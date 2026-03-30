@@ -1,0 +1,378 @@
+/* ═══════════════════════════════════════════════════════════════
+   StudyHub — Mobile Native (Capacitor) Styles
+   Safe areas, bottom nav, touch targets, native feel
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --keyboard-height: 0px;
+  --bottom-nav-height: 60px;
+}
+
+/* ─── Native Platform Detection ─────────────────────────────── */
+
+body.native-platform {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+body.native-platform input,
+body.native-platform textarea,
+body.native-platform [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+/* ─── Safe Area Padding ─────────────────────────────────────── */
+
+body.native-platform .app-layout {
+  padding-top: var(--safe-area-top);
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+}
+
+body.native-platform .main-content {
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 8px);
+}
+
+/* Hide desktop sidebar on mobile native */
+body.native-platform .sidebar {
+  display: none !important;
+}
+
+body.native-platform .app-layout {
+  grid-template-columns: 1fr !important;
+}
+
+/* ─── Bottom Navigation Bar ─────────────────────────────────── */
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
+  padding-bottom: var(--safe-area-bottom);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 9999;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+body.keyboard-open .mobile-bottom-nav {
+  display: none;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+  min-width: 56px;
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.9);
+}
+
+.mobile-nav-item.active {
+  color: var(--accent);
+}
+
+.mobile-nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 4px 4px;
+}
+
+.mobile-nav-icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mobile-nav-label {
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  min-width: 16px;
+  height: 16px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+/* ─── Mobile Header Bar ─────────────────────────────────────── */
+
+.mobile-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  padding-top: calc(12px + var(--safe-area-top));
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.mobile-header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.mobile-header-action {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+/* ─── Touch-Friendly Targets ────────────────────────────────── */
+
+body.native-platform button,
+body.native-platform a,
+body.native-platform .clickable {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+body.native-platform input,
+body.native-platform textarea,
+body.native-platform select {
+  font-size: 16px !important; /* Prevents iOS zoom on focus */
+  min-height: 44px;
+}
+
+/* ─── Pull to Refresh Indicator ─────────────────────────────── */
+
+.pull-refresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  gap: 8px;
+}
+
+.pull-refresh-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-color);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ─── Mobile Cards ──────────────────────────────────────────── */
+
+body.native-platform .project-card,
+body.native-platform .friend-card,
+body.native-platform .stat-card {
+  border-radius: 16px;
+}
+
+/* ─── Mobile Chat Adjustments ───────────────────────────────── */
+
+body.native-platform .wa-chat-input-area {
+  padding-bottom: calc(8px + var(--safe-area-bottom));
+}
+
+body.keyboard-open .wa-chat-input-area {
+  padding-bottom: 8px;
+}
+
+body.native-platform .wa-messages-container {
+  padding-bottom: 80px;
+}
+
+/* ─── Mobile Profile ────────────────────────────────────────── */
+
+body.native-platform .fb-profile-cover {
+  border-radius: 0;
+  margin: 0 -16px;
+}
+
+/* ─── Smooth Scrolling ──────────────────────────────────────── */
+
+body.native-platform .main-content,
+body.native-platform .wa-messages-container,
+body.native-platform .sidebar-inner {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* ─── Animations (Reduced for Native) ───────────────────────── */
+
+body.native-platform * {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.native-platform * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Toast / Snackbar ──────────────────────────────────────── */
+
+.mobile-toast {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  z-index: 10000;
+  animation: toastIn 0.3s ease;
+  max-width: calc(100vw - 32px);
+  text-align: center;
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ─── Floating Action Button ────────────────────────────────── */
+
+.mobile-fab {
+  position: fixed;
+  bottom: calc(var(--bottom-nav-height) + var(--safe-area-bottom) + 16px);
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(79, 140, 255, 0.4);
+  z-index: 9998;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.mobile-fab:active {
+  transform: scale(0.9);
+}
+
+/* ─── Mobile-only visibility ────────────────────────────────── */
+
+.mobile-only {
+  display: none !important;
+}
+
+body.native-platform .mobile-only {
+  display: flex !important;
+}
+
+body.native-platform .desktop-only {
+  display: none !important;
+}
+
+/* ─── Swipe Actions (List Items) ────────────────────────────── */
+
+.swipe-container {
+  overflow: hidden;
+  position: relative;
+}
+
+.swipe-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+.swipe-action-btn {
+  height: 100%;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.swipe-action-btn.delete { background: #ef4444; }
+.swipe-action-btn.archive { background: #f59e0b; }
+
+/* ─── Loading Skeleton (Native Feel) ────────────────────────── */
+
+.skeleton-pulse {
+  background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+  background-size: 200% 100%;
+  animation: skeletonPulse 1.5s ease infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeletonPulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

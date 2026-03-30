@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Data (local dev only)
+*.db
+*.sqlite
+*.sqlite3
+
+# StudyHub local data
+backend/studyhub_data/
+
+# Capacitor native builds
+android/app/build/
+ios/App/Pods/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temp files
+*.tmp
+logo-options.html
+profile-mockups.html
+
+# Claude
+.claude/
