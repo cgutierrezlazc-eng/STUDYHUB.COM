@@ -59,57 +59,30 @@
   margin-bottom: 48px;
 }
 
-.auth-logo-row {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
-}
-
-.auth-logo-mark {
-  width: 56px;
-  height: 56px;
-  background: linear-gradient(135deg, #5b9aff, #7c3aed);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Sora', var(--font-sans);
-  font-size: 28px;
-  font-weight: 800;
-  color: white;
-  flex-shrink: 0;
-  box-shadow: 0 4px 20px rgba(91, 154, 255, 0.3);
-}
-
 .auth-brand-name {
-  font-family: 'Sora', var(--font-sans);
-  font-size: 44px;
-  font-weight: 700;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
-  margin: 0;
-  letter-spacing: -1px;
-}
-
-.auth-brand-name span {
-  color: #8bb8ff;
-  -webkit-text-fill-color: #8bb8ff;
+  font-family: 'Outfit', var(--font-sans);
+  font-size: 56px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #22d3ee, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+  letter-spacing: -2px;
+  filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.3)) drop-shadow(0 0 60px rgba(129, 140, 248, 0.15));
 }
 
 .auth-brand h1 {
-  font-family: 'Sora', var(--font-sans);
-  font-size: 44px;
-  font-weight: 700;
-  color: #ffffff;
-  -webkit-text-fill-color: #ffffff;
-  margin: 0;
-  letter-spacing: -1px;
-}
-
-.auth-brand h1 span {
-  color: #8bb8ff;
-  -webkit-text-fill-color: #8bb8ff;
+  font-family: 'Outfit', var(--font-sans);
+  font-size: 56px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #22d3ee, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 8px;
+  letter-spacing: -2px;
+  filter: drop-shadow(0 0 30px rgba(34, 211, 238, 0.3)) drop-shadow(0 0 60px rgba(129, 140, 248, 0.15));
 }
 
 .auth-tagline {
@@ -605,7 +578,7 @@
 .btn-auth-primary {
   width: 100%;
   padding: 13px;
-  background: linear-gradient(135deg, #0a66c2 0%, #0052a3 100%);
+  background: linear-gradient(135deg, #0891b2, #4f46e5);
   color: white;
   border: none;
   border-radius: 28px;
@@ -616,12 +589,12 @@
   transition: all 0.25s ease;
   margin-top: 8px;
   letter-spacing: 0.01em;
-  box-shadow: 0 2px 8px rgba(10, 102, 194, 0.2);
+  box-shadow: 0 2px 8px rgba(8, 145, 178, 0.25);
 }
 
 .btn-auth-primary:hover {
-  background: linear-gradient(135deg, #004182 0%, #003366 100%);
-  box-shadow: 0 6px 20px rgba(10, 102, 194, 0.35);
+  box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35);
+  transform: translateY(-1px);
   transform: translateY(-1px);
 }
 
@@ -686,8 +659,8 @@
   width: 100%;
   padding: 13px;
   background: transparent;
-  color: #0a66c2;
-  border: 1px solid #0a66c2;
+  color: #0891b2;
+  border: 1px solid #0891b2;
   border-radius: 28px;
   font-size: 15px;
   font-weight: 600;
@@ -698,9 +671,9 @@
 }
 
 .btn-auth-register:hover {
-  background: rgba(10, 102, 194, 0.06);
-  border-color: #004182;
-  color: #004182;
+  background: rgba(8, 145, 178, 0.06);
+  border-color: #0e7490;
+  color: #0e7490;
 }
 
 /* Trusted section */

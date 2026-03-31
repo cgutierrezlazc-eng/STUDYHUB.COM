@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Opciones de Marca — Logo Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=Space+Grotesk:wght@500;600;700&family=Unbounded:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#f4f2ee;color:#191919;min-height:100vh}
+.header{text-align:center;padding:48px 24px 32px;border-bottom:1px solid #e0dfdc}
+.header h1{font-family:'Sora';font-size:20px;font-weight:700;color:#0a66c2}
+.header p{font-size:14px;color:#666;margin-top:6px}
+.brand-section{max-width:1100px;margin:0 auto;padding:40px 24px}
+.brand-name-title{font-family:'Sora';font-size:28px;font-weight:800;margin-bottom:6px}
+.brand-meaning{font-size:14px;color:#666;margin-bottom:24px}
+.logos-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:48px}
+.logo-card{border-radius:16px;overflow:hidden;border:1px solid #e0dfdc;background:#fff}
+.logo-preview{padding:40px 24px;display:flex;align-items:center;justify-content:center;min-height:160px}
+.logo-preview.dark{background:#0c0c1d}
+.logo-preview.blue{background:linear-gradient(135deg,#071e3d,#0a2a5e)}
+.logo-preview.light{background:#f4f2ee}
+.logo-label{padding:14px 20px;border-top:1px solid #eee;font-size:12px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:1px}
+
+/* ─── CLASSNOVA LOGOS ─── */
+.cn1-mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#0a66c2,#00b4d8);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:24px;font-weight:800;color:#fff;margin-right:16px;box-shadow:0 4px 16px rgba(10,102,194,0.3)}
+.cn1-text{font-family:'Sora';font-size:34px;font-weight:700;color:#fff}
+.cn1-text span{opacity:0.6}
+.cn1-text-dark{color:#191919}
+.cn1-text-dark span{color:#0a66c2;opacity:1}
+
+.cn2-wrap{text-align:center}
+.cn2-icon{font-size:36px;margin-bottom:8px}
+.cn2-text{font-family:'Outfit';font-size:32px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.cn2-text span{color:#00b4d8}
+.cn2-sub{font-size:11px;text-transform:uppercase;letter-spacing:4px;color:rgba(255,255,255,0.5);margin-top:4px}
+.cn2-text-dk{color:#191919}
+.cn2-text-dk span{color:#0a66c2}
+.cn2-sub-dk{color:#888}
+
+.cn3-circle{width:56px;height:56px;border-radius:50%;border:3px solid #00b4d8;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-size:22px;font-weight:700;color:#00b4d8;margin-right:14px}
+.cn3-text{font-family:'Space Grotesk';font-size:30px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.cn3-text-lt{color:#191919}
+
+/* ─── NEUDY LOGOS ─── */
+.nd1-mark{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:22px;font-weight:800;color:#fff;margin-right:14px;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.nd1-text{font-family:'Sora';font-size:34px;font-weight:700;color:#fff}
+.nd1-text span{color:#c084fc}
+.nd1-text-dk{color:#191919}
+.nd1-text-dk span{color:#7c3aed}
+
+.nd2-wrap{display:flex;align-items:center;gap:12px}
+.nd2-brain{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-size:24px}
+.nd2-text{font-family:'Plus Jakarta Sans';font-size:36px;font-weight:800;color:#fff;letter-spacing:-1px}
+.nd2-text-dk{color:#191919}
+
+.nd3-wrap{text-align:center}
+.nd3-text{font-family:'Unbounded';font-size:32px;font-weight:700;color:#fff;letter-spacing:-0.5px;position:relative;display:inline-block}
+.nd3-text::after{content:'';position:absolute;bottom:2px;left:0;right:0;height:4px;background:linear-gradient(90deg,#7c3aed,#ec4899);border-radius:2px}
+.nd3-text-dk{color:#191919}
+.nd3-sub{font-size:11px;text-transform:uppercase;letter-spacing:3px;color:rgba(255,255,255,0.4);margin-top:8px}
+.nd3-sub-dk{color:#888}
+
+/* ─── CAMPUSY LOGOS ─── */
+.cp1-mark{width:50px;height:50px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:22px;font-weight:800;color:#fff;margin-right:14px;box-shadow:0 4px 16px rgba(245,158,11,0.3)}
+.cp1-text{font-family:'Sora';font-size:34px;font-weight:700;color:#fff}
+.cp1-text span{color:#fbbf24}
+.cp1-text-dk{color:#191919}
+.cp1-text-dk span{color:#e16b16}
+
+.cp2-wrap{display:flex;align-items:center;gap:14px}
+.cp2-hat{font-size:36px}
+.cp2-text{font-family:'Outfit';font-size:34px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.cp2-text span{color:#fbbf24}
+.cp2-text-dk{color:#191919}
+.cp2-text-dk span{color:#e16b16}
+
+.cp3-wrap{text-align:center}
+.cp3-badge{display:inline-block;padding:8px 24px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:24px;margin-bottom:8px}
+.cp3-badge-text{font-family:'Sora';font-size:28px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.cp3-sub{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.4)}
+.cp3-sub-dk{color:#888}
+
+.divider{height:1px;background:#e0dfdc;max-width:1100px;margin:0 auto}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Opciones de Marca — Logo Concepts</h1>
+  <p>3 logos por cada nombre. Versión oscura, sobre azul, y clara.</p>
+</div>
+
+<!-- ═══════════ CLASSNOVA ═══════════ -->
+<div class="brand-section">
+  <div class="brand-name-title" style="color:#0a66c2">Classnova</div>
+  <div class="brand-meaning">Class + Nova (estrella nueva) — Innovación educativa, nueva forma de aprender. Comunidad inteligente de estudio.</div>
+  <div class="logos-row">
+    <div class="logo-card">
+      <div class="logo-preview dark">
+        <div style="display:flex;align-items:center">
+          <div class="cn1-mark">C</div>
+          <div class="cn1-text">Class<span>nova</span></div>
+        </div>
+      </div>
+      <div class="logo-label">A1 — Ícono + Texto (Oscuro)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview blue">
+        <div class="cn2-wrap">
+          <div class="cn2-icon">✦</div>
+          <div class="cn2-text">Class<span>nova</span></div>
+          <div class="cn2-sub">Smart Study Community</div>
+        </div>
+      </div>
+      <div class="logo-label">A2 — Estrella + Tagline (Azul)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview light">
+        <div style="display:flex;align-items:center">
+          <div class="cn3-circle">CN</div>
+          <div class="cn3-text-lt">Classnova</div>
+        </div>
+      </div>
+      <div class="logo-label">A3 — Monograma Circular (Claro)</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════ NEUDY ═══════════ -->
+<div class="brand-section">
+  <div class="brand-name-title" style="color:#7c3aed">Neudy</div>
+  <div class="brand-meaning">Neural + Study — Estudio potenciado por inteligencia artificial. Tu cerebro digital para la universidad.</div>
+  <div class="logos-row">
+    <div class="logo-card">
+      <div class="logo-preview dark">
+        <div style="display:flex;align-items:center">
+          <div class="nd1-mark">N</div>
+          <div class="nd1-text"><span>Neu</span>dy</div>
+        </div>
+      </div>
+      <div class="logo-label">B1 — Ícono + Texto (Oscuro)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview" style="background:#1a1030">
+        <div class="nd2-wrap">
+          <div class="nd2-brain">🧠</div>
+          <div class="nd2-text">Neudy</div>
+        </div>
+      </div>
+      <div class="logo-label">B2 — Cerebro + Texto (Púrpura)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview light">
+        <div class="nd3-wrap">
+          <div class="nd3-text nd3-text-dk">Neudy</div>
+          <div class="nd3-sub nd3-sub-dk">Neural Study Platform</div>
+        </div>
+      </div>
+      <div class="logo-label">B3 — Underline Gradient (Claro)</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ═══════════ CAMPUSY ═══════════ -->
+<div class="brand-section">
+  <div class="brand-name-title" style="color:#e16b16">Campusy</div>
+  <div class="brand-meaning">Campus + y — Tu campus digital. Comunidad universitaria donde estudias, conectas y creces.</div>
+  <div class="logos-row">
+    <div class="logo-card">
+      <div class="logo-preview dark">
+        <div style="display:flex;align-items:center">
+          <div class="cp1-mark">C</div>
+          <div class="cp1-text"><span>Campus</span>y</div>
+        </div>
+      </div>
+      <div class="logo-label">C1 — Ícono + Texto (Oscuro)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview blue">
+        <div class="cp2-wrap">
+          <div class="cp2-hat">🎓</div>
+          <div class="cp2-text">Campus<span>y</span></div>
+        </div>
+      </div>
+      <div class="logo-label">C2 — Graduación + Texto (Azul)</div>
+    </div>
+    <div class="logo-card">
+      <div class="logo-preview light">
+        <div class="cp3-wrap">
+          <div class="cp3-badge"><span class="cp3-badge-text">Campusy</span></div>
+          <div class="cp3-sub cp3-sub-dk">Your Digital Campus</div>
+        </div>
+      </div>
+      <div class="logo-label">C3 — Badge Gradient (Claro)</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:40px;color:#888;font-size:13px">
+  Elige el nombre y el estilo de logo que prefieras. Luego verificamos el dominio y lo compramos.
+</div>
+</body>
+</html>

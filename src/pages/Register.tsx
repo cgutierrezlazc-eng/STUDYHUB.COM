@@ -174,7 +174,7 @@ export default function Register({ onSwitchToLogin }: Props) {
     <div className="auth-page">
       <div className="auth-left">
         <div className="auth-brand">
-          <div className="auth-logo-row"><div className="auth-logo-mark">S</div><h1 className="auth-brand-name"><span>Study</span>Hub</h1></div>
+          <h1 className="auth-brand-name">Conniku</h1>
           <p className="auth-tagline">{t('welcome.subtitle')}</p>
         </div>
         <div className="auth-free-badge">

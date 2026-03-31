@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>VOXEDY — Brand Identity</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#08080f;color:#eee}
+
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.92);backdrop-filter:blur(16px);padding:16px 40px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center}
+.nav h1{font-family:'Sora';font-size:12px;color:#555;text-transform:uppercase;letter-spacing:4px}
+
+.hero{text-align:center;padding:56px 24px 16px}
+.hero-name{font-family:'Outfit';font-size:64px;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-3px;filter:drop-shadow(0 0 40px rgba(124,58,237,0.3))}
+.hero p{font-size:15px;color:#555;margin-top:8px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6}
+.hero-tags{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.hero-tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(124,58,237,0.1);color:#a78bfa;border:1px solid rgba(124,58,237,0.15)}
+
+.section{max-width:1200px;margin:0 auto;padding:40px 32px}
+.stitle{font-family:'Sora';font-size:10px;text-transform:uppercase;letter-spacing:5px;color:#444;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.stitle::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.04)}
+
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+
+.card{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);background:#0e0e1c;transition:all 0.25s}
+.card:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 8px 40px rgba(124,58,237,0.08)}
+.preview{padding:48px 32px;display:flex;align-items:center;justify-content:center;min-height:180px}
+.preview-tall{min-height:220px}
+.label{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.03);font-size:10px;color:#444;display:flex;justify-content:space-between;align-items:center}
+.label strong{color:#777;font-size:11px}
+.tag{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-star{background:rgba(251,191,36,0.15);color:#fbbf24}
+.tag-rec{background:rgba(124,58,237,0.15);color:#a78bfa}
+.tag-hot{background:rgba(236,72,153,0.15);color:#f472b6}
+.tag-min{background:rgba(34,211,153,0.15);color:#34d399}
+
+.deep{background:#0a0816 !important}
+.dark{background:#08080f !important}
+.gradient-bg{background:linear-gradient(135deg,#120a24,#0a0816) !important}
+.light{background:#f4f2ee !important}
+.white{background:#ffffff !important}
+
+/* ═══════════════════════════════════════════════ */
+/*   01 — GLOW RAINBOW (estilo 08-F adaptado)    */
+/* ═══════════════════════════════════════════════ */
+.v1{font-family:'Outfit';font-size:56px;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;filter:drop-shadow(0 0 30px rgba(124,58,237,0.4)) drop-shadow(0 0 60px rgba(236,72,153,0.15))}
+
+/* 01-B: Glow + tagline */
+.v1b-wrap{text-align:center}
+.v1b{font-family:'Outfit';font-size:52px;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;filter:drop-shadow(0 0 30px rgba(124,58,237,0.35))}
+.v1b-sub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#444;margin-top:8px}
+
+/* 01-C: Glow + Icon */
+.v1c-wrap{display:flex;align-items:center;gap:16px}
+.v1c-mark{width:54px;height:54px;border-radius:14px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:24px;font-weight:800;color:#a78bfa;box-shadow:0 0 24px rgba(124,58,237,0.2)}
+.v1c{font-family:'Outfit';font-size:44px;font-weight:800;background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1.5px;filter:drop-shadow(0 0 20px rgba(124,58,237,0.3))}
+
+/* ═══════════════════════════════════════════════ */
+/*   02 — EDITORIAL GLOW HYBRID                  */
+/* ═══════════════════════════════════════════════ */
+.v2-wrap{text-align:center}
+.v2{font-family:'Sora';font-size:48px;font-weight:300;color:#d0cce0;letter-spacing:10px;text-transform:uppercase;text-shadow:0 0 60px rgba(124,58,237,0.2)}
+.v2 b{font-weight:800;background:linear-gradient(135deg,#a78bfa,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 15px rgba(167,139,250,0.4))}
+.v2-sub{font-size:10px;letter-spacing:5px;color:#333;margin-top:8px;text-transform:uppercase}
+
+/* ═══════════════════════════════════════════════ */
+/*   03 — SOLID ICON MARK (para sidebar/favicon) */
+/* ═══════════════════════════════════════════════ */
+.v3-wrap{display:flex;align-items:center;gap:14px}
+.v3-mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:26px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(124,58,237,0.3);position:relative}
+.v3-mark::before{content:'';position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent)}
+.v3-text{font-family:'Sora';font-size:36px;font-weight:700;color:#eee;letter-spacing:-0.5px}
+.v3-text b{font-weight:800;color:#a78bfa}
+
+/* ═══════════════════════════════════════════════ */
+/*   04 — STACKED PREMIUM                        */
+/* ═══════════════════════════════════════════════ */
+.v4-wrap{text-align:center}
+.v4-top{font-family:'DM Sans';font-size:10px;letter-spacing:8px;text-transform:uppercase;color:#7c3aed;font-weight:600}
+.v4{font-family:'Outfit';font-size:56px;font-weight:800;color:#fff;letter-spacing:-2px;text-shadow:0 0 60px rgba(124,58,237,0.35)}
+.v4 span{background:linear-gradient(135deg,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(192,132,252,0.4))}
+.v4-bar{width:60px;height:3px;background:linear-gradient(90deg,#7c3aed,#ec4899);border-radius:2px;margin:10px auto 0}
+
+/* ═══════════════════════════════════════════════ */
+/*   05 — NEON OUTLINE                           */
+/* ═══════════════════════════════════════════════ */
+.v5{font-family:'Outfit';font-size:52px;font-weight:800;color:transparent;letter-spacing:-1.5px;-webkit-text-stroke:2px rgba(167,139,250,0.7);text-shadow:0 0 30px rgba(124,58,237,0.3),0 0 60px rgba(124,58,237,0.1)}
+
+/* ═══════════════════════════════════════════════ */
+/*   06 — WORDMARK DOT                           */
+/* ═══════════════════════════════════════════════ */
+.v6{font-family:'Bricolage Grotesque';font-size:52px;font-weight:800;letter-spacing:-2px}
+.v6 .vox{background:linear-gradient(135deg,#a78bfa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.v6 .edy{color:#eee}
+.v6-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ec4899;margin-left:3px;vertical-align:super;box-shadow:0 0 16px rgba(236,72,153,0.5)}
+
+/* ═══════════════════════════════════════════════ */
+/*   07 — SPLIT GRADIENT                         */
+/* ═══════════════════════════════════════════════ */
+.v7{font-family:'Plus Jakarta Sans';font-size:48px;font-weight:800;letter-spacing:-1.5px}
+.v7 .left{color:#eee}
+.v7 .right{background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(124,58,237,0.3))}
+
+/* ═══════════════════════════════════════════════ */
+/*   08 — PILL BADGE GLOW                        */
+/* ═══════════════════════════════════════════════ */
+.v8-pill{display:inline-flex;align-items:center;gap:12px;padding:14px 32px 14px 16px;background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.08));border:1px solid rgba(124,58,237,0.25);border-radius:50px;box-shadow:0 0 40px rgba(124,58,237,0.12)}
+.v8-icon{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:18px;font-weight:800;color:#fff;box-shadow:0 4px 16px rgba(124,58,237,0.3)}
+.v8-text{font-family:'Outfit';font-size:28px;font-weight:800;background:linear-gradient(135deg,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* ═══════════════════════════════════════════════ */
+/*   LIGHT VERSIONS                               */
+/* ═══════════════════════════════════════════════ */
+.vlt-1{font-family:'Outfit';font-size:44px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#6d28d9,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1.5px}
+.vlt-2{font-family:'Sora';font-size:42px;font-weight:300;color:#191919;letter-spacing:8px;text-transform:uppercase}.vlt-2 b{font-weight:800;color:#7c3aed}
+.vlt-3-wrap{display:flex;align-items:center;gap:12px}
+.vlt-3-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:20px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(124,58,237,0.2)}
+.vlt-3-text{font-family:'Sora';font-size:32px;font-weight:700;color:#191919;letter-spacing:-0.3px}.vlt-3-text b{color:#7c3aed}
+.vlt-4-wrap{text-align:center}
+.vlt-4{font-family:'Bricolage Grotesque';font-size:44px;font-weight:800;color:#191919;letter-spacing:-1px}.vlt-4 span{color:#7c3aed}
+.vlt-4-bar{width:50px;height:3px;background:linear-gradient(90deg,#7c3aed,#ec4899);border-radius:2px;margin:6px auto 0}
+
+/* ═══════════════════════════════════════════════ */
+/*   MOCKUPS                                      */
+/* ═══════════════════════════════════════════════ */
+.mockup-login{max-width:940px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.05)}
+.ml-left{background:linear-gradient(165deg,#120a24 0%,#0a0816 50%,#08080f 100%);padding:48px 40px;display:flex;flex-direction:column;justify-content:center}
+.ml-right{background:#f4f2ee;padding:40px;display:flex;flex-direction:column;justify-content:center}
+.ml-features{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.ml-feat{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;font-size:13px;color:#777}
+.ml-trusted{margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;font-size:11px;color:rgba(255,255,255,0.25);font-style:italic}
+.ml-title{font-family:'Sora';font-size:20px;font-weight:600;color:#191919;margin-bottom:4px}
+.ml-sub{font-size:13px;color:#888;margin-bottom:20px}
+.ml-input{width:100%;padding:11px 14px;border:1px solid #d0d0d0;border-radius:8px;font-size:13px;margin-bottom:12px;outline:none;font-family:'DM Sans'}
+.ml-btn{width:100%;padding:12px;border:none;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+.ml-btn-p{background:#7c3aed;color:#fff;margin-bottom:8px;box-shadow:0 4px 12px rgba(124,58,237,0.25)}
+.ml-btn-o{background:transparent;color:#7c3aed;border:1px solid #7c3aed}
+.ml-google{width:100%;padding:11px;background:#fff;border:1px solid #ddd;border-radius:24px;font-size:13px;font-weight:600;margin-bottom:16px;cursor:pointer;font-family:'DM Sans';color:#333}
+.ml-div{text-align:center;color:#aaa;font-size:12px;margin:12px 0;position:relative}
+.ml-div::before,.ml-div::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:#ddd}
+.ml-div::before{left:0}.ml-div::after{right:0}
+
+.sidebar-row{display:flex;gap:24px;justify-content:center;margin-top:24px}
+.sb{width:220px;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);padding:16px}
+.sb-dark{background:#0e0e1c}
+.sb-light{background:#fff;border-color:#e0dfdc}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.sb-light .sb-logo{border-bottom-color:#e0dfdc}
+.sb-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:14px;font-weight:800;color:#fff;box-shadow:0 0 12px rgba(124,58,237,0.15)}
+.sb-text{font-family:'Outfit';font-size:18px;font-weight:800;letter-spacing:-0.5px}
+.sb-dark .sb-text{background:linear-gradient(135deg,#c084fc,#818cf8,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-light .sb-text{background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-item{padding:7px 10px;border-radius:6px;font-size:12px;color:#666;margin-bottom:1px;display:flex;align-items:center;gap:8px}
+.sb-dark .sb-item.active{background:rgba(124,58,237,0.1);color:#a78bfa}
+.sb-light .sb-item{color:#555}
+.sb-light .sb-item.active{background:rgba(124,58,237,0.06);color:#7c3aed}
+.sb-sec{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:#333;padding:10px 10px 4px;font-weight:600}
+.sb-light .sb-sec{color:#aaa}
+
+.app-icon-row{display:flex;gap:20px;justify-content:center;margin-top:24px}
+.app-icon{width:72px;height:72px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:32px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.ai-1{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+.ai-2{background:linear-gradient(135deg,#7c3aed,#ec4899)}
+.ai-3{background:linear-gradient(135deg,#6d28d9,#4f46e5)}
+.ai-4{background:linear-gradient(135deg,#8b5cf6,#ec4899,#f59e0b)}
+.app-icon-label{text-align:center;font-size:10px;color:#444;margin-top:6px}
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <h1>Voxedy — Brand Identity System</h1>
+</div>
+
+<div class="hero">
+  <div class="hero-name">Voxedy</div>
+  <p>Vox (voz, conocimiento) + Edy (educación). Tu voz de estudio potenciada por inteligencia artificial.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">IA + Estudio</span>
+    <span class="hero-tag">Comunidad</span>
+    <span class="hero-tag">.com Disponible</span>
+  </div>
+</div>
+
+<!-- ═══════════ DARK LOGOS ═══════════ -->
+<div class="section">
+  <div class="stitle">Logos principales — Fondo oscuro</div>
+  <div class="grid g2">
+
+    <div class="card">
+      <div class="preview deep preview-tall"><div class="v1">Voxedy</div></div>
+      <div class="label"><strong>01 — Glow Rainbow</strong><span class="tag tag-star">⭐ TU FAVORITO</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview gradient-bg preview-tall">
+        <div class="v1b-wrap"><div class="v1b">Voxedy</div><div class="v1b-sub">Neural Study Platform</div></div>
+      </div>
+      <div class="label"><strong>02 — Glow + Tagline</strong><span class="tag tag-rec">COMPLETO</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview deep preview-tall">
+        <div class="v1c-wrap"><div class="v1c-mark">V</div><div class="v1c">Voxedy</div></div>
+      </div>
+      <div class="label"><strong>03 — Glow + Icon Mark</strong><span class="tag tag-rec">VERSÁTIL</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview gradient-bg preview-tall">
+        <div class="v4-wrap"><div class="v4-top">Neural Study</div><div class="v4"><span>Vox</span>edy</div><div class="v4-bar"></div></div>
+      </div>
+      <div class="label"><strong>04 — Stacked Glow + Bar</strong><span class="tag tag-hot">PREMIUM</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview deep preview-tall">
+        <div class="v2-wrap"><div class="v2">V<b>OX</b>EDY</div><div class="v2-sub">Smart Study Community</div></div>
+      </div>
+      <div class="label"><strong>05 — Editorial + Glow</strong><span class="tag tag-min">ELEGANTE</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview dark preview-tall">
+        <div><span class="v6"><span class="vox">Vox</span><span class="edy">edy</span></span><span class="v6-dot"></span></div>
+      </div>
+      <div class="label"><strong>06 — Wordmark + Dot</strong><span class="tag tag-min">MINIMAL</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview deep preview-tall"><div class="v5">Voxedy</div></div>
+      <div class="label"><strong>07 — Neon Outline</strong><span class="tag tag-hot">FUTURISTA</span></div>
+    </div>
+
+    <div class="card">
+      <div class="preview gradient-bg preview-tall">
+        <div class="v8-pill"><div class="v8-icon">V</div><div class="v8-text">Voxedy</div></div>
+      </div>
+      <div class="label"><strong>08 — Pill Badge Glow</strong><span class="tag tag-rec">APP-READY</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ LIGHT VERSIONS ═══════════ -->
+<div class="section">
+  <div class="stitle">Versiones claras — Tema LinkedIn</div>
+  <div class="grid g2" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <div class="card"><div class="preview light"><div class="vlt-1">Voxedy</div></div><div class="label"><strong>Gradient</strong></div></div>
+    <div class="card"><div class="preview white"><div class="vlt-2">V<b>OX</b>EDY</div></div><div class="label"><strong>Editorial</strong></div></div>
+    <div class="card"><div class="preview light"><div class="vlt-3-wrap"><div class="vlt-3-mark">V</div><div class="vlt-3-text"><b>Vox</b>edy</div></div></div><div class="label"><strong>Icon Mark</strong></div></div>
+    <div class="card"><div class="preview white"><div class="vlt-4-wrap"><div class="vlt-4"><span>Vox</span>edy</div><div class="vlt-4-bar"></div></div></div><div class="label"><strong>Stacked</strong></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ APP ICONS ═══════════ -->
+<div class="section">
+  <div class="stitle">App Icons — Google Play & App Store</div>
+  <div class="app-icon-row">
+    <div><div class="app-icon ai-1">V</div><div class="app-icon-label">Clásico</div></div>
+    <div><div class="app-icon ai-2">V</div><div class="app-icon-label">Gradiente</div></div>
+    <div><div class="app-icon ai-3">V</div><div class="app-icon-label">Profundo</div></div>
+    <div><div class="app-icon ai-4">V</div><div class="app-icon-label">Rainbow</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ MOCKUP LOGIN ═══════════ -->
+<div class="section">
+  <div class="stitle">Mockup — Página de Login</div>
+  <div class="mockup-login">
+    <div class="ml-left">
+      <div>
+        <div class="v1c-wrap" style="margin-bottom:8px"><div class="v1c-mark">V</div><div class="v1c">Voxedy</div></div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.45)">Tu plataforma neural de estudio</div>
+      </div>
+      <div class="ml-features">
+        <div class="ml-feat">🧠 IA que entiende tu material</div>
+        <div class="ml-feat">👥 Comunidad estudiantil</div>
+        <div class="ml-feat">📖 Guías, quizzes y flashcards</div>
+        <div class="ml-feat">⚡ 7 días gratis — sin tarjeta</div>
+      </div>
+      <div class="ml-trusted">Creado por un estudiante, para estudiantes</div>
+    </div>
+    <div class="ml-right">
+      <div class="ml-title">Iniciar Sesión</div>
+      <div class="ml-sub">Bienvenido de vuelta</div>
+      <div class="ml-google">G &nbsp;Continuar con Google</div>
+      <div class="ml-div">o usa tu correo</div>
+      <input class="ml-input" placeholder="tu@universidad.edu">
+      <input class="ml-input" type="password" placeholder="••••••••">
+      <button class="ml-btn ml-btn-p">Iniciar Sesión</button>
+      <div style="text-align:center;margin:8px 0"><a style="font-size:12px;color:#7c3aed;text-decoration:none">¿Olvidaste tu contraseña?</a></div>
+      <button class="ml-btn ml-btn-o">Crear cuenta gratis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SIDEBAR MOCKUPS ═══════════ -->
+<div class="section">
+  <div class="stitle">Mockup — Sidebar Dark & Light</div>
+  <div class="sidebar-row">
+    <div class="sb sb-dark">
+      <div class="sb-logo"><div class="sb-mark">V</div><div class="sb-text">Voxedy</div></div>
+      <div class="sb-item active">👤 Mi Perfil</div>
+      <div class="sb-item">🏠 Dashboard</div>
+      <div class="sb-item">💬 Mensajes</div>
+      <div class="sb-item">👥 Comunidad</div>
+      <div class="sb-sec">Mis Asignaturas</div>
+      <div class="sb-item">+ Nueva Asignatura</div>
+      <div class="sb-sec">Soporte</div>
+      <div class="sb-item">💎 Suscripción</div>
+    </div>
+    <div class="sb sb-light">
+      <div class="sb-logo"><div class="sb-mark">V</div><div class="sb-text">Voxedy</div></div>
+      <div class="sb-item active">👤 Mi Perfil</div>
+      <div class="sb-item">🏠 Dashboard</div>
+      <div class="sb-item">💬 Mensajes</div>
+      <div class="sb-item">👥 Comunidad</div>
+      <div class="sb-sec">Mis Asignaturas</div>
+      <div class="sb-item">+ Nueva Asignatura</div>
+      <div class="sb-sec">Soporte</div>
+      <div class="sb-item">💎 Suscripción</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:48px;border-top:1px solid rgba(255,255,255,0.04)">
+  <p style="color:#444;font-size:13px;max-width:520px;margin:0 auto;line-height:1.7">
+    <strong style="color:#a78bfa">01 (Glow Rainbow)</strong> es tu favorito original.
+    <strong style="color:#a78bfa">03 (Glow + Icon)</strong> es el más versátil para uso real (sidebar, favicon, app icon).
+    El <strong style="color:#a78bfa">04 (Stacked)</strong> combina lo mejor del editorial + glow.
+  </p>
+</div>
+
+</body>
+</html>

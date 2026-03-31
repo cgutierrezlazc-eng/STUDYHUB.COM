@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>NEUDY — Brand Identity Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@400;500;600;700;800&family=Manrope:wght@500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#0a0a14;color:#eee;min-height:100vh}
+
+.top-bar{padding:20px 40px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center}
+.top-bar h1{font-family:'Sora';font-size:13px;color:#666;text-transform:uppercase;letter-spacing:3px}
+.top-bar span{font-size:12px;color:#444}
+
+.hero{text-align:center;padding:60px 24px 20px}
+.hero h2{font-family:'Sora';font-size:42px;font-weight:800;background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1.5px}
+.hero p{font-size:15px;color:#666;margin-top:8px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+.section{max-width:1200px;margin:0 auto;padding:40px 32px}
+.section-title{font-family:'Sora';font-size:11px;text-transform:uppercase;letter-spacing:4px;color:#555;margin-bottom:24px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+
+.card{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:#111122;transition:border-color 0.2s}
+.card:hover{border-color:rgba(124,58,237,0.3)}
+.card-preview{padding:48px 32px;display:flex;align-items:center;justify-content:center;min-height:180px}
+.card-label{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.04);font-size:11px;color:#555;display:flex;justify-content:space-between;align-items:center}
+.card-label strong{color:#888;font-weight:600}
+.card-tag{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-rec{background:rgba(124,58,237,0.15);color:#a78bfa}
+.tag-bold{background:rgba(236,72,153,0.15);color:#f472b6}
+.tag-min{background:rgba(34,211,153,0.15);color:#34d399}
+
+/* ═══ CONCEPT 1: ICON MARK — The Neural "N" ═══ */
+.c1-mark{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;position:relative;margin-right:16px;box-shadow:0 8px 24px rgba(124,58,237,0.25)}
+.c1-mark::before{content:'';position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.15),transparent);pointer-events:none}
+.c1-n{font-family:'Sora';font-size:28px;font-weight:800;color:#fff}
+.c1-text{font-family:'Sora';font-size:36px;font-weight:700;color:#eee;letter-spacing:-0.5px}
+.c1-text b{font-weight:800;color:#a78bfa}
+
+/* ═══ CONCEPT 2: WORDMARK PURO — Tipografía como logo ═══ */
+.c2-text{font-family:'Bricolage Grotesque';font-size:48px;font-weight:800;letter-spacing:-2px}
+.c2-text .neu{color:#a78bfa}
+.c2-text .dy{color:#eee}
+.c2-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#ec4899;margin-left:2px;vertical-align:super;box-shadow:0 0 16px rgba(236,72,153,0.5)}
+
+/* ═══ CONCEPT 3: STACKED PREMIUM ═══ */
+.c3-wrap{text-align:center}
+.c3-top{font-family:'Sora';font-size:10px;text-transform:uppercase;letter-spacing:8px;color:#7c3aed;font-weight:700}
+.c3-main{font-family:'Outfit';font-size:52px;font-weight:800;color:#eee;letter-spacing:-2px;line-height:1}
+.c3-line{width:60px;height:3px;background:linear-gradient(90deg,#7c3aed,#ec4899);border-radius:2px;margin:10px auto 0}
+
+/* ═══ CONCEPT 4: SYMBOL — Abstract Brain Node ═══ */
+.c4-symbol{width:52px;height:52px;border-radius:50%;border:3px solid #7c3aed;position:relative;margin-right:16px;display:flex;align-items:center;justify-content:center}
+.c4-symbol::before{content:'';width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#ec4899)}
+.c4-symbol::after{content:'';position:absolute;width:8px;height:8px;border-radius:50%;background:#ec4899;top:4px;right:4px;box-shadow:0 0 8px rgba(236,72,153,0.6)}
+.c4-text{font-family:'Manrope';font-size:34px;font-weight:800;color:#eee;letter-spacing:-0.5px}
+
+/* ═══ CONCEPT 5: BADGE PILL ═══ */
+.c5-pill{display:inline-flex;align-items:center;gap:10px;padding:12px 28px 12px 14px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:50px;box-shadow:0 8px 32px rgba(124,58,237,0.3)}
+.c5-icon{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:18px}
+.c5-text{font-family:'Sora';font-size:24px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+
+/* ═══ CONCEPT 6: EDITORIAL LUXURY ═══ */
+.c6-wrap{text-align:center}
+.c6-text{font-family:'Sora';font-size:44px;font-weight:300;color:#eee;letter-spacing:8px;text-transform:uppercase}
+.c6-accent{font-weight:800;background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.c6-sub{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:#444;margin-top:8px}
+
+/* ═══ CONCEPT 7: GEOMETRIC MARK ═══ */
+.c7-geo{width:48px;height:48px;position:relative;margin-right:16px}
+.c7-geo .sq1{position:absolute;width:32px;height:32px;border-radius:8px;background:#7c3aed;top:0;left:0;opacity:0.8}
+.c7-geo .sq2{position:absolute;width:32px;height:32px;border-radius:8px;background:#ec4899;bottom:0;right:0;opacity:0.6}
+.c7-text{font-family:'Space Grotesk';font-size:34px;font-weight:700;color:#eee;letter-spacing:-0.5px}
+
+/* ═══ CONCEPT 8: GLOW WORDMARK ═══ */
+.c8-text{font-family:'Outfit';font-size:48px;font-weight:800;color:#eee;letter-spacing:-1.5px;text-shadow:0 0 40px rgba(124,58,237,0.4),0 0 80px rgba(124,58,237,0.15)}
+.c8-text span{color:#a78bfa;text-shadow:0 0 40px rgba(167,139,250,0.5)}
+
+/* ═══ LIGHT VERSIONS ═══ */
+.light-bg{background:#f4f2ee !important}
+.lt-text{color:#191919 !important}
+.lt-accent{color:#7c3aed !important;-webkit-text-fill-color:#7c3aed !important}
+.lt-muted{color:#666 !important}
+
+/* ═══ MOCKUP SECTIONS ═══ */
+.mockup-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.mockup-card{border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.06);background:#111122}
+.mockup-top{height:48px;display:flex;align-items:center;padding:0 16px;gap:8px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.mockup-dot{width:10px;height:10px;border-radius:50%;background:#333}
+.mockup-body{padding:20px;font-size:12px;color:#555}
+.mockup-nav{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.04)}
+.mockup-nav-logo{display:flex;align-items:center;gap:8px}
+.mockup-nav-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:14px;font-weight:800;color:#fff}
+.mockup-nav-text{font-family:'Sora';font-size:16px;font-weight:700;color:#eee}
+.mockup-nav-text b{color:#a78bfa}
+
+.mockup-app{border-radius:14px;overflow:hidden;border:1px solid #e0dfdc;background:#f4f2ee}
+.mockup-app-nav{display:flex;align-items:center;gap:10px;padding:12px 16px;background:#fff;border-bottom:1px solid #e0dfdc}
+.mockup-app-mark{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:14px;font-weight:800;color:#fff}
+.mockup-app-text{font-family:'Sora';font-size:16px;font-weight:700;color:#191919}
+.mockup-app-text b{color:#7c3aed}
+.mockup-app-body{padding:20px;font-size:12px;color:#888}
+
+.mockup-mobile{width:200px;height:360px;border-radius:28px;border:3px solid #333;background:#0c0c1d;overflow:hidden;margin:0 auto}
+.mockup-mobile-notch{width:80px;height:6px;border-radius:3px;background:#222;margin:8px auto}
+.mockup-mobile-body{padding:16px}
+.mockup-mobile-logo{display:flex;align-items:center;gap:6px;margin-bottom:16px}
+.mockup-mobile-mark{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#6d28d9);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:12px;font-weight:800;color:#fff}
+.mockup-mobile-text{font-family:'Sora';font-size:14px;font-weight:700;color:#eee}
+.mockup-mobile-text b{color:#a78bfa}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>Neudy — Brand Identity</h1>
+  <span>8 Concepts · Light & Dark · Mockups</span>
+</div>
+
+<div class="hero">
+  <h2>Neudy</h2>
+  <p>Neural + Study. Tu cerebro digital para la universidad. Plataforma de estudio potenciada por IA con comunidad estudiantil.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">Conceptos principales — Fondo oscuro</div>
+  <div class="grid-2">
+
+    <div class="card">
+      <div class="card-preview">
+        <div style="display:flex;align-items:center">
+          <div class="c1-mark"><span class="c1-n">N</span></div>
+          <div class="c1-text"><b>Neu</b>dy</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>01 — Icon Mark</strong><span class="card-tag tag-rec">RECOMENDADO</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div><span class="c2-text"><span class="neu">Neu</span><span class="dy">dy</span></span><span class="c2-dot"></span></div>
+      </div>
+      <div class="card-label"><strong>02 — Wordmark + Dot</strong><span class="card-tag tag-min">MINIMALISTA</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div class="c3-wrap">
+          <div class="c3-top">Neural</div>
+          <div class="c3-main">Neudy</div>
+          <div class="c3-line"></div>
+        </div>
+      </div>
+      <div class="card-label"><strong>03 — Stacked Premium</strong><span class="card-tag tag-bold">EDITORIAL</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div style="display:flex;align-items:center">
+          <div class="c4-symbol"></div>
+          <div class="c4-text">Neudy</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>04 — Brain Node</strong><span class="card-tag tag-bold">TECH</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div class="c5-pill">
+          <div class="c5-icon">⚡</div>
+          <div class="c5-text">Neudy</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>05 — Pill Badge</strong><span class="card-tag tag-bold">APP-READY</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div class="c6-wrap">
+          <div class="c6-text">N<span class="c6-accent">EU</span>DY</div>
+          <div class="c6-sub">Neural Study Platform</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>06 — Editorial Luxury</strong><span class="card-tag tag-min">PREMIUM</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div style="display:flex;align-items:center">
+          <div class="c7-geo"><div class="sq1"></div><div class="sq2"></div></div>
+          <div class="c7-text">Neudy</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>07 — Geometric Mark</strong><span class="card-tag tag-bold">ABSTRACTO</span></div>
+    </div>
+
+    <div class="card">
+      <div class="card-preview">
+        <div class="c8-text"><span>Neu</span>dy</div>
+      </div>
+      <div class="card-label"><strong>08 — Glow Wordmark</strong><span class="card-tag tag-rec">IMPACTO</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════ LIGHT VERSIONS ═══════════ -->
+<div class="section">
+  <div class="section-title">Versiones claras (LinkedIn-style)</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-preview light-bg">
+        <div style="display:flex;align-items:center">
+          <div class="c1-mark"><span class="c1-n">N</span></div>
+          <div class="c1-text lt-text"><b style="color:#7c3aed">Neu</b>dy</div>
+        </div>
+      </div>
+      <div class="card-label"><strong>01 Light</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-preview light-bg">
+        <div><span class="c2-text"><span class="neu">Neu</span><span class="dy lt-text">dy</span></span><span class="c2-dot"></span></div>
+      </div>
+      <div class="card-label"><strong>02 Light</strong></div>
+    </div>
+    <div class="card">
+      <div class="card-preview light-bg">
+        <div class="c3-wrap">
+          <div class="c3-top">Neural</div>
+          <div class="c3-main lt-text">Neudy</div>
+          <div class="c3-line"></div>
+        </div>
+      </div>
+      <div class="card-label"><strong>03 Light</strong></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ MOCKUPS IN CONTEXT ═══════════ -->
+<div class="section">
+  <div class="section-title">Mockups en contexto — Cómo se vería en la app</div>
+  <div class="mockup-row">
+    <div class="mockup-card">
+      <div class="mockup-top"><div class="mockup-dot"></div><div class="mockup-dot"></div><div class="mockup-dot"></div></div>
+      <div class="mockup-nav">
+        <div class="mockup-nav-logo">
+          <div class="mockup-nav-mark">N</div>
+          <div class="mockup-nav-text"><b>Neu</b>dy</div>
+        </div>
+      </div>
+      <div class="mockup-body">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <div style="width:50px;height:8px;border-radius:4px;background:#7c3aed"></div>
+          <div style="width:40px;height:8px;border-radius:4px;background:#252548"></div>
+          <div style="width:35px;height:8px;border-radius:4px;background:#252548"></div>
+          <div style="width:45px;height:8px;border-radius:4px;background:#252548"></div>
+        </div>
+        <div style="height:100px;border-radius:8px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.15);margin-bottom:12px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="height:60px;border-radius:8px;background:#1a1a34;border:1px solid #252548"></div>
+          <div style="height:60px;border-radius:8px;background:#1a1a34;border:1px solid #252548"></div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:10px;color:#444">Sidebar Dark Theme</div>
+      </div>
+    </div>
+
+    <div class="mockup-app">
+      <div class="mockup-app-nav">
+        <div class="mockup-app-mark">N</div>
+        <div class="mockup-app-text"><b>Neu</b>dy</div>
+      </div>
+      <div class="mockup-app-body">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <div style="width:50px;height:8px;border-radius:4px;background:#7c3aed"></div>
+          <div style="width:40px;height:8px;border-radius:4px;background:#e0dfdc"></div>
+          <div style="width:35px;height:8px;border-radius:4px;background:#e0dfdc"></div>
+          <div style="width:45px;height:8px;border-radius:4px;background:#e0dfdc"></div>
+        </div>
+        <div style="height:100px;border-radius:8px;background:#fff;border:1px solid #e0dfdc;margin-bottom:12px"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="height:60px;border-radius:8px;background:#fff;border:1px solid #e0dfdc"></div>
+          <div style="height:60px;border-radius:8px;background:#fff;border:1px solid #e0dfdc"></div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:10px;color:#aaa">LinkedIn Light Theme</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:center;margin-top:32px">
+    <div class="mockup-mobile">
+      <div class="mockup-mobile-notch"></div>
+      <div class="mockup-mobile-body">
+        <div class="mockup-mobile-logo">
+          <div class="mockup-mobile-mark">N</div>
+          <div class="mockup-mobile-text"><b>Neu</b>dy</div>
+        </div>
+        <div style="height:40px;border-radius:8px;background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(236,72,153,0.1));margin-bottom:10px"></div>
+        <div style="height:24px;border-radius:6px;background:#1a1a34;margin-bottom:6px;width:80%"></div>
+        <div style="height:24px;border-radius:6px;background:#1a1a34;margin-bottom:6px;width:60%"></div>
+        <div style="height:80px;border-radius:8px;background:#1a1a34;margin-bottom:10px;border:1px solid #252548"></div>
+        <div style="height:80px;border-radius:8px;background:#1a1a34;border:1px solid #252548"></div>
+        <div style="text-align:center;margin-top:16px;font-size:9px;color:#444">Mobile App</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:48px 24px;border-top:1px solid rgba(255,255,255,0.04)">
+  <p style="color:#555;font-size:13px">Elige tu favorito. Los más profesionales para una plataforma educativa son el <strong style="color:#a78bfa">01 (Icon Mark)</strong> y el <strong style="color:#a78bfa">02 (Wordmark + Dot)</strong>.</p>
+</div>
+</body>
+</html>

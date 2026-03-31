@@ -22,8 +22,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   return (
     <div className="sidebar">
       <div className="sidebar-header">
-        <div className="sidebar-logo-mark">S</div>
-        <h1 className="sidebar-brand"><span>Study</span>Hub</h1>
+        <h1 className="sidebar-brand">Conniku</h1>
       </div>
 
       <nav className="sidebar-nav">

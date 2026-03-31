@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>CONNIKU — Brand Identity</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200;300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Bricolage+Grotesque:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#08080f;color:#eee}
+
+.nav{position:sticky;top:0;z-index:100;background:rgba(8,8,15,0.92);backdrop-filter:blur(16px);padding:16px 40px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;justify-content:space-between;align-items:center}
+.nav h1{font-family:'Sora';font-size:12px;color:#555;text-transform:uppercase;letter-spacing:4px}
+
+.hero{text-align:center;padding:56px 24px 16px}
+.hero p{font-size:15px;color:#555;margin-top:8px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.6}
+.hero-tags{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.hero-tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(6,182,212,0.1);color:#22d3ee;border:1px solid rgba(6,182,212,0.15)}
+
+.section{max-width:1200px;margin:0 auto;padding:40px 32px}
+.stitle{font-family:'Sora';font-size:10px;text-transform:uppercase;letter-spacing:5px;color:#444;margin-bottom:24px;display:flex;align-items:center;gap:12px}
+.stitle::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.04)}
+
+.grid{display:grid;gap:20px}
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:1fr 1fr 1fr}
+.g4{grid-template-columns:1fr 1fr 1fr 1fr}
+
+.card{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.05);background:#0e0e1c;transition:all 0.25s}
+.card:hover{border-color:rgba(6,182,212,0.3);box-shadow:0 8px 40px rgba(6,182,212,0.06)}
+.preview{padding:48px 32px;display:flex;align-items:center;justify-content:center;min-height:190px}
+.label{padding:14px 20px;border-top:1px solid rgba(255,255,255,0.03);font-size:10px;color:#444;display:flex;justify-content:space-between;align-items:center}
+.label strong{color:#777;font-size:11px}
+.tag{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-star{background:rgba(251,191,36,0.15);color:#fbbf24}
+.tag-rec{background:rgba(6,182,212,0.12);color:#22d3ee}
+.tag-hot{background:rgba(236,72,153,0.15);color:#f472b6}
+.tag-min{background:rgba(34,211,153,0.15);color:#34d399}
+
+.deep{background:#0a0a16 !important}
+.dark{background:#08080f !important}
+.gbg{background:linear-gradient(135deg,#0a1628,#0a0a16) !important}
+.light{background:#f4f2ee !important}
+.white{background:#ffffff !important}
+
+/* ═══ COLOR SYSTEM: Teal + Indigo + Cyan ═══ */
+
+/* 01 — GLOW RAINBOW */
+.c1{font-family:'Outfit';font-size:56px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;filter:drop-shadow(0 0 30px rgba(34,211,238,0.3)) drop-shadow(0 0 60px rgba(129,140,248,0.15))}
+
+/* 02 — GLOW + TAGLINE */
+.c2-w{text-align:center}
+.c2{font-family:'Outfit';font-size:52px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-2px;filter:drop-shadow(0 0 25px rgba(34,211,238,0.3))}
+.c2-sub{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#444;margin-top:8px}
+
+/* 03 — ICON MARK + GLOW */
+.c3-w{display:flex;align-items:center;gap:16px}
+.c3-mark{width:54px;height:54px;border-radius:14px;background:linear-gradient(135deg,#0891b2,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:26px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(8,145,178,0.3);position:relative}
+.c3-mark::before{content:'';position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,rgba(255,255,255,0.2),transparent);pointer-events:none}
+.c3{font-family:'Outfit';font-size:42px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1.5px;filter:drop-shadow(0 0 20px rgba(34,211,238,0.2))}
+
+/* 04 — EDITORIAL LUXURY */
+.c4-w{text-align:center}
+.c4{font-family:'Sora';font-size:48px;font-weight:300;color:#c8d4e0;letter-spacing:10px;text-transform:uppercase;text-shadow:0 0 50px rgba(34,211,238,0.15)}
+.c4 b{font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 12px rgba(34,211,238,0.4))}
+.c4-sub{font-size:10px;letter-spacing:5px;color:#333;margin-top:8px;text-transform:uppercase}
+
+/* 05 — STACKED + BAR */
+.c5-w{text-align:center}
+.c5-top{font-family:'DM Sans';font-size:10px;letter-spacing:8px;text-transform:uppercase;color:#0891b2;font-weight:600}
+.c5{font-family:'Outfit';font-size:56px;font-weight:800;color:#fff;letter-spacing:-2px;text-shadow:0 0 50px rgba(34,211,238,0.3)}
+.c5 span{background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(34,211,238,0.4))}
+.c5-bar{width:60px;height:3px;background:linear-gradient(90deg,#22d3ee,#6366f1);border-radius:2px;margin:10px auto 0}
+
+/* 06 — WORDMARK + DOT */
+.c6{font-family:'Bricolage Grotesque';font-size:52px;font-weight:800;letter-spacing:-2px}
+.c6 .co{background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.c6 .nn{color:#eee}
+.c6-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#22d3ee;margin-left:3px;vertical-align:super;box-shadow:0 0 16px rgba(34,211,238,0.5)}
+
+/* 07 — NEON OUTLINE */
+.c7{font-family:'Outfit';font-size:52px;font-weight:800;color:transparent;letter-spacing:-1.5px;-webkit-text-stroke:2px rgba(34,211,238,0.6);text-shadow:0 0 30px rgba(34,211,238,0.25),0 0 60px rgba(34,211,238,0.08)}
+
+/* 08 — PILL BADGE */
+.c8{display:inline-flex;align-items:center;gap:12px;padding:14px 32px 14px 16px;background:linear-gradient(135deg,rgba(8,145,178,0.15),rgba(99,102,241,0.08));border:1px solid rgba(34,211,238,0.2);border-radius:50px;box-shadow:0 0 40px rgba(34,211,238,0.08)}
+.c8-icon{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#0891b2,#6366f1);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:18px;font-weight:800;color:#fff;box-shadow:0 4px 16px rgba(8,145,178,0.3)}
+.c8-text{font-family:'Outfit';font-size:28px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* 09 — SPLIT TEXT GLOW */
+.c9{font-family:'Plus Jakarta Sans';font-size:48px;font-weight:800;letter-spacing:-1.5px}
+.c9 .left{color:#eee}
+.c9 .right{background:linear-gradient(135deg,#22d3ee,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 16px rgba(34,211,238,0.3))}
+
+/* 10 — CIRCLE MONOGRAM + TEXT */
+.c10-w{display:flex;align-items:center;gap:14px}
+.c10-circle{width:56px;height:56px;border-radius:50%;border:2px solid rgba(34,211,238,0.4);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:20px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;box-shadow:0 0 20px rgba(34,211,238,0.12)}
+.c10{font-family:'Manrope';font-size:36px;font-weight:800;color:#eee;letter-spacing:-0.5px}
+
+/* ═══ LIGHT VERSIONS ═══ */
+.lt1{font-family:'Outfit';font-size:44px;font-weight:800;background:linear-gradient(135deg,#0891b2,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1.5px}
+.lt2{font-family:'Sora';font-size:40px;font-weight:300;color:#191919;letter-spacing:8px;text-transform:uppercase}.lt2 b{font-weight:800;color:#0891b2}
+.lt3-w{display:flex;align-items:center;gap:12px}
+.lt3-mark{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#0891b2,#4f46e5);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:20px;font-weight:800;color:#fff;box-shadow:0 4px 12px rgba(8,145,178,0.2)}
+.lt3-text{font-family:'Sora';font-size:32px;font-weight:700;color:#191919;letter-spacing:-0.3px}.lt3-text b{color:#0891b2}
+.lt4-w{text-align:center}.lt4{font-family:'Bricolage Grotesque';font-size:44px;font-weight:800;color:#191919;letter-spacing:-1px}.lt4 span{color:#0891b2}
+.lt4-bar{width:50px;height:3px;background:linear-gradient(90deg,#0891b2,#6366f1);border-radius:2px;margin:6px auto 0}
+
+/* ═══ APP ICONS ═══ */
+.icon-row{display:flex;gap:24px;justify-content:center}
+.app-icon{width:76px;height:76px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:34px;font-weight:800;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.ai1{background:linear-gradient(135deg,#0891b2,#4f46e5)}
+.ai2{background:linear-gradient(135deg,#22d3ee,#6366f1)}
+.ai3{background:linear-gradient(135deg,#06b6d4,#ec4899)}
+.ai4{background:linear-gradient(135deg,#0891b2,#818cf8,#c084fc)}
+.ai5{background:#0c0c1d;border:2px solid rgba(34,211,238,0.3);font-size:28px;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.icon-label{text-align:center;font-size:10px;color:#444;margin-top:6px}
+
+/* ═══ MOCKUPS ═══ */
+.mockup-login{max-width:940px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.05)}
+.ml-l{background:linear-gradient(165deg,#0a1628 0%,#0a0a16 50%,#08080f 100%);padding:48px 40px;display:flex;flex-direction:column;justify-content:center}
+.ml-r{background:#f4f2ee;padding:40px;display:flex;flex-direction:column;justify-content:center}
+.ml-feat{display:flex;flex-direction:column;gap:10px;margin-top:28px}
+.ml-f{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);border-radius:8px;font-size:13px;color:#777}
+.ml-trusted{margin-top:20px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.05);text-align:center;font-size:11px;color:rgba(255,255,255,0.25);font-style:italic}
+.ml-title{font-family:'Sora';font-size:20px;font-weight:600;color:#191919;margin-bottom:4px}
+.ml-sub{font-size:13px;color:#888;margin-bottom:20px}
+.ml-input{width:100%;padding:11px 14px;border:1px solid #d0d0d0;border-radius:8px;font-size:13px;margin-bottom:12px;outline:none;font-family:'DM Sans';background:#fff}
+.ml-btn{width:100%;padding:12px;border:none;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;font-family:'DM Sans'}
+.ml-btn-p{background:linear-gradient(135deg,#0891b2,#4f46e5);color:#fff;margin-bottom:8px;box-shadow:0 4px 12px rgba(8,145,178,0.25)}
+.ml-btn-o{background:transparent;color:#0891b2;border:1px solid #0891b2}
+.ml-google{width:100%;padding:11px;background:#fff;border:1px solid #ddd;border-radius:24px;font-size:13px;font-weight:600;margin-bottom:16px;cursor:pointer;font-family:'DM Sans';color:#333}
+.ml-div{text-align:center;color:#aaa;font-size:12px;margin:12px 0;position:relative}
+.ml-div::before,.ml-div::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:#ddd}
+.ml-div::before{left:0}.ml-div::after{right:0}
+
+.sb-row{display:flex;gap:24px;justify-content:center}
+.sb{width:220px;border-radius:12px;overflow:hidden;padding:16px}
+.sb-dk{background:#0e0e1c;border:1px solid rgba(255,255,255,0.05)}
+.sb-lt{background:#fff;border:1px solid #e0dfdc}
+.sb-logo{display:flex;align-items:center;gap:8px;margin-bottom:16px;padding-bottom:14px}
+.sb-dk .sb-logo{border-bottom:1px solid rgba(255,255,255,0.04)}
+.sb-lt .sb-logo{border-bottom:1px solid #e0dfdc}
+.sb-mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0891b2,#4f46e5);display:flex;align-items:center;justify-content:center;font-family:'Sora';font-size:14px;font-weight:800;color:#fff;box-shadow:0 0 12px rgba(8,145,178,0.15)}
+.sb-dk .sb-name{font-family:'Outfit';font-size:18px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-lt .sb-name{font-family:'Outfit';font-size:18px;font-weight:800;background:linear-gradient(135deg,#0891b2,#4f46e5);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sb-item{padding:7px 10px;border-radius:6px;font-size:12px;margin-bottom:1px;display:flex;align-items:center;gap:8px}
+.sb-dk .sb-item{color:#666}.sb-dk .sb-item.active{background:rgba(8,145,178,0.1);color:#22d3ee}
+.sb-lt .sb-item{color:#555}.sb-lt .sb-item.active{background:rgba(8,145,178,0.06);color:#0891b2}
+.sb-sec{font-size:9px;text-transform:uppercase;letter-spacing:2px;padding:10px 10px 4px;font-weight:600}
+.sb-dk .sb-sec{color:#333}.sb-lt .sb-sec{color:#aaa}
+</style>
+</head>
+<body>
+
+<div class="nav"><h1>Conniku — Brand Identity System</h1></div>
+
+<div class="hero">
+  <div style="font-family:'Outfit';font-size:64px;font-weight:800;background:linear-gradient(135deg,#22d3ee,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-3px;filter:drop-shadow(0 0 40px rgba(34,211,238,0.3))">Conniku</div>
+  <p>Connect + Unique. La red estudiantil donde te conectas, estudias y creces. Tu comunidad universitaria con herramientas de IA.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">Red Social Estudiantil</span>
+    <span class="hero-tag">IA + Estudio</span>
+    <span class="hero-tag">.com Disponible</span>
+  </div>
+</div>
+
+<!-- ═══════════ 10 LOGOS OSCUROS ═══════════ -->
+<div class="section">
+  <div class="stitle">10 Conceptos de logo — Fondo oscuro</div>
+  <div class="grid g2">
+
+    <div class="card"><div class="preview deep"><div class="c1">Conniku</div></div>
+    <div class="label"><strong>01 — Glow Rainbow</strong><span class="tag tag-star">⭐ FAVORITO</span></div></div>
+
+    <div class="card"><div class="preview gbg"><div class="c2-w"><div class="c2">Conniku</div><div class="c2-sub">Student Community Platform</div></div></div>
+    <div class="label"><strong>02 — Glow + Tagline</strong><span class="tag tag-rec">COMPLETO</span></div></div>
+
+    <div class="card"><div class="preview deep"><div class="c3-w"><div class="c3-mark">C</div><div class="c3">Conniku</div></div></div>
+    <div class="label"><strong>03 — Icon Mark + Glow</strong><span class="tag tag-rec">VERSÁTIL</span></div></div>
+
+    <div class="card"><div class="preview deep"><div class="c4-w"><div class="c4">C<b>ONN</b>IKU</div><div class="c4-sub">Smart Study Community</div></div></div>
+    <div class="label"><strong>04 — Editorial Luxury</strong><span class="tag tag-min">ELEGANTE</span></div></div>
+
+    <div class="card"><div class="preview gbg"><div class="c5-w"><div class="c5-top">Student Network</div><div class="c5"><span>Con</span>niku</div><div class="c5-bar"></div></div></div>
+    <div class="label"><strong>05 — Stacked + Bar</strong><span class="tag tag-hot">PREMIUM</span></div></div>
+
+    <div class="card"><div class="preview dark"><div><span class="c6"><span class="co">Con</span><span class="nn">niku</span></span><span class="c6-dot"></span></div></div>
+    <div class="label"><strong>06 — Wordmark + Dot</strong><span class="tag tag-min">MINIMAL</span></div></div>
+
+    <div class="card"><div class="preview deep"><div class="c7">Conniku</div></div>
+    <div class="label"><strong>07 — Neon Outline</strong><span class="tag tag-hot">FUTURISTA</span></div></div>
+
+    <div class="card"><div class="preview gbg"><div class="c8"><div class="c8-icon">C</div><div class="c8-text">Conniku</div></div></div>
+    <div class="label"><strong>08 — Pill Badge</strong><span class="tag tag-rec">APP-READY</span></div></div>
+
+    <div class="card"><div class="preview deep"><div class="c9"><span class="left">Conn</span><span class="right">iku</span></div></div>
+    <div class="label"><strong>09 — Split Gradient</strong><span class="tag tag-min">MODERNO</span></div></div>
+
+    <div class="card"><div class="preview gbg"><div class="c10-w"><div class="c10-circle">CK</div><div class="c10">Conniku</div></div></div>
+    <div class="label"><strong>10 — Circle Monogram</strong><span class="tag tag-rec">CLÁSICO</span></div></div>
+
+  </div>
+</div>
+
+<!-- ═══════════ LIGHT ═══════════ -->
+<div class="section">
+  <div class="stitle">Versiones claras — Tema LinkedIn</div>
+  <div class="grid g4">
+    <div class="card"><div class="preview light"><div class="lt1">Conniku</div></div><div class="label"><strong>Gradient</strong></div></div>
+    <div class="card"><div class="preview white"><div class="lt2">C<b>ONN</b>IKU</div></div><div class="label"><strong>Editorial</strong></div></div>
+    <div class="card"><div class="preview light"><div class="lt3-w"><div class="lt3-mark">C</div><div class="lt3-text"><b>Con</b>niku</div></div></div><div class="label"><strong>Icon Mark</strong></div></div>
+    <div class="card"><div class="preview white"><div class="lt4-w"><div class="lt4"><span>Con</span>niku</div><div class="lt4-bar"></div></div></div><div class="label"><strong>Stacked</strong></div></div>
+  </div>
+</div>
+
+<!-- ═══════════ APP ICONS ═══════════ -->
+<div class="section">
+  <div class="stitle">App Icons — Play Store & App Store</div>
+  <div class="icon-row">
+    <div><div class="app-icon ai1">C</div><div class="icon-label">Teal → Indigo</div></div>
+    <div><div class="app-icon ai2">C</div><div class="icon-label">Cyan → Blue</div></div>
+    <div><div class="app-icon ai3">C</div><div class="icon-label">Cyan → Pink</div></div>
+    <div><div class="app-icon ai4">C</div><div class="icon-label">Tricolor</div></div>
+    <div><div class="app-icon ai5">C</div><div class="icon-label">Dark Outline</div></div>
+  </div>
+</div>
+
+<!-- ═══════════ MOCKUP LOGIN ═══════════ -->
+<div class="section">
+  <div class="stitle">Mockup — Login Page</div>
+  <div class="mockup-login">
+    <div class="ml-l">
+      <div>
+        <div class="c3-w" style="margin-bottom:8px"><div class="c3-mark">C</div><div class="c3">Conniku</div></div>
+        <div style="font-size:15px;color:rgba(255,255,255,0.45)">Tu comunidad estudiantil con IA</div>
+      </div>
+      <div class="ml-feat">
+        <div class="ml-f">🧠 IA que entiende tu material</div>
+        <div class="ml-f">👥 Conecta con estudiantes de tu carrera</div>
+        <div class="ml-f">📖 Guías, quizzes y flashcards</div>
+        <div class="ml-f">⚡ 7 días gratis — sin tarjeta</div>
+      </div>
+      <div class="ml-trusted">Creado por un estudiante, para estudiantes</div>
+    </div>
+    <div class="ml-r">
+      <div class="ml-title">Iniciar Sesión</div>
+      <div class="ml-sub">Bienvenido de vuelta</div>
+      <div class="ml-google">G &nbsp;Continuar con Google</div>
+      <div class="ml-div">o usa tu correo</div>
+      <input class="ml-input" placeholder="tu@universidad.edu">
+      <input class="ml-input" type="password" placeholder="••••••••">
+      <button class="ml-btn ml-btn-p">Iniciar Sesión</button>
+      <div style="text-align:center;margin:8px 0"><a style="font-size:12px;color:#0891b2;text-decoration:none">¿Olvidaste tu contraseña?</a></div>
+      <button class="ml-btn ml-btn-o">Crear cuenta gratis</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<div class="section">
+  <div class="stitle">Mockup — Sidebar Dark & Light</div>
+  <div class="sb-row">
+    <div class="sb sb-dk">
+      <div class="sb-logo"><div class="sb-mark">C</div><div class="sb-name">Conniku</div></div>
+      <div class="sb-item active">👤 Mi Perfil</div>
+      <div class="sb-item">🏠 Dashboard</div>
+      <div class="sb-item">💬 Mensajes</div>
+      <div class="sb-item">👥 Comunidad</div>
+      <div class="sb-sec">Mis Asignaturas</div>
+      <div class="sb-item">+ Nueva Asignatura</div>
+      <div class="sb-sec">Soporte</div>
+      <div class="sb-item">💎 Suscripción</div>
+    </div>
+    <div class="sb sb-lt">
+      <div class="sb-logo"><div class="sb-mark">C</div><div class="sb-name">Conniku</div></div>
+      <div class="sb-item active">👤 Mi Perfil</div>
+      <div class="sb-item">🏠 Dashboard</div>
+      <div class="sb-item">💬 Mensajes</div>
+      <div class="sb-item">👥 Comunidad</div>
+      <div class="sb-sec">Mis Asignaturas</div>
+      <div class="sb-item">+ Nueva Asignatura</div>
+      <div class="sb-sec">Soporte</div>
+      <div class="sb-item">💎 Suscripción</div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:48px;border-top:1px solid rgba(255,255,255,0.04)">
+  <p style="color:#444;font-size:13px;max-width:520px;margin:0 auto;line-height:1.7">
+    Paleta de colores: <strong style="color:#22d3ee">Teal/Cyan</strong> + <strong style="color:#818cf8">Indigo</strong> — diferente al púrpura de la competencia, fresco, social, joven.
+    Elige tu favorito y lo aplico en toda la app.
+  </p>
+</div>
+
+</body>
+</html>
