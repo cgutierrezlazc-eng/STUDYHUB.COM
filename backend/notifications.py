@@ -1,5 +1,5 @@
 """
-Email notification system for StudyHub social events.
+Email notification system for Conniku social events.
 Supports: friend requests, wall posts, messages, friend request accepted.
 Uses a background queue to avoid blocking the main request thread.
 """
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/notifications", tags=["notifications"])
 # SMTP configuration from environment
 # ---------------------------------------------------------------------------
 
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
@@ -79,9 +79,9 @@ def _wrap(inner_html: str) -> str:
 <html lang="es"><head><meta charset="utf-8">{_BASE_STYLE}</head>
 <body>
 <div class="container">
-  <div class="header"><h1>StudyHub</h1></div>
+  <div class="header"><h1>Conniku</h1></div>
   <div class="body">{inner_html}</div>
-  <div class="footer">Este correo fue enviado por StudyHub. Si no deseas recibir estas notificaciones,
+  <div class="footer">Este correo fue enviado por Conniku. Si no deseas recibir estas notificaciones,
   puedes desactivarlas en tu perfil.</div>
 </div>
 </body></html>"""
@@ -89,11 +89,11 @@ def _wrap(inner_html: str) -> str:
 
 TEMPLATES = {
     "friend_request": {
-        "subject": "Nueva solicitud de amistad en StudyHub",
+        "subject": "Nueva solicitud de amistad en Conniku",
         "html": lambda sender_name: _wrap(f"""
             <p>Hola,</p>
             <p><span class="highlight">{sender_name}</span> te ha enviado una solicitud de amistad.</p>
-            <p>Ingresa a StudyHub para aceptarla o rechazarla.</p>
+            <p>Ingresa a Conniku para aceptarla o rechazarla.</p>
             <a class="btn" href="#">Ver solicitud</a>
         """),
     },
@@ -102,12 +102,12 @@ TEMPLATES = {
         "html": lambda accepter_name: _wrap(f"""
             <p>Hola,</p>
             <p><span class="highlight">{accepter_name}</span> ha aceptado tu solicitud de amistad.</p>
-            <p>Ya pueden interactuar en StudyHub.</p>
-            <a class="btn" href="#">Ir a StudyHub</a>
+            <p>Ya pueden interactuar en Conniku.</p>
+            <a class="btn" href="#">Ir a Conniku</a>
         """),
     },
     "wall_post": {
-        "subject": "Nueva publicacion en tu muro de StudyHub",
+        "subject": "Nueva publicacion en tu muro de Conniku",
         "html": lambda poster_name, preview: _wrap(f"""
             <p>Hola,</p>
             <p><span class="highlight">{poster_name}</span> ha publicado en tu muro:</p>
@@ -118,7 +118,7 @@ TEMPLATES = {
         """),
     },
     "new_message": {
-        "subject": "Nuevo mensaje en StudyHub",
+        "subject": "Nuevo mensaje en Conniku",
         "html": lambda sender_name, preview: _wrap(f"""
             <p>Hola,</p>
             <p><span class="highlight">{sender_name}</span> te ha enviado un mensaje:</p>
@@ -129,13 +129,13 @@ TEMPLATES = {
         """),
     },
     "payment_receipt": {
-        "subject": "Recibo de pago - StudyHub PRO",
+        "subject": "Recibo de pago - Conniku PRO",
         "html": lambda user_name, amount, currency, transaction_id, date_str: _wrap(f"""
             <p>Hola <span class="highlight">{user_name}</span>,</p>
-            <p>Gracias por suscribirte a <strong>StudyHub PRO</strong>. Aquí tienes tu recibo de pago:</p>
+            <p>Gracias por suscribirte a <strong>Conniku PRO</strong>. Aquí tienes tu recibo de pago:</p>
             <div style="background:#f8f9fc; border-radius:8px; padding:20px; margin:16px 0;">
                 <table style="width:100%; border-collapse:collapse; font-size:14px;">
-                    <tr><td style="padding:8px 0; color:#666;">Concepto</td><td style="padding:8px 0; text-align:right; font-weight:600;">StudyHub PRO - Suscripción Mensual</td></tr>
+                    <tr><td style="padding:8px 0; color:#666;">Concepto</td><td style="padding:8px 0; text-align:right; font-weight:600;">Conniku PRO - Suscripción Mensual</td></tr>
                     <tr><td style="padding:8px 0; color:#666;">Monto</td><td style="padding:8px 0; text-align:right; font-weight:600;">{amount} {currency}</td></tr>
                     <tr><td style="padding:8px 0; color:#666;">Fecha</td><td style="padding:8px 0; text-align:right;">{date_str}</td></tr>
                     <tr><td style="padding:8px 0; color:#666;">ID Transacción</td><td style="padding:8px 0; text-align:right; font-family:monospace; font-size:12px;">{transaction_id}</td></tr>
@@ -143,14 +143,14 @@ TEMPLATES = {
                 </table>
             </div>
             <p style="font-size:13px; color:#666;">Este recibo sirve como comprobante de pago. Si necesitas una factura formal, contáctanos a soporte@studyhub.com.</p>
-            <p style="font-size:13px; color:#666;">Puedes administrar tu suscripción desde tu perfil en StudyHub.</p>
+            <p style="font-size:13px; color:#666;">Puedes administrar tu suscripción desde tu perfil en Conniku.</p>
         """),
     },
     "welcome_pro": {
-        "subject": "Bienvenido a StudyHub PRO",
+        "subject": "Bienvenido a Conniku PRO",
         "html": lambda user_name: _wrap(f"""
             <p>Hola <span class="highlight">{user_name}</span>,</p>
-            <p>Tu suscripción a <strong>StudyHub PRO</strong> está activa. Ahora tienes acceso a:</p>
+            <p>Tu suscripción a <strong>Conniku PRO</strong> está activa. Ahora tienes acceso a:</p>
             <ul style="padding-left:20px; line-height:2;">
                 <li>Asignaturas ilimitadas</li>
                 <li>Chat IA sin límites</li>
@@ -158,8 +158,8 @@ TEMPLATES = {
                 <li>Subida de videos y transcripciones</li>
                 <li>Soporte prioritario</li>
             </ul>
-            <a class="btn" href="#">Ir a StudyHub</a>
-            <p style="margin-top:16px; font-size:13px; color:#666;">Gracias por apoyar StudyHub. Tu suscripción se renovará automáticamente cada mes.</p>
+            <a class="btn" href="#">Ir a Conniku</a>
+            <p style="margin-top:16px; font-size:13px; color:#666;">Gracias por apoyar Conniku. Tu suscripción se renovará automáticamente cada mes.</p>
         """),
     },
 }
@@ -360,8 +360,8 @@ def send_test_notification(user: User = Depends(get_current_user), db: Session =
     """Enviar un correo de prueba al usuario actual."""
     test_html = _wrap("""
         <p>Hola,</p>
-        <p>Este es un correo de prueba de <span class="highlight">StudyHub</span>.</p>
+        <p>Este es un correo de prueba de <span class="highlight">Conniku</span>.</p>
         <p>Si recibes este mensaje, tus notificaciones por correo estan funcionando correctamente.</p>
     """)
-    enqueue_email(user.email, "Prueba de notificaciones - StudyHub", test_html)
+    enqueue_email(user.email, "Prueba de notificaciones - Conniku", test_html)
     return {"status": "queued", "message": "Correo de prueba enviado a la cola."}
