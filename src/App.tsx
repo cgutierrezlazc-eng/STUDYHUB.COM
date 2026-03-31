@@ -65,7 +65,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', flexDirection: 'column', gap: 16 }}>
-        <h1 className="sidebar-brand" style={{ fontSize: 32 }}>StudyHub</h1>
+        <h1 className="sidebar-brand" style={{ fontSize: 32 }}>Conniku</h1>
         <div className="loading-dots"><span /><span /><span /></div>
       </div>
     )

@@ -24,7 +24,7 @@ export default function Checkout({ onNavigate }: Props) {
     setIsLoading(true)
     setTimeout(() => {
       setIsLoading(false)
-      alert('Procesador de pagos en configuración. Contacta soporte@studyhub.com')
+      alert('Procesador de pagos en configuración. Contacta soporte@conniku.com')
     }, 600)
   }
 

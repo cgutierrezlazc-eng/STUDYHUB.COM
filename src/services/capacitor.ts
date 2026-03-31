@@ -82,7 +82,7 @@ export async function shareContent(title: string, text: string, url?: string) {
     }
     return;
   }
-  await Share.share({ title, text, url, dialogTitle: 'Compartir desde StudyHub' });
+  await Share.share({ title, text, url, dialogTitle: 'Compartir desde Conniku' });
 }
 
 // ─── Open External Link ────────────────────────────────────────

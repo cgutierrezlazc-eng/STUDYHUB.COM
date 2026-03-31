@@ -278,7 +278,7 @@ export const api = {
     request('/social/friend-suggestions'),
 
   // ─── Word Export ──────────────────────────────────────────
-  exportDocx: async (projectId: string, content: string, title: string = 'StudyHub Document') => {
+  exportDocx: async (projectId: string, content: string, title: string = 'Conniku Document') => {
     const token = getToken();
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) headers['Authorization'] = `Bearer ${token}`;

@@ -327,14 +327,14 @@ def init_db():
     # Create owner account if not exists
     db = SessionLocal()
     try:
-        owner = db.query(User).filter(User.email == "owner@studyhub.com").first()
+        owner = db.query(User).filter(User.email == "ceo@conniku.com").first()
         if not owner:
             import bcrypt
             from sqlalchemy import func
             max_num = db.query(func.max(User.user_number)).scalar() or 0
             owner = User(
                 id=gen_id(),
-                email="owner@studyhub.com",
+                email="ceo@conniku.com",
                 password_hash=bcrypt.hashpw("StudyHub$Owner2024".encode(), bcrypt.gensalt()).decode(),
                 username="owner",
                 user_number=max_num + 1,

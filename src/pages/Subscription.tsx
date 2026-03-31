@@ -50,7 +50,7 @@ export default function Subscription({ onNavigate }: Props) {
     <>
       <div className="page-header">
         <h2>Elige tu plan</h2>
-        <p>Desbloquea todo el potencial de StudyHub con el plan que mejor se adapte a ti.</p>
+        <p>Desbloquea todo el potencial de Conniku con el plan que mejor se adapte a ti.</p>
       </div>
       <div className="page-body">
         <div style={{

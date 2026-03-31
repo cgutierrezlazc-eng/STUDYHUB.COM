@@ -183,7 +183,7 @@ export default function Register({ onSwitchToLogin }: Props) {
         <div className="auth-features">
           <div className="auth-feature">
             <span className="auth-feature-icon">🧠</span>
-            <div><strong>StudyHub entiende tu material</strong><p>Sube tus documentos y videos, StudyHub los analiza para ti</p></div>
+            <div><strong>Conniku entiende tu material</strong><p>Sube tus documentos y videos, Conniku los analiza para ti</p></div>
           </div>
           <div className="auth-feature">
             <span className="auth-feature-icon">👥</span>

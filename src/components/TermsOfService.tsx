@@ -43,16 +43,16 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               <p><strong>Última actualización: 29 de marzo de 2026</strong></p>
 
               <h3>1. Aceptación de los Términos</h3>
-              <p>Al crear una cuenta y utilizar StudyHub, usted acepta en su totalidad estos Términos de Uso, la Política de Privacidad y la Política de Reembolso. Si no está de acuerdo con alguno de estos términos, no debe utilizar la plataforma. El uso continuado de StudyHub constituye aceptación vinculante de estos términos y cualquier modificación futura.</p>
+              <p>Al crear una cuenta y utilizar Conniku, usted acepta en su totalidad estos Términos de Uso, la Política de Privacidad y la Política de Reembolso. Si no está de acuerdo con alguno de estos términos, no debe utilizar la plataforma. El uso continuado de Conniku constituye aceptación vinculante de estos términos y cualquier modificación futura.</p>
 
               <h3>2. Descripción del Servicio</h3>
-              <p>StudyHub es una plataforma de estudio interactiva que ofrece herramientas para organizar material académico, interactuar con documentos de estudio, conectar con otros estudiantes y acceder a recursos educativos. StudyHub presta un servicio tecnológico de apoyo al estudio y <strong>no es una institución educativa, no otorga certificaciones, títulos ni créditos académicos</strong>.</p>
+              <p>Conniku es una plataforma de estudio interactiva que ofrece herramientas para organizar material académico, interactuar con documentos de estudio, conectar con otros estudiantes y acceder a recursos educativos. Conniku presta un servicio tecnológico de apoyo al estudio y <strong>no es una institución educativa, no otorga certificaciones, títulos ni créditos académicos</strong>.</p>
 
               <h3>3. Elegibilidad</h3>
-              <p>StudyHub es exclusivamente para mayores de 18 años. Al registrarse, usted declara bajo juramento que tiene al menos 18 años de edad. La plataforma se reserva el derecho de solicitar verificación de identidad y edad en cualquier momento. Cuentas de menores de edad serán eliminadas inmediatamente sin previo aviso.</p>
+              <p>Conniku es exclusivamente para mayores de 18 años. Al registrarse, usted declara bajo juramento que tiene al menos 18 años de edad. La plataforma se reserva el derecho de solicitar verificación de identidad y edad en cualquier momento. Cuentas de menores de edad serán eliminadas inmediatamente sin previo aviso.</p>
 
               <h3>4. Uso Permitido</h3>
-              <p>El usuario se compromete a utilizar StudyHub exclusivamente para fines educativos y de estudio legítimos. Está permitido:</p>
+              <p>El usuario se compromete a utilizar Conniku exclusivamente para fines educativos y de estudio legítimos. Está permitido:</p>
               <ul>
                 <li>Subir documentos académicos propios o de uso libre para estudio personal</li>
                 <li>Interactuar con las herramientas de estudio de la plataforma</li>
@@ -75,24 +75,24 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               </ul>
 
               <h3>6. Moderación y Sanciones</h3>
-              <p>StudyHub se reserva el derecho de monitorear, revisar y eliminar cualquier contenido que viole estos términos. El administrador de la plataforma tiene acceso a todo el contenido publicado para fines de moderación y seguridad. Las sanciones incluyen advertencias, suspensión temporal y eliminación permanente de la cuenta sin derecho a reembolso.</p>
+              <p>Conniku se reserva el derecho de monitorear, revisar y eliminar cualquier contenido que viole estos términos. El administrador de la plataforma tiene acceso a todo el contenido publicado para fines de moderación y seguridad. Las sanciones incluyen advertencias, suspensión temporal y eliminación permanente de la cuenta sin derecho a reembolso.</p>
 
               <h3>7. Limitación de Responsabilidad</h3>
-              <p><strong>ESTA SECCIÓN ES DE ESPECIAL IMPORTANCIA.</strong> StudyHub se proporciona "TAL CUAL" y "SEGÚN DISPONIBILIDAD", sin garantías de ningún tipo, expresas o implícitas. Específicamente:</p>
+              <p><strong>ESTA SECCIÓN ES DE ESPECIAL IMPORTANCIA.</strong> Conniku se proporciona "TAL CUAL" y "SEGÚN DISPONIBILIDAD", sin garantías de ningún tipo, expresas o implícitas. Específicamente:</p>
               <ul>
-                <li><strong>Sin garantía académica:</strong> StudyHub no garantiza resultados académicos, calificaciones, aprobación de exámenes ni éxito educativo de ningún tipo. Las herramientas son de apoyo y complemento, no sustituyen el estudio personal ni la enseñanza formal.</li>
+                <li><strong>Sin garantía académica:</strong> Conniku no garantiza resultados académicos, calificaciones, aprobación de exámenes ni éxito educativo de ningún tipo. Las herramientas son de apoyo y complemento, no sustituyen el estudio personal ni la enseñanza formal.</li>
                 <li><strong>Sin garantía de precisión:</strong> Las respuestas, resúmenes, guías y cualquier contenido generado por la plataforma pueden contener errores, imprecisiones o información desactualizada. Es responsabilidad exclusiva del usuario verificar toda la información antes de utilizarla.</li>
                 <li><strong>Sin garantía de disponibilidad:</strong> La plataforma puede experimentar interrupciones, errores técnicos, pérdida de datos o períodos de mantenimiento sin previo aviso.</li>
-                <li><strong>Sin responsabilidad por contenido de usuarios:</strong> StudyHub no es responsable del contenido subido, compartido o publicado por sus usuarios en la plataforma.</li>
+                <li><strong>Sin responsabilidad por contenido de usuarios:</strong> Conniku no es responsable del contenido subido, compartido o publicado por sus usuarios en la plataforma.</li>
                 <li><strong>Sin responsabilidad por uso indebido:</strong> El uso de la plataforma y la forma en que el usuario aplica la información obtenida es exclusiva responsabilidad del usuario.</li>
               </ul>
-              <p>En ningún caso StudyHub, sus propietarios, empleados, afiliados o colaboradores serán responsables por daños directos, indirectos, incidentales, especiales, consecuentes o punitivos que resulten del uso o imposibilidad de uso de la plataforma, incluyendo pero no limitado a: pérdida de datos, pérdida de oportunidades académicas, daño a la reputación, o cualquier otro perjuicio.</p>
+              <p>En ningún caso Conniku, sus propietarios, empleados, afiliados o colaboradores serán responsables por daños directos, indirectos, incidentales, especiales, consecuentes o punitivos que resulten del uso o imposibilidad de uso de la plataforma, incluyendo pero no limitado a: pérdida de datos, pérdida de oportunidades académicas, daño a la reputación, o cualquier otro perjuicio.</p>
 
               <h3>8. Errores y Limitaciones del Sistema</h3>
-              <p>El usuario reconoce y acepta que StudyHub es una plataforma tecnológica que <strong>puede contener errores, bugs, imprecisiones y limitaciones técnicas</strong>. El sistema puede generar respuestas incorrectas, incompletas o fuera de contexto. El usuario acepta que:</p>
+              <p>El usuario reconoce y acepta que Conniku es una plataforma tecnológica que <strong>puede contener errores, bugs, imprecisiones y limitaciones técnicas</strong>. El sistema puede generar respuestas incorrectas, incompletas o fuera de contexto. El usuario acepta que:</p>
               <ul>
                 <li>Toda información proporcionada por la plataforma debe ser verificada de forma independiente</li>
-                <li>No debe basarse exclusivamente en StudyHub para decisiones académicas importantes</li>
+                <li>No debe basarse exclusivamente en Conniku para decisiones académicas importantes</li>
                 <li>Los errores del sistema no constituyen causa de reclamo o demanda</li>
                 <li>La plataforma es una herramienta de apoyo, no un sustituto del criterio personal</li>
               </ul>
@@ -102,7 +102,7 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               <ul>
                 <li>La veracidad de la información proporcionada en su perfil</li>
                 <li>El contenido que sube, publica o comparte en la plataforma</li>
-                <li>El uso que hace de la información y herramientas proporcionadas por StudyHub</li>
+                <li>El uso que hace de la información y herramientas proporcionadas por Conniku</li>
                 <li>Las consecuencias académicas, profesionales o personales del uso de la plataforma</li>
                 <li>Mantener la confidencialidad de sus credenciales de acceso</li>
                 <li>El cumplimiento de las normas académicas de su institución educativa</li>
@@ -110,22 +110,22 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               </ul>
 
               <h3>10. Suscripción y Pagos</h3>
-              <p>StudyHub ofrece un período de prueba gratuito de 7 días. Después del período de prueba, se requiere una suscripción mensual de USD $20.00. Los pagos se procesan a través de proveedores de pago terceros (Stripe, PayPal). StudyHub no almacena información de tarjetas de crédito directamente. La suscripción se renueva automáticamente cada mes hasta que el usuario la cancele.</p>
+              <p>Conniku ofrece un período de prueba gratuito de 7 días. Después del período de prueba, se requiere una suscripción mensual de USD $20.00. Los pagos se procesan a través de proveedores de pago terceros (Stripe, PayPal). Conniku no almacena información de tarjetas de crédito directamente. La suscripción se renueva automáticamente cada mes hasta que el usuario la cancele.</p>
 
               <h3>11. Propiedad Intelectual</h3>
-              <p>El código, diseño, marca y tecnología de StudyHub son propiedad exclusiva de sus creadores. El contenido generado por la plataforma para el usuario puede ser utilizado libremente por el usuario para fines personales y académicos. Los documentos subidos por el usuario siguen siendo propiedad del usuario.</p>
+              <p>El código, diseño, marca y tecnología de Conniku son propiedad exclusiva de sus creadores. El contenido generado por la plataforma para el usuario puede ser utilizado libremente por el usuario para fines personales y académicos. Los documentos subidos por el usuario siguen siendo propiedad del usuario.</p>
 
               <h3>12. Indemnización</h3>
-              <p>El usuario acepta indemnizar, defender y mantener indemne a StudyHub, sus propietarios, directores, empleados y afiliados de cualquier reclamo, demanda, pérdida, responsabilidad, costo o gasto (incluyendo honorarios de abogados) que surja del uso de la plataforma, violación de estos términos, o infracción de derechos de terceros.</p>
+              <p>El usuario acepta indemnizar, defender y mantener indemne a Conniku, sus propietarios, directores, empleados y afiliados de cualquier reclamo, demanda, pérdida, responsabilidad, costo o gasto (incluyendo honorarios de abogados) que surja del uso de la plataforma, violación de estos términos, o infracción de derechos de terceros.</p>
 
               <h3>13. Modificaciones</h3>
-              <p>StudyHub se reserva el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados a través de la plataforma. El uso continuado después de la publicación de cambios constituye aceptación de los nuevos términos. Si no está de acuerdo con las modificaciones, debe dejar de usar la plataforma y solicitar la eliminación de su cuenta.</p>
+              <p>Conniku se reserva el derecho de modificar estos términos en cualquier momento. Los cambios serán notificados a través de la plataforma. El uso continuado después de la publicación de cambios constituye aceptación de los nuevos términos. Si no está de acuerdo con las modificaciones, debe dejar de usar la plataforma y solicitar la eliminación de su cuenta.</p>
 
               <h3>14. Legislación Aplicable</h3>
               <p>Estos términos se rigen por las leyes de la República de Chile. Cualquier disputa será sometida a la jurisdicción de los tribunales competentes de Santiago de Chile. El usuario renuncia a cualquier jurisdicción que pudiera corresponderle por su domicilio presente o futuro.</p>
 
               <h3>15. Acuerdo Completo</h3>
-              <p>Estos Términos de Uso, junto con la Política de Privacidad y la Política de Reembolso, constituyen el acuerdo completo entre el usuario y StudyHub. Cualquier renuncia a un término no implica renuncia a los demás. Si alguna disposición se considera inválida, las demás permanecen en pleno vigor.</p>
+              <p>Estos Términos de Uso, junto con la Política de Privacidad y la Política de Reembolso, constituyen el acuerdo completo entre el usuario y Conniku. Cualquier renuncia a un término no implica renuncia a los demás. Si alguna disposición se considera inválida, las demás permanecen en pleno vigor.</p>
             </>
           )}
 
@@ -134,22 +134,22 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               <p><strong>Última actualización: 29 de marzo de 2026</strong></p>
 
               <h3>1. Datos que Recopilamos</h3>
-              <p>StudyHub recopila: información de registro (nombre, email, universidad, carrera), documentos subidos por el usuario, historial de interacciones con la plataforma, datos de uso y navegación, e información de pago procesada por terceros.</p>
+              <p>Conniku recopila: información de registro (nombre, email, universidad, carrera), documentos subidos por el usuario, historial de interacciones con la plataforma, datos de uso y navegación, e información de pago procesada por terceros.</p>
 
               <h3>2. Uso de los Datos</h3>
               <p>Los datos se utilizan para: proporcionar y mejorar el servicio, personalizar la experiencia de estudio, moderar contenido, comunicar actualizaciones importantes, y cumplir con obligaciones legales.</p>
 
               <h3>3. Almacenamiento y Seguridad</h3>
-              <p>Los datos se almacenan de forma segura. Sin embargo, ningún sistema es 100% seguro. StudyHub no se hace responsable por brechas de seguridad fuera de su control razonable.</p>
+              <p>Los datos se almacenan de forma segura. Sin embargo, ningún sistema es 100% seguro. Conniku no se hace responsable por brechas de seguridad fuera de su control razonable.</p>
 
               <h3>4. Compartición de Datos</h3>
-              <p>StudyHub no vende datos personales a terceros. Los datos pueden compartirse con: proveedores de pago para procesar transacciones, autoridades legales cuando sea requerido por ley, y servicios técnicos esenciales para el funcionamiento de la plataforma.</p>
+              <p>Conniku no vende datos personales a terceros. Los datos pueden compartirse con: proveedores de pago para procesar transacciones, autoridades legales cuando sea requerido por ley, y servicios técnicos esenciales para el funcionamiento de la plataforma.</p>
 
               <h3>5. Derechos del Usuario</h3>
               <p>El usuario puede solicitar: acceso a sus datos personales, rectificación de datos incorrectos, eliminación de su cuenta y datos asociados, y portabilidad de sus datos.</p>
 
               <h3>6. Cookies y Rastreo</h3>
-              <p>StudyHub utiliza cookies técnicas necesarias para el funcionamiento de la plataforma. No utilizamos cookies de rastreo publicitario.</p>
+              <p>Conniku utiliza cookies técnicas necesarias para el funcionamiento de la plataforma. No utilizamos cookies de rastreo publicitario.</p>
             </>
           )}
 
@@ -160,7 +160,7 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               <h3>Política de Reembolso y Garantía de Satisfacción</h3>
 
               <h4>Período de Prueba Gratuito</h4>
-              <p>StudyHub ofrece 7 días de prueba completamente gratis, sin necesidad de tarjeta de crédito. Durante este período puede explorar todas las funcionalidades de la plataforma sin compromiso alguno.</p>
+              <p>Conniku ofrece 7 días de prueba completamente gratis, sin necesidad de tarjeta de crédito. Durante este período puede explorar todas las funcionalidades de la plataforma sin compromiso alguno.</p>
 
               <h4>Garantía de Satisfacción — 14 Días</h4>
               <p>Si después de suscribirse no está satisfecho con el servicio, puede solicitar un reembolso completo dentro de los primeros 14 días naturales después de su primer pago. No se requiere justificación, pero agradecemos sus comentarios para mejorar.</p>
@@ -179,11 +179,11 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
                 <li>Cuentas baneadas por violación de términos de uso o conducta prohibida</li>
                 <li>Solicitudes realizadas después de 14 días del pago (salvo excepciones técnicas)</li>
                 <li>Intentos de abuso del sistema de reembolso (múltiples solicitudes, uso extensivo antes de solicitar reembolso)</li>
-                <li>Insatisfacción con resultados académicos (StudyHub no garantiza resultados)</li>
+                <li>Insatisfacción con resultados académicos (Conniku no garantiza resultados)</li>
               </ul>
 
               <h4>Errores y Problemas Técnicos</h4>
-              <p>StudyHub reconoce que la plataforma puede presentar errores técnicos, interrupciones del servicio o limitaciones en sus funcionalidades. Si experimenta problemas técnicos persistentes que afecten significativamente su experiencia:</p>
+              <p>Conniku reconoce que la plataforma puede presentar errores técnicos, interrupciones del servicio o limitaciones en sus funcionalidades. Si experimenta problemas técnicos persistentes que afecten significativamente su experiencia:</p>
               <ul>
                 <li>Contáctenos primero para intentar resolver el problema</li>
                 <li>Si el problema no se resuelve en 72 horas, puede solicitar un reembolso proporcional</li>

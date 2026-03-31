@@ -601,7 +601,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <div className="empty-state">
                 <div className="empty-state-icon">📖</div>
                 <h3>Genera una guía de estudio</h3>
-                <p>StudyHub analizará todos los documentos de {project.name} y creará material de estudio personalizado</p>
+                <p>Conniku analizará todos los documentos de {project.name} y creará material de estudio personalizado</p>
                 <button
                   className="btn btn-primary"
                   style={{ marginTop: 16 }}

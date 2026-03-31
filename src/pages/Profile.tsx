@@ -274,7 +274,7 @@ export default function Profile() {
             {activeSection === 'appearance' && (
               <div className="pf-section">
                 <h3>Tema Visual</h3>
-                <p className="pf-hint">Elige la apariencia que prefieras para StudyHub</p>
+                <p className="pf-hint">Elige la apariencia que prefieras para Conniku</p>
                 <div className="theme-selector">
                   {([
                     { id: 'nocturno', name: 'Claro', desc: 'Limpio y profesional', colors: ['#f4f2ee', '#0a66c2', '#191919'] },
@@ -367,7 +367,7 @@ export default function Profile() {
                   <button className="btn btn-danger btn-sm" onClick={() => {
                     if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es IRREVERSIBLE.')) {
                       if (confirm('ÚLTIMA CONFIRMACIÓN: Todos tus datos serán eliminados permanentemente. ¿Continuar?')) {
-                        alert('Funcionalidad de eliminación de cuenta próximamente. Contacta soporte@studyhub.com')
+                        alert('Funcionalidad de eliminación de cuenta próximamente. Contacta soporte@conniku.com')
                       }
                     }
                   }}>
@@ -382,15 +382,15 @@ export default function Profile() {
               <div className="pf-section">
                 <h3>Cuentas de Correo Corporativo</h3>
                 <p className="pf-hint" style={{ marginBottom: 20 }}>
-                  Administra las cuentas de correo electrónico de StudyHub. Configura estas cuentas en tu cliente de correo (Outlook, Gmail, etc.)
+                  Administra las cuentas de correo electrónico de Conniku. Configura estas cuentas en tu cliente de correo (Outlook, Gmail, etc.)
                   usando los datos IMAP/SMTP de tu proveedor de dominio.
                 </p>
                 <div className="pf-toggles">
                   {[
-                    { email: 'contacto@studyhub.com', label: 'Contacto General', desc: 'Soporte y consultas de usuarios', status: 'active' },
-                    { email: 'cristian.a.gutierrez@studyhub.com', label: 'CEO / Fundador', desc: 'Correo personal del propietario', status: 'active' },
-                    { email: 'soporte@studyhub.com', label: 'Soporte Técnico', desc: 'Tickets de soporte y ayuda', status: 'pending' },
-                    { email: 'pagos@studyhub.com', label: 'Facturación', desc: 'Recibos, facturas y pagos', status: 'pending' },
+                    { email: 'contacto@conniku.com', label: 'Contacto General', desc: 'Soporte y consultas de usuarios', status: 'active' },
+                    { email: 'cristian.a.gutierrez@conniku.com', label: 'CEO / Fundador', desc: 'Correo personal del propietario', status: 'active' },
+                    { email: 'soporte@conniku.com', label: 'Soporte Técnico', desc: 'Tickets de soporte y ayuda', status: 'pending' },
+                    { email: 'pagos@conniku.com', label: 'Facturación', desc: 'Recibos, facturas y pagos', status: 'pending' },
                   ].map(account => (
                     <div key={account.email} className="pf-email-row">
                       <div className={`pf-email-icon ${account.status}`}>
@@ -408,7 +408,7 @@ export default function Profile() {
                   ))}
                 </div>
                 <button className="btn btn-secondary btn-sm" style={{ marginTop: 16 }} onClick={() => {
-                  const email = prompt('Nuevo correo (ej: marketing@studyhub.com):')
+                  const email = prompt('Nuevo correo (ej: marketing@conniku.com):')
                   if (email) alert(`Para crear ${email}, configúralo en tu panel de hosting (cPanel, Google Workspace, Zoho Mail, etc.)`)
                 }}>
                   + Crear nueva cuenta de correo
@@ -420,13 +420,13 @@ export default function Profile() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
                   <div className="pf-config-box">
                     <h4 style={{ color: 'var(--accent-blue)' }}>Correo Entrante (IMAP)</h4>
-                    <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>mail.studyhub.com</strong></div>
+                    <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>mail.conniku.com</strong></div>
                     <div>Puerto: <strong>993</strong> (SSL/TLS)</div>
-                    <div>Usuario: <strong style={{ fontFamily: 'var(--font-mono)' }}>tu@studyhub.com</strong></div>
+                    <div>Usuario: <strong style={{ fontFamily: 'var(--font-mono)' }}>tu@conniku.com</strong></div>
                   </div>
                   <div className="pf-config-box">
                     <h4 style={{ color: 'var(--accent-green)' }}>Correo Saliente (SMTP)</h4>
-                    <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>smtp.studyhub.com</strong></div>
+                    <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>smtp.conniku.com</strong></div>
                     <div>Puerto: <strong>587</strong> (STARTTLS)</div>
                     <div>Autenticación: <strong>Requerida</strong></div>
                   </div>

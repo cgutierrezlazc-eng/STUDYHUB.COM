@@ -142,7 +142,7 @@ TEMPLATES = {
                     <tr style="border-top:1px solid #e0e0e0;"><td style="padding:12px 0; font-weight:700;">Total</td><td style="padding:12px 0; text-align:right; font-weight:700; font-size:18px; color:#4f8cff;">{amount} {currency}</td></tr>
                 </table>
             </div>
-            <p style="font-size:13px; color:#666;">Este recibo sirve como comprobante de pago. Si necesitas una factura formal, contáctanos a soporte@studyhub.com.</p>
+            <p style="font-size:13px; color:#666;">Este recibo sirve como comprobante de pago. Si necesitas una factura formal, contáctanos a soporte@conniku.com.</p>
             <p style="font-size:13px; color:#666;">Puedes administrar tu suscripción desde tu perfil en Conniku.</p>
         """),
     },
