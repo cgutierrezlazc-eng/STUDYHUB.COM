@@ -203,9 +203,9 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
     # Generate verification code
     verification_code = ''.join(random.choices(string.digits, k=6))
 
-    # Check if admin
+    # Check if admin — ensure boolean, not empty string
     admin_email = get_admin_email()
-    is_admin = admin_email and req.email.lower() == admin_email
+    is_admin = bool(admin_email and req.email.lower() == admin_email)
 
     user = User(
         id=gen_id(),

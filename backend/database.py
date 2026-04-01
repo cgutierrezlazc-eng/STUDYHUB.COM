@@ -55,14 +55,14 @@ class User(Base):
     bio = Column(Text, default="")
     provider = Column(String(20), default="email")  # email | google
 
-    email_verified = Column(Boolean, default=False)
+    email_verified = Column(Boolean, nullable=False, default=False)
     verification_code = Column(String(10), nullable=True)
-    is_banned = Column(Boolean, default=False)
+    is_banned = Column(Boolean, nullable=False, default=False)
     ban_reason = Column(String(500), nullable=True)
-    is_admin = Column(Boolean, default=False)
-    role = Column(String(20), default="user")  # user | admin | owner
+    is_admin = Column(Boolean, nullable=False, default=False)
+    role = Column(String(20), nullable=False, default="user")  # user | admin | owner
     tos_accepted_at = Column(DateTime, nullable=True)
-    onboarding_completed = Column(Boolean, default=False)
+    onboarding_completed = Column(Boolean, nullable=False, default=False)
 
     # Theme & preferences
     theme = Column(String(30), default="nocturno")  # calido | profesional | vibrante | nocturno
