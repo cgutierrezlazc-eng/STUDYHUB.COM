@@ -52,29 +52,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const loginWithGoogle = async () => {
-    // Simulated Google login for MVP
-    const mockData = {
-      email: 'usuario@gmail.com',
-      password: 'google_temp_123',
-      first_name: 'Usuario',
-      last_name: 'Google',
-      gender: 'unspecified',
-      language: 'es',
-      birth_date: '1995-01-01',
-      tos_accepted: true,
+    const GOOGLE_CLIENT_ID = '179321527751-mvuuabn6uakngeksv5q22mda2uqhv3t3.apps.googleusercontent.com'
+
+    // Load Google Identity Services script if not loaded
+    if (!(window as any).google?.accounts) {
+      await new Promise<void>((resolve) => {
+        const script = document.createElement('script')
+        script.src = 'https://accounts.google.com/gsi/client'
+        script.onload = () => resolve()
+        document.head.appendChild(script)
+      })
     }
-    try {
-      const data = await api.register(mockData)
-      localStorage.setItem(TOKEN_KEY, data.token)
-      setUser(data.user)
-    } catch {
-      // Try login if already exists
-      try {
-        const data = await api.login('usuario@gmail.com', 'google_temp_123')
-        localStorage.setItem(TOKEN_KEY, data.token)
-        setUser(data.user)
-      } catch {}
-    }
+
+    // Use Google One Tap / popup to get credential
+    return new Promise<void>((resolve) => {
+      (window as any).google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response: any) => {
+          try {
+            // Decode JWT token from Google to get user info
+            const payload = JSON.parse(atob(response.credential.split('.')[1]))
+            const googleEmail = payload.email
+            const firstName = payload.given_name || 'Usuario'
+            const lastName = payload.family_name || ''
+            const avatar = payload.picture || ''
+
+            // Try to register with Google info
+            try {
+              const data = await api.register({
+                email: googleEmail,
+                password: `google_${payload.sub}`,
+                first_name: firstName,
+                last_name: lastName,
+                avatar: avatar,
+                gender: 'unspecified',
+                language: 'es',
+                birth_date: '1995-01-01',
+                tos_accepted: true,
+              })
+              localStorage.setItem(TOKEN_KEY, data.token)
+              setUser(data.user)
+            } catch {
+              // Already registered — login
+              try {
+                const data = await api.login(googleEmail, `google_${payload.sub}`)
+                localStorage.setItem(TOKEN_KEY, data.token)
+                setUser(data.user)
+              } catch {}
+            }
+          } catch (err) {
+            console.error('Google login error:', err)
+          }
+          resolve()
+        },
+      })
+      ;(window as any).google.accounts.id.prompt()
+    })
   }
 
   const register = async (formData: any) => {
