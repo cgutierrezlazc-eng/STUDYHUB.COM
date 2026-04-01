@@ -52,7 +52,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const loginWithGoogle = async () => {
-    const GOOGLE_CLIENT_ID = '179321527751-mvuuabn6uakngeksv5q22mda2uqhv3t3.apps.googleusercontent.com'
+    const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+
+    if (!GOOGLE_CLIENT_ID) {
+      console.error('Google Client ID not configured. Set VITE_GOOGLE_CLIENT_ID env var.')
+      return
+    }
 
     // Load Google Identity Services script if not loaded
     if (!(window as any).google?.accounts) {
@@ -77,11 +82,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const lastName = payload.family_name || ''
             const avatar = payload.picture || ''
 
+            // Generate a cryptographically random password for Google users
+            const randomPassword = crypto.getRandomValues(new Uint8Array(32))
+            const googlePassword = Array.from(randomPassword, b => b.toString(16).padStart(2, '0')).join('')
+
             // Try to register with Google info
             try {
               const data = await api.register({
                 email: googleEmail,
-                password: `google_${payload.sub}`,
+                password: googlePassword,
                 first_name: firstName,
                 last_name: lastName,
                 avatar: avatar,
@@ -93,12 +102,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               localStorage.setItem(TOKEN_KEY, data.token)
               setUser(data.user)
             } catch {
-              // Already registered — login
+              // Already registered — try login with Google credential token
+              // Since we can't know the random password, use the Google token as auth
               try {
-                const data = await api.login(googleEmail, `google_${payload.sub}`)
+                const data = await api.login(googleEmail, response.credential)
                 localStorage.setItem(TOKEN_KEY, data.token)
                 setUser(data.user)
-              } catch {}
+              } catch {
+                console.error('Google login failed: account may require password login')
+              }
             }
           } catch (err) {
             console.error('Google login error:', err)

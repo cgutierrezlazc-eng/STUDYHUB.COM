@@ -3,6 +3,8 @@ Auth middleware: JWT token handling and user dependency injection.
 """
 import os
 import json
+import secrets
+import logging
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -15,16 +17,25 @@ from sqlalchemy.orm import Session
 
 from database import get_db, User, DATA_DIR
 
-# JWT config — prefer env var for production, fallback to config file
-CONFIG_FILE = DATA_DIR / "config.json"
-SECRET_KEY = os.environ.get("JWT_SECRET", "conniku-secret-key-change-in-production")
+logger = logging.getLogger("conniku.auth")
 
-if not os.environ.get("JWT_SECRET") and CONFIG_FILE.exists():
+# JWT config — prefer env var, then config file, then generate ephemeral key
+CONFIG_FILE = DATA_DIR / "config.json"
+SECRET_KEY = os.environ.get("JWT_SECRET", "")
+
+if not SECRET_KEY and CONFIG_FILE.exists():
     try:
         config = json.loads(CONFIG_FILE.read_text())
-        SECRET_KEY = config.get("jwt_secret", SECRET_KEY)
-    except:
+        SECRET_KEY = config.get("jwt_secret", "")
+    except Exception:
         pass
+
+if not SECRET_KEY:
+    SECRET_KEY = secrets.token_hex(32)
+    logger.warning(
+        "⚠️  JWT_SECRET not configured! Using ephemeral key. "
+        "Set JWT_SECRET env var for production. All tokens will be invalidated on restart."
+    )
 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 30

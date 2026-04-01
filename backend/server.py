@@ -29,10 +29,16 @@ from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
 
+# CORS: restrict to known origins in production
+_cors_origins = os.environ.get(
+    "CORS_ORIGINS",
+    "http://localhost:5173,http://localhost:8899,https://conniku.com,https://www.conniku.com"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=[o.strip() for o in _cors_origins],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -1,11 +1,13 @@
 """
 Auth routes: registration, login, profile, email verification, username management.
 """
-import hashlib
+import os
 import random
 import string
 from datetime import datetime, date
 from typing import Optional
+
+import bcrypt
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
@@ -18,23 +20,27 @@ from middleware import create_access_token, get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-# ─── Password hashing (simple sha256 + salt for MVP) ────────────
+# ─── Password hashing (bcrypt) ──────────────────────────────────
+
+BCRYPT_ROUNDS = int(os.environ.get("BCRYPT_ROUNDS", "12"))
+
 
 def hash_password(password: str) -> str:
-    salt = ''.join(random.choices(string.ascii_letters, k=8))
-    hashed = hashlib.sha256(f"{salt}:{password}".encode()).hexdigest()
-    return f"{salt}:{hashed}"
+    """Hash password using bcrypt with configurable rounds."""
+    return bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=BCRYPT_ROUNDS)).decode()
 
 
 def verify_password(password: str, stored: str) -> bool:
-    # Support bcrypt hashes (used by owner account)
+    """Verify password against stored hash. Supports bcrypt and legacy SHA-256."""
+    import hashlib
+    # bcrypt hashes
     if stored.startswith("$2b$") or stored.startswith("$2a$"):
-        import bcrypt
         return bcrypt.checkpw(password.encode(), stored.encode())
-    if ':' not in stored:
-        return False
-    salt, hashed = stored.split(':', 1)
-    return hashlib.sha256(f"{salt}:{password}".encode()).hexdigest() == hashed
+    # Legacy SHA-256 hashes — verify and schedule migration on next login
+    if ':' in stored:
+        salt, hashed = stored.split(':', 1)
+        return hashlib.sha256(f"{salt}:{password}".encode()).hexdigest() == hashed
+    return False
 
 
 # ─── Auto-generate username ─────────────────────────────────────
@@ -276,7 +282,6 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
     return {
         "token": token,
         "user": user_to_dict(user),
-        "verificationCode": verification_code,  # MVP: return code directly for testing
     }
 
 
@@ -292,8 +297,11 @@ def login(req: LoginRequest, db: Session = Depends(get_db)):
     if user.is_banned:
         raise HTTPException(403, f"Cuenta suspendida: {user.ban_reason or 'Violación de políticas'}")
 
+    # Migrate legacy SHA-256 hashes to bcrypt on successful login
+    if user.password_hash and not user.password_hash.startswith("$2b$") and not user.password_hash.startswith("$2a$"):
+        user.password_hash = hash_password(req.password)
+
     if not user.email_verified:
-        # For MVP, auto-verify on login
         user.email_verified = True
 
     user.last_login = datetime.utcnow()
@@ -397,7 +405,7 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == req.email.lower()).first()
     if not user:
         # Don't reveal if email exists
-        return {"sent": True, "code": None}
+        return {"sent": True}
 
     code = ''.join(random.choices(string.digits, k=6))
     from datetime import timedelta
@@ -405,8 +413,25 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user.reset_code_expires = datetime.utcnow() + timedelta(minutes=15)
     db.commit()
 
-    # MVP: return code directly for testing (in production, send via email)
-    return {"sent": True, "code": code}
+    # Send reset code via email
+    try:
+        from notifications import enqueue_email, _wrap
+        reset_html = _wrap(f"""
+            <p>Hola <span class="highlight">{user.first_name}</span>,</p>
+            <p>Recibimos una solicitud para restablecer tu contraseña. Tu código es:</p>
+            <div style="text-align:center; margin:20px 0;">
+                <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#4f8cff;
+                             background:#f0f4ff; padding:12px 24px; border-radius:8px; display:inline-block;">
+                    {code}
+                </span>
+            </div>
+            <p style="color:#999; font-size:13px;">Este código expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.</p>
+        """)
+        enqueue_email(user.email, "Restablecer contraseña - Conniku", reset_html)
+    except Exception:
+        pass
+
+    return {"sent": True}
 
 
 @router.post("/reset-password")

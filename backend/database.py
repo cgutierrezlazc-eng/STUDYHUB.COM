@@ -1,6 +1,6 @@
 """
 Database models and session management for Conniku.
-Uses SQLite via SQLAlchemy.
+Uses PostgreSQL in production, SQLite for local development.
 """
 import os
 import uuid
@@ -17,12 +17,18 @@ DATA_DIR = Path.home() / ".conniku"
 DATA_DIR.mkdir(exist_ok=True)
 DB_PATH = DATA_DIR / "conniku.db"
 
-# Force clean DB on deploy to fix schema issues
-if os.environ.get("FORCE_DB_RESET") == "1" and DB_PATH.exists():
-    DB_PATH.unlink()
-    print("Database reset: old DB removed")
+# Use PostgreSQL if DATABASE_URL is set (production), otherwise SQLite (local dev)
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
 
-engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
+if DATABASE_URL:
+    # Render uses postgres:// but SQLAlchemy needs postgresql://
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True, pool_size=5, max_overflow=10)
+    print(f"Using PostgreSQL database")
+else:
+    engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
+    print(f"Using SQLite database at {DB_PATH}")
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
 
@@ -329,7 +335,11 @@ class PaymentLog(Base):
 
 def init_db():
     Base.metadata.create_all(engine)
-    # Create owner account if not exists
+    # Create owner account if not exists and OWNER_PASSWORD env var is set
+    owner_password = os.environ.get("OWNER_PASSWORD")
+    if not owner_password:
+        return  # Skip owner creation if no password configured
+
     db = SessionLocal()
     try:
         owner = db.query(User).filter(User.email == "ceo@conniku.com").first()
@@ -340,7 +350,7 @@ def init_db():
             owner = User(
                 id=gen_id(),
                 email="ceo@conniku.com",
-                password_hash=bcrypt.hashpw("Conniku$CEO2024".encode(), bcrypt.gensalt()).decode(),
+                password_hash=bcrypt.hashpw(owner_password.encode(), bcrypt.gensalt()).decode(),
                 username="owner",
                 user_number=max_num + 1,
                 first_name="Conniku",

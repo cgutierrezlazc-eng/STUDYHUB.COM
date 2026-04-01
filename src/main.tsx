@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router-dom'
 import { AuthProvider } from './services/auth'
 import { I18nProvider } from './services/i18n'
 import { isNative, initNative } from './services/capacitor'
+import ErrorBoundary from './components/ErrorBoundary'
 import App from './App'
 import './styles/global.css'
 import './styles/auth.css'
@@ -19,12 +20,14 @@ initNative()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <I18nProvider>
-      <AuthProvider>
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </AuthProvider>
-    </I18nProvider>
+    <ErrorBoundary>
+      <I18nProvider>
+        <AuthProvider>
+          <HashRouter>
+            <App />
+          </HashRouter>
+        </AuthProvider>
+      </I18nProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
 )
