@@ -17,6 +17,11 @@ DATA_DIR = Path.home() / ".studyhub"
 DATA_DIR.mkdir(exist_ok=True)
 DB_PATH = DATA_DIR / "studyhub.db"
 
+# Force clean DB on deploy to fix schema issues
+if os.environ.get("FORCE_DB_RESET") == "1" and DB_PATH.exists():
+    DB_PATH.unlink()
+    print("Database reset: old DB removed")
+
 engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
