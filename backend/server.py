@@ -13,6 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 
+from sqlalchemy.orm import Session
 from database import init_db, get_db, User
 from middleware import get_current_user
 from document_processor import DocumentProcessor
@@ -191,17 +192,36 @@ def delete_project(project_id: str, user: User = Depends(get_current_user)):
 
 
 @app.post("/projects/{project_id}/documents")
-async def upload_document(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user)):
+async def upload_document(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
+
+    # Read file content
+    content = await file.read()
+    file_size = len(content)
+
+    # Check storage limit
+    current_used = user.storage_used_bytes or 0
+    storage_limit = user.storage_limit_bytes or 524288000  # 500 MB default
+    if current_used + file_size > storage_limit:
+        used_mb = round(current_used / 1048576, 1)
+        limit_mb = round(storage_limit / 1048576, 1)
+        raise HTTPException(
+            413,
+            f"Almacenamiento lleno ({used_mb}/{limit_mb} MB). "
+            "Actualiza a PRO para obtener 5 GB de almacenamiento."
+        )
 
     docs_dir = get_project_docs_dir(project_id)
     file_path = docs_dir / file.filename
 
     with open(file_path, "wb") as f:
-        content = await file.read()
         f.write(content)
+
+    # Update storage usage
+    user.storage_used_bytes = current_used + file_size
+    db.commit()
 
     text = doc_processor.extract_text(str(file_path))
     doc_id = uuid.uuid4().hex[:12]
@@ -211,6 +231,7 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
         "id": doc_id,
         "name": file.filename,
         "path": str(file_path),
+        "size": file_size,
         "processed": True,
     })
     save_project_meta(project_id, meta)

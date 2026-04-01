@@ -166,6 +166,8 @@ def user_to_dict(user: User) -> dict:
         "subscriptionStatus": user.subscription_status or "trial",
         "trialStartedAt": user.trial_started_at.isoformat() if user.trial_started_at else None,
         "subscriptionExpiresAt": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
+        "storageUsedBytes": getattr(user, 'storage_used_bytes', 0) or 0,
+        "storageLimitBytes": getattr(user, 'storage_limit_bytes', 524288000) or 524288000,
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }

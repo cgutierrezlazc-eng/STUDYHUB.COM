@@ -87,6 +87,10 @@ class User(Base):
     stripe_customer_id = Column(String(255), nullable=True)
     paypal_subscription_id = Column(String(255), nullable=True)
 
+    # Storage tracking
+    storage_used_bytes = Column(Float, default=0)  # bytes used by uploaded documents
+    storage_limit_bytes = Column(Float, default=524288000)  # 500 MB for basic, 5 GB for PRO
+
     # Password recovery
     reset_code = Column(String(10), nullable=True)
     reset_code_expires = Column(DateTime, nullable=True)
@@ -385,6 +389,8 @@ def init_db():
                 subscription_expires_at=None,
                 stripe_customer_id=None,
                 paypal_subscription_id=None,
+                storage_used_bytes=0,
+                storage_limit_bytes=1099511627776,  # 1 TB for owner
                 reset_code=None,
                 reset_code_expires=None,
             )
