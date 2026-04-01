@@ -1,11 +1,11 @@
 """
-Database migrations for StudyHub.
+Database migrations for Conniku.
 Adds new columns to existing tables. Safe to run multiple times.
 """
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path.home() / ".studyhub" / "studyhub.db"
+DB_PATH = Path.home() / ".conniku" / "conniku.db"
 
 
 def migrate():

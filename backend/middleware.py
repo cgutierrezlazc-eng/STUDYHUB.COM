@@ -17,7 +17,7 @@ from database import get_db, User, DATA_DIR
 
 # JWT config — prefer env var for production, fallback to config file
 CONFIG_FILE = DATA_DIR / "config.json"
-SECRET_KEY = os.environ.get("JWT_SECRET", "studyhub-secret-key-change-in-production")
+SECRET_KEY = os.environ.get("JWT_SECRET", "conniku-secret-key-change-in-production")
 
 if not os.environ.get("JWT_SECRET") and CONFIG_FILE.exists():
     try:

@@ -746,14 +746,14 @@ function detectBrowserLanguage(): Language {
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
-    const saved = localStorage.getItem('studyhub_language')
+    const saved = localStorage.getItem('conniku_language')
     if (saved && ['es', 'en', 'pt', 'fr'].includes(saved)) return saved as Language
     return detectBrowserLanguage()
   })
 
   const setLang = (newLang: Language) => {
     setLangState(newLang)
-    localStorage.setItem('studyhub_language', newLang)
+    localStorage.setItem('conniku_language', newLang)
   }
 
   const t = (key: string): string => {

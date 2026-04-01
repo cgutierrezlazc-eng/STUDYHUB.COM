@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useI18n } from '../services/i18n'
 import { useAuth } from '../services/auth'
 
-const CONTACT_EMAIL = 'soporte@studyhub.app'
+const CONTACT_EMAIL = 'soporte@conniku.com'
 
 interface Suggestion {
   id: string
@@ -14,12 +14,12 @@ interface Suggestion {
 }
 
 function loadSuggestions(): Suggestion[] {
-  try { return JSON.parse(localStorage.getItem('studyhub_suggestions') || '[]') }
+  try { return JSON.parse(localStorage.getItem('conniku_suggestions') || '[]') }
   catch { return [] }
 }
 
 function saveSuggestions(items: Suggestion[]) {
-  localStorage.setItem('studyhub_suggestions', JSON.stringify(items))
+  localStorage.setItem('conniku_suggestions', JSON.stringify(items))
 }
 
 export default function Suggestions() {

@@ -1,5 +1,5 @@
 """
-Database models and session management for StudyHub.
+Database models and session management for Conniku.
 Uses SQLite via SQLAlchemy.
 """
 import os
@@ -13,9 +13,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-DATA_DIR = Path.home() / ".studyhub"
+DATA_DIR = Path.home() / ".conniku"
 DATA_DIR.mkdir(exist_ok=True)
-DB_PATH = DATA_DIR / "studyhub.db"
+DB_PATH = DATA_DIR / "conniku.db"
 
 # Force clean DB on deploy to fix schema issues
 if os.environ.get("FORCE_DB_RESET") == "1" and DB_PATH.exists():

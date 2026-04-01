@@ -9,7 +9,7 @@ import chromadb
 from anthropic import Anthropic
 from pathlib import Path
 
-DATA_DIR = Path.home() / ".studyhub"
+DATA_DIR = Path.home() / ".conniku"
 
 # Use API key from environment or config
 API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -94,7 +94,7 @@ class AIEngine:
 
     def _call_claude(self, system: str, user_message: str, model: str = "claude-sonnet-4-20250514") -> str:
         if not self.client:
-            return "⚠️ API key no configurada. Configura tu ANTHROPIC_API_KEY en ~/.studyhub/config.json"
+            return "⚠️ API key no configurada. Configura tu ANTHROPIC_API_KEY en ~/.conniku/config.json"
 
         response = self.client.messages.create(
             model=model,
@@ -154,7 +154,7 @@ class AIEngine:
 - Puedes usar algunas referencias teóricas sin desglosar cada una.
 - Tono: como un tutor universitario accesible y profesional."""
 
-        system = f"""Eres un tutor de estudio inteligente llamado StudyHub.
+        system = f"""Eres un tutor de estudio inteligente llamado Conniku.
 Tu rol es ayudar al estudiante a entender el material de su asignatura.
 {lang_inst}, de forma clara, didáctica y con ejemplos cuando sea posible.
 {gender_tone}

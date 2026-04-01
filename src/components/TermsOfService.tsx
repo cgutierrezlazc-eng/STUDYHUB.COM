@@ -191,7 +191,7 @@ export default function TermsOfService({ onClose, showRefundForm = false }: Prop
               </ul>
 
               <h4>Cómo Solicitar un Reembolso</h4>
-              <p>Complete el formulario a continuación o envíe un correo a soporte@studyhub.app indicando su email de registro, fecha de pago y motivo de la solicitud. Los reembolsos se procesan en un plazo de 5-10 días hábiles al método de pago original.</p>
+              <p>Complete el formulario a continuación o envíe un correo a soporte@conniku.com indicando su email de registro, fecha de pago y motivo de la solicitud. Los reembolsos se procesan en un plazo de 5-10 días hábiles al método de pago original.</p>
 
               {!refundSent ? (
                 <div className="refund-form">

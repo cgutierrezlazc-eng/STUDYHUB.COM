@@ -1,11 +1,11 @@
 // Dynamic API base: production uses env var, dev uses localhost
 function getApiBase(): string {
   // Allow override via localStorage (for dev/testing)
-  const override = localStorage.getItem('studyhub_api_base');
+  const override = localStorage.getItem('conniku_api_base');
   if (override) return override;
 
   // In production native builds, use the configured server URL
-  const saved = localStorage.getItem('studyhub_server_url');
+  const saved = localStorage.getItem('conniku_server_url');
   if (saved) return saved;
 
   // Production: detect by hostname (not localhost = deployed)
@@ -19,7 +19,7 @@ function getApiBase(): string {
 const API_BASE = getApiBase();
 
 function getToken(): string | null {
-  return localStorage.getItem('studyhub_token');
+  return localStorage.getItem('conniku_token');
 }
 
 async function request(endpoint: string, options?: RequestInit) {

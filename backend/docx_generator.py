@@ -15,7 +15,7 @@ except ImportError:
     HAS_DOCX = False
 
 
-def markdown_to_docx(content: str, title: str = "StudyHub Document") -> str:
+def markdown_to_docx(content: str, title: str = "Conniku Document") -> str:
     """Convert markdown-like text to a .docx file. Returns file path."""
     if not HAS_DOCX:
         raise RuntimeError("python-docx not installed")
@@ -29,7 +29,7 @@ def markdown_to_docx(content: str, title: str = "StudyHub Document") -> str:
     # Add subtitle
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run = sub.add_run("Generado con StudyHub")
+    run = sub.add_run("Generado con Conniku")
     run.font.size = Pt(10)
     run.font.color.rgb = RGBColor(128, 128, 128)
 
@@ -84,7 +84,7 @@ def markdown_to_docx(content: str, title: str = "StudyHub Document") -> str:
             _add_formatted_runs(p, stripped)
 
     # Save to temp file
-    tmp = tempfile.NamedTemporaryFile(suffix=".docx", delete=False, dir=str(Path.home() / ".studyhub"))
+    tmp = tempfile.NamedTemporaryFile(suffix=".docx", delete=False, dir=str(Path.home() / ".conniku"))
     doc.save(tmp.name)
     return tmp.name
 

@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 from database import get_db, User, Base, gen_id, engine
 from middleware import get_current_user
 
-logger = logging.getLogger("studyhub.notifications")
+logger = logging.getLogger("conniku.notifications")
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 

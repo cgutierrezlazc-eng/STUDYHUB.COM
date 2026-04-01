@@ -1,5 +1,5 @@
 """
-Gamification system for StudyHub.
+Gamification system for Conniku.
 Handles XP, levels, streaks, badges, and leaderboards.
 """
 import json

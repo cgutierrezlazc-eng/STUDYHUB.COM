@@ -27,7 +27,7 @@ from gamification import router as gamification_router
 from notifications import router as notifications_router
 from migrations import migrate
 
-app = FastAPI(title="StudyHub Backend", version="2.0.0")
+app = FastAPI(title="Conniku Backend", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -51,7 +51,7 @@ app.include_router(gamification_router)
 app.include_router(notifications_router)
 
 # Storage paths
-DATA_DIR = Path.home() / ".studyhub"
+DATA_DIR = Path.home() / ".conniku"
 PROJECTS_DIR = DATA_DIR / "projects"
 DATA_DIR.mkdir(exist_ok=True)
 PROJECTS_DIR.mkdir(exist_ok=True)
@@ -297,7 +297,7 @@ def solve_math(req: MathRequest, user: User = Depends(get_current_user)):
 
 class ExportDocxRequest(BaseModel):
     content: str
-    title: str = "StudyHub Document"
+    title: str = "Conniku Document"
 
 
 @app.post("/projects/{project_id}/chat/export-docx")

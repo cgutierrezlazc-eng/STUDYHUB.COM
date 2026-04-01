@@ -258,7 +258,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
         from notifications import enqueue_email, _wrap
         verify_html = _wrap(f"""
             <p>Hola <span class="highlight">{req.first_name}</span>,</p>
-            <p>Bienvenido a StudyHub. Tu código de verificación es:</p>
+            <p>Bienvenido a Conniku. Tu código de verificación es:</p>
             <div style="text-align:center; margin:20px 0;">
                 <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#4f8cff;
                              background:#f0f4ff; padding:12px 24px; border-radius:8px; display:inline-block;">
@@ -268,7 +268,7 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
             <p>Ingresa este código en la aplicación para verificar tu correo electrónico.</p>
             <p style="color:#999; font-size:13px;">Este código expira en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.</p>
         """)
-        enqueue_email(user.email, "Verifica tu cuenta de StudyHub", verify_html)
+        enqueue_email(user.email, "Verifica tu cuenta de Conniku", verify_html)
     except Exception:
         pass  # Don't block registration if email fails
 
