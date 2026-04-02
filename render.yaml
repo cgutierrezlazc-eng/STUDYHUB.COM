@@ -15,4 +15,16 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: CORS_ORIGINS
-        value: "https://conniku.com,https://www.conniku.com"
+        value: "https://conniku.com,https://www.conniku.com,http://localhost:5173,http://localhost:8899"
+      - key: ENVIRONMENT
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: conniku-db
+          property: connectionString
+
+databases:
+  - name: conniku-db
+    plan: free
+    databaseName: conniku
+    user: conniku_user

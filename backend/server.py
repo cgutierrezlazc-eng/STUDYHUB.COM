@@ -2,13 +2,15 @@ import os
 import json
 import uuid
 import shutil
+import logging
+import traceback
 from pathlib import Path
 from typing import Optional
 
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
@@ -43,6 +45,22 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("conniku")
+
+
+# Global exception handler: ensures 500 errors return JSON with CORS headers
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled error on {request.method} {request.url.path}: {exc}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"},
+    )
+
 
 # Run migrations on startup
 migrate()
@@ -121,6 +139,8 @@ class MathRequest(BaseModel):
 class QuizRequest(BaseModel):
     num_questions: int = 10
 
+ALLOWED_DOC_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.rtf'}
+
 
 # --- Project storage helpers ---
 
@@ -197,6 +217,11 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
 
+    # Validate file type
+    ext = Path(file.filename).suffix.lower() if file.filename else ""
+    if ext not in ALLOWED_DOC_EXTENSIONS:
+        raise HTTPException(400, f"Tipo de archivo no permitido. Formatos aceptados: {', '.join(ALLOWED_DOC_EXTENSIONS)}")
+
     # Read file content
     content = await file.read()
     file_size = len(content)
@@ -245,9 +270,15 @@ def upload_from_path(project_id: str, req: PathUploadRequest, user: User = Depen
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
 
-    source = Path(req.path)
+    source = Path(req.path).resolve()
+    # Security: only allow files from the user's own project directories or home
+    allowed_bases = [PROJECTS_DIR.resolve(), Path.home().resolve()]
+    if not any(str(source).startswith(str(base)) for base in allowed_bases):
+        raise HTTPException(400, "Ruta de archivo no permitida")
     if not source.exists():
         raise HTTPException(404, "File not found")
+    if not source.is_file():
+        raise HTTPException(400, "La ruta no es un archivo válido")
 
     docs_dir = get_project_docs_dir(project_id)
     dest = docs_dir / source.name
