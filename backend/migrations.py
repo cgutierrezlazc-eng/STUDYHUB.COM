@@ -61,6 +61,19 @@ def migrate():
         # Country & currency
         ("country", "VARCHAR(5) DEFAULT 'CL'"),
         ("country_currency", "VARCHAR(5) DEFAULT 'CLP'"),
+        # Profile fields
+        ("language_skill", "VARCHAR(20) DEFAULT 'intermediate'"),
+        ("secondary_languages", "TEXT DEFAULT '[]'"),
+        ("platform_language", "VARCHAR(5) DEFAULT 'es'"),
+        ("phone", "VARCHAR(50) DEFAULT ''"),
+        ("birth_date", "VARCHAR(20) DEFAULT ''"),
+        ("bio", "TEXT DEFAULT ''"),
+        ("gender", "VARCHAR(20) DEFAULT 'unspecified'"),
+        ("is_graduated", "BOOLEAN DEFAULT FALSE"),
+        ("graduation_year", "INTEGER"),
+        ("is_senior_year", "BOOLEAN DEFAULT FALSE"),
+        ("total_semesters", "INTEGER DEFAULT 8"),
+        ("provider", "VARCHAR(20) DEFAULT 'email'"),
     ]
 
     inspector = inspect(engine)
