@@ -7,18 +7,50 @@ from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, desc
 
 from database import (
-    get_db, User, Friendship, WallPost, PostLike, PostComment, BlockedUser, UserReport, gen_id
+    get_db, User, Friendship, WallPost, PostLike, PostComment, PostReaction, BlockedUser, UserReport, gen_id
 )
 from middleware import get_current_user
+from notification_routes import create_notification
 try:
     from notifications import notify_friend_request, notify_friend_accepted, notify_wall_post
 except ImportError:
     notify_friend_request = notify_friend_accepted = notify_wall_post = None
 
 router = APIRouter(prefix="/social", tags=["social"])
+
+import re
+
+def extract_hashtags(content: str) -> list[str]:
+    return [tag.lower() for tag in re.findall(r'#(\w+)', content)]
+
+def extract_mentions(content: str) -> list[str]:
+    return re.findall(r'@(\w+)', content)
+
+def process_hashtags(db, content: str, post_id: str, post_type: str = "wall"):
+    from database import Hashtag, PostHashtag
+    tags = extract_hashtags(content)
+    for tag_text in tags:
+        hashtag = db.query(Hashtag).filter(Hashtag.tag == tag_text).first()
+        if not hashtag:
+            hashtag = Hashtag(id=gen_id(), tag=tag_text, usage_count=0)
+            db.add(hashtag)
+        hashtag.usage_count = (hashtag.usage_count or 0) + 1
+        hashtag.last_used_at = datetime.utcnow()
+        link = PostHashtag(id=gen_id(), post_id=post_id, post_type=post_type, hashtag_id=hashtag.id)
+        db.add(link)
+
+def process_mentions(db, content: str, actor_id: str, link: str = ""):
+    usernames = extract_mentions(content)
+    for username in usernames:
+        mentioned = db.query(User).filter(User.username == username).first()
+        if mentioned and mentioned.id != actor_id:
+            from notification_routes import create_notification
+            create_notification(db, mentioned.id, "mention",
+                f"Te mencionaron en una publicación",
+                body=content[:100], link=link, actor_id=actor_id)
 
 
 # ─── Request Models ────────────────────────────────────────────
@@ -119,6 +151,12 @@ def send_friend_request(
     if notify_friend_request:
         notify_friend_request(db, target, user)
 
+    # In-app notification
+    create_notification(db, body.addressee_id, "friend_request",
+        f"{user.first_name} {user.last_name} te envió una solicitud de amistad",
+        link=f"/user/{user.id}", actor_id=user.id, reference_id=friendship.id)
+    db.commit()
+
     return {"status": "pending"}
 
 
@@ -145,6 +183,12 @@ def accept_friend_request(
         requester = db.query(User).filter(User.id == fr.requester_id).first()
         if requester:
             notify_friend_accepted(db, requester, user)
+
+    # In-app notification
+    create_notification(db, fr.requester_id, "friend_accepted",
+        f"{user.first_name} {user.last_name} aceptó tu solicitud de amistad",
+        link=f"/user/{user.id}", actor_id=user.id, reference_id=fr.id)
+    db.commit()
 
     return {"status": "accepted"}
 
@@ -201,6 +245,33 @@ def get_friends(user: User = Depends(get_current_user), db: Session = Depends(ge
         friend = db.query(User).filter(User.id == friend_id).first()
         if friend:
             friends.append({**user_brief(friend), "friendshipId": f.id, "since": f.updated_at.isoformat()})
+    return friends
+
+
+@router.get("/users/{user_id}/friends")
+def get_user_friends(user_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get any user's friend list (public). Used on profile pages."""
+    # Check not blocked
+    is_blocked = db.query(BlockedUser).filter(
+        or_(
+            and_(BlockedUser.blocker_id == user.id, BlockedUser.blocked_id == user_id),
+            and_(BlockedUser.blocker_id == user_id, BlockedUser.blocked_id == user.id),
+        )
+    ).first()
+    if is_blocked:
+        raise HTTPException(403, "No puedes ver este perfil")
+
+    friendships = db.query(Friendship).filter(
+        Friendship.status == "accepted",
+        or_(Friendship.requester_id == user_id, Friendship.addressee_id == user_id),
+    ).all()
+
+    friends = []
+    for f in friendships:
+        friend_id = f.addressee_id if f.requester_id == user_id else f.requester_id
+        friend = db.query(User).filter(User.id == friend_id).first()
+        if friend:
+            friends.append({**user_brief(friend), "since": f.updated_at.isoformat()})
     return friends
 
 
@@ -280,7 +351,7 @@ def get_user_profile(
     if is_blocked:
         raise HTTPException(403, "No puedes ver este perfil")
 
-    # Non-friends get limited info only
+    # Non-friends: show public profile with real friend count (not restricted)
     if not is_own and not is_friend:
         # Check friendship status for pending requests
         friendship_status = "none"
@@ -295,6 +366,11 @@ def get_user_profile(
             friendship_status = fr.status
             friendship_id = fr.id
 
+        friend_count = db.query(Friendship).filter(
+            Friendship.status == "accepted",
+            or_(Friendship.requester_id == user_id, Friendship.addressee_id == user_id),
+        ).count()
+
         return {
             "id": target.id,
             "username": target.username,
@@ -304,12 +380,14 @@ def get_user_profile(
             "avatar": target.avatar or "",
             "university": target.university,
             "career": target.career,
+            "semester": target.semester,
+            "bio": target.bio or "",
             "isFriend": False,
             "friendshipStatus": friendship_status,
             "friendshipId": friendship_id,
-            "friendCount": 0,
+            "friendCount": friend_count,
             "isOwnProfile": False,
-            "restricted": True,
+            "restricted": False,
         }
 
     # Full profile for friends and own profile
@@ -353,7 +431,7 @@ def create_wall_post(
     if wall_owner_id != user.id and not are_friends(db, user.id, wall_owner_id):
         raise HTTPException(403, "Solo puedes publicar en muros de amigos")
 
-    if not body.content.strip():
+    if not body.content.strip() and not body.image_url:
         raise HTTPException(400, "El contenido no puede estar vacío")
 
     # Basic moderation
@@ -361,6 +439,21 @@ def create_wall_post(
     mod = check_content(body.content)
     if not mod["allowed"]:
         raise HTTPException(400, f"Contenido bloqueado: {mod['reason']}")
+
+    # Track image storage usage (base64 images count against user storage)
+    if body.image_url and body.image_url.startswith("data:"):
+        image_size = len(body.image_url.encode('utf-8'))
+        current_used = getattr(user, 'storage_used_bytes', 0) or 0
+        storage_limit = getattr(user, 'storage_limit_bytes', 524288000) or 524288000
+        if current_used + image_size > storage_limit:
+            used_mb = round(current_used / 1048576, 1)
+            limit_mb = round(storage_limit / 1048576, 1)
+            raise HTTPException(
+                413,
+                f"Almacenamiento lleno ({used_mb}/{limit_mb} MB). "
+                "Actualiza a PRO para obtener más espacio."
+            )
+        user.storage_used_bytes = current_used + image_size
 
     post = WallPost(
         author_id=user.id,
@@ -377,6 +470,17 @@ def create_wall_post(
         wall_owner = db.query(User).filter(User.id == wall_owner_id).first()
         if wall_owner:
             notify_wall_post(db, wall_owner, user, body.content[:100])
+
+    # In-app notification
+    if post.author_id != post.wall_owner_id:
+        create_notification(db, wall_owner_id, "wall_post",
+            f"{user.first_name} publicó en tu muro",
+            body=body.content[:100], link=f"/user/{wall_owner_id}", actor_id=user.id, reference_id=post.id)
+        db.commit()
+
+    process_hashtags(db, body.content, post.id, "wall")
+    process_mentions(db, body.content, user.id, f"/user/{wall_owner_id}")
+    db.commit()
 
     author = db.query(User).filter(User.id == post.author_id).first()
     return {
@@ -425,6 +529,8 @@ def get_wall_posts(
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
+            "reactions": _get_reactions(db, post.id),
+            "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
             "createdAt": post.created_at.isoformat(),
         })
     return result
@@ -472,7 +578,60 @@ def toggle_like(
         like = PostLike(post_id=post_id, user_id=user.id)
         db.add(like)
         db.commit()
+        # In-app notification
+        if post.author_id != user.id:
+            create_notification(db, post.author_id, "like",
+                f"{user.first_name} le dio me gusta a tu publicación",
+                body=post.content[:80] if post.content else "", link=f"/user/{post.wall_owner_id}",
+                actor_id=user.id, reference_id=post.id)
+            db.commit()
         return {"liked": True}
+
+
+# ─── Reactions ────────────────────────────────────────────────
+
+def _get_reactions(db, post_id: str) -> dict:
+    """Get reaction counts grouped by type."""
+    from sqlalchemy import func as sqlfunc
+    results = db.query(PostReaction.reaction_type, sqlfunc.count(PostReaction.id)).filter(
+        PostReaction.post_id == post_id
+    ).group_by(PostReaction.reaction_type).all()
+    return {r_type: count for r_type, count in results}
+
+
+@router.post("/posts/{post_id}/react")
+def react_to_post(post_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """React to a post with different reaction types."""
+    reaction_type = data.get("reaction_type", "like")
+    valid_types = {"like", "love", "useful", "brilliant", "funny", "thinking"}
+    if reaction_type not in valid_types:
+        reaction_type = "like"
+
+    post = db.query(WallPost).filter(WallPost.id == post_id).first()
+    if not post:
+        raise HTTPException(404, "Post no encontrado")
+
+    existing = db.query(PostReaction).filter(
+        PostReaction.post_id == post_id, PostReaction.user_id == user.id
+    ).first()
+
+    if existing:
+        if existing.reaction_type == reaction_type:
+            db.delete(existing)
+            db.commit()
+            reactions = _get_reactions(db, post_id)
+            return {"reacted": False, "reactions": reactions, "userReaction": None}
+        else:
+            existing.reaction_type = reaction_type
+            db.commit()
+            reactions = _get_reactions(db, post_id)
+            return {"reacted": True, "reactions": reactions, "userReaction": reaction_type}
+    else:
+        reaction = PostReaction(id=gen_id(), post_id=post_id, user_id=user.id, reaction_type=reaction_type)
+        db.add(reaction)
+        db.commit()
+        reactions = _get_reactions(db, post_id)
+        return {"reacted": True, "reactions": reactions, "userReaction": reaction_type}
 
 
 # ─── Comments ──────────────────────────────────────────────────
@@ -504,6 +663,15 @@ def add_comment(
     db.add(comment)
     db.commit()
     db.refresh(comment)
+
+    # In-app notification
+    if post.author_id != user.id:
+        content = body.content.strip()
+        create_notification(db, post.author_id, "comment",
+            f"{user.first_name} comentó en tu publicación",
+            body=content[:100], link=f"/user/{post.wall_owner_id}",
+            actor_id=user.id, reference_id=post.id)
+        db.commit()
 
     author = db.query(User).filter(User.id == comment.author_id).first()
     return {
@@ -577,6 +745,8 @@ def get_feed(
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
+            "reactions": _get_reactions(db, post.id),
+            "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
             "createdAt": post.created_at.isoformat(),
         })
     return result
@@ -629,6 +799,8 @@ def get_activity_feed(
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
+            "reactions": _get_reactions(db, post.id),
+            "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
             "createdAt": post.created_at.isoformat(),
         })
 
@@ -773,22 +945,41 @@ def get_friend_suggestions(
     # Exclude self, friends, blocked, and pending
     exclude_ids = friend_ids | blocked_ids | pending_ids | {user.id}
 
-    # Get candidate users
-    candidates = db.query(User).filter(
-        User.id.notin_(exclude_ids),
-        User.is_banned == False,
-    ).limit(100).all()
+    # Get candidate users — prioritize same university, then others
+    same_uni_candidates = []
+    other_candidates = []
 
-    # Build friend sets for mutual friend calculation
-    def get_friend_set(uid: str) -> set:
-        fs = db.query(Friendship).filter(
-            Friendship.status == "accepted",
-            or_(Friendship.requester_id == uid, Friendship.addressee_id == uid),
-        ).all()
-        s = set()
-        for f in fs:
-            s.add(f.addressee_id if f.requester_id == uid else f.requester_id)
-        return s
+    if user.university:
+        same_uni_candidates = db.query(User).filter(
+            User.id.notin_(exclude_ids),
+            User.is_banned == False,
+            func.lower(User.university) == user.university.lower(),
+        ).limit(50).all()
+
+    other_candidates = db.query(User).filter(
+        User.id.notin_(exclude_ids | {c.id for c in same_uni_candidates}),
+        User.is_banned == False,
+    ).limit(50).all()
+
+    candidates = same_uni_candidates + other_candidates
+
+    # Preload all friendships for candidates in one query (avoid N+1)
+    candidate_ids = [c.id for c in candidates]
+    all_candidate_friendships = db.query(Friendship).filter(
+        Friendship.status == "accepted",
+        or_(
+            Friendship.requester_id.in_(candidate_ids),
+            Friendship.addressee_id.in_(candidate_ids),
+        ),
+    ).all()
+
+    # Build friend sets from preloaded data
+    candidate_friend_map: dict[str, set] = {cid: set() for cid in candidate_ids}
+    for f in all_candidate_friendships:
+        if f.requester_id in candidate_friend_map:
+            candidate_friend_map[f.requester_id].add(f.addressee_id)
+        if f.addressee_id in candidate_friend_map:
+            candidate_friend_map[f.addressee_id].add(f.requester_id)
 
     my_friends = friend_ids
 
@@ -797,26 +988,27 @@ def get_friend_suggestions(
         score = 0
         reasons = []
 
-        # Same university
+        # Same university (+30)
         if user.university and candidate.university and user.university.lower() == candidate.university.lower():
             score += 30
             reasons.append(f"Misma universidad: {candidate.university}")
 
-        # Same career
+        # Same career (+25)
         if user.career and candidate.career and user.career.lower() == candidate.career.lower():
             score += 25
             reasons.append(f"Misma carrera: {candidate.career}")
 
-        # Similar semester
+        # Similar semester — within 2 (+10), same semester (+15)
         if user.semester and candidate.semester:
             diff = abs(user.semester - candidate.semester)
-            if diff <= 2:
+            if diff == 0:
+                score += 15
+                reasons.append("Mismo semestre")
+            elif diff <= 2:
                 score += 10
-                if diff == 0:
-                    reasons.append("Mismo semestre")
 
-        # Mutual friends
-        candidate_friends = get_friend_set(candidate.id)
+        # Mutual friends (+15 each)
+        candidate_friends = candidate_friend_map.get(candidate.id, set())
         mutual = my_friends & candidate_friends
         mutual_count = len(mutual)
         if mutual_count > 0:
@@ -829,7 +1021,11 @@ def get_friend_suggestions(
         if candidate.bio:
             score += 3
 
-        if score > 0:
+        # Include everyone from same university even if score is low
+        if score > 0 or (user.university and candidate.university and user.university.lower() == candidate.university.lower()):
+            if score == 0:
+                score = 1  # Minimum score for same university with no other matches
+                reasons.append(f"Estudia en {candidate.university}")
             suggestions.append({
                 **user_brief(candidate),
                 "score": score,
@@ -837,6 +1033,334 @@ def get_friend_suggestions(
                 "mutualFriends": mutual_count,
             })
 
-    # Sort by score descending, take top 20
+    # Sort by score descending, take top 30
     suggestions.sort(key=lambda x: x["score"], reverse=True)
-    return suggestions[:20]
+    return suggestions[:30]
+
+
+# ─── Polls ──────────────────────────────────────────────────
+
+@router.post("/polls")
+def create_poll(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    question = data.get("question", "").strip()
+    options = data.get("options", [])
+    is_anonymous = data.get("is_anonymous", False)
+    expires_in_hours = data.get("expires_in_hours")
+    wall_post_id = data.get("wall_post_id")
+    community_post_id = data.get("community_post_id")
+
+    if not question or len(options) < 2:
+        raise HTTPException(400, "Se necesitan al menos 2 opciones")
+    if len(options) > 6:
+        raise HTTPException(400, "Máximo 6 opciones")
+
+    expires_at = None
+    if expires_in_hours:
+        from datetime import timedelta
+        expires_at = datetime.utcnow() + timedelta(hours=int(expires_in_hours))
+
+    from database import Poll, PollOption
+    poll = Poll(
+        id=gen_id(), author_id=user.id, question=question,
+        is_anonymous=is_anonymous, expires_at=expires_at,
+        wall_post_id=wall_post_id, community_post_id=community_post_id,
+    )
+    db.add(poll)
+
+    poll_options = []
+    for i, opt_text in enumerate(options):
+        opt = PollOption(id=gen_id(), poll_id=poll.id, text=opt_text.strip(), position=i)
+        db.add(opt)
+        poll_options.append(opt)
+
+    from gamification import award_xp
+    award_xp(user, 5, db)
+    db.commit()
+
+    return {
+        "id": poll.id, "question": poll.question,
+        "isAnonymous": poll.is_anonymous,
+        "expiresAt": poll.expires_at.isoformat() if poll.expires_at else None,
+        "totalVotes": 0,
+        "options": [{"id": o.id, "text": o.text, "voteCount": 0, "percentage": 0} for o in poll_options],
+        "userVoted": None,
+        "author": user_brief(user),
+        "createdAt": poll.created_at.isoformat(),
+    }
+
+
+@router.post("/polls/{poll_id}/vote")
+def vote_poll(poll_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import Poll, PollOption, PollVote
+    poll = db.query(Poll).filter(Poll.id == poll_id).first()
+    if not poll:
+        raise HTTPException(404, "Encuesta no encontrada")
+    if poll.expires_at and datetime.utcnow() > poll.expires_at:
+        raise HTTPException(400, "La encuesta ha expirado")
+
+    existing = db.query(PollVote).filter(PollVote.poll_id == poll_id, PollVote.user_id == user.id).first()
+    if existing:
+        raise HTTPException(400, "Ya votaste en esta encuesta")
+
+    option_id = data.get("option_id")
+    option = db.query(PollOption).filter(PollOption.id == option_id, PollOption.poll_id == poll_id).first()
+    if not option:
+        raise HTTPException(400, "Opción inválida")
+
+    vote = PollVote(id=gen_id(), poll_id=poll_id, option_id=option_id, user_id=user.id)
+    db.add(vote)
+    option.vote_count = (option.vote_count or 0) + 1
+    poll.total_votes = (poll.total_votes or 0) + 1
+
+    from gamification import award_xp
+    award_xp(user, 3, db)
+    db.commit()
+
+    # Return updated poll with results
+    options = db.query(PollOption).filter(PollOption.poll_id == poll_id).order_by(PollOption.position).all()
+    total = poll.total_votes or 1
+    return {
+        "id": poll.id, "totalVotes": poll.total_votes,
+        "options": [{"id": o.id, "text": o.text, "voteCount": o.vote_count or 0,
+                      "percentage": round(((o.vote_count or 0) / total) * 100)} for o in options],
+        "userVoted": option_id,
+    }
+
+
+@router.get("/polls/{poll_id}")
+def get_poll(poll_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import Poll, PollOption, PollVote
+    poll = db.query(Poll).filter(Poll.id == poll_id).first()
+    if not poll:
+        raise HTTPException(404, "Encuesta no encontrada")
+
+    options = db.query(PollOption).filter(PollOption.poll_id == poll_id).order_by(PollOption.position).all()
+    user_vote = db.query(PollVote).filter(PollVote.poll_id == poll_id, PollVote.user_id == user.id).first()
+    total = poll.total_votes or 1
+    author = db.query(User).filter(User.id == poll.author_id).first()
+
+    show_results = user_vote is not None or (poll.expires_at and datetime.utcnow() > poll.expires_at)
+
+    return {
+        "id": poll.id, "question": poll.question,
+        "isAnonymous": poll.is_anonymous,
+        "expiresAt": poll.expires_at.isoformat() if poll.expires_at else None,
+        "totalVotes": poll.total_votes or 0,
+        "options": [{
+            "id": o.id, "text": o.text,
+            "voteCount": (o.vote_count or 0) if show_results else None,
+            "percentage": round(((o.vote_count or 0) / total) * 100) if show_results else None,
+        } for o in options],
+        "userVoted": user_vote.option_id if user_vote else None,
+        "author": user_brief(author),
+        "createdAt": poll.created_at.isoformat() if poll.created_at else "",
+    }
+
+
+# ─── Hashtags ──────────────────────────────────────────────
+
+@router.get("/hashtags/trending")
+def trending_hashtags(db: Session = Depends(get_db)):
+    from database import Hashtag
+    from datetime import timedelta
+    week_ago = datetime.utcnow() - timedelta(days=7)
+    tags = db.query(Hashtag).filter(
+        Hashtag.last_used_at >= week_ago
+    ).order_by(desc(Hashtag.usage_count)).limit(10).all()
+    return [{"tag": t.tag, "count": t.usage_count or 0} for t in tags]
+
+
+@router.get("/hashtags/{tag}/posts")
+def posts_by_hashtag(tag: str, page: int = 1, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import Hashtag, PostHashtag
+    hashtag = db.query(Hashtag).filter(Hashtag.tag == tag.lower()).first()
+    if not hashtag:
+        return []
+
+    post_links = db.query(PostHashtag).filter(
+        PostHashtag.hashtag_id == hashtag.id, PostHashtag.post_type == "wall"
+    ).offset((page - 1) * 20).limit(20).all()
+
+    post_ids = [pl.post_id for pl in post_links]
+    if not post_ids:
+        return []
+
+    posts = db.query(WallPost).filter(WallPost.id.in_(post_ids)).order_by(desc(WallPost.created_at)).all()
+    authors = {u.id: u for u in db.query(User).filter(User.id.in_([p.author_id for p in posts])).all()}
+
+    return [{
+        "id": p.id, "content": p.content, "imageUrl": p.image_url,
+        "author": user_brief(authors.get(p.author_id)),
+        "createdAt": p.created_at.isoformat() if p.created_at else "",
+    } for p in posts]
+
+
+@router.get("/users/autocomplete")
+def autocomplete_users(q: str = "", db: Session = Depends(get_db)):
+    if len(q) < 1:
+        return []
+    users = db.query(User).filter(
+        User.username.ilike(f"{q}%")
+    ).limit(5).all()
+    return [user_brief(u) for u in users]
+
+
+# ─── Skills & Endorsements ──────────────────────────────────
+
+@router.post("/users/{user_id}/skills")
+def add_skill(user_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if user_id != user.id:
+        raise HTTPException(403, "Solo puedes agregar skills a tu perfil")
+    from database import UserSkill
+    skill_name = data.get("skill_name", "").strip()
+    if not skill_name:
+        raise HTTPException(400, "Nombre de habilidad requerido")
+    existing = db.query(UserSkill).filter(UserSkill.user_id == user.id, UserSkill.skill_name == skill_name).first()
+    if existing:
+        raise HTTPException(400, "Ya tienes esta habilidad")
+    skill = UserSkill(id=gen_id(), user_id=user.id, skill_name=skill_name)
+    db.add(skill)
+    db.commit()
+    return {"id": skill.id, "skillName": skill.skill_name, "endorsementCount": 0}
+
+
+@router.delete("/skills/{skill_id}")
+def remove_skill(skill_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserSkill, SkillEndorsement
+    skill = db.query(UserSkill).filter(UserSkill.id == skill_id, UserSkill.user_id == user.id).first()
+    if not skill:
+        raise HTTPException(404, "Habilidad no encontrada")
+    db.query(SkillEndorsement).filter(SkillEndorsement.skill_id == skill_id).delete(synchronize_session=False)
+    db.delete(skill)
+    db.commit()
+    return {"status": "deleted"}
+
+
+@router.get("/users/{user_id}/skills")
+def get_skills(user_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserSkill, SkillEndorsement
+    skills = db.query(UserSkill).filter(UserSkill.user_id == user_id).order_by(desc(UserSkill.endorsement_count)).all()
+    result = []
+    for s in skills:
+        endorsed = db.query(SkillEndorsement).filter(
+            SkillEndorsement.skill_id == s.id, SkillEndorsement.endorser_id == user.id
+        ).first() is not None
+        result.append({
+            "id": s.id, "skillName": s.skill_name,
+            "endorsementCount": s.endorsement_count or 0,
+            "endorsed": endorsed,
+        })
+    return result
+
+
+@router.post("/skills/{skill_id}/endorse")
+def toggle_endorsement(skill_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserSkill, SkillEndorsement
+    skill = db.query(UserSkill).filter(UserSkill.id == skill_id).first()
+    if not skill:
+        raise HTTPException(404, "Habilidad no encontrada")
+    if skill.user_id == user.id:
+        raise HTTPException(400, "No puedes validar tus propias habilidades")
+
+    existing = db.query(SkillEndorsement).filter(
+        SkillEndorsement.skill_id == skill_id, SkillEndorsement.endorser_id == user.id
+    ).first()
+    if existing:
+        db.delete(existing)
+        skill.endorsement_count = max(0, (skill.endorsement_count or 1) - 1)
+    else:
+        endorsement = SkillEndorsement(id=gen_id(), skill_id=skill_id, endorser_id=user.id)
+        db.add(endorsement)
+        skill.endorsement_count = (skill.endorsement_count or 0) + 1
+        from gamification import award_xp
+        award_xp(user, 5, db)
+        from notification_routes import create_notification
+        create_notification(db, skill.user_id, "endorsement",
+            f"{user.first_name} validó tu habilidad: {skill.skill_name}",
+            link=f"/user/{skill.user_id}", actor_id=user.id)
+    db.commit()
+    return {"endorsed": existing is None, "endorsementCount": skill.endorsement_count}
+
+
+# ─── Bookmarks ──────────────────────────────────────────────
+
+@router.post("/posts/{post_id}/bookmark")
+def toggle_bookmark(post_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import PostBookmark
+    existing = db.query(PostBookmark).filter(
+        PostBookmark.user_id == user.id, PostBookmark.post_id == post_id
+    ).first()
+    if existing:
+        db.delete(existing)
+        db.commit()
+        return {"bookmarked": False}
+    else:
+        bookmark = PostBookmark(id=gen_id(), user_id=user.id, post_id=post_id, post_type="wall")
+        db.add(bookmark)
+        db.commit()
+        return {"bookmarked": True}
+
+
+@router.get("/bookmarks")
+def get_bookmarks(page: int = 1, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import PostBookmark, WallPost
+    bookmarks = db.query(PostBookmark).filter(
+        PostBookmark.user_id == user.id
+    ).order_by(desc(PostBookmark.created_at)).offset((page-1)*20).limit(20).all()
+
+    post_ids = [b.post_id for b in bookmarks]
+    if not post_ids:
+        return []
+
+    posts = db.query(WallPost).filter(WallPost.id.in_(post_ids)).all()
+    authors = {u.id: u for u in db.query(User).filter(User.id.in_([p.author_id for p in posts])).all()}
+    posts_map = {p.id: p for p in posts}
+
+    result = []
+    for b in bookmarks:
+        p = posts_map.get(b.post_id)
+        if not p:
+            continue
+        author = authors.get(p.author_id)
+        result.append({
+            "id": p.id, "content": p.content, "imageUrl": p.image_url,
+            "author": user_brief(author) if author else None,
+            "createdAt": p.created_at.isoformat() if p.created_at else "",
+            "bookmarkedAt": b.created_at.isoformat() if b.created_at else "",
+        })
+    return result
+
+
+# ─── Share / Repost ─────────────────────────────────────────
+
+@router.post("/posts/{post_id}/share")
+def share_post(post_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import PostShare
+    original = db.query(WallPost).filter(WallPost.id == post_id).first()
+    if not original:
+        raise HTTPException(404, "Post no encontrado")
+
+    comment = data.get("comment", "").strip()
+
+    # Create share record
+    share = PostShare(id=gen_id(), user_id=user.id, original_post_id=post_id, comment=comment)
+    db.add(share)
+
+    # Create wall post with reference
+    content = f"\U0001f4e2 Compartido\n\n{comment}" if comment else "\U0001f4e2 Compartido"
+    shared_post = WallPost(
+        id=gen_id(), author_id=user.id, wall_owner_id=user.id, content=content,
+    )
+    db.add(shared_post)
+
+    # Notify original author
+    if original.author_id != user.id:
+        from notification_routes import create_notification
+        create_notification(db, original.author_id, "share",
+            f"{user.first_name} compartió tu publicación",
+            link=f"/user/{user.id}", actor_id=user.id, reference_id=post_id)
+
+    from gamification import award_xp
+    award_xp(user, 3, db)
+    db.commit()
+    return {"status": "shared", "postId": shared_post.id}

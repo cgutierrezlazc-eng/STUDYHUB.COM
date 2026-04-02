@@ -15,103 +15,87 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const { user } = useAuth()
   const { t } = useI18n()
 
-  const initials = user
-    ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase()
-    : '?'
+  const isActive = (path: string) => {
+    if (path === '/') return currentPath === '/' || currentPath === '/feed'
+    return currentPath.startsWith(path)
+  }
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-header">
-        <h1 className="sidebar-brand">Conniku</h1>
+    <nav className="sidebar">
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Social</div>
+        <button className={`nav-item ${isActive('/') ? 'active' : ''}`} onClick={() => onNavigate('/')}>
+          <span className="nav-item-icon">🏠</span> Inicio
+        </button>
+        <button className={`nav-item ${currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate(user ? `/user/${user.id}` : '/')}>
+          <span className="nav-item-icon">👤</span> Mi Perfil
+        </button>
+        <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
+          <span className="nav-item-icon">👥</span> Comunidad
+        </button>
+        <button className={`nav-item ${isActive('/communities') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
+          <span className="nav-item-icon">🏘️</span> Comunidades
+        </button>
+        <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
+          <span className="nav-item-icon">📅</span> Eventos
+        </button>
+        <button className={`nav-item ${isActive('/mentorship') ? 'active' : ''}`} onClick={() => onNavigate('/mentorship')}>
+          <span className="nav-item-icon">🧭</span> Mentoría
+        </button>
+        <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
+          <span className="nav-item-icon">💬</span> Mensajes
+        </button>
       </div>
 
-      <nav className="sidebar-nav">
-        <button className={`nav-item ${currentPath === '/' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
-          <span className="nav-item-icon">👤</span>
-          Mi Perfil
-        </button>
-
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Académico</div>
         <button className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`} onClick={() => onNavigate('/dashboard')}>
-          <span className="nav-item-icon">🏠</span>
-          {t('nav.dashboard')}
+          <span className="nav-item-icon">📊</span> Dashboard
         </button>
-
-        <button className={`nav-item ${currentPath.startsWith('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
-          <span className="nav-item-icon">💬</span>
-          {t('nav.messages')}
+        <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
+          <span className="nav-item-icon">📚</span> Salas de Estudio
         </button>
-
-        <button className={`nav-item ${currentPath.startsWith('/friends') || currentPath.startsWith('/user/') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
-          <span className="nav-item-icon">👥</span>
-          Comunidad
+        <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
+          <span className="nav-item-icon">📅</span> Calendario
         </button>
+        <button className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`} onClick={() => onNavigate('/marketplace')}>
+          <span className="nav-item-icon">📚</span> Apuntes
+        </button>
+        <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
+          <span className="nav-item-icon">💼</span> Oportunidades
+        </button>
+        <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
+          <span className="nav-item-icon">🌱</span> Desarrollo Integral
+        </button>
+      </div>
 
-        <div className="nav-section-title">{t('nav.mySubjects')}</div>
-
+      <div className="sidebar-section sidebar-section-grow">
+        <div className="sidebar-section-title">{t('nav.mySubjects')}</div>
         {projects.map(project => (
           <button key={project.id} className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`} onClick={() => onNavigate(`/project/${project.id}`)}>
             <span className="project-dot" style={{ background: project.color }} />
             {project.name}
           </button>
         ))}
-
-        <button className="nav-item" onClick={onNewProject}>
-          <span className="nav-item-icon">+</span>
-          {t('nav.newSubject')}
-        </button>
-
-        <div className="nav-section-title" style={{ marginTop: 16 }}>{t('nav.support')}</div>
-
-        <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
-          <span className="nav-item-icon">💎</span>
-          Suscripción
-        </button>
-
-        <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
-          <span className="nav-item-icon">💡</span>
-          {t('nav.suggestions')}
-        </button>
-
-        {user?.isAdmin && (
-          <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
-            <span className="nav-item-icon">⚙️</span>
-            {t('nav.admin')}
-          </button>
-        )}
-      </nav>
-
-      {/* User section */}
-      <div className="sidebar-user" onClick={() => onNavigate('/')}>
-        {user?.avatar ? (
-          <img src={user.avatar} alt="" className="sidebar-user-avatar" />
-        ) : (
-          <div className="sidebar-user-initials">{initials}</div>
-        )}
-        <div className="sidebar-user-info">
-          <span className="sidebar-user-name">{user?.firstName} {user?.lastName}</span>
-          <span className="sidebar-user-email">@{user?.username} #{String(user?.userNumber || 0).padStart(4, '0')}</span>
-        </div>
-        <button
-          className="sidebar-settings-btn"
-          title="Settings"
-          onClick={(e) => { e.stopPropagation(); onNavigate('/profile') }}
-          style={{
-            marginLeft: 'auto',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: 18,
-            padding: '4px 6px',
-            borderRadius: 6,
-            color: 'var(--text-secondary)',
-            transition: 'background 0.15s, color 0.15s',
-          }}
-          onMouseEnter={(e) => { (e.target as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.target as HTMLElement).style.color = 'var(--text-primary)' }}
-          onMouseLeave={(e) => { (e.target as HTMLElement).style.background = 'none'; (e.target as HTMLElement).style.color = 'var(--text-secondary)' }}
-        >
-          &#9881;
+        <button className="nav-item nav-item-add" onClick={onNewProject}>
+          <span className="nav-item-icon">+</span> {t('nav.newSubject')}
         </button>
       </div>
-    </div>
+
+      <div className="sidebar-section">
+        <div className="sidebar-section-title">Soporte</div>
+        <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
+          <span className="nav-item-icon">💎</span> Suscripción
+        </button>
+        <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
+          <span className="nav-item-icon">💡</span> Sugerencias
+        </button>
+        {user?.isAdmin && (
+          <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
+            <span className="nav-item-icon">⚙️</span> Admin
+          </button>
+        )}
+      </div>
+    </nav>
   )
 }

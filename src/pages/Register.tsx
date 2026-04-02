@@ -97,7 +97,9 @@ export default function Register({ onSwitchToLogin }: Props) {
     if (step === 0) {
       if (!form.email.trim()) { setError(t('err.invalidEmail')); return false }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError(t('err.invalidEmail')); return false }
-      if (form.password.length < 6) { setError(t('err.shortPassword')); return false }
+      if (form.password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return false }
+      if (!/[A-Z]/.test(form.password)) { setError('La contraseña debe incluir al menos una mayúscula'); return false }
+      if (!/[0-9]/.test(form.password)) { setError('La contraseña debe incluir al menos un número'); return false }
       if (form.password !== form.confirmPassword) { setError(t('err.passwordMismatch')); return false }
     }
     if (step === 1) {
@@ -107,6 +109,10 @@ export default function Register({ onSwitchToLogin }: Props) {
       if (calculateAge(form.birthDate) < 18) { setError(t('err.under18')); return false }
     }
     if (step === 2) {
+      if (!form.username.trim()) { setError('Debes elegir un nombre de usuario'); return false }
+      if (form.username.length < 3 || form.username.length > 30) { setError('El usuario debe tener entre 3 y 30 caracteres'); return false }
+      if (!/^[a-z0-9._]+$/.test(form.username)) { setError('Solo letras minúsculas, números, puntos y guiones bajos'); return false }
+      if (usernameAvailable === false) { setError('Este nombre de usuario ya está en uso'); return false }
       if (!form.university.trim()) { setError(t('err.enterUniversity')); return false }
       if (!form.career.trim()) { setError(t('err.enterCareer')); return false }
       if (!form.tosAccepted) { setError(t('err.acceptTOS')); return false }
@@ -329,8 +335,30 @@ export default function Register({ onSwitchToLogin }: Props) {
           {step === 2 && (
             <>
               <div className="auth-field">
+                <label>Nombre de usuario *</label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15 }}>@</span>
+                  <input
+                    placeholder="tu.usuario"
+                    value={form.username}
+                    onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
+                    style={{ paddingLeft: 32 }}
+                    autoFocus
+                    maxLength={30}
+                  />
+                  {form.username.length >= 3 && (
+                    <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>
+                      {checkingUsername ? '...' : usernameAvailable === true ? '✓' : usernameAvailable === false ? '✗ En uso' : ''}
+                    </span>
+                  )}
+                </div>
+                <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                  Este será tu identificador único. Solo letras, números, puntos y guiones bajos.
+                </small>
+              </div>
+              <div className="auth-field">
                 <label>{t('reg.university')}</label>
-                <input placeholder={t('reg.universityPlaceholder')} value={form.university} onChange={e => update('university', e.target.value)} autoFocus />
+                <input placeholder={t('reg.universityPlaceholder')} value={form.university} onChange={e => update('university', e.target.value)} />
               </div>
               <div className="auth-field">
                 <label>{t('reg.career')}</label>

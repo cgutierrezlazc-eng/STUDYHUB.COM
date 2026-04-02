@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import { useAuth } from '../services/auth'
-import { useI18n } from '../services/i18n'
+import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
 import { LanguageSkill } from '../types'
 
@@ -277,10 +277,10 @@ export default function Profile() {
                 <p className="pf-hint">Elige la apariencia que prefieras para Conniku</p>
                 <div className="theme-selector">
                   {([
-                    { id: 'nocturno', name: 'Claro', desc: 'Limpio y profesional', colors: ['#f4f2ee', '#0a66c2', '#191919'] },
-                    { id: 'calido', name: 'Cálido', desc: 'Tonos tierra', colors: ['#150f0b', '#d4915e', '#f0e6d8'] },
-                    { id: 'profesional', name: 'Profesional', desc: 'Azul corporativo', colors: ['#0b1120', '#3b82f6', '#f1f5f9'] },
-                    { id: 'vibrante', name: 'Vibrante', desc: 'Claro y vivo', colors: ['#f7f5f2', '#5b5bd6', '#1a1a2e'] },
+                    { id: 'nocturno', name: '☀️ Sereno', desc: 'Cálido y profesional', colors: ['#F5F3EF', '#2563EB', '#1D2939'] },
+                    { id: 'calido', name: '🌙 Noche Calma', desc: 'Oscuro y suave', colors: ['#111318', '#60A5FA', '#ECECEF'] },
+                    { id: 'profesional', name: '🌿 Bosque', desc: 'Verde y natural', colors: ['#F2F5F0', '#16A34A', '#1A2E1A'] },
+                    { id: 'vibrante', name: '🌊 Océano', desc: 'Azul profundo', colors: ['#0F172A', '#38BDF8', '#F1F5F9'] },
                   ] as const).map(theme => (
                     <button key={theme.id} className={`theme-card ${(user.theme || 'nocturno') === theme.id ? 'active' : ''}`}
                       onClick={() => {
@@ -296,6 +296,57 @@ export default function Profile() {
                     </button>
                   ))}
                 </div>
+
+                <div className="pf-divider" />
+
+                <h3>Idioma de la Plataforma</h3>
+                <p className="pf-hint">Elige el idioma en que Conniku se comunica contigo</p>
+                <select
+                  value={user.platformLanguage || user.language || 'es'}
+                  onChange={e => updateProfile({ platformLanguage: e.target.value } as any)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14, marginBottom: 16 }}
+                >
+                  {LANGUAGES.map(l => (
+                    <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+                  ))}
+                </select>
+
+                <h3>Idiomas Adicionales</h3>
+                <p className="pf-hint">Selecciona hasta 3 idiomas adicionales que hablas. Conniku adaptará el contenido y las interacciones.</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+                  {LANGUAGES.filter(l => l.code !== (user.platformLanguage || user.language || 'es')).map(l => {
+                    const selected = (user.secondaryLanguages || []).includes(l.code)
+                    return (
+                      <button
+                        key={l.code}
+                        onClick={() => {
+                          const current = user.secondaryLanguages || []
+                          let updated: string[]
+                          if (selected) {
+                            updated = current.filter((c: string) => c !== l.code)
+                          } else if (current.length < 3) {
+                            updated = [...current, l.code]
+                          } else {
+                            return
+                          }
+                          updateProfile({ secondaryLanguages: updated } as any)
+                        }}
+                        style={{
+                          padding: '6px 12px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
+                          border: selected ? '2px solid var(--accent)' : '1px solid var(--border)',
+                          background: selected ? 'rgba(37,99,235,0.08)' : 'var(--bg-secondary)',
+                          color: selected ? 'var(--accent)' : 'var(--text-secondary)',
+                          fontWeight: selected ? 600 : 400,
+                        }}
+                      >
+                        {l.flag} {l.name} {selected && '✓'}
+                      </button>
+                    )
+                  })}
+                </div>
+                {(user.secondaryLanguages || []).length >= 3 && (
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Máximo 3 idiomas adicionales seleccionados</p>
+                )}
               </div>
             )}
 
@@ -367,7 +418,10 @@ export default function Profile() {
                   <button className="btn btn-danger btn-sm" onClick={() => {
                     if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es IRREVERSIBLE.')) {
                       if (confirm('ÚLTIMA CONFIRMACIÓN: Todos tus datos serán eliminados permanentemente. ¿Continuar?')) {
-                        alert('Funcionalidad de eliminación de cuenta próximamente. Contacta soporte@conniku.com')
+                        api.deleteAccount().then(() => {
+                          alert('Tu cuenta ha sido eliminada. Serás redirigido.')
+                          logout()
+                        }).catch((err: any) => alert(err.message || 'Error al eliminar cuenta'))
                       }
                     }
                   }}>

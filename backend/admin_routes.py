@@ -307,30 +307,32 @@ def admin_blocked_users(
 # ─── Admin Promote / Demote ───────────────────────────────────
 
 @router.post("/users/{user_id}/make-admin")
-def make_admin(user_id: str, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+def make_admin(user_id: str, owner: User = Depends(require_owner), db: Session = Depends(get_db)):
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(404, "Usuario no encontrado")
 
     target.is_admin = True
+    target.role = "admin"
     db.add(ModerationLog(
-        id=gen_id(), user_id=user_id, action="make_admin", admin_id=admin.id,
+        id=gen_id(), user_id=user_id, action="make_admin", admin_id=owner.id,
     ))
     db.commit()
     return {"isAdmin": True}
 
 
 @router.post("/users/{user_id}/remove-admin")
-def remove_admin(user_id: str, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+def remove_admin(user_id: str, owner: User = Depends(require_owner), db: Session = Depends(get_db)):
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
         raise HTTPException(404, "Usuario no encontrado")
-    if target.id == admin.id:
-        raise HTTPException(400, "No puedes quitarte el admin a ti mismo")
+    if target.role == "owner":
+        raise HTTPException(400, "No se puede remover al propietario")
 
     target.is_admin = False
+    target.role = "user"
     db.add(ModerationLog(
-        id=gen_id(), user_id=user_id, action="remove_admin", admin_id=admin.id,
+        id=gen_id(), user_id=user_id, action="remove_admin", admin_id=owner.id,
     ))
     db.commit()
     return {"isAdmin": False}

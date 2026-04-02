@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: studyhub-api
+    name: conniku-api
     runtime: python
     rootDir: backend
     buildCommand: pip install -r requirements.txt

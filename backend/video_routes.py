@@ -91,6 +91,25 @@ def process_video_transcription(video_doc_id: str, file_path: Optional[str] = No
         db.close()
 
 
+def _verify_project_access(project_id: str, user: User, db: Session):
+    """Verify the user owns the project or has a video already linked to it."""
+    import json
+    from pathlib import Path
+    meta_file = Path.home() / ".conniku" / "projects" / project_id / "meta.json"
+    if meta_file.exists():
+        meta = json.loads(meta_file.read_text())
+        if meta.get("user_id") != user.id:
+            raise HTTPException(403, "No tienes acceso a este proyecto")
+    else:
+        # If no meta file, check if user has any video in this project
+        existing = db.query(VideoDocument).filter(
+            VideoDocument.project_id == project_id,
+            VideoDocument.user_id == user.id,
+        ).first()
+        if not existing:
+            raise HTTPException(403, "No tienes acceso a este proyecto")
+
+
 @router.post("/projects/{project_id}/video/youtube")
 def add_youtube_video(
     project_id: str,
@@ -99,6 +118,8 @@ def add_youtube_video(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    _verify_project_access(project_id, user, db)
+
     video_id = extract_youtube_id(body.url)
     if not video_id:
         raise HTTPException(400, "URL de YouTube no válida")
@@ -137,6 +158,8 @@ async def upload_video(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    _verify_project_access(project_id, user, db)
+
     if not file.filename:
         raise HTTPException(400, "No se proporcionó archivo")
 

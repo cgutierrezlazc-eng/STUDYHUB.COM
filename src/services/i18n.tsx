@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { Language, Gender } from '../types'
 
-const translations: Record<Language, Record<string, string>> = {
+const translations: Partial<Record<Language, Record<string, string>>> = {
   es: {
     // Nav
     'nav.dashboard': 'Dashboard',
@@ -738,16 +738,18 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | null>(null)
 
+const ALL_LANG_CODES = ['es','en','pt','fr','de','it','zh','ja','ko','ar','ru','hi','tr','nl','pl','sv','da','no','fi','el','he','th','vi','id','ms','tl','uk','cs','ro','hu','ca','hr','bg','sk','sl','lt','lv','et','sw','bn']
+
 function detectBrowserLanguage(): Language {
   const browserLang = navigator.language?.slice(0, 2) || 'es'
-  if (['es', 'en', 'pt', 'fr'].includes(browserLang)) return browserLang as Language
+  if (ALL_LANG_CODES.includes(browserLang)) return browserLang as Language
   return 'es'
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     const saved = localStorage.getItem('conniku_language')
-    if (saved && ['es', 'en', 'pt', 'fr'].includes(saved)) return saved as Language
+    if (saved && ALL_LANG_CODES.includes(saved)) return saved as Language
     return detectBrowserLanguage()
   })
 
@@ -757,7 +759,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }
 
   const t = (key: string): string => {
-    return translations[lang]?.[key] || translations.es[key] || key
+    return translations[lang]?.[key] || translations['en']?.[key] || translations['es']?.[key] || key
   }
 
   return (
@@ -773,9 +775,45 @@ export function useI18n() {
   return ctx
 }
 
-export const LANGUAGES: { code: Language; flag: string; name: string }[] = [
-  { code: 'es', flag: '🇪🇸', name: 'Español' },
-  { code: 'en', flag: '🇺🇸', name: 'English' },
-  { code: 'pt', flag: '🇧🇷', name: 'Português' },
-  { code: 'fr', flag: '🇫🇷', name: 'Français' },
-]
+export const LANGUAGES = [
+  { code: 'es', name: 'Español', flag: '🇪🇸' },
+  { code: 'en', name: 'English', flag: '🇺🇸' },
+  { code: 'pt', name: 'Português', flag: '🇧🇷' },
+  { code: 'fr', name: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'Deutsch', flag: '🇩🇪' },
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'zh', name: '中文', flag: '🇨🇳' },
+  { code: 'ja', name: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: '한국어', flag: '🇰🇷' },
+  { code: 'ar', name: 'العربية', flag: '🇸🇦' },
+  { code: 'ru', name: 'Русский', flag: '🇷🇺' },
+  { code: 'hi', name: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'tr', name: 'Türkçe', flag: '🇹🇷' },
+  { code: 'nl', name: 'Nederlands', flag: '🇳🇱' },
+  { code: 'pl', name: 'Polski', flag: '🇵🇱' },
+  { code: 'sv', name: 'Svenska', flag: '🇸🇪' },
+  { code: 'da', name: 'Dansk', flag: '🇩🇰' },
+  { code: 'no', name: 'Norsk', flag: '🇳🇴' },
+  { code: 'fi', name: 'Suomi', flag: '🇫🇮' },
+  { code: 'el', name: 'Ελληνικά', flag: '🇬🇷' },
+  { code: 'he', name: 'עברית', flag: '🇮🇱' },
+  { code: 'th', name: 'ไทย', flag: '🇹🇭' },
+  { code: 'vi', name: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'id', name: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'ms', name: 'Bahasa Melayu', flag: '🇲🇾' },
+  { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
+  { code: 'uk', name: 'Українська', flag: '🇺🇦' },
+  { code: 'cs', name: 'Čeština', flag: '🇨🇿' },
+  { code: 'ro', name: 'Română', flag: '🇷🇴' },
+  { code: 'hu', name: 'Magyar', flag: '🇭🇺' },
+  { code: 'ca', name: 'Català', flag: '🏳️' },
+  { code: 'hr', name: 'Hrvatski', flag: '🇭🇷' },
+  { code: 'bg', name: 'Български', flag: '🇧🇬' },
+  { code: 'sk', name: 'Slovenčina', flag: '🇸🇰' },
+  { code: 'sl', name: 'Slovenščina', flag: '🇸🇮' },
+  { code: 'lt', name: 'Lietuvių', flag: '🇱🇹' },
+  { code: 'lv', name: 'Latviešu', flag: '🇱🇻' },
+  { code: 'et', name: 'Eesti', flag: '🇪🇪' },
+  { code: 'sw', name: 'Kiswahili', flag: '🇰🇪' },
+  { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
+] as const

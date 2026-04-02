@@ -296,6 +296,21 @@ def send_message(
     if not moderation["allowed"]:
         raise HTTPException(400, f"Contenido no permitido: {moderation['reason']}")
 
+    # Track storage for document/photo/audio attachments (base64 data URLs)
+    if req.document_path and req.document_path.startswith("data:"):
+        attachment_size = len(req.document_path.encode('utf-8'))
+        current_used = getattr(user, 'storage_used_bytes', 0) or 0
+        storage_limit = getattr(user, 'storage_limit_bytes', 524288000) or 524288000
+        if current_used + attachment_size > storage_limit:
+            used_mb = round(current_used / 1048576, 1)
+            limit_mb = round(storage_limit / 1048576, 1)
+            raise HTTPException(
+                413,
+                f"Almacenamiento lleno ({used_mb}/{limit_mb} MB). "
+                "Actualiza a PRO para obtener más espacio."
+            )
+        user.storage_used_bytes = current_used + attachment_size
+
     msg = Message(
         id=gen_id(),
         conversation_id=conv_id,

@@ -10,7 +10,7 @@ interface Props {
 export default function Friends({ onNavigate }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
-  const [tab, setTab] = useState<'friends' | 'requests' | 'search'>('friends')
+  const [tab, setTab] = useState<'friends' | 'requests' | 'sent' | 'search'>('friends')
   const [friends, setFriends] = useState<any[]>([])
   const [requests, setRequests] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState('')
@@ -43,7 +43,9 @@ export default function Friends({ onNavigate }: Props) {
       await api.sendFriendRequest(userId)
       loadSentRequests()
       setSearchResults(prev => prev.map(u => u.id === userId ? { ...u, requestSent: true } : u))
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar solicitud')
+    }
   }
 
   const handleAccept = async (requestId: string) => {
@@ -51,21 +53,27 @@ export default function Friends({ onNavigate }: Props) {
       await api.acceptFriendRequest(requestId)
       loadFriends()
       loadRequests()
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al aceptar solicitud')
+    }
   }
 
   const handleReject = async (requestId: string) => {
     try {
       await api.rejectFriendRequest(requestId)
       loadRequests()
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al rechazar solicitud')
+    }
   }
 
   const handleUnfriend = async (userId: string) => {
     try {
       await api.unfriend(userId)
       loadFriends()
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al eliminar amigo')
+    }
   }
 
   const sentIds = sentRequests.map(r => r.user.id)
@@ -83,6 +91,9 @@ export default function Friends({ onNavigate }: Props) {
           </button>
           <button className={`friends-tab ${tab === 'requests' ? 'active' : ''}`} onClick={() => setTab('requests')}>
             Solicitudes {requests.length > 0 && <span className="badge badge-red">{requests.length}</span>}
+          </button>
+          <button className={`friends-tab ${tab === 'sent' ? 'active' : ''}`} onClick={() => setTab('sent')}>
+            Enviadas {sentRequests.length > 0 && <span className="badge">{sentRequests.length}</span>}
           </button>
           <button className={`friends-tab ${tab === 'search' ? 'active' : ''}`} onClick={() => setTab('search')}>
             Buscar Estudiantes
@@ -192,6 +203,42 @@ export default function Friends({ onNavigate }: Props) {
                   <div className="friend-actions">
                     <button className="btn btn-primary btn-xs" onClick={() => handleAccept(req.id)}>Aceptar</button>
                     <button className="btn btn-secondary btn-xs" onClick={() => handleReject(req.id)}>Rechazar</button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
+        {tab === 'sent' && (
+          <div className="friends-grid">
+            {sentRequests.length === 0 ? (
+              <div className="friends-empty">
+                <div style={{ fontSize: 48 }}>📤</div>
+                <h3>No has enviado solicitudes</h3>
+                <p>Busca compañeros y enviales una solicitud de amistad</p>
+                <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
+              </div>
+            ) : (
+              sentRequests.map(req => (
+                <div key={req.id} className="friend-card card" onClick={() => onNavigate(`/user/${req.user.id}`)}>
+                  <div className="friend-avatar">
+                    {req.user.avatar ? (
+                      <img src={req.user.avatar} alt="" />
+                    ) : (
+                      <div className="friend-initials">{(req.user.firstName?.[0] || '') + (req.user.lastName?.[0] || '')}</div>
+                    )}
+                  </div>
+                  <div className="friend-info">
+                    <h4>{req.user.firstName} {req.user.lastName}</h4>
+                    <span className="friend-username">@{req.user.username}</span>
+                    <p className="friend-meta">{req.user.career}</p>
+                    <p className="friend-meta">{req.user.university}</p>
+                  </div>
+                  <div className="friend-actions" onClick={e => e.stopPropagation()}>
+                    <span className="badge" style={{ background: 'var(--accent-blue)', color: '#fff', padding: '6px 14px', borderRadius: 20, fontSize: 12 }}>
+                      ⏳ Invitación Enviada
+                    </span>
                   </div>
                 </div>
               ))

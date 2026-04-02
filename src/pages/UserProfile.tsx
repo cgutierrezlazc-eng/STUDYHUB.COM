@@ -46,7 +46,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   }
 
   const loadFriends = async () => {
-    try { setFriendsList(await api.getFriends()) } catch {}
+    try { setFriendsList(await api.getUserFriends(userId)) } catch {}
   }
 
   const loadActivityFeed = async () => {
@@ -62,7 +62,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setNewPost('')
       setPostImage(null)
       loadPosts()
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al publicar')
+    }
   }
 
   const handleLike = async (postId: string) => {
@@ -71,7 +73,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setPosts(prev => prev.map(p => p.id === postId ? {
         ...p, liked: result.liked, likes: result.liked ? p.likes + 1 : p.likes - 1
       } : p))
-    } catch {}
+    } catch (err: any) {
+      console.error('Error toggling like:', err)
+    }
   }
 
   const handleComment = async (postId: string) => {
@@ -82,7 +86,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), comment] }))
       setCommentText(prev => ({ ...prev, [postId]: '' }))
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, commentCount: p.commentCount + 1 } : p))
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al comentar')
+    }
   }
 
   const toggleComments = async (postId: string) => {
@@ -121,7 +127,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       await api.blockUser(userId)
       setShowMoreMenu(false)
       onNavigate('/friends')
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al bloquear usuario')
+    }
   }
 
   const handleReport = async () => {
@@ -131,7 +139,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setShowReportModal(false)
       setReportReason('')
       alert('Reporte enviado. Nuestro equipo lo revisará.')
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar reporte')
+    }
   }
 
   const handlePostImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -168,7 +178,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     try {
       await api.deleteWallPost(postId)
       setPosts(prev => prev.filter(p => p.id !== postId))
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al eliminar publicación')
+    }
   }
 
   const handleSaveBio = async () => {
@@ -176,44 +188,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       await updateProfile({ bio: bioText } as any)
       setProfile((prev: any) => ({ ...prev, bio: bioText }))
       setEditingBio(false)
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar biografía')
+    }
   }
 
   if (loading) return <div className="page-body"><div className="loading-dots"><span /><span /><span /></div></div>
   if (!profile) return <div className="page-body"><div className="empty-state"><h3>Usuario no encontrado</h3></div></div>
-
-  // Restricted profile for non-friends
-  if (profile.restricted && !profile.isOwnProfile) {
-    return (
-      <div className="fb-profile-page">
-        <div className="fb-cover-section">
-          <div className="fb-cover-photo" style={{ backgroundColor: 'var(--bg-hover)' }} />
-        </div>
-        <div className="fb-profile-photo-section">
-          <div className="fb-profile-photo">
-            {profile.avatar ? <img src={profile.avatar} alt="" /> : (
-              <div className="fb-profile-initials">{`${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase()}</div>
-            )}
-          </div>
-          <div className="fb-profile-name-section">
-            <h1>{profile.firstName} {profile.lastName}</h1>
-            <span>@{profile.username} #{String(profile.userNumber).padStart(4, '0')}</span>
-            {profile.university && <span style={{ marginLeft: 12, color: 'var(--text-muted)' }}>{profile.university}</span>}
-          </div>
-        </div>
-        <div style={{ padding: '40px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>🔒</div>
-          <h3 style={{ marginBottom: 8 }}>Perfil privado</h3>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 20 }}>Agrega a {profile.firstName} como amigo para ver su perfil completo, publicaciones y fotos.</p>
-          {profile.friendshipStatus === 'pending' ? (
-            <button className="btn btn-secondary" disabled>Solicitud enviada</button>
-          ) : (
-            <button className="btn btn-primary" onClick={handleFriendAction}>+ Agregar Amigo</button>
-          )}
-        </div>
-      </div>
-    )
-  }
 
   const isOwn = profile.isOwnProfile
   const canPost = isOwn || profile.isFriend
@@ -287,16 +268,27 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
               {/* Action buttons */}
               {!isOwn && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
                   {profile.isFriend ? (
                     <>
-                      <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }}>✓ Amigos</button>
+                      <button className="btn btn-primary btn-sm" style={{ borderRadius: 24, background: 'var(--accent-green)', borderColor: 'var(--accent-green)' }}>✓ Amigos</button>
                       <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={handleUnfriend}>Eliminar</button>
                     </>
+                  ) : profile.friendshipStatus === 'pending' && profile.friendshipId ? (
+                    <>
+                      <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>
+                        ✓ Aceptar Solicitud
+                      </button>
+                      <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => { api.rejectFriendRequest(profile.friendshipId); loadProfile() }}>
+                        Rechazar
+                      </button>
+                    </>
                   ) : profile.friendshipStatus === 'pending' ? (
-                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>
-                      {profile.friendshipId ? '✓ Aceptar Solicitud' : '⏳ Solicitud Enviada'}
+                    <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24, cursor: 'default', opacity: 0.8 }} disabled>
+                      ⏳ Invitación Enviada
                     </button>
+                  ) : profile.friendshipStatus === 'rejected' ? (
+                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
                   ) : (
                     <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
                   )}

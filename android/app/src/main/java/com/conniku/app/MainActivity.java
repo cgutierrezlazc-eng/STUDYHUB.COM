@@ -1,4 +1,4 @@
-package com.studyhub.app;
+package com.conniku.app;
 
 import com.getcapacitor.BridgeActivity;
 

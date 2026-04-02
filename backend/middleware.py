@@ -31,10 +31,16 @@ if not SECRET_KEY and CONFIG_FILE.exists():
         pass
 
 if not SECRET_KEY:
+    env = os.environ.get("ENVIRONMENT", os.environ.get("RENDER", ""))
+    if env:
+        raise RuntimeError(
+            "JWT_SECRET is required in production. "
+            "Set the JWT_SECRET environment variable before starting the server."
+        )
     SECRET_KEY = secrets.token_hex(32)
     logger.warning(
-        "⚠️  JWT_SECRET not configured! Using ephemeral key. "
-        "Set JWT_SECRET env var for production. All tokens will be invalidated on restart."
+        "JWT_SECRET not configured. Using ephemeral key for development. "
+        "All tokens will be invalidated on restart."
     )
 
 ALGORITHM = "HS256"
@@ -103,3 +109,56 @@ async def require_owner(user: User = Depends(get_current_user)) -> User:
     if getattr(user, 'role', None) != "owner":
         raise HTTPException(status_code=403, detail="Owner access required")
     return user
+
+
+# ─── Tier System ────────────────────────────────────────────
+
+TIER_LIMITS = {
+    "free": {
+        "max_subjects": 2, "ai_messages_per_window": 20, "ai_window_hours": 6,
+        "quizzes_per_week": 2, "guides_per_week": 1, "storage_bytes": 104857600,
+        "can_export_docx": False, "can_detect_ai": False, "can_create_events": False,
+        "can_post_jobs": False, "can_predict_exam": False, "xp_multiplier": 1.0,
+    },
+    "pro": {
+        "max_subjects": 8, "ai_messages_per_window": 200, "ai_window_hours": 24,
+        "quizzes_per_week": 105, "guides_per_week": 70, "storage_bytes": 2147483648,
+        "can_export_docx": True, "can_detect_ai": True, "can_create_events": True,
+        "can_post_jobs": False, "can_predict_exam": True, "xp_multiplier": 1.2,
+    },
+    "max": {
+        "max_subjects": 99999, "ai_messages_per_window": 99999, "ai_window_hours": 24,
+        "quizzes_per_week": 99999, "guides_per_week": 99999, "storage_bytes": 10737418240,
+        "can_export_docx": True, "can_detect_ai": True, "can_create_events": True,
+        "can_post_jobs": True, "can_predict_exam": True, "xp_multiplier": 1.5,
+    },
+}
+
+
+def get_tier(user):
+    tier = getattr(user, 'subscription_tier', 'free') or 'free'
+    status = getattr(user, 'subscription_status', 'trial') or 'trial'
+    if tier == "max" and status == "active":
+        return "max"
+    if tier == "pro" and status in ("active", "trial"):
+        return "pro"
+    return "free"
+
+
+def get_tier_limits(user):
+    return TIER_LIMITS[get_tier(user)]
+
+
+def require_tier(user, minimum_tier):
+    tier_order = {"free": 0, "pro": 1, "max": 2}
+    if tier_order.get(get_tier(user), 0) < tier_order.get(minimum_tier, 0):
+        names = {"pro": "Plan Pro ($5/mes)", "max": "Plan Max ($13/mes)"}
+        raise HTTPException(403, f"Esta función requiere {names.get(minimum_tier, minimum_tier)}. Actualiza tu plan.")
+
+
+def check_tier_limit(user, limit_key, current_count):
+    limits = get_tier_limits(user)
+    limit = limits.get(limit_key, 0)
+    if limit >= 99999:
+        return True, limit, 99999
+    return current_count < limit, limit, max(0, limit - current_count)

@@ -1,229 +1,362 @@
 """
-Gamification system for Conniku.
-Handles XP, levels, streaks, badges, and leaderboards.
+Gamification system: XP, levels, smart streaks, leagues, badges, study time tracking.
 """
 import json
-from datetime import date, timedelta
+from datetime import datetime, date, timedelta
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
+from sqlalchemy import func, desc
 
-from database import get_db, User, WallPost, Friendship, Message
+from database import get_db, User, WallPost, Friendship, Message, StudySession, LeagueMembership, gen_id
 from middleware import get_current_user
 
 router = APIRouter(prefix="/gamification", tags=["gamification"])
 
-# ─── Badge Definitions ─────────────────────────────────────────
+# ─── Badge definitions ──────────────────────────────────────────
 
 BADGE_INFO = {
-    "first_post": {
-        "id": "first_post",
-        "name": "First Post",
-        "emoji": "📝",
-        "description": "Published your first wall post",
-    },
-    "social_butterfly": {
-        "id": "social_butterfly",
-        "name": "Social Butterfly",
-        "emoji": "🦋",
-        "description": "Made 5 or more friends",
-    },
-    "studious": {
-        "id": "studious",
-        "name": "Studious",
-        "emoji": "📚",
-        "description": "Uploaded 5 or more documents",
-    },
-    "quiz_master": {
-        "id": "quiz_master",
-        "name": "Quiz Master",
-        "emoji": "🧠",
-        "description": "Generated 3 or more quizzes",
-    },
-    "chatterbox": {
-        "id": "chatterbox",
-        "name": "Chatterbox",
-        "emoji": "💬",
-        "description": "Sent 50 or more messages",
-    },
-    "streak_3": {
-        "id": "streak_3",
-        "name": "On Fire",
-        "emoji": "🔥",
-        "description": "Maintained a 3-day streak",
-    },
-    "streak_7": {
-        "id": "streak_7",
-        "name": "Week Warrior",
-        "emoji": "⚡",
-        "description": "Maintained a 7-day streak",
-    },
-    "streak_30": {
-        "id": "streak_30",
-        "name": "Monthly Legend",
-        "emoji": "🏆",
-        "description": "Maintained a 30-day streak",
-    },
+    "first_post": {"emoji": "\ud83d\udcdd", "name": "Primera Publicaci\u00f3n", "description": "Publicaste en un muro por primera vez"},
+    "social_butterfly": {"emoji": "\ud83e\udd8b", "name": "Mariposa Social", "description": "Tienes 5 o m\u00e1s amigos"},
+    "studious": {"emoji": "\ud83d\udcda", "name": "Estudioso", "description": "Enviaste 5+ mensajes en chats de estudio"},
+    "quiz_master": {"emoji": "\ud83e\udde0", "name": "Maestro del Quiz", "description": "Completaste 10 quizzes"},
+    "chatterbox": {"emoji": "\ud83d\udcac", "name": "Parlanchin", "description": "Enviaste 50+ mensajes"},
+    "streak_3": {"emoji": "\ud83d\udd25", "name": "En Racha", "description": "3 d\u00edas consecutivos de estudio"},
+    "streak_7": {"emoji": "\u26a1", "name": "Semana Perfecta", "description": "7 d\u00edas consecutivos de estudio"},
+    "streak_30": {"emoji": "\ud83c\udfc6", "name": "Mes Imparable", "description": "30 d\u00edas consecutivos de estudio"},
+    "streak_100": {"emoji": "\ud83d\udc8e", "name": "Centenario", "description": "100 d\u00edas consecutivos de estudio"},
+    "time_1h": {"emoji": "\u23f0", "name": "Primera Hora", "description": "Acumulaste 1 hora de estudio"},
+    "time_10h": {"emoji": "\ud83d\udcd6", "name": "Dedicado", "description": "Acumulaste 10 horas de estudio"},
+    "time_50h": {"emoji": "\ud83c\udf93", "name": "Erudito", "description": "Acumulaste 50 horas de estudio"},
+    "helper": {"emoji": "\ud83e\udd1d", "name": "Buen Compa\u00f1ero", "description": "Compartiste 5+ documentos"},
+    "league_gold": {"emoji": "\ud83e\udd47", "name": "Liga de Oro", "description": "Alcanzaste la Liga de Oro"},
+    "league_diamond": {"emoji": "\ud83d\udca0", "name": "Liga Diamante", "description": "Alcanzaste la Liga Diamante"},
+}
+
+LEAGUE_TIERS = ["bronce", "plata", "oro", "diamante"]
+LEAGUE_NAMES = {"bronce": "Bronce", "plata": "Plata", "oro": "Oro", "diamante": "Diamante"}
+LEAGUE_EMOJIS = {"bronce": "\ud83e\udd49", "plata": "\ud83e\udd48", "oro": "\ud83e\udd47", "diamante": "\ud83d\udc8e"}
+
+XP_REWARDS = {
+    "chat_message": 5,
+    "quiz_complete": 25,
+    "guide_generated": 15,
+    "flashcard_session": 10,
+    "document_upload": 10,
+    "document_shared": 20,
+    "wall_post": 5,
+    "friend_added": 10,
+    "streak_maintained": 15,
+    "study_session_30min": 20,
 }
 
 
-# ─── Core Functions ────────────────────────────────────────────
-
-def award_xp(db: Session, user_id: str, amount: int, action: str):
-    """Add XP to a user and check for level up (every 100 XP = 1 level)."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        return
+def award_xp(user: User, amount: int, db: Session):
+    """Add XP, update level, and track weekly league XP."""
     user.xp = (user.xp or 0) + amount
     user.level = (user.xp // 100) + 1
-    db.commit()
+
+    # Update weekly league XP
+    today = date.today()
+    week_start = (today - timedelta(days=today.weekday())).isoformat()
+    membership = db.query(LeagueMembership).filter(
+        LeagueMembership.user_id == user.id,
+        LeagueMembership.week_start == week_start
+    ).first()
+    if membership:
+        membership.weekly_xp = (membership.weekly_xp or 0) + amount
+    else:
+        membership = LeagueMembership(
+            id=gen_id(), user_id=user.id,
+            league_tier="bronce", weekly_xp=amount,
+            week_start=week_start
+        )
+        db.add(membership)
 
 
-def check_streak(db: Session, user_id: str):
-    """Check if user was active yesterday (streak += 1) or reset to 1."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        return
+def check_streak(user: User, db: Session):
+    """Smart streak: check activity, apply freeze if needed."""
     today_str = date.today().isoformat()
     yesterday_str = (date.today() - timedelta(days=1)).isoformat()
 
     if user.last_active_date == today_str:
-        return  # already checked today
+        return  # Already checked today
 
     if user.last_active_date == yesterday_str:
+        # Consecutive day - increment streak
         user.streak_days = (user.streak_days or 0) + 1
+        award_xp(user, XP_REWARDS["streak_maintained"], db)
+    elif user.last_active_date:
+        # Missed a day - try to use streak freeze
+        days_gap = (date.today() - date.fromisoformat(user.last_active_date)).days
+        if days_gap <= 2 and (user.streak_freeze_count or 0) > 0:
+            # Use a freeze - maintain streak
+            user.streak_freeze_count = (user.streak_freeze_count or 0) - 1
+            user.streak_days = (user.streak_days or 0) + 1
+        else:
+            # Streak broken
+            user.streak_days = 1
     else:
         user.streak_days = 1
 
     user.last_active_date = today_str
-    db.commit()
 
 
-def check_badges(db: Session, user_id: str) -> list:
-    """Return earned badges based on user activity."""
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        return []
+def check_badges(user: User, db: Session) -> list[str]:
+    """Check and award earned badges based on activity."""
+    current = json.loads(user.badges or "[]")
+    earned = set(current)
 
-    current_badges = set(json.loads(user.badges or "[]"))
-    earned = set()
-
-    # first_post: first wall post
-    post_count = db.query(func.count(WallPost.id)).filter(WallPost.author_id == user_id).scalar()
+    # Post badges
+    post_count = db.query(func.count(WallPost.id)).filter(WallPost.author_id == user.id).scalar() or 0
     if post_count >= 1:
         earned.add("first_post")
 
-    # social_butterfly: 5+ friends
+    # Social badges
     friend_count = db.query(func.count(Friendship.id)).filter(
-        Friendship.status == "accepted",
-        or_(Friendship.requester_id == user_id, Friendship.addressee_id == user_id)
-    ).scalar()
+        ((Friendship.requester_id == user.id) | (Friendship.addressee_id == user.id)),
+        Friendship.status == "accepted"
+    ).scalar() or 0
     if friend_count >= 5:
         earned.add("social_butterfly")
 
-    # studious: 5+ documents (count project documents via filesystem is complex,
-    # so we count based on projects meta - approximate via messages with document type)
-    # For simplicity, count documents uploaded to conversations
-    doc_msg_count = db.query(func.count(Message.id)).filter(
-        Message.sender_id == user_id,
-        Message.message_type == "document"
-    ).scalar()
-    if doc_msg_count >= 5:
+    # Message badges
+    msg_count = db.query(func.count(Message.id)).filter(Message.sender_id == user.id).scalar() or 0
+    if msg_count >= 5:
         earned.add("studious")
-
-    # quiz_master: 3+ quizzes - tracked via XP awards with quiz action
-    # Since we don't have a quiz log table, we check XP indirectly
-    # For now, this badge is awarded when user reaches enough activity
-    # We'll use a simple heuristic: level >= 3 as proxy, or we track via badges themselves
-    # Better approach: count from project meta files - but that's filesystem based
-    # We'll skip complex counting and just check if badge was previously earned
-    if "quiz_master" in current_badges:
-        earned.add("quiz_master")
-
-    # chatterbox: 50+ messages
-    msg_count = db.query(func.count(Message.id)).filter(
-        Message.sender_id == user_id,
-        Message.is_deleted == False
-    ).scalar()
     if msg_count >= 50:
         earned.add("chatterbox")
 
-    # streak badges
+    # Streak badges
     streak = user.streak_days or 0
-    if streak >= 3:
-        earned.add("streak_3")
-    if streak >= 7:
-        earned.add("streak_7")
-    if streak >= 30:
-        earned.add("streak_30")
+    if streak >= 3: earned.add("streak_3")
+    if streak >= 7: earned.add("streak_7")
+    if streak >= 30: earned.add("streak_30")
+    if streak >= 100: earned.add("streak_100")
 
-    # Update user badges if changed
-    if earned != current_badges:
-        user.badges = json.dumps(sorted(earned))
+    # Study time badges
+    total_seconds = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id
+    ).scalar() or 0
+    total_hours = total_seconds / 3600
+    if total_hours >= 1: earned.add("time_1h")
+    if total_hours >= 10: earned.add("time_10h")
+    if total_hours >= 50: earned.add("time_50h")
+
+    # Shared documents badges
+    from database import SharedDocument
+    shared_count = db.query(func.count(SharedDocument.id)).filter(
+        SharedDocument.user_id == user.id
+    ).scalar() or 0
+    if shared_count >= 5: earned.add("helper")
+
+    # League badges
+    best_league = db.query(LeagueMembership.league_tier).filter(
+        LeagueMembership.user_id == user.id
+    ).order_by(desc(LeagueMembership.created_at)).first()
+    if best_league:
+        tier = best_league[0]
+        if tier in ("oro", "diamante"): earned.add("league_gold")
+        if tier == "diamante": earned.add("league_diamond")
+
+    new_badges = list(earned)
+    if set(new_badges) != set(current):
+        user.badges = json.dumps(new_badges)
+
+    return new_badges
+
+
+# ─── Study Session Tracking ────────────────────────────────────
+
+@router.post("/study-session")
+def log_study_session(
+    data: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Log a study session (duration in seconds)."""
+    duration = data.get("duration_seconds", 0)
+    project_id = data.get("project_id")
+    activity_type = data.get("activity_type", "study")
+
+    if duration < 10:  # Ignore sessions shorter than 10 seconds
+        return {"status": "ignored"}
+
+    session = StudySession(
+        id=gen_id(), user_id=user.id,
+        project_id=project_id,
+        duration_seconds=duration,
+        activity_type=activity_type
+    )
+    db.add(session)
+
+    # Award XP for 30+ min sessions
+    if duration >= 1800:
+        award_xp(user, XP_REWARDS["study_session_30min"], db)
+
+    check_streak(user, db)
+    db.commit()
+    return {"status": "logged", "duration": duration}
+
+
+@router.get("/study-time")
+def get_study_time(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get study time stats."""
+    today = date.today()
+    week_start = today - timedelta(days=today.weekday())
+    month_start = today.replace(day=1)
+
+    total = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id
+    ).scalar() or 0
+
+    this_week = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id,
+        StudySession.created_at >= datetime.combine(week_start, datetime.min.time())
+    ).scalar() or 0
+
+    this_month = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id,
+        StudySession.created_at >= datetime.combine(month_start, datetime.min.time())
+    ).scalar() or 0
+
+    today_total = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id,
+        StudySession.created_at >= datetime.combine(today, datetime.min.time())
+    ).scalar() or 0
+
+    # Sessions by project
+    by_project = db.query(
+        StudySession.project_id,
+        func.sum(StudySession.duration_seconds)
+    ).filter(
+        StudySession.user_id == user.id
+    ).group_by(StudySession.project_id).all()
+
+    return {
+        "totalSeconds": total,
+        "weekSeconds": this_week,
+        "monthSeconds": this_month,
+        "todaySeconds": today_total,
+        "byProject": {pid: secs for pid, secs in by_project if pid},
+    }
+
+
+# ─── League System ─────────────────────────────────────────────
+
+@router.get("/league")
+def get_league(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current week's league standings."""
+    today = date.today()
+    week_start = (today - timedelta(days=today.weekday())).isoformat()
+
+    # Get or create user's membership
+    membership = db.query(LeagueMembership).filter(
+        LeagueMembership.user_id == user.id,
+        LeagueMembership.week_start == week_start
+    ).first()
+
+    if not membership:
+        # Determine tier from last week
+        last_week = (today - timedelta(days=today.weekday() + 7)).isoformat()
+        prev = db.query(LeagueMembership).filter(
+            LeagueMembership.user_id == user.id,
+            LeagueMembership.week_start == last_week
+        ).first()
+        tier = prev.league_tier if prev else "bronce"
+        membership = LeagueMembership(
+            id=gen_id(), user_id=user.id,
+            league_tier=tier, weekly_xp=0, week_start=week_start
+        )
+        db.add(membership)
         db.commit()
 
-    return list(earned)
+    # Get all members in same tier this week
+    standings = db.query(
+        LeagueMembership, User
+    ).join(User, User.id == LeagueMembership.user_id).filter(
+        LeagueMembership.week_start == week_start,
+        LeagueMembership.league_tier == membership.league_tier
+    ).order_by(desc(LeagueMembership.weekly_xp)).limit(30).all()
 
-
-# ─── Endpoints ─────────────────────────────────────────────────
-
-@router.get("/stats")
-def get_gamification_stats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Return user's XP, level, streak, badges, and top 10 leaderboard."""
-    # Update streak on access
-    check_streak(db, user.id)
-    earned_ids = check_badges(db, user.id)
-
-    # Refresh user after updates
-    db.refresh(user)
-
-    # Build badge list with earned status
-    badges = []
-    for badge_id, info in BADGE_INFO.items():
-        badges.append({
-            **info,
-            "earned": badge_id in earned_ids,
-        })
-
-    # Top 10 leaderboard
-    top_users = db.query(User).order_by(User.xp.desc()).limit(10).all()
-    leaderboard = [
-        {
+    leaderboard = []
+    user_rank = 0
+    for i, (m, u) in enumerate(standings):
+        if u.id == user.id:
+            user_rank = i + 1
+        leaderboard.append({
+            "rank": i + 1,
             "userId": u.id,
             "username": u.username,
             "firstName": u.first_name,
             "lastName": u.last_name,
-            "avatar": u.avatar or "",
-            "xp": u.xp or 0,
-            "level": u.level or 1,
-        }
-        for u in top_users
-    ]
+            "avatar": u.avatar,
+            "weeklyXp": m.weekly_xp or 0,
+        })
+
+    days_left = 6 - today.weekday()  # Days until Sunday
+
+    return {
+        "tier": membership.league_tier,
+        "tierName": LEAGUE_NAMES.get(membership.league_tier, "Bronce"),
+        "tierEmoji": LEAGUE_EMOJIS.get(membership.league_tier, "\ud83e\udd49"),
+        "weeklyXp": membership.weekly_xp or 0,
+        "userRank": user_rank,
+        "daysLeft": max(days_left, 0),
+        "leaderboard": leaderboard,
+        "promotionZone": 3,  # Top 3 get promoted
+        "relegationZone": 3,  # Bottom 3 get relegated
+    }
+
+
+# ─── Stats Endpoint (enhanced) ─────────────────────────────────
+
+@router.get("/stats")
+def get_stats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    check_streak(user, db)
+    badges_list = check_badges(user, db)
+    db.commit()
+
+    # Study time
+    total_seconds = db.query(func.sum(StudySession.duration_seconds)).filter(
+        StudySession.user_id == user.id
+    ).scalar() or 0
+
+    all_badges = []
+    for bid, info in BADGE_INFO.items():
+        all_badges.append({
+            "id": bid,
+            "emoji": info["emoji"],
+            "name": info["name"],
+            "description": info["description"],
+            "earned": bid in badges_list,
+        })
+
+    # Leaderboard
+    top = db.query(User).order_by(desc(User.xp)).limit(10).all()
+    leaderboard = [{
+        "userId": u.id, "username": u.username,
+        "firstName": u.first_name, "lastName": u.last_name,
+        "avatar": u.avatar, "xp": u.xp or 0, "level": u.level or 1,
+    } for u in top]
 
     return {
         "xp": user.xp or 0,
         "level": user.level or 1,
         "streakDays": user.streak_days or 0,
-        "badges": badges,
+        "streakFreezes": user.streak_freeze_count or 0,
+        "badges": all_badges,
         "nextLevelXp": ((user.level or 1) * 100),
+        "totalStudySeconds": total_seconds,
         "leaderboard": leaderboard,
     }
 
 
 @router.get("/leaderboard")
-def get_leaderboard(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Return top 20 users by XP."""
-    top_users = db.query(User).order_by(User.xp.desc()).limit(20).all()
-    return [
-        {
-            "userId": u.id,
-            "username": u.username,
-            "firstName": u.first_name,
-            "lastName": u.last_name,
-            "avatar": u.avatar or "",
-            "xp": u.xp or 0,
-            "level": u.level or 1,
-        }
-        for u in top_users
-    ]
+def get_leaderboard(db: Session = Depends(get_db)):
+    top = db.query(User).order_by(desc(User.xp)).limit(20).all()
+    return [{
+        "userId": u.id, "username": u.username,
+        "firstName": u.first_name, "lastName": u.last_name,
+        "avatar": u.avatar, "xp": u.xp or 0, "level": u.level or 1,
+    } for u in top]

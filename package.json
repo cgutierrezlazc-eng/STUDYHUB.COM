@@ -1,5 +1,5 @@
 {
-  "name": "studyhub",
+  "name": "conniku",
   "version": "1.0.0",
   "description": "AI-powered study assistant for university students",
   "main": "dist/main/main.js",

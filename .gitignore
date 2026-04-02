@@ -27,8 +27,8 @@ build/
 *.sqlite
 *.sqlite3
 
-# StudyHub local data
-backend/studyhub_data/
+# Conniku local data
+backend/conniku_data/
 
 # Capacitor native builds
 android/app/build/

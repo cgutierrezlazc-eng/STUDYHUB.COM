@@ -43,7 +43,7 @@ function formatSize(bytes: number) {
 export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const { id } = useParams<{ id: string }>()
   const project = projects.find(p => p.id === id)
-  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'live'>('docs')
+  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'live'>('docs')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -61,7 +61,20 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [liveTranscription, setLiveTranscription] = useState('')
   const [savingTranscription, setSavingTranscription] = useState(false)
   const [showProjectMenu, setShowProjectMenu] = useState(false)
+  const [showRenameModal, setShowRenameModal] = useState(false)
+  const [renameValue, setRenameValue] = useState('')
   const [quizResult, setQuizResult] = useState<any>(null)
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([])
+  const [quizCurrentIndex, setQuizCurrentIndex] = useState(0)
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({})
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [flashcards, setFlashcards] = useState<any[]>([])
+  const [flashcardIndex, setFlashcardIndex] = useState(0)
+  const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false)
+  const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false)
+  const [socraticMode, setSocraticMode] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<number | null>(null)
@@ -194,7 +207,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     setIsLoading(true)
 
     try {
-      const res = await api.chat(project.id, userMsg.content)
+      const res = await api.chat(project.id, userMsg.content, undefined, undefined, undefined, socraticMode)
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -357,7 +370,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             </button>
             {showProjectMenu && (
               <div className="wa-dropdown-menu" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, minWidth: 180, zIndex: 10 }}>
-                <button disabled style={{ opacity: 0.5 }}>
+                <button onClick={() => { setRenameValue(project.name); setShowRenameModal(true); setShowProjectMenu(false) }}>
                   ✏️ Renombrar
                 </button>
                 <button className="wa-danger" onClick={() => {
@@ -384,6 +397,9 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           </button>
           <button className={`tab ${tab === 'quiz' ? 'active' : ''}`} onClick={() => setTab('quiz')}>
             Quiz
+          </button>
+          <button className={`tab ${tab === 'flashcards' ? 'active' : ''}`} onClick={() => setTab('flashcards')}>
+            Flashcards
           </button>
           <button className={`tab ${tab === 'live' ? 'active' : ''}`} onClick={() => setTab('live')}>
             Clases en Vivo
@@ -441,6 +457,45 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <h3>Arrastra archivos aquí o haz click para seleccionar</h3>
               <p>PDF, Word, Excel, PowerPoint, TXT, CSV, Imágenes</p>
             </div>
+
+            {project.documents.length > 0 && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    setIsGeneratingGuide(true)
+                    try {
+                      const result = await api.uploadToStudy(project.id)
+                      if (result.guide) setGuide(result.guide)
+                      if (result.quiz?.questions) {
+                        setQuizQuestions(result.quiz.questions)
+                        setQuizCurrentIndex(0)
+                        setQuizAnswers({})
+                        setQuizSubmitted(false)
+                      }
+                      if (result.flashcards) {
+                        const cards = (Array.isArray(result.flashcards) ? result.flashcards : []).map((fc: any, i: number) => ({
+                          ...fc,
+                          id: `fc-${Date.now()}-${i}`,
+                          interval: 1,
+                          ease: 2.5,
+                          nextReview: new Date().toISOString(),
+                        }))
+                        setFlashcards(cards)
+                      }
+                      alert('¡Listo! Se generaron guía, quiz y flashcards. Revisa las pestañas.')
+                    } catch (err: any) {
+                      alert(err.message || 'Error al generar material')
+                    } finally {
+                      setIsGeneratingGuide(false)
+                    }
+                  }}
+                  disabled={isGeneratingGuide}
+                >
+                  {isGeneratingGuide ? '⏳ Generando...' : '🚀 Upload to Study — Generar Todo'}
+                </button>
+              </div>
+            )}
 
             {project.documents.length > 0 && (
               <div className="doc-list" style={{ marginTop: 20 }}>
@@ -575,6 +630,58 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <div ref={chatEndRef} />
             </div>
             <div className="chat-input-area">
+              <button
+                className={`btn btn-sm ${socraticMode ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => setSocraticMode(!socraticMode)}
+                title={socraticMode ? 'Modo Socrático: ON (te guío con preguntas)' : 'Modo Socrático: OFF (respuestas directas)'}
+                style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
+              >
+                🧠 {socraticMode ? 'Socrático' : 'Directo'}
+              </button>
+                <button
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/*'
+                    input.capture = 'environment'
+                    input.onchange = async (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0]
+                      if (!file) return
+                      const reader = new FileReader()
+                      reader.onloadend = async () => {
+                        const base64 = reader.result as string
+                        setIsLoading(true)
+                        setChatInput('')
+                        const userMsg: ChatMessage = {
+                          id: Date.now().toString(), role: 'user',
+                          content: '📷 Escaneando problema...', timestamp: new Date().toISOString(), projectId: project.id,
+                        }
+                        setMessages(prev => [...prev, userMsg])
+                        try {
+                          const result = await api.scanAndSolve(base64)
+                          const assistantMsg: ChatMessage = {
+                            id: (Date.now() + 1).toString(), role: 'assistant',
+                            content: result.solution, timestamp: new Date().toISOString(), projectId: project.id,
+                          }
+                          setMessages(prev => [...prev, assistantMsg])
+                        } catch {
+                          setMessages(prev => [...prev, {
+                            id: (Date.now() + 1).toString(), role: 'assistant',
+                            content: '⚠️ No se pudo procesar la imagen.', timestamp: new Date().toISOString(), projectId: project.id,
+                          }])
+                        }
+                        setIsLoading(false)
+                      }
+                      reader.readAsDataURL(file)
+                    }
+                    input.click()
+                  }}
+                  className="btn btn-sm btn-secondary"
+                  title="Escanear problema con cámara"
+                  style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
+                >
+                  📷 Escanear
+                </button>
               <textarea
                 className="chat-input"
                 placeholder={`Pregunta algo sobre ${project.name}...`}
@@ -630,14 +737,435 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         )}
 
         {tab === 'quiz' && (
-          <div className="empty-state">
-            <div className="empty-state-icon">🧠</div>
-            <h3>Quiz de Repaso</h3>
-            <p>Genera preguntas automáticas basadas en tus documentos</p>
-            <button className="btn btn-primary" style={{ marginTop: 16 }} disabled>
-              Próximamente
-            </button>
-          </div>
+          <>
+            {/* Initial state: no questions generated yet */}
+            {quizQuestions.length === 0 && !isGeneratingQuiz && (
+              <div className="empty-state">
+                <div className="empty-state-icon">🧠</div>
+                <h3>Quiz de Repaso</h3>
+                <p>Genera preguntas automáticas basadas en tus documentos</p>
+                {project.documents.length === 0 ? (
+                  <p style={{ color: 'var(--warning)', fontSize: 13, marginTop: 8 }}>
+                    ⚠️ Sube al menos un documento para generar un quiz.
+                  </p>
+                ) : (
+                  <button
+                    className="btn btn-primary"
+                    style={{ marginTop: 16 }}
+                    onClick={async () => {
+                      setIsGeneratingQuiz(true)
+                      try {
+                        const data = await api.generateQuiz(project.id)
+                        setQuizQuestions(data.questions)
+                        setQuizCurrentIndex(0)
+                        setQuizAnswers({})
+                        setQuizSubmitted(false)
+                        setQuizScore(0)
+                      } catch (e) {
+                        console.error('Error generating quiz:', e)
+                      } finally {
+                        setIsGeneratingQuiz(false)
+                      }
+                    }}
+                  >
+                    Generar Quiz
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Loading state */}
+            {isGeneratingQuiz && (
+              <div className="empty-state">
+                <div className="empty-state-icon" style={{ animation: 'pulse 1.5s infinite' }}>🧠</div>
+                <h3>Generando quiz...</h3>
+                <p>Analizando tus documentos para crear preguntas</p>
+              </div>
+            )}
+
+            {/* Question view */}
+            {quizQuestions.length > 0 && !quizSubmitted && !isGeneratingQuiz && (
+              <div>
+                {/* Progress indicator */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Pregunta {quizCurrentIndex + 1} de {quizQuestions.length}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {Object.keys(quizAnswers).length} de {quizQuestions.length} respondidas
+                  </span>
+                </div>
+                <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    borderRadius: 2,
+                    background: 'var(--accent)',
+                    transition: 'width 0.3s',
+                    width: `${((quizCurrentIndex + 1) / quizQuestions.length) * 100}%`,
+                  }} />
+                </div>
+
+                {/* Question card */}
+                <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+                  <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>
+                    {quizQuestions[quizCurrentIndex].question}
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {quizQuestions[quizCurrentIndex].options.map((option: string, idx: number) => {
+                      const isSelected = quizAnswers[quizCurrentIndex] === idx
+                      return (
+                        <button
+                          key={idx}
+                          onClick={() => setQuizAnswers(prev => ({ ...prev, [quizCurrentIndex]: idx }))}
+                          style={{
+                            padding: '12px 16px',
+                            borderRadius: 'var(--radius-sm)',
+                            border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border-color)',
+                            background: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-secondary)',
+                            color: 'var(--text-primary)',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <span style={{ fontWeight: 600, marginRight: 10, color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}>
+                            {String.fromCharCode(65 + idx)}.
+                          </span>
+                          {option}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Navigation buttons */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button
+                    className="btn btn-secondary"
+                    disabled={quizCurrentIndex === 0}
+                    onClick={() => setQuizCurrentIndex(i => i - 1)}
+                  >
+                    ← Anterior
+                  </button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {quizCurrentIndex < quizQuestions.length - 1 ? (
+                      <button
+                        className="btn btn-primary"
+                        onClick={() => setQuizCurrentIndex(i => i + 1)}
+                      >
+                        Siguiente →
+                      </button>
+                    ) : (
+                      <button
+                        className="btn btn-primary"
+                        disabled={Object.keys(quizAnswers).length < quizQuestions.length}
+                        onClick={() => {
+                          let correct = 0
+                          quizQuestions.forEach((q: any, i: number) => {
+                            if (quizAnswers[i] === q.correctAnswer) correct++
+                          })
+                          setQuizScore(correct)
+                          setQuizSubmitted(true)
+                          setQuizResult({ score: correct, total: quizQuestions.length })
+                        }}
+                        title={Object.keys(quizAnswers).length < quizQuestions.length ? 'Responde todas las preguntas primero' : ''}
+                      >
+                        Ver Resultados
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Results view */}
+            {quizSubmitted && quizQuestions.length > 0 && (
+              <div>
+                {/* Score summary */}
+                <div className="card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
+                  <div style={{ fontSize: 48, marginBottom: 8 }}>
+                    {quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? '📚' : '💪'}
+                  </div>
+                  <h2 style={{ margin: '0 0 8px' }}>
+                    {quizScore} / {quizQuestions.length} correctas
+                  </h2>
+                  <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
+                    {quizScore / quizQuestions.length >= 0.7
+                      ? '¡Excelente trabajo! Dominas bien el material.'
+                      : quizScore / quizQuestions.length >= 0.4
+                        ? 'Buen intento. Repasa los temas donde fallaste.'
+                        : 'Necesitas repasar más. ¡No te rindas!'}
+                  </p>
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 20 }}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setQuizCurrentIndex(0)
+                        setQuizAnswers({})
+                        setQuizSubmitted(false)
+                        setQuizScore(0)
+                        setQuizResult(null)
+                      }}
+                    >
+                      🔄 Reintentar
+                    </button>
+                    <button
+                      className="btn btn-primary"
+                      onClick={async () => {
+                        setQuizQuestions([])
+                        setQuizCurrentIndex(0)
+                        setQuizAnswers({})
+                        setQuizSubmitted(false)
+                        setQuizScore(0)
+                        setQuizResult(null)
+                        setIsGeneratingQuiz(true)
+                        try {
+                          const data = await api.generateQuiz(project.id)
+                          setQuizQuestions(data.questions)
+                        } catch (e) {
+                          console.error('Error generating quiz:', e)
+                        } finally {
+                          setIsGeneratingQuiz(false)
+                        }
+                      }}
+                    >
+                      ✨ Nuevo Quiz
+                    </button>
+                  </div>
+                </div>
+
+                {/* Detailed results */}
+                <h3 style={{ marginBottom: 12 }}>Detalle de Respuestas</h3>
+                {quizQuestions.map((q: any, i: number) => {
+                  const userAnswer = quizAnswers[i]
+                  const isCorrect = userAnswer === q.correctAnswer
+                  return (
+                    <div
+                      key={i}
+                      className="card"
+                      style={{
+                        padding: 20,
+                        marginBottom: 12,
+                        borderLeft: `4px solid ${isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)'}`,
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                        <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.5, flex: 1 }}>
+                          {i + 1}. {q.question}
+                        </h4>
+                        <span style={{
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: 'var(--radius-sm)',
+                          background: isCorrect ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          color: isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)',
+                          marginLeft: 12,
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 13, marginBottom: 8 }}>
+                        <span style={{ color: 'var(--text-muted)' }}>Tu respuesta: </span>
+                        <span style={{ color: isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)', fontWeight: 500 }}>
+                          {String.fromCharCode(65 + userAnswer)}. {q.options[userAnswer]}
+                        </span>
+                      </div>
+                      {!isCorrect && (
+                        <div style={{ fontSize: 13, marginBottom: 8 }}>
+                          <span style={{ color: 'var(--text-muted)' }}>Respuesta correcta: </span>
+                          <span style={{ color: 'var(--success, #22c55e)', fontWeight: 500 }}>
+                            {String.fromCharCode(65 + q.correctAnswer)}. {q.options[q.correctAnswer]}
+                          </span>
+                        </div>
+                      )}
+                      {q.explanation && (
+                        <div style={{
+                          fontSize: 13,
+                          color: 'var(--text-secondary)',
+                          background: 'var(--bg-secondary)',
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-sm)',
+                          marginTop: 8,
+                          lineHeight: 1.5,
+                        }}>
+                          💡 {q.explanation}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </>
+        )}
+
+        {tab === 'flashcards' && (
+          <>
+            {flashcards.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">🃏</div>
+                <h3>Flashcards con Repetición Espaciada</h3>
+                <p>Genera flashcards inteligentes que se adaptan a tu ritmo de aprendizaje</p>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: 16 }}
+                  onClick={async () => {
+                    if (project.documents.length === 0) return
+                    setIsGeneratingFlashcards(true)
+                    try {
+                      const result = await api.generateFlashcards(project.id)
+                      const cards = (Array.isArray(result) ? result : []).map((fc: any, i: number) => ({
+                        ...fc,
+                        id: `fc-${Date.now()}-${i}`,
+                        interval: 1,
+                        ease: 2.5,
+                        repetitions: 0,
+                        nextReview: new Date().toISOString(),
+                      }))
+                      setFlashcards(cards)
+                      setFlashcardIndex(0)
+                    } catch (err: any) {
+                      alert(err.message || 'Error al generar flashcards')
+                    } finally {
+                      setIsGeneratingFlashcards(false)
+                    }
+                  }}
+                  disabled={isGeneratingFlashcards || project.documents.length === 0}
+                >
+                  {isGeneratingFlashcards ? 'Generando...' : 'Generar Flashcards'}
+                </button>
+                {project.documents.length === 0 && (
+                  <p style={{ marginTop: 8, color: 'var(--accent-orange)', fontSize: 13 }}>
+                    Sube documentos primero
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div style={{ maxWidth: 600, margin: '0 auto' }}>
+                {/* Progress */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    Tarjeta {flashcardIndex + 1} de {flashcards.length}
+                  </span>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn btn-secondary btn-xs" onClick={() => {
+                      setFlashcards([])
+                      setFlashcardIndex(0)
+                    }}>Nuevas Flashcards</button>
+                  </div>
+                </div>
+
+                {/* Card */}
+                <div
+                  onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
+                  style={{
+                    background: 'var(--bg-secondary)', border: '2px solid var(--border-color)',
+                    borderRadius: 16, padding: 40, minHeight: 250,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    cursor: 'pointer', textAlign: 'center', transition: 'all 0.3s',
+                    boxShadow: showFlashcardAnswer ? '0 0 20px var(--accent)33' : 'none',
+                  }}
+                >
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    {showFlashcardAnswer ? 'RESPUESTA' : 'PREGUNTA'} — click para voltear
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.5 }}>
+                    {showFlashcardAnswer ? flashcards[flashcardIndex]?.back : flashcards[flashcardIndex]?.front}
+                  </div>
+                </div>
+
+                {/* FSRS Rating Buttons */}
+                {showFlashcardAnswer && (
+                  <div style={{ marginTop: 16 }}>
+                    <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
+                      ¿Qué tan bien lo sabías?
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                      {[
+                        { label: 'No lo sabía', quality: 0, color: '#ef4444' },
+                        { label: 'Difícil', quality: 2, color: '#f97316' },
+                        { label: 'Bien', quality: 3, color: '#3b82f6' },
+                        { label: 'Fácil', quality: 5, color: '#22c55e' },
+                      ].map(btn => (
+                        <button
+                          key={btn.quality}
+                          onClick={() => {
+                            // FSRS-like algorithm
+                            const card = { ...flashcards[flashcardIndex] }
+                            const quality = btn.quality
+
+                            if (quality < 3) {
+                              card.repetitions = 0
+                              card.interval = 1
+                            } else {
+                              if (card.repetitions === 0) {
+                                card.interval = 1
+                              } else if (card.repetitions === 1) {
+                                card.interval = 3
+                              } else {
+                                card.interval = Math.round(card.interval * card.ease)
+                              }
+                              card.repetitions = (card.repetitions || 0) + 1
+                            }
+
+                            card.ease = Math.max(1.3, card.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
+
+                            const next = new Date()
+                            next.setDate(next.getDate() + card.interval)
+                            card.nextReview = next.toISOString()
+
+                            const updated = [...flashcards]
+                            updated[flashcardIndex] = card
+
+                            // Sort by next review date, show cards due first
+                            const now = new Date()
+                            const dueCards = updated.filter(c => new Date(c.nextReview) <= now)
+
+                            setFlashcards(updated)
+                            setShowFlashcardAnswer(false)
+
+                            if (flashcardIndex < flashcards.length - 1) {
+                              setFlashcardIndex(flashcardIndex + 1)
+                            } else if (dueCards.length > 0) {
+                              setFlashcardIndex(updated.indexOf(dueCards[0]))
+                            } else {
+                              // Session complete
+                              api.logStudySession({ duration_seconds: flashcards.length * 15, project_id: project.id, activity_type: 'flashcards' }).catch(() => {})
+                              alert(`¡Sesión completada! Revisaste ${flashcards.length} tarjetas.`)
+                              setFlashcardIndex(0)
+                            }
+                          }}
+                          style={{
+                            padding: '12px 8px', borderRadius: 10, border: `2px solid ${btn.color}33`,
+                            background: `${btn.color}11`, color: btn.color, cursor: 'pointer',
+                            fontWeight: 600, fontSize: 12, transition: 'all 0.2s',
+                          }}
+                        >
+                          {btn.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Navigation */}
+                {!showFlashcardAnswer && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setFlashcardIndex(Math.max(0, flashcardIndex - 1)); setShowFlashcardAnswer(false) }} disabled={flashcardIndex === 0}>
+                      ← Anterior
+                    </button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setFlashcardIndex(Math.min(flashcards.length - 1, flashcardIndex + 1)); setShowFlashcardAnswer(false) }} disabled={flashcardIndex >= flashcards.length - 1}>
+                      Siguiente →
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </>
         )}
 
         {tab === 'live' && (
@@ -763,6 +1291,34 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           </div>
         )}
       </div>
+      {showRenameModal && (
+        <div className="modal-overlay" onClick={() => setShowRenameModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <h3>Renombrar Asignatura</h3>
+            <div className="auth-field">
+              <label>Nuevo nombre</label>
+              <input value={renameValue} onChange={e => setRenameValue(e.target.value)} autoFocus
+                onKeyDown={e => { if (e.key === 'Enter' && renameValue.trim()) {
+                  api.updateProject(project.id, { name: renameValue.trim() }).then(updated => {
+                    onUpdate({ ...project, name: updated.name })
+                    setShowRenameModal(false)
+                  }).catch(() => alert('Error al renombrar'))
+                }}}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowRenameModal(false)}>Cancelar</button>
+              <button className="btn btn-primary btn-sm" onClick={() => {
+                if (!renameValue.trim()) return
+                api.updateProject(project.id, { name: renameValue.trim() }).then(updated => {
+                  onUpdate({ ...project, name: updated.name })
+                  setShowRenameModal(false)
+                }).catch(() => alert('Error al renombrar'))
+              }}>Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

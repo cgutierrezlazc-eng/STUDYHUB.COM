@@ -63,7 +63,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     try {
       const data = await api.getConversations()
       setConversations(data)
-    } catch {}
+    } catch (err: any) {
+      console.error('Error loading conversations:', err)
+    }
     setLoading(false)
   }
 
@@ -72,7 +74,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   }
 
   const loadMessages = async (convId: string) => {
-    try { setMessages(await api.getMessages(convId)) } catch {}
+    try { setMessages(await api.getMessages(convId)) } catch (err: any) {
+      console.error('Error loading messages:', err)
+    }
   }
 
   const handleSend = async () => {
@@ -182,7 +186,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setSearchResults([])
       await loadConversations()
       setActiveConv(conv.id)
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al iniciar conversación')
+    }
   }
 
   const createGroup = async () => {
@@ -194,7 +200,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setSelectedUsers([])
       await loadConversations()
       setActiveConv(conv.id)
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al crear grupo')
+    }
   }
 
   const createFolder = async () => {
@@ -204,12 +212,16 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setNewFolderName('')
       setShowNewFolder(false)
       await loadFolders()
-    } catch {}
+    } catch (err: any) {
+      alert(err.message || 'Error al crear carpeta')
+    }
   }
 
   const deleteMsg = async (msgId: string) => {
     if (!activeConv) return
-    try { await api.deleteMessage(activeConv, msgId); await loadMessages(activeConv) } catch {}
+    try { await api.deleteMessage(activeConv, msgId); await loadMessages(activeConv) } catch (err: any) {
+      alert(err.message || 'Error al eliminar mensaje')
+    }
   }
 
   const handleBlockUser = async () => {
@@ -428,6 +440,43 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                 </>
                               )}
                             </div>
+                            {!msg.isDeleted && msg.content && !isMine && (
+                              <button
+                                onClick={async (e) => {
+                                  e.stopPropagation()
+                                  const btn = e.currentTarget
+                                  if (btn.dataset.translated) {
+                                    btn.textContent = '🌐'
+                                    btn.title = 'Traducir'
+                                    const original = btn.dataset.original || ''
+                                    const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
+                                    if (contentEl) contentEl.textContent = original
+                                    delete btn.dataset.translated
+                                  } else {
+                                    btn.textContent = '⏳'
+                                    try {
+                                      const result = await api.translateText(msg.content, user?.language || 'es')
+                                      const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
+                                      if (contentEl) {
+                                        btn.dataset.original = contentEl.textContent || ''
+                                        contentEl.textContent = result.translated
+                                      }
+                                      btn.textContent = '↩️'
+                                      btn.title = 'Ver original'
+                                      btn.dataset.translated = 'true'
+                                    } catch {
+                                      btn.textContent = '🌐'
+                                    }
+                                  }
+                                }}
+                                title="Traducir"
+                                style={{
+                                  background: 'none', border: 'none', cursor: 'pointer',
+                                  fontSize: 11, padding: '2px 4px', opacity: 0.5,
+                                  position: 'absolute', bottom: 2, right: 2,
+                                }}
+                              >🌐</button>
+                            )}
                             <div className="msg-meta wa-meta">
                               <span>{formatTime(msg.createdAt)}</span>
                               {isMine && <span className="wa-check">✓✓</span>}

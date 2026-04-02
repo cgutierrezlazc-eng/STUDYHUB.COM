@@ -3,6 +3,8 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './services/auth'
 import { isNative } from './services/capacitor'
 import Sidebar from './components/Sidebar'
+import TopBar from './components/TopBar'
+import RightPanel from './components/RightPanel'
 import MobileBottomNav from './components/MobileBottomNav'
 import NewProjectModal from './components/NewProjectModal'
 import Onboarding from './components/Onboarding'
@@ -17,12 +19,22 @@ const Suggestions = lazy(() => import('./pages/Suggestions'))
 const Messages = lazy(() => import('./pages/Messages'))
 const Admin = lazy(() => import('./pages/Admin'))
 const Friends = lazy(() => import('./pages/Friends'))
+const Calendar = lazy(() => import('./pages/Calendar'))
+const Marketplace = lazy(() => import('./pages/Marketplace'))
 const UserProfile = lazy(() => import('./pages/UserProfile'))
 const Subscription = lazy(() => import('./pages/Subscription'))
 const Checkout = lazy(() => import('./pages/Checkout'))
+const Feed = lazy(() => import('./pages/Feed'))
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'))
+const Communities = lazy(() => import('./pages/Communities'))
+const CommunityView = lazy(() => import('./pages/CommunityView'))
+const Jobs = React.lazy(() => import('./pages/Jobs'))
+const Courses = React.lazy(() => import('./pages/Courses'))
+const Events = React.lazy(() => import('./pages/Events'))
+const Mentorship = React.lazy(() => import('./pages/Mentorship'))
+const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -147,17 +159,21 @@ export default function App() {
 
   return (
     <div className="app-layout">
-      <Sidebar
-        projects={projects}
-        activeProjectId={activeProjectId}
-        currentPath={location.pathname}
-        onNavigate={(path) => navigate(path)}
-        onNewProject={() => setShowNewProject(true)}
-      />
-      <main className="main-content">
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : <Dashboard projects={projects} onNavigate={(path) => navigate(path)} />} />
+      <TopBar onNavigate={(path) => navigate(path)} />
+      <div className="app-body">
+        <Sidebar
+          projects={projects}
+          activeProjectId={activeProjectId}
+          currentPath={location.pathname}
+          onNavigate={(path) => navigate(path)}
+          onNewProject={() => setShowNewProject(true)}
+        />
+        <main className="main-content">
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+            <Route path="/" element={<Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} />} />
             <Route path="/project/:id" element={<ProjectView projects={projects} onUpdate={handleUpdateProject} onDelete={handleDeleteProject} />} />
             <Route path="/profile" element={<Profile />} />
@@ -165,13 +181,24 @@ export default function App() {
             <Route path="/messages" element={<Messages onNavigate={(path) => navigate(path)} />} />
             <Route path="/messages/:convId" element={<Messages conversationId={conversationId} onNavigate={(path) => navigate(path)} />} />
             <Route path="/friends" element={<Friends onNavigate={(path) => navigate(path)} />} />
+            <Route path="/calendar" element={<Calendar projects={projects} onNavigate={(path) => navigate(path)} />} />
+            <Route path="/marketplace" element={<Marketplace onNavigate={(path) => navigate(path)} />} />
+            <Route path="/jobs" element={<Jobs onNavigate={(path) => navigate(path)} />} />
+            <Route path="/courses" element={<Courses onNavigate={(path) => navigate(path)} />} />
             <Route path="/user/:userId" element={profileUserId ? <UserProfile userId={profileUserId} onNavigate={(path) => navigate(path)} /> : null} />
+            <Route path="/events" element={<Events onNavigate={(path) => navigate(path)} />} />
+            <Route path="/mentorship" element={<Mentorship onNavigate={(path) => navigate(path)} />} />
+            <Route path="/study-rooms" element={<StudyRooms onNavigate={(path) => navigate(path)} />} />
+            <Route path="/communities" element={<Communities onNavigate={(path) => navigate(path)} />} />
+            <Route path="/communities/:id" element={<CommunityView onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />
           </Routes>
         </Suspense>
       </main>
+      <RightPanel currentPath={location.pathname} onNavigate={(path) => navigate(path)} />
+      </div>
 
       {showNewProject && (
         <NewProjectModal onClose={() => setShowNewProject(false)} onCreate={handleCreateProject} />

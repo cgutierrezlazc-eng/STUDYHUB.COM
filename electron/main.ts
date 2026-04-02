@@ -40,7 +40,10 @@ function createWindow() {
       contextIsolation: true,
       nodeIntegration: false,
     },
-    icon: path.join(__dirname, '../public/icon.png'),
+    icon: (() => {
+      const iconPath = path.join(__dirname, '../public/icon.png');
+      return require('fs').existsSync(iconPath) ? iconPath : undefined;
+    })(),
     show: false,
   });
 
@@ -64,10 +67,10 @@ function createWindow() {
 function createTray() {
   const icon = nativeImage.createEmpty();
   tray = new Tray(icon);
-  tray.setToolTip('StudyHub - Tu asistente de estudio');
+  tray.setToolTip('Conniku - Tu asistente de estudio');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Abrir StudyHub', click: () => mainWindow?.show() },
+    { label: 'Abrir Conniku', click: () => mainWindow?.show() },
     { type: 'separator' },
     {
       label: 'Salir',

@@ -2,14 +2,17 @@
 Auth routes: registration, login, profile, email verification, username management.
 """
 import os
+import re
 import random
 import string
-from datetime import datetime, date
+import hashlib
+from datetime import datetime, date, timedelta
 from typing import Optional
+from collections import defaultdict
 
 import bcrypt
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -18,6 +21,19 @@ from database import get_db, User, gen_id, DATA_DIR
 from middleware import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# ─── Rate limiting for sensitive endpoints ─────────────────────
+_rate_limits: dict[str, list[datetime]] = defaultdict(list)
+
+def _check_rate_limit(key: str, max_attempts: int, window_minutes: int):
+    """Raise 429 if key exceeds max_attempts within window."""
+    now = datetime.utcnow()
+    cutoff = now - timedelta(minutes=window_minutes)
+    attempts = [t for t in _rate_limits[key] if t > cutoff]
+    _rate_limits[key] = attempts
+    if len(attempts) >= max_attempts:
+        raise HTTPException(429, "Demasiados intentos. Intenta de nuevo más tarde.")
+    _rate_limits[key].append(now)
 
 
 # ─── Password hashing (bcrypt) ──────────────────────────────────
@@ -107,6 +123,8 @@ class UpdateProfileRequest(BaseModel):
     gender: Optional[str] = None
     language: Optional[str] = None
     language_skill: Optional[str] = None
+    secondary_languages: Optional[list] = None
+    platform_language: Optional[str] = None
     university: Optional[str] = None
     career: Optional[str] = None
     semester: Optional[int] = None
@@ -138,6 +156,7 @@ class VerifyEmailRequest(BaseModel):
 # ─── Helper: serialize user ─────────────────────────────────────
 
 def user_to_dict(user: User) -> dict:
+    import json as _json
     return {
         "id": user.id,
         "email": user.email,
@@ -149,6 +168,8 @@ def user_to_dict(user: User) -> dict:
         "gender": user.gender,
         "language": user.language,
         "languageSkill": user.language_skill,
+        "secondaryLanguages": _json.loads(getattr(user, 'secondary_languages', None) or "[]"),
+        "platformLanguage": getattr(user, 'platform_language', None) or user.language or "es",
         "university": user.university,
         "career": user.career,
         "semester": user.semester,
@@ -176,7 +197,19 @@ def user_to_dict(user: User) -> dict:
 # ─── Routes ─────────────────────────────────────────────────────
 
 @router.post("/register")
-def register(req: RegisterRequest, db: Session = Depends(get_db)):
+def register(req: RegisterRequest, request: Request = None, db: Session = Depends(get_db)):
+    # Rate limit: 5 registrations per IP per hour
+    client_ip = request.client.host if request and request.client else "unknown"
+    _check_rate_limit(f"register:{client_ip}", max_attempts=5, window_minutes=60)
+
+    # Password strength: min 8 chars, at least 1 uppercase, 1 number
+    if len(req.password) < 8:
+        raise HTTPException(400, "La contraseña debe tener al menos 8 caracteres")
+    if not re.search(r'[A-Z]', req.password):
+        raise HTTPException(400, "La contraseña debe incluir al menos una mayúscula")
+    if not re.search(r'[0-9]', req.password):
+        raise HTTPException(400, "La contraseña debe incluir al menos un número")
+
     # Validate email unique
     if db.query(User).filter(User.email == req.email.lower()).first():
         raise HTTPException(400, "Ya existe una cuenta con este correo")
@@ -288,13 +321,14 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(req: LoginRequest, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == req.email.lower()).first()
-    if not user:
-        raise HTTPException(401, "No existe una cuenta con este correo")
+def login(req: LoginRequest, request: Request = None, db: Session = Depends(get_db)):
+    # Rate limit: 10 login attempts per email per 15 min
+    email_key = hashlib.md5(req.email.lower().encode()).hexdigest()
+    _check_rate_limit(f"login:{email_key}", max_attempts=10, window_minutes=15)
 
-    if not user.password_hash or not verify_password(req.password, user.password_hash):
-        raise HTTPException(401, "Contraseña incorrecta")
+    user = db.query(User).filter(User.email == req.email.lower()).first()
+    if not user or not user.password_hash or not verify_password(req.password, user.password_hash):
+        raise HTTPException(401, "Correo o contraseña incorrectos")
 
     if user.is_banned:
         raise HTTPException(403, f"Cuenta suspendida: {user.ban_reason or 'Violación de políticas'}")
@@ -320,8 +354,14 @@ def get_me(user: User = Depends(get_current_user)):
 
 @router.put("/me")
 def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    import json as _json
     updates = req.dict(exclude_none=True)
     for key, value in updates.items():
+        # Handle secondary_languages specially: store as JSON string
+        if key == "secondary_languages":
+            if isinstance(value, list) and len(value) <= 4:
+                user.secondary_languages = _json.dumps(value)
+            continue
         # Convert camelCase to snake_case for db fields
         db_key = key
         if hasattr(user, db_key):
@@ -391,8 +431,12 @@ def change_password(req: ChangePasswordRequest, user: User = Depends(get_current
     if not verify_password(req.current_password, user.password_hash):
         raise HTTPException(400, "Contraseña actual incorrecta")
 
-    if len(req.new_password) < 6:
-        raise HTTPException(400, "La nueva contraseña debe tener al menos 6 caracteres")
+    if len(req.new_password) < 8:
+        raise HTTPException(400, "La nueva contraseña debe tener al menos 8 caracteres")
+    if not re.search(r'[A-Z]', req.new_password):
+        raise HTTPException(400, "La contraseña debe incluir al menos una mayúscula")
+    if not re.search(r'[0-9]', req.new_password):
+        raise HTTPException(400, "La contraseña debe incluir al menos un número")
 
     user.password_hash = hash_password(req.new_password)
     db.commit()
@@ -403,13 +447,17 @@ def change_password(req: ChangePasswordRequest, user: User = Depends(get_current
 # ─── Password Recovery ─────────────────────────────────────────
 
 @router.post("/forgot-password")
-def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+def forgot_password(req: ForgotPasswordRequest, request: Request = None, db: Session = Depends(get_db)):
+    # Rate limit: 3 reset requests per email per hour
+    email_key = hashlib.md5(req.email.lower().encode()).hexdigest()
+    _check_rate_limit(f"reset:{email_key}", max_attempts=3, window_minutes=60)
+
     user = db.query(User).filter(User.email == req.email.lower()).first()
     if not user:
         # Don't reveal if email exists
         return {"sent": True}
 
-    code = ''.join(random.choices(string.digits, k=6))
+    code = ''.join(random.choices(string.digits, k=8))
     from datetime import timedelta
     user.reset_code = code
     user.reset_code_expires = datetime.utcnow() + timedelta(minutes=15)
@@ -437,10 +485,14 @@ def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/reset-password")
-def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
+def reset_password(req: ResetPasswordRequest, request: Request = None, db: Session = Depends(get_db)):
+    # Rate limit: 5 reset attempts per email per 15 min
+    email_key = hashlib.md5(req.email.lower().encode()).hexdigest()
+    _check_rate_limit(f"reset_verify:{email_key}", max_attempts=5, window_minutes=15)
+
     user = db.query(User).filter(User.email == req.email.lower()).first()
     if not user:
-        raise HTTPException(400, "No se encontró la cuenta")
+        raise HTTPException(400, "Código incorrecto o cuenta no encontrada")
 
     if not user.reset_code or user.reset_code != req.code:
         raise HTTPException(400, "Código incorrecto")
@@ -448,8 +500,12 @@ def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
     if user.reset_code_expires and user.reset_code_expires < datetime.utcnow():
         raise HTTPException(400, "El código ha expirado")
 
-    if len(req.new_password) < 6:
-        raise HTTPException(400, "La contraseña debe tener al menos 6 caracteres")
+    if len(req.new_password) < 8:
+        raise HTTPException(400, "La contraseña debe tener al menos 8 caracteres")
+    if not re.search(r'[A-Z]', req.new_password):
+        raise HTTPException(400, "La contraseña debe incluir al menos una mayúscula")
+    if not re.search(r'[0-9]', req.new_password):
+        raise HTTPException(400, "La contraseña debe incluir al menos un número")
 
     user.password_hash = hash_password(req.new_password)
     user.reset_code = None
@@ -457,3 +513,52 @@ def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
     db.commit()
 
     return {"success": True}
+
+
+@router.delete("/me")
+def delete_account(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Permanently delete user account and all associated data."""
+    user_id = user.id
+
+    from database import (
+        ConversationParticipant, Message, Conversation,
+        WallPost, PostComment, PostLike,
+        Friendship, BlockedUser, UserReport,
+        ConversationFolder, ConversationFolderItem
+    )
+
+    # Delete messages sent by user
+    db.query(Message).filter(Message.sender_id == user_id).delete(synchronize_session=False)
+
+    # Remove from conversation participants
+    db.query(ConversationParticipant).filter(ConversationParticipant.user_id == user_id).delete(synchronize_session=False)
+
+    # Delete wall posts authored by user
+    db.query(PostComment).filter(PostComment.author_id == user_id).delete(synchronize_session=False)
+    db.query(PostLike).filter(PostLike.user_id == user_id).delete(synchronize_session=False)
+    db.query(WallPost).filter(WallPost.author_id == user_id).delete(synchronize_session=False)
+
+    # Delete wall posts on user's wall
+    db.query(WallPost).filter(WallPost.wall_owner_id == user_id).delete(synchronize_session=False)
+
+    # Delete friendships
+    db.query(Friendship).filter((Friendship.requester_id == user_id) | (Friendship.addressee_id == user_id)).delete(synchronize_session=False)
+
+    # Delete blocks
+    db.query(BlockedUser).filter((BlockedUser.blocker_id == user_id) | (BlockedUser.blocked_id == user_id)).delete(synchronize_session=False)
+
+    # Delete reports
+    db.query(UserReport).filter((UserReport.reporter_id == user_id) | (UserReport.reported_id == user_id)).delete(synchronize_session=False)
+
+    # Delete folders and folder items
+    folder_ids = [f.id for f in db.query(ConversationFolder).filter(ConversationFolder.user_id == user_id).all()]
+    if folder_ids:
+        db.query(ConversationFolderItem).filter(ConversationFolderItem.folder_id.in_(folder_ids)).delete(synchronize_session=False)
+    db.query(ConversationFolder).filter(ConversationFolder.user_id == user_id).delete(synchronize_session=False)
+
+    # Delete the user
+    db.query(User).filter(User.id == user_id).delete(synchronize_session=False)
+
+    db.commit()
+
+    return {"status": "deleted", "message": "Tu cuenta ha sido eliminada permanentemente."}

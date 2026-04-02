@@ -104,7 +104,7 @@ class AIEngine:
         )
         return response.content[0].text
 
-    def chat(self, project_id: str, message: str, language: str = "es", gender: str = "unspecified", language_skill: str = "intermediate") -> str:
+    def chat(self, project_id: str, message: str, language: str = "es", gender: str = "unspecified", language_skill: str = "intermediate", socratic: bool = False) -> str:
         context = self._get_context(project_id, message)
 
         lang_instructions = {
@@ -165,6 +165,30 @@ Si el material incluye fórmulas matemáticas, usa notación LaTeX entre $ para 
 Si no tienes información suficiente en el contexto, dilo honestamente.
 Siempre cita de qué documento sacas la información."""
 
+        if socratic:
+            system += """
+
+MODO SOCRÁTICO ACTIVADO:
+- NUNCA des la respuesta directamente
+- Haz preguntas que guíen al estudiante a descubrir la respuesta
+- Usa el método socrático: pregunta → reflexión → descubrimiento
+- Si el estudiante está cerca de la respuesta, anímalo
+- Si está perdido, da una pista sutil, no la respuesta
+- Empieza con "¿Qué crees que...?" o "¿Has considerado...?"
+- Máximo 2-3 preguntas guía por respuesta"""
+
+        # Humanized communication style
+        system += """
+
+ESTILO DE COMUNICACION HUMANIZADO:
+- Comunicate como un tutor amigable y cercano, no como una maquina
+- Usa expresiones naturales y calidas ("Excelente pregunta!", "Vamos a ver esto juntos")
+- Adapta tu tono al del estudiante: si es informal, se informal; si es formal, se profesional
+- Incluye palabras de aliento cuando el tema es dificil
+- Si el estudiante parece frustrado, se empatico primero, luego explica
+- Nunca uses lenguaje robotico como "Como modelo de lenguaje..." o "Procesando tu solicitud..."
+- Eres Conniku, un companero de estudio inteligente, no un asistente generico"""
+
         user_prompt = f"""Contexto de los documentos del curso:
 {context}
 
@@ -172,14 +196,14 @@ Pregunta del estudiante: {message}"""
 
         return self._call_claude(system, user_prompt)
 
-    def generate_study_guide(self, project_id: str) -> str:
+    def generate_study_guide(self, project_id: str, language: str = "es") -> str:
         all_text = self._get_all_text(project_id)
 
         if not all_text:
             return "<p>No hay documentos procesados en este proyecto.</p>"
 
         system = """Eres un experto creador de material de estudio. Genera guías de estudio
-completas, bien estructuradas y fáciles de entender en español.
+completas, bien estructuradas y fáciles de entender.
 Usa HTML para el formato (h2, h3, p, ul, li, strong, em, blockquote, code).
 Para fórmulas matemáticas, usa notación LaTeX envuelta en <span class="katex-inline">...</span> para inline.
 Incluye:
@@ -190,34 +214,71 @@ Incluye:
 5. Puntos clave para recordar
 6. Preguntas de autoevaluación al final"""
 
+        lang_instruction = {
+            "es": "Genera la guía en español.",
+            "en": "Generate the guide in English.",
+            "pt": "Gere o guia em português.",
+            "fr": "Générez le guide en français.",
+            "de": "Erstellen Sie den Leitfaden auf Deutsch.",
+            "it": "Genera la guida in italiano.",
+            "zh": "用中文生成学习指南。",
+            "ja": "日本語で学習ガイドを生成してください。",
+            "ko": "한국어로 학습 가이드를 생성하세요.",
+        }.get(language, f"Generate the guide in {language}.")
+
         user_prompt = f"""Genera una guía de estudio completa basada en este material:
 
 {all_text[:15000]}
 
-Genera la guía en HTML bien formateado."""
+Genera la guía en HTML bien formateado. {lang_instruction}"""
 
         return self._call_claude(system, user_prompt)
 
-    def generate_quiz(self, project_id: str, num_questions: int = 10) -> dict:
+    def generate_quiz(self, project_id: str, num_questions: int = 10, language: str = "es", difficulty: str = "medium", weak_topics: list[str] = None) -> dict:
         all_text = self._get_all_text(project_id)
 
-        system = """Genera un quiz de estudio basado en el material proporcionado.
+        difficulty_instruction = {
+            "easy": "Genera preguntas FÁCILES de comprensión básica y definiciones.",
+            "medium": "Genera preguntas de dificultad MEDIA que requieran comprensión y aplicación.",
+            "hard": "Genera preguntas DIFÍCILES de análisis, síntesis y pensamiento crítico.",
+        }.get(difficulty, "Genera preguntas de dificultad media.")
+
+        weak_instruction = ""
+        if weak_topics:
+            weak_instruction = f"\n\nENFÓCATE ESPECIALMENTE en estos temas donde el estudiante tiene debilidades: {', '.join(weak_topics)}"
+
+        system = f"""Genera un quiz de estudio basado en el material proporcionado.
+{difficulty_instruction}{weak_instruction}
 Responde SOLO con JSON válido con esta estructura:
-{
+{{
   "questions": [
-    {
+    {{
       "question": "texto de la pregunta",
       "options": ["opción A", "opción B", "opción C", "opción D"],
       "correctAnswer": 0,
-      "explanation": "explicación de por qué es correcta"
-    }
+      "explanation": "explicación de por qué es correcta",
+      "topic": "tema específico de esta pregunta",
+      "difficulty": "{difficulty}"
+    }}
   ]
-}"""
+}}"""
+
+        quiz_lang = {
+            "es": f"Genera {num_questions} preguntas de opción múltiple en español.",
+            "en": f"Generate {num_questions} multiple choice questions in English.",
+            "pt": f"Gere {num_questions} perguntas de múltipla escolha em português.",
+            "fr": f"Générez {num_questions} questions à choix multiples en français.",
+            "de": f"Erstellen Sie {num_questions} Multiple-Choice-Fragen auf Deutsch.",
+            "it": f"Genera {num_questions} domande a scelta multipla in italiano.",
+            "zh": f"用中文生成{num_questions}道选择题。",
+            "ja": f"日本語で{num_questions}問の多肢選択問題を生成してください。",
+            "ko": f"한국어로 {num_questions}개의 객관식 문제를 생성하세요.",
+        }.get(language, f"Generate {num_questions} multiple choice questions in {language}.")
 
         user_prompt = f"""Material del curso:
 {all_text[:12000]}
 
-Genera {num_questions} preguntas de opción múltiple en español."""
+{quiz_lang}"""
 
         result = self._call_claude(system, user_prompt, model="claude-haiku-4-5-20251001")
         try:

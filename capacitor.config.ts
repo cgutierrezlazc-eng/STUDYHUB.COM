@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.studyhub.app',
-  appName: 'StudyHub',
+  appId: 'com.conniku.app',
+  appName: 'Conniku',
   webDir: 'dist/renderer',
   server: {
     // For development, point to your local Vite server
@@ -15,15 +15,15 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#1a1a2e',
+      backgroundColor: '#F5F3EF',
       showSpinner: false,
       androidSpinnerStyle: 'small',
       splashFullScreen: true,
       splashImmersive: true,
     },
     StatusBar: {
-      style: 'DARK',
-      backgroundColor: '#1a1a2e',
+      style: 'LIGHT',
+      backgroundColor: '#F5F3EF',
     },
     Keyboard: {
       resize: 'body',
@@ -36,10 +36,10 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'StudyHub',
+    scheme: 'Conniku',
   },
   android: {
-    backgroundColor: '#1a1a2e',
+    backgroundColor: '#F5F3EF',
     allowMixedContent: true,
   },
 };

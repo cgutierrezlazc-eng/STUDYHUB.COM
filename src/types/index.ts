@@ -1,5 +1,5 @@
 export type Gender = 'male' | 'female' | 'unspecified';
-export type Language = 'es' | 'en' | 'pt' | 'fr';
+export type Language = 'es' | 'en' | 'pt' | 'fr' | 'de' | 'it' | 'zh' | 'ja' | 'ko' | 'ar' | 'ru' | 'hi' | 'tr' | 'nl' | 'pl' | 'sv' | 'da' | 'no' | 'fi' | 'el' | 'he' | 'th' | 'vi' | 'id' | 'ms' | 'tl' | 'uk' | 'cs' | 'ro' | 'hu' | 'ca' | 'hr' | 'bg' | 'sk' | 'sl' | 'lt' | 'lv' | 'et' | 'sw' | 'bn';
 export type LanguageSkill = 'beginner' | 'intermediate' | 'advanced';
 
 export interface User {
@@ -27,6 +27,8 @@ export interface User {
   role?: string;
   tosAcceptedAt?: string;
   onboardingCompleted: boolean;
+  secondaryLanguages?: string[];
+  platformLanguage?: string;
   theme?: string;
   subscriptionStatus?: string;
   trialStartedAt?: string;
@@ -205,4 +207,68 @@ export interface LeaderboardEntry {
   avatar: string;
   xp: number;
   level: number;
+}
+
+// ─── Calendar ──────────────────────────────────────────────────
+
+export interface CalendarEvent {
+  id: string
+  title: string
+  description: string
+  eventType: 'task' | 'exam' | 'deadline' | 'study_session'
+  dueDate: string
+  projectId?: string
+  completed: boolean
+  color: string
+}
+
+// ─── Study Time ────────────────────────────────────────────────
+
+export interface StudyTimeStats {
+  totalSeconds: number
+  weekSeconds: number
+  monthSeconds: number
+  todaySeconds: number
+  byProject: Record<string, number>
+}
+
+// ─── Leagues ───────────────────────────────────────────────────
+
+export interface LeagueData {
+  tier: string
+  tierName: string
+  tierEmoji: string
+  weeklyXp: number
+  userRank: number
+  daysLeft: number
+  leaderboard: LeagueEntry[]
+  promotionZone: number
+  relegationZone: number
+}
+
+export interface LeagueEntry {
+  rank: number
+  userId: string
+  username: string
+  firstName: string
+  lastName: string
+  avatar?: string
+  weeklyXp: number
+}
+
+// ─── Marketplace ───────────────────────────────────────────────
+
+export interface SharedDoc {
+  id: string
+  title: string
+  description: string
+  fileType: string
+  university: string
+  career: string
+  courseName: string
+  downloads: number
+  rating: number
+  ratingCount: number
+  author: UserBrief | null
+  createdAt: string
 }
