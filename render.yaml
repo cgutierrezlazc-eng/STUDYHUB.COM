@@ -15,7 +15,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: CORS_ORIGINS
-        value: "https://conniku.com,https://www.conniku.com,http://localhost:5173,http://localhost:8899"
+        value: "https://conniku.com,https://www.conniku.com,https://studyhub-com.vercel.app,http://localhost:5173,http://localhost:8899"
       - key: ENVIRONMENT
         value: production
       - key: DATABASE_URL

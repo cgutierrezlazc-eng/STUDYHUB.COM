@@ -54,7 +54,7 @@ app = FastAPI(title="Conniku Backend", version="2.0.0")
 # CORS: restrict to known origins in production
 _cors_origins = os.environ.get(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:8899,https://conniku.com,https://www.conniku.com"
+    "http://localhost:5173,http://localhost:8899,https://conniku.com,https://www.conniku.com,https://studyhub-com.vercel.app"
 ).split(",")
 
 app.add_middleware(
