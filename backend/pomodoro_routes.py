@@ -13,7 +13,7 @@ router = APIRouter(prefix="/pomodoro", tags=["pomodoro"])
 
 @router.post("/complete")
 def complete_session(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    duration = data.get("duration_minutes", 25)
+    duration = min(max(int(data.get("duration_minutes", 25)), 1), 120)  # Clamp 1-120 min
     project_id = data.get("subject_id")
 
     session = StudySession(

@@ -7,9 +7,10 @@ import TermsOfService from '../components/TermsOfService'
 
 interface Props {
   onSwitchToLogin: () => void
+  onBack?: () => void
 }
 
-export default function Register({ onSwitchToLogin }: Props) {
+export default function Register({ onSwitchToLogin, onBack }: Props) {
   const { register, loginWithGoogle } = useAuth()
   const { t, lang, setLang } = useI18n()
   const [step, setStep] = useState(0)
@@ -44,6 +45,7 @@ export default function Register({ onSwitchToLogin }: Props) {
     semester: 1,
     bio: '',
     username: '',
+    country: 'CL',
     tosAccepted: false,
   })
 
@@ -180,8 +182,7 @@ export default function Register({ onSwitchToLogin }: Props) {
     <div className="auth-page">
       <div className="auth-left">
         <div className="auth-brand">
-          <h1 className="auth-brand-name">Conniku</h1>
-          <p className="auth-tagline">{t('welcome.subtitle')}</p>
+          <img src="/logo.svg" alt="Conniku" style={{ height: 44, objectFit: 'contain', marginBottom: 8 }} />
         </div>
         <div className="auth-free-badge">
           <span>🎁</span> Gratis por 7 días — sin tarjeta de crédito
@@ -189,7 +190,7 @@ export default function Register({ onSwitchToLogin }: Props) {
         <div className="auth-features">
           <div className="auth-feature">
             <span className="auth-feature-icon">🧠</span>
-            <div><strong>Conniku entiende tu material</strong><p>Sube tus documentos y videos, Conniku los analiza para ti</p></div>
+            <div><strong>Estudia de forma interactiva</strong><p>Sube tus documentos y videos, estudia con herramientas inteligentes</p></div>
           </div>
           <div className="auth-feature">
             <span className="auth-feature-icon">👥</span>
@@ -204,18 +205,19 @@ export default function Register({ onSwitchToLogin }: Props) {
 
       <div className="auth-right">
         <div className="auth-card">
+          {onBack && (
+            <button onClick={onBack} style={{ position: 'absolute', top: 16, left: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 14 }}>
+              ← Volver
+            </button>
+          )}
           {/* Language selector at top */}
-          <div className="auth-lang-row">
-            {LANGUAGES.map(l => (
-              <button
-                key={l.code}
-                className={`auth-lang-btn ${form.language === l.code ? 'active' : ''}`}
-                onClick={() => update('language', l.code)}
-                type="button"
-              >
-                {l.flag} {l.name}
-              </button>
-            ))}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <select value={form.language} onChange={e => update('language', e.target.value)}
+              style={{ padding: '6px 12px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer' }}>
+              {LANGUAGES.slice(0, 10).map(l => (
+                <option key={l.code} value={l.code}>{l.flag} {l.name}</option>
+              ))}
+            </select>
           </div>
 
           {/* Progress Steps */}
@@ -355,6 +357,24 @@ export default function Register({ onSwitchToLogin }: Props) {
                 <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
                   Este será tu identificador único. Solo letras, números, puntos y guiones bajos.
                 </small>
+              </div>
+              <div className="auth-field">
+                <label>País</label>
+                <select value={form.country || 'CL'} onChange={e => update('country', e.target.value)}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                  {[
+                    ['CL','Chile'],['MX','México'],['CO','Colombia'],['PE','Perú'],
+                    ['AR','Argentina'],['BR','Brasil'],['EC','Ecuador'],['UY','Uruguay'],
+                    ['PY','Paraguay'],['BO','Bolivia'],['VE','Venezuela'],['CR','Costa Rica'],
+                    ['PA','Panamá'],['DO','Rep. Dominicana'],['GT','Guatemala'],['HN','Honduras'],
+                    ['SV','El Salvador'],['NI','Nicaragua'],
+                    ['US','Estados Unidos'],['CA','Canadá'],['GB','Reino Unido'],['ES','España'],
+                    ['DE','Alemania'],['FR','Francia'],['IT','Italia'],['PT','Portugal'],
+                    ['JP','Japón'],['KR','Corea del Sur'],['AU','Australia'],['IN','India'],
+                  ].map(([code, name]) => (
+                    <option key={code} value={code}>{name}</option>
+                  ))}
+                </select>
               </div>
               <div className="auth-field">
                 <label>{t('reg.university')}</label>

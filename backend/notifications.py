@@ -1,367 +1,209 @@
+"""Email notification system for Conniku.
+Uses 3 emails: noreply@ (sends), contacto@ (receives user messages), ceo@ (admin).
+All notification emails include reply-to: contacto@conniku.com
 """
-Email notification system for Conniku social events.
-Supports: friend requests, wall posts, messages, friend request accepted.
-Uses a background queue to avoid blocking the main request thread.
-"""
-
 import os
 import smtplib
 import threading
-import logging
-from queue import Queue
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from typing import Optional
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import Session
 
-from database import get_db, User, Base, gen_id, engine
+from database import get_db, User, gen_id
 from middleware import get_current_user
 
-logger = logging.getLogger("conniku.notifications")
+router = APIRouter(prefix="/email", tags=["email"])
 
-router = APIRouter(prefix="/notifications", tags=["notifications"])
-
-# ---------------------------------------------------------------------------
-# SMTP configuration from environment
-# ---------------------------------------------------------------------------
-
+# Email config
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_USER = os.environ.get("SMTP_USER", "noreply@conniku.com")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
-SMTP_FROM = os.environ.get("SMTP_FROM", SMTP_USER)
-
-# ---------------------------------------------------------------------------
-# Database model for notification preferences
-# ---------------------------------------------------------------------------
-
-
-class NotificationPreference(Base):
-    __tablename__ = "notification_preferences"
-
-    user_id = Column(String(16), primary_key=True)
-    notify_friend_request = Column(Boolean, default=True)
-    notify_friend_accepted = Column(Boolean, default=True)
-    notify_wall_post = Column(Boolean, default=True)
-    notify_message = Column(Boolean, default=True)
+SMTP_FROM = os.environ.get("SMTP_FROM", "noreply@conniku.com")
+REPLY_TO = os.environ.get("SMTP_REPLY_TO", "contacto@conniku.com")
+CEO_EMAIL = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "contacto@conniku.com")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 
 
-# Create table if it doesn't exist
-NotificationPreference.__table__.create(bind=engine, checkfirst=True)
-
-# ---------------------------------------------------------------------------
-# HTML email templates (Spanish)
-# ---------------------------------------------------------------------------
-
-_BASE_STYLE = """
-<style>
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6fb; margin: 0; padding: 0; }
-  .container { max-width: 520px; margin: 30px auto; background: #ffffff; border-radius: 12px;
-               box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
-  .header { background: linear-gradient(135deg, #4f8cff, #6c5ce7); padding: 28px 24px; text-align: center; }
-  .header h1 { color: #fff; margin: 0; font-size: 22px; }
-  .body { padding: 28px 24px; color: #333; line-height: 1.6; }
-  .body p { margin: 0 0 14px; }
-  .highlight { font-weight: 600; color: #4f8cff; }
-  .btn { display: inline-block; padding: 12px 28px; background: #4f8cff; color: #fff !important;
-         text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 10px; }
-  .footer { text-align: center; padding: 16px 24px; font-size: 12px; color: #999; }
-</style>
-"""
-
-
-def _wrap(inner_html: str) -> str:
-    return f"""<!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8">{_BASE_STYLE}</head>
-<body>
-<div class="container">
-  <div class="header"><h1>Conniku</h1></div>
-  <div class="body">{inner_html}</div>
-  <div class="footer">Este correo fue enviado por Conniku. Si no deseas recibir estas notificaciones,
-  puedes desactivarlas en tu perfil.</div>
-</div>
-</body></html>"""
-
-
-TEMPLATES = {
-    "friend_request": {
-        "subject": "Nueva solicitud de amistad en Conniku",
-        "html": lambda sender_name: _wrap(f"""
-            <p>Hola,</p>
-            <p><span class="highlight">{sender_name}</span> te ha enviado una solicitud de amistad.</p>
-            <p>Ingresa a Conniku para aceptarla o rechazarla.</p>
-            <a class="btn" href="#">Ver solicitud</a>
-        """),
-    },
-    "friend_accepted": {
-        "subject": "Tu solicitud de amistad fue aceptada",
-        "html": lambda accepter_name: _wrap(f"""
-            <p>Hola,</p>
-            <p><span class="highlight">{accepter_name}</span> ha aceptado tu solicitud de amistad.</p>
-            <p>Ya pueden interactuar en Conniku.</p>
-            <a class="btn" href="#">Ir a Conniku</a>
-        """),
-    },
-    "wall_post": {
-        "subject": "Nueva publicacion en tu muro de Conniku",
-        "html": lambda poster_name, preview: _wrap(f"""
-            <p>Hola,</p>
-            <p><span class="highlight">{poster_name}</span> ha publicado en tu muro:</p>
-            <blockquote style="border-left:3px solid #4f8cff; padding-left:12px; color:#555;">
-              {preview[:200]}{'...' if len(preview) > 200 else ''}
-            </blockquote>
-            <a class="btn" href="#">Ver publicacion</a>
-        """),
-    },
-    "new_message": {
-        "subject": "Nuevo mensaje en Conniku",
-        "html": lambda sender_name, preview: _wrap(f"""
-            <p>Hola,</p>
-            <p><span class="highlight">{sender_name}</span> te ha enviado un mensaje:</p>
-            <blockquote style="border-left:3px solid #4f8cff; padding-left:12px; color:#555;">
-              {preview[:200]}{'...' if len(preview) > 200 else ''}
-            </blockquote>
-            <a class="btn" href="#">Responder</a>
-        """),
-    },
-    "payment_receipt": {
-        "subject": "Recibo de pago - Conniku PRO",
-        "html": lambda user_name, amount, currency, transaction_id, date_str: _wrap(f"""
-            <p>Hola <span class="highlight">{user_name}</span>,</p>
-            <p>Gracias por suscribirte a <strong>Conniku PRO</strong>. Aquí tienes tu recibo de pago:</p>
-            <div style="background:#f8f9fc; border-radius:8px; padding:20px; margin:16px 0;">
-                <table style="width:100%; border-collapse:collapse; font-size:14px;">
-                    <tr><td style="padding:8px 0; color:#666;">Concepto</td><td style="padding:8px 0; text-align:right; font-weight:600;">Conniku PRO - Suscripción Mensual</td></tr>
-                    <tr><td style="padding:8px 0; color:#666;">Monto</td><td style="padding:8px 0; text-align:right; font-weight:600;">{amount} {currency}</td></tr>
-                    <tr><td style="padding:8px 0; color:#666;">Fecha</td><td style="padding:8px 0; text-align:right;">{date_str}</td></tr>
-                    <tr><td style="padding:8px 0; color:#666;">ID Transacción</td><td style="padding:8px 0; text-align:right; font-family:monospace; font-size:12px;">{transaction_id}</td></tr>
-                    <tr style="border-top:1px solid #e0e0e0;"><td style="padding:12px 0; font-weight:700;">Total</td><td style="padding:12px 0; text-align:right; font-weight:700; font-size:18px; color:#4f8cff;">{amount} {currency}</td></tr>
-                </table>
-            </div>
-            <p style="font-size:13px; color:#666;">Este recibo sirve como comprobante de pago. Si necesitas una factura formal, contáctanos a soporte@conniku.com.</p>
-            <p style="font-size:13px; color:#666;">Puedes administrar tu suscripción desde tu perfil en Conniku.</p>
-        """),
-    },
-    "welcome_pro": {
-        "subject": "Bienvenido a Conniku PRO",
-        "html": lambda user_name: _wrap(f"""
-            <p>Hola <span class="highlight">{user_name}</span>,</p>
-            <p>Tu suscripción a <strong>Conniku PRO</strong> está activa. Ahora tienes acceso a:</p>
-            <ul style="padding-left:20px; line-height:2;">
-                <li>Asignaturas ilimitadas</li>
-                <li>Chat IA sin límites</li>
-                <li>Generación ilimitada de guías, quizzes y flashcards</li>
-                <li>Subida de videos y transcripciones</li>
-                <li>Soporte prioritario</li>
-            </ul>
-            <a class="btn" href="#">Ir a Conniku</a>
-            <p style="margin-top:16px; font-size:13px; color:#666;">Gracias por apoyar Conniku. Tu suscripción se renovará automáticamente cada mes.</p>
-        """),
-    },
-}
-
-# ---------------------------------------------------------------------------
-# Background email queue / worker
-# ---------------------------------------------------------------------------
-
-_email_queue: Queue = Queue()
-_worker_started = False
-_worker_lock = threading.Lock()
-
-
-def _send_email(to_email: str, subject: str, html_body: str) -> None:
-    """Actually send one email via SMTP. Runs inside the worker thread."""
-    if not SMTP_USER or not SMTP_PASS:
-        logger.warning("SMTP credentials not configured; skipping email to %s", to_email)
-        return
-
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = SMTP_FROM
-    msg["To"] = to_email
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-
-    try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
-            server.ehlo()
-            server.starttls()
-            server.ehlo()
-            server.login(SMTP_USER, SMTP_PASS)
-            server.sendmail(SMTP_FROM, [to_email], msg.as_string())
-        logger.info("Email sent to %s [%s]", to_email, subject)
-    except Exception:
-        logger.exception("Failed to send email to %s", to_email)
-
-
-def _worker() -> None:
-    """Daemon thread that drains the email queue."""
-    while True:
-        item = _email_queue.get()
-        if item is None:
-            break
-        to_email, subject, html_body = item
-        _send_email(to_email, subject, html_body)
-        _email_queue.task_done()
-
-
-def _ensure_worker() -> None:
-    global _worker_started
-    if _worker_started:
-        return
-    with _worker_lock:
-        if _worker_started:
+def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str = None):
+    """Send email in background thread."""
+    def _send():
+        if not SMTP_PASS:
+            print(f"[Email] SMTP not configured. Would send to {to_email}: {subject}")
             return
-        t = threading.Thread(target=_worker, daemon=True, name="email-worker")
-        t.start()
-        _worker_started = True
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["From"] = f"Conniku <{SMTP_FROM}>"
+            msg["To"] = to_email
+            msg["Subject"] = subject
+            msg["Reply-To"] = reply_to or REPLY_TO
+            msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASS)
+                server.sendmail(SMTP_FROM, to_email, msg.as_string())
+            print(f"[Email] Sent to {to_email}: {subject}")
+        except Exception as e:
+            print(f"[Email Error] {e}")
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
 
 
-def enqueue_email(to_email: str, subject: str, html_body: str) -> None:
-    """Add an email to the send queue (non-blocking)."""
-    _ensure_worker()
-    _email_queue.put((to_email, subject, html_body))
+def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = "") -> str:
+    """Generate branded HTML email template."""
+    cta_html = ""
+    if cta_text and cta_url:
+        cta_html = f'''<div style="text-align:center;margin:24px 0">
+            <a href="{cta_url}" style="background:#2563EB;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">{cta_text}</a>
+        </div>'''
+
+    return f'''<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
+<body style="margin:0;padding:0;background:#F5F3EF;font-family:Inter,-apple-system,sans-serif">
+<div style="max-width:560px;margin:0 auto;padding:32px 16px">
+    <div style="text-align:center;margin-bottom:24px">
+        <span style="font-size:22px;font-weight:700;color:#1D2939">Conniku</span>
+    </div>
+    <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #E5E7EB">
+        <h2 style="margin:0 0 16px;font-size:18px;color:#1D2939">{title}</h2>
+        <div style="font-size:14px;line-height:1.7;color:#475467">{body}</div>
+        {cta_html}
+    </div>
+    <div style="text-align:center;margin-top:24px;font-size:12px;color:#98A2B3">
+        <p>Este correo fue enviado por Conniku. No respondas a este mensaje.</p>
+        <p>Para contactarnos: <a href="mailto:{CONTACT_EMAIL}" style="color:#2563EB">{CONTACT_EMAIL}</a></p>
+        <p><a href="{FRONTEND_URL}" style="color:#2563EB">conniku.com</a></p>
+    </div>
+</div></body></html>'''
 
 
-# ---------------------------------------------------------------------------
-# Helper: check preference then enqueue
-# ---------------------------------------------------------------------------
+# ─── Notification Triggers (call from any route) ────────────
 
-
-def _get_prefs(db: Session, user_id: str) -> NotificationPreference:
-    prefs = db.query(NotificationPreference).filter_by(user_id=user_id).first()
-    if not prefs:
-        prefs = NotificationPreference(user_id=user_id)
-        db.add(prefs)
-        db.commit()
-        db.refresh(prefs)
-    return prefs
-
-
-def notify_friend_request(db: Session, recipient: User, sender: User) -> None:
-    """Queue an email for a new friend request if the recipient allows it."""
-    prefs = _get_prefs(db, recipient.id)
-    if not prefs.notify_friend_request:
+def send_notification_email(user: User, event_type: str, title: str, body: str, cta_text: str = "", cta_url: str = ""):
+    """Send a notification email to a user based on event type."""
+    if not user or not user.email:
         return
-    tpl = TEMPLATES["friend_request"]
-    sender_name = f"{sender.first_name} {sender.last_name}"
-    enqueue_email(recipient.email, tpl["subject"], tpl["html"](sender_name))
 
-
-def notify_friend_accepted(db: Session, recipient: User, accepter: User) -> None:
-    """Queue an email when a friend request is accepted."""
-    prefs = _get_prefs(db, recipient.id)
-    if not prefs.notify_friend_accepted:
+    # Don't email for minor events
+    SKIP_EMAIL = {"like", "endorsement", "share"}
+    if event_type in SKIP_EMAIL:
         return
-    tpl = TEMPLATES["friend_accepted"]
-    accepter_name = f"{accepter.first_name} {accepter.last_name}"
-    enqueue_email(recipient.email, tpl["subject"], tpl["html"](accepter_name))
+
+    html = _email_template(title, body, cta_text, cta_url or f"{FRONTEND_URL}/")
+    _send_email_async(user.email, f"Conniku — {title}", html)
 
 
-def notify_wall_post(db: Session, recipient: User, poster: User, post_content: str) -> None:
-    """Queue an email when someone posts on the recipient's wall."""
-    prefs = _get_prefs(db, recipient.id)
-    if not prefs.notify_wall_post:
-        return
-    tpl = TEMPLATES["wall_post"]
-    poster_name = f"{poster.first_name} {poster.last_name}"
-    enqueue_email(recipient.email, tpl["subject"], tpl["html"](poster_name, post_content))
+def send_welcome_email(user: User):
+    """Welcome email on registration."""
+    body = f"""
+    <p>¡Hola {user.first_name}! 👋</p>
+    <p>Bienvenido/a a <strong>Conniku</strong>, tu comunidad de estudio universitario.</p>
+    <p>Ya puedes:</p>
+    <ul>
+        <li>📚 Crear asignaturas y subir documentos</li>
+        <li>💬 Chatear sobre tus materiales de estudio</li>
+        <li>📝 Generar guías, quizzes y flashcards</li>
+        <li>👥 Conectar con otros estudiantes</li>
+    </ul>
+    <p>¡Tu primer paso: crea tu primera asignatura!</p>
+    """
+    html = _email_template("¡Bienvenido/a a Conniku!", body, "Comenzar a Estudiar", FRONTEND_URL)
+    _send_email_async(user.email, "¡Bienvenido/a a Conniku! 🎉", html)
 
 
-def notify_payment_receipt(db: Session, user: User, amount: float, currency: str,
-                           transaction_id: str, date_str: str) -> None:
-    """Send a payment receipt/invoice email after successful payment."""
-    tpl = TEMPLATES["payment_receipt"]
-    user_name = f"{user.first_name} {user.last_name}"
-    enqueue_email(user.email, tpl["subject"],
-                  tpl["html"](user_name, f"${amount:.2f}", currency, transaction_id, date_str))
+def send_subscription_email(user: User, plan: str, action: str):
+    """Email for subscription events."""
+    actions = {
+        "activated": ("¡Tu plan fue activado!", f"Tu plan <strong>{plan}</strong> está activo. Disfruta de todas las funciones."),
+        "renewed": ("Plan renovado", f"Tu plan <strong>{plan}</strong> fue renovado exitosamente."),
+        "failed": ("⚠️ Pago fallido", "No pudimos procesar tu pago. Tienes 3 días para actualizar tu método de pago."),
+        "expired": ("Plan expirado", "Tu suscripción expiró y tu cuenta volvió al plan Básico."),
+        "upgraded": ("🎉 ¡Upgrade exitoso!", f"Tu plan fue actualizado a <strong>{plan}</strong>."),
+    }
+    title, body = actions.get(action, ("Actualización de suscripción", f"Tu suscripción cambió a {plan}."))
+    html = _email_template(title, f"<p>Hola {user.first_name},</p><p>{body}</p>", "Ver mi Suscripción", f"{FRONTEND_URL}/subscription")
+    _send_email_async(user.email, f"Conniku — {title}", html)
 
 
-def notify_welcome_pro(db: Session, user: User) -> None:
-    """Send a welcome email when a user upgrades to PRO."""
-    tpl = TEMPLATES["welcome_pro"]
-    user_name = f"{user.first_name} {user.last_name}"
-    enqueue_email(user.email, tpl["subject"], tpl["html"](user_name))
+def send_ceo_weekly_report(report_data: dict):
+    """Send weekly report to CEO email."""
+    rev = report_data.get("revenue", {})
+    users = report_data.get("users", {})
+    eng = report_data.get("engagement", {})
+
+    body = f"""
+    <p><strong>Período:</strong> {report_data.get('period', '')}</p>
+    <h3>💰 Ingresos</h3>
+    <p>Bruto: ${rev.get('grossUsd', 0)} USD | Ganancia neta: ${rev.get('gananciaNetaClp', 0):,} CLP</p>
+    <p>Tendencia: {rev.get('trend', '➡️')} {rev.get('growthPercent', 0)}% vs semana anterior</p>
+    <h3>👥 Usuarios</h3>
+    <p>Total: {users.get('total', 0)} | Nuevos: {users.get('newThisWeek', 0)} | Activos: {users.get('activeThisWeek', 0)}</p>
+    <h3>📊 Engagement</h3>
+    <p>Posts: {eng.get('wallPosts', 0)} | Mensajes: {eng.get('messages', 0)} | Estudio: {eng.get('studyHours', 0)}h</p>
+    """
+    html = _email_template("Reporte Semanal CEO", body, "Ver Dashboard", f"{FRONTEND_URL}/admin")
+    _send_email_async(CEO_EMAIL, f"Conniku — Reporte Semanal {report_data.get('period', '')}", html, reply_to=CEO_EMAIL)
 
 
-def notify_new_message(db: Session, recipient: User, sender: User, message_preview: str) -> None:
-    """Queue an email when the recipient gets a new direct message."""
-    prefs = _get_prefs(db, recipient.id)
-    if not prefs.notify_message:
-        return
-    tpl = TEMPLATES["new_message"]
-    sender_name = f"{sender.first_name} {sender.last_name}"
-    enqueue_email(recipient.email, tpl["subject"], tpl["html"](sender_name, message_preview))
+# ─── Contact Form ───────────────────────────────────────────
+
+class ContactMessage(BaseModel):
+    name: str
+    email: str
+    subject: str = "Consulta General"
+    message: str
 
 
-# ---------------------------------------------------------------------------
-# Pydantic schemas
-# ---------------------------------------------------------------------------
+@router.post("/contact")
+def send_contact_message(data: ContactMessage):
+    """Public contact form — sends to contacto@ and CEO."""
+    if not data.name or not data.email or not data.message:
+        raise HTTPException(400, "Todos los campos son obligatorios")
+    if len(data.message) > 2000:
+        raise HTTPException(400, "Mensaje muy largo (máximo 2000 caracteres)")
+
+    # Send to contact email (which forwards to CEO)
+    body = f"""
+    <p><strong>De:</strong> {data.name} ({data.email})</p>
+    <p><strong>Asunto:</strong> {data.subject}</p>
+    <hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0">
+    <p>{data.message.replace(chr(10), '<br>')}</p>
+    """
+    html = _email_template(f"Nuevo mensaje: {data.subject}", body)
+    _send_email_async(CONTACT_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email)
+
+    # Also send to CEO directly
+    _send_email_async(CEO_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email)
+
+    return {"status": "sent", "message": "Mensaje enviado. Te responderemos a la brevedad."}
 
 
-class NotificationPrefsResponse(BaseModel):
-    notify_friend_request: bool
-    notify_friend_accepted: bool
-    notify_wall_post: bool
-    notify_message: bool
+@router.post("/contact/from-profile")
+def send_contact_from_profile(data: dict, user: User = Depends(get_current_user)):
+    """Contact form from user profile — includes user context."""
+    message = data.get("message", "").strip()
+    subject = data.get("subject", "Comentario de Usuario")
+    if not message:
+        raise HTTPException(400, "Mensaje requerido")
 
+    body = f"""
+    <p><strong>De:</strong> {user.first_name} {user.last_name} (@{user.username})</p>
+    <p><strong>Email:</strong> {user.email}</p>
+    <p><strong>Universidad:</strong> {user.university or 'N/A'} | <strong>Carrera:</strong> {user.career or 'N/A'}</p>
+    <p><strong>Plan:</strong> {user.subscription_tier or 'free'}</p>
+    <p><strong>Asunto:</strong> {subject}</p>
+    <hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0">
+    <p>{message.replace(chr(10), '<br>')}</p>
+    """
+    html = _email_template(f"Mensaje de @{user.username}: {subject}", body)
+    _send_email_async(CONTACT_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email)
+    _send_email_async(CEO_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email)
 
-class NotificationPrefsUpdate(BaseModel):
-    notify_friend_request: Optional[bool] = None
-    notify_friend_accepted: Optional[bool] = None
-    notify_wall_post: Optional[bool] = None
-    notify_message: Optional[bool] = None
-
-
-# ---------------------------------------------------------------------------
-# FastAPI endpoints
-# ---------------------------------------------------------------------------
-
-
-@router.get("/preferences", response_model=NotificationPrefsResponse)
-def get_preferences(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Obtener las preferencias de notificacion del usuario actual."""
-    prefs = _get_prefs(db, user.id)
-    return NotificationPrefsResponse(
-        notify_friend_request=prefs.notify_friend_request,
-        notify_friend_accepted=prefs.notify_friend_accepted,
-        notify_wall_post=prefs.notify_wall_post,
-        notify_message=prefs.notify_message,
-    )
-
-
-@router.put("/preferences", response_model=NotificationPrefsResponse)
-def update_preferences(
-    body: NotificationPrefsUpdate,
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
-    """Actualizar preferencias de notificacion."""
-    prefs = _get_prefs(db, user.id)
-    for field in ("notify_friend_request", "notify_friend_accepted", "notify_wall_post", "notify_message"):
-        val = getattr(body, field)
-        if val is not None:
-            setattr(prefs, field, val)
-    db.commit()
-    db.refresh(prefs)
-    return NotificationPrefsResponse(
-        notify_friend_request=prefs.notify_friend_request,
-        notify_friend_accepted=prefs.notify_friend_accepted,
-        notify_wall_post=prefs.notify_wall_post,
-        notify_message=prefs.notify_message,
-    )
-
-
-@router.post("/test")
-def send_test_notification(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Enviar un correo de prueba al usuario actual."""
-    test_html = _wrap("""
-        <p>Hola,</p>
-        <p>Este es un correo de prueba de <span class="highlight">Conniku</span>.</p>
-        <p>Si recibes este mensaje, tus notificaciones por correo estan funcionando correctamente.</p>
-    """)
-    enqueue_email(user.email, "Prueba de notificaciones - Conniku", test_html)
-    return {"status": "queued", "message": "Correo de prueba enviado a la cola."}
+    return {"status": "sent", "message": "Mensaje enviado al equipo de Conniku."}

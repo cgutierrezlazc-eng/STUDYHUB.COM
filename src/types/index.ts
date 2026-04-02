@@ -18,6 +18,8 @@ export interface User {
   career: string;
   semester: number;
   phone?: string;
+  country?: string;
+  countryCurrency?: string;
   birthDate?: string;
   bio?: string;
   provider: 'email' | 'google';

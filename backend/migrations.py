@@ -49,6 +49,18 @@ def migrate():
         ("is_banned", "BOOLEAN DEFAULT FALSE"),
         ("ban_reason", "VARCHAR(500)"),
         ("is_admin", "BOOLEAN DEFAULT FALSE"),
+        # Tier system
+        ("subscription_tier", "VARCHAR(10) DEFAULT 'free'"),
+        ("referral_code", "VARCHAR(12)"),
+        ("referred_by", "VARCHAR(16)"),
+        ("referral_count", "INTEGER DEFAULT 0"),
+        ("weekly_study_goal_hours", "FLOAT DEFAULT 10.0"),
+        ("pomodoro_total_sessions", "INTEGER DEFAULT 0"),
+        ("pomodoro_total_minutes", "INTEGER DEFAULT 0"),
+        ("streak_freeze_count", "INTEGER DEFAULT 2"),
+        # Country & currency
+        ("country", "VARCHAR(5) DEFAULT 'CL'"),
+        ("country_currency", "VARCHAR(5) DEFAULT 'CLP'"),
     ]
 
     inspector = inspect(engine)

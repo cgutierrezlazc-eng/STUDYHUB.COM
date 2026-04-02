@@ -11,9 +11,11 @@ export default function Subscription({ onNavigate }: Props) {
   const [subStatus, setSubStatus] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly')
+  const [localPrices, setLocalPrices] = useState<any>(null)
 
   useEffect(() => {
     api.getSubscriptionStatus().then(setSubStatus).catch(() => {})
+    api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
     // Check URL params for success/cancel
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
@@ -115,7 +117,7 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Para empezar y conectar</div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, lineHeight: 2.2, color: 'var(--text-secondary)' }}>
                   <li>✓ 2 asignaturas</li>
-                  <li>✓ 20 mensajes IA / 6 horas</li>
+                  <li>✓ 20 consultas / 6 horas</li>
                   <li>✓ Red social básica</li>
                   <li>✓ Cursos de desarrollo</li>
                   <li>✓ 100 MB almacenamiento</li>
@@ -135,6 +137,11 @@ export default function Subscription({ onNavigate }: Props) {
                   ${selectedPlan === 'monthly' ? '5' : '39.99'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
+                {localPrices?.plans && (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    ≈ {localPrices.plans[selectedPlan === 'monthly' ? 'pro_monthly' : 'pro_yearly']?.formatted} {localPrices.currency}
+                  </div>
+                )}
                 {selectedPlan === 'yearly' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $6.67/mes · Ahorras $40/año</div>
                 )}
@@ -142,7 +149,7 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Para estudiar en serio</div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 13, lineHeight: 2.2, color: 'var(--text-secondary)' }}>
                   <li>✓ 8 asignaturas</li>
-                  <li>✓ 200 mensajes IA / día</li>
+                  <li>✓ 200 consultas / día</li>
                   <li>✓ Sin anuncios</li>
                   <li>✓ Exportar DOCX</li>
                   <li>✓ Crear comunidades</li>
@@ -155,7 +162,9 @@ export default function Subscription({ onNavigate }: Props) {
                   onClick={handleSubscribe} disabled={loading}>
                   {loading ? 'Procesando...' : 'Comenzar Prueba Gratis (7 días)'}
                 </button>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>Cancela cuando quieras</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>
+                  Cobro automático {selectedPlan === 'monthly' ? 'mensual' : 'anual'} · Cancela cuando quieras
+                </p>
               </div>
 
               {/* MAX Plan */}
@@ -166,6 +175,11 @@ export default function Subscription({ onNavigate }: Props) {
                   ${selectedPlan === 'monthly' ? '13' : '99.99'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
+                {localPrices?.plans && (
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    ≈ {localPrices.plans[selectedPlan === 'monthly' ? 'max_monthly' : 'max_yearly']?.formatted} {localPrices.currency}
+                  </div>
+                )}
                 {selectedPlan === 'yearly' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $8.33/mes · Ahorras $56/año</div>
                 )}
@@ -186,7 +200,9 @@ export default function Subscription({ onNavigate }: Props) {
                   onClick={handleSubscribe} disabled={loading}>
                   {loading ? 'Procesando...' : 'Activar Max'}
                 </button>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>Pago seguro con Stripe</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>
+                  Cobro automático {selectedPlan === 'monthly' ? 'mensual' : 'anual'} · Stripe seguro
+                </p>
               </div>
             </div>
 
@@ -215,7 +231,7 @@ export default function Subscription({ onNavigate }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
                 { icon: '📚', label: 'Asignaturas ilimitadas' },
-                { icon: '🤖', label: 'Chat IA ilimitado' },
+                { icon: '📚', label: 'Chat con tus documentos ilimitado' },
                 { icon: '🧠', label: 'Quizzes ilimitados' },
                 { icon: '🃏', label: 'Flashcards FSRS' },
                 { icon: '🚀', label: 'Upload to Study' },

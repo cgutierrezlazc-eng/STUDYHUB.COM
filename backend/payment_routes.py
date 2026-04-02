@@ -134,12 +134,20 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
     if event_type == "checkout.session.completed":
         # Payment successful
         user_id = data_object.get("metadata", {}).get("conniku_user_id")
+        plan = data_object.get("metadata", {}).get("plan", "monthly")
         if user_id:
             user = db.query(User).filter(User.id == user_id).first()
             if user:
                 user.subscription_status = "active"
-                user.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
-                user.storage_limit_bytes = 5 * 1024 * 1024 * 1024  # 5 GB for PRO
+                # Determine tier from plan metadata
+                if plan in ("max_monthly", "max_yearly", "max"):
+                    user.subscription_tier = "max"
+                    user.storage_limit_bytes = 3221225472  # 3 GB for MAX
+                    user.subscription_expires_at = datetime.utcnow() + timedelta(days=365 if "yearly" in plan else 30)
+                else:
+                    user.subscription_tier = "pro"
+                    user.storage_limit_bytes = 1073741824  # 1 GB for PRO
+                    user.subscription_expires_at = datetime.utcnow() + timedelta(days=365 if "yearly" in plan else 30)
 
                 # Log payment
                 payment = PaymentLog(
@@ -159,11 +167,12 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             user = db.query(User).filter(User.stripe_customer_id == customer_id).first()
             if user:
                 user.subscription_status = "cancelled"
-                user.storage_limit_bytes = 500 * 1024 * 1024  # Back to 500 MB
+                user.subscription_tier = "free"
+                user.storage_limit_bytes = 314572800  # 300 MB free tier
                 db.commit()
 
     elif event_type == "customer.subscription.updated":
-        # Subscription renewed/updated
+        # Subscription renewed or updated (auto-billing success)
         customer_id = data_object.get("customer")
         status = data_object.get("status")
         if customer_id:
@@ -174,8 +183,29 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                     current_period_end = data_object.get("current_period_end")
                     if current_period_end:
                         user.subscription_expires_at = datetime.utcfromtimestamp(current_period_end)
+                    # Log the renewal payment
+                    amount = data_object.get("plan", {}).get("amount", 0) / 100
+                    if amount > 0:
+                        payment = PaymentLog(
+                            id=gen_id(), user_id=user.id, provider="stripe",
+                            transaction_id=data_object.get("id", ""),
+                            amount=amount,
+                            currency=data_object.get("plan", {}).get("currency", "usd"),
+                            status="completed",
+                        )
+                        db.add(payment)
                 elif status in ("past_due", "unpaid"):
-                    user.subscription_status = "expired"
+                    # Payment failed — 3-day grace period starts
+                    user.subscription_status = "active"  # Keep active during grace
+                    from notification_routes import create_notification
+                    create_notification(db, user.id, "payment_overdue",
+                        "No pudimos procesar tu pago",
+                        body="Tienes 3 días para actualizar tu método de pago antes de perder tu suscripción.",
+                        link="/subscription")
+                elif status == "canceled":
+                    user.subscription_status = "cancelled"
+                    user.subscription_tier = "free"
+                    user.storage_limit_bytes = 314572800
                 db.commit()
 
     elif event_type == "invoice.payment_failed":
@@ -190,3 +220,107 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
                 db.commit()
 
     return {"received": True}
+
+
+@router.post("/upgrade-prorate")
+def calculate_upgrade_proration(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Calculate prorated price for upgrading from Pro to Max mid-cycle."""
+    from middleware import get_tier
+    current_tier = get_tier(user)
+    target_tier = data.get("target_tier", "max")
+
+    if current_tier != "pro" or target_tier != "max":
+        raise HTTPException(400, "Solo se puede prorratear de Pro a Max")
+
+    if not user.subscription_expires_at:
+        raise HTTPException(400, "No tienes una suscripción activa")
+
+    from calendar import monthrange
+    now = datetime.utcnow()
+
+    # Calculate days remaining in current billing period
+    expires = user.subscription_expires_at
+    if expires <= now:
+        raise HTTPException(400, "Tu suscripción ya expiró. Suscríbete directamente a Max.")
+
+    days_remaining = (expires - now).days
+
+    # Get the total days in the billing month
+    _, days_in_month = monthrange(now.year, now.month)
+
+    # Monthly prices
+    pro_monthly = 5.00
+    max_monthly = 13.00
+    price_diff = max_monthly - pro_monthly  # $8 per month
+
+    # Prorated amount: difference × (remaining days / total days)
+    prorated_amount = round(price_diff * (days_remaining / days_in_month), 2)
+
+    return {
+        "currentTier": "pro",
+        "targetTier": "max",
+        "daysRemaining": days_remaining,
+        "daysInMonth": days_in_month,
+        "proMonthly": pro_monthly,
+        "maxMonthly": max_monthly,
+        "priceDifference": price_diff,
+        "proratedAmount": prorated_amount,
+        "currency": "USD",
+        "message": f"Pago prorrateado: ${prorated_amount} USD por {days_remaining} días restantes de tu ciclo actual.",
+    }
+
+
+@router.post("/execute-upgrade")
+def execute_upgrade(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Execute the upgrade from Pro to Max with prorated payment via Stripe."""
+    if not stripe:
+        raise HTTPException(503, "Stripe no configurado")
+
+    from middleware import get_tier
+    if get_tier(user) != "pro":
+        raise HTTPException(400, "Solo usuarios Pro pueden hacer upgrade a Max")
+
+    try:
+        # Get current Stripe subscription
+        if not user.stripe_customer_id:
+            raise HTTPException(400, "No tienes método de pago registrado")
+
+        subscriptions = stripe.Subscription.list(customer=user.stripe_customer_id, status="active", limit=1)
+        if not subscriptions.data:
+            raise HTTPException(400, "No se encontró suscripción activa en Stripe")
+
+        current_sub = subscriptions.data[0]
+
+        STRIPE_PRICE_MAX_MONTHLY = os.environ.get("STRIPE_PRICE_MAX_MONTHLY", "")
+        if not STRIPE_PRICE_MAX_MONTHLY:
+            raise HTTPException(503, "Precio Max no configurado")
+
+        # Update subscription with proration
+        updated = stripe.Subscription.modify(
+            current_sub.id,
+            items=[{
+                "id": current_sub["items"]["data"][0]["id"],
+                "price": STRIPE_PRICE_MAX_MONTHLY,
+            }],
+            proration_behavior="always_invoice",  # Stripe handles proration automatically
+        )
+
+        # Update user
+        user.subscription_tier = "max"
+        user.storage_limit_bytes = 3221225472  # 3 GB
+        db.commit()
+
+        from notification_routes import create_notification
+        create_notification(db, user.id, "upgrade",
+            "🎉 ¡Bienvenido a Conniku MAX!",
+            body="Tu plan fue actualizado. Disfruta de todas las funciones ilimitadas.",
+            link="/subscription")
+        db.commit()
+
+        return {
+            "status": "upgraded",
+            "newTier": "max",
+            "message": "¡Upgrade exitoso! Ahora tienes Conniku MAX.",
+        }
+    except Exception as e:
+        raise HTTPException(500, f"Error al procesar upgrade: {str(e)}")

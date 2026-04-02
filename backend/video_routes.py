@@ -82,6 +82,47 @@ def process_video_transcription(video_doc_id: str, file_path: Optional[str] = No
 
         video.transcription = transcript
         video.status = "done" if not transcript.startswith("[Error") else "error"
+
+        # Save transcription as project document
+        try:
+            import json as json_mod
+            from pathlib import Path
+
+            PROJECTS_DIR = Path.home() / ".conniku" / "projects"
+            meta_file = PROJECTS_DIR / video.project_id / "meta.json"
+            docs_dir = PROJECTS_DIR / video.project_id / "documents"
+            docs_dir.mkdir(parents=True, exist_ok=True)
+
+            # Save transcription as .txt file
+            txt_filename = f"transcripcion_{video.title or 'clase'}_{video.id}.txt"
+            txt_path = docs_dir / txt_filename
+            txt_path.write_text(transcript, encoding="utf-8")
+
+            # Add to project meta.json documents array
+            if meta_file.exists():
+                meta = json_mod.loads(meta_file.read_text())
+                doc_entry = {
+                    "id": video.id,
+                    "name": txt_filename,
+                    "type": "txt",
+                    "path": str(txt_path),
+                    "size": len(transcript.encode("utf-8")),
+                    "uploadedAt": datetime.utcnow().isoformat(),
+                    "processed": True,
+                    "summary": f"Transcripción de: {video.title or 'clase grabada'}",
+                }
+                if "documents" not in meta:
+                    meta["documents"] = []
+                meta["documents"].append(doc_entry)
+                meta_file.write_text(json_mod.dumps(meta, indent=2))
+
+            # Also index in AI engine for chat
+            from ai_engine import AIEngine
+            ai = AIEngine()
+            ai.add_document(video.project_id, txt_filename, transcript)
+        except Exception as e:
+            print(f"[Warning] Could not save transcription as document: {e}")
+
         db.commit()
     except Exception as e:
         video.status = "error"
@@ -159,6 +200,9 @@ async def upload_video(
     db: Session = Depends(get_db),
 ):
     _verify_project_access(project_id, user, db)
+
+    from middleware import require_tier
+    require_tier(user, "pro")  # Pro can upload videos, MAX can transcribe
 
     if not file.filename:
         raise HTTPException(400, "No se proporcionó archivo")

@@ -75,43 +75,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         client_id: GOOGLE_CLIENT_ID,
         callback: async (response: any) => {
           try {
-            // Decode JWT token from Google to get user info
-            const payload = JSON.parse(atob(response.credential.split('.')[1]))
-            const googleEmail = payload.email
-            const firstName = payload.given_name || 'Usuario'
-            const lastName = payload.family_name || ''
-            const avatar = payload.picture || ''
-
-            // Generate a cryptographically random password for Google users
-            const randomPassword = crypto.getRandomValues(new Uint8Array(32))
-            const googlePassword = Array.from(randomPassword, b => b.toString(16).padStart(2, '0')).join('')
-
-            // Try to register with Google info
-            try {
-              const data = await api.register({
-                email: googleEmail,
-                password: googlePassword,
-                first_name: firstName,
-                last_name: lastName,
-                avatar: avatar,
-                gender: 'unspecified',
-                language: 'es',
-                birth_date: '1995-01-01',
-                tos_accepted: true,
-              })
-              localStorage.setItem(TOKEN_KEY, data.token)
-              setUser(data.user)
-            } catch {
-              // Already registered — try login with Google credential token
-              // Since we can't know the random password, use the Google token as auth
-              try {
-                const data = await api.login(googleEmail, response.credential)
-                localStorage.setItem(TOKEN_KEY, data.token)
-                setUser(data.user)
-              } catch {
-                console.error('Google login failed: account may require password login')
-              }
-            }
+            // Send Google credential to our backend for verification
+            const data = await api.googleAuth(response.credential)
+            localStorage.setItem(TOKEN_KEY, data.token)
+            setUser(data.user)
           } catch (err) {
             console.error('Google login error:', err)
           }

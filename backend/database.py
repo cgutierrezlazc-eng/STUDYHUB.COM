@@ -59,6 +59,8 @@ class User(Base):
     career = Column(String(255), default="")
     semester = Column(Integer, default=1)
     phone = Column(String(50), default="")
+    country = Column(String(5), default="CL")  # ISO country code
+    country_currency = Column(String(5), default="CLP")  # User's local currency
     birth_date = Column(String(20), default="")
     bio = Column(Text, default="")
     is_graduated = Column(Boolean, default=False)
@@ -970,6 +972,34 @@ class MoodCheckIn(Base):
     mood = Column(Integer, nullable=False)  # 1-5
     energy = Column(Integer, default=3)  # 1-5
     note = Column(String(200), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ─── Class Attendance ──────────────────────────────────────
+
+class ClassAttendance(Base):
+    __tablename__ = "class_attendance"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    project_id = Column(String(255), nullable=False)
+    class_title = Column(String(255), default="")
+    attended_at = Column(DateTime, default=datetime.utcnow)
+    duration_minutes = Column(Integer, default=0)
+    recorded = Column(Boolean, default=False)
+    transcribed = Column(Boolean, default=False)
+
+
+# ─── User Downloads (cloud storage) ───────────────────────
+
+class UserDownload(Base):
+    __tablename__ = "user_downloads"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    filename = Column(String(500), nullable=False)
+    file_path = Column(Text, nullable=False)
+    file_size = Column(Integer, default=0)  # bytes
+    source_url = Column(Text, default="")  # original URL
+    mime_type = Column(String(100), default="")
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

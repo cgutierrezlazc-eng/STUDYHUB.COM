@@ -18,7 +18,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'welcome.male': 'Bienvenido',
     'welcome.female': 'Bienvenida',
     'welcome.unspecified': 'Hola',
-    'welcome.subtitle': 'Tu plataforma inteligente de estudio',
+    'welcome.subtitle': 'Tu comunidad de estudio universitario',
 
     // Dashboard
     'dash.title': 'Dashboard',
@@ -280,7 +280,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Onboarding
     'onb.welcomeTitle': '¡Bienvenido a Conniku!',
-    'onb.welcomeDesc': 'Tu plataforma de estudio inteligente. Vamos a mostrarte cómo sacar el máximo provecho.',
+    'onb.welcomeDesc': 'Tu comunidad de estudio universitario. Vamos a mostrarte cómo sacar el máximo provecho.',
     'onb.subjectsTitle': 'Crea tus asignaturas',
     'onb.subjectsDesc': 'Organiza tu estudio creando un proyecto por cada asignatura. Sube PDFs, Word, Excel, PowerPoint y más.',
     'onb.studyTitle': 'Estudio Interactivo',
@@ -354,7 +354,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'welcome.male': 'Welcome',
     'welcome.female': 'Welcome',
     'welcome.unspecified': 'Hello',
-    'welcome.subtitle': 'Your intelligent study platform',
+    'welcome.subtitle': 'Your university study community',
     'dash.title': 'Dashboard',
     'dash.subjects': 'Subjects',
     'dash.documents': 'Documents',
@@ -584,7 +584,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'admin.noLogs': 'No moderation logs.',
     'admin.target': 'User',
     'onb.welcomeTitle': 'Welcome to Conniku!',
-    'onb.welcomeDesc': 'Your intelligent study platform. Let us show you how to get the most out of it.',
+    'onb.welcomeDesc': 'Your university study community. Let us show you how to get the most out of it.',
     'onb.subjectsTitle': 'Create your subjects',
     'onb.subjectsDesc': 'Organize your study by creating a project for each subject. Upload PDFs, Word, Excel, PowerPoint and more.',
     'onb.studyTitle': 'Interactive Study',
@@ -649,7 +649,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'welcome.male': 'Bem-vindo',
     'welcome.female': 'Bem-vinda',
     'welcome.unspecified': 'Olá',
-    'welcome.subtitle': 'Sua plataforma inteligente de estudo',
+    'welcome.subtitle': 'Sua comunidade de estudo universitário',
     'dash.title': 'Painel',
     'dash.subjects': 'Disciplinas',
     'dash.documents': 'Documentos',
@@ -694,7 +694,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'welcome.male': 'Bienvenu',
     'welcome.female': 'Bienvenue',
     'welcome.unspecified': 'Bonjour',
-    'welcome.subtitle': "Votre plateforme d'étude intelligente",
+    'welcome.subtitle': "Votre communauté d'étude universitaire",
     'dash.title': 'Tableau de bord',
     'dash.subjects': 'Matières',
     'dash.documents': 'Documents',

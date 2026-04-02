@@ -239,7 +239,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
         {/* Tip Card */}
         {totalDocs === 0 && projects.length > 0 && (
           <div className="card" style={{ marginTop: 20, padding: 16, borderLeft: '4px solid var(--accent-orange)' }}>
-            <strong>💡 Consejo:</strong> Sube documentos a una asignatura para que la IA genere guías, quizzes y flashcards automáticamente.
+            <strong>💡 Consejo:</strong> Sube documentos a una asignatura para que Conniku genere guías, quizzes y flashcards automáticamente.
           </div>
         )}
 

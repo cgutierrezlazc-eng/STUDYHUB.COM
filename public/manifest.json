@@ -1,7 +1,7 @@
 {
   "name": "Conniku",
   "short_name": "Conniku",
-  "description": "Plataforma de estudio con IA para estudiantes universitarios",
+  "description": "Comunidad de estudio para estudiantes universitarios",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F3EF",

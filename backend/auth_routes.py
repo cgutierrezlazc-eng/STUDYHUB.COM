@@ -6,6 +6,7 @@ import re
 import random
 import string
 import hashlib
+import html
 from datetime import datetime, date, timedelta
 from typing import Optional
 from collections import defaultdict
@@ -110,6 +111,7 @@ class RegisterRequest(BaseModel):
     avatar: str = ""
     username: Optional[str] = None
     tos_accepted: bool = False
+    referral_code: Optional[str] = None
 
 
 class LoginRequest(BaseModel):
@@ -185,10 +187,16 @@ def user_to_dict(user: User) -> dict:
         "onboardingCompleted": user.onboarding_completed,
         "theme": user.theme or "nocturno",
         "subscriptionStatus": user.subscription_status or "trial",
+        "subscriptionTier": getattr(user, 'subscription_tier', 'free') or "free",
         "trialStartedAt": user.trial_started_at.isoformat() if user.trial_started_at else None,
         "subscriptionExpiresAt": user.subscription_expires_at.isoformat() if user.subscription_expires_at else None,
         "storageUsedBytes": getattr(user, 'storage_used_bytes', 0) or 0,
         "storageLimitBytes": getattr(user, 'storage_limit_bytes', 524288000) or 524288000,
+        "referralCode": getattr(user, 'referral_code', None),
+        "referralCount": getattr(user, 'referral_count', 0) or 0,
+        "pomodoroTotalSessions": getattr(user, 'pomodoro_total_sessions', 0) or 0,
+        "pomodoroTotalMinutes": getattr(user, 'pomodoro_total_minutes', 0) or 0,
+        "weeklyStudyGoalHours": getattr(user, 'weekly_study_goal_hours', 10.0) or 10.0,
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }
@@ -209,6 +217,11 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         raise HTTPException(400, "La contraseña debe incluir al menos una mayúscula")
     if not re.search(r'[0-9]', req.password):
         raise HTTPException(400, "La contraseña debe incluir al menos un número")
+
+    # Block disposable emails
+    from security_middleware import is_disposable_email
+    if is_disposable_email(req.email):
+        raise HTTPException(400, "No se permiten correos temporales. Usa tu correo universitario o personal.")
 
     # Validate email unique
     if db.query(User).filter(User.email == req.email.lower()).first():
@@ -254,18 +267,18 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         password_hash=hash_password(req.password),
         username=username,
         user_number=get_next_user_number(db),
-        first_name=req.first_name,
-        last_name=req.last_name,
+        first_name=html.escape(req.first_name),
+        last_name=html.escape(req.last_name),
         avatar=req.avatar or None,
         gender=req.gender or "unspecified",
         language=req.language or "es",
         language_skill="intermediate",
-        university=req.university or "",
-        career=req.career or "",
+        university=html.escape(req.university or ""),
+        career=html.escape(req.career or ""),
         semester=req.semester or 1,
         phone=req.phone or "",
         birth_date=req.birth_date or "",
-        bio=req.bio or "",
+        bio=html.escape(req.bio or ""),
         provider="email",
         email_verified=False,
         verification_code=verification_code,
@@ -294,22 +307,52 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
     db.commit()
     db.refresh(user)
 
+    # Process referral code if provided
+    if req.referral_code:
+        referrer = db.query(User).filter(User.referral_code == req.referral_code).first()
+        if referrer and referrer.id != user.id:
+            referrer.referral_count = (referrer.referral_count or 0) + 1
+            user.referred_by = referrer.id
+            # Give referrer 7 bonus days of Pro
+            if not referrer.subscription_expires_at or referrer.subscription_expires_at < datetime.utcnow():
+                referrer.subscription_expires_at = datetime.utcnow() + timedelta(days=7)
+            else:
+                referrer.subscription_expires_at = referrer.subscription_expires_at + timedelta(days=7)
+            if referrer.subscription_tier == "free":
+                referrer.subscription_status = "active"
+                referrer.subscription_tier = "pro"
+            # Give new user 3 bonus days of Pro
+            user.subscription_status = "active"
+            user.subscription_tier = "pro"
+            user.subscription_expires_at = datetime.utcnow() + timedelta(days=3)
+            db.commit()
+            # Notify referrer
+            try:
+                from notification_routes import create_notification
+                create_notification(db, referrer.id, "referral",
+                    f"¡{user.first_name} se unió con tu enlace! +7 días Pro 🎉",
+                    link="/subscription", actor_id=user.id)
+                db.commit()
+            except Exception:
+                pass
+
     # Send verification email
     try:
-        from notifications import enqueue_email, _wrap
-        verify_html = _wrap(f"""
-            <p>Hola <span class="highlight">{req.first_name}</span>,</p>
+        from notifications import _send_email_async, _email_template
+        verify_body = f"""
+            <p>Hola <strong>{req.first_name}</strong>,</p>
             <p>Bienvenido a Conniku. Tu código de verificación es:</p>
             <div style="text-align:center; margin:20px 0;">
-                <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#4f8cff;
-                             background:#f0f4ff; padding:12px 24px; border-radius:8px; display:inline-block;">
+                <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#2563EB;
+                             background:#EFF6FF; padding:12px 24px; border-radius:8px; display:inline-block;">
                     {verification_code}
                 </span>
             </div>
             <p>Ingresa este código en la aplicación para verificar tu correo electrónico.</p>
-            <p style="color:#999; font-size:13px;">Este código expira en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.</p>
-        """)
-        enqueue_email(user.email, "Verifica tu cuenta de Conniku", verify_html)
+            <p style="color:#98A2B3; font-size:13px;">Este código expira en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.</p>
+        """
+        verify_html = _email_template("Verifica tu cuenta", verify_body)
+        _send_email_async(user.email, "Verifica tu cuenta de Conniku", verify_html)
     except Exception:
         pass  # Don't block registration if email fails
 
@@ -337,11 +380,97 @@ def login(req: LoginRequest, request: Request = None, db: Session = Depends(get_
     if user.password_hash and not user.password_hash.startswith("$2b$") and not user.password_hash.startswith("$2a$"):
         user.password_hash = hash_password(req.password)
 
-    if not user.email_verified:
-        user.email_verified = True
-
     user.last_login = datetime.utcnow()
     db.commit()
+
+    token = create_access_token(user.id)
+    return {"token": token, "user": user_to_dict(user)}
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str  # Google JWT token
+
+
+@router.post("/google")
+def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = Depends(get_db)):
+    """Authenticate with Google credential. Creates account if needed."""
+    import base64
+    import json as _json
+
+    # Rate limit
+    client_ip = request.client.host if request and request.client else "unknown"
+    _check_rate_limit(f"google:{client_ip}", max_attempts=10, window_minutes=15)
+
+    # Decode Google JWT (header.payload.signature)
+    try:
+        parts = req.credential.split(".")
+        if len(parts) != 3:
+            raise HTTPException(400, "Token de Google inválido")
+        # Pad base64 if needed
+        payload_b64 = parts[1] + "=" * (4 - len(parts[1]) % 4)
+        payload = _json.loads(base64.urlsafe_b64decode(payload_b64))
+    except Exception:
+        raise HTTPException(400, "No se pudo decodificar el token de Google")
+
+    google_email = payload.get("email", "").lower()
+    if not google_email:
+        raise HTTPException(400, "Token de Google no contiene email")
+
+    first_name = payload.get("given_name", "Usuario")
+    last_name = payload.get("family_name", "")
+    avatar = payload.get("picture", "")
+
+    # Check if user exists
+    user = db.query(User).filter(User.email == google_email).first()
+
+    if user:
+        # Existing user — just log in
+        if user.is_banned:
+            raise HTTPException(403, f"Cuenta suspendida: {user.ban_reason or 'Violación de políticas'}")
+        user.last_login = datetime.utcnow()
+        if avatar and not user.avatar:
+            user.avatar = avatar
+        db.commit()
+    else:
+        # New user — create account
+        username = generate_username(first_name, db)
+        user = User(
+            id=gen_id(),
+            email=google_email,
+            password_hash=None,  # Google users don't have a password
+            username=username,
+            user_number=get_next_user_number(db),
+            first_name=html.escape(first_name),
+            last_name=html.escape(last_name),
+            avatar=avatar,
+            gender="unspecified",
+            language="es",
+            language_skill="intermediate",
+            university="",
+            career="",
+            semester=1,
+            phone="",
+            birth_date="",
+            bio="",
+            provider="google",
+            email_verified=True,  # Google already verified the email
+            verification_code=None,
+            is_banned=False,
+            is_admin=False,
+            role="user",
+            tos_accepted_at=datetime.utcnow(),
+            onboarding_completed=False,
+            theme="nocturno",
+            xp=0,
+            level=1,
+            streak_days=0,
+            badges="[]",
+            subscription_status="trial",
+            trial_started_at=datetime.utcnow(),
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     token = create_access_token(user.id)
     return {"token": token, "user": user_to_dict(user)}
@@ -465,19 +594,20 @@ def forgot_password(req: ForgotPasswordRequest, request: Request = None, db: Ses
 
     # Send reset code via email
     try:
-        from notifications import enqueue_email, _wrap
-        reset_html = _wrap(f"""
-            <p>Hola <span class="highlight">{user.first_name}</span>,</p>
+        from notifications import _send_email_async, _email_template
+        reset_body = f"""
+            <p>Hola <strong>{user.first_name}</strong>,</p>
             <p>Recibimos una solicitud para restablecer tu contraseña. Tu código es:</p>
             <div style="text-align:center; margin:20px 0;">
-                <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#4f8cff;
-                             background:#f0f4ff; padding:12px 24px; border-radius:8px; display:inline-block;">
+                <span style="font-size:32px; font-weight:700; letter-spacing:8px; color:#2563EB;
+                             background:#EFF6FF; padding:12px 24px; border-radius:8px; display:inline-block;">
                     {code}
                 </span>
             </div>
-            <p style="color:#999; font-size:13px;">Este código expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.</p>
-        """)
-        enqueue_email(user.email, "Restablecer contraseña - Conniku", reset_html)
+            <p style="color:#98A2B3; font-size:13px;">Este código expira en 15 minutos. Si no solicitaste esto, ignora este mensaje.</p>
+        """
+        reset_html = _email_template("Restablecer contraseña", reset_body)
+        _send_email_async(user.email, "Restablecer contraseña - Conniku", reset_html)
     except Exception:
         pass
 

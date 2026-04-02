@@ -291,13 +291,15 @@ Responde SOLO con JSON válido con esta estructura:
                 return json.loads(result[start:end])
             return {"questions": [], "error": "Could not parse quiz"}
 
-    def generate_flashcards(self, project_id: str) -> list[dict]:
+    def generate_flashcards(self, project_id: str, language: str = "es") -> list[dict]:
         all_text = self._get_all_text(project_id)
 
-        system = """Genera flashcards de estudio basadas en el material.
+        lang_name = {"es": "español", "en": "English", "pt": "português", "fr": "français"}.get(language, "español")
+
+        system = f"""Genera flashcards de estudio basadas en el material.
 Responde SOLO con JSON válido: una lista de objetos con "front" (pregunta/concepto) y "back" (respuesta/definición).
-Ejemplo: [{"front": "¿Qué es X?", "back": "X es..."}]
-Genera entre 15-20 flashcards en español."""
+Ejemplo: [{{"front": "¿Qué es X?", "back": "X es..."}}]
+Genera entre 15-20 flashcards en {lang_name}."""
 
         user_prompt = f"""Material:
 {all_text[:12000]}"""

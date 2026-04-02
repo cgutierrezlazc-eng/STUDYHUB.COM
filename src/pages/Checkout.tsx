@@ -325,7 +325,7 @@ export default function Checkout({ onNavigate }: Props) {
 
           <div style={styles.lineItem}>
             <span>Suscripcion mensual</span>
-            <span>$8.00 USD</span>
+            <span>$5.00 USD</span>
           </div>
           <div style={styles.lineItem}>
             <span>Periodo de prueba</span>
@@ -341,13 +341,13 @@ export default function Checkout({ onNavigate }: Props) {
 
           <div style={styles.trialBadge}>
             <span>✓</span>
-            7 dias gratis, luego $8 USD/mes
+            7 dias gratis, luego $5 USD/mes
           </div>
 
           <div style={{ marginTop: '24px', fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
             <p style={{ margin: '0 0 6px 0' }}>Incluye:</p>
-            <p style={{ margin: '0 0 4px 0' }}>✦ IA ilimitada para estudio</p>
-            <p style={{ margin: '0 0 4px 0' }}>✦ Resumenes y flashcards</p>
+            <p style={{ margin: '0 0 4px 0' }}>✦ Consultas ilimitadas sobre tu material</p>
+            <p style={{ margin: '0 0 4px 0' }}>✦ Resúmenes y flashcards</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Proyectos colaborativos</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Soporte prioritario</p>
           </div>

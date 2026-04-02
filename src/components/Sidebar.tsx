@@ -55,6 +55,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
           <span className="nav-item-icon">📚</span> Salas de Estudio
         </button>
+        <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
+          <span className="nav-item-icon">🔍</span> Buscador
+        </button>
         <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
           <span className="nav-item-icon">📅</span> Calendario
         </button>
@@ -90,6 +93,11 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
           <span className="nav-item-icon">💡</span> Sugerencias
         </button>
+        {user?.role === 'owner' && (
+          <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
+            <span className="nav-item-icon">🏢</span> CEO Panel
+          </button>
+        )}
         {user?.isAdmin && (
           <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
             <span className="nav-item-icon">⚙️</span> Admin

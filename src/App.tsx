@@ -8,6 +8,7 @@ import RightPanel from './components/RightPanel'
 import MobileBottomNav from './components/MobileBottomNav'
 import NewProjectModal from './components/NewProjectModal'
 import Onboarding from './components/Onboarding'
+import Landing from './pages/Landing'
 import { Project } from './types'
 import { api } from './services/api'
 
@@ -35,6 +36,8 @@ const Courses = React.lazy(() => import('./pages/Courses'))
 const Events = React.lazy(() => import('./pages/Events'))
 const Mentorship = React.lazy(() => import('./pages/Mentorship'))
 const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
+const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
+const Search = React.lazy(() => import('./pages/Search'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -53,7 +56,7 @@ function PageLoader() {
 
 export default function App() {
   const { user, isLoading, refreshUser } = useAuth()
-  const [authView, setAuthView] = useState<'login' | 'register' | 'forgot'>('login')
+  const [authView, setAuthView] = useState<'landing' | 'login' | 'register' | 'forgot'>('landing')
   const [projects, setProjects] = useState<Project[]>([])
   const [showNewProject, setShowNewProject] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
@@ -96,7 +99,7 @@ export default function App() {
   if (isLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', flexDirection: 'column', gap: 16 }}>
-        <h1 className="sidebar-brand" style={{ fontSize: 32 }}>Conniku</h1>
+        <img src="/logo.svg" alt="Conniku" style={{ height: 48, objectFit: 'contain' }} />
         <div className="loading-dots"><span /><span /><span /></div>
       </div>
     )
@@ -105,9 +108,10 @@ export default function App() {
   if (!user) {
     return (
       <Suspense fallback={<PageLoader />}>
+        {authView === 'landing' && <Landing onLogin={() => setAuthView('login')} onRegister={() => setAuthView('register')} />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
-        {authView === 'login' && <Login onSwitchToRegister={() => setAuthView('register')} onForgotPassword={() => setAuthView('forgot')} />}
-        {authView === 'register' && <Register onSwitchToLogin={() => setAuthView('login')} />}
+        {authView === 'login' && <Login onSwitchToRegister={() => setAuthView('register')} onForgotPassword={() => setAuthView('forgot')} onBack={() => setAuthView('landing')} />}
+        {authView === 'register' && <Register onSwitchToLogin={() => setAuthView('login')} onBack={() => setAuthView('landing')} />}
       </Suspense>
     )
   }
@@ -191,6 +195,8 @@ export default function App() {
             <Route path="/study-rooms" element={<StudyRooms onNavigate={(path) => navigate(path)} />} />
             <Route path="/communities" element={<Communities onNavigate={(path) => navigate(path)} />} />
             <Route path="/communities/:id" element={<CommunityView onNavigate={(path) => navigate(path)} />} />
+            <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
+            <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />

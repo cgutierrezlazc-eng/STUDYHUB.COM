@@ -26,7 +26,7 @@ export default function TopBar({ onNavigate }: Props) {
   return (
     <header className="topbar">
       <div className="topbar-left">
-        <span className="topbar-logo" onClick={() => onNavigate('/')}>Conniku</span>
+        <img src="/logo.svg" alt="Conniku" className="topbar-logo" onClick={() => onNavigate('/')} style={{ height: 28, objectFit: 'contain', cursor: 'pointer' }} />
       </div>
 
       <div className="topbar-center">
@@ -39,7 +39,7 @@ export default function TopBar({ onNavigate }: Props) {
             onChange={e => setSearchQuery(e.target.value)}
             onKeyDown={e => {
               if (e.key === 'Enter' && searchQuery.trim()) {
-                onNavigate(`/friends?search=${encodeURIComponent(searchQuery)}`)
+                onNavigate(`/search?q=${encodeURIComponent(searchQuery)}`)
                 setSearchQuery('')
               }
             }}

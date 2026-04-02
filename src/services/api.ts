@@ -46,6 +46,9 @@ export const api = {
   login: (email: string, password: string) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
 
+  googleAuth: (credential: string) =>
+    request('/auth/google', { method: 'POST', body: JSON.stringify({ credential }) }),
+
   getMe: () => request('/auth/me'),
 
   updateMe: (data: any) =>
@@ -665,6 +668,70 @@ export const api = {
   // ─── Study Goals ──────────────────────────────────────────
   setStudyGoal: (goalHours: number) =>
     request('/auth/me', { method: 'PUT', body: JSON.stringify({ weekly_study_goal_hours: goalHours }) }),
+
+  // ─── Finance / Multi-currency ─────────────────────────────
+  getFinancePrices: (countryCode?: string) =>
+    request(`/finance/prices/${countryCode || 'CL'}`),
+  getCountries: () => request('/finance/countries'),
+  getAdminFinanceDashboard: () => request('/finance/admin/dashboard'),
+  checkExpiredSubscriptions: () =>
+    request('/finance/check-expired-subscriptions', { method: 'POST' }),
+
+  // ─── F129 SII ─────────────────────────────────────────────
+  generateF129: (month?: number, year?: number) => {
+    const params = new URLSearchParams();
+    if (month) params.set('month', String(month));
+    if (year) params.set('year', String(year));
+    return request(`/finance/admin/f129/generate?${params}`);
+  },
+  submitF129: (data: any) =>
+    request('/finance/admin/f129/submit', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ─── Rewards ──────────────────────────────────────────────
+  checkRewards: () => request('/rewards/check', { method: 'POST' }),
+  getAvailableRewards: () => request('/rewards/available'),
+
+  // ─── CEO Reports ──────────────────────────────────────────
+  getCeoWeeklyReport: () => request('/finance/admin/weekly-report'),
+  getReferralFraudReport: () => request('/referrals/admin/fraud-report'),
+  getComplianceStatus: () => request('/finance/compliance-status'),
+
+  // ─── Document Download ────────────────────────────────────
+  downloadProjectDocument: (projectId: string, docName: string) =>
+    request(`/projects/${projectId}/documents/${encodeURIComponent(docName)}/download`),
+
+  // ─── Attendance ───────────────────────────────────────────
+  logAttendance: (projectId: string, data: { title?: string; duration_minutes?: number; recorded?: boolean; transcribed?: boolean }) =>
+    request(`/projects/${projectId}/attendance`, { method: 'POST', body: JSON.stringify(data) }),
+  getAttendance: (projectId: string) => request(`/projects/${projectId}/attendance`),
+
+  // ─── Exam Night Mode ──────────────────────────────────────
+  generateExamNightPlan: (projectId: string, hours: number) =>
+    request(`/projects/${projectId}/exam-night-mode`, { method: 'POST', body: JSON.stringify({ hours }) }),
+
+  // ─── Subscription Upgrade ─────────────────────────────────
+  calculateUpgradeProration: (targetTier: string) =>
+    request('/payments/upgrade-prorate', { method: 'POST', body: JSON.stringify({ target_tier: targetTier }) }),
+  executeUpgrade: () =>
+    request('/payments/execute-upgrade', { method: 'POST', body: JSON.stringify({}) }),
+
+  // ─── Contact ──────────────────────────────────────────────
+  sendContactMessage: (data: { name: string; email: string; subject?: string; message: string }) =>
+    request('/email/contact', { method: 'POST', body: JSON.stringify(data) }),
+  sendContactFromProfile: (subject: string, message: string) =>
+    request('/email/contact/from-profile', { method: 'POST', body: JSON.stringify({ subject, message }) }),
+
+  // ─── Academic Search ──────────────────────────────────────
+  searchWeb: (query: string, page?: number) =>
+    request(`/search/web?q=${encodeURIComponent(query)}${page ? `&page=${page}` : ''}`),
+  getAiSearchSummary: (query: string, results: any[]) =>
+    request('/search/ai-summary', { method: 'POST', body: JSON.stringify({ query, results }) }),
+  downloadToConniku: (url: string, filename?: string) =>
+    request('/search/download-to-conniku', { method: 'POST', body: JSON.stringify({ url, filename }) }),
+  getMyDownloads: () => request('/search/downloads'),
+  getDownloadFile: (downloadId: string) => request(`/search/downloads/${downloadId}/file`),
+  deleteDownload: (downloadId: string) =>
+    request(`/search/downloads/${downloadId}`, { method: 'DELETE' }),
 
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),

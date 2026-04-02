@@ -16,7 +16,8 @@ from pydantic import BaseModel
 import uvicorn
 
 from sqlalchemy.orm import Session
-from database import init_db, get_db, User
+from sqlalchemy import desc
+from database import init_db, get_db, User, gen_id
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from ai_engine import AIEngine
@@ -43,6 +44,9 @@ from pomodoro_routes import router as pomodoro_router
 from wellness_routes import router as wellness_router
 from referral_routes import router as referral_router
 from exam_predictor_routes import router as exam_predictor_router
+from chile_tax_routes import router as finance_router
+from rewards_routes import router as rewards_router
+from search_routes import router as search_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -60,6 +64,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from security_middleware import SecurityHeadersMiddleware
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Disable docs in production
+if os.environ.get("ENVIRONMENT") == "production":
+    app.docs_url = None
+    app.redoc_url = None
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -104,6 +116,9 @@ app.include_router(pomodoro_router)
 app.include_router(wellness_router)
 app.include_router(referral_router)
 app.include_router(exam_predictor_router)
+app.include_router(finance_router)
+app.include_router(rewards_router)
+app.include_router(search_router)
 
 # Storage paths
 DATA_DIR = Path.home() / ".conniku"
@@ -114,35 +129,39 @@ PROJECTS_DIR.mkdir(exist_ok=True)
 doc_processor = DocumentProcessor()
 ai_engine = AIEngine()
 
-# ─── Chat rate limiting for free users ─────────────────────────
+# ─── Chat rate limiting (tier-aware) ───────────────────────────
 # In-memory tracker: { user_id: [datetime, datetime, ...] }
 _chat_timestamps: dict[str, list[datetime]] = {}
 
-FREE_CHAT_LIMIT = 20
-FREE_CHAT_WINDOW_HOURS = 5
-
 
 def check_chat_limit(user: User):
-    """Raise 429 if a free/trial user exceeds 20 messages per 5 hours."""
-    sub = getattr(user, 'subscription_status', 'trial') or 'trial'
-    role = getattr(user, 'role', 'user') or 'user'
-    # Premium, active subscribers, admins, and owner bypass limits
-    if sub in ("active", "owner") or role in ("admin", "owner"):
+    """Raise 429 if user exceeds their tier's AI message limit."""
+    from middleware import get_tier, get_tier_limits
+    tier = get_tier(user)
+    limits = get_tier_limits(user)
+
+    # Max tier and owner/admin bypass limits
+    if tier == "max":
         return
 
+    window_hours = limits.get("ai_window_hours", 6)
+    max_messages = limits.get("ai_messages_per_window", 20)
+
     now = datetime.utcnow()
-    cutoff = now - timedelta(hours=FREE_CHAT_WINDOW_HOURS)
+    cutoff = now - timedelta(hours=window_hours)
 
     timestamps = _chat_timestamps.get(user.id, [])
     # Prune old entries
     timestamps = [t for t in timestamps if t > cutoff]
     _chat_timestamps[user.id] = timestamps
 
-    if len(timestamps) >= FREE_CHAT_LIMIT:
+    if len(timestamps) >= max_messages:
+        tier_names = {"free": "Pro ($5/mes)", "pro": "Max ($13/mes)"}
+        upgrade_to = tier_names.get(tier, "tu plan")
         raise HTTPException(
             429,
-            f"Límite de {FREE_CHAT_LIMIT} mensajes cada {FREE_CHAT_WINDOW_HOURS} horas alcanzado. "
-            "Actualiza a Premium para mensajes ilimitados."
+            f"Límite de {max_messages} mensajes cada {window_hours} horas alcanzado. "
+            f"Actualiza a {upgrade_to} para más mensajes."
         )
 
 
@@ -333,8 +352,8 @@ def upload_from_path(project_id: str, req: PathUploadRequest, user: User = Depen
         raise HTTPException(403, "No tienes acceso a este proyecto")
 
     source = Path(req.path).resolve()
-    # Security: only allow files from the user's own project directories or home
-    allowed_bases = [PROJECTS_DIR.resolve(), Path.home().resolve()]
+    # Security: only allow files from the user's own project directories
+    allowed_bases = [PROJECTS_DIR.resolve()]
     if not any(str(source).startswith(str(base)) for base in allowed_bases):
         raise HTTPException(400, "Ruta de archivo no permitida")
     if not source.exists():
@@ -404,13 +423,16 @@ def generate_flashcards(project_id: str, user: User = Depends(get_current_user))
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    flashcards = ai_engine.generate_flashcards(project_id)
+    flashcards = ai_engine.generate_flashcards(project_id, user.language or "es")
     return {"flashcards": flashcards}
 
 
 @app.post("/projects/{project_id}/upload-to-study")
 def upload_to_study(project_id: str, user: User = Depends(get_current_user)):
     """Generate guide + quiz + flashcards in one call."""
+    from middleware import require_tier
+    require_tier(user, "pro")
+
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -431,6 +453,9 @@ def upload_to_study(project_id: str, user: User = Depends(get_current_user)):
 @app.post("/projects/{project_id}/audio-to-notes")
 async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Record or upload class audio → transcribe → generate notes + flashcards."""
+    from middleware import require_tier
+    require_tier(user, "max")  # Only MAX can record + transcribe classes
+
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso")
@@ -488,6 +513,36 @@ Responde en {'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
         else:
             result = json.loads(result_text)
 
+        # Save full transcription as project document
+        try:
+            notes_content = result.get("notes", "")
+            if notes_content:
+                notes_filename = f"notas_clase_{datetime.now().strftime('%Y%m%d_%H%M%S')}.html"
+                notes_path = docs_dir / notes_filename
+                notes_path.write_text(notes_content, encoding="utf-8")
+
+                # Add to project meta
+                meta = get_project_meta(project_id)
+                doc_entry = {
+                    "id": gen_id(),
+                    "name": notes_filename,
+                    "type": "txt",
+                    "path": str(notes_path),
+                    "size": len(notes_content.encode("utf-8")),
+                    "uploadedAt": datetime.now().isoformat(),
+                    "processed": True,
+                    "summary": "Transcripción completa de clase grabada",
+                }
+                if "documents" not in meta:
+                    meta["documents"] = []
+                meta["documents"].append(doc_entry)
+                save_project_meta(project_id, meta)
+
+                # Index in AI engine
+                ai_engine.add_document(project_id, notes_filename, notes_content)
+        except Exception as e:
+            print(f"[Warning] Could not save notes as document: {e}")
+
         return {
             "notes": result.get("notes", ""),
             "summary": result.get("summary", ""),
@@ -503,6 +558,112 @@ Responde en {'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
         }
 
 
+@app.get("/projects/{project_id}/documents/{doc_name}/download")
+def download_document(project_id: str, doc_name: str, user: User = Depends(get_current_user)):
+    """Download a document — Pro and MAX only. Free can only view."""
+    from middleware import get_tier_limits
+    limits = get_tier_limits(user)
+    if not limits.get("can_download_docs"):
+        raise HTTPException(403, "Descarga de documentos requiere Plan Pro ($5/mes) o superior.")
+
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso")
+
+    file_path = get_project_docs_dir(project_id) / doc_name
+    if not file_path.exists():
+        raise HTTPException(404, "Documento no encontrado")
+
+    return FileResponse(str(file_path), filename=doc_name)
+
+
+@app.post("/projects/{project_id}/attendance")
+def log_attendance(project_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Log class attendance for a subject."""
+    from database import ClassAttendance
+    from middleware import require_tier
+    require_tier(user, "max")
+
+    att = ClassAttendance(
+        id=gen_id(), user_id=user.id, project_id=project_id,
+        class_title=data.get("title", "Clase"),
+        duration_minutes=data.get("duration_minutes", 0),
+        recorded=data.get("recorded", False),
+        transcribed=data.get("transcribed", False),
+    )
+    db.add(att)
+    db.commit()
+    return {"id": att.id, "status": "logged"}
+
+
+@app.get("/projects/{project_id}/attendance")
+def get_attendance(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get attendance history for a subject."""
+    from database import ClassAttendance
+    records = db.query(ClassAttendance).filter(
+        ClassAttendance.user_id == user.id, ClassAttendance.project_id == project_id
+    ).order_by(desc(ClassAttendance.attended_at)).all()
+
+    total = len(records)
+    recorded = sum(1 for r in records if r.recorded)
+    transcribed = sum(1 for r in records if r.transcribed)
+
+    return {
+        "totalClasses": total,
+        "recordedClasses": recorded,
+        "transcribedClasses": transcribed,
+        "attendanceRate": f"{round(total / max(total, 1) * 100)}%",
+        "records": [{
+            "id": r.id, "title": r.class_title or "Clase",
+            "date": r.attended_at.isoformat() if r.attended_at else "",
+            "duration": r.duration_minutes, "recorded": r.recorded, "transcribed": r.transcribed,
+        } for r in records],
+    }
+
+
+@app.post("/projects/{project_id}/exam-night-mode")
+def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(get_current_user)):
+    """MAX only — Generate emergency study plan for the night before an exam."""
+    from middleware import require_tier
+    require_tier(user, "max")
+
+    hours_available = data.get("hours", 6)
+    lang = user.language or "es"
+
+    all_text = ai_engine._get_all_text(project_id)
+    if not all_text:
+        raise HTTPException(400, "Sube documentos primero")
+
+    system = f"""Eres un tutor de emergencia. El estudiante tiene un examen MAÑANA y solo le quedan {hours_available} horas.
+Genera un plan de estudio de emergencia ultra-eficiente.
+Responde SOLO con JSON:
+{{
+  "plan": [
+    {{"hour": 1, "topic": "Tema más importante", "action": "Leer resumen + hacer 3 ejercicios", "minutes": 50, "break": 10}},
+    {{"hour": 2, "topic": "Segundo tema", "action": "Flashcards rápidas", "minutes": 50, "break": 10}}
+  ],
+  "criticalTopics": ["tema1", "tema2", "tema3"],
+  "quickTips": ["tip1", "tip2", "tip3"],
+  "motivationalMessage": "Mensaje de ánimo personalizado"
+}}
+Genera exactamente {hours_available} bloques de estudio.
+Prioriza lo más probable que salga en el examen.
+Responde en {'español' if lang == 'es' else 'English'}."""
+
+    prompt = f"Material del curso:\n{all_text[:15000]}\n\nGenera plan de emergencia para {hours_available} horas."
+
+    try:
+        result_text = ai_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
+        import json as json_mod
+        start = result_text.find('{')
+        end = result_text.rfind('}') + 1
+        result = json_mod.loads(result_text[start:end])
+    except Exception:
+        result = {"plan": [], "criticalTopics": [], "quickTips": ["Revisa tus notas", "Haz ejercicios clave", "Duerme al menos 4 horas"], "motivationalMessage": "¡Tú puedes! Confía en lo que ya sabes."}
+
+    return result
+
+
 @app.post("/math/solve")
 def solve_math(req: MathRequest, user: User = Depends(get_current_user)):
     from math_engine import MathEngine
@@ -514,6 +675,10 @@ def solve_math(req: MathRequest, user: User = Depends(get_current_user)):
 @app.post("/math/scan")
 def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)):
     """Scan an image of a math problem and solve it step by step."""
+    from middleware import get_tier_limits
+    # Check daily scan limit (tier-based)
+    # For now, just log — full rate tracking would need a counter
+
     import base64
 
     system = f"""Eres un experto en matemáticas. El estudiante te envía una foto de un problema o ecuación.
@@ -566,6 +731,17 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
+    # DOCX export: Pro (1500 words) + Max (unlimited), Free blocked
+    from middleware import get_tier, get_tier_limits
+    tier = get_tier(user)
+    if tier == "free":
+        raise HTTPException(403, "Exportar a Word requiere Plan Pro ($5/mes) o superior. Los usuarios Free pueden visualizar pero no descargar.")
+
+    # Pro: limit to 1500 words
+    if tier == "pro":
+        word_count = len(req.content.split())
+        if word_count > 1500:
+            raise HTTPException(403, f"Tu plan Pro permite exportar hasta 1,500 palabras ({word_count} detectadas). Actualiza a MAX para exportar sin límite.")
     try:
         from docx_generator import markdown_to_docx
         file_path = markdown_to_docx(req.content, req.title)

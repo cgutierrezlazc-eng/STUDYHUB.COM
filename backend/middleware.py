@@ -115,22 +115,73 @@ async def require_owner(user: User = Depends(get_current_user)) -> User:
 
 TIER_LIMITS = {
     "free": {
-        "max_subjects": 2, "ai_messages_per_window": 20, "ai_window_hours": 6,
-        "quizzes_per_week": 2, "guides_per_week": 1, "storage_bytes": 104857600,
-        "can_export_docx": False, "can_detect_ai": False, "can_create_events": False,
-        "can_post_jobs": False, "can_predict_exam": False, "xp_multiplier": 1.0,
+        "max_subjects": 2,
+        "ai_messages_per_window": 20,
+        "ai_window_hours": 6,
+        "quizzes_per_week": 2,
+        "guides_per_week": 1,
+        "storage_bytes": 314572800,  # 300 MB
+        "can_export_docx": False,
+        "can_download_docs": False,
+        "can_view_docs": True,
+        "can_detect_ai": False,
+        "can_use_videos": False,
+        "can_record_class": False,
+        "can_transcribe": False,
+        "can_create_events": False,
+        "can_post_jobs": False,
+        "can_predict_exam": False,
+        "can_use_socratic": False,
+        "can_use_flashcards_fsrs": False,
+        "can_exam_mode": False,
+        "scan_per_day": 3,
+        "xp_multiplier": 1.0,
     },
     "pro": {
-        "max_subjects": 8, "ai_messages_per_window": 200, "ai_window_hours": 24,
-        "quizzes_per_week": 105, "guides_per_week": 70, "storage_bytes": 2147483648,
-        "can_export_docx": True, "can_detect_ai": True, "can_create_events": True,
-        "can_post_jobs": False, "can_predict_exam": True, "xp_multiplier": 1.2,
+        "max_subjects": 8,
+        "ai_messages_per_window": 200,
+        "ai_window_hours": 24,
+        "quizzes_per_week": 105,
+        "guides_per_week": 70,
+        "storage_bytes": 1073741824,  # 1 GB
+        "can_export_docx": False,  # View only, MAX to download
+        "can_download_docs": True,
+        "can_view_docs": True,
+        "can_detect_ai": True,
+        "can_use_videos": True,
+        "can_record_class": False,  # MAX only
+        "can_transcribe": False,  # MAX only
+        "can_create_events": True,
+        "can_post_jobs": False,
+        "can_predict_exam": True,
+        "can_use_socratic": True,
+        "can_use_flashcards_fsrs": True,
+        "can_exam_mode": False,
+        "scan_per_day": 20,
+        "xp_multiplier": 1.2,
     },
     "max": {
-        "max_subjects": 99999, "ai_messages_per_window": 99999, "ai_window_hours": 24,
-        "quizzes_per_week": 99999, "guides_per_week": 99999, "storage_bytes": 10737418240,
-        "can_export_docx": True, "can_detect_ai": True, "can_create_events": True,
-        "can_post_jobs": True, "can_predict_exam": True, "xp_multiplier": 1.5,
+        "max_subjects": 99999,
+        "ai_messages_per_window": 99999,
+        "ai_window_hours": 24,
+        "quizzes_per_week": 99999,
+        "guides_per_week": 99999,
+        "storage_bytes": 3221225472,  # 3 GB
+        "can_export_docx": True,
+        "can_download_docs": True,
+        "can_view_docs": True,
+        "can_detect_ai": True,
+        "can_use_videos": True,
+        "can_record_class": True,
+        "can_transcribe": True,
+        "can_create_events": True,
+        "can_post_jobs": True,
+        "can_predict_exam": True,
+        "can_use_socratic": True,
+        "can_use_flashcards_fsrs": True,
+        "can_exam_mode": True,
+        "scan_per_day": 99999,
+        "xp_multiplier": 1.5,
     },
 }
 
@@ -138,6 +189,10 @@ TIER_LIMITS = {
 def get_tier(user):
     tier = getattr(user, 'subscription_tier', 'free') or 'free'
     status = getattr(user, 'subscription_status', 'trial') or 'trial'
+    role = getattr(user, 'role', 'user') or 'user'
+    # Owner and admin always get max tier
+    if role in ("owner", "admin") or status == "owner":
+        return "max"
     if tier == "max" and status == "active":
         return "max"
     if tier == "pro" and status in ("active", "trial"):
