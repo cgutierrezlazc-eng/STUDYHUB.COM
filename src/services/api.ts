@@ -10,7 +10,7 @@ function getApiBase(): string {
 
   // Production: detect by hostname (not localhost = deployed)
   if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-    return import.meta.env.VITE_API_URL || 'https://conniku-api.onrender.com';
+    return import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
   }
 
   return 'http://localhost:8899';
