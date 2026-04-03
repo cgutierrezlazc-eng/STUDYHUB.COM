@@ -1352,6 +1352,62 @@ h1, h2, h3,
   background: var(--bg-secondary);
 }
 
+/* ── Chat sidebar tabs ── */
+.msg-tab-bar {
+  display: flex;
+  border-bottom: 2px solid var(--border);
+  background: var(--bg-primary);
+  flex-shrink: 0;
+}
+.msg-tab {
+  flex: 1;
+  padding: 10px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.msg-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+.msg-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.msg-tab-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  text-align: center;
+}
+.msg-tab-count {
+  background: var(--bg-secondary);
+  color: var(--text-muted);
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.msg-friend-item:hover .msg-conv-preview {
+  color: var(--text-primary);
+}
+
 .msg-sidebar-header {
   padding: 12px;
   display: flex;

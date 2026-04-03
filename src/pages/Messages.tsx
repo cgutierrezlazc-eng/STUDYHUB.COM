@@ -9,6 +9,8 @@ interface Props {
   onNavigate: (path: string) => void
 }
 
+type SidebarTab = 'chats' | 'friends' | 'groups'
+
 export default function Messages({ conversationId, onNavigate }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -19,6 +21,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const [newMsg, setNewMsg] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('chats')
   const [showNewChat, setShowNewChat] = useState(false)
   const [showNewGroup, setShowNewGroup] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -31,7 +34,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const [recordingTime, setRecordingTime] = useState(0)
   const [showContactMenu, setShowContactMenu] = useState(false)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [friends, setFriends] = useState<any[]>([])
+  const [friendsFilter, setFriendsFilter] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -42,7 +46,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   useEffect(() => {
     loadConversations()
     loadFolders()
-    api.getFriendSuggestions().then(data => setSuggestions(data.slice(0, 4))).catch(() => {})
+    loadFriends()
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [])
 
@@ -71,6 +75,10 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
   const loadFolders = async () => {
     try { setFolders(await api.getFolders()) } catch {}
+  }
+
+  const loadFriends = async () => {
+    try { setFriends(await api.getFriends()) } catch {}
   }
 
   const loadMessages = async (convId: string) => {
@@ -178,12 +186,13 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     try { setSearchResults(await api.searchUsers(q)) } catch {}
   }
 
-  const startDirectChat = async (targetUser: UserBrief) => {
+  const startDirectChat = async (targetUser: any) => {
     try {
       const conv = await api.createConversation({ type: 'direct', participant_ids: [targetUser.id] })
       setShowNewChat(false)
       setSearchQuery('')
       setSearchResults([])
+      setSidebarTab('chats')
       await loadConversations()
       setActiveConv(conv.id)
     } catch (err: any) {
@@ -198,6 +207,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setShowNewGroup(false)
       setGroupName('')
       setSelectedUsers([])
+      setSidebarTab('chats')
       await loadConversations()
       setActiveConv(conv.id)
     } catch (err: any) {
@@ -252,6 +262,25 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const activeConversation = conversations.find(c => c.id === activeConv)
   const otherParticipant = activeConversation?.participants.find(p => p.id !== user?.id)
 
+  // Split conversations
+  const directChats = conversations.filter(c => c.type === 'direct')
+  const groupChats = conversations.filter(c => c.type === 'group_study')
+
+  // Filter friends who already have a conversation
+  const friendsWithChatStatus = friends.map(f => {
+    const existingConv = directChats.find(c => c.participants.some(p => p.id === f.id))
+    return { ...f, conversationId: existingConv?.id || null }
+  })
+
+  const filteredFriends = friendsFilter
+    ? friendsWithChatStatus.filter(f =>
+        `${f.firstName} ${f.lastName} ${f.username}`.toLowerCase().includes(friendsFilter.toLowerCase())
+      )
+    : friendsWithChatStatus
+
+  // Online indicator (placeholder — shows recently active)
+  const isOnline = (_userId: string) => Math.random() > 0.5
+
   const formatTime = (iso: string) => {
     const d = new Date(iso)
     const now = new Date()
@@ -263,6 +292,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
   const formatRecTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`
 
+  const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0)
+
   return (
     <>
       <div className="page-header">
@@ -271,86 +302,228 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       </div>
       <div className="page-body">
         <div className="msg-layout">
-          {/* Left: Conversation list */}
+          {/* Left: Sidebar with tabs */}
           <div className="msg-sidebar">
-            <div className="msg-sidebar-header">
-              <button className="btn btn-primary btn-sm" onClick={() => setShowNewChat(true)}>+ {t('msg.newChat')}</button>
-              <button className="btn btn-secondary btn-sm" onClick={() => setShowNewGroup(true)}>{t('msg.newGroup')}</button>
+            {/* Tab bar */}
+            <div className="msg-tab-bar">
+              <button
+                className={`msg-tab ${sidebarTab === 'chats' ? 'active' : ''}`}
+                onClick={() => setSidebarTab('chats')}
+              >
+                💬 Chats
+                {totalUnread > 0 && <span className="msg-tab-badge">{totalUnread}</span>}
+              </button>
+              <button
+                className={`msg-tab ${sidebarTab === 'friends' ? 'active' : ''}`}
+                onClick={() => setSidebarTab('friends')}
+              >
+                👥 Amigos
+                {friends.length > 0 && <span className="msg-tab-count">{friends.length}</span>}
+              </button>
+              <button
+                className={`msg-tab ${sidebarTab === 'groups' ? 'active' : ''}`}
+                onClick={() => setSidebarTab('groups')}
+              >
+                📚 Grupos
+                {groupChats.length > 0 && <span className="msg-tab-count">{groupChats.length}</span>}
+              </button>
             </div>
 
-            {folders.length > 0 && (
-              <div className="msg-folders">
-                {folders.map(f => (
-                  <div key={f.id} className="msg-folder-label">📁 {f.name}</div>
-                ))}
-              </div>
-            )}
-            <button className="msg-add-folder" onClick={() => setShowNewFolder(true)}>+ {t('msg.newFolder')}</button>
+            {/* ─── TAB: CHATS ─── */}
+            {sidebarTab === 'chats' && (
+              <>
+                <div className="msg-sidebar-header">
+                  <button className="btn btn-primary btn-sm" onClick={() => setShowNewChat(true)}>+ Nuevo Chat</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowNewGroup(true)}>+ Grupo</button>
+                </div>
 
-            <div className="msg-conv-list">
-              {loading ? (
-                <div className="msg-empty">{t('msg.loading')}</div>
-              ) : conversations.length === 0 && !activeConv ? (
-                <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
-                  <h3 style={{ margin: '0 0 8px' }}>{t('msg.noConversations')}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Empieza una conversación con tus compañeros de estudio</p>
-                  <button className="btn btn-primary btn-sm" onClick={() => setShowNewChat(true)} style={{ marginBottom: 20 }}>Buscar contactos</button>
-                  {suggestions.length > 0 && (
-                    <div style={{ textAlign: 'left' }}>
-                      <h4 style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Personas sugeridas</h4>
-                      {suggestions.map(s => (
-                        <div key={s.id} className="msg-user-result" onClick={() => startDirectChat(s)} style={{ padding: '8px 12px', borderRadius: 8, cursor: 'pointer' }}>
-                          <div className="msg-user-avatar">{s.avatar ? <img src={s.avatar} alt="" /> : s.firstName?.[0]}</div>
-                          <div>
-                            <div className="msg-user-name">{s.firstName} {s.lastName}</div>
-                            <div className="msg-user-username">@{s.username} · {s.career || s.university || ''}</div>
-                          </div>
-                        </div>
-                      ))}
+                {folders.length > 0 && (
+                  <div className="msg-folders">
+                    {folders.map(f => (
+                      <div key={f.id} className="msg-folder-label">📁 {f.name}</div>
+                    ))}
+                  </div>
+                )}
+                <button className="msg-add-folder" onClick={() => setShowNewFolder(true)}>+ {t('msg.newFolder')}</button>
+
+                <div className="msg-conv-list">
+                  {loading ? (
+                    <div className="msg-empty">{t('msg.loading')}</div>
+                  ) : conversations.length === 0 ? (
+                    <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+                      <h3 style={{ margin: '0 0 8px' }}>{t('msg.noConversations')}</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Empieza una conversación con tus compañeros</p>
+                      <button className="btn btn-primary btn-sm" onClick={() => setSidebarTab('friends')}>Ver amigos</button>
                     </div>
+                  ) : (
+                    conversations.map(conv => {
+                      const other = conv.participants.find(p => p.id !== user?.id)
+                      return (
+                        <div
+                          key={conv.id}
+                          className={`msg-conv-item ${activeConv === conv.id ? 'active' : ''}`}
+                          onClick={() => setActiveConv(conv.id)}
+                        >
+                          <div className="msg-conv-avatar wa-avatar">
+                            {conv.type === 'group_study' ? '👥' : (
+                              other?.avatar ?
+                                <img src={other.avatar} alt="" /> :
+                                <span>{(other?.firstName?.[0] || conv.name?.[0] || '?').toUpperCase()}</span>
+                            )}
+                          </div>
+                          <div className="msg-conv-info">
+                            <div className="msg-conv-name">
+                              {conv.type === 'group_study' && <span style={{ marginRight: 4, fontSize: 12 }}>📚</span>}
+                              {conv.name}
+                              {conv.unreadCount > 0 && <span className="msg-badge">{conv.unreadCount}</span>}
+                            </div>
+                            <div className="msg-conv-preview">
+                              {conv.lastMessage ? (
+                                <>
+                                  <span className="msg-conv-sender">{conv.lastMessage.sender?.firstName}: </span>
+                                  {conv.lastMessage.content?.slice(0, 40)}
+                                </>
+                              ) : t('msg.noMessages')}
+                            </div>
+                          </div>
+                          {conv.lastMessage && (
+                            <div className="msg-conv-time">{formatTime(conv.lastMessage.createdAt)}</div>
+                          )}
+                        </div>
+                      )
+                    })
                   )}
                 </div>
-              ) : conversations.length === 0 ? (
-                <div className="msg-empty"><p>{t('msg.noConversations')}</p></div>
-              ) : (
-                conversations.map(conv => {
-                  const other = conv.participants.find(p => p.id !== user?.id)
-                  return (
-                    <div
-                      key={conv.id}
-                      className={`msg-conv-item ${activeConv === conv.id ? 'active' : ''}`}
-                      onClick={() => setActiveConv(conv.id)}
-                    >
-                      <div className="msg-conv-avatar wa-avatar">
-                        {conv.type === 'group_study' ? '👥' : (
-                          other?.avatar ?
-                            <img src={other.avatar} alt="" /> :
-                            <span>{(other?.firstName?.[0] || conv.name?.[0] || '?').toUpperCase()}</span>
+              </>
+            )}
+
+            {/* ─── TAB: FRIENDS ─── */}
+            {sidebarTab === 'friends' && (
+              <>
+                <div className="msg-sidebar-header" style={{ padding: '8px 12px' }}>
+                  <input
+                    className="msg-friends-search"
+                    placeholder="🔍 Buscar amigo..."
+                    value={friendsFilter}
+                    onChange={e => setFriendsFilter(e.target.value)}
+                    style={{
+                      width: '100%', padding: '8px 12px', borderRadius: 20,
+                      border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+                      fontSize: 13, outline: 'none',
+                    }}
+                  />
+                </div>
+
+                <div className="msg-conv-list">
+                  {friends.length === 0 ? (
+                    <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>👥</div>
+                      <h3 style={{ margin: '0 0 8px' }}>Sin amigos aún</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Agrega amigos desde la Comunidad para chatear</p>
+                      <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>Ir a Comunidad</button>
+                    </div>
+                  ) : (
+                    filteredFriends.map(friend => (
+                      <div
+                        key={friend.id}
+                        className={`msg-conv-item msg-friend-item ${friend.conversationId && activeConv === friend.conversationId ? 'active' : ''}`}
+                        onClick={() => {
+                          if (friend.conversationId) {
+                            setActiveConv(friend.conversationId)
+                            setSidebarTab('chats')
+                          } else {
+                            startDirectChat(friend)
+                          }
+                        }}
+                      >
+                        <div className="msg-conv-avatar wa-avatar" style={{ position: 'relative' }}>
+                          {friend.avatar ?
+                            <img src={friend.avatar} alt="" /> :
+                            <span>{(friend.firstName?.[0] || '?').toUpperCase()}</span>
+                          }
+                          <div className="msg-online-dot" style={{
+                            position: 'absolute', bottom: 1, right: 1,
+                            width: 10, height: 10, borderRadius: '50%',
+                            border: '2px solid var(--bg-primary)',
+                            background: isOnline(friend.id) ? '#22c55e' : '#94a3b8',
+                          }} />
+                        </div>
+                        <div className="msg-conv-info">
+                          <div className="msg-conv-name">{friend.firstName} {friend.lastName}</div>
+                          <div className="msg-conv-preview" style={{ fontSize: 12 }}>
+                            @{friend.username}
+                            {friend.career && <span> · {friend.career}</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                          {friend.conversationId ? (
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>💬</span>
+                          ) : (
+                            <span style={{
+                              fontSize: 10, color: 'var(--accent)', fontWeight: 600,
+                              background: 'var(--accent-bg, rgba(99,102,241,0.1))',
+                              padding: '2px 8px', borderRadius: 10,
+                            }}>Nuevo</span>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* ─── TAB: GROUPS ─── */}
+            {sidebarTab === 'groups' && (
+              <>
+                <div className="msg-sidebar-header">
+                  <button className="btn btn-primary btn-sm" onClick={() => setShowNewGroup(true)} style={{ width: '100%' }}>
+                    + Crear grupo de estudio
+                  </button>
+                </div>
+
+                <div className="msg-conv-list">
+                  {groupChats.length === 0 ? (
+                    <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+                      <h3 style={{ margin: '0 0 8px' }}>Sin grupos</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
+                        Crea un grupo de estudio con tus compañeros de asignatura
+                      </p>
+                      <button className="btn btn-primary btn-sm" onClick={() => setShowNewGroup(true)}>Crear grupo</button>
+                    </div>
+                  ) : (
+                    groupChats.map(conv => (
+                      <div
+                        key={conv.id}
+                        className={`msg-conv-item ${activeConv === conv.id ? 'active' : ''}`}
+                        onClick={() => { setActiveConv(conv.id); setSidebarTab('chats') }}
+                      >
+                        <div className="msg-conv-avatar wa-avatar">
+                          <span>📚</span>
+                        </div>
+                        <div className="msg-conv-info">
+                          <div className="msg-conv-name">
+                            {conv.name}
+                            {conv.unreadCount > 0 && <span className="msg-badge">{conv.unreadCount}</span>}
+                          </div>
+                          <div className="msg-conv-preview">
+                            {conv.participants.length} miembros
+                            {conv.lastMessage && (
+                              <> · {conv.lastMessage.sender?.firstName}: {conv.lastMessage.content?.slice(0, 25)}</>
+                            )}
+                          </div>
+                        </div>
+                        {conv.lastMessage && (
+                          <div className="msg-conv-time">{formatTime(conv.lastMessage.createdAt)}</div>
                         )}
                       </div>
-                      <div className="msg-conv-info">
-                        <div className="msg-conv-name">
-                          {conv.name}
-                          {conv.unreadCount > 0 && <span className="msg-badge">{conv.unreadCount}</span>}
-                        </div>
-                        <div className="msg-conv-preview">
-                          {conv.lastMessage ? (
-                            <>
-                              <span className="msg-conv-sender">{conv.lastMessage.sender?.firstName}: </span>
-                              {conv.lastMessage.content?.slice(0, 40)}
-                            </>
-                          ) : t('msg.noMessages')}
-                        </div>
-                      </div>
-                      {conv.lastMessage && (
-                        <div className="msg-conv-time">{formatTime(conv.lastMessage.createdAt)}</div>
-                      )}
-                    </div>
-                  )
-                })
-              )}
-            </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Right: Chat pane */}
@@ -361,7 +534,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-chat-header wa-header">
                   <div className="wa-header-left" onClick={() => otherParticipant && onNavigate(`/user/${otherParticipant.id}`)}>
                     <div className="wa-header-avatar">
-                      {activeConversation.type === 'group_study' ? '👥' : (
+                      {activeConversation.type === 'group_study' ? '📚' : (
                         otherParticipant?.avatar ?
                           <img src={otherParticipant.avatar} alt="" /> :
                           <span>{(otherParticipant?.firstName?.[0] || '?').toUpperCase()}</span>
@@ -542,20 +715,38 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               <div className="msg-no-chat">
                 <div className="msg-no-chat-icon">💬</div>
                 <h3>{t('msg.selectChat')}</h3>
-                <p>{t('msg.selectChatHint')}</p>
-                {suggestions.length > 0 && (
-                  <div style={{ marginTop: 24, maxWidth: 320 }}>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12 }}>Contactos sugeridos:</p>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {suggestions.map(s => (
-                        <div key={s.id} onClick={() => startDirectChat(s)} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', background: 'var(--bg-secondary)', borderRadius: 12, cursor: 'pointer', border: '1px solid var(--border-color)' }}>
-                          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600 }}>
-                            {s.avatar ? <img src={s.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : s.firstName?.[0]}
+                <p style={{ color: 'var(--text-muted)', maxWidth: 320, margin: '8px auto 0' }}>
+                  Selecciona una conversación o elige un amigo para empezar a chatear
+                </p>
+                {friends.length > 0 && (
+                  <div style={{ marginTop: 24, maxWidth: 360 }}>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12, fontWeight: 600 }}>Amigos recientes:</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                      {friends.slice(0, 6).map(f => (
+                        <div
+                          key={f.id}
+                          onClick={() => startDirectChat(f)}
+                          style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                            padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 12,
+                            cursor: 'pointer', border: '1px solid var(--border-color)', minWidth: 90,
+                            transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                          <div style={{
+                            width: 40, height: 40, borderRadius: '50%',
+                            background: 'var(--accent)', color: '#fff',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16, fontWeight: 600, overflow: 'hidden',
+                          }}>
+                            {f.avatar ?
+                              <img src={f.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} /> :
+                              f.firstName?.[0]
+                            }
                           </div>
-                          <div style={{ textAlign: 'left' }}>
-                            <div style={{ fontWeight: 600, fontSize: 14 }}>{s.firstName} {s.lastName}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.career || s.university || `@${s.username}`}</div>
-                          </div>
+                          <div style={{ fontSize: 12, fontWeight: 600, textAlign: 'center' }}>{f.firstName}</div>
                         </div>
                       ))}
                     </div>
@@ -594,15 +785,37 @@ export default function Messages({ conversationId, onNavigate }: Props) {
         {showNewGroup && (
           <div className="modal-overlay" onClick={() => setShowNewGroup(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>{t('msg.newGroup')}</h3>
+              <h3>Crear grupo de estudio</h3>
               <div className="auth-field">
-                <label>{t('msg.groupName')}</label>
-                <input placeholder={t('msg.groupNamePlaceholder')} value={groupName} onChange={e => setGroupName(e.target.value)} autoFocus />
+                <label>Nombre del grupo</label>
+                <input placeholder="Ej: Cálculo II - Sección A" value={groupName} onChange={e => setGroupName(e.target.value)} autoFocus />
               </div>
               <div className="auth-field">
                 <label>{t('msg.addMembers')}</label>
                 <input placeholder={t('msg.searchPlaceholder')} value={searchQuery} onChange={e => handleSearch(e.target.value)} />
               </div>
+
+              {/* Quick add from friends */}
+              {friends.length > 0 && selectedUsers.length === 0 && !searchQuery && (
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Amigos:</label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
+                    {friends.slice(0, 8).map(f => (
+                      <button
+                        key={f.id}
+                        className="btn btn-secondary btn-sm"
+                        style={{ fontSize: 11, padding: '4px 10px', borderRadius: 16 }}
+                        onClick={() => setSelectedUsers(prev =>
+                          prev.find(x => x.id === f.id) ? prev : [...prev, f]
+                        )}
+                      >
+                        + {f.firstName}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {selectedUsers.length > 0 && (
                 <div className="msg-selected-users">
                   {selectedUsers.map(u => (
