@@ -134,7 +134,7 @@ export interface UserBrief {
 
 export interface Conversation {
   id: string;
-  type: 'direct' | 'group_study';
+  type: 'direct' | 'group_study' | 'message_request';
   name: string;
   description: string;
   avatar: string;

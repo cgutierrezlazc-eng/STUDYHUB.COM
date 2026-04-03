@@ -102,13 +102,18 @@ export default function Profile() {
         {/* Header Card — Avatar + Identity */}
         <div className="pf-header-card">
           <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
-          <div className="pf-header-avatar" onClick={() => fileInputRef.current?.click()}>
-            {user.avatar ? (
-              <img src={user.avatar} alt="" className="pf-avatar-img" />
-            ) : (
-              <div className="pf-avatar-initials">{initials || '?'}</div>
-            )}
-            <div className="pf-avatar-edit">Editar</div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+            <div className="pf-header-avatar" onClick={() => fileInputRef.current?.click()}>
+              {user.avatar ? (
+                <img src={user.avatar} alt="" className="pf-avatar-img" />
+              ) : (
+                <div className="pf-avatar-initials">{initials || '?'}</div>
+              )}
+              <div className="pf-avatar-edit">Editar</div>
+            </div>
+            <span style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 120, lineHeight: 1.3 }}>
+              Usa una foto profesional tipo CV o LinkedIn
+            </span>
           </div>
           <div className="pf-header-info">
             <h2 className="pf-header-name">{user.firstName} {user.lastName}</h2>

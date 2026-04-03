@@ -312,6 +312,18 @@ h1, h2, h3,
   background: var(--bg-hover);
   color: var(--text-primary);
 }
+.nav-item-badge {
+  margin-left: auto;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 16px;
+}
 
 .nav-item.active {
   background: rgba(37,99,235,0.08);

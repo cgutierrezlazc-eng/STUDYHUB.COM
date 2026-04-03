@@ -210,6 +210,15 @@ def reject_friend_request(
     fr.status = "rejected"
     fr.updated_at = datetime.utcnow()
     db.commit()
+
+    # Notify the requester
+    create_notification(
+        db, fr.requester_id, "comment",
+        f"{user.first_name} rechazó tu solicitud de amistad",
+        "", f"/user/{user.id}", actor_id=user.id, reference_id=request_id
+    )
+    db.commit()
+
     return {"status": "rejected"}
 
 

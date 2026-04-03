@@ -9,7 +9,7 @@ interface Props {
   onNavigate: (path: string) => void
 }
 
-type SidebarTab = 'chats' | 'friends' | 'groups'
+type SidebarTab = 'chats' | 'friends' | 'groups' | 'requests'
 
 export default function Messages({ conversationId, onNavigate }: Props) {
   const { user } = useAuth()
@@ -259,12 +259,44 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     }
   }
 
+  const acceptMessageRequest = async (convId: string) => {
+    try {
+      await api.acceptMessageRequest(convId)
+      await loadConversations()
+    } catch (err: any) {
+      alert(err.message || 'Error al aceptar solicitud')
+    }
+  }
+
+  const rejectMessageRequest = async (convId: string) => {
+    try {
+      await api.rejectMessageRequest(convId)
+      await loadConversations()
+      if (activeConv === convId) setActiveConv(null)
+    } catch (err: any) {
+      alert(err.message || 'Error al rechazar solicitud')
+    }
+  }
+
   const activeConversation = conversations.find(c => c.id === activeConv)
   const otherParticipant = activeConversation?.participants.find(p => p.id !== user?.id)
 
   // Split conversations
   const directChats = conversations.filter(c => c.type === 'direct')
   const groupChats = conversations.filter(c => c.type === 'group_study')
+  const messageRequests = conversations.filter(c => c.type === 'message_request' && c.participants.some(p => p.id !== user?.id))
+  // Incoming requests: ones where I'm NOT the creator
+  const incomingRequests = messageRequests.filter(c => {
+    // The creator is the person who sent the request - show to the other person
+    const isCreator = c.participants.find(p => p.role === 'admin')
+    return isCreator && isCreator.id !== user?.id
+  })
+  // Sent requests: ones I created
+  const sentRequests = messageRequests.filter(c => {
+    const isCreator = c.participants.find(p => p.role === 'admin')
+    return isCreator && isCreator.id === user?.id
+  })
+  const activeChats = conversations.filter(c => c.type === 'direct' || c.type === 'group_study')
 
   // Filter friends who already have a conversation
   const friendsWithChatStatus = friends.map(f => {
@@ -318,14 +350,19 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 onClick={() => setSidebarTab('friends')}
               >
                 👥 Amigos
-                {friends.length > 0 && <span className="msg-tab-count">{friends.length}</span>}
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'groups' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('groups')}
               >
                 📚 Grupos
-                {groupChats.length > 0 && <span className="msg-tab-count">{groupChats.length}</span>}
+              </button>
+              <button
+                className={`msg-tab ${sidebarTab === 'requests' ? 'active' : ''}`}
+                onClick={() => setSidebarTab('requests')}
+              >
+                📩 Solicitudes
+                {incomingRequests.length > 0 && <span className="msg-tab-badge">{incomingRequests.length}</span>}
               </button>
             </div>
 
@@ -524,6 +561,102 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 </div>
               </>
             )}
+
+            {/* ─── TAB: REQUESTS ─── */}
+            {sidebarTab === 'requests' && (
+              <div className="msg-conv-list">
+                {incomingRequests.length === 0 && sentRequests.length === 0 ? (
+                  <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>📩</div>
+                    <h3 style={{ margin: '0 0 8px' }}>Sin solicitudes</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                      Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {incomingRequests.length > 0 && (
+                      <div style={{ padding: '8px 12px 4px' }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          Recibidas ({incomingRequests.length})
+                        </div>
+                      </div>
+                    )}
+                    {incomingRequests.map(conv => {
+                      const other = conv.participants.find(p => p.id !== user?.id)
+                      return (
+                        <div key={conv.id} className="msg-conv-item msg-request-item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8, padding: '12px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div className="msg-conv-avatar wa-avatar" style={{ flexShrink: 0 }}>
+                              {other?.avatar ?
+                                <img src={other.avatar} alt="" /> :
+                                <span>{(other?.firstName?.[0] || '?').toUpperCase()}</span>
+                              }
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontWeight: 600, fontSize: 13 }}>{other?.firstName} {other?.lastName}</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{other?.username} quiere enviarte un mensaje</div>
+                            </div>
+                          </div>
+                          {conv.lastMessage && (
+                            <div style={{
+                              background: 'var(--bg-secondary)', borderRadius: 8, padding: '8px 10px',
+                              fontSize: 12, color: 'var(--text-secondary)', fontStyle: 'italic',
+                              borderLeft: '3px solid var(--accent)',
+                            }}>
+                              "{conv.lastMessage.content?.slice(0, 80)}"
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button
+                              className="btn btn-primary btn-sm"
+                              style={{ flex: 1, fontSize: 12 }}
+                              onClick={(e) => { e.stopPropagation(); acceptMessageRequest(conv.id) }}
+                            >
+                              ✓ Aceptar
+                            </button>
+                            <button
+                              className="btn btn-secondary btn-sm"
+                              style={{ flex: 1, fontSize: 12 }}
+                              onClick={(e) => { e.stopPropagation(); rejectMessageRequest(conv.id) }}
+                            >
+                              ✕ Rechazar
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                    {sentRequests.length > 0 && (
+                      <>
+                        <div style={{ padding: '12px 12px 4px' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                            Enviadas ({sentRequests.length})
+                          </div>
+                        </div>
+                        {sentRequests.map(conv => {
+                          const other = conv.participants.find(p => p.id !== user?.id)
+                          return (
+                            <div key={conv.id} className="msg-conv-item" style={{ opacity: 0.7 }}>
+                              <div className="msg-conv-avatar wa-avatar">
+                                {other?.avatar ?
+                                  <img src={other.avatar} alt="" /> :
+                                  <span>{(other?.firstName?.[0] || '?').toUpperCase()}</span>
+                                }
+                              </div>
+                              <div className="msg-conv-info">
+                                <div className="msg-conv-name">{other?.firstName} {other?.lastName}</div>
+                                <div className="msg-conv-preview">⏳ Esperando respuesta...</div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right: Chat pane */}
@@ -664,6 +797,33 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   })}
                   <div ref={messagesEndRef} />
                 </div>
+
+                {/* Message request banner */}
+                {activeConversation.type === 'message_request' && (
+                  <div style={{
+                    padding: '12px 16px', background: 'var(--bg-secondary)',
+                    borderTop: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12,
+                    flexShrink: 0,
+                  }}>
+                    <div style={{ flex: 1, fontSize: 13 }}>
+                      {activeConversation.participants.find(p => p.role === 'admin')?.id === user?.id ? (
+                        <span style={{ color: 'var(--text-muted)' }}>⏳ Esperando que acepten tu solicitud de mensaje...</span>
+                      ) : (
+                        <span><strong>{otherParticipant?.firstName}</strong> quiere enviarte un mensaje</span>
+                      )}
+                    </div>
+                    {activeConversation.participants.find(p => p.role === 'admin')?.id !== user?.id && (
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button className="btn btn-primary btn-sm" onClick={() => acceptMessageRequest(activeConversation.id)}>
+                          ✓ Aceptar
+                        </button>
+                        <button className="btn btn-secondary btn-sm" onClick={() => rejectMessageRequest(activeConversation.id)}>
+                          ✕ Rechazar
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Photo preview */}
                 {photoPreview && (

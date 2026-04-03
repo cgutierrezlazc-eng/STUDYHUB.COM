@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
+import { api } from '../services/api'
 import { Project } from '../types'
 
 interface Props {
@@ -14,6 +15,18 @@ interface Props {
 export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
+  const [unreadMessages, setUnreadMessages] = useState(0)
+
+  useEffect(() => {
+    const fetchUnread = () => {
+      api.getUnreadMessageCount()
+        .then((data: any) => setUnreadMessages(data.unreadCount || 0))
+        .catch(() => {})
+    }
+    fetchUnread()
+    const interval = setInterval(fetchUnread, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const isActive = (path: string) => {
     if (path === '/') return currentPath === '/' || currentPath === '/feed'
@@ -44,6 +57,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         </button>
         <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
           <span className="nav-item-icon">💬</span> Mensajes
+          {unreadMessages > 0 && (
+            <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
+          )}
         </button>
       </div>
 

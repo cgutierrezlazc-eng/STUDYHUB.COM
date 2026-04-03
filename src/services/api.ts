@@ -146,8 +146,17 @@ export const api = {
   getConversations: () =>
     request('/messaging/conversations'),
 
+  getUnreadMessageCount: () =>
+    request('/messaging/unread-count'),
+
   createConversation: (data: { type: string; name?: string; description?: string; participant_ids: string[] }) =>
     request('/messaging/conversations', { method: 'POST', body: JSON.stringify(data) }),
+
+  acceptMessageRequest: (convId: string) =>
+    request(`/messaging/conversations/${convId}/accept`, { method: 'POST' }),
+
+  rejectMessageRequest: (convId: string) =>
+    request(`/messaging/conversations/${convId}/reject`, { method: 'POST' }),
 
   getConversation: (id: string) =>
     request(`/messaging/conversations/${id}`),

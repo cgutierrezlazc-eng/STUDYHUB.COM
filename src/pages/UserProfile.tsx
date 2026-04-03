@@ -250,6 +250,11 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               </>
             )}
           </div>
+          {isOwn && !profile.avatar && (
+            <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+              Sube una foto profesional tipo CV
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
             <div>

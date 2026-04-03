@@ -11,7 +11,7 @@ from sqlalchemy import or_, and_, desc, func
 
 from database import (
     get_db, User, Conversation, ConversationParticipant,
-    Message, ConversationFolder, ConversationFolderItem, gen_id
+    Message, ConversationFolder, ConversationFolderItem, Friendship, gen_id
 )
 from middleware import get_current_user
 from moderation import check_content
@@ -19,6 +19,10 @@ try:
     from notifications import notify_new_message
 except ImportError:
     notify_new_message = None
+try:
+    from notification_routes import create_notification
+except ImportError:
+    create_notification = None
 
 router = APIRouter(prefix="/messaging", tags=["messaging"])
 
@@ -52,6 +56,18 @@ class MoveFolderRequest(BaseModel):
 
 
 # ─── Helpers ─────────────────────────────────────────────────────
+
+def are_friends(db: Session, user_a: str, user_b: str) -> bool:
+    """Check if two users are accepted friends."""
+    f = db.query(Friendship).filter(
+        or_(
+            and_(Friendship.requester_id == user_a, Friendship.addressee_id == user_b),
+            and_(Friendship.requester_id == user_b, Friendship.addressee_id == user_a),
+        ),
+        Friendship.status == "accepted"
+    ).first()
+    return f is not None
+
 
 def user_brief(user: User) -> dict:
     return {
@@ -157,6 +173,35 @@ def search_users(q: str, user: User = Depends(get_current_user), db: Session = D
     return [user_brief(u) for u in results]
 
 
+# ─── Unread Count ────────────────────────────────────────────────
+
+@router.get("/unread-count")
+def get_unread_message_count(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get total unread message count across all conversations."""
+    my_parts = db.query(ConversationParticipant).filter(
+        ConversationParticipant.user_id == user.id
+    ).all()
+
+    total_unread = 0
+    for part in my_parts:
+        if part.last_read_at:
+            count = db.query(Message).filter(
+                Message.conversation_id == part.conversation_id,
+                Message.created_at > part.last_read_at,
+                Message.sender_id != user.id,
+                Message.is_deleted == False
+            ).count()
+        else:
+            count = db.query(Message).filter(
+                Message.conversation_id == part.conversation_id,
+                Message.sender_id != user.id,
+                Message.is_deleted == False
+            ).count()
+        total_unread += count
+
+    return {"unreadCount": total_unread}
+
+
 # ─── Conversations ───────────────────────────────────────────────
 
 @router.get("/conversations")
@@ -175,14 +220,14 @@ def list_conversations(user: User = Depends(get_current_user), db: Session = Dep
 
 @router.post("/conversations")
 def create_conversation(req: CreateConversationRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if req.type not in ("direct", "group_study"):
+    if req.type not in ("direct", "group_study", "message_request"):
         raise HTTPException(400, "Tipo de conversación inválido")
 
-    # For direct chats, check if one already exists with this user pair
-    if req.type == "direct" and len(req.participant_ids) == 1:
+    # For direct chats or message requests, check if one already exists with this user pair
+    if req.type in ("direct", "message_request") and len(req.participant_ids) == 1:
         other_id = req.participant_ids[0]
         existing = db.query(Conversation).join(ConversationParticipant).filter(
-            Conversation.type == "direct",
+            Conversation.type.in_(["direct", "message_request"]),
             ConversationParticipant.user_id == user.id
         ).all()
 
@@ -191,9 +236,16 @@ def create_conversation(req: CreateConversationRequest, user: User = Depends(get
             if other_id in parts and user.id in parts and len(parts) == 2:
                 return conversation_to_dict(conv, user.id, db)
 
+    # For direct chats with non-friends, auto-convert to message_request
+    actual_type = req.type
+    if req.type == "direct" and len(req.participant_ids) == 1:
+        other_id = req.participant_ids[0]
+        if not are_friends(db, user.id, other_id):
+            actual_type = "message_request"
+
     conv = Conversation(
         id=gen_id(),
-        type=req.type,
+        type=actual_type,
         name=req.name,
         description=req.description,
         created_by=user.id,
@@ -222,6 +274,18 @@ def create_conversation(req: CreateConversationRequest, user: User = Depends(get
 
     db.commit()
     db.refresh(conv)
+
+    # Notify recipient of message request
+    if actual_type == "message_request" and create_notification and len(req.participant_ids) == 1:
+        other_id = req.participant_ids[0]
+        create_notification(
+            db, other_id, "friend_request",
+            f"{user.first_name} {user.last_name} quiere enviarte un mensaje",
+            "Tienes una solicitud de mensaje pendiente",
+            "/messages", actor_id=user.id, reference_id=conv.id
+        )
+        db.commit()
+
     return conversation_to_dict(conv, user.id, db)
 
 
@@ -239,6 +303,98 @@ def get_conversation(conv_id: str, user: User = Depends(get_current_user), db: S
         raise HTTPException(404, "Conversación no encontrada")
 
     return conversation_to_dict(conv, user.id, db)
+
+
+# ─── Message Requests ────────────────────────────────────────────
+
+@router.post("/conversations/{conv_id}/accept")
+def accept_message_request(conv_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Accept a message request — converts it to a direct chat and auto-sends friend request."""
+    conv = db.query(Conversation).filter(Conversation.id == conv_id).first()
+    if not conv:
+        raise HTTPException(404, "Conversación no encontrada")
+    if conv.type != "message_request":
+        raise HTTPException(400, "Esta conversación no es una solicitud de mensaje")
+
+    part = db.query(ConversationParticipant).filter(
+        ConversationParticipant.conversation_id == conv_id,
+        ConversationParticipant.user_id == user.id,
+    ).first()
+    if not part:
+        raise HTTPException(403, "No tienes acceso")
+
+    # Convert to direct
+    conv.type = "direct"
+    conv.updated_at = datetime.utcnow()
+
+    # Auto-create friendship if not already friends
+    sender_id = conv.created_by
+    if sender_id != user.id and not are_friends(db, user.id, sender_id):
+        existing_req = db.query(Friendship).filter(
+            or_(
+                and_(Friendship.requester_id == user.id, Friendship.addressee_id == sender_id),
+                and_(Friendship.requester_id == sender_id, Friendship.addressee_id == user.id),
+            )
+        ).first()
+        if existing_req:
+            existing_req.status = "accepted"
+            existing_req.updated_at = datetime.utcnow()
+        else:
+            db.add(Friendship(
+                id=gen_id(),
+                requester_id=sender_id,
+                addressee_id=user.id,
+                status="accepted",
+            ))
+
+    db.commit()
+
+    # Notify the sender
+    if create_notification and sender_id != user.id:
+        create_notification(
+            db, sender_id, "friend_accepted",
+            f"{user.first_name} aceptó tu mensaje",
+            "Ahora pueden chatear libremente",
+            f"/messages", actor_id=user.id, reference_id=conv_id
+        )
+        db.commit()
+
+    return conversation_to_dict(conv, user.id, db)
+
+
+@router.post("/conversations/{conv_id}/reject")
+def reject_message_request(conv_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Reject a message request — removes participant and notifies sender."""
+    conv = db.query(Conversation).filter(Conversation.id == conv_id).first()
+    if not conv:
+        raise HTTPException(404, "Conversación no encontrada")
+    if conv.type != "message_request":
+        raise HTTPException(400, "Esta conversación no es una solicitud de mensaje")
+
+    part = db.query(ConversationParticipant).filter(
+        ConversationParticipant.conversation_id == conv_id,
+        ConversationParticipant.user_id == user.id,
+    ).first()
+    if not part:
+        raise HTTPException(403, "No tienes acceso")
+
+    # Remove the user from the conversation
+    db.delete(part)
+    conv.type = "rejected_request"
+    conv.updated_at = datetime.utcnow()
+    db.commit()
+
+    # Notify the sender
+    sender_id = conv.created_by
+    if create_notification and sender_id != user.id:
+        create_notification(
+            db, sender_id, "comment",
+            f"{user.first_name} rechazó tu solicitud de mensaje",
+            "", f"/messages", actor_id=user.id, reference_id=conv_id
+        )
+        db.commit()
+
+    return {"status": "rejected"}
 
 
 # ─── Messages ────────────────────────────────────────────────────
