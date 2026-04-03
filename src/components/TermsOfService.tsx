@@ -64,8 +64,14 @@ export default function TermsOfService({ onClose }: Props) {
           <p>El contenido que subes sigue siendo de tu propiedad. Conniku no reclama propiedad sobre tus documentos, publicaciones o materiales de estudio. Al subir contenido, nos otorgas una licencia limitada, no exclusiva y revocable para procesarlo con fines de proporcionarte el servicio (análisis, indexación para búsqueda, generación de material de estudio).</p>
           <p>El código, diseño, marca y funcionalidades de Conniku son propiedad exclusiva de Conniku SpA. Queda prohibida su reproducción sin autorización.</p>
 
-          <h3>12. Cursos y Certificados</h3>
-          <p>Los cursos de Desarrollo Integral de Conniku son gratuitos e incluidos en todos los planes. Los certificados emitidos son verificables y acreditan la completación del curso, pero no constituyen títulos académicos oficiales. Cada certificado incluye un ID único de verificación.</p>
+          <h3>12. Cursos y Constancias</h3>
+          <p>Los cursos disponibles en Conniku son programas de formación interna orientados al desarrollo de habilidades personales, profesionales y tecnológicas. Las constancias de finalización emitidas por Conniku Learning acreditan la conclusión de un programa formativo interno. <strong>No confieren crédito académico, título profesional ni equivalen a certificaciones de instituciones acreditadas por el Estado.</strong> Cada constancia incluye un identificador único verificable en conniku.com/validar.</p>
+
+          <h3>12b. Programa de Recompensas</h3>
+          <p>Conniku ofrece beneficios a usuarios que completan cursos: al completar 3 cursos, el usuario recibe 1 mes gratuito del plan Pro; al completar 6 cursos, recibe 1 mes gratuito del plan Max. Los cursos completados se acumulan de forma permanente. Conniku se reserva el derecho de modificar las condiciones de este programa con previo aviso de 15 días. Las recompensas no son transferibles, canjeables por dinero ni acumulables con otras promociones, salvo que se indique lo contrario.</p>
+
+          <h3>12c. Conferencias en Línea</h3>
+          <p>Conniku organiza periódicamente conferencias en línea con profesionales, gerentes, CEOs y personas con trayectorias destacadas del mercado laboral. Estas conferencias son abiertas a todos los usuarios registrados (Free, Pro y Max). Las conferencias se realizan a través de plataformas externas como Zoom. Conniku no garantiza la disponibilidad, frecuencia ni contenido específico de las conferencias. Las grabaciones pueden quedar disponibles para visualización posterior.</p>
 
           <h3>13. Bolsa de Empleo</h3>
           <p>Conniku facilita la conexión entre estudiantes y empleadores pero no garantiza empleo. Los reclutadores son verificados por nuestro equipo. Conniku no es responsable de las condiciones laborales ofrecidas por terceros. La información compartida con reclutadores depende de la configuración de privacidad del CV del usuario (público, solo reclutadores verificados, solo amigos o privado).</p>

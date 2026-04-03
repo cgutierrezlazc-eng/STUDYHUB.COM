@@ -8,6 +8,8 @@ import RightPanel from './components/RightPanel'
 import MobileBottomNav from './components/MobileBottomNav'
 import NewProjectModal from './components/NewProjectModal'
 import Onboarding from './components/Onboarding'
+import ConferencePanel from './components/ConferencePanel'
+import WelcomeModal from './components/WelcomeModal'
 import Landing from './pages/Landing'
 import { Project } from './types'
 import { api } from './services/api'
@@ -60,6 +62,7 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([])
   const [showNewProject, setShowNewProject] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -85,6 +88,14 @@ export default function App() {
       // Show onboarding if not completed
       if (user.onboardingCompleted === false) {
         setShowOnboarding(true)
+      }
+
+      // Show welcome modal for new users (first 5 minutes after creation)
+      const createdAt = new Date(user.createdAt).getTime()
+      const fiveMinutes = 5 * 60 * 1000
+      const welcomed = localStorage.getItem('conniku_welcomed')
+      if (Date.now() - createdAt < fiveMinutes && !welcomed) {
+        setShowWelcome(true)
       }
     }
   }, [user])
@@ -219,6 +230,15 @@ export default function App() {
           currentPath={location.pathname}
           onNavigate={(path) => navigate(path)}
         />
+      )}
+
+      <ConferencePanel />
+
+      {showWelcome && (
+        <WelcomeModal onAccept={() => {
+          setShowWelcome(false)
+          localStorage.setItem('conniku_welcomed', 'true')
+        }} />
       )}
     </div>
   )

@@ -43,6 +43,9 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     university: '',
     career: '',
     semester: 1,
+    academicRegime: 'semestral',
+    entryYear: new Date().getFullYear(),
+    careerDuration: 5,
     bio: '',
     username: '',
     country: 'CL',
@@ -385,11 +388,48 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 <input placeholder={t('reg.careerPlaceholder')} value={form.career} onChange={e => update('career', e.target.value)} />
               </div>
               <div className="auth-field">
-                <label>{t('reg.semester')}</label>
+                <label>Régimen académico</label>
                 <div className="auth-semester-picker">
-                  {[1,2,3,4,5,6,7,8,9,10,11,12].map(s => (
-                    <button key={s} type="button" className={`auth-semester-btn ${form.semester === s ? 'active' : ''}`} onClick={() => update('semester', s)}>{s}</button>
+                  {[
+                    { value: 'semestral', label: 'Semestral' },
+                    { value: 'trimestral', label: 'Trimestral' },
+                    { value: 'cuatrimestral', label: 'Cuatrimestral' },
+                    { value: 'anual', label: 'Anual' },
+                  ].map(r => (
+                    <button key={r.value} type="button" className={`auth-semester-btn ${form.academicRegime === r.value ? 'active' : ''}`}
+                      style={{ flex: 1 }}
+                      onClick={() => { update('academicRegime', r.value); update('semester', 1) }}>{r.label}</button>
                   ))}
+                </div>
+              </div>
+              <div className="auth-field">
+                <label>{form.academicRegime === 'semestral' ? 'Semestre actual' : form.academicRegime === 'trimestral' ? 'Trimestre actual' : form.academicRegime === 'cuatrimestral' ? 'Cuatrimestre actual' : 'Año de cursada actual'}</label>
+                <div className="auth-semester-picker">
+                  {Array.from({ length: form.academicRegime === 'semestral' ? 10 : form.academicRegime === 'trimestral' ? 12 : form.academicRegime === 'cuatrimestral' ? 9 : 8 }, (_, i) => i + 1).map(s => (
+                    <button key={s} type="button" className={`auth-semester-btn ${form.semester === s ? 'active' : ''}`} onClick={() => update('semester', s)}>
+                      {s === (form.academicRegime === 'semestral' ? 10 : form.academicRegime === 'trimestral' ? 12 : form.academicRegime === 'cuatrimestral' ? 9 : 8) ? `${s}+` : s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="auth-row">
+                <div className="auth-field">
+                  <label>Año de ingreso</label>
+                  <select value={form.entryYear} onChange={e => update('entryYear', parseInt(e.target.value))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                    {Array.from({ length: 9 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="auth-field">
+                  <label>Duración de la carrera</label>
+                  <select value={form.careerDuration} onChange={e => update('careerDuration', parseInt(e.target.value))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                    {[2,3,4,5,6,7,8].map(y => (
+                      <option key={y} value={y}>{y} años</option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <div className="auth-field">

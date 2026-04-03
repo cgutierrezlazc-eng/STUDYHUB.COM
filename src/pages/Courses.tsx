@@ -254,10 +254,30 @@ export default function Courses({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header">
+        {/* Reward banner */}
+        <div style={{
+          background: 'linear-gradient(135deg, #1A3A7A 0%, #2D5FAA 100%)',
+          borderRadius: 12, padding: '14px 20px',
+          display: 'flex', alignItems: 'center', gap: 14,
+          marginBottom: 16, color: '#fff',
+        }}>
+          <div style={{
+            width: 42, height: 42, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.15)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20,
+          }}>⭐</div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Gana beneficios completando cursos</div>
+            <div style={{ fontSize: 11, opacity: 0.85, lineHeight: 1.4 }}>
+              Completa 3 cursos y obtiene 1 mes de Pro gratis. Completa 6 cursos y obtiene 1 mes de Max gratis. Los cursos completados se acumulan de forma permanente en tu perfil.
+            </div>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>🌱 Desarrollo Integral</h2>
-            <p>Cursos gratuitos para formar profesionales completos, humanos y líderes</p>
+            <h2>Cursos y Formación</h2>
+            <p>60+ cursos para tu crecimiento personal, profesional y tecnológico</p>
           </div>
           <button className={`tab ${tab === 'my-certs' ? 'active' : ''}`}
             onClick={() => { setTab(tab === 'my-certs' ? 'catalog' : 'my-certs'); if (tab !== 'my-certs') loadCertificates() }}>
