@@ -2,6 +2,7 @@ import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './services/auth'
 import { isNative } from './services/capacitor'
+import { useDevice } from './hooks/useDevice'
 import Sidebar from './components/Sidebar'
 import TopBar from './components/TopBar'
 import RightPanel from './components/RightPanel'
@@ -58,13 +59,33 @@ function PageLoader() {
 
 export default function App() {
   const { user, isLoading, refreshUser } = useAuth()
+  const device = useDevice()
+  const showMobileUI = device.isMobile || isNative
+  const showTabletUI = device.isTablet
   const [authView, setAuthView] = useState<'landing' | 'login' | 'register' | 'forgot'>('landing')
   const [projects, setProjects] = useState<Project[]>([])
   const [showNewProject, setShowNewProject] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [showWelcome, setShowWelcome] = useState(false)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Close sidebar when navigating on mobile
+  useEffect(() => {
+    if (showMobileUI) setSidebarOpen(false)
+  }, [location.pathname, showMobileUI])
+
+  // Add device class to body for CSS targeting
+  useEffect(() => {
+    document.body.classList.remove('device-mobile', 'device-tablet', 'device-desktop')
+    document.body.classList.add(`device-${device.type}`)
+    if (device.isTouchDevice) {
+      document.body.classList.add('touch-device')
+    } else {
+      document.body.classList.remove('touch-device')
+    }
+  }, [device.type, device.isTouchDevice])
 
   // Load projects from backend
   useEffect(() => {
@@ -173,15 +194,20 @@ export default function App() {
   const profileUserId = userMatch ? userMatch[1] : undefined
 
   return (
-    <div className="app-layout">
-      <TopBar onNavigate={(path) => navigate(path)} />
+    <div className={`app-layout ${showMobileUI ? 'mobile-layout' : ''} ${showTabletUI ? 'tablet-layout' : ''}`}>
+      <TopBar onNavigate={(path) => navigate(path)} onMenuToggle={() => setSidebarOpen(!sidebarOpen)} showMenuButton={showMobileUI || showTabletUI} />
       <div className="app-body">
+        {/* Sidebar overlay for mobile/tablet */}
+        {(showMobileUI || showTabletUI) && sidebarOpen && (
+          <div className="sidebar-overlay visible" onClick={() => setSidebarOpen(false)} />
+        )}
         <Sidebar
           projects={projects}
           activeProjectId={activeProjectId}
           currentPath={location.pathname}
           onNavigate={(path) => navigate(path)}
           onNewProject={() => setShowNewProject(true)}
+          className={showMobileUI || showTabletUI ? (sidebarOpen ? 'open' : '') : ''}
         />
         <main className="main-content">
           <Suspense fallback={<PageLoader />}>
@@ -214,7 +240,9 @@ export default function App() {
           </Routes>
         </Suspense>
       </main>
-      <RightPanel currentPath={location.pathname} onNavigate={(path) => navigate(path)} />
+      {!showMobileUI && !showTabletUI && (
+        <RightPanel currentPath={location.pathname} onNavigate={(path) => navigate(path)} />
+      )}
       </div>
 
       {showNewProject && (
@@ -225,7 +253,7 @@ export default function App() {
         <Onboarding onComplete={() => { setShowOnboarding(false); refreshUser() }} />
       )}
 
-      {isNative && (
+      {showMobileUI && (
         <MobileBottomNav
           currentPath={location.pathname}
           onNavigate={(path) => navigate(path)}

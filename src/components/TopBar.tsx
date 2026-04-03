@@ -4,9 +4,11 @@ import NotificationBell from './NotificationBell'
 
 interface Props {
   onNavigate: (path: string) => void
+  onMenuToggle?: () => void
+  showMenuButton?: boolean
 }
 
-export default function TopBar({ onNavigate }: Props) {
+export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Props) {
   const { user, logout } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -26,6 +28,15 @@ export default function TopBar({ onNavigate }: Props) {
   return (
     <header className="topbar">
       <div className="topbar-left">
+        {showMenuButton && (
+          <button className="topbar-hamburger" onClick={onMenuToggle} aria-label="Menu">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+        )}
         <img src="/logo.svg" alt="Conniku" className="topbar-logo" onClick={() => onNavigate('/')} style={{ height: 28, objectFit: 'contain', cursor: 'pointer' }} />
       </div>
 

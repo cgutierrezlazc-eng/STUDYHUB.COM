@@ -10,9 +10,10 @@ interface Props {
   currentPath: string
   onNavigate: (path: string) => void
   onNewProject: () => void
+  className?: string
 }
 
-export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject }: Props) {
+export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, className }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -34,7 +35,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   }
 
   return (
-    <nav className="sidebar">
+    <nav className={`sidebar ${className || ''}`}>
       <div className="sidebar-section">
         <div className="sidebar-section-title">Social</div>
         <button className={`nav-item ${isActive('/') ? 'active' : ''}`} onClick={() => onNavigate('/')}>

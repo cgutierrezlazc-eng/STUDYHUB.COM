@@ -182,14 +182,20 @@ body.keyboard-open .mobile-bottom-nav {
 
 body.native-platform button,
 body.native-platform a,
-body.native-platform .clickable {
+body.native-platform .clickable,
+body.device-mobile button,
+body.device-mobile a,
+body.device-mobile .clickable {
   min-height: 44px;
   min-width: 44px;
 }
 
 body.native-platform input,
 body.native-platform textarea,
-body.native-platform select {
+body.native-platform select,
+body.device-mobile input,
+body.device-mobile textarea,
+body.device-mobile select {
   font-size: 16px !important; /* Prevents iOS zoom on focus */
   min-height: 44px;
 }
@@ -248,7 +254,11 @@ body.native-platform .fb-profile-cover {
 
 body.native-platform .main-content,
 body.native-platform .wa-messages-container,
-body.native-platform .sidebar-inner {
+body.native-platform .sidebar-inner,
+body.device-mobile .main-content,
+body.device-mobile .wa-messages-container,
+body.device-mobile .sidebar-inner,
+body.device-tablet .main-content {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
@@ -323,11 +333,13 @@ body.native-platform * {
   display: none !important;
 }
 
-body.native-platform .mobile-only {
+body.native-platform .mobile-only,
+body.device-mobile .mobile-only {
   display: flex !important;
 }
 
-body.native-platform .desktop-only {
+body.native-platform .desktop-only,
+body.device-mobile .desktop-only {
   display: none !important;
 }
 

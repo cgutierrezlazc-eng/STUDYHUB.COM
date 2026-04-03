@@ -2773,88 +2773,206 @@ h1, h2, h3,
   color: var(--text-secondary);
 }
 
-/* Hide right panel on medium screens */
+/* ═══════════════════════════════════════════════════════════════
+   Responsive: Device detection via body classes from useDevice
+   device-mobile, device-tablet, device-desktop, touch-device
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Hamburger menu button ────────────────────────────────── */
+.topbar-hamburger {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: 8px;
+  margin-right: 8px;
+  border-radius: 8px;
+  transition: background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.topbar-hamburger:hover { background: var(--bg-hover); }
+
+/* ─── Sidebar overlay (for drawer) ─────────────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  -webkit-tap-highlight-color: transparent;
+}
+.sidebar-overlay.visible { display: block; }
+
+/* ─── Touch-friendly targets for web mobile ────────────────── */
+body.touch-device button,
+body.touch-device a,
+body.touch-device .clickable {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.touch-device input,
+body.touch-device textarea,
+body.touch-device select {
+  font-size: 16px !important; /* Prevents iOS zoom on focus */
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Large desktop → hide right panel below 1200px
+   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 1200px) {
   .right-panel { display: none; }
 }
 
-/* Hide topbar search on small screens */
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Tablet (769px – 1024px)
+   Sidebar becomes drawer, search bar shrinks, right panel hidden
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .topbar-hamburger { display: flex; align-items: center; justify-content: center; }
+  .topbar-center { max-width: 280px; }
+
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 56px;
+    z-index: 1000;
+    height: calc(100vh - 56px);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+  }
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.15);
+  }
+
+  .main-content { margin-left: 0 !important; width: 100% !important; }
+  .right-panel { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Small tablet / large phone (≤ 900px)
+   Hide search completely
+   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 900px) {
   .topbar-center { display: none; }
 }
 
-/* ─── Responsive Mobile ──────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Mobile (≤ 768px)
+   Full mobile layout: bottom nav, stacked content, drawer sidebar
+   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
   .topbar { padding: 0 12px; }
   .topbar-center { display: none; }
   .right-panel { display: none; }
-  .app-body { flex-direction: column; }
+
+  .app-layout.mobile-layout {
+    padding-bottom: calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px));
+  }
+
   .sidebar {
-    position: fixed; left: -280px; z-index: 1000; height: 100vh;
-    transition: left 0.3s ease;
+    position: fixed;
+    left: -280px;
+    top: 56px;
+    z-index: 1000;
+    height: calc(100vh - 56px);
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  .sidebar.open { left: 0; }
-  .sidebar-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-    z-index: 999;
+  .sidebar.open {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
   }
-  .sidebar-overlay.visible { display: block; }
 
-  .main-content { margin-left: 0 !important; width: 100% !important; }
-
-  .mobile-header {
-    display: flex; align-items: center; padding: 12px 16px;
-    background: var(--bg-secondary); border-bottom: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 100;
+  .main-content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    -webkit-overflow-scrolling: touch;
   }
-  .mobile-header .hamburger {
-    background: none; border: none; font-size: 24px; cursor: pointer;
-    color: var(--text-primary); padding: 4px 8px; margin-right: 12px;
-  }
-  .mobile-header h1 { font-size: 18px; font-weight: 600; }
 
+  /* Page spacing */
   .page-body { padding: 12px !important; }
   .page-header { padding: 16px !important; }
   .page-header h2 { font-size: 20px !important; }
 
+  /* Messages */
   .msg-layout { flex-direction: column; }
   .msg-sidebar { width: 100%; max-height: 40vh; border-right: none; border-bottom: 1px solid var(--border); }
   .msg-chat { width: 100%; }
 
+  /* Profile */
   .fb-cover-photo { height: 160px !important; }
   .fb-profile-photo { width: 90px !important; height: 90px !important; }
   .fb-profile-initials { font-size: 24px !important; }
   .fb-wall-layout { grid-template-columns: 1fr !important; }
   .fb-wall-sidebar { display: none; }
-  .fb-profile-tabs { overflow-x: auto; white-space: nowrap; }
+  .fb-profile-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
   .fb-profile-name-section { flex-direction: column; align-items: flex-start !important; gap: 4px; }
   .fb-profile-actions { flex-wrap: wrap; }
 
+  /* Grids */
   .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
   .quick-shortcuts { grid-template-columns: repeat(2, 1fr) !important; }
   .friends-grid { grid-template-columns: 1fr !important; }
   .friend-card { flex-direction: column; text-align: center; }
   .suggestions-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .card-grid { grid-template-columns: 1fr !important; }
 
+  /* Admin */
   .admin-tabs { flex-wrap: wrap; }
   .admin-table { font-size: 11px; }
   .admin-toolbar { flex-direction: column; }
   .admin-detail-grid { grid-template-columns: 1fr !important; }
 
+  /* Modals */
   .modal { width: 95% !important; max-width: 95% !important; margin: 8px; max-height: 90vh; overflow-y: auto; }
+  .modal-overlay { padding: 8px; }
   .fb-photos-grid { grid-template-columns: repeat(2, 1fr) !important; }
 
+  /* Chat */
   .wa-bubble { max-width: 85% !important; }
   .wa-photo-msg img { max-width: 220px !important; }
 
+  /* Auth */
   .auth-layout { flex-direction: column; }
   .auth-left { display: none; }
   .auth-right { width: 100%; padding: 24px 16px; }
+
+  /* Bottom nav spacing for main content */
+  .mobile-layout .main-content {
+    padding-bottom: calc(var(--bottom-nav-height, 60px) + 8px);
+  }
 }
 
-/* Very small screens */
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Very small screens (≤ 480px)
+   Single column everything, compact spacing
+   ═══════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr !important; }
   .suggestions-grid { grid-template-columns: 1fr !important; }
   .fb-profile-photo-section { flex-direction: column; align-items: center; text-align: center; }
+  .quick-shortcuts { grid-template-columns: 1fr !important; }
+  .topbar { padding: 0 8px; }
+  .topbar-right { gap: 0; }
+  .topbar-icon-btn { padding: 6px; font-size: 16px; }
+  .topbar-avatar-btn { width: 28px; height: 28px; font-size: 11px; }
+  .page-body { padding: 8px !important; }
+  .page-header { padding: 12px !important; }
+  .page-header h2 { font-size: 18px !important; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Very small height (landscape phones)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-bottom-nav { height: 48px; }
+  .mobile-nav-label { display: none; }
+  .mobile-nav-icon { font-size: 20px; }
+  .topbar { height: 44px; }
+  .app-layout { padding-top: 44px; }
+  .sidebar { top: 44px; height: calc(100vh - 44px); }
 }
