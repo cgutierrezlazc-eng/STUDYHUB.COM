@@ -309,7 +309,7 @@ def get_conversation(conv_id: str, user: User = Depends(get_current_user), db: S
 
 @router.post("/conversations/{conv_id}/accept")
 def accept_message_request(conv_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Accept a message request — converts it to a direct chat and auto-sends friend request."""
+    """Accept a message request — only opens the conversation, does NOT create friendship."""
     conv = db.query(Conversation).filter(Conversation.id == conv_id).first()
     if not conv:
         raise HTTPException(404, "Conversación no encontrada")
@@ -323,38 +323,18 @@ def accept_message_request(conv_id: str, user: User = Depends(get_current_user),
     if not part:
         raise HTTPException(403, "No tienes acceso")
 
-    # Convert to direct
+    # Convert to direct chat only — friendship must be managed separately
     conv.type = "direct"
     conv.updated_at = datetime.utcnow()
-
-    # Auto-create friendship if not already friends
-    sender_id = conv.created_by
-    if sender_id != user.id and not are_friends(db, user.id, sender_id):
-        existing_req = db.query(Friendship).filter(
-            or_(
-                and_(Friendship.requester_id == user.id, Friendship.addressee_id == sender_id),
-                and_(Friendship.requester_id == sender_id, Friendship.addressee_id == user.id),
-            )
-        ).first()
-        if existing_req:
-            existing_req.status = "accepted"
-            existing_req.updated_at = datetime.utcnow()
-        else:
-            db.add(Friendship(
-                id=gen_id(),
-                requester_id=sender_id,
-                addressee_id=user.id,
-                status="accepted",
-            ))
-
     db.commit()
 
-    # Notify the sender
+    # Notify the sender that message was accepted
+    sender_id = conv.created_by
     if create_notification and sender_id != user.id:
         create_notification(
-            db, sender_id, "friend_accepted",
+            db, sender_id, "comment",
             f"{user.first_name} aceptó tu mensaje",
-            "Ahora pueden chatear libremente",
+            "Pueden chatear. Para ser contactos, envía una solicitud de amistad.",
             f"/messages", actor_id=user.id, reference_id=conv_id
         )
         db.commit()
