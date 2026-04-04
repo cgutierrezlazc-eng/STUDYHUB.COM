@@ -645,6 +645,30 @@ def reset_password(req: ResetPasswordRequest, request: Request = None, db: Sessi
     return {"success": True}
 
 
+# ─── Owner Setup (one-time, secured by setup key) ─────────────
+class OwnerSetupRequest(BaseModel):
+    setup_key: str
+    password: str
+
+@router.post("/setup-owner")
+def setup_owner(req: OwnerSetupRequest, db: Session = Depends(get_db)):
+    """Set/reset the owner account password using a setup key."""
+    expected_key = os.environ.get("SETUP_KEY", "conniku-setup-2026")
+    if req.setup_key != expected_key:
+        raise HTTPException(403, "Invalid setup key")
+
+    user = db.query(User).filter(User.email == "ceo@conniku.com").first()
+    if not user:
+        raise HTTPException(404, "Owner account not found")
+
+    user.password_hash = hash_password(req.password)
+    user.is_admin = True
+    user.role = "owner"
+    user.email_verified = True
+    db.commit()
+    return {"success": True, "message": "Owner password updated"}
+
+
 @router.delete("/me")
 def delete_account(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Permanently delete user account and all associated data."""
