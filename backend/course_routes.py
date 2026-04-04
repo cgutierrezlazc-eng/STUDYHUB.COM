@@ -699,7 +699,7 @@ def admin_progress_overview(user: User = Depends(get_current_user), db: Session 
         User, User.id == UserCourseProgress.user_id
     ).join(
         Course, Course.id == UserCourseProgress.course_id
-    ).order_by(desc(UserCourseProgress.updated_at)).all()
+    ).order_by(desc(UserCourseProgress.started_at)).all()
 
     # Build user progress map
     users_map: dict = {}
