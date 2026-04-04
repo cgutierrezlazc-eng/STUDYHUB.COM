@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 
@@ -29,8 +29,6 @@ export default function Courses({ onNavigate }: Props) {
   const [quizError, setQuizError] = useState<string | null>(null)
   const [certificates, setCertificates] = useState<any[]>([])
   const [tab, setTab] = useState<'catalog' | 'my-certs'>('catalog')
-  const [viewingCert, setViewingCert] = useState<any>(null)
-  const certRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { loadCourses() }, [])
 
@@ -113,178 +111,6 @@ export default function Courses({ onNavigate }: Props) {
     try { setCertificates(await api.getMyCertificates()) } catch (err: any) {
       console.error('Failed to load certificates:', err)
     }
-  }
-
-  const downloadCertificate = async () => {
-    if (!certRef.current) return
-    try {
-      const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(certRef.current, {
-        scale: 2,
-        backgroundColor: null,
-        useCORS: true,
-        logging: false,
-      })
-      const link = document.createElement('a')
-      link.download = `Certificado-${viewingCert?.courseTitle?.replace(/\s+/g, '-') || 'Conniku'}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-    } catch (err) {
-      console.error('Download failed, using fallback:', err)
-      // Fallback: open print dialog
-      const printWin = window.open('', '_blank')
-      if (printWin && certRef.current) {
-        printWin.document.write(`<html><head><title>Certificado</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f5f5f5;">${certRef.current.outerHTML}</body></html>`)
-        printWin.document.close()
-        setTimeout(() => printWin.print(), 500)
-      }
-    }
-  }
-
-  // Certificate visual component
-  const CertificateView = ({ cert, onClose }: { cert: any; onClose: () => void }) => {
-    const date = cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })
-    return (
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: 20, overflow: 'auto',
-      }} onClick={(e) => { if (e.target === e.currentTarget) onClose() }}>
-        {/* Action buttons */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-          <button onClick={downloadCertificate} style={{
-            padding: '10px 24px', borderRadius: 8, border: 'none', cursor: 'pointer',
-            background: '#2D62C8', color: '#fff', fontWeight: 600, fontSize: 14,
-            display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            📥 Descargar Certificado
-          </button>
-          <button onClick={onClose} style={{
-            padding: '10px 24px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.3)',
-            background: 'rgba(255,255,255,0.1)', color: '#fff', fontWeight: 600, fontSize: 14, cursor: 'pointer',
-          }}>
-            ✕ Cerrar
-          </button>
-        </div>
-
-        {/* Certificate */}
-        <div ref={certRef} style={{
-          width: 800, maxWidth: '95vw', aspectRatio: '1.414',
-          background: 'linear-gradient(135deg, #151B1E 0%, #1a2332 50%, #151B1E 100%)',
-          borderRadius: 12, position: 'relative', overflow: 'hidden',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          padding: '48px 60px', boxSizing: 'border-box',
-          fontFamily: "'Outfit', sans-serif",
-        }}>
-          {/* Decorative border */}
-          <div style={{
-            position: 'absolute', inset: 12,
-            border: '2px solid rgba(45,98,200,0.4)',
-            borderRadius: 8, pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', inset: 18,
-            border: '1px solid rgba(45,98,200,0.15)',
-            borderRadius: 6, pointerEvents: 'none',
-          }} />
-
-          {/* Corner accents */}
-          {[{ top: 8, left: 8 }, { top: 8, right: 8 }, { bottom: 8, left: 8 }, { bottom: 8, right: 8 }].map((pos, i) => (
-            <div key={i} style={{
-              position: 'absolute', ...pos, width: 40, height: 40,
-              borderTop: pos.top !== undefined ? '3px solid #2D62C8' : 'none',
-              borderBottom: pos.bottom !== undefined ? '3px solid #2D62C8' : 'none',
-              borderLeft: pos.left !== undefined ? '3px solid #2D62C8' : 'none',
-              borderRight: pos.right !== undefined ? '3px solid #2D62C8' : 'none',
-              borderRadius: 4,
-            }} />
-          ))}
-
-          {/* Background glow */}
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            width: 400, height: 400, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(45,98,200,0.08) 0%, transparent 70%)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Logo / Brand */}
-          <div style={{ fontSize: 14, letterSpacing: 6, textTransform: 'uppercase', color: 'rgba(245,247,248,0.5)', marginBottom: 8 }}>
-            CONNIKU
-          </div>
-
-          {/* Title */}
-          <h1 style={{
-            fontSize: 32, fontWeight: 300, color: '#F5F7F8', margin: '4px 0 4px',
-            letterSpacing: 2, textTransform: 'uppercase',
-          }}>
-            Certificado de Logro
-          </h1>
-
-          <div style={{ width: 80, height: 2, background: 'linear-gradient(90deg, transparent, #2D62C8, transparent)', margin: '16px 0' }} />
-
-          {/* Presented to */}
-          <p style={{ fontSize: 13, color: 'rgba(245,247,248,0.5)', margin: '8px 0 4px', letterSpacing: 1 }}>
-            Se otorga a
-          </p>
-          <h2 style={{
-            fontSize: 36, fontWeight: 600, color: '#F5F7F8', margin: '4px 0 16px',
-            textAlign: 'center',
-          }}>
-            {user?.firstName} {user?.lastName}
-          </h2>
-
-          <div style={{ width: 60, height: 1, background: 'rgba(245,247,248,0.15)', margin: '4px 0 16px' }} />
-
-          {/* Course info */}
-          <p style={{ fontSize: 13, color: 'rgba(245,247,248,0.5)', margin: '0 0 6px', letterSpacing: 1 }}>
-            Por completar exitosamente el curso
-          </p>
-          <div style={{
-            fontSize: 22, fontWeight: 600, color: '#2D62C8', margin: '0 0 6px',
-            textAlign: 'center', lineHeight: 1.3,
-          }}>
-            {cert.courseEmoji} {cert.courseTitle}
-          </div>
-          <p style={{ fontSize: 14, color: 'rgba(245,247,248,0.6)', margin: '4px 0 0' }}>
-            Categoría: {cert.courseCategory || 'Desarrollo Personal'}
-          </p>
-          <p style={{ fontSize: 15, color: 'rgba(245,247,248,0.7)', margin: '2px 0 20px' }}>
-            Puntuación obtenida: <strong style={{ color: '#2D62C8' }}>{cert.score}%</strong>
-          </p>
-
-          {/* Bottom info */}
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
-            width: '100%', marginTop: 'auto', paddingTop: 16,
-          }}>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{ width: 120, height: 1, background: 'rgba(245,247,248,0.3)', marginBottom: 6 }} />
-              <div style={{ fontSize: 11, color: 'rgba(245,247,248,0.4)' }}>Fecha de emisión</div>
-              <div style={{ fontSize: 13, color: 'rgba(245,247,248,0.7)' }}>{date}</div>
-            </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 28, marginBottom: 2 }}>🏅</div>
-              <div style={{ fontSize: 10, color: 'rgba(245,247,248,0.3)', letterSpacing: 1 }}>VERIFICADO</div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ width: 120, height: 1, background: 'rgba(245,247,248,0.3)', marginBottom: 6, marginLeft: 'auto' }} />
-              <div style={{ fontSize: 11, color: 'rgba(245,247,248,0.4)' }}>ID de Certificado</div>
-              <div style={{ fontSize: 13, color: 'rgba(245,247,248,0.7)', fontFamily: 'monospace' }}>{cert.certificateId?.slice(0, 12)}</div>
-            </div>
-          </div>
-
-          {/* conniku.com watermark */}
-          <div style={{
-            position: 'absolute', bottom: 6, left: '50%', transform: 'translateX(-50%)',
-            fontSize: 10, color: 'rgba(245,247,248,0.2)', letterSpacing: 2,
-          }}>
-            conniku.com
-          </div>
-        </div>
-      </div>
-    )
   }
 
   // Course detail view
@@ -414,19 +240,9 @@ export default function Courses({ onNavigate }: Props) {
                           <div style={{ marginTop: 16, padding: 16, background: 'rgba(5,150,105,0.08)', borderRadius: 12, border: '1px solid rgba(5,150,105,0.2)' }}>
                             <div style={{ fontSize: 24, marginBottom: 8 }}>🏅</div>
                             <strong>Certificado obtenido</strong>
-                            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 12px' }}>
+                            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '4px 0 0' }}>
                               {quizResult.courseTitle} — se agregó a tu perfil profesional
                             </p>
-                            <button className="btn btn-primary btn-sm" onClick={() => setViewingCert({
-                              certificateId: quizResult.certificateId || courseDetail?.progress?.certificateId,
-                              courseTitle: quizResult.courseTitle || courseDetail?.title,
-                              courseEmoji: courseDetail?.emoji || '📚',
-                              courseCategory: courseDetail?.category,
-                              score: quizResult.score,
-                              completedAt: new Date().toISOString(),
-                            })} style={{ fontSize: 13 }}>
-                              📜 Ver Certificado
-                            </button>
                           </div>
                         )}
                         {!quizResult.passed && (
@@ -539,22 +355,15 @@ export default function Courses({ onNavigate }: Props) {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
               {certificates.map((cert: any) => (
-                <div key={cert.certificateId} className="card" style={{ padding: 20, textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-                  onClick={() => setViewingCert(cert)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(45,98,200,0.15)' }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
+                <div key={cert.certificateId} className="card" style={{ padding: 20, textAlign: 'center' }}>
                   <div style={{ fontSize: 32, marginBottom: 8 }}>{cert.courseEmoji}</div>
                   <h4 style={{ margin: '0 0 4px' }}>{cert.courseTitle}</h4>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
                     Puntuación: {cert.score}% · {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es') : ''}
                   </div>
-                  <div style={{ padding: 8, background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: 'var(--accent-green)', marginBottom: 10 }}>
+                  <div style={{ padding: 8, background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: 'var(--accent-green)' }}>
                     🏅 Certificado verificado · ID: {cert.certificateId?.slice(0, 8)}
                   </div>
-                  <button className="btn btn-primary btn-sm" style={{ width: '100%', fontSize: 13 }}
-                    onClick={(e) => { e.stopPropagation(); setViewingCert(cert) }}>
-                    📜 Ver Certificado
-                  </button>
                 </div>
               ))}
             </div>
@@ -637,8 +446,6 @@ export default function Courses({ onNavigate }: Props) {
           </>
         )}
       </div>
-      {/* Certificate modal */}
-      {viewingCert && <CertificateView cert={viewingCert} onClose={() => setViewingCert(null)} />}
     </>
   )
 }
