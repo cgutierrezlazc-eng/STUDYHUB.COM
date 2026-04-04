@@ -107,6 +107,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: formData.avatar || '',
         username: formData.username || null,
         tos_accepted: formData.tosAccepted || false,
+        academic_status: formData.academicStatus || 'estudiante',
+        offers_mentoring: formData.offersMentoring || false,
+        mentoring_services: formData.mentoringServices || [],
+        professional_title: formData.professionalTitle || '',
       }
       const data = await api.register(payload)
       localStorage.setItem(TOKEN_KEY, data.token)
@@ -139,6 +143,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.birthDate !== undefined) payload.birth_date = data.birthDate
       if (data.bio !== undefined) payload.bio = data.bio
       if (data.avatar !== undefined) payload.avatar = data.avatar
+      if ((data as any).academicStatus !== undefined) payload.academic_status = (data as any).academicStatus
+      if ((data as any).offersMentoring !== undefined) payload.offers_mentoring = (data as any).offersMentoring
+      if ((data as any).mentoringServices !== undefined) payload.mentoring_services = (data as any).mentoringServices
+      if ((data as any).mentoringSubjects !== undefined) payload.mentoring_subjects = (data as any).mentoringSubjects
+      if ((data as any).professionalTitle !== undefined) payload.professional_title = (data as any).professionalTitle
 
       const updated = await api.updateMe(payload)
       setUser(updated)

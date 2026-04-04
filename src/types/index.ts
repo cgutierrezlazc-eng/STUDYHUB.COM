@@ -35,6 +35,11 @@ export interface User {
   subscriptionStatus?: string;
   trialStartedAt?: string;
   subscriptionExpiresAt?: string;
+  academicStatus?: 'estudiante' | 'egresado' | 'titulado';
+  offersMentoring?: boolean;
+  mentoringServices?: string[];
+  mentoringSubjects?: string[];
+  professionalTitle?: string;
   createdAt: string;
   lastLogin: string;
 }

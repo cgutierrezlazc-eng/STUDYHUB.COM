@@ -50,6 +50,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     username: '',
     country: 'CL',
     tosAccepted: false,
+    academicStatus: 'estudiante' as 'estudiante' | 'egresado' | 'titulado',
+    offersMentoring: false,
+    mentoringServices: [] as string[],
+    professionalTitle: '',
   })
 
   const update = (field: string, value: string | number | boolean) => {
@@ -120,6 +124,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
       if (usernameAvailable === false) { setError('Este nombre de usuario ya está en uso'); return false }
       if (!form.university.trim()) { setError(t('err.enterUniversity')); return false }
       if (!form.career.trim()) { setError(t('err.enterCareer')); return false }
+      if (form.academicStatus === 'titulado' && !form.professionalTitle.trim()) { setError('Ingresa tu título profesional'); return false }
       if (!form.tosAccepted) { setError(t('err.acceptTOS')); return false }
     }
     return true
@@ -387,6 +392,90 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 <label>{t('reg.career')}</label>
                 <input placeholder={t('reg.careerPlaceholder')} value={form.career} onChange={e => update('career', e.target.value)} />
               </div>
+
+              {/* Academic Status */}
+              <div className="auth-field">
+                <label>Estado académico *</label>
+                <div className="auth-semester-picker">
+                  {([
+                    { value: 'estudiante', label: '🎓 Estudiante', desc: 'Cursando actualmente' },
+                    { value: 'egresado', label: '📋 Egresado', desc: 'Completó materias' },
+                    { value: 'titulado', label: '🏅 Titulado', desc: 'Con título profesional' },
+                  ] as const).map(opt => (
+                    <button key={opt.value} type="button"
+                      className={`auth-semester-btn ${form.academicStatus === opt.value ? 'active' : ''}`}
+                      style={{ flex: 1, flexDirection: 'column', padding: '10px 8px', lineHeight: 1.3 }}
+                      onClick={() => {
+                        update('academicStatus', opt.value)
+                        if (opt.value === 'estudiante') {
+                          setForm(prev => ({ ...prev, academicStatus: 'estudiante', offersMentoring: false, mentoringServices: [], professionalTitle: '' }))
+                        }
+                      }}>
+                      <span style={{ fontSize: 14, fontWeight: 600 }}>{opt.label}</span>
+                      <span style={{ fontSize: 10, opacity: 0.7 }}>{opt.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Professional Title - for titulado */}
+              {form.academicStatus === 'titulado' && (
+                <div className="auth-field">
+                  <label>Título profesional *</label>
+                  <input placeholder="Ej: Ingeniero Civil Industrial, Abogado, Médico..."
+                    value={form.professionalTitle}
+                    onChange={e => update('professionalTitle', e.target.value)} />
+                </div>
+              )}
+
+              {/* Mentoring options - for titulado or egresado */}
+              {(form.academicStatus === 'titulado' || form.academicStatus === 'egresado') && (
+                <div className="auth-field" style={{ background: 'var(--bg-tertiary, #f0f4f8)', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: 18 }}>🤝</span>
+                    <span>¿Te gustaría ayudar a otros estudiantes?</span>
+                  </label>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                    Como {form.academicStatus}, puedes ofrecer tu experiencia a estudiantes que la necesiten.
+                  </p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+                    {[
+                      { id: 'ayudantias', label: '📚 Ayudantías', desc: 'Apoyo en materias' },
+                      { id: 'cursos', label: '🎯 Cursos', desc: 'Enseñar temas específicos' },
+                      { id: 'clases_particulares', label: '👨‍🏫 Clases particulares', desc: 'Sesiones 1 a 1' },
+                    ].map(svc => {
+                      const selected = form.mentoringServices.includes(svc.id)
+                      return (
+                        <button key={svc.id} type="button"
+                          style={{
+                            flex: 1, minWidth: 120, padding: '10px 8px', borderRadius: 10,
+                            border: selected ? '2px solid #2D62C8' : '1px solid var(--border)',
+                            background: selected ? 'rgba(45,98,200,0.08)' : 'var(--bg-secondary)',
+                            color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'center',
+                            transition: 'all 0.2s',
+                          }}
+                          onClick={() => {
+                            const services = selected
+                              ? form.mentoringServices.filter(s => s !== svc.id)
+                              : [...form.mentoringServices, svc.id]
+                            setForm(prev => ({ ...prev, mentoringServices: services, offersMentoring: services.length > 0 }))
+                          }}>
+                          <div style={{ fontSize: 14, fontWeight: 600 }}>{svc.label}</div>
+                          <div style={{ fontSize: 10, opacity: 0.7 }}>{svc.desc}</div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  {form.mentoringServices.length > 0 && (
+                    <div style={{ background: 'rgba(45,138,86,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(45,138,86,0.2)' }}>
+                      <p style={{ fontSize: 12, color: '#2D8A56', margin: 0, fontWeight: 500 }}>
+                        💬 Toda coordinación de ayudantías, cursos y clases se realiza a través del <strong>chat de la plataforma</strong>. Esto garantiza seguridad para ambas partes y un registro de la comunicación.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="auth-field">
                 <label>Régimen académico</label>
                 <div className="auth-semester-picker">

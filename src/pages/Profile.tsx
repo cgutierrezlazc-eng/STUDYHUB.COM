@@ -260,6 +260,83 @@ export default function Profile() {
                 </div>
 
                 <div className="pf-divider" />
+                <h3>Estado Académico</h3>
+                <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                  {([
+                    { value: 'estudiante', label: '🎓 Estudiante' },
+                    { value: 'egresado', label: '📋 Egresado' },
+                    { value: 'titulado', label: '🏅 Titulado' },
+                  ] as const).map(opt => (
+                    <button key={opt.value}
+                      className={`pf-skill-btn ${((user as any).academicStatus || 'estudiante') === opt.value ? 'active' : ''}`}
+                      onClick={() => {
+                        const updates: any = { academicStatus: opt.value }
+                        if (opt.value === 'estudiante') {
+                          updates.offersMentoring = false
+                          updates.mentoringServices = []
+                          updates.professionalTitle = ''
+                        }
+                        updateProfile(updates)
+                      }}>
+                      <strong>{opt.label}</strong>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Professional Title for titulado */}
+                {((user as any).academicStatus === 'titulado') && (
+                  <div className="pf-field" style={{ marginBottom: 16 }}>
+                    <label>Título profesional</label>
+                    {isEditing ? (
+                      <input className="form-input" value={(form as any).professionalTitle || ''} placeholder="Ej: Ingeniero Civil Industrial"
+                        onChange={e => update('professionalTitle' as any, e.target.value)} />
+                    ) : <p>{(user as any).professionalTitle || '—'}</p>}
+                  </div>
+                )}
+
+                {/* Mentoring for titulado/egresado */}
+                {((user as any).academicStatus === 'titulado' || (user as any).academicStatus === 'egresado') && (
+                  <div style={{ background: 'var(--bg-tertiary, #f0f4f8)', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14 }}>🤝 Ayuda a otros estudiantes</h4>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                      Selecciona los servicios que quieres ofrecer. La coordinación se realiza por el chat de la plataforma.
+                    </p>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {[
+                        { id: 'ayudantias', label: '📚 Ayudantías' },
+                        { id: 'cursos', label: '🎯 Cursos' },
+                        { id: 'clases_particulares', label: '👨‍🏫 Clases particulares' },
+                      ].map(svc => {
+                        const services: string[] = (user as any).mentoringServices || []
+                        const selected = services.includes(svc.id)
+                        return (
+                          <button key={svc.id}
+                            style={{
+                              flex: 1, minWidth: 100, padding: '10px 8px', borderRadius: 10,
+                              border: selected ? '2px solid #2D62C8' : '1px solid var(--border)',
+                              background: selected ? 'rgba(45,98,200,0.08)' : 'var(--bg-secondary)',
+                              color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                            }}
+                            onClick={() => {
+                              const updated = selected ? services.filter(s => s !== svc.id) : [...services, svc.id]
+                              updateProfile({ mentoringServices: updated, offersMentoring: updated.length > 0 } as any)
+                            }}>
+                            {svc.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                    {((user as any).mentoringServices || []).length > 0 && (
+                      <div style={{ marginTop: 12, background: 'rgba(45,138,86,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(45,138,86,0.2)' }}>
+                        <p style={{ fontSize: 12, color: '#2D8A56', margin: 0 }}>
+                          💬 Toda coordinación se realiza a través del <strong>chat de la plataforma</strong> para garantizar seguridad.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="pf-divider" />
 
                 <h3>{t('skill.title')}</h3>
                 <p className="pf-hint">{t('skill.hint')}</p>

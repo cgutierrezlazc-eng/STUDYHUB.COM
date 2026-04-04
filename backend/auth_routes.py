@@ -112,6 +112,11 @@ class RegisterRequest(BaseModel):
     username: Optional[str] = None
     tos_accepted: bool = False
     referral_code: Optional[str] = None
+    academic_status: str = "estudiante"  # estudiante | egresado | titulado
+    offers_mentoring: bool = False
+    mentoring_services: list = []  # ["ayudantias","cursos","clases_particulares"]
+    mentoring_subjects: list = []  # subjects they can teach
+    professional_title: str = ""
 
 
 class LoginRequest(BaseModel):
@@ -135,6 +140,11 @@ class UpdateProfileRequest(BaseModel):
     bio: Optional[str] = None
     avatar: Optional[str] = None
     theme: Optional[str] = None
+    academic_status: Optional[str] = None
+    offers_mentoring: Optional[bool] = None
+    mentoring_services: Optional[list] = None
+    mentoring_subjects: Optional[list] = None
+    professional_title: Optional[str] = None
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -197,6 +207,11 @@ def user_to_dict(user: User) -> dict:
         "pomodoroTotalSessions": getattr(user, 'pomodoro_total_sessions', 0) or 0,
         "pomodoroTotalMinutes": getattr(user, 'pomodoro_total_minutes', 0) or 0,
         "weeklyStudyGoalHours": getattr(user, 'weekly_study_goal_hours', 10.0) or 10.0,
+        "academicStatus": getattr(user, 'academic_status', 'estudiante') or "estudiante",
+        "offersMentoring": getattr(user, 'offers_mentoring', False) or False,
+        "mentoringServices": _json.loads(getattr(user, 'mentoring_services', None) or "[]"),
+        "mentoringSubjects": _json.loads(getattr(user, 'mentoring_subjects', None) or "[]"),
+        "professionalTitle": getattr(user, 'professional_title', '') or "",
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }
@@ -244,6 +259,8 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
     if not req.tos_accepted:
         raise HTTPException(400, "Debes aceptar los términos de servicio")
 
+    import json as _json
+
     # Generate or validate username
     if req.username:
         username = req.username.lower().strip()
@@ -286,6 +303,11 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         ban_reason=None,
         is_admin=is_admin,
         role="user",
+        academic_status=req.academic_status if req.academic_status in ("estudiante", "egresado", "titulado") else "estudiante",
+        offers_mentoring=req.offers_mentoring if req.academic_status in ("egresado", "titulado") else False,
+        mentoring_services=_json.dumps(req.mentoring_services) if req.mentoring_services else "[]",
+        mentoring_subjects=_json.dumps(req.mentoring_subjects) if req.mentoring_subjects else "[]",
+        professional_title=html.escape(req.professional_title or ""),
         tos_accepted_at=datetime.utcnow() if req.tos_accepted else None,
         onboarding_completed=False,
         theme="nocturno",
@@ -485,11 +507,17 @@ def get_me(user: User = Depends(get_current_user)):
 def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     import json as _json
     updates = req.dict(exclude_none=True)
+    json_list_fields = {"secondary_languages", "mentoring_services", "mentoring_subjects"}
     for key, value in updates.items():
-        # Handle secondary_languages specially: store as JSON string
-        if key == "secondary_languages":
-            if isinstance(value, list) and len(value) <= 4:
-                user.secondary_languages = _json.dumps(value)
+        # Handle JSON list fields specially: store as JSON string
+        if key in json_list_fields:
+            if isinstance(value, list):
+                if key == "secondary_languages" and len(value) > 4:
+                    continue
+                setattr(user, key, _json.dumps(value))
+            continue
+        # Validate academic_status
+        if key == "academic_status" and value not in ("estudiante", "egresado", "titulado"):
             continue
         # Convert camelCase to snake_case for db fields
         db_key = key

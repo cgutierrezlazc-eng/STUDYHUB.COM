@@ -67,6 +67,12 @@ class User(Base):
     graduation_year = Column(Integer, nullable=True)
     is_senior_year = Column(Boolean, default=False)  # Last year of studies
     total_semesters = Column(Integer, default=8)  # Total semesters in their program
+    academic_status = Column(String(20), default="estudiante")  # estudiante | egresado | titulado
+    # Mentoring preferences (for titulados/egresados)
+    offers_mentoring = Column(Boolean, default=False)
+    mentoring_services = Column(Text, default="[]")  # JSON: ["ayudantias","cursos","clases_particulares"]
+    mentoring_subjects = Column(Text, default="[]")  # JSON: subjects they can teach
+    professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
     provider = Column(String(20), default="email")  # email | google
 
     email_verified = Column(Boolean, nullable=False, default=False)
