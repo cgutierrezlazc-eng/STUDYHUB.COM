@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4f8cff</color>
-    <color name="colorPrimaryDark">#1a1a2e</color>
-    <color name="colorAccent">#4f8cff</color>
-    <color name="splash_bg">#1a1a2e</color>
+    <color name="colorPrimary">#2D62C8</color>
+    <color name="colorPrimaryDark">#151B1E</color>
+    <color name="colorAccent">#2D62C8</color>
+    <color name="splash_bg">#151B1E</color>
+    <color name="navigationBarColor">#151B1E</color>
 </resources>

@@ -74,11 +74,11 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   }
 
   const loadFolders = async () => {
-    try { setFolders(await api.getFolders()) } catch {}
+    try { setFolders(await api.getFolders()) } catch (err: any) { console.error('Failed to load folders:', err) }
   }
 
   const loadFriends = async () => {
-    try { setFriends(await api.getFriends()) } catch {}
+    try { setFriends(await api.getFriends()) } catch (err: any) { console.error('Failed to load friends:', err) }
   }
 
   const loadMessages = async (convId: string) => {
@@ -114,7 +114,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setPhotoPreview(null)
       await loadMessages(activeConv)
       await loadConversations()
-    } catch {}
+    } catch (err: any) { console.error('Failed to send photo:', err) }
     setSending(false)
   }
 
@@ -151,7 +151,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             })
             await loadMessages(activeConv)
             await loadConversations()
-          } catch {}
+          } catch (err: any) { console.error('Failed to send voice message:', err) }
         }
         reader.readAsDataURL(blob)
       }
@@ -183,7 +183,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const handleSearch = async (q: string) => {
     setSearchQuery(q)
     if (q.length < 2) { setSearchResults([]); return }
-    try { setSearchResults(await api.searchUsers(q)) } catch {}
+    try { setSearchResults(await api.searchUsers(q)) } catch (err: any) { console.error('Search failed:', err) }
   }
 
   const startDirectChat = async (targetUser: any) => {

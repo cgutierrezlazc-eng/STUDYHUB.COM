@@ -68,7 +68,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       const data = await api.getMyDownloads()
       setDownloads(data.downloads || [])
       setStorageInfo({ used: data.storageUsed, limit: data.storageLimit, percent: data.storagePercent })
-    } catch {}
+    } catch (err: any) { console.error('Failed to load downloads:', err) }
   }
 
   const handleDeleteDownload = async (id: string) => {
@@ -76,7 +76,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       const result = await api.deleteDownload(id)
       setDownloads(prev => prev.filter(d => d.id !== id))
       setStorageInfo((prev: any) => prev ? { ...prev, used: result.storageUsed } : prev)
-    } catch {}
+    } catch (err: any) { console.error('Failed to delete download:', err) }
   }
 
   const fmtSize = (bytes: number) => bytes < 1024*1024 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/(1024*1024)).toFixed(1)} MB`

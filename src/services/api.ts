@@ -508,6 +508,14 @@ export const api = {
   getMyCertificates: () => request('/courses/certificates/my'),
   getUserCertificates: (userId: string) => request(`/courses/certificates/${userId}`),
 
+  // Admin course management (manual, no AI)
+  adminCreateCourse: (data: any) =>
+    request('/courses/admin/create', { method: 'POST', body: JSON.stringify(data) }),
+  adminUpdateCourse: (courseId: string, data: any) =>
+    request(`/courses/admin/${courseId}`, { method: 'PUT', body: JSON.stringify(data) }),
+  adminDeleteCourse: (courseId: string) =>
+    request(`/courses/admin/${courseId}`, { method: 'DELETE' }),
+
   // ─── Student CV ───────────────────────────────────────────
   getMyCV: () => request('/courses/cv'),
   updateCV: (data: any) =>

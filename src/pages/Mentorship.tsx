@@ -23,7 +23,7 @@ export default function Mentorship({ onNavigate }: Props) {
 
   const loadMentors = async () => {
     setLoading(true)
-    try { setMentors(await api.getMentors(search || undefined)) } catch {}
+    try { setMentors(await api.getMentors(search || undefined)) } catch (err: any) { console.error('Failed to load mentors:', err) }
     setLoading(false)
   }
   const loadMy = async () => {
@@ -31,7 +31,7 @@ export default function Mentorship({ onNavigate }: Props) {
       setMyMentors(await api.getMyMentors())
       setMyMentees(await api.getMyMentees())
       setMentorProfile(await api.getMentorProfile())
-    } catch {}
+    } catch (err: any) { console.error('Failed to load mentorship data:', err) }
   }
   const handleBecomeMentor = async () => {
     const subjectList = subjects.split(',').map(s => s.trim()).filter(Boolean)

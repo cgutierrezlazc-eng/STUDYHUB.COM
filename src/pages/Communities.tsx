@@ -37,7 +37,7 @@ export default function Communities({ onNavigate }: Props) {
     try {
       const data = await api.getCommunities(search || undefined, category || undefined, undefined, tab === 'my', 1)
       setCommunities(data.communities || [])
-    } catch {}
+    } catch (err: any) { console.error('Failed to load communities:', err) }
     setLoading(false)
   }
 

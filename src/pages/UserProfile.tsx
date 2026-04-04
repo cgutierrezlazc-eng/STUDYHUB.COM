@@ -37,21 +37,21 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     try {
       const data = await api.getUserProfile(userId)
       setProfile(data)
-    } catch {}
+    } catch (err: any) { console.error('Failed to load profile:', err) }
     setLoading(false)
   }
 
   const loadPosts = async () => {
-    try { setPosts(await api.getWallPosts(userId)) } catch {}
+    try { setPosts(await api.getWallPosts(userId)) } catch (err: any) { console.error('Failed to load posts:', err) }
   }
 
   const loadFriends = async () => {
-    try { setFriendsList(await api.getUserFriends(userId)) } catch {}
+    try { setFriendsList(await api.getUserFriends(userId)) } catch (err: any) { console.error('Failed to load friends:', err) }
   }
 
   const loadActivityFeed = async () => {
     setActivityLoading(true)
-    try { setActivityFeed(await api.getActivityFeed()) } catch {}
+    try { setActivityFeed(await api.getActivityFeed()) } catch (err: any) { console.error('Failed to load activity feed:', err) }
     setActivityLoading(false)
   }
 
@@ -99,7 +99,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         try {
           const data = await api.getComments(postId)
           setComments(prev => ({ ...prev, [postId]: data }))
-        } catch {}
+        } catch (err: any) { console.error('Failed to load comments:', err) }
       }
       setExpandedComments(prev => new Set(prev).add(postId))
     }

@@ -16,29 +16,37 @@ export default function Courses({ onNavigate }: Props) {
   const [courses, setCourses] = useState<any[]>([])
   const [categories, setCategories] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState('')
   const [selectedCourse, setSelectedCourse] = useState<any>(null)
   const [courseDetail, setCourseDetail] = useState<any>(null)
+  const [courseError, setCourseError] = useState<string | null>(null)
   const [activeLesson, setActiveLesson] = useState<number>(0)
   const [generating, setGenerating] = useState(false)
   const [quizMode, setQuizMode] = useState(false)
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({})
   const [quizResult, setQuizResult] = useState<any>(null)
+  const [quizError, setQuizError] = useState<string | null>(null)
   const [certificates, setCertificates] = useState<any[]>([])
   const [tab, setTab] = useState<'catalog' | 'my-certs'>('catalog')
 
   useEffect(() => { loadCourses() }, [])
 
   const loadCourses = async () => {
+    setError(null)
     try {
       const data = await api.getCourses(selectedCategory || undefined)
       setCourses(data.courses || [])
       setCategories(data.categories || {})
-    } catch {}
+    } catch (err: any) {
+      console.error('Failed to load courses:', err)
+      setError('No se pudieron cargar los cursos. Intenta de nuevo más tarde.')
+    }
     setLoading(false)
   }
 
   const openCourse = async (courseId: string) => {
+    setCourseError(null)
     try {
       const data = await api.getCourse(courseId)
       setCourseDetail(data)
@@ -56,11 +64,15 @@ export default function Courses({ onNavigate }: Props) {
           setCourseDetail(updated)
           setSelectedCourse(updated)
         } catch (err: any) {
-          alert('Error generando contenido: ' + (err.message || ''))
+          console.error('Course generation failed:', err)
+          setCourseError('El contenido del curso no está disponible en este momento. El servicio de generación está temporalmente fuera de servicio. Puedes ver la información del curso mientras tanto.')
         }
         setGenerating(false)
       }
-    } catch {}
+    } catch (err: any) {
+      console.error('Failed to open course:', err)
+      setCourseError('No se pudo cargar el curso. Intenta de nuevo más tarde.')
+    }
   }
 
   const handleCompleteLesson = async (lessonId: string) => {
@@ -72,11 +84,14 @@ export default function Courses({ onNavigate }: Props) {
         progress: { ...prev.progress, completedLessons: result.completedLessons },
         lessons: prev.lessons.map((l: any) => ({ ...l, completed: result.completedLessons.includes(l.id) })),
       }))
-    } catch {}
+    } catch (err: any) {
+      console.error('Failed to complete lesson:', err)
+    }
   }
 
   const handleSubmitQuiz = async () => {
     if (!courseDetail) return
+    setQuizError(null)
     try {
       const result = await api.submitCourseQuiz(courseDetail.id, quizAnswers)
       setQuizResult(result)
@@ -87,12 +102,15 @@ export default function Courses({ onNavigate }: Props) {
         }))
       }
     } catch (err: any) {
-      alert(err.message || 'Error al enviar quiz')
+      console.error('Quiz submission failed:', err)
+      setQuizError('Error al enviar el examen. Intenta de nuevo.')
     }
   }
 
   const loadCertificates = async () => {
-    try { setCertificates(await api.getMyCertificates()) } catch {}
+    try { setCertificates(await api.getMyCertificates()) } catch (err: any) {
+      console.error('Failed to load certificates:', err)
+    }
   }
 
   // Course detail view
@@ -120,6 +138,27 @@ export default function Courses({ onNavigate }: Props) {
         </div>
 
         <div className="page-body">
+          {courseError && (
+            <div style={{
+              padding: '16px 20px', marginBottom: 16, borderRadius: 12,
+              background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)',
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+            }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}>⚠️</span>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)', marginBottom: 4 }}>
+                  Contenido no disponible
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  {courseError}
+                </div>
+                <button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }}
+                  onClick={() => { setCourseError(null); openCourse(courseDetail.id) }}>
+                  Reintentar
+                </button>
+              </div>
+            </div>
+          )}
           {generating ? (
             <div className="empty-state" style={{ padding: 40 }}>
               <div className="loading-dots"><span /><span /><span /></div>
@@ -234,6 +273,11 @@ export default function Courses({ onNavigate }: Props) {
                             </div>
                           </div>
                         ))}
+                        {quizError && (
+                          <div style={{ padding: '12px 16px', marginBottom: 12, borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', fontSize: 13, color: '#ef4444' }}>
+                            {quizError}
+                          </div>
+                        )}
                         <button className="btn btn-primary" onClick={handleSubmitQuiz}
                           disabled={Object.keys(quizAnswers).length < courseDetail.quiz.questions.length}>
                           Enviar Examen ({Object.keys(quizAnswers).length}/{courseDetail.quiz.questions.length})
@@ -326,6 +370,28 @@ export default function Courses({ onNavigate }: Props) {
           )
         ) : loading ? (
           <div className="loading-dots"><span /><span /><span /></div>
+        ) : error ? (
+          <div className="empty-state" style={{ padding: 40 }}>
+            <div style={{ fontSize: 48 }}>⚠️</div>
+            <h3>Error al cargar cursos</h3>
+            <p style={{ color: 'var(--text-muted)' }}>{error}</p>
+            <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => { setLoading(true); loadCourses() }}>
+              Reintentar
+            </button>
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="empty-state" style={{ padding: 40 }}>
+            <div style={{ fontSize: 48 }}>📚</div>
+            <h3>No hay cursos disponibles</h3>
+            <p style={{ color: 'var(--text-muted)' }}>
+              {selectedCategory ? 'No se encontraron cursos en esta categoría. Prueba con otra.' : 'Los cursos estarán disponibles próximamente.'}
+            </p>
+            {selectedCategory && (
+              <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => { setSelectedCategory(''); setTimeout(loadCourses, 50) }}>
+                Ver todos los cursos
+              </button>
+            )}
+          </div>
         ) : (
           <>
             {/* Featured courses */}

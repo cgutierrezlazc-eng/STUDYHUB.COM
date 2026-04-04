@@ -25,14 +25,14 @@ export default function CommunityView({ onNavigate }: Props) {
   }, [id])
 
   const loadCommunity = async () => {
-    try { setCommunity(await api.getCommunity(id!)) } catch {}
+    try { setCommunity(await api.getCommunity(id!)) } catch (err: any) { console.error('Failed to load community:', err) }
     setLoading(false)
   }
   const loadPosts = async () => {
-    try { setPosts(await api.getCommunityPosts(id!)) } catch {}
+    try { setPosts(await api.getCommunityPosts(id!)) } catch (err: any) { console.error('Failed to load posts:', err) }
   }
   const loadMembers = async () => {
-    try { setMembers(await api.getCommunityMembers(id!)) } catch {}
+    try { setMembers(await api.getCommunityMembers(id!)) } catch (err: any) { console.error('Failed to load members:', err) }
   }
 
   const handlePost = async () => {
@@ -63,7 +63,7 @@ export default function CommunityView({ onNavigate }: Props) {
     try {
       const result = await api.likeCommunityPost(postId)
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, likeCount: result.likeCount, liked: result.liked } : p))
-    } catch {}
+    } catch (err: any) { console.error('Like failed:', err) }
   }
 
   const toggleComments = async (postId: string) => {
@@ -71,7 +71,7 @@ export default function CommunityView({ onNavigate }: Props) {
       setExpandedComments(prev => { const s = new Set(prev); s.delete(postId); return s })
     } else {
       if (!comments[postId]) {
-        try { const data = await api.getCommunityPostComments(postId); setComments(prev => ({ ...prev, [postId]: data })) } catch {}
+        try { const data = await api.getCommunityPostComments(postId); setComments(prev => ({ ...prev, [postId]: data })) } catch (err: any) { console.error('Failed to load comments:', err) }
       }
       setExpandedComments(prev => new Set(prev).add(postId))
     }
@@ -92,7 +92,7 @@ export default function CommunityView({ onNavigate }: Props) {
     try {
       const result = await api.pinCommunityPost(postId)
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, isPinned: result.isPinned } : p))
-    } catch {}
+    } catch (err: any) { console.error('Pin failed:', err) }
   }
 
   const handleDeletePost = async (postId: string) => {
@@ -100,7 +100,7 @@ export default function CommunityView({ onNavigate }: Props) {
     try {
       await api.deleteCommunityPost(postId)
       setPosts(prev => prev.filter(p => p.id !== postId))
-    } catch {}
+    } catch (err: any) { console.error('Delete post failed:', err) }
   }
 
   const timeAgo = (iso: string) => {

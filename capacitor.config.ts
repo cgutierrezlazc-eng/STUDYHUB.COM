@@ -5,25 +5,23 @@ const config: CapacitorConfig = {
   appName: 'Conniku',
   webDir: 'dist/renderer',
   server: {
-    // For development, point to your local Vite server
-    // Comment this out for production builds
-    // url: 'http://192.168.1.X:5173',
-    // cleartext: true,
     androidScheme: 'https',
+    iosScheme: 'https',
+    hostname: 'app.conniku.com',
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
+      launchShowDuration: 2500,
       launchAutoHide: true,
-      backgroundColor: '#F5F3EF',
+      backgroundColor: '#151B1E',
       showSpinner: false,
-      androidSpinnerStyle: 'small',
       splashFullScreen: true,
       splashImmersive: true,
+      launchFadeOutDuration: 300,
     },
     StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#F5F3EF',
+      style: 'DARK',
+      backgroundColor: '#151B1E',
     },
     Keyboard: {
       resize: 'body',
@@ -32,15 +30,22 @@ const config: CapacitorConfig = {
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert'],
     },
+    Camera: {
+      permissions: ['camera', 'photos'],
+    },
   },
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
     scheme: 'Conniku',
+    backgroundColor: '#151B1E',
+    limitsNavigationsToAppBoundDomains: true,
   },
   android: {
-    backgroundColor: '#F5F3EF',
-    allowMixedContent: true,
+    backgroundColor: '#151B1E',
+    allowMixedContent: false,
+    captureInput: true,
+    webContentsDebuggingEnabled: false,
   },
 };
 

@@ -41,7 +41,7 @@ export default function StudyRooms({ onNavigate }: Props) {
   }, [pomodoroRunning, pomodoroTime])
 
   const loadRooms = async () => {
-    try { setRooms(await api.getStudyRooms()) } catch {}
+    try { setRooms(await api.getStudyRooms()) } catch (err: any) { console.error('Failed to load study rooms:', err) }
     setLoading(false)
   }
 
@@ -67,7 +67,7 @@ export default function StudyRooms({ onNavigate }: Props) {
   const handleLeave = async () => {
     if (!activeRoom) return
     setPomodoroRunning(false)
-    try { await api.leaveStudyRoom(activeRoom.id, totalStudyMin) } catch {}
+    try { await api.leaveStudyRoom(activeRoom.id, totalStudyMin) } catch (err: any) { console.error('Failed to leave study room:', err) }
     setActiveRoom(null)
     setTotalStudyMin(0)
     loadRooms()

@@ -31,7 +31,7 @@ export default function Events({ onNavigate }: Props) {
     try {
       const data = await api.getEvents(tab === 'my')
       setEvents(Array.isArray(data) ? data : [])
-    } catch {}
+    } catch (err: any) { console.error('Failed to load events:', err) }
     setLoading(false)
   }
 

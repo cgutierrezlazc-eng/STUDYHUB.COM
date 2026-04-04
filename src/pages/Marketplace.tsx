@@ -72,7 +72,7 @@ export default function Marketplace({ onNavigate }: Props) {
     try {
       await api.downloadDocument(docId)
       setDocuments(prev => prev.map(d => d.id === docId ? { ...d, downloads: d.downloads + 1 } : d))
-    } catch {}
+    } catch (err: any) { console.error('Download failed:', err) }
   }
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

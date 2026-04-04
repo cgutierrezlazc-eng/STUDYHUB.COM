@@ -68,7 +68,7 @@ export default function Jobs({ onNavigate }: Props) {
     try {
       const data = await api.getJobListings(search || undefined, jobTypeFilter || undefined)
       setJobs(data.jobs || [])
-    } catch {}
+    } catch (err: any) { console.error('Failed to load jobs:', err) }
     setLoading(false)
   }
 
@@ -76,24 +76,24 @@ export default function Jobs({ onNavigate }: Props) {
     try {
       const data = await api.browseCandidates(search || undefined)
       setCandidates(data.candidates || [])
-    } catch {}
+    } catch (err: any) { console.error('Failed to load candidates:', err) }
   }
 
   const loadMyApps = async () => {
-    try { setMyApps(await api.getMyApplications()) } catch {}
+    try { setMyApps(await api.getMyApplications()) } catch (err: any) { console.error('Failed to load applications:', err) }
   }
 
   const loadTutorings = async () => {
     try {
       const data = await api.getTutoringListings()
       setTutorings(data.listings || [])
-    } catch {}
+    } catch (err: any) { console.error('Failed to load tutorings:', err) }
   }
 
   const loadRecruiter = async () => {
     try {
       setRecruiterProfile(await api.getRecruiterProfile())
-    } catch {}
+    } catch (err: any) { console.error('Failed to load recruiter profile:', err) }
   }
 
   const handleCreateTutoring = async () => {
@@ -171,7 +171,7 @@ export default function Jobs({ onNavigate }: Props) {
         headline: careerStatus?.headline || '',
       })
       setCareerStatus((prev: any) => ({ ...prev, isOpenToOpportunities: newVal }))
-    } catch {}
+    } catch (err: any) { console.error('Failed to update career status:', err) }
   }
 
   const formatSalary = (min: number | null, max: number | null, currency: string) => {

@@ -39,7 +39,9 @@ export default function Feed({ onNavigate }: Props) {
       else setPosts(prev => [...prev, ...items])
       setHasMore(items.length >= 20)
       setPage(p)
-    } catch {}
+    } catch (err: any) {
+      console.error('Failed to load feed:', err)
+    }
     setLoading(false)
   }
 
@@ -65,7 +67,9 @@ export default function Feed({ onNavigate }: Props) {
         ...p, reactions: result.reactions, userReaction: result.userReaction,
         liked: result.reacted, likes: Object.values(result.reactions as Record<string, number>).reduce((a: number, b: number) => a + b, 0),
       } : p))
-    } catch {}
+    } catch (err: any) {
+      console.error('Reaction failed:', err)
+    }
     setHoveredReaction(null)
   }
 
@@ -82,7 +86,9 @@ export default function Feed({ onNavigate }: Props) {
         try {
           const data = await api.getComments(postId)
           setComments(prev => ({ ...prev, [postId]: data }))
-        } catch {}
+        } catch (err: any) {
+          console.error('Failed to load comments:', err)
+        }
       }
       setExpandedComments(prev => new Set(prev).add(postId))
     }
@@ -273,7 +279,7 @@ export default function Feed({ onNavigate }: Props) {
                         try {
                           const result = await api.toggleBookmark(post.id)
                           setPosts(prev => prev.map(p => p.id === post.id ? { ...p, bookmarked: result.bookmarked } : p))
-                        } catch {}
+                        } catch (err: any) { console.error('Bookmark failed:', err) }
                       }} style={{
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: post.bookmarked ? 'var(--accent)' : 'var(--text-muted)', borderRadius: 8,

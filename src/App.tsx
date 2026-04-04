@@ -11,6 +11,7 @@ import NewProjectModal from './components/NewProjectModal'
 import Onboarding from './components/Onboarding'
 import ConferencePanel from './components/ConferencePanel'
 import WelcomeModal from './components/WelcomeModal'
+import ErrorBoundary from './components/ErrorBoundary'
 import Landing from './pages/Landing'
 import { Project } from './types'
 import { api } from './services/api'
@@ -210,6 +211,7 @@ export default function App() {
           className={showMobileUI || showTabletUI ? (sidebarOpen ? 'open' : '') : ''}
         />
         <main className="main-content">
+          <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
             <Route path="/" element={<Feed onNavigate={(path) => navigate(path)} />} />
@@ -239,6 +241,7 @@ export default function App() {
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />
           </Routes>
         </Suspense>
+          </ErrorBoundary>
       </main>
       {!showMobileUI && !showTabletUI && (
         <RightPanel currentPath={location.pathname} onNavigate={(path) => navigate(path)} />

@@ -21,21 +21,21 @@ export default function Friends({ onNavigate }: Props) {
   useEffect(() => { loadFriends(); loadRequests(); loadSentRequests(); loadSuggestions() }, [])
 
   const loadFriends = async () => {
-    try { setFriends(await api.getFriends()) } catch {}
+    try { setFriends(await api.getFriends()) } catch (err: any) { console.error('Failed to load friends:', err) }
   }
   const loadRequests = async () => {
-    try { setRequests(await api.getFriendRequests()) } catch {}
+    try { setRequests(await api.getFriendRequests()) } catch (err: any) { console.error('Failed to load requests:', err) }
   }
   const loadSentRequests = async () => {
-    try { setSentRequests(await api.getSentFriendRequests()) } catch {}
+    try { setSentRequests(await api.getSentFriendRequests()) } catch (err: any) { console.error('Failed to load sent requests:', err) }
   }
   const loadSuggestions = async () => {
-    try { setSuggestions(await api.getFriendSuggestions()) } catch {}
+    try { setSuggestions(await api.getFriendSuggestions()) } catch (err: any) { console.error('Failed to load suggestions:', err) }
   }
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
-    try { setSearchResults(await api.searchUsers(searchQuery)) } catch {}
+    try { setSearchResults(await api.searchUsers(searchQuery)) } catch (err: any) { console.error('Search failed:', err) }
   }
 
   const handleSendRequest = async (userId: string) => {

@@ -146,7 +146,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     if (verificationCode === expectedCode) {
       try {
         await api.verifyEmail(verificationCode)
-      } catch {}
+      } catch (err: any) { console.error('Email verification failed:', err) }
       // Already logged in from register, just close
       window.location.reload()
     } else {
