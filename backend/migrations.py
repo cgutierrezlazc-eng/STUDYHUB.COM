@@ -74,6 +74,12 @@ def migrate():
         ("is_senior_year", "BOOLEAN DEFAULT FALSE"),
         ("total_semesters", "INTEGER DEFAULT 8"),
         ("provider", "VARCHAR(20) DEFAULT 'email'"),
+        # Academic status & mentoring
+        ("academic_status", "VARCHAR(20) DEFAULT 'estudiante'"),
+        ("offers_mentoring", "BOOLEAN DEFAULT FALSE"),
+        ("mentoring_services", "TEXT DEFAULT '[]'"),
+        ("mentoring_subjects", "TEXT DEFAULT '[]'"),
+        ("professional_title", "VARCHAR(255) DEFAULT ''"),
     ]
 
     inspector = inspect(engine)
