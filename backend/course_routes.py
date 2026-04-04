@@ -678,6 +678,170 @@ def user_certificates(user_id: str, db: Session = Depends(get_db)):
     } for p, c in completed]
 
 
+# ─── CEO: Course Certification Management ──────────────────
+
+class AdminCertifyRequest(BaseModel):
+    user_id: str
+    course_ids: list[str]
+    score_override: int = 100  # default 100%
+
+@router.get("/admin/progress-overview")
+def admin_progress_overview(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get all users' course progress for CEO dashboard."""
+    if not user.is_admin:
+        raise HTTPException(403, "Solo administradores")
+
+    # Get all courses
+    courses = db.query(Course).order_by(Course.title).all()
+
+    # Get all progress records with user info
+    progress_records = db.query(UserCourseProgress, User, Course).join(
+        User, User.id == UserCourseProgress.user_id
+    ).join(
+        Course, Course.id == UserCourseProgress.course_id
+    ).order_by(desc(UserCourseProgress.updated_at)).all()
+
+    # Build user progress map
+    users_map: dict = {}
+    for p, u, c in progress_records:
+        if u.id not in users_map:
+            users_map[u.id] = {
+                "userId": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "email": u.email,
+                "avatar": u.avatar or "",
+                "courses": [],
+                "completedCount": 0,
+                "totalStarted": 0,
+            }
+        completed_lessons = json.loads(p.completed_lessons or "[]")
+        course_lessons = db.query(CourseLesson).filter(CourseLesson.course_id == c.id).count()
+        lesson_progress = round((len(completed_lessons) / max(course_lessons, 1)) * 100)
+
+        course_data = {
+            "courseId": c.id,
+            "courseTitle": c.title,
+            "courseEmoji": c.emoji or "📚",
+            "category": c.category,
+            "lessonProgress": lesson_progress,
+            "lessonsCompleted": len(completed_lessons),
+            "totalLessons": course_lessons,
+            "quizPassed": p.quiz_passed or False,
+            "quizScore": p.quiz_score,
+            "completed": p.completed or False,
+            "certificateId": p.certificate_id,
+            "completedAt": p.completed_at.isoformat() if p.completed_at else None,
+        }
+        users_map[u.id]["courses"].append(course_data)
+        users_map[u.id]["totalStarted"] += 1
+        if p.completed:
+            users_map[u.id]["completedCount"] += 1
+
+    # Summary stats
+    total_users_with_progress = len(users_map)
+    total_certificates = sum(1 for p, _, _ in progress_records if p.completed)
+    total_in_progress = sum(1 for p, _, _ in progress_records if not p.completed)
+
+    return {
+        "summary": {
+            "totalUsersWithProgress": total_users_with_progress,
+            "totalCertificatesIssued": total_certificates,
+            "totalInProgress": total_in_progress,
+            "totalCourses": len(courses),
+        },
+        "users": list(users_map.values()),
+        "courses": [{"id": c.id, "title": c.title, "emoji": c.emoji or "📚", "category": c.category} for c in courses],
+    }
+
+
+@router.post("/admin/certify")
+def admin_certify_users(req: AdminCertifyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """CEO can manually certify a user for specific courses."""
+    if not user.is_admin:
+        raise HTTPException(403, "Solo administradores")
+
+    target_user = db.query(User).filter(User.id == req.user_id).first()
+    if not target_user:
+        raise HTTPException(404, "Usuario no encontrado")
+
+    certified = []
+    for course_id in req.course_ids:
+        course = db.query(Course).filter(Course.id == course_id).first()
+        if not course:
+            continue
+
+        # Get or create progress
+        progress = db.query(UserCourseProgress).filter(
+            UserCourseProgress.user_id == req.user_id,
+            UserCourseProgress.course_id == course_id
+        ).first()
+
+        if not progress:
+            progress = UserCourseProgress(
+                id=gen_id(),
+                user_id=req.user_id,
+                course_id=course_id,
+                completed_lessons="[]",
+            )
+            db.add(progress)
+
+        # Mark all lessons as completed
+        lessons = db.query(CourseLesson).filter(CourseLesson.course_id == course_id).all()
+        progress.completed_lessons = json.dumps([l.id for l in lessons])
+
+        # Mark quiz as passed and course as completed
+        progress.quiz_passed = True
+        progress.quiz_score = req.score_override
+        progress.completed = True
+        progress.completed_at = datetime.utcnow()
+        progress.certificate_id = progress.certificate_id or gen_id()
+
+        # Award XP
+        from gamification import award_xp
+        award_xp(target_user, 30, db)
+
+        certified.append({
+            "courseId": course_id,
+            "courseTitle": course.title,
+            "certificateId": progress.certificate_id,
+            "score": req.score_override,
+        })
+
+    db.commit()
+
+    return {
+        "success": True,
+        "userId": req.user_id,
+        "userName": f"{target_user.first_name} {target_user.last_name}",
+        "certified": certified,
+        "message": f"{len(certified)} curso(s) certificado(s) exitosamente",
+    }
+
+
+@router.post("/admin/revoke-certificate")
+def admin_revoke_certificate(user_id: str, course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """CEO can revoke a certificate."""
+    if not user.is_admin:
+        raise HTTPException(403, "Solo administradores")
+
+    progress = db.query(UserCourseProgress).filter(
+        UserCourseProgress.user_id == user_id,
+        UserCourseProgress.course_id == course_id
+    ).first()
+
+    if not progress:
+        raise HTTPException(404, "Progreso no encontrado")
+
+    progress.completed = False
+    progress.quiz_passed = False
+    progress.quiz_score = None
+    progress.certificate_id = None
+    progress.completed_at = None
+    db.commit()
+
+    return {"success": True, "message": "Certificado revocado"}
+
+
 # ─── Student CV ─────────────────────────────────────────────
 
 @router.get("/cv")

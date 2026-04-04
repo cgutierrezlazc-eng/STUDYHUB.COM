@@ -516,6 +516,13 @@ export const api = {
   adminDeleteCourse: (courseId: string) =>
     request(`/courses/admin/${courseId}`, { method: 'DELETE' }),
 
+  // ─── CEO Course Certification ─────────────────────────────
+  adminGetProgressOverview: () => request('/courses/admin/progress-overview'),
+  adminCertifyUser: (userId: string, courseIds: string[], scoreOverride?: number) =>
+    request('/courses/admin/certify', { method: 'POST', body: JSON.stringify({ user_id: userId, course_ids: courseIds, score_override: scoreOverride || 100 }) }),
+  adminRevokeCertificate: (userId: string, courseId: string) =>
+    request(`/courses/admin/revoke-certificate?user_id=${userId}&course_id=${courseId}`, { method: 'POST' }),
+
   // ─── Student CV ───────────────────────────────────────────
   getMyCV: () => request('/courses/cv'),
   updateCV: (data: any) =>

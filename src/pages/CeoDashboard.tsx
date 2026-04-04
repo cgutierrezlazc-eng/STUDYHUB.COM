@@ -14,7 +14,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [compliance, setComplianceStatus] = useState<any>(null)
   const [f129, setF129] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'financial' | 'f129' | 'fraud' | 'compliance'>('overview')
+  const [tab, setTab] = useState<'overview' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications'>('overview')
+  const [progressData, setProgressData] = useState<any>(null)
+  const [certSearch, setCertSearch] = useState('')
+  const [certLoading, setCertLoading] = useState(false)
+  const [selectedUsers, setSelectedUsers] = useState<Record<string, string[]>>({}) // userId -> courseIds[]
+  const [certScoreOverride, setCertScoreOverride] = useState(100)
+  const [certifying, setCertifying] = useState(false)
+  const [certMessage, setCertMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     if (user?.role !== 'owner') return
@@ -28,6 +35,61 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
   const loadF129 = async (month?: number, year?: number) => {
     try { setF129(await api.generateF129(month, year)) } catch (e: any) { alert(e.message || 'Error') }
+  }
+
+  const loadProgressOverview = async () => {
+    setCertLoading(true)
+    try {
+      const data = await api.adminGetProgressOverview()
+      setProgressData(data)
+    } catch (e: any) { console.error('Failed to load progress overview:', e) }
+    setCertLoading(false)
+  }
+
+  const toggleCourseSelection = (userId: string, courseId: string) => {
+    setSelectedUsers(prev => {
+      const current = prev[userId] || []
+      const updated = current.includes(courseId)
+        ? current.filter(id => id !== courseId)
+        : [...current, courseId]
+      return { ...prev, [userId]: updated }
+    })
+  }
+
+  const selectAllCoursesForUser = (userId: string, courseIds: string[]) => {
+    setSelectedUsers(prev => {
+      const current = prev[userId] || []
+      const allSelected = courseIds.every(id => current.includes(id))
+      return { ...prev, [userId]: allSelected ? [] : courseIds }
+    })
+  }
+
+  const handleCertify = async (userId: string) => {
+    const courseIds = selectedUsers[userId] || []
+    if (courseIds.length === 0) return
+    setCertifying(true)
+    setCertMessage(null)
+    try {
+      const result = await api.adminCertifyUser(userId, courseIds, certScoreOverride)
+      setCertMessage({ type: 'success', text: result.message || 'Certificado(s) emitido(s)' })
+      setSelectedUsers(prev => ({ ...prev, [userId]: [] }))
+      // Reload data
+      await loadProgressOverview()
+    } catch (e: any) {
+      setCertMessage({ type: 'error', text: e.message || 'Error al certificar' })
+    }
+    setCertifying(false)
+  }
+
+  const handleRevokeCert = async (userId: string, courseId: string, courseTitle: string) => {
+    if (!confirm(`¿Revocar certificado de "${courseTitle}"? Esta acción no se puede deshacer.`)) return
+    try {
+      await api.adminRevokeCertificate(userId, courseId)
+      setCertMessage({ type: 'success', text: 'Certificado revocado' })
+      await loadProgressOverview()
+    } catch (e: any) {
+      setCertMessage({ type: 'error', text: e.message || 'Error al revocar' })
+    }
   }
 
   const submitF129 = async () => {
@@ -50,9 +112,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
         <h2>🏢 Panel CEO — Conniku</h2>
         <p>Vista exclusiva del estado completo de la plataforma</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          {(['overview', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
-            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129() }}>
-              {t === 'overview' ? '📊 Resumen' : t === 'financial' ? '💰 Finanzas' : t === 'f129' ? '📋 F129 SII' : t === 'fraud' ? '🛡️ Anti-Fraude' : '✅ Compliance'}
+          {(['overview', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
+            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview() }}>
+              {t === 'overview' ? '📊 Resumen' : t === 'certifications' ? '🎓 Certificaciones' : t === 'financial' ? '💰 Finanzas' : t === 'f129' ? '📋 F129 SII' : t === 'fraud' ? '🛡️ Anti-Fraude' : '✅ Compliance'}
             </button>
           ))}
         </div>
@@ -258,6 +320,259 @@ export default function CeoDashboard({ onNavigate }: Props) {
               </div>
             </div>
           )}
+          {/* CERTIFICATIONS */}
+          {tab === 'certifications' && (
+            <div>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ fontSize: 17, margin: '0 0 4px' }}>🎓 Gestión de Certificaciones</h3>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+                    Certifica manualmente a usuarios, revoca certificados o revisa el progreso de cada estudiante.
+                  </p>
+                </div>
+                <button className="btn btn-secondary btn-sm" onClick={loadProgressOverview} disabled={certLoading}>
+                  🔄 Actualizar
+                </button>
+              </div>
+
+              {/* Message */}
+              {certMessage && (
+                <div style={{
+                  padding: '10px 16px', borderRadius: 8, marginBottom: 16, fontSize: 13, fontWeight: 500,
+                  background: certMessage.type === 'success' ? 'rgba(5,150,105,0.06)' : 'rgba(239,68,68,0.06)',
+                  color: certMessage.type === 'success' ? '#059669' : '#DC2626',
+                  border: `1px solid ${certMessage.type === 'success' ? 'rgba(5,150,105,0.15)' : 'rgba(239,68,68,0.15)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                }}>
+                  {certMessage.type === 'success' ? '✅' : '⚠️'} {certMessage.text}
+                  <button onClick={() => setCertMessage(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'inherit' }}>×</button>
+                </div>
+              )}
+
+              {certLoading ? (
+                <div className="loading-dots"><span /><span /><span /></div>
+              ) : progressData ? (
+                <>
+                  {/* Summary cards */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
+                    {[
+                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: '👥', color: '#1A3A7A' },
+                      { label: 'Certificados emitidos', value: progressData.summary.totalCertificatesIssued, icon: '🏅', color: '#059669' },
+                      { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: '📖', color: '#C4882A' },
+                      { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: '📚', color: '#5B5FC7' },
+                    ].map((card, i) => (
+                      <div key={i} className="card" style={{ padding: 16, textAlign: 'center' }}>
+                        <div style={{ fontSize: 24, marginBottom: 4 }}>{card.icon}</div>
+                        <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{card.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Score override */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
+                    padding: '10px 16px', background: 'var(--bg-secondary)', borderRadius: 8, flexWrap: 'wrap',
+                  }}>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>Puntuación al certificar:</span>
+                    {[80, 90, 100].map(s => (
+                      <button key={s} onClick={() => setCertScoreOverride(s)}
+                        style={{
+                          padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                          border: certScoreOverride === s ? '2px solid #1A3A7A' : '1px solid var(--border)',
+                          background: certScoreOverride === s ? 'rgba(26,58,122,0.08)' : '#fff',
+                          color: certScoreOverride === s ? '#1A3A7A' : 'var(--text-secondary)',
+                        }}>
+                        {s}%
+                      </button>
+                    ))}
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Se asignará como puntuación del examen
+                    </span>
+                  </div>
+
+                  {/* Search */}
+                  <input type="text" placeholder="🔍 Buscar por nombre o correo..." value={certSearch}
+                    onChange={e => setCertSearch(e.target.value)}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)',
+                      fontSize: 14, marginBottom: 16, background: '#fff', color: 'var(--text-primary)',
+                    }} />
+
+                  {/* Users list */}
+                  {(progressData.users as any[])
+                    .filter((u: any) => {
+                      if (!certSearch) return true
+                      const q = certSearch.toLowerCase()
+                      return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)
+                    })
+                    .map((userData: any) => {
+                      const userSelected = selectedUsers[userData.userId] || []
+                      const incompleteCourses = progressData.courses.filter((c: any) =>
+                        !userData.courses.some((uc: any) => uc.courseId === c.id && uc.completed)
+                      )
+                      const completedCourses = userData.courses.filter((c: any) => c.completed)
+
+                      return (
+                        <div key={userData.userId} className="card" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
+                          {/* User header */}
+                          <div style={{
+                            padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            borderBottom: '1px solid var(--border)', flexWrap: 'wrap', gap: 8,
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{
+                                width: 36, height: 36, borderRadius: '50%', background: '#1A3A7A',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: '#fff', fontWeight: 700, fontSize: 14,
+                              }}>
+                                {userData.name.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: 14 }}>{userData.name}</div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{userData.email}</div>
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                              <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>
+                                🏅 {userData.completedCount} completados
+                              </span>
+                              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                                📖 {userData.totalStarted} iniciados
+                              </span>
+                              {userSelected.length > 0 && (
+                                <button onClick={() => handleCertify(userData.userId)} disabled={certifying}
+                                  style={{
+                                    padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                                    background: '#059669', color: '#fff', fontSize: 12, fontWeight: 600,
+                                  }}>
+                                  {certifying ? '...' : `🎓 Certificar ${userSelected.length} curso(s)`}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Courses grid */}
+                          <div style={{ padding: '12px 18px' }}>
+                            {/* Completed courses */}
+                            {completedCourses.length > 0 && (
+                              <div style={{ marginBottom: completedCourses.length > 0 && incompleteCourses.length > 0 ? 12 : 0 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#059669', marginBottom: 6 }}>
+                                  ✅ Certificados obtenidos
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                  {completedCourses.map((c: any) => (
+                                    <div key={c.courseId} style={{
+                                      display: 'flex', alignItems: 'center', gap: 6,
+                                      padding: '5px 10px', borderRadius: 6, fontSize: 12,
+                                      background: 'rgba(5,150,105,0.06)', border: '1px solid rgba(5,150,105,0.15)',
+                                      color: '#059669',
+                                    }}>
+                                      <span>{c.courseEmoji}</span>
+                                      <span style={{ fontWeight: 500 }}>{c.courseTitle}</span>
+                                      <span style={{ color: 'var(--text-muted)' }}>({c.quizScore}%)</span>
+                                      <button onClick={() => handleRevokeCert(userData.userId, c.courseId, c.courseTitle)}
+                                        title="Revocar certificado"
+                                        style={{
+                                          background: 'none', border: 'none', cursor: 'pointer',
+                                          color: '#DC2626', fontSize: 12, padding: '0 2px', marginLeft: 2,
+                                        }}>
+                                        ✕
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* In-progress + available to certify */}
+                            {incompleteCourses.length > 0 && (
+                              <div>
+                                <div style={{
+                                  fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                                  color: 'var(--text-muted)', marginBottom: 6,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                }}>
+                                  <span>📋 Cursos disponibles para certificar</span>
+                                  <button onClick={() => selectAllCoursesForUser(userData.userId, incompleteCourses.map((c: any) => c.id))}
+                                    style={{
+                                      background: 'none', border: 'none', cursor: 'pointer',
+                                      fontSize: 10, color: '#1A3A7A', fontWeight: 700, textTransform: 'uppercase',
+                                    }}>
+                                    {incompleteCourses.every((c: any) => userSelected.includes(c.id)) ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                  </button>
+                                </div>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                                  {incompleteCourses.map((c: any) => {
+                                    const inProgress = userData.courses.find((uc: any) => uc.courseId === c.id)
+                                    const isSelected = userSelected.includes(c.id)
+                                    return (
+                                      <button key={c.id} onClick={() => toggleCourseSelection(userData.userId, c.id)}
+                                        style={{
+                                          display: 'flex', alignItems: 'center', gap: 6,
+                                          padding: '5px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                                          background: isSelected ? 'rgba(26,58,122,0.08)' : '#fff',
+                                          border: `1.5px solid ${isSelected ? '#1A3A7A' : 'var(--border)'}`,
+                                          color: isSelected ? '#1A3A7A' : 'var(--text-secondary)',
+                                          transition: 'all 0.15s',
+                                        }}>
+                                        <span style={{
+                                          width: 16, height: 16, borderRadius: 4, flexShrink: 0,
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                          background: isSelected ? '#1A3A7A' : 'transparent',
+                                          border: isSelected ? 'none' : '2px solid var(--border)',
+                                          color: '#fff', fontSize: 10,
+                                        }}>
+                                          {isSelected && '✓'}
+                                        </span>
+                                        <span>{c.emoji}</span>
+                                        <span style={{ fontWeight: 500 }}>{c.title}</span>
+                                        {inProgress && (
+                                          <span style={{
+                                            fontSize: 10, padding: '1px 6px', borderRadius: 4,
+                                            background: 'rgba(196,136,42,0.1)', color: '#C4882A', fontWeight: 600,
+                                          }}>
+                                            {inProgress.lessonProgress}%
+                                          </span>
+                                        )}
+                                      </button>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                            {completedCourses.length === progressData.courses.length && (
+                              <div style={{ textAlign: 'center', padding: 12, color: '#059669', fontSize: 13, fontWeight: 600 }}>
+                                🎉 Todos los cursos completados
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
+
+                  {progressData.users.length === 0 && (
+                    <div className="empty-state" style={{ padding: 40 }}>
+                      <div style={{ fontSize: 48 }}>📭</div>
+                      <h3>Sin actividad aún</h3>
+                      <p style={{ color: 'var(--text-muted)' }}>Ningún usuario ha empezado cursos todavía.</p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="empty-state" style={{ padding: 40 }}>
+                  <div style={{ fontSize: 48 }}>🎓</div>
+                  <h3>Carga los datos de progreso</h3>
+                  <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
+                    Cargar datos
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
         </>}
       </div>
     </>

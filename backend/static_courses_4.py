@@ -2,3121 +2,2893 @@
 
 COURSES_BATCH_4 = {
     "Responsabilidad Social": {
+        "emoji": "🌱",
+        "level": "beginner",
+        "duration": "25min",
         "lessons": [
             {
-                "title": "Responsabilidad Social Corporativa: Fundamentos",
-                "content": """<h3>Responsabilidad Social Corporativa: Fundamentos</h3>
-<p>La Responsabilidad Social Corporativa (RSC) es un concepto que ha transformado la manera en que las organizaciones entienden su papel en la sociedad. Ya no basta con generar utilidades para los accionistas; hoy se espera que las empresas contribuyan activamente al bienestar de sus comunidades, empleados y del planeta.</p>
+                "title": "Responsabilidad Social Corporativa (RSC)",
+                "content": """<h3>Responsabilidad Social Corporativa (RSC)</h3>
+<p>La Responsabilidad Social Corporativa es un modelo de gestión empresarial que integra de forma voluntaria las preocupaciones sociales, ambientales y éticas en las operaciones comerciales y en las relaciones con los grupos de interés. No se trata simplemente de filantropía, sino de una <strong>estrategia integral</strong> que transforma la manera en que las empresas crean valor.</p>
 
-<h4>Origen y evolución de la RSC</h4>
-<p>El concepto de RSC surgió formalmente en la década de 1950 con el libro <em>Social Responsibilities of the Businessman</em> de Howard Bowen. Sin embargo, la idea de que las empresas tienen obligaciones más allá del lucro es mucho más antigua. A lo largo de las décadas, la RSC ha evolucionado desde la simple filantropía hasta convertirse en una estrategia integral que abarca aspectos ambientales, sociales y de gobernanza (ESG).</p>
+<h4>Orígenes y evolución del concepto</h4>
+<p>Aunque el término se popularizó en la segunda mitad del siglo XX, las raíces de la RSC se remontan a la Revolución Industrial, cuando surgieron las primeras críticas al impacto social de las fábricas. En 1953, Howard Bowen publicó <em>Social Responsibilities of the Businessman</em>, considerado el texto fundacional del campo. Desde entonces, el concepto ha evolucionado desde la caridad empresarial hasta un enfoque estratégico que reconoce la interdependencia entre empresa y sociedad.</p>
 
 <h4>Los cuatro pilares de la RSC</h4>
 <ul>
-<li><strong>Responsabilidad económica:</strong> Ser rentable y generar empleo de calidad, pagando salarios justos y cumpliendo con obligaciones fiscales.</li>
-<li><strong>Responsabilidad legal:</strong> Cumplir con todas las leyes y regulaciones aplicables, no solo por obligación sino como compromiso ético.</li>
-<li><strong>Responsabilidad ética:</strong> Ir más allá de lo legal, adoptando prácticas que la sociedad espera aunque no estén reguladas por ley.</li>
-<li><strong>Responsabilidad filantrópica:</strong> Contribuir voluntariamente a mejorar la calidad de vida de la comunidad a través de donaciones, voluntariado y programas sociales.</li>
+<li><strong>Responsabilidad económica:</strong> generar beneficios de forma sostenible, pagando salarios justos y cumpliendo con las obligaciones fiscales.</li>
+<li><strong>Responsabilidad legal:</strong> cumplir todas las leyes y regulaciones aplicables en cada jurisdicción donde opera la empresa.</li>
+<li><strong>Responsabilidad ética:</strong> actuar con integridad más allá de lo que exige la ley, respetando normas morales y valores compartidos.</li>
+<li><strong>Responsabilidad filantrópica:</strong> contribuir voluntariamente al bienestar de la comunidad mediante donaciones, voluntariado y programas sociales.</li>
 </ul>
 
-<h4>La pirámide de Carroll</h4>
-<p>Archie Carroll propuso una pirámide que organiza estas responsabilidades de menor a mayor: en la base está la responsabilidad económica, seguida de la legal, luego la ética y en la cima la filantrópica. Esta jerarquía no significa que unas sean más importantes que otras, sino que cada nivel se construye sobre el anterior.</p>
+<blockquote>«Una empresa que solo se enfoca en sus beneficios es como un avión que vuela con un solo motor: puede funcionar un tiempo, pero eventualmente fallará.» — Adaptación de un proverbio empresarial.</blockquote>
 
-<blockquote>La verdadera responsabilidad social no es un departamento ni una campaña de marketing; es una forma de hacer negocios que integra el impacto social y ambiental en cada decisión estratégica.</blockquote>
+<h4>Grupos de interés (stakeholders)</h4>
+<p>La RSC reconoce que la empresa no existe en el vacío. Sus decisiones afectan a múltiples actores: empleados, clientes, proveedores, comunidades locales, gobiernos, inversores y el medio ambiente. Gestionar estas relaciones de forma equilibrada es el gran desafío de la responsabilidad social moderna. Las empresas que lo logran construyen <em>reputación</em>, <em>confianza</em> y <em>lealtad</em> a largo plazo.</p>
 
-<h4>Beneficios tangibles de la RSC</h4>
-<p>Las empresas con programas sólidos de RSC experimentan mayor lealtad de sus clientes, mejor retención de talento, reducción de riesgos reputacionales y, en muchos casos, mayor rentabilidad a largo plazo. Estudios de Harvard Business School han demostrado que las empresas con altos estándares de sostenibilidad superan financieramente a sus competidores en un horizonte de diez a quince años.</p>
-
-<h4>Tu rol como futuro profesional</h4>
-<p>Independientemente de tu carrera, tendrás la oportunidad de influir en las prácticas de responsabilidad social de tu organización. Comprender estos fundamentos te permitirá ser un agente de cambio desde cualquier posición.</p>""",
-                "estimatedMinutes": 5
+<h4>RSC en América Latina</h4>
+<p>En la región, la RSC ha cobrado especial relevancia debido a las profundas desigualdades sociales. Empresas como Natura, Bimbo y Bancolombia han sido reconocidas internacionalmente por integrar la responsabilidad social en su modelo de negocio, demostrando que es posible ser rentable y socialmente responsable al mismo tiempo.</p>"""
             },
             {
-                "title": "Sostenibilidad y Desarrollo Sostenible",
-                "content": """<h3>Sostenibilidad y Desarrollo Sostenible</h3>
-<p>La sostenibilidad es la capacidad de satisfacer las necesidades del presente sin comprometer la capacidad de las generaciones futuras para satisfacer las suyas propias. Esta definición, proveniente del Informe Brundtland de 1987, sigue siendo la piedra angular del pensamiento sostenible contemporáneo.</p>
+                "title": "Sostenibilidad y Desarrollo Sustentable",
+                "content": """<h3>Sostenibilidad y Desarrollo Sustentable</h3>
+<p>El concepto de desarrollo sustentable fue definido por la Comisión Brundtland en 1987 como aquel que <strong>satisface las necesidades del presente sin comprometer la capacidad de las generaciones futuras para satisfacer las suyas</strong>. Esta definición, aparentemente sencilla, encierra un profundo cambio de paradigma en la forma de entender el progreso.</p>
 
 <h4>Las tres dimensiones de la sostenibilidad</h4>
-<p>La sostenibilidad se sustenta en tres pilares interdependientes, frecuentemente representados como un diagrama de Venn:</p>
+<p>La sostenibilidad se sustenta en tres pilares interconectados, conocidos como el <em>triple bottom line</em>:</p>
 <ul>
-<li><strong>Dimensión ambiental:</strong> Protección de los ecosistemas, uso responsable de recursos naturales, reducción de emisiones de carbono y preservación de la biodiversidad.</li>
-<li><strong>Dimensión social:</strong> Equidad, inclusión, derechos humanos, acceso a educación y salud, y condiciones laborales dignas.</li>
-<li><strong>Dimensión económica:</strong> Modelos de negocio viables que generen prosperidad sin agotar los recursos ni explotar a las personas.</li>
+<li><strong>Dimensión ambiental:</strong> preservar los ecosistemas, reducir la contaminación, gestionar los recursos naturales de forma responsable y combatir el cambio climático.</li>
+<li><strong>Dimensión social:</strong> garantizar la equidad, el acceso a servicios básicos, la inclusión y el respeto a los derechos humanos.</li>
+<li><strong>Dimensión económica:</strong> promover un crecimiento que genere empleo digno, distribución justa de la riqueza e innovación responsable.</li>
 </ul>
 
 <h4>Los Objetivos de Desarrollo Sostenible (ODS)</h4>
-<p>En 2015, las Naciones Unidas adoptaron la Agenda 2030 con 17 Objetivos de Desarrollo Sostenible. Estos ODS abarcan desde la erradicación de la pobreza y el hambre hasta la acción climática y la paz. Son una hoja de ruta universal que involucra a gobiernos, empresas, universidades y ciudadanos.</p>
+<p>En 2015, las Naciones Unidas aprobaron la Agenda 2030, que incluye 17 Objetivos de Desarrollo Sostenible. Estos ODS abarcan desde la erradicación de la pobreza y el hambre hasta la acción climática y la paz. Constituyen una hoja de ruta global que involucra a gobiernos, empresas, organizaciones y ciudadanos. Algunos de los más relevantes para los jóvenes universitarios son:</p>
+<ul>
+<li>ODS 4: Educación de calidad</li>
+<li>ODS 8: Trabajo decente y crecimiento económico</li>
+<li>ODS 12: Producción y consumo responsables</li>
+<li>ODS 13: Acción por el clima</li>
+</ul>
+
+<blockquote>«No heredamos la Tierra de nuestros padres, la tomamos prestada de nuestros hijos.» — Proverbio atribuido a diversas culturas indígenas.</blockquote>
 
 <h4>Economía circular vs. economía lineal</h4>
-<p>El modelo económico tradicional es lineal: <em>extraer, producir, usar y desechar</em>. La economía circular propone un cambio radical: diseñar productos para que los materiales se reutilicen, reparen o reciclen indefinidamente. Empresas como Patagonia, que repara ropa usada, o Interface, que recicla alfombras viejas para crear nuevas, son ejemplos pioneros.</p>
+<p>El modelo económico tradicional sigue un esquema lineal: extraer, producir, usar y desechar. La <strong>economía circular</strong> propone un cambio radical: diseñar productos que puedan repararse, reutilizarse y reciclarse, eliminando el concepto de residuo. Empresas como Patagonia o IKEA ya están implementando modelos circulares que reducen su huella ambiental mientras mantienen la rentabilidad.</p>
 
-<blockquote>No heredamos la tierra de nuestros antepasados, la tomamos prestada de nuestros hijos. Cada decisión de consumo y producción tiene consecuencias que trascienden nuestra generación.</blockquote>
-
-<h4>Huella de carbono y huella hídrica</h4>
-<p>Dos indicadores clave para medir nuestro impacto son la huella de carbono (cantidad de gases de efecto invernadero que generamos) y la huella hídrica (volumen de agua que consumimos directa e indirectamente). Conocer estas métricas a nivel personal y organizacional es el primer paso para reducirlas.</p>
-
-<h4>Greenwashing: el peligro del falso compromiso</h4>
-<p>El <em>greenwashing</em> ocurre cuando una empresa aparenta ser sostenible sin serlo realmente. Identificar estas prácticas engañosas es fundamental para exigir transparencia y apoyar a las organizaciones genuinamente comprometidas con el medio ambiente.</p>""",
-                "estimatedMinutes": 5
+<h4>Tu papel como futuro profesional</h4>
+<p>Independientemente de tu carrera, tendrás la oportunidad de integrar la sostenibilidad en tus decisiones profesionales. Desde un ingeniero que diseña procesos más eficientes hasta un comunicador que promueve el consumo responsable, cada profesión puede contribuir al desarrollo sustentable.</p>"""
             },
             {
-                "title": "Impacto Social y Emprendimiento Social",
-                "content": """<h3>Impacto Social y Emprendimiento Social</h3>
-<p>El impacto social se refiere a los cambios significativos y positivos que una acción, proyecto u organización genera en una comunidad o grupo de personas. Medir y maximizar este impacto se ha convertido en una disciplina en sí misma, con metodologías rigurosas y herramientas especializadas.</p>
+                "title": "Impacto Social y Voluntariado",
+                "content": """<h3>Impacto Social y Voluntariado</h3>
+<p>El impacto social se refiere al <strong>efecto que las acciones de individuos, organizaciones o políticas tienen en el bienestar de las comunidades</strong>. Comprender cómo se genera, mide y maximiza este impacto es fundamental para cualquier persona comprometida con la transformación social.</p>
 
-<h4>Diferencia entre caridad e impacto social</h4>
-<p>La caridad tradicional alivia síntomas; el impacto social busca transformar las causas estructurales de los problemas. Por ejemplo, donar alimentos es caridad; crear un programa de capacitación agrícola que permita a una comunidad alimentarse por sí misma es impacto social sostenible.</p>
+<h4>Tipos de impacto social</h4>
 <ul>
-<li><strong>Caridad:</strong> Respuesta inmediata, alivio temporal, dependencia del donante.</li>
-<li><strong>Impacto social:</strong> Solución sistémica, cambio duradero, empoderamiento de la comunidad.</li>
+<li><strong>Impacto directo:</strong> el beneficio inmediato que reciben las personas atendidas por un programa o iniciativa, como alimentos para familias en situación vulnerable.</li>
+<li><strong>Impacto indirecto:</strong> los efectos secundarios positivos, como la dinamización económica local cuando se compra a proveedores del barrio.</li>
+<li><strong>Impacto sistémico:</strong> los cambios a gran escala en políticas, normas culturales o estructuras sociales que benefician a poblaciones enteras.</li>
 </ul>
 
 <h4>Emprendimiento social</h4>
-<p>Un emprendimiento social es una organización que utiliza estrategias de mercado para abordar problemas sociales o ambientales. A diferencia de una ONG tradicional que depende de donaciones, el emprendimiento social genera sus propios ingresos mientras cumple su misión social. Muhammad Yunus, fundador del Grameen Bank y Premio Nobel de la Paz, popularizó este concepto al crear un banco de microcréditos para personas en situación de pobreza.</p>
+<p>Los emprendedores sociales combinan la pasión por resolver problemas sociales con herramientas y metodologías del mundo empresarial. A diferencia de las ONG tradicionales que dependen de donaciones, los emprendimientos sociales buscan <em>modelos autosostenibles</em> que generen tanto impacto como ingresos. Muhammad Yunus, fundador del Grameen Bank y Premio Nobel de la Paz, es uno de los referentes más importantes de este movimiento.</p>
 
-<h4>Medición del impacto social</h4>
-<p>Existen diversas metodologías para medir el impacto:</p>
+<blockquote>«El voluntariado no cambia solo la vida de quien recibe la ayuda; transforma profundamente a quien la ofrece.»</blockquote>
+
+<h4>El voluntariado como herramienta de cambio</h4>
+<p>El voluntariado es una de las formas más accesibles de generar impacto social. Para los estudiantes universitarios, representa además una oportunidad invaluable de desarrollo personal y profesional. Los beneficios incluyen:</p>
 <ul>
-<li><strong>Teoría del Cambio:</strong> Mapa que conecta las actividades de un proyecto con los resultados esperados a corto, mediano y largo plazo.</li>
-<li><strong>SROI (Social Return on Investment):</strong> Calcula el valor social generado por cada peso invertido.</li>
-<li><strong>Indicadores ODS:</strong> Alinear las métricas del proyecto con los indicadores oficiales de los Objetivos de Desarrollo Sostenible.</li>
+<li>Desarrollo de habilidades blandas como empatía, trabajo en equipo y liderazgo.</li>
+<li>Ampliación de la red de contactos profesionales.</li>
+<li>Mayor comprensión de realidades sociales diferentes a la propia.</li>
+<li>Fortalecimiento del currículum vitae con experiencia práctica.</li>
+<li>Sentido de propósito y satisfacción personal.</li>
 </ul>
 
-<blockquote>El verdadero emprendedor social no busca maximizar ganancias financieras, sino maximizar el impacto positivo en la vida de las personas, utilizando la innovación y el mercado como herramientas de transformación.</blockquote>
+<h4>Medición del impacto</h4>
+<p>Medir el impacto social es esencial para saber si las acciones están funcionando. Herramientas como la <strong>Teoría del Cambio</strong>, el <strong>Retorno Social de la Inversión (SROI)</strong> y los <strong>indicadores de impacto</strong> permiten evaluar de forma rigurosa los resultados de cualquier iniciativa. Sin medición, corremos el riesgo de invertir recursos en acciones que generan más satisfacción personal que transformación real.</p>
 
-<h4>Casos emblemáticos en América Latina</h4>
-<p>En la región existen ejemplos inspiradores: <strong>Sistema B</strong> certifica empresas que equilibran propósito y lucro; <strong>Socialab</strong> conecta innovadores sociales con recursos y mentores; y múltiples cooperativas en Chile, Colombia y México demuestran que es posible construir economías solidarias a escala.</p>
-
-<h4>Cómo generar impacto desde la universidad</h4>
-<p>No necesitas esperar a graduarte para generar impacto. Puedes participar en proyectos de voluntariado universitario, desarrollar tu tesis en torno a un problema social, o crear un emprendimiento social desde tu campus. La clave es identificar un problema que te apasione y aplicar tus conocimientos para abordarlo.</p>""",
-                "estimatedMinutes": 5
+<h4>Cómo empezar</h4>
+<p>No necesitas crear una fundación para generar impacto. Puedes comenzar con acciones concretas: donar sangre, tutorear a un compañero, participar en jornadas de reforestación o simplemente ser consciente de cómo tus decisiones cotidianas afectan a otros.</p>"""
             },
             {
-                "title": "Ciudadanía Activa y Participación Cívica",
-                "content": """<h3>Ciudadanía Activa y Participación Cívica</h3>
-<p>Ser ciudadano va mucho más allá de tener una cédula de identidad o un pasaporte. La ciudadanía activa implica participar conscientemente en la construcción de la sociedad en la que vivimos, ejerciendo nuestros derechos y cumpliendo nuestras responsabilidades con compromiso y criterio.</p>
+                "title": "Ciudadanía Activa y Participación",
+                "content": """<h3>Ciudadanía Activa y Participación</h3>
+<p>Ser ciudadano va mucho más allá de poseer un documento de identidad o pagar impuestos. La <strong>ciudadanía activa</strong> implica participar de forma consciente y constructiva en la vida pública, contribuyendo al fortalecimiento de la democracia y al bienestar colectivo. En un mundo donde la apatía política crece, especialmente entre los jóvenes, rescatar el valor de la participación ciudadana es más urgente que nunca.</p>
 
-<h4>De la ciudadanía pasiva a la ciudadanía activa</h4>
-<p>Un ciudadano pasivo se limita a cumplir las leyes y votar cada cierto tiempo. Un ciudadano activo, en cambio, se informa, debate, propone soluciones, se organiza con otros y participa en la vida pública de manera constante. La diferencia radica en el grado de involucramiento y en la convicción de que cada persona puede influir en su entorno.</p>
-
-<h4>Formas de participación cívica</h4>
+<h4>Formas de participación ciudadana</h4>
+<p>La participación no se limita a votar cada ciertos años. Existen múltiples formas de ejercer la ciudadanía activa:</p>
 <ul>
-<li><strong>Participación electoral:</strong> Votar de manera informada, no solo por tradición o por el candidato más carismático, sino analizando propuestas y trayectorias.</li>
-<li><strong>Participación comunitaria:</strong> Involucrarse en juntas de vecinos, organizaciones locales, centros de estudiantes y grupos comunitarios.</li>
-<li><strong>Activismo y advocacy:</strong> Promover causas específicas a través de campañas, peticiones, manifestaciones pacíficas y comunicación en redes sociales.</li>
-<li><strong>Fiscalización ciudadana:</strong> Monitorear el uso de recursos públicos, exigir transparencia y denunciar irregularidades.</li>
-<li><strong>Voluntariado estructurado:</strong> Dedicar tiempo y habilidades a organizaciones que atienden necesidades sociales concretas.</li>
+<li><strong>Participación electoral:</strong> votar de forma informada, ser jurado de votación, participar como veedor.</li>
+<li><strong>Participación comunitaria:</strong> involucrarse en juntas de acción comunal, asociaciones vecinales o consejos estudiantiles.</li>
+<li><strong>Activismo y movilización:</strong> participar en marchas pacíficas, campañas de concientización o movimientos sociales.</li>
+<li><strong>Participación digital:</strong> usar las redes sociales y plataformas digitales para informar, denunciar y proponer soluciones.</li>
+<li><strong>Veeduría ciudadana:</strong> vigilar el uso de los recursos públicos y exigir transparencia a los gobernantes.</li>
 </ul>
 
-<h4>Pensamiento crítico y medios de comunicación</h4>
-<p>Un ciudadano activo necesita <em>alfabetización mediática</em>: la capacidad de consumir información de manera crítica, verificar fuentes, distinguir entre noticias y opiniones, e identificar desinformación. En la era de las redes sociales, esta habilidad es más importante que nunca.</p>
+<h4>El papel de los jóvenes</h4>
+<p>Históricamente, los movimientos juveniles han sido catalizadores de grandes transformaciones sociales. Desde las protestas estudiantiles de 1968 hasta el movimiento Fridays for Future liderado por Greta Thunberg, los jóvenes han demostrado que <em>la edad no es un impedimento para generar cambio</em>. En América Latina, los movimientos estudiantiles en Chile, Colombia y México han puesto en la agenda pública temas como la educación gratuita, la equidad de género y la justicia ambiental.</p>
 
-<blockquote>La democracia no es un espectáculo que observamos desde la tribuna; es un juego en el que todos debemos participar. La indiferencia cívica es el mayor riesgo para cualquier sociedad libre.</blockquote>
+<blockquote>«El precio de la libertad es la eterna vigilancia.» — Thomas Jefferson. Esta frase nos recuerda que la democracia no se sostiene sola; requiere ciudadanos comprometidos.</blockquote>
 
-<h4>El poder de la acción colectiva</h4>
-<p>Los grandes cambios sociales rara vez son obra de individuos aislados. El movimiento por los derechos civiles, el sufragio femenino, las luchas ambientales y los avances en derechos laborales son todos ejemplos de lo que la acción colectiva organizada puede lograr. Aprender a colaborar, negociar y construir consensos es esencial para cualquier ciudadano comprometido.</p>
+<h4>Derechos y deberes</h4>
+<p>La ciudadanía activa implica un equilibrio entre derechos y responsabilidades. Tenemos derecho a la educación, la salud y la libertad de expresión, pero también el deber de respetar las leyes, contribuir al bien común y defender los derechos de los demás, especialmente de los más vulnerables.</p>
 
-<h4>Ciudadanía digital</h4>
-<p>Hoy la participación cívica también ocurre en el espacio digital. Firmar peticiones en línea, participar en consultas públicas digitales, utilizar datos abiertos del gobierno y contribuir a proyectos de ciencia ciudadana son nuevas formas de ejercer tu ciudadanía activa.</p>""",
-                "estimatedMinutes": 5
+<h4>Pensamiento crítico como herramienta cívica</h4>
+<p>En la era de las noticias falsas y la polarización, el pensamiento crítico es una habilidad ciudadana esencial. Verificar fuentes, contrastar información, escuchar perspectivas diferentes y evitar la manipulación mediática son actos de responsabilidad cívica tan importantes como ir a votar.</p>"""
             },
             {
                 "title": "Consumo Ético y Responsable",
                 "content": """<h3>Consumo Ético y Responsable</h3>
-<p>Cada vez que compramos algo, estamos votando con nuestro dinero. El consumo ético reconoce que nuestras decisiones de compra tienen consecuencias sociales, ambientales y económicas que van mucho más allá del producto que adquirimos. Es una forma poderosa de ejercer responsabilidad social desde lo cotidiano.</p>
+<p>Cada decisión de compra es un <strong>voto económico</strong>. Cuando elegimos un producto o servicio, estamos apoyando un modelo de producción, unas condiciones laborales y un impacto ambiental determinados. El consumo ético implica ser conscientes de estas consecuencias y tomar decisiones informadas que reflejen nuestros valores.</p>
 
-<h4>Principios del consumo responsable</h4>
+<h4>¿Qué es el consumo responsable?</h4>
+<p>El consumo responsable va más allá de comprar productos «verdes» o «ecológicos». Es un enfoque integral que considera todo el ciclo de vida del producto: desde la extracción de materias primas hasta su disposición final. Incluye reflexionar sobre si realmente <em>necesitamos</em> algo antes de comprarlo, un ejercicio que desafía directamente la cultura del consumismo.</p>
+
+<h4>Principios del consumo ético</h4>
 <ul>
-<li><strong>Necesidad vs. deseo:</strong> Antes de comprar, preguntarte si realmente necesitas ese producto o si estás respondiendo a un impulso de marketing o presión social.</li>
-<li><strong>Origen y trazabilidad:</strong> Investigar de dónde vienen los productos, bajo qué condiciones se fabricaron y qué impacto generaron en su cadena de producción.</li>
-<li><strong>Durabilidad sobre desechabilidad:</strong> Preferir productos de calidad que duren más tiempo sobre artículos baratos de un solo uso.</li>
-<li><strong>Impacto ambiental:</strong> Considerar la huella ecológica del producto, incluyendo su empaque, transporte y disposición final.</li>
+<li><strong>Reducir:</strong> comprar solo lo necesario, evitando el consumo impulsivo y la acumulación innecesaria de objetos.</li>
+<li><strong>Reutilizar:</strong> dar nueva vida a productos, comprar de segunda mano, reparar antes de reemplazar.</li>
+<li><strong>Reciclar:</strong> separar correctamente los residuos para facilitar su reincorporación al ciclo productivo.</li>
+<li><strong>Investigar:</strong> conocer las prácticas laborales y ambientales de las marcas que consumimos.</li>
+<li><strong>Apoyar lo local:</strong> preferir productos locales que generan empleo en la comunidad y reducen la huella de carbono del transporte.</li>
 </ul>
 
-<h4>Comercio justo (Fair Trade)</h4>
-<p>El comercio justo es un movimiento que busca garantizar condiciones dignas para los productores, especialmente en países en desarrollo. Al comprar productos con sello de comercio justo, estás asegurando que los agricultores y artesanos recibieron un precio justo por su trabajo, que no se utilizó trabajo infantil y que se respetaron estándares ambientales mínimos.</p>
+<h4>Comercio justo</h4>
+<p>El movimiento de <strong>comercio justo</strong> (Fair Trade) busca garantizar condiciones dignas para los productores, especialmente en países en desarrollo. Cuando compras café, chocolate o artesanías con sello de comercio justo, estás contribuyendo a que los agricultores reciban un precio justo por su trabajo, tengan condiciones laborales dignas y accedan a programas de desarrollo comunitario.</p>
+
+<blockquote>«El consumidor tiene más poder del que cree. Cada compra es una oportunidad de construir el mundo en el que quieres vivir.»</blockquote>
 
 <h4>Fast fashion y sus consecuencias</h4>
-<p>La industria de la moda rápida es una de las más contaminantes del mundo. Produce millones de toneladas de residuos textiles al año y frecuentemente depende de condiciones laborales precarias. Alternativas como la moda sostenible, la ropa de segunda mano, el <em>upcycling</em> y las cápsulas de vestuario son formas concretas de consumir moda de manera responsable.</p>
+<p>La industria de la moda rápida es uno de los sectores más contaminantes del planeta. Produce el 10% de las emisiones globales de carbono y es responsable del 20% de la contaminación del agua. Además, millones de trabajadores textiles, muchos de ellos mujeres y niños, laboran en condiciones precarias. Alternativas como la moda sostenible, el intercambio de ropa y la compra consciente están ganando terreno entre las nuevas generaciones.</p>
 
-<blockquote>El consumidor tiene más poder del que cree. Las empresas responden a la demanda: si los consumidores exigen productos éticos y sostenibles, el mercado se transformará para ofrecerlos.</blockquote>
-
-<h4>Herramientas para un consumo más consciente</h4>
-<p>Existen aplicaciones y plataformas que te ayudan a tomar mejores decisiones: <strong>Good On You</strong> califica marcas de ropa por su ética; <strong>Buycott</strong> permite escanear productos y conocer las prácticas de sus fabricantes; y las etiquetas de certificación como <em>B Corp</em>, <em>Fair Trade</em> y <em>Rainforest Alliance</em> son indicadores confiables de compromiso social y ambiental.</p>
-
-<h4>El minimalismo como filosofía</h4>
-<p>El minimalismo no se trata de privación, sino de intencionalidad. Consumir menos pero mejor, valorar experiencias sobre posesiones y liberar tu vida del exceso material son prácticas que benefician tanto tu bienestar personal como el del planeta. Como estudiante universitario, adoptar hábitos de consumo consciente ahora te preparará para una vida más sostenible y satisfactoria.</p>""",
-                "estimatedMinutes": 5
+<h4>El poder del consumidor universitario</h4>
+<p>Como estudiante, quizás pienses que tu capacidad de influir es limitada. Sin embargo, los jóvenes representan uno de los segmentos de mercado más poderosos. Las marcas prestan atención a las tendencias de consumo juvenil. Tus decisiones, amplificadas por las redes sociales, pueden presionar a las empresas a adoptar prácticas más responsables.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "Según la pirámide de Carroll, ¿cuál es la base de la Responsabilidad Social Corporativa?",
+                "question": "¿Cuál es la definición más precisa de Responsabilidad Social Corporativa (RSC)?",
                 "options": [
-                    "Responsabilidad económica",
-                    "Responsabilidad filantrópica",
-                    "Responsabilidad ética",
-                    "Responsabilidad legal"
+                    "Donar una parte de las ganancias a causas benéficas",
+                    "Integrar voluntariamente preocupaciones sociales, ambientales y éticas en las operaciones empresariales",
+                    "Cumplir con todas las leyes y regulaciones vigentes",
+                    "Maximizar las ganancias para los accionistas"
                 ],
-                "correctAnswer": 0,
-                "explanation": "Archie Carroll ubicó la responsabilidad económica en la base de su pirámide, ya que una empresa debe ser rentable para poder cumplir con sus demás responsabilidades sociales."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es el greenwashing?",
+                "question": "¿Quién es considerado el autor del texto fundacional de la RSC, publicado en 1953?",
                 "options": [
-                    "Un método de reciclaje industrial avanzado",
-                    "Aparentar ser sostenible sin serlo realmente",
-                    "Un estándar internacional de certificación ambiental",
-                    "Una técnica de agricultura sostenible"
-                ],
-                "correctAnswer": 1,
-                "explanation": "El greenwashing ocurre cuando una empresa aparenta compromiso ambiental a través de marketing engañoso sin implementar prácticas genuinamente sostenibles."
-            },
-            {
-                "question": "¿Cuál es la diferencia principal entre caridad e impacto social según la lección?",
-                "options": [
-                    "La caridad es más costosa que el impacto social",
-                    "La caridad alivia síntomas; el impacto social transforma causas estructurales",
-                    "El impacto social solo lo generan las empresas grandes",
-                    "No hay diferencia, son sinónimos"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La caridad ofrece alivio temporal, mientras que el impacto social busca soluciones sistémicas que empoderan a las comunidades y generan cambios duraderos."
-            },
-            {
-                "question": "¿Qué implica la alfabetización mediática en el contexto de ciudadanía activa?",
-                "options": [
-                    "Saber crear contenido para redes sociales",
-                    "Consumir información de manera crítica, verificar fuentes y detectar desinformación",
-                    "Leer únicamente medios de comunicación tradicionales",
-                    "Evitar completamente las redes sociales"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La alfabetización mediática es la capacidad de consumir información críticamente, verificar fuentes, distinguir noticias de opiniones e identificar desinformación."
-            },
-            {
-                "question": "¿Qué principio del consumo responsable sugiere preguntarse si realmente necesitas un producto antes de comprarlo?",
-                "options": [
-                    "Origen y trazabilidad",
-                    "Durabilidad sobre desechabilidad",
-                    "Necesidad vs. deseo",
-                    "Impacto ambiental"
-                ],
-                "correctAnswer": 2,
-                "explanation": "El principio de 'Necesidad vs. deseo' invita a reflexionar si la compra responde a una necesidad real o es un impulso generado por marketing o presión social."
-            },
-            {
-                "question": "¿Qué diferencia hay entre la economía circular y la economía lineal?",
-                "options": [
-                    "La economía circular produce más residuos que la lineal",
-                    "La economía lineal extrae, produce, usa y desecha; la circular reutiliza, repara y recicla",
-                    "Son modelos idénticos con nombres diferentes",
-                    "La economía circular solo aplica a la industria tecnológica"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La economía lineal sigue el modelo extraer-producir-usar-desechar, mientras que la circular propone diseñar productos para que los materiales se reutilicen, reparen o reciclen indefinidamente."
-            },
-            {
-                "question": "¿Quién popularizó el concepto de emprendimiento social con la creación del Grameen Bank?",
-                "options": [
+                    "Milton Friedman",
+                    "Peter Drucker",
                     "Howard Bowen",
-                    "Archie Carroll",
-                    "Muhammad Yunus",
-                    "Adam Smith"
+                    "Michael Porter"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Muhammad Yunus, fundador del Grameen Bank y Premio Nobel de la Paz, popularizó el emprendimiento social al crear un banco de microcréditos para personas en situación de pobreza."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué mide el SROI (Social Return on Investment)?",
+                "question": "¿Qué organismo definió el desarrollo sustentable en 1987?",
                 "options": [
-                    "La rentabilidad financiera de una empresa",
-                    "El valor social generado por cada peso invertido",
-                    "El número de empleados beneficiados por un programa",
-                    "La cantidad de donaciones recibidas por una ONG"
+                    "La Organización Mundial del Comercio",
+                    "La Comisión Brundtland",
+                    "El Banco Mundial",
+                    "La UNESCO"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El SROI calcula el valor social generado por cada peso invertido en un proyecto, permitiendo cuantificar el impacto social de manera comparable."
+                "correctAnswer": 1
             },
             {
-                "question": "Según el Informe Brundtland de 1987, ¿qué es la sostenibilidad?",
-                "options": [
-                    "Producir más con menos recursos en el menor tiempo posible",
-                    "Satisfacer las necesidades del presente sin comprometer las de las generaciones futuras",
-                    "Eliminar completamente el uso de recursos naturales",
-                    "Lograr que todas las empresas sean organizaciones sin fines de lucro"
-                ],
-                "correctAnswer": 1,
-                "explanation": "El Informe Brundtland definió la sostenibilidad como la capacidad de satisfacer las necesidades del presente sin comprometer la capacidad de las generaciones futuras para satisfacer las suyas."
-            },
-            {
-                "question": "¿Cuál es una forma de participación cívica que implica monitorear el uso de recursos públicos?",
-                "options": [
-                    "Activismo y advocacy",
-                    "Participación electoral",
-                    "Fiscalización ciudadana",
-                    "Voluntariado estructurado"
-                ],
-                "correctAnswer": 2,
-                "explanation": "La fiscalización ciudadana consiste en monitorear el uso de recursos públicos, exigir transparencia y denunciar irregularidades como forma activa de participación cívica."
-            },
-            {
-                "question": "¿Qué es el comercio justo (Fair Trade)?",
-                "options": [
-                    "Un tipo de libre comercio sin aranceles entre países",
-                    "Un movimiento que busca garantizar condiciones dignas para los productores",
-                    "Una estrategia de marketing para vender productos más caros",
-                    "Un acuerdo entre grandes corporaciones para fijar precios"
-                ],
-                "correctAnswer": 1,
-                "explanation": "El comercio justo busca garantizar condiciones dignas para los productores, asegurando precios justos, ausencia de trabajo infantil y estándares ambientales mínimos."
-            },
-            {
-                "question": "¿Cuántos Objetivos de Desarrollo Sostenible (ODS) adoptaron las Naciones Unidas en la Agenda 2030?",
+                "question": "¿Cuántos Objetivos de Desarrollo Sostenible (ODS) aprobó la ONU en 2015?",
                 "options": [
                     "10",
                     "12",
                     "15",
                     "17"
                 ],
-                "correctAnswer": 3,
-                "explanation": "En 2015, las Naciones Unidas adoptaron 17 Objetivos de Desarrollo Sostenible que abarcan desde la erradicación de la pobreza hasta la acción climática y la paz."
+                "correctAnswer": 3
             },
             {
-                "question": "Según la lección, ¿por qué la fast fashion es problemática?",
+                "question": "¿Qué propone la economía circular a diferencia de la economía lineal?",
                 "options": [
-                    "Porque la ropa es de muy alta calidad y cara",
-                    "Porque es una de las industrias más contaminantes y depende de condiciones laborales precarias",
-                    "Porque no permite la expresión personal a través de la vestimenta",
-                    "Porque solo está disponible en países desarrollados"
+                    "Aumentar la producción para reducir costos unitarios",
+                    "Diseñar productos que puedan repararse, reutilizarse y reciclarse",
+                    "Trasladar la producción a países con menores costos laborales",
+                    "Eliminar los intermediarios en la cadena de distribución"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La fast fashion es una de las industrias más contaminantes del mundo, produce millones de toneladas de residuos textiles y frecuentemente depende de condiciones laborales precarias."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué distingue al ciudadano activo del ciudadano pasivo según la lección?",
+                "question": "¿Qué tipo de impacto social se refiere a cambios en políticas o estructuras que benefician a poblaciones enteras?",
                 "options": [
-                    "El ciudadano activo tiene más derechos legales que el pasivo",
-                    "El ciudadano pasivo se limita a cumplir leyes y votar; el activo se informa, debate y propone soluciones constantemente",
-                    "El ciudadano activo solo participa en protestas y manifestaciones",
-                    "No hay diferencia real, todos los ciudadanos participan de la misma manera"
+                    "Impacto directo",
+                    "Impacto indirecto",
+                    "Impacto sistémico",
+                    "Impacto filantrópico"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Un ciudadano pasivo se limita a cumplir las leyes y votar esporádicamente, mientras que un ciudadano activo se informa, debate, propone soluciones, se organiza y participa constantemente en la vida pública."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué rol cumple la Teoría del Cambio en la medición del impacto social?",
+                "question": "Muhammad Yunus, fundador del Grameen Bank, es referente de:",
                 "options": [
-                    "Es una técnica de marketing para organizaciones sin fines de lucro",
-                    "Es un mapa que conecta las actividades de un proyecto con los resultados esperados a corto, mediano y largo plazo",
-                    "Es un modelo económico para calcular la rentabilidad de empresas sociales",
-                    "Es un marco legal para regular las donaciones filantrópicas"
+                    "La banca de inversión sostenible",
+                    "El emprendimiento social",
+                    "La responsabilidad fiscal corporativa",
+                    "Los fondos de pensiones éticos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La Teoría del Cambio es un mapa que conecta las actividades de un proyecto con los resultados esperados a corto, mediano y largo plazo, siendo una metodología clave para medir impacto social."
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué herramienta permite evaluar el valor social generado por cada unidad monetaria invertida?",
+                "options": [
+                    "Análisis FODA",
+                    "Balance General Social",
+                    "Retorno Social de la Inversión (SROI)",
+                    "Indicadores de Gestión Financiera"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué forma de participación ciudadana consiste en vigilar el uso de recursos públicos?",
+                "options": [
+                    "Activismo digital",
+                    "Participación electoral",
+                    "Veeduría ciudadana",
+                    "Movilización comunitaria"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué porcentaje de las emisiones globales de carbono produce la industria de la moda rápida, aproximadamente?",
+                "options": [
+                    "2%",
+                    "5%",
+                    "10%",
+                    "20%"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "El concepto de 'triple bottom line' se refiere a las dimensiones:",
+                "options": [
+                    "Producción, distribución y consumo",
+                    "Local, nacional e internacional",
+                    "Ambiental, social y económica",
+                    "Pasado, presente y futuro"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Cuál de los siguientes NO es un pilar de la RSC según la pirámide clásica?",
+                "options": [
+                    "Responsabilidad económica",
+                    "Responsabilidad tecnológica",
+                    "Responsabilidad ética",
+                    "Responsabilidad filantrópica"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "El comercio justo (Fair Trade) busca principalmente:",
+                "options": [
+                    "Eliminar los aranceles de importación entre países",
+                    "Garantizar condiciones dignas y precios justos para los productores",
+                    "Promover el libre comercio sin regulaciones",
+                    "Reducir los precios al consumidor final"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Cuál es el principal riesgo de no medir el impacto de las iniciativas sociales?",
+                "options": [
+                    "Perder financiamiento gubernamental",
+                    "No poder publicar informes anuales",
+                    "Invertir recursos en acciones que no generan transformación real",
+                    "Violar regulaciones internacionales"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué principio del consumo responsable implica reflexionar si realmente necesitamos algo antes de comprarlo?",
+                "options": [
+                    "Reciclar",
+                    "Reutilizar",
+                    "Reducir",
+                    "Investigar"
+                ],
+                "correctAnswer": 2
             }
         ]
     },
-
     "Marca Personal": {
+        "emoji": "⭐",
+        "level": "beginner",
+        "duration": "25min",
         "lessons": [
             {
-                "title": "Fundamentos de la Marca Personal",
-                "content": """<h3>Fundamentos de la Marca Personal</h3>
-<p>Tu marca personal es la percepción que los demás tienen de ti como profesional. No se trata de inventar una imagen falsa, sino de comunicar estratégicamente quién eres, qué sabes hacer y qué valor aportas. En un mercado laboral cada vez más competitivo, tener una marca personal clara puede ser la diferencia entre ser considerado para una oportunidad o pasar desapercibido.</p>
+                "title": "¿Qué es la Marca Personal?",
+                "content": """<h3>¿Qué es la Marca Personal?</h3>
+<p>Tu marca personal es la <strong>percepción que los demás tienen de ti</strong>: lo que piensan, sienten y esperan cuando escuchan tu nombre. A diferencia de lo que muchos creen, la marca personal no se trata de inventar una imagen artificial, sino de gestionar de forma estratégica y auténtica cómo te presentas al mundo profesional.</p>
 
-<h4>¿Qué es exactamente una marca personal?</h4>
-<p>Jeff Bezos dijo célebremente: <em>"Tu marca personal es lo que dicen de ti cuando no estás en la habitación"</em>. Tu marca personal es la combinación de tu reputación, tus habilidades, tu experiencia, tus valores y la forma en que los comunicas al mundo. Es, esencialmente, tu propuesta de valor como profesional.</p>
+<h4>La marca personal en la era digital</h4>
+<p>En un mundo donde los reclutadores buscan tu nombre en Google antes de llamarte a una entrevista, tu presencia digital se convierte en tu primera carta de presentación. Según un estudio de CareerBuilder, el <strong>70% de los empleadores revisa las redes sociales</strong> de los candidatos durante el proceso de selección. Esto significa que, lo quieras o no, ya tienes una marca personal en línea.</p>
+
+<h4>Diferencia entre marca personal y reputación</h4>
+<ul>
+<li><strong>Marca personal:</strong> es lo que tú comunicas activamente sobre ti mismo — tus valores, habilidades y propuesta de valor única.</li>
+<li><strong>Reputación:</strong> es lo que los demás dicen de ti cuando no estás presente — se construye con cada interacción y decisión.</li>
+</ul>
+<p>El objetivo es que ambas estén alineadas. Cuando lo que comunicas coincide con lo que los demás perciben, tu marca personal es <em>coherente y creíble</em>.</p>
+
+<blockquote>«Tu marca personal es lo que la gente dice de ti cuando no estás en la habitación.» — Jeff Bezos.</blockquote>
+
+<h4>¿Por qué es importante para un estudiante?</h4>
+<p>Muchos estudiantes piensan que la marca personal es algo que se construye después de graduarse. Sin embargo, comenzar temprano ofrece ventajas significativas: te diferencias de otros candidatos con el mismo título, atraes oportunidades de prácticas y empleo, y desarrollas claridad sobre tu dirección profesional. La marca personal no es solo para influencers o ejecutivos; es una herramienta para <em>cualquier persona</em> que quiera tomar control de su carrera.</p>
 
 <h4>Los tres pilares de la marca personal</h4>
 <ul>
-<li><strong>Autoconocimiento:</strong> Identificar tus fortalezas, valores, pasiones y lo que te diferencia. ¿En qué eres excepcionalmente bueno? ¿Qué problemas puedes resolver mejor que otros?</li>
-<li><strong>Propuesta de valor:</strong> La intersección entre lo que sabes hacer, lo que te apasiona y lo que el mercado necesita. Es tu oferta única al mundo profesional.</li>
-<li><strong>Comunicación consistente:</strong> Transmitir tu propuesta de valor de forma coherente en todos los puntos de contacto: currículum, redes sociales, entrevistas, conversaciones informales.</li>
-</ul>
-
-<h4>Marca personal vs. ego</h4>
-<p>Es importante distinguir entre construir una marca personal y alimentar el ego. La marca personal auténtica se centra en el valor que ofreces a otros, no en la autopromoción vacía. Las personas con marcas personales más sólidas suelen ser aquellas que comparten generosamente su conocimiento y ayudan a otros a crecer.</p>
-
-<blockquote>Construir una marca personal no es presumir; es asegurarte de que las personas correctas sepan cómo puedes contribuir. Es hacer visible tu valor para que puedas generar impacto.</blockquote>
-
-<h4>El proceso de construcción</h4>
-<p>Construir una marca personal es un proceso iterativo que involucra: descubrimiento personal, definición de tu audiencia objetivo, creación de contenido y presencia, networking estratégico y mejora continua basada en retroalimentación. No es algo que se logra de la noche a la mañana, pero cada paso cuenta.</p>
-
-<h4>¿Por qué empezar ahora?</h4>
-<p>Como estudiante universitario, tienes la ventaja de empezar a construir tu marca personal antes de entrar al mercado laboral. Los reclutadores y empleadores investigan a los candidatos en línea antes de contactarlos. Tener una presencia profesional sólida desde ahora te dará una ventaja competitiva significativa.</p>""",
-                "estimatedMinutes": 5
+<li><strong>Autoconocimiento:</strong> saber quién eres, qué te apasiona y en qué eres bueno.</li>
+<li><strong>Propuesta de valor:</strong> definir qué ofreces de forma única al mercado laboral.</li>
+<li><strong>Comunicación:</strong> transmitir tu mensaje de forma consistente en todos los canales.</li>
+</ul>"""
             },
             {
-                "title": "Optimización de LinkedIn",
-                "content": """<h3>Optimización de LinkedIn</h3>
-<p>LinkedIn es la red profesional más grande del mundo, con más de 900 millones de usuarios. Es la plataforma donde reclutadores buscan candidatos, profesionales generan oportunidades de negocio y expertos comparten conocimiento. Optimizar tu perfil de LinkedIn no es opcional si quieres desarrollar tu carrera profesional.</p>
+                "title": "LinkedIn y tu Presencia Profesional en Línea",
+                "content": """<h3>LinkedIn y tu Presencia Profesional en Línea</h3>
+<p>LinkedIn es la red profesional más grande del mundo, con más de 900 millones de usuarios. Para un estudiante universitario, es la <strong>plataforma más importante para construir y proyectar su marca personal</strong>. Un perfil bien optimizado puede abrirte puertas que ni siquiera sabías que existían.</p>
 
-<h4>Tu foto de perfil y banner</h4>
-<p>Los perfiles con foto profesional reciben 21 veces más visitas y 36 veces más mensajes que los perfiles sin foto. Tu foto debe ser reciente, con buena iluminación, fondo limpio y vestimenta acorde a tu industria. El banner es una oportunidad extra para comunicar tu área de especialización o tu propuesta de valor visualmente.</p>
-
-<h4>El titular: tu primera impresión digital</h4>
-<p>El titular de LinkedIn (los 220 caracteres debajo de tu nombre) es lo más visible de tu perfil. No te limites a poner tu cargo actual. En su lugar, comunica tu propuesta de valor:</p>
+<h4>Elementos clave de un perfil de LinkedIn efectivo</h4>
 <ul>
-<li><strong>Débil:</strong> "Estudiante de Ingeniería Civil en Universidad X"</li>
-<li><strong>Fuerte:</strong> "Futuro Ingeniero Civil | Apasionado por construcción sostenible y diseño sísmico | Líder estudiantil"</li>
+<li><strong>Foto profesional:</strong> un retrato con buena iluminación, fondo neutro y vestimenta acorde a tu industria. Los perfiles con foto reciben 21 veces más visitas.</li>
+<li><strong>Titular (headline):</strong> no pongas solo «Estudiante de Ingeniería». Usa un titular que comunique valor, como «Estudiante de Ingeniería Industrial | Apasionado por la optimización de procesos | Investigador en logística sostenible».</li>
+<li><strong>Resumen (About):</strong> escribe en primera persona, cuenta tu historia, menciona tus logros y aspiraciones. Usa palabras clave de tu industria.</li>
+<li><strong>Experiencia:</strong> incluye prácticas, proyectos académicos, voluntariado y trabajos relevantes. Describe logros con datos cuantificables.</li>
+<li><strong>Habilidades y validaciones:</strong> agrega habilidades relevantes y pide a compañeros y profesores que las validen.</li>
 </ul>
 
-<h4>El resumen (Acerca de)</h4>
-<p>La sección "Acerca de" es tu oportunidad de contar tu historia profesional en primera persona. Debe incluir: quién eres, qué te apasiona, qué valor aportas, logros relevantes y un llamado a la acción (cómo contactarte). Escríbelo en un tono profesional pero personal, como si estuvieras hablando con un colega.</p>
+<h4>Estrategia de contenido en LinkedIn</h4>
+<p>No basta con tener un perfil completo; necesitas ser visible. La creación de contenido te posiciona como alguien informado y comprometido con tu campo profesional:</p>
+<ul>
+<li>Comparte artículos relevantes de tu industria con tu análisis personal.</li>
+<li>Publica reflexiones sobre lo que estás aprendiendo en tus clases o prácticas.</li>
+<li>Comenta de forma constructiva en publicaciones de líderes de tu sector.</li>
+<li>Celebra logros de tus compañeros — esto fortalece tu red y tu imagen.</li>
+</ul>
 
-<h4>Experiencia y educación</h4>
-<p>No solo listes tus cargos y universidades. Describe qué hiciste, qué lograste y qué habilidades desarrollaste en cada experiencia. Utiliza verbos de acción y, cuando sea posible, incluye métricas: <em>"Lideré un equipo de 8 personas que aumentó la participación estudiantil en un 40%"</em> es mucho más poderoso que <em>"Fui presidente del centro de estudiantes"</em>.</p>
+<blockquote>«LinkedIn no es un currículum en línea; es una plataforma para demostrar tu conocimiento, construir relaciones y generar oportunidades.»</blockquote>
 
-<blockquote>Un perfil de LinkedIn optimizado trabaja por ti las 24 horas del día. Es tu currículum vivo, tu portafolio profesional y tu tarjeta de presentación digital, todo en uno.</blockquote>
-
-<h4>Palabras clave y SEO en LinkedIn</h4>
-<p>Los reclutadores buscan candidatos usando palabras clave. Identifica los términos más relevantes para tu industria y distribúyelos naturalmente en tu titular, resumen, experiencia y habilidades. Investiga ofertas de trabajo que te interesen y observa qué términos se repiten.</p>
-
-<h4>Recomendaciones y validaciones</h4>
-<p>Solicita recomendaciones de profesores, supervisores de prácticas y compañeros de proyecto. Las recomendaciones aportan credibilidad social a tu perfil. Además, las validaciones de habilidades por parte de tu red refuerzan tu expertise en áreas específicas.</p>""",
-                "estimatedMinutes": 5
+<h4>Más allá de LinkedIn</h4>
+<p>Aunque LinkedIn es fundamental, tu presencia profesional puede extenderse a otras plataformas: un <strong>portafolio en línea</strong> (Behance, GitHub, personal website), un <strong>blog</strong> donde compartas tu expertise, o incluso un <strong>canal de YouTube</strong> con contenido educativo. La clave es elegir las plataformas donde se encuentre tu audiencia objetivo y mantener coherencia en tu mensaje.</p>"""
             },
             {
-                "title": "Presencia Digital y Reputación Online",
-                "content": """<h3>Presencia Digital y Reputación Online</h3>
-<p>Tu presencia digital es el conjunto de todas las huellas que dejas en internet: perfiles en redes sociales, publicaciones, comentarios, fotos, artículos y cualquier contenido asociado a tu nombre. Gestionar esta presencia de forma estratégica es fundamental para tu marca personal y tu carrera.</p>
+                "title": "Autenticidad y Diferenciación",
+                "content": """<h3>Autenticidad y Diferenciación</h3>
+<p>En un mercado laboral donde miles de profesionales tienen títulos similares y experiencias comparables, la <strong>autenticidad</strong> se convierte en tu mayor ventaja competitiva. Las personas y empresas no buscan perfiles perfectos; buscan personas genuinas con quienes puedan conectar y confiar.</p>
 
-<h4>Auditoría digital: ¿qué dice internet sobre ti?</h4>
-<p>El primer paso es buscarte a ti mismo en Google. Revisa los primeros resultados y pregúntate: ¿esta información me representa como el profesional que quiero ser? Los reclutadores hacen exactamente esto antes de llamarte a una entrevista. Si los resultados no son favorables, necesitas trabajar activamente en crear contenido positivo que desplace lo negativo.</p>
-
-<h4>Estrategia multi-plataforma</h4>
+<h4>¿Qué significa ser auténtico profesionalmente?</h4>
+<p>La autenticidad no significa compartir cada detalle de tu vida personal ni ignorar las normas profesionales. Significa ser <em>honesto sobre quién eres</em>, qué valoras y qué te motiva. Un profesional auténtico:</p>
 <ul>
-<li><strong>LinkedIn:</strong> Tu perfil profesional principal, ideal para networking y contenido de industria.</li>
-<li><strong>Twitter/X:</strong> Perfecto para compartir opiniones sobre tu campo, interactuar con líderes de industria y mantenerte al día con tendencias.</li>
-<li><strong>GitHub/Behance/Portfolio:</strong> Plataformas para mostrar tu trabajo de forma tangible, esenciales para carreras técnicas y creativas.</li>
-<li><strong>Blog personal o Medium:</strong> Espacio para publicar artículos más profundos que demuestren tu expertise en temas específicos.</li>
+<li>Reconoce sus fortalezas sin exagerarlas y sus áreas de mejora sin ocultarlas.</li>
+<li>Actúa de forma coherente en diferentes contextos, adaptando su comunicación pero no sus valores.</li>
+<li>Comparte sus opiniones genuinas, aunque sean diferentes a las de la mayoría.</li>
+<li>Muestra vulnerabilidad cuando es apropiado, generando conexiones más profundas.</li>
 </ul>
 
-<h4>Creación de contenido de valor</h4>
-<p>No necesitas ser un influencer para tener una presencia digital efectiva. Compartir artículos relevantes de tu industria con tus comentarios, escribir reflexiones sobre lo que estás aprendiendo, o publicar resúmenes de conferencias a las que asistes son formas accesibles de generar contenido de valor sin ser un experto consumado.</p>
-
-<blockquote>En el mundo digital, si no defines tu propia narrativa, otros la definirán por ti. Cada publicación, comentario e interacción en línea contribuye a la percepción que el mundo profesional tiene de ti.</blockquote>
-
-<h4>Coherencia entre lo digital y lo presencial</h4>
-<p>Tu presencia online debe ser un reflejo fiel de quien eres en persona. Nada es más dañino para tu marca personal que la incongruencia entre tu imagen digital y tu comportamiento real. La autenticidad es el activo más valioso de una marca personal duradera.</p>
-
-<h4>Gestión de la privacidad</h4>
-<p>No todo debe ser público. Configura adecuadamente la privacidad de tus cuentas personales, separa lo profesional de lo íntimo y piensa dos veces antes de publicar algo que podría perjudicarte en un contexto profesional. Una regla útil: si no lo dirías en una entrevista de trabajo, no lo publiques en línea.</p>""",
-                "estimatedMinutes": 5
-            },
-            {
-                "title": "Autenticidad como Estrategia",
-                "content": """<h3>Autenticidad como Estrategia</h3>
-<p>En una era saturada de contenido curado y vidas aparentemente perfectas en redes sociales, la autenticidad se ha convertido en el diferenciador más poderoso de una marca personal. Las personas conectan con personas reales, no con perfiles impecables pero vacíos. Ser auténtico no significa compartir todo sin filtro; significa ser genuino en lo que compartes.</p>
-
-<h4>El mito de la perfección profesional</h4>
-<p>Muchos jóvenes profesionales creen que deben proyectar una imagen de perfección para ser tomados en serio. La realidad es que la vulnerabilidad estratégica genera más conexión y confianza que la perfección. Compartir lo que has aprendido de un fracaso, admitir lo que no sabes o pedir ayuda son señales de madurez profesional, no de debilidad.</p>
-
-<h4>Componentes de la autenticidad profesional</h4>
+<h4>Encontrando tu diferenciador</h4>
+<p>Tu diferenciador no siempre es algo espectacular. A menudo es la <strong>combinación única de experiencias, habilidades e intereses</strong> que solo tú posees. Para descubrirlo, reflexiona sobre estas preguntas:</p>
 <ul>
-<li><strong>Valores claros:</strong> Saber qué principios guían tus decisiones y comunicarlos sin miedo. Si te apasiona la sostenibilidad, la diversidad o la innovación, que se note.</li>
-<li><strong>Voz propia:</strong> Desarrollar un estilo de comunicación que sea reconociblemente tuyo. No copies la voz de otros; encuentra la tuya.</li>
-<li><strong>Congruencia:</strong> Que tus acciones sean coherentes con tus palabras. La autenticidad se construye con hechos, no con discursos.</li>
-<li><strong>Transparencia:</strong> Ser honesto sobre tus capacidades y limitaciones. Prometer menos y entregar más siempre supera la estrategia contraria.</li>
+<li>¿Qué problemas resuelvo mejor que la mayoría?</li>
+<li>¿Qué experiencias de vida me dan una perspectiva única?</li>
+<li>¿Qué habilidades de diferentes campos puedo combinar de forma creativa?</li>
+<li>¿Qué feedback positivo recibo con frecuencia de profesores, jefes o compañeros?</li>
 </ul>
+
+<blockquote>«No intentes ser mejor que todos; intenta ser el único que hace lo que tú haces, de la manera en que tú lo haces.» — Jerry García, adaptado al contexto profesional.</blockquote>
+
+<h4>El peligro de la comparación</h4>
+<p>Las redes sociales pueden generar una trampa peligrosa: compararte constantemente con otros y sentir que nunca eres suficiente. Recuerda que cada persona tiene un <em>ritmo diferente</em> y que lo que ves en línea es una versión editada de la realidad. Tu marca personal debe construirse desde la confianza en tu propio valor, no desde la imitación de otros.</p>
 
 <h4>Storytelling personal</h4>
-<p>Las historias son la forma más antigua y efectiva de comunicación humana. Tu marca personal se fortalece enormemente cuando puedes articular tu historia: de dónde vienes, qué obstáculos has superado, qué te motiva y hacia dónde vas. Una buena historia personal no necesita ser dramática; necesita ser genuina y relevante.</p>
-
-<blockquote>La autenticidad no es una táctica de marketing; es una forma de vivir tu carrera. Las marcas personales más duraderas son aquellas construidas sobre quién eres realmente, no sobre quién crees que los demás quieren que seas.</blockquote>
-
-<h4>El coraje de la diferenciación</h4>
-<p>Ser auténtico a menudo implica diferenciarse del grupo. Puede significar tener opiniones distintas a la mayoría, elegir un camino profesional poco convencional o rechazar oportunidades que no se alinean con tus valores. Este coraje es precisamente lo que hace que una marca personal sea memorable.</p>
-
-<h4>Construyendo credibilidad con el tiempo</h4>
-<p>La autenticidad se demuestra con consistencia. No basta con un solo acto de transparencia; es la acumulación de acciones congruentes a lo largo del tiempo lo que construye una reputación sólida. Cada interacción, cada proyecto y cada decisión es un ladrillo en la construcción de tu marca personal auténtica.</p>""",
-                "estimatedMinutes": 5
+<p>Las historias son el vehículo más poderoso para transmitir tu marca personal. Tu historia profesional — de dónde vienes, qué obstáculos has superado, qué te apasiona y hacia dónde vas — es lo que te hace memorable. Practica contar tu historia de forma concisa, emotiva y relevante para tu audiencia.</p>"""
             },
             {
                 "title": "El Elevator Pitch Perfecto",
                 "content": """<h3>El Elevator Pitch Perfecto</h3>
-<p>Un elevator pitch es una presentación concisa de quién eres, qué haces y qué valor aportas, diseñada para durar entre 30 y 60 segundos, el tiempo aproximado de un viaje en ascensor. Es una herramienta esencial para networking, entrevistas, ferias de empleo y cualquier situación donde necesites causar una primera impresión profesional memorable.</p>
+<p>Un elevator pitch es una <strong>presentación breve y persuasiva de quién eres y qué ofreces</strong>, diseñada para captar el interés de tu interlocutor en 30 a 60 segundos — el tiempo aproximado de un viaje en ascensor. Es una herramienta esencial para ferias de empleo, eventos de networking, entrevistas y cualquier situación donde necesites causar una primera impresión impactante.</p>
 
 <h4>Estructura del elevator pitch</h4>
-<p>Un elevator pitch efectivo tiene cuatro componentes:</p>
+<p>Un pitch efectivo sigue una estructura clara que combina información y emoción:</p>
 <ul>
-<li><strong>Gancho:</strong> Una frase inicial que capture la atención. Puede ser una pregunta provocadora, un dato sorprendente o una afirmación audaz relacionada con tu campo.</li>
-<li><strong>Quién eres:</strong> Tu nombre, tu área de estudio o profesión, y tu contexto actual de forma breve.</li>
-<li><strong>Tu propuesta de valor:</strong> Qué problema resuelves, qué habilidad única posees o qué resultado puedes generar. Esta es la parte más importante.</li>
-<li><strong>Llamado a la acción:</strong> Qué quieres que pase después: intercambiar contactos, agendar una reunión, explorar una colaboración.</li>
+<li><strong>Gancho inicial:</strong> una frase que capture la atención. Puede ser una pregunta, un dato sorprendente o una afirmación audaz.</li>
+<li><strong>Quién eres:</strong> tu nombre, tu carrera o área de expertise, y un dato relevante sobre tu trayectoria.</li>
+<li><strong>Qué haces / qué valor ofreces:</strong> describe tu propuesta de valor de forma concreta y orientada a resultados.</li>
+<li><strong>Prueba social:</strong> menciona un logro, proyecto o experiencia que respalde tu propuesta.</li>
+<li><strong>Llamada a la acción:</strong> cierra con una invitación clara: intercambiar contactos, agendar una reunión o enviar tu portafolio.</li>
 </ul>
 
 <h4>Ejemplo práctico</h4>
-<p><em>"¿Sabías que el 70% de las startups fracasan por problemas de comunicación interna, no por falta de capital? Soy María González, estudio Psicología Organizacional y me especializo en dinámicas de equipo y resolución de conflictos. He facilitado talleres para tres organizaciones estudiantiles mejorando su retención de miembros en un 50%. Me encantaría conversar sobre cómo podría aportar a tu equipo."</em></p>
+<p><em>«¿Sabías que el 60% de los residuos industriales podría reutilizarse con el proceso adecuado? Soy María González, estudiante de último año de Ingeniería Ambiental. He liderado un proyecto de investigación que redujo los residuos de una planta procesadora en un 35%. Me apasiona encontrar soluciones sostenibles que también sean rentables. Me encantaría conversar sobre cómo puedo aportar a su equipo de innovación. ¿Podemos intercambiar contactos?»</em></p>
 
-<h4>Errores comunes a evitar</h4>
+<blockquote>«No se trata de venderte; se trata de comunicar con claridad y pasión por qué lo que haces importa.»</blockquote>
+
+<h4>Errores comunes al hacer un pitch</h4>
 <ul>
-<li><strong>Ser demasiado genérico:</strong> "Soy estudiante de ingeniería y busco oportunidades" no dice nada memorable. Sé específico.</li>
-<li><strong>Hablar solo de ti:</strong> El pitch debe centrarse en el valor que ofreces al otro, no en una lista de tus logros.</li>
-<li><strong>Sonar robótico:</strong> Memorizar un guion rígido te hará sonar artificial. Conoce tus puntos clave pero permite que la conversación fluya naturalmente.</li>
-<li><strong>No adaptarlo:</strong> Tu pitch debe variar según la audiencia. Lo que dices en una feria de tecnología es diferente a lo que dices en un evento de emprendimiento social.</li>
+<li>Hablar demasiado rápido por nerviosismo.</li>
+<li>Usar jerga técnica que tu audiencia no entiende.</li>
+<li>Enfocarte en ti mismo en lugar de en el valor que puedes aportar.</li>
+<li>No tener una llamada a la acción clara.</li>
+<li>Sonar memorizado y robótico — practica hasta que suene natural.</li>
 </ul>
 
-<blockquote>Un buen elevator pitch no es un monólogo; es una invitación al diálogo. Su objetivo no es cerrar una venta, sino abrir una conversación que podría cambiar tu carrera.</blockquote>
+<h4>Adapta tu pitch</h4>
+<p>No existe un pitch único para todas las situaciones. Debes tener una <strong>versión base</strong> y adaptarla según tu audiencia. Si hablas con un reclutador de tecnología, enfatiza tus habilidades técnicas. Si hablas con un emprendedor, destaca tu capacidad de innovación. La flexibilidad es clave para que tu mensaje resuene con cada interlocutor.</p>"""
+            },
+            {
+                "title": "Gestión de Reputación y Consistencia",
+                "content": """<h3>Gestión de Reputación y Consistencia</h3>
+<p>Construir una marca personal es un proceso continuo que requiere <strong>consistencia, monitoreo y adaptación</strong>. No basta con crear un buen perfil de LinkedIn y olvidarte de él; necesitas gestionar activamente cómo te percibe el mundo profesional a lo largo del tiempo.</p>
 
-<h4>Practica, practica, practica</h4>
-<p>Grábate en video practicando tu pitch y revísalo. Pide retroalimentación a amigos y mentores. Practícalo frente al espejo hasta que suene natural, no ensayado. Los mejores elevator pitches parecen espontáneos porque han sido practicados decenas de veces. Recuerda: la naturalidad es el resultado de la preparación, no de la improvisación.</p>""",
-                "estimatedMinutes": 5
+<h4>Auditoría de tu presencia digital</h4>
+<p>El primer paso es saber qué dice internet sobre ti. Realiza una <em>auditoría digital</em> con estos pasos:</p>
+<ul>
+<li>Busca tu nombre completo en Google y revisa los primeros resultados.</li>
+<li>Revisa tus perfiles en todas las redes sociales, incluyendo las que ya no usas.</li>
+<li>Configura alertas de Google con tu nombre para monitorear menciones futuras.</li>
+<li>Elimina o privatiza contenido que no refleje la imagen profesional que deseas proyectar.</li>
+<li>Verifica que tus fotos de perfil sean coherentes en todas las plataformas.</li>
+</ul>
+
+<h4>Consistencia en todos los canales</h4>
+<p>Tu marca personal debe ser <strong>reconocible y coherente</strong> en cada punto de contacto. Esto incluye:</p>
+<ul>
+<li><strong>Mensaje:</strong> tu propuesta de valor y tu historia deben ser consistentes, aunque adaptes el tono a cada plataforma.</li>
+<li><strong>Visual:</strong> usa la misma foto profesional, colores y estilo gráfico en tus perfiles.</li>
+<li><strong>Comportamiento:</strong> tu forma de interactuar en línea debe reflejar tus valores. Un comentario agresivo en Twitter puede destruir la imagen profesional que construiste en LinkedIn.</li>
+</ul>
+
+<blockquote>«Se necesitan 20 años para construir una reputación y 5 minutos para destruirla.» — Warren Buffett.</blockquote>
+
+<h4>Plan de contenido personal</h4>
+<p>Los profesionales más visibles en sus campos tienen una estrategia de contenido, aunque sea sencilla. Considera crear un plan mensual que incluya publicaciones en LinkedIn, artículos en tu blog o contribuciones en comunidades profesionales. La regularidad es más importante que la perfección.</p>
+
+<h4>Manejo de crisis de reputación</h4>
+<p>En algún momento, podrías enfrentar una situación que afecte tu reputación: un error profesional, un malentendido público o un comentario desafortunado. La clave es responder con <em>transparencia, humildad y rapidez</em>. Reconoce el error, muestra lo que aprendiste y demuestra con acciones que has cambiado. Las personas admiran más a quienes se recuperan con gracia que a quienes fingen ser perfectos.</p>
+
+<h4>Evolución de tu marca</h4>
+<p>Tu marca personal no es estática. A medida que creces profesionalmente, tus intereses, habilidades y objetivos cambiarán. Revisa y actualiza tu marca al menos cada seis meses para asegurarte de que refleje quién eres hoy, no quién eras hace dos años.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "Según Jeff Bezos, ¿qué es tu marca personal?",
+                "question": "¿Qué porcentaje de empleadores revisa las redes sociales de los candidatos según CareerBuilder?",
                 "options": [
-                    "Tu currículum vitae actualizado",
-                    "Lo que dicen de ti cuando no estás en la habitación",
-                    "La cantidad de seguidores en redes sociales",
-                    "Tu título universitario y certificaciones"
+                    "30%",
+                    "50%",
+                    "70%",
+                    "90%"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Jeff Bezos definió la marca personal como 'lo que dicen de ti cuando no estás en la habitación', es decir, la percepción que otros tienen de ti como profesional."
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Cuál es la diferencia clave entre marca personal y reputación?",
+                "options": [
+                    "La marca personal es para empresas y la reputación para personas",
+                    "La marca personal es lo que tú comunicas; la reputación es lo que otros dicen de ti",
+                    "La reputación se puede controlar y la marca personal no",
+                    "No hay diferencia real entre ambas"
+                ],
+                "correctAnswer": 1
             },
             {
                 "question": "¿Cuántas veces más visitas recibe un perfil de LinkedIn con foto profesional?",
                 "options": [
                     "5 veces más",
-                    "10 veces más",
+                    "11 veces más",
                     "21 veces más",
                     "50 veces más"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Los perfiles de LinkedIn con foto profesional reciben 21 veces más visitas y 36 veces más mensajes que los perfiles sin foto."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál es el primer paso para gestionar tu presencia digital?",
+                "question": "¿Cuál de estos NO es uno de los tres pilares de la marca personal mencionados en el curso?",
                 "options": [
-                    "Crear perfiles en todas las redes sociales posibles",
-                    "Contratar a un profesional de marketing digital",
-                    "Buscarte a ti mismo en Google y evaluar los resultados",
-                    "Eliminar todas tus redes sociales personales"
+                    "Autoconocimiento",
+                    "Propuesta de valor",
+                    "Influencia digital",
+                    "Comunicación"
                 ],
-                "correctAnswer": 2,
-                "explanation": "El primer paso es realizar una auditoría digital: buscarte en Google y evaluar si los resultados te representan como el profesional que quieres ser."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué componente del elevator pitch es considerado el más importante?",
+                "question": "Un elevator pitch efectivo debe durar aproximadamente:",
                 "options": [
-                    "El gancho inicial",
-                    "La presentación personal",
-                    "La propuesta de valor",
-                    "El llamado a la acción"
+                    "10-15 segundos",
+                    "30-60 segundos",
+                    "2-3 minutos",
+                    "5 minutos"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La propuesta de valor es la parte más importante del elevator pitch, ya que comunica qué problema resuelves o qué habilidad única aportas."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿cuál es el diferenciador más poderoso de una marca personal en la era actual?",
+                "question": "¿Cuál es el primer elemento de la estructura de un elevator pitch?",
                 "options": [
-                    "Tener muchos títulos y certificaciones",
-                    "La autenticidad",
-                    "Una gran cantidad de seguidores en redes",
-                    "Un diseño gráfico profesional de tu perfil"
+                    "Tu nombre y carrera",
+                    "Un gancho inicial que capture la atención",
+                    "La llamada a la acción",
+                    "Tu experiencia laboral"
                 ],
-                "correctAnswer": 1,
-                "explanation": "En una era saturada de contenido curado, la autenticidad se ha convertido en el diferenciador más poderoso, ya que las personas conectan con personas reales y genuinas."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuáles son los tres pilares de la marca personal?",
+                "question": "¿Qué frase se atribuye a Jeff Bezos sobre la marca personal?",
                 "options": [
-                    "Dinero, poder y fama",
-                    "Autoconocimiento, propuesta de valor y comunicación consistente",
-                    "Redes sociales, currículum y entrevistas",
-                    "Título universitario, experiencia laboral y contactos"
+                    "«Tu marca es tu legado»",
+                    "«La marca personal es lo que la gente dice de ti cuando no estás en la habitación»",
+                    "«Primero construye, después comunica»",
+                    "«La autenticidad es la nueva moneda»"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Los tres pilares de la marca personal son: autoconocimiento (identificar fortalezas y diferenciadores), propuesta de valor (intersección entre habilidades, pasión y necesidad del mercado) y comunicación consistente."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué debe incluir la sección 'Acerca de' en LinkedIn según la lección?",
+                "question": "¿Qué error es común al hacer un elevator pitch?",
                 "options": [
-                    "Solo tu formación académica y títulos obtenidos",
-                    "Quién eres, qué te apasiona, qué valor aportas, logros relevantes y un llamado a la acción",
-                    "Una lista completa de todas tus experiencias laborales",
-                    "Tu información personal como edad, estado civil y hobbies"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La sección 'Acerca de' debe incluir quién eres, qué te apasiona, qué valor aportas, logros relevantes y un llamado a la acción, escrita en un tono profesional pero personal."
-            },
-            {
-                "question": "¿Qué es la vulnerabilidad estratégica en el contexto de la marca personal?",
-                "options": [
-                    "Mostrar debilidades para obtener lástima de los reclutadores",
-                    "Compartir aprendizajes de fracasos y admitir limitaciones como señal de madurez profesional",
-                    "Publicar información personal sensible en redes sociales",
-                    "Evitar cualquier tema difícil en tu comunicación profesional"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La vulnerabilidad estratégica implica compartir lo aprendido de fracasos y admitir lo que no sabes, generando más conexión y confianza que la proyección de una imagen de perfección."
-            },
-            {
-                "question": "Según la lección, ¿por qué es importante hacer una auditoría digital de tu presencia en línea?",
-                "options": [
-                    "Para eliminar todas tus redes sociales y empezar de cero",
-                    "Porque los reclutadores te buscan en Google antes de contactarte y los resultados deben representarte profesionalmente",
-                    "Para copiar los perfiles de profesionales exitosos",
-                    "Porque es un requisito legal en la mayoría de los países"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Los reclutadores buscan a los candidatos en Google antes de contactarlos, por lo que es fundamental que los resultados te representen como el profesional que quieres ser."
-            },
-            {
-                "question": "¿Cuál es la diferencia entre marca personal y ego según la lección?",
-                "options": [
-                    "No hay diferencia, ambos buscan la autopromoción",
-                    "La marca personal se centra en el valor que ofreces a otros; el ego en la autopromoción vacía",
-                    "El ego es más efectivo para conseguir empleo",
-                    "La marca personal es solo para redes sociales; el ego es para interacciones presenciales"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La marca personal auténtica se centra en el valor que ofreces a otros, mientras que alimentar el ego es autopromoción vacía. Las marcas más sólidas son de personas que comparten conocimiento y ayudan a otros."
-            },
-            {
-                "question": "En un elevator pitch, ¿qué error común se debe evitar?",
-                "options": [
-                    "Incluir datos específicos sobre tus logros",
+                    "Hacer contacto visual con el interlocutor",
                     "Adaptar el mensaje según la audiencia",
-                    "Sonar robótico por memorizar un guion rígido sin permitir que la conversación fluya",
-                    "Terminar con un llamado a la acción"
+                    "Usar jerga técnica que la audiencia no entiende",
+                    "Incluir una llamada a la acción"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Memorizar un guion rígido hace que el pitch suene artificial. Lo ideal es conocer los puntos clave pero permitir que la conversación fluya naturalmente."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué sugiere la lección sobre la coherencia entre la presencia digital y la presencial?",
+                "question": "La autenticidad profesional implica:",
                 "options": [
-                    "La presencia digital puede ser completamente diferente de la real",
-                    "Tu presencia online debe ser un reflejo fiel de quien eres en persona",
-                    "Solo importa la presencia digital, no la presencial",
-                    "Es mejor no tener presencia digital para evitar incongruencias"
+                    "Compartir todos los detalles de tu vida personal",
+                    "Imitar a los líderes más exitosos de tu industria",
+                    "Ser honesto sobre quién eres y actuar de forma coherente con tus valores",
+                    "Proyectar siempre una imagen perfecta sin mostrar vulnerabilidad"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La presencia online debe ser un reflejo fiel de quien eres en persona. La incongruencia entre la imagen digital y el comportamiento real daña la marca personal; la autenticidad es el activo más valioso."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué tipo de contenido sugiere la lección para construir presencia digital sin ser un experto?",
+                "question": "¿Cada cuánto tiempo se recomienda revisar y actualizar tu marca personal?",
                 "options": [
-                    "Solo contenido original de investigación académica",
-                    "Compartir artículos de tu industria con tus comentarios, reflexiones sobre lo que aprendes y resúmenes de conferencias",
-                    "Publicar únicamente logros y premios obtenidos",
-                    "Compartir contenido viral sin importar la temática"
+                    "Cada mes",
+                    "Cada seis meses",
+                    "Cada año",
+                    "Solo cuando busques empleo"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La lección sugiere compartir artículos relevantes con tus comentarios, escribir reflexiones sobre lo que aprendes y publicar resúmenes de conferencias como formas accesibles de generar contenido de valor."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección sobre storytelling personal, ¿qué necesita una buena historia personal para fortalecer tu marca?",
+                "question": "¿Cuál es la mejor estrategia para gestionar una crisis de reputación?",
                 "options": [
-                    "Ser lo más dramática y exagerada posible",
-                    "Ser genuina y relevante, no necesariamente dramática",
-                    "Incluir únicamente éxitos y logros profesionales",
-                    "Ser inventada para impresionar a los reclutadores"
+                    "Ignorar la situación hasta que pase",
+                    "Borrar todo el contenido relacionado",
+                    "Responder con transparencia, humildad y rapidez",
+                    "Culpar a otros y justificarse"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Una buena historia personal no necesita ser dramática; necesita ser genuina y relevante, articulando de dónde vienes, qué obstáculos has superado, qué te motiva y hacia dónde vas."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Por qué es recomendable que los estudiantes empiecen a construir su marca personal antes de entrar al mercado laboral?",
+                "question": "¿Qué es lo primero que debes hacer en una auditoría de tu presencia digital?",
                 "options": [
-                    "Porque las universidades exigen tener un perfil profesional activo",
-                    "Porque los reclutadores investigan candidatos en línea y una presencia profesional temprana da ventaja competitiva",
-                    "Porque es imposible construir una marca personal después de graduarse",
-                    "Porque las redes sociales solo permiten registrarse siendo estudiante"
+                    "Crear un blog profesional",
+                    "Buscar tu nombre completo en Google",
+                    "Cambiar todas tus contraseñas",
+                    "Eliminar todas tus redes sociales"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Los reclutadores investigan a los candidatos en línea antes de contactarlos, por lo que tener una presencia profesional sólida desde la universidad otorga una ventaja competitiva significativa."
+                "correctAnswer": 1
+            },
+            {
+                "question": "Para encontrar tu diferenciador profesional, debes reflexionar sobre:",
+                "options": [
+                    "Los salarios promedio de tu industria",
+                    "La combinación única de tus experiencias, habilidades e intereses",
+                    "Las tendencias más populares en redes sociales",
+                    "Los títulos académicos más demandados"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué tipo de titular de LinkedIn es más efectivo para un estudiante?",
+                "options": [
+                    "«Estudiante de Administración»",
+                    "«Buscando empleo»",
+                    "«Estudiante de Administración | Apasionado por marketing digital | Investigador en comportamiento del consumidor»",
+                    "«Futuro CEO»"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "Según Warren Buffett, ¿cuánto tiempo puede tomar destruir una reputación?",
+                "options": [
+                    "5 minutos",
+                    "5 días",
+                    "5 meses",
+                    "5 años"
+                ],
+                "correctAnswer": 0
             }
         ]
     },
-
     "Networking Profesional": {
+        "emoji": "🔗",
+        "level": "beginner",
+        "duration": "25min",
         "lessons": [
             {
-                "title": "Construyendo Conexiones Genuinas",
-                "content": """<h3>Construyendo Conexiones Genuinas</h3>
-<p>El networking profesional es mucho más que repartir tarjetas de presentación o acumular contactos en LinkedIn. Es el arte de construir relaciones profesionales auténticas basadas en la confianza, el respeto mutuo y el valor compartido. Las investigaciones demuestran que entre el 60% y el 80% de las oportunidades laborales se obtienen a través de contactos personales, no de postulaciones formales.</p>
+                "title": "Conexiones Genuinas: La Base del Networking",
+                "content": """<h3>Conexiones Genuinas: La Base del Networking</h3>
+<p>El networking profesional es mucho más que repartir tarjetas de presentación en un evento. Es el arte de <strong>construir relaciones genuinas y mutuamente beneficiosas</strong> que enriquecen tu carrera y la de otros. Las investigaciones muestran que hasta el 85% de los empleos se llenan a través de conexiones personales, lo que convierte al networking en una de las habilidades más importantes para tu desarrollo profesional.</p>
 
-<h4>Networking transaccional vs. networking relacional</h4>
+<h4>Networking transaccional vs. relacional</h4>
 <p>Existe una diferencia fundamental entre dos enfoques de networking:</p>
 <ul>
-<li><strong>Networking transaccional:</strong> Se acerca a otros solo cuando necesita algo. Es oportunista, superficial y genera desconfianza. "¿Qué puedes hacer por mí?"</li>
-<li><strong>Networking relacional:</strong> Construye conexiones genuinas a lo largo del tiempo, se interesa por los demás sin esperar retorno inmediato. "¿Cómo puedo aportar valor a tu vida profesional?"</li>
+<li><strong>Networking transaccional:</strong> se basa en «¿qué puedes hacer por mí?». Es superficial, interesado y genera incomodidad en ambas partes. Las personas detectan rápidamente cuando alguien se acerca solo porque quiere algo.</li>
+<li><strong>Networking relacional:</strong> se basa en «¿cómo podemos ayudarnos mutuamente?». Prioriza la <em>construcción de confianza</em>, el interés genuino y el largo plazo. Las oportunidades surgen como consecuencia natural de relaciones sólidas.</li>
 </ul>
-<p>El networking relacional es exponencialmente más efectivo a largo plazo porque genera reciprocidad natural y recomendaciones espontáneas.</p>
 
-<h4>La regla del dar primero</h4>
-<p>Adam Grant, profesor de Wharton y autor de <em>Give and Take</em>, demostró que los profesionales más exitosos son los "dadores" (givers): personas que aportan valor a su red sin llevar la cuenta. Compartir un artículo relevante, presentar a dos personas que podrían beneficiarse mutuamente, o felicitar un logro de forma genuina son pequeños actos que construyen relaciones sólidas.</p>
+<blockquote>«Tu red de contactos es tu patrimonio neto profesional.» — Porter Gale. Pero solo si esas conexiones son auténticas.</blockquote>
 
-<h4>Superando la barrera de la timidez</h4>
-<p>Muchas personas evitan el networking porque les resulta incómodo o artificial. Algunos consejos para superar esta barrera:</p>
+<h4>El principio de la reciprocidad</h4>
+<p>El networking efectivo se basa en el principio de <strong>dar antes de pedir</strong>. Cuando ayudas a alguien sin esperar nada a cambio — compartes un artículo relevante, haces una presentación o das retroalimentación — creas un vínculo de confianza que, con el tiempo, genera oportunidades para ambos. Adam Grant, en su libro <em>Give and Take</em>, demuestra que los profesionales más exitosos son «givers» — personas generosas que invierten en los demás.</p>
+
+<h4>Superando el miedo al networking</h4>
+<p>Es normal sentir ansiedad al acercarte a desconocidos en un evento profesional. Para superar este miedo:</p>
 <ul>
-<li>Recuerda que la mayoría de las personas en eventos de networking también se sienten incómodas.</li>
-<li>Enfócate en la curiosidad genuina por los demás, no en "venderte".</li>
-<li>Prepara dos o tres preguntas abiertas que puedas hacer a cualquier persona.</li>
-<li>Establece metas modestas: conocer a dos o tres personas significativas es mejor que intercambiar tarjetas con veinte.</li>
+<li>Recuerda que la mayoría de las personas también se sienten incómodas.</li>
+<li>Prepara dos o tres preguntas abiertas que puedas usar para iniciar conversaciones.</li>
+<li>Enfócate en escuchar genuinamente en lugar de pensar en qué vas a decir después.</li>
+<li>Comienza con eventos pequeños y ve aumentando gradualmente el tamaño.</li>
 </ul>
 
-<blockquote>El networking no se trata de usar a las personas; se trata de construir una comunidad profesional donde todos se benefician mutuamente. Las mejores oportunidades surgen de relaciones que cultivas sin esperar nada a cambio.</blockquote>
-
-<h4>Tu red actual como punto de partida</h4>
-<p>No necesitas empezar desde cero. Tu red de networking ya existe: compañeros de clase, profesores, familiares, amigos de amigos, excompañeros de trabajo, personas que conociste en actividades extracurriculares. Comienza por fortalecer estas relaciones existentes antes de buscar contactos completamente nuevos.</p>""",
-                "estimatedMinutes": 5
+<h4>Networking para introvertidos</h4>
+<p>Ser introvertido no es una desventaja para el networking. De hecho, los introvertidos suelen ser excelentes escuchadores y construyen relaciones más profundas. La clave está en adaptar tu estrategia: preferir conversaciones uno a uno, elegir eventos más íntimos y usar plataformas digitales como LinkedIn para iniciar contactos.</p>"""
             },
             {
-                "title": "Eventos de Networking: Antes, Durante y Después",
-                "content": """<h3>Eventos de Networking: Antes, Durante y Después</h3>
-<p>Los eventos de networking, ya sean conferencias, seminarios, ferias de empleo, meetups o eventos sociales profesionales, son oportunidades concentradas para expandir tu red de contactos. Sin embargo, la diferencia entre un evento productivo y uno desperdiciado está en la preparación y el seguimiento.</p>
+                "title": "Eventos de Networking y Primeras Impresiones",
+                "content": """<h3>Eventos de Networking y Primeras Impresiones</h3>
+<p>Los eventos profesionales — conferencias, ferias de empleo, meetups, talleres — son escenarios ideales para expandir tu red de contactos. Sin embargo, asistir sin una estrategia clara es como ir de pesca sin carnada: puedes pasar horas sin resultados. La preparación y la ejecución marcan la diferencia entre un evento productivo y una pérdida de tiempo.</p>
 
 <h4>Antes del evento: preparación estratégica</h4>
 <ul>
-<li><strong>Investiga:</strong> Revisa la lista de asistentes, ponentes y empresas participantes. Identifica a las personas que más te interesa conocer.</li>
-<li><strong>Define objetivos claros:</strong> ¿Buscas aprender sobre una industria? ¿Conocer potenciales mentores? ¿Explorar oportunidades laborales? Tener claridad te ayudará a priorizar.</li>
-<li><strong>Prepara tu elevator pitch:</strong> Ten lista una versión concisa de quién eres y qué buscas, adaptada al contexto del evento.</li>
-<li><strong>Lleva tarjetas de presentación:</strong> Aunque parezca anticuado, sigue siendo útil. Asegúrate de que incluyan tu nombre, contacto y un enlace a tu perfil de LinkedIn o portafolio.</li>
+<li><strong>Investiga a los asistentes:</strong> revisa la lista de ponentes y participantes. Identifica a las personas con quienes te gustaría conectar y aprende sobre su trabajo.</li>
+<li><strong>Define tus objetivos:</strong> ¿quieres conocer reclutadores, encontrar mentores, descubrir oportunidades o aprender sobre una industria? Un objetivo claro guía tus acciones.</li>
+<li><strong>Prepara tu elevator pitch:</strong> ten lista una presentación breve y adaptable a diferentes interlocutores.</li>
+<li><strong>Lleva tarjetas de presentación:</strong> aunque vivimos en la era digital, una tarjeta bien diseñada sigue siendo un gesto profesional valorado.</li>
 </ul>
 
-<h4>Durante el evento: técnicas efectivas</h4>
-<p>Llegar temprano tiene una ventaja táctica: hay menos personas y es más fácil iniciar conversaciones. Las primeras personas en llegar suelen ser las más interesadas en hacer networking.</p>
+<h4>Durante el evento: el arte de la conversación</h4>
+<p>La primera impresión se forma en los primeros <strong>7 segundos</strong> de interacción. Para causar una impresión positiva:</p>
 <ul>
-<li><strong>La técnica del grupo de tres:</strong> Los grupos de dos personas están en conversación privada; los de cuatro o más son difíciles de penetrar. Los grupos de tres suelen ser los más accesibles para unirse.</li>
-<li><strong>Preguntas poderosas:</strong> "¿Qué te trajo al evento?" y "¿En qué estás trabajando actualmente?" son mejores que "¿A qué te dedicas?"</li>
-<li><strong>Escucha activa:</strong> Las personas recuerdan a quienes las escucharon con atención, no a quienes hablaron más.</li>
-<li><strong>Toma notas:</strong> Después de cada conversación significativa, anota detalles clave en tu teléfono: nombre, tema de conversación, algo personal que compartieron.</li>
+<li>Sonríe genuinamente y haz contacto visual.</li>
+<li>Da un apretón de manos firme (ni aplastante ni débil).</li>
+<li>Preséntate con claridad: nombre, rol y una frase que genere interés.</li>
+<li>Haz preguntas abiertas que demuestren curiosidad: «¿Qué te trajo a este evento?» o «¿En qué proyecto estás trabajando actualmente?».</li>
+<li>Practica la <em>escucha activa</em>: asiente, reformula y profundiza en lo que la otra persona comparte.</li>
 </ul>
 
-<blockquote>El networking en eventos no se mide por la cantidad de tarjetas recolectadas, sino por la calidad de las conversaciones sostenidas. Una sola conexión profunda vale más que cincuenta intercambios superficiales.</blockquote>
+<blockquote>«A la gente no le importa cuánto sabes hasta que sabe cuánto te importa.» — Theodore Roosevelt. Esta frase resume la esencia del networking efectivo.</blockquote>
 
-<h4>Salir con elegancia</h4>
-<p>Saber cerrar una conversación es tan importante como saber iniciarla. Frases como <em>"Ha sido un placer conversar contigo, me encantaría seguir en contacto"</em> o <em>"Voy a saludar a alguien más, pero conectemos por LinkedIn"</em> son formas elegantes y respetuosas de transicionar.</p>
+<h4>Después del evento: el seguimiento</h4>
+<p>El momento más importante del networking ocurre <em>después</em> del evento. Sin seguimiento, las conexiones que hiciste se desvanecerán en cuestión de días. En la siguiente lección profundizaremos en las estrategias de seguimiento, pero recuerda: el follow-up convierte un encuentro casual en una relación profesional.</p>
 
-<h4>La zona de comodidad y los eventos virtuales</h4>
-<p>Los eventos virtuales han democratizado el networking, eliminando barreras geográficas. Participar activamente en el chat, hacer preguntas durante las sesiones y utilizar las salas de networking virtual son estrategias efectivas para conectar en formato digital.</p>""",
-                "estimatedMinutes": 5
+<h4>Tipos de eventos para estudiantes</h4>
+<p>No esperes a graduarte para asistir a eventos. Conferencias académicas, hackatones, ferias de empleo universitarias, meetups de tecnología, charlas de alumni y eventos de organizaciones estudiantiles son oportunidades accesibles y valiosas para comenzar a construir tu red.</p>"""
             },
             {
                 "title": "El Arte del Seguimiento (Follow-up)",
                 "content": """<h3>El Arte del Seguimiento (Follow-up)</h3>
-<p>El seguimiento después de un primer contacto es donde la magia del networking realmente ocurre, y paradójicamente, es donde la mayoría de las personas fallan. Conocer a alguien interesante y no hacer seguimiento es como plantar una semilla y nunca regarla. El follow-up transforma un encuentro casual en una relación profesional duradera.</p>
+<p>El seguimiento es donde la mayoría de las personas fallan en el networking. Según estudios, menos del <strong>20% de los profesionales hace follow-up</strong> después de un evento. Esto significa que, si tú lo haces de forma efectiva, inmediatamente te destacarás del 80% restante. El seguimiento es lo que transforma un encuentro casual en una relación profesional duradera.</p>
 
 <h4>La regla de las 48 horas</h4>
-<p>El momento ideal para hacer seguimiento es dentro de las 48 horas posteriores al encuentro. Después de ese tiempo, el recuerdo se difumina y el impacto del contacto inicial se pierde. Un mensaje oportuno demuestra profesionalismo y genuino interés.</p>
+<p>El seguimiento debe hacerse dentro de las <strong>48 horas posteriores al primer contacto</strong>. Después de ese período, la memoria del encuentro se debilita y el impacto del mensaje disminuye significativamente. No esperes a «encontrar el momento perfecto»; un mensaje oportuno siempre será mejor que uno perfecto pero tardío.</p>
 
-<h4>Cómo escribir un mensaje de seguimiento efectivo</h4>
-<p>Un buen mensaje de follow-up tiene cuatro elementos:</p>
+<h4>Cómo hacer un follow-up efectivo</h4>
+<p>Un buen mensaje de seguimiento debe incluir:</p>
 <ul>
-<li><strong>Referencia al encuentro:</strong> Menciona dónde se conocieron y algo específico de la conversación para refrescar su memoria.</li>
-<li><strong>Valor agregado:</strong> Incluye algo útil: un artículo que mencionaron, una referencia a un contacto que podría interesarles, o un recurso relacionado con lo que conversaron.</li>
-<li><strong>Brevedad:</strong> Respeta el tiempo de la otra persona. Tres o cuatro oraciones son suficientes para un primer seguimiento.</li>
-<li><strong>Propuesta concreta:</strong> Si deseas continuar la conversación, sugiere una acción específica: "¿Te gustaría tomar un café la próxima semana?" es mejor que "Deberíamos juntarnos algún día".</li>
+<li><strong>Referencia al encuentro:</strong> menciona dónde se conocieron y algún detalle de la conversación. Esto demuestra que prestaste atención.</li>
+<li><strong>Agradecimiento:</strong> agradece su tiempo y lo que compartieron contigo.</li>
+<li><strong>Valor:</strong> ofrece algo útil — un artículo que les interese, un contacto relevante o una idea que complement su proyecto.</li>
+<li><strong>Siguiente paso:</strong> propón una acción concreta: un café virtual, una videollamada de 15 minutos o simplemente mantenerse en contacto.</li>
 </ul>
 
 <h4>Ejemplo de mensaje de seguimiento</h4>
-<p><em>"Hola Carlos, fue un gusto conocerte en la charla de innovación del martes. Me quedé pensando en lo que mencionaste sobre inteligencia artificial aplicada a salud. Encontré este artículo de MIT Technology Review que creo te podría interesar [enlace]. ¿Te gustaría tomar un café el jueves o viernes para seguir conversando? Saludos, Ana."</em></p>
+<p><em>«Hola Carlos, fue un placer conocerte ayer en la conferencia de innovación. Disfruté mucho nuestra conversación sobre inteligencia artificial aplicada a la salud. Me tomé la libertad de buscarte un artículo que publicó el MIT la semana pasada sobre exactamente el tema que discutimos — creo que te resultará muy útil. ¿Te gustaría tomar un café virtual la próxima semana para seguir conversando? Un saludo, María.»</em></p>
 
-<blockquote>El seguimiento no es insistencia; es demostrar que la conexión te importó lo suficiente como para invertir tiempo en cultivarla. La mayoría de las relaciones profesionales valiosas nacen de un seguimiento bien ejecutado.</blockquote>
+<blockquote>«La fortuna está en el seguimiento. La diferencia entre una persona exitosa y una promedio es que la exitosa hace una llamada más, envía un mensaje más, da un paso más.»</blockquote>
 
 <h4>Canales de seguimiento</h4>
 <ul>
-<li><strong>LinkedIn:</strong> El canal más profesional y apropiado para la mayoría de los contextos. Personaliza siempre la solicitud de conexión.</li>
-<li><strong>Email:</strong> Ideal para seguimientos más formales o cuando quieres compartir material extenso.</li>
-<li><strong>WhatsApp:</strong> Solo si la otra persona lo sugirió o si el contexto cultural lo hace apropiado.</li>
+<li><strong>LinkedIn:</strong> ideal para conexiones profesionales. Personaliza siempre la solicitud de conexión.</li>
+<li><strong>Email:</strong> más formal y apropiado para contactos de alto nivel o cuando necesitas compartir documentos.</li>
+<li><strong>WhatsApp:</strong> en América Latina, es aceptable para contactos con quienes ya estableciste cierta confianza.</li>
 </ul>
 
-<h4>Cuando no recibes respuesta</h4>
-<p>No te desanimes si alguien no responde a tu primer mensaje. Las personas están ocupadas. Un segundo mensaje cortés después de una o dos semanas es perfectamente aceptable. Si no hay respuesta después de dos intentos, respeta el silencio y sigue adelante. No todos los contactos se convertirán en relaciones, y eso está bien.</p>""",
-                "estimatedMinutes": 5
+<h4>Lo que NO debes hacer</h4>
+<p>Evita enviar mensajes genéricos de copiar y pegar, pedir favores en el primer mensaje de seguimiento, agregar personas a grupos sin su consentimiento o enviar mensajes excesivamente largos. La brevedad, la personalización y el respeto por el tiempo del otro son fundamentales.</p>"""
             },
             {
-                "title": "Creación de Valor Mutuo",
-                "content": """<h3>Creación de Valor Mutuo</h3>
-<p>La esencia del networking profesional sostenible es la creación de valor mutuo. Las relaciones profesionales más fuertes y duraderas son aquellas donde ambas partes sienten que ganan algo: conocimiento, oportunidades, apoyo, perspectivas diferentes o simplemente una conexión humana significativa.</p>
+                "title": "Generando Valor Mutuo",
+                "content": """<h3>Generando Valor Mutuo</h3>
+<p>El networking más poderoso no se basa en lo que puedes obtener, sino en lo que puedes <strong>ofrecer</strong>. Cuando te enfocas en crear valor para los demás, construyes una reputación de generosidad que atrae oportunidades de forma natural. Este enfoque, conocido como <em>networking generativo</em>, transforma las relaciones profesionales de intercambios transaccionales a alianzas genuinas.</p>
 
-<h4>La mentalidad de abundancia</h4>
-<p>Las personas con mentalidad de escasez ven el networking como una competencia: si tú ganas, yo pierdo. Las personas con mentalidad de abundancia entienden que el éxito profesional no es un juego de suma cero. Cuando ayudas a alguien de tu red a conseguir una oportunidad, no pierdes nada; al contrario, fortaleces la relación y generas reciprocidad.</p>
-
-<h4>Formas concretas de aportar valor</h4>
+<h4>¿Qué valor puedes ofrecer como estudiante?</h4>
+<p>Muchos estudiantes piensan que no tienen nada que ofrecer a profesionales con más experiencia. Esto es completamente falso. Como estudiante, puedes aportar:</p>
 <ul>
-<li><strong>Conectar personas:</strong> Si conoces a dos personas que podrían beneficiarse mutuamente, preséntalas. Ser un conector de tu red es una de las formas más poderosas de generar valor.</li>
-<li><strong>Compartir conocimiento:</strong> Enviar artículos relevantes, recomendar libros, compartir herramientas o recursos útiles con personas de tu red.</li>
-<li><strong>Dar retroalimentación:</strong> Ofrecer opiniones honestas y constructivas cuando alguien te pide consejo sobre un proyecto, una presentación o una decisión de carrera.</li>
-<li><strong>Reconocer y celebrar:</strong> Felicitar logros, recomendar públicamente a personas talentosas y reconocer el trabajo de otros en tu industria.</li>
-<li><strong>Ofrecer tu tiempo y habilidades:</strong> Ayudar con una revisión de currículum, practicar una entrevista simulada o colaborar en un proyecto sin esperar compensación inmediata.</li>
+<li><strong>Perspectiva fresca:</strong> tu mirada actualizada sobre tendencias, tecnologías y metodologías es valiosa para profesionales que llevan años en la industria.</li>
+<li><strong>Conocimiento actualizado:</strong> las teorías y herramientas que aprendes en clase pueden ser nuevas para profesionales que se graduaron hace años.</li>
+<li><strong>Energía y disponibilidad:</strong> tu disposición para colaborar en proyectos, investigaciones o eventos es un recurso valioso.</li>
+<li><strong>Red universitaria:</strong> conoces profesores, investigadores y compañeros talentosos que pueden ser contactos valiosos para otros.</li>
+<li><strong>Habilidades digitales:</strong> tu dominio de herramientas tecnológicas y redes sociales puede ayudar a profesionales menos familiarizados con el mundo digital.</li>
 </ul>
 
-<h4>El concepto de capital social</h4>
-<p>El sociólogo Pierre Bourdieu definió el <em>capital social</em> como el conjunto de recursos disponibles a través de las relaciones sociales. Tu capital social aumenta cuando inviertes en tu red de manera consistente y generosa. A diferencia del dinero, el capital social crece cuanto más lo compartes.</p>
+<h4>Ser un conector</h4>
+<p>Una de las formas más poderosas de generar valor es ser un <strong>conector</strong> — la persona que presenta a dos contactos que pueden beneficiarse mutuamente. Malcolm Gladwell, en su libro <em>The Tipping Point</em>, llama a estas personas «conectores» y argumenta que son fundamentales en la difusión de ideas y oportunidades.</p>
 
-<blockquote>El mejor networker no es quien más contactos tiene, sino quien más valor crea para su red. La generosidad profesional estratégica es la inversión con mayor retorno en cualquier carrera.</blockquote>
+<blockquote>«El secreto del networking no es llegar a la persona más importante de la sala, sino convertirte en la persona más útil de la sala.»</blockquote>
 
-<h4>Reciprocidad diferida</h4>
-<p>El valor que aportas a tu red no necesariamente regresa de la misma persona ni en el mismo momento. La reciprocidad en el networking es difusa y diferida: ayudas a A, quien ayuda a B, quien eventualmente te ayuda a ti. Confiar en este proceso requiere paciencia y fe en el poder de las relaciones genuinas.</p>
+<h4>El sistema de gestión de contactos</h4>
+<p>Para generar valor de forma consistente, necesitas un sistema para gestionar tus relaciones:</p>
+<ul>
+<li>Mantén una base de datos simple con nombres, contexto del encuentro, intereses y necesidades.</li>
+<li>Programa recordatorios para hacer check-ins periódicos con contactos importantes.</li>
+<li>Cuando encuentres un artículo, evento u oportunidad relevante, compártelo con el contacto adecuado.</li>
+<li>Celebra los logros de tu red: un ascenso, una publicación o un cumpleaños son oportunidades para reconectar.</li>
+</ul>
 
-<h4>Networking como servicio</h4>
-<p>Reencuadra el networking como un acto de servicio. En lugar de preguntarte "¿Qué puedo obtener de esta persona?", pregúntate "¿Cómo puedo ser útil para esta persona?". Este cambio de perspectiva no solo hace que el networking sea más agradable sino también más efectivo.</p>""",
-                "estimatedMinutes": 5
+<h4>Mentoría inversa</h4>
+<p>La mentoría inversa es una tendencia donde los jóvenes profesionales orientan a ejecutivos senior en temas como tecnología, redes sociales y tendencias culturales. Si encuentras un profesional experimentado dispuesto a esta dinámica, ambos se beneficiarán enormemente del intercambio de conocimientos.</p>"""
             },
             {
-                "title": "Mantenimiento de Relaciones Profesionales",
-                "content": """<h3>Mantenimiento de Relaciones Profesionales</h3>
-<p>Construir relaciones profesionales es importante, pero mantenerlas es crucial. Una red de contactos que no cultivas es como un jardín que no riegas: eventualmente se marchita. El mantenimiento de relaciones requiere intencionalidad, consistencia y un sistema que te ayude a no perder el contacto con las personas que importan.</p>
+                "title": "Manteniendo Relaciones a Largo Plazo",
+                "content": """<h3>Manteniendo Relaciones a Largo Plazo</h3>
+<p>Las relaciones profesionales más valiosas son las que se cultivan durante años. El networking no termina cuando agregas a alguien en LinkedIn; apenas comienza. Mantener relaciones a largo plazo requiere <strong>intencionalidad, constancia y autenticidad</strong>, pero los resultados — en términos de oportunidades, apoyo y crecimiento — son extraordinarios.</p>
 
-<h4>El sistema de círculos concéntricos</h4>
-<p>No todas las relaciones profesionales requieren la misma atención. Organiza tus contactos en círculos:</p>
+<h4>La regla de los toques periódicos</h4>
+<p>Para mantener viva una relación profesional, necesitas interactuar con tus contactos de forma regular. No se trata de enviar mensajes todos los días, sino de crear <em>puntos de contacto significativos</em>:</p>
 <ul>
-<li><strong>Círculo interno (15-20 personas):</strong> Mentores, colaboradores clave, amigos profesionales cercanos. Contacto al menos mensual.</li>
-<li><strong>Círculo medio (50-100 personas):</strong> Colegas, excompañeros, contactos de industria relevantes. Contacto trimestral.</li>
-<li><strong>Círculo externo (150-300 personas):</strong> Conocidos profesionales, contactos de eventos, conexiones de LinkedIn. Contacto semestral o anual.</li>
-</ul>
-<p>Este modelo se basa en el número de Dunbar, que sugiere que podemos mantener aproximadamente 150 relaciones sociales significativas simultáneamente.</p>
-
-<h4>Puntos de contacto naturales</h4>
-<p>Mantener relaciones no requiere esfuerzos artificiales. Aprovecha los momentos naturales para reconectar:</p>
-<ul>
-<li>Un artículo que te recordó una conversación pasada con esa persona.</li>
-<li>Un cambio de trabajo o ascenso que publicaron en LinkedIn.</li>
-<li>Su cumpleaños o un aniversario profesional.</li>
-<li>Un evento o conferencia de interés mutuo.</li>
-<li>El inicio de un nuevo año o trimestre como excusa para un café virtual.</li>
+<li><strong>Contactos clave (mentores, aliados cercanos):</strong> interactúa al menos una vez al mes.</li>
+<li><strong>Contactos importantes (colegas, excompañeros):</strong> cada 2-3 meses es suficiente.</li>
+<li><strong>Contactos amplios (conocidos de eventos):</strong> 1-2 veces al año para mantener el vínculo.</li>
 </ul>
 
-<h4>La herramienta CRM personal</h4>
-<p>Los profesionales con redes grandes utilizan sistemas para gestionar sus contactos. No necesitas software sofisticado; una hoja de cálculo con nombres, fechas del último contacto, temas de interés y recordatorios puede ser suficiente. Aplicaciones como <em>Notion</em>, <em>Airtable</em> o incluso un calendario con recordatorios recurrentes pueden ayudarte a sistematizar el mantenimiento de tu red.</p>
+<h4>Formas de mantener el contacto</h4>
+<p>Mantener relaciones no significa siempre tener una razón «oficial» para escribir. Algunos gestos simples pero efectivos incluyen:</p>
+<ul>
+<li>Felicitar por un logro profesional que viste en LinkedIn.</li>
+<li>Compartir un artículo o recurso que les resulte útil.</li>
+<li>Invitar a un evento o webinar relevante para su campo.</li>
+<li>Preguntar genuinamente cómo están y cómo van sus proyectos.</li>
+<li>Recomendar sus servicios o productos a alguien que los necesite.</li>
+</ul>
 
-<blockquote>Las relaciones profesionales son como cuentas bancarias emocionales. Cada interacción positiva es un depósito; cada solicitud sin previo cultivo de la relación es un retiro. Mantén tu balance siempre positivo.</blockquote>
+<blockquote>«Las relaciones son como los jardines: si no las riegas regularmente, se marchitan. Pero si las cuidas con constancia, dan frutos durante años.»</blockquote>
 
-<h4>Networking intergeneracional</h4>
-<p>No limites tu red a personas de tu misma edad o nivel profesional. Las relaciones con personas mayores te aportan experiencia y perspectiva; las relaciones con personas más jóvenes te mantienen actualizado y te permiten ser mentor. La diversidad generacional enriquece cualquier red profesional.</p>
+<h4>Construyendo tu «consejo personal»</h4>
+<p>Los profesionales más exitosos tienen un grupo informal de <strong>consejeros y aliados</strong> — personas de diferentes campos y niveles que les ofrecen perspectivas, consejos y apoyo. Tu consejo personal podría incluir un mentor en tu industria, un par que trabaje en un campo diferente, un amigo emprendedor y un profesor de confianza. Cultiva estas relaciones con especial cuidado.</p>
 
-<h4>Cuando las relaciones se enfrían</h4>
-<p>Es natural que algunas relaciones profesionales pierdan relevancia con el tiempo. No te sientas culpable por dejar ir conexiones que ya no aportan valor mutuo. Concentra tu energía en las relaciones que siguen siendo significativas y en cultivar nuevas conexiones alineadas con tu dirección profesional actual.</p>""",
-                "estimatedMinutes": 5
+<h4>Networking en la era del trabajo remoto</h4>
+<p>El auge del trabajo remoto ha transformado el networking. Las videollamadas, los cafés virtuales, los webinars y las comunidades en línea se han convertido en herramientas fundamentales. La distancia física ya no es un obstáculo: puedes construir relaciones significativas con profesionales de cualquier parte del mundo. Plataformas como Slack, Discord y Clubhouse ofrecen espacios para conectar con comunidades profesionales globales.</p>
+
+<h4>La red como ecosistema</h4>
+<p>Piensa en tu red de contactos como un <em>ecosistema vivo</em>. Necesita diversidad — personas de diferentes industrias, niveles de experiencia y perspectivas culturales. Una red homogénea te limita; una red diversa te expone a ideas, oportunidades y formas de pensar que enriquecen tu carrera de maneras inesperadas.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "Según las investigaciones mencionadas, ¿qué porcentaje de oportunidades laborales se obtienen a través de contactos personales?",
+                "question": "¿Qué porcentaje de empleos se llena a través de conexiones personales, según las investigaciones?",
                 "options": [
-                    "Entre 20% y 40%",
-                    "Entre 40% y 60%",
-                    "Entre 60% y 80%",
-                    "Más del 90%"
+                    "45%",
+                    "65%",
+                    "85%",
+                    "95%"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Las investigaciones demuestran que entre el 60% y el 80% de las oportunidades laborales se obtienen a través de contactos personales, no de postulaciones formales."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál es la regla temporal recomendada para hacer seguimiento después de un primer contacto?",
+                "question": "¿Cuál es la diferencia principal entre networking transaccional y relacional?",
                 "options": [
-                    "Dentro de las primeras 24 horas",
-                    "Dentro de las primeras 48 horas",
-                    "Dentro de la primera semana",
-                    "Dentro del primer mes"
+                    "El transaccional es más efectivo a largo plazo",
+                    "El relacional prioriza la confianza y el beneficio mutuo",
+                    "El transaccional solo se hace en línea",
+                    "El relacional solo funciona entre personas del mismo campo"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Se recomienda hacer seguimiento dentro de las 48 horas posteriores al encuentro, ya que después de ese tiempo el recuerdo se difumina y se pierde el impacto del contacto inicial."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿qué técnica de entrada a grupos es más efectiva en eventos de networking?",
+                "question": "Según Adam Grant, los profesionales más exitosos son:",
                 "options": [
-                    "Acercarse a personas que están solas",
-                    "Unirse a grupos grandes de más de cinco personas",
-                    "Acercarse a grupos de tres personas",
-                    "Esperar a que alguien se acerque a ti"
+                    "«Takers» que saben pedir lo que necesitan",
+                    "«Matchers» que equilibran dar y recibir",
+                    "«Givers» que invierten generosamente en los demás",
+                    "«Networkers» que acumulan la mayor cantidad de contactos"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La técnica del grupo de tres es la más efectiva: los grupos de dos están en conversación privada y los de cuatro o más son difíciles de penetrar, pero los de tres son los más accesibles."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuántas personas comprende aproximadamente el círculo interno de contactos profesionales?",
+                "question": "¿En cuántos segundos se forma la primera impresión durante una interacción?",
                 "options": [
-                    "5-10 personas",
-                    "15-20 personas",
-                    "50-100 personas",
-                    "150-300 personas"
+                    "3 segundos",
+                    "7 segundos",
+                    "15 segundos",
+                    "30 segundos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El círculo interno comprende 15-20 personas (mentores, colaboradores clave, amigos profesionales cercanos) con quienes se mantiene contacto al menos mensual."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es el capital social según Pierre Bourdieu?",
+                "question": "¿Dentro de cuántas horas se recomienda hacer follow-up después de un evento?",
                 "options": [
-                    "El dinero invertido en eventos de networking",
-                    "El conjunto de recursos disponibles a través de las relaciones sociales",
-                    "La cantidad de seguidores en redes sociales",
-                    "El presupuesto de una empresa para actividades sociales"
+                    "12 horas",
+                    "24 horas",
+                    "48 horas",
+                    "72 horas"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Pierre Bourdieu definió el capital social como el conjunto de recursos disponibles a través de las relaciones sociales, que crece cuanto más se comparte."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál es la diferencia entre networking transaccional y networking relacional?",
+                "question": "¿Qué porcentaje de profesionales hace follow-up después de un evento de networking?",
                 "options": [
-                    "El transaccional es presencial y el relacional es digital",
-                    "El transaccional se acerca a otros solo cuando necesita algo; el relacional construye conexiones genuinas a lo largo del tiempo",
-                    "El relacional es para empleados y el transaccional para emprendedores",
-                    "No existe diferencia, son sinónimos"
+                    "Menos del 10%",
+                    "Menos del 20%",
+                    "Menos del 40%",
+                    "Menos del 60%"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El networking transaccional es oportunista y superficial, se acerca a otros solo cuando necesita algo. El relacional construye conexiones genuinas a lo largo del tiempo, generando reciprocidad natural."
+                "correctAnswer": 1
             },
             {
-                "question": "Según Adam Grant, ¿qué tipo de profesionales son los más exitosos en networking?",
+                "question": "¿Cuál de estas acciones NO es apropiada en un mensaje de seguimiento?",
                 "options": [
-                    "Los 'tomadores' (takers) que maximizan lo que reciben",
-                    "Los 'equilibradores' (matchers) que dan solo si reciben",
-                    "Los 'dadores' (givers) que aportan valor sin llevar la cuenta",
-                    "Los 'competidores' que buscan ser los más conectados"
+                    "Mencionar un detalle de la conversación que tuvieron",
+                    "Ofrecer un artículo relevante como valor",
+                    "Pedir un favor importante en el primer mensaje",
+                    "Proponer un café virtual para seguir conversando"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Adam Grant demostró en 'Give and Take' que los profesionales más exitosos son los 'dadores' (givers), personas que aportan valor a su red sin llevar la cuenta."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué debe incluir un buen mensaje de seguimiento (follow-up) después de un evento de networking?",
+                "question": "Malcolm Gladwell llama 'conectores' a las personas que:",
                 "options": [
-                    "Solo tu currículum adjunto y una solicitud de empleo",
-                    "Una referencia al encuentro, valor agregado, brevedad y una propuesta concreta",
-                    "Un mensaje genérico copiado y pegado para todos los contactos",
-                    "Una descripción detallada de tu historial profesional completo"
+                    "Tienen más de 10,000 contactos en LinkedIn",
+                    "Presentan a dos contactos que pueden beneficiarse mutuamente",
+                    "Trabajan en departamentos de recursos humanos",
+                    "Organizan eventos de networking profesional"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Un buen follow-up incluye: referencia al encuentro, valor agregado (artículo, contacto útil), brevedad (3-4 oraciones) y una propuesta concreta de acción."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuántas personas comprende el círculo medio de contactos profesionales y con qué frecuencia se recomienda contactarlas?",
+                "question": "¿Qué es la mentoría inversa?",
                 "options": [
-                    "5-10 personas, contacto semanal",
-                    "50-100 personas, contacto trimestral",
-                    "150-300 personas, contacto anual",
-                    "200-500 personas, contacto diario"
+                    "Cuando un mentor decide terminar la relación",
+                    "Cuando un joven orienta a un ejecutivo senior en temas actuales",
+                    "Cuando dos personas del mismo nivel se aconsejan mutuamente",
+                    "Cuando un mentor da retroalimentación negativa"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El círculo medio comprende 50-100 personas (colegas, excompañeros, contactos de industria relevantes) con quienes se recomienda mantener contacto trimestral."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es la reciprocidad diferida en el contexto del networking?",
+                "question": "¿Con qué frecuencia se recomienda interactuar con contactos clave como mentores?",
                 "options": [
-                    "Exigir que te devuelvan un favor inmediatamente",
-                    "El valor que aportas a tu red no regresa necesariamente de la misma persona ni en el mismo momento",
-                    "Llevar un registro contable de todos los favores dados y recibidos",
-                    "Solo ayudar a personas que pueden ayudarte directamente"
+                    "Cada semana",
+                    "Al menos una vez al mes",
+                    "Cada 3-4 meses",
+                    "Una vez al año"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La reciprocidad diferida significa que el valor que aportas no necesariamente regresa de la misma persona ni al mismo tiempo; ayudas a A, quien ayuda a B, quien eventualmente te ayuda a ti."
+                "correctAnswer": 1
             },
             {
-                "question": "Según el número de Dunbar mencionado en la lección, ¿cuántas relaciones sociales significativas podemos mantener simultáneamente?",
+                "question": "¿Qué valor pueden aportar los estudiantes a profesionales con más experiencia?",
                 "options": [
-                    "Aproximadamente 50",
-                    "Aproximadamente 150",
-                    "Aproximadamente 500",
-                    "No hay límite si usas herramientas digitales"
+                    "Nada significativo hasta que se gradúen",
+                    "Solo pueden pedir consejos y orientación",
+                    "Perspectiva fresca, conocimiento actualizado y habilidades digitales",
+                    "Únicamente mano de obra gratuita"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El número de Dunbar sugiere que podemos mantener aproximadamente 150 relaciones sociales significativas simultáneamente, lo que fundamenta el sistema de círculos concéntricos para organizar contactos."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál es la ventaja táctica de llegar temprano a un evento de networking?",
+                "question": "¿Por qué es importante la diversidad en tu red de contactos?",
                 "options": [
-                    "Puedes elegir el mejor asiento para escuchar las ponencias",
-                    "Hay menos personas y es más fácil iniciar conversaciones",
-                    "Los organizadores te darán atención preferencial",
-                    "Puedes irte más temprano del evento"
+                    "Porque se ve bien en LinkedIn",
+                    "Porque las empresas lo exigen",
+                    "Porque te expone a diferentes ideas, oportunidades y formas de pensar",
+                    "Porque facilita encontrar empleo más rápido"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Llegar temprano tiene ventaja táctica porque hay menos personas y es más fácil iniciar conversaciones. Las primeras personas en llegar suelen ser las más interesadas en hacer networking."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué sugiere la lección cuando no recibes respuesta a tu primer mensaje de seguimiento?",
+                "question": "¿Cuál es la mejor estrategia de networking para introvertidos?",
                 "options": [
-                    "Enviar múltiples mensajes diarios hasta obtener respuesta",
-                    "Un segundo mensaje cortés después de una o dos semanas es aceptable; después de dos intentos, respetar el silencio",
-                    "Llamar por teléfono repetidamente",
-                    "Publicar en redes sociales que la persona no respondió"
+                    "Evitar eventos de networking por completo",
+                    "Forzarse a ser extrovertido en los eventos",
+                    "Preferir conversaciones uno a uno y usar plataformas digitales",
+                    "Solo hacer networking por escrito"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Un segundo mensaje cortés después de una o dos semanas es perfectamente aceptable. Si no hay respuesta tras dos intentos, se debe respetar el silencio y seguir adelante."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Por qué la lección recomienda el networking intergeneracional?",
+                "question": "Un 'consejo personal' de networking consiste en:",
                 "options": [
-                    "Porque las personas mayores siempre tienen mejores contactos",
-                    "Porque las relaciones con mayores aportan experiencia y con jóvenes te mantienen actualizado",
-                    "Porque las empresas exigen tener contactos de todas las edades",
-                    "Porque es un requisito para obtener certificaciones profesionales"
+                    "Un grupo formal de asesores empresariales pagados",
+                    "Un grupo informal de personas de diferentes campos que te ofrecen perspectivas y apoyo",
+                    "Los directivos de tu empresa actual",
+                    "Tus compañeros de clase más cercanos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Las relaciones con personas mayores aportan experiencia y perspectiva; las relaciones con personas más jóvenes te mantienen actualizado y te permiten ser mentor. La diversidad generacional enriquece la red."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué recomendación da la lección para superar la timidez en eventos de networking?",
+                "question": "¿Cuál de estos NO es un canal apropiado para hacer seguimiento profesional?",
                 "options": [
-                    "Fingir ser una persona extrovertida",
-                    "Enfocarte en la curiosidad genuina por los demás en lugar de intentar 'venderte'",
-                    "Evitar los eventos de networking y enfocarte solo en redes sociales",
-                    "Llevar un amigo que haga la conversación por ti"
+                    "LinkedIn con solicitud personalizada",
+                    "Email formal",
+                    "Etiquetar públicamente a la persona en una red social personal",
+                    "WhatsApp, si ya se estableció confianza"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La lección sugiere enfocarse en la curiosidad genuina por los demás en lugar de 'venderte', preparar preguntas abiertas y establecer metas modestas como conocer dos o tres personas significativas."
+                "correctAnswer": 2
             }
         ]
     },
-
     "Negociación y Manejo de Conflictos": {
+        "emoji": "🤝",
+        "level": "intermediate",
+        "duration": "30min",
         "lessons": [
             {
-                "title": "Negociación Win-Win: Principios Fundamentales",
-                "content": """<h3>Negociación Win-Win: Principios Fundamentales</h3>
-<p>La negociación es una habilidad que utilizamos diariamente, desde decidir dónde almorzar con amigos hasta negociar un salario o resolver un desacuerdo en un proyecto grupal. La negociación <em>win-win</em> (ganar-ganar) busca acuerdos que satisfagan los intereses de todas las partes involucradas, en lugar de que una gane a costa de la otra.</p>
+                "title": "Principios de la Negociación Win-Win",
+                "content": """<h3>Principios de la Negociación Win-Win</h3>
+<p>La negociación es una habilidad que utilizamos constantemente, desde decidir dónde cenar con amigos hasta negociar un salario o resolver un conflicto laboral. La <strong>negociación win-win</strong> (ganar-ganar) parte del principio de que es posible encontrar soluciones que satisfagan los intereses de todas las partes involucradas, en lugar de ver la negociación como una batalla donde uno gana y otro pierde.</p>
 
-<h4>El modelo de Harvard: negociación basada en principios</h4>
-<p>Roger Fisher y William Ury, del Proyecto de Negociación de Harvard, revolucionaron el campo con su libro <em>Getting to Yes</em>. Su enfoque se basa en cuatro principios:</p>
+<h4>Negociación distributiva vs. integrativa</h4>
 <ul>
-<li><strong>Separar a las personas del problema:</strong> Ataca el problema, no a la persona. Las emociones y los egos pueden nublar el juicio; aprende a gestionar la relación y el contenido de forma independiente.</li>
-<li><strong>Centrarse en intereses, no en posiciones:</strong> Las posiciones son lo que las personas dicen que quieren; los intereses son las razones detrás de esas posiciones. Explorar intereses abre posibilidades creativas.</li>
-<li><strong>Generar opciones de beneficio mutuo:</strong> Antes de decidir, genera múltiples opciones creativas que puedan satisfacer los intereses de ambas partes.</li>
-<li><strong>Insistir en criterios objetivos:</strong> Basar el acuerdo en estándares justos e independientes de la voluntad de cada parte: precios de mercado, precedentes, opiniones de expertos.</li>
+<li><strong>Negociación distributiva (suma cero):</strong> las partes compiten por una «torta fija». Lo que uno gana, el otro lo pierde. Es el enfoque clásico de regateo de precios: si compras más barato, el vendedor gana menos.</li>
+<li><strong>Negociación integrativa (ganar-ganar):</strong> las partes colaboran para «agrandar la torta». En lugar de pelear por la misma porción, buscan opciones creativas que satisfagan los intereses de todos. Este enfoque produce mejores resultados y <em>preserva las relaciones</em>.</li>
 </ul>
 
-<h4>Posiciones vs. intereses: un ejemplo práctico</h4>
-<p>Dos hermanas pelean por una naranja. La posición de cada una es: "Yo quiero la naranja". Un enfoque de posiciones daría media naranja a cada una. Pero al explorar los intereses, descubrimos que una quiere el jugo para beber y la otra quiere la cáscara para hacer un pastel. Al conocer los intereses, ambas obtienen el 100% de lo que necesitan.</p>
+<h4>Los cuatro principios de Harvard</h4>
+<p>El Método de Negociación de Harvard, desarrollado por Roger Fisher y William Ury, propone cuatro principios fundamentales:</p>
+<ul>
+<li><strong>Separar a las personas del problema:</strong> enfócate en los intereses en juego, no en las emociones o personalidades.</li>
+<li><strong>Concentrarse en intereses, no en posiciones:</strong> una posición es lo que la persona dice que quiere; un interés es la razón profunda por la que lo quiere.</li>
+<li><strong>Generar opciones de beneficio mutuo:</strong> antes de decidir, genera múltiples alternativas creativas que satisfagan los intereses de ambas partes.</li>
+<li><strong>Insistir en criterios objetivos:</strong> basa el acuerdo en estándares independientes como valores de mercado, precedentes o normas profesionales.</li>
+</ul>
 
-<blockquote>La negociación más exitosa no es aquella donde impones tu voluntad, sino aquella donde descubres soluciones que ninguna de las partes había imaginado al principio. La creatividad es el arma más poderosa de un negociador.</blockquote>
+<blockquote>«La mejor negociación es aquella en la que ambas partes sienten que ganaron algo valioso.» — Adaptación del principio de Harvard.</blockquote>
 
-<h4>Preparación: el 80% de la negociación</h4>
-<p>Los negociadores expertos dedican mucho más tiempo a prepararse que a negociar. Antes de sentarte a la mesa, investiga: ¿cuáles son tus intereses y los de la otra parte? ¿Qué opciones existen? ¿Cuáles son los estándares objetivos aplicables? ¿Cuál es tu punto de resistencia (lo mínimo aceptable)?</p>
-
-<h4>El poder de la escucha activa</h4>
-<p>Escuchar activamente es la habilidad más subestimada en la negociación. Cuando escuchas de verdad, descubres información valiosa sobre los intereses, miedos y prioridades de la otra parte. Además, las personas son más propensas a cooperar con quienes se sienten escuchadas y comprendidas.</p>""",
-                "estimatedMinutes": 6
+<h4>Ejemplo práctico</h4>
+<p>Imagina que dos compañeros de departamento quieren usar la misma sala de reuniones a la misma hora. La posición de cada uno es «yo necesito la sala». Pero al explorar los <em>intereses</em>, descubres que uno necesita silencio para una videollamada y el otro necesita un proyector para una presentación. La solución integrativa: el primero usa una oficina privada con buena conexión y el segundo usa la sala con el proyector. Ambos satisfacen sus verdaderos intereses.</p>"""
             },
             {
                 "title": "BATNA: Tu Mejor Alternativa",
                 "content": """<h3>BATNA: Tu Mejor Alternativa</h3>
-<p>El concepto de BATNA (Best Alternative to a Negotiated Agreement), o Mejor Alternativa a un Acuerdo Negociado, es posiblemente la herramienta más poderosa en el arsenal de cualquier negociador. Tu BATNA es lo que harás si la negociación actual fracasa. Es tu plan B, y determina cuánto poder real tienes en la mesa de negociación.</p>
+<p>BATNA es el acrónimo de <strong>Best Alternative to a Negotiated Agreement</strong> (Mejor Alternativa a un Acuerdo Negociado). Es quizás el concepto más poderoso en la teoría de la negociación, porque determina tu poder real en cualquier negociación. Si no sabes cuál es tu BATNA, estás negociando a ciegas.</p>
 
-<h4>¿Por qué el BATNA es tan importante?</h4>
-<p>Tu BATNA define tu punto de resistencia: el peor acuerdo que estarías dispuesto a aceptar. Si tienes un BATNA fuerte, puedes negociar con confianza porque sabes que tienes opciones. Si tu BATNA es débil, estás en una posición vulnerable. Por ejemplo, si estás negociando un salario y tienes otra oferta de trabajo atractiva, tu BATNA es fuerte. Si no tienes alternativas, estás más presionado a aceptar cualquier oferta.</p>
+<h4>¿Qué es exactamente el BATNA?</h4>
+<p>Tu BATNA es lo mejor que puedes hacer <em>si la negociación fracasa</em>. Es tu plan B, tu alternativa real. Cuanto mejor sea tu BATNA, más poder tienes en la negociación porque puedes permitirte rechazar un mal acuerdo. Por ejemplo, si estás negociando un salario y tienes otra oferta de empleo atractiva, tu BATNA es fuerte y puedes negociar con más confianza.</p>
 
 <h4>Cómo desarrollar tu BATNA</h4>
 <ul>
-<li><strong>Identifica tus alternativas:</strong> ¿Qué opciones tienes si no llegas a un acuerdo? Lista todas las posibilidades, incluso las menos obvias.</li>
-<li><strong>Evalúa cada alternativa:</strong> ¿Cuál es el valor real de cada opción? Sé realista, no optimista ni pesimista.</li>
-<li><strong>Selecciona la mejor:</strong> Tu BATNA es la mejor de todas tus alternativas. Es tu punto de referencia para evaluar cualquier propuesta.</li>
-<li><strong>Mejora tu BATNA:</strong> Antes de negociar, invierte tiempo en fortalecer tus alternativas. Cuanto mejor sea tu BATNA, más poder tendrás.</li>
+<li><strong>Identifica todas tus alternativas:</strong> haz una lista exhaustiva de lo que podrías hacer si no llegas a un acuerdo.</li>
+<li><strong>Evalúa cada alternativa:</strong> analiza los pros y contras de cada opción de forma realista.</li>
+<li><strong>Selecciona la mejor:</strong> esa es tu BATNA. Recuerda, no es una lista de alternativas, sino <em>la mejor</em> de ellas.</li>
+<li><strong>Mejora tu BATNA:</strong> invierte tiempo en fortalecer tu alternativa antes de la negociación. Un BATNA más fuerte te da más poder.</li>
 </ul>
 
-<h4>BATNA en la vida estudiantil</h4>
-<p>Los estudiantes utilizan el BATNA constantemente sin saberlo:</p>
-<ul>
-<li><strong>Negociando con un grupo de trabajo:</strong> Tu BATNA podría ser pedir al profesor un cambio de grupo o hacer el trabajo individualmente.</li>
-<li><strong>Negociando una práctica profesional:</strong> Si tienes dos ofertas de práctica, cada una es el BATNA de la otra negociación.</li>
-<li><strong>Negociando condiciones de arriendo:</strong> Si tienes otras opciones de vivienda, tu posición es más fuerte frente al arrendador.</li>
-</ul>
+<h4>El punto de reserva</h4>
+<p>Tu BATNA define tu <strong>punto de reserva</strong> — el peor acuerdo que estarías dispuesto a aceptar. Si la otra parte ofrece algo peor que tu BATNA, debes estar preparado para levantarte de la mesa. No llegar a un acuerdo es mejor que aceptar un mal acuerdo.</p>
 
-<blockquote>Nunca entres a una negociación sin conocer tu BATNA. Es como jugar póker sin mirar tus cartas. El poder en una negociación no viene de la agresividad ni de la autoridad, sino de las alternativas que tienes si no se llega a un acuerdo.</blockquote>
+<blockquote>«Nunca entres a una negociación sin saber cuál es tu mejor alternativa. Tu BATNA es tu fuente de poder y tu protección contra malos acuerdos.» — Roger Fisher y William Ury.</blockquote>
 
-<h4>El BATNA de la otra parte</h4>
-<p>Tan importante como conocer tu propio BATNA es estimar el de la otra parte. Si sus alternativas son limitadas, probablemente esté más dispuesta a hacer concesiones. Si tiene muchas alternativas, necesitarás ofrecer más valor para llegar a un acuerdo.</p>
+<h4>ZOPA: La zona de posible acuerdo</h4>
+<p>La ZOPA (Zone of Possible Agreement) es el rango donde un acuerdo es posible — el espacio entre los puntos de reserva de ambas partes. Si tu punto de reserva para un salario es $3,000 y el máximo que la empresa puede pagar es $3,500, la ZOPA es $3,000-$3,500. Si los puntos de reserva no se superponen, no hay ZOPA y el acuerdo es imposible.</p>
 
-<h4>Zona de posible acuerdo (ZOPA)</h4>
-<p>La ZOPA es el rango entre los puntos de resistencia de ambas partes. Si tu punto mínimo es $500.000 de salario y el máximo que la empresa puede pagar es $700.000, la ZOPA va de $500.000 a $700.000. Si no existe ZOPA (tu mínimo es mayor que su máximo), no hay acuerdo posible y tu BATNA entra en juego.</p>""",
-                "estimatedMinutes": 6
+<h4>Error común: confundir deseos con BATNA</h4>
+<p>Un error frecuente es confundir lo que <em>deseas</em> obtener con tu BATNA real. Tu BATNA no es tu meta ni tu aspiración; es una alternativa concreta y verificable. «Quiero ganar $5,000» no es un BATNA. «Tengo una oferta confirmada de $3,200 en otra empresa» sí lo es. La honestidad contigo mismo sobre tu verdadera alternativa es esencial para negociar de forma inteligente.</p>"""
             },
             {
                 "title": "Estilos de Manejo de Conflictos",
                 "content": """<h3>Estilos de Manejo de Conflictos</h3>
-<p>El conflicto es inevitable en cualquier relación humana, ya sea personal o profesional. Lo que importa no es evitar el conflicto, sino manejarlo de manera constructiva. Kenneth Thomas y Ralph Kilmann identificaron cinco estilos de manejo de conflictos, cada uno apropiado en diferentes situaciones.</p>
+<p>El conflicto es una parte inevitable de la vida profesional. Cuando personas con diferentes perspectivas, intereses y personalidades trabajan juntas, los desacuerdos son naturales. Lo que determina si un conflicto es destructivo o constructivo no es su existencia, sino <strong>cómo lo manejamos</strong>. El modelo de Thomas-Kilmann identifica cinco estilos de manejo de conflictos.</p>
 
-<h4>Los cinco estilos Thomas-Kilmann</h4>
-<p>Estos estilos se mapean según dos dimensiones: la asertividad (cuánto defiendes tus propios intereses) y la cooperación (cuánto intentas satisfacer los intereses del otro).</p>
+<h4>Los cinco estilos de Thomas-Kilmann</h4>
 <ul>
-<li><strong>Competir (alta asertividad, baja cooperación):</strong> Persigues tus intereses a expensas de los del otro. Apropiado en emergencias o cuando se requiere una decisión rápida y firme.</li>
-<li><strong>Colaborar (alta asertividad, alta cooperación):</strong> Buscas una solución que satisfaga plenamente a ambas partes. Ideal cuando los intereses de ambos son demasiado importantes para comprometer.</li>
-<li><strong>Comprometer (asertividad y cooperación medias):</strong> Ambas partes ceden algo. Útil cuando el tiempo es limitado o cuando una solución temporal es suficiente.</li>
-<li><strong>Evitar (baja asertividad, baja cooperación):</strong> Te retiras del conflicto. Apropiado cuando el asunto es trivial o cuando necesitas tiempo para calmarte.</li>
-<li><strong>Acomodar (baja asertividad, alta cooperación):</strong> Cedes ante los intereses del otro. Útil cuando te das cuenta de que estás equivocado o cuando la relación es más importante que el resultado.</li>
+<li><strong>Competir (alta asertividad, baja cooperación):</strong> persigues tus intereses a costa de los del otro. Útil en emergencias o cuando debes defender principios no negociables, pero puede dañar relaciones.</li>
+<li><strong>Colaborar (alta asertividad, alta cooperación):</strong> buscas una solución que satisfaga completamente a ambas partes. Requiere más tiempo y energía, pero produce los mejores resultados y fortalece las relaciones.</li>
+<li><strong>Comprometer (asertividad media, cooperación media):</strong> ambas partes ceden algo para llegar a un acuerdo intermedio. Es práctico cuando el tiempo es limitado, pero ninguna parte queda completamente satisfecha.</li>
+<li><strong>Evitar (baja asertividad, baja cooperación):</strong> no enfrentas el conflicto, lo ignoras o lo pospones. Útil cuando el tema es trivial o necesitas tiempo para pensar, pero peligroso si se convierte en un patrón habitual.</li>
+<li><strong>Ceder (baja asertividad, alta cooperación):</strong> sacrificas tus propios intereses para satisfacer los del otro. Apropiado cuando la relación es más importante que el resultado o cuando reconoces que estás equivocado.</li>
 </ul>
 
-<h4>No hay estilo "mejor"</h4>
-<p>Un error común es creer que colaborar siempre es el mejor enfoque. En realidad, cada estilo tiene su momento. Un bombero no colabora con el fuego; compite contra él. Un padre que discute sobre qué película ver con su hijo puede acomodar. La inteligencia en el manejo de conflictos está en elegir el estilo adecuado para cada situación.</p>
+<h4>No existe un estilo «correcto»</h4>
+<p>La clave no es usar siempre el mismo estilo, sino elegir el más apropiado para cada situación. La <em>inteligencia conflictual</em> consiste en diagnosticar correctamente la situación y adaptar tu enfoque en consecuencia.</p>
 
-<h4>Identificar tu estilo dominante</h4>
-<p>Todos tenemos un estilo de conflicto que tendemos a usar por defecto. Identificarlo es el primer paso para expandir tu repertorio. Si siempre evitas el conflicto, podrías estar sacrificando tus intereses. Si siempre compites, podrías estar dañando relaciones importantes.</p>
+<blockquote>«El conflicto bien gestionado es una fuente de innovación y crecimiento. El conflicto mal gestionado es una fuente de estrés y destrucción.»</blockquote>
 
-<blockquote>El manejo efectivo de conflictos no consiste en eliminar las diferencias, sino en canalizarlas productivamente. Los mejores equipos no son aquellos que nunca tienen conflictos, sino aquellos que saben gestionarlos de manera constructiva.</blockquote>
+<h4>Conflictos funcionales vs. disfuncionales</h4>
+<p>Los <strong>conflictos funcionales</strong> estimulan la creatividad, cuestionan ideas débiles y mejoran la toma de decisiones. Los equipos que nunca discrepan suelen tomar peores decisiones por el «pensamiento de grupo». En cambio, los <strong>conflictos disfuncionales</strong> — los que se vuelven personales, agresivos o interminables — deterioran la moral, la productividad y las relaciones.</p>
 
-<h4>De destructivo a constructivo</h4>
-<p>Un conflicto se vuelve destructivo cuando se personaliza, cuando se acumulan resentimientos no expresados o cuando se busca "ganar" en lugar de resolver. Se vuelve constructivo cuando se enfoca en el problema, se expresan las necesidades con respeto y se buscan soluciones creativas.</p>
-
-<h4>Inteligencia emocional en el conflicto</h4>
-<p>La capacidad de reconocer y gestionar tus emociones durante un conflicto es fundamental. Técnicas como la respiración consciente, el parafraseo de lo que dijo la otra persona y el uso de declaraciones en primera persona ("Yo siento..." en lugar de "Tú siempre...") ayudan a mantener el conflicto en territorio constructivo.</p>""",
-                "estimatedMinutes": 6
+<h4>Autodiagnóstico</h4>
+<p>Reflexiona sobre tu estilo predominante. ¿Tiendes a evitar los conflictos o a enfrentarlos directamente? ¿Sueles ceder para mantener la paz o compites para imponer tu punto de vista? Conocer tu tendencia natural es el primer paso para desarrollar flexibilidad en el manejo de conflictos.</p>"""
             },
             {
                 "title": "Conversaciones Difíciles",
                 "content": """<h3>Conversaciones Difíciles</h3>
-<p>Las conversaciones difíciles son aquellas que preferiríamos evitar: dar retroalimentación negativa, expresar desacuerdo con un superior, abordar un comportamiento problemático de un compañero, o negociar condiciones que nos generan ansiedad. Sin embargo, evitarlas casi siempre empeora la situación. Aprender a manejar estas conversaciones es una habilidad profesional de alto valor.</p>
+<p>Las conversaciones difíciles son aquellas donde hay algo importante en juego, las opiniones difieren y las emociones están presentes. Dar retroalimentación negativa, pedir un aumento, confrontar un comportamiento inapropiado o resolver un malentendido con un colega son ejemplos de situaciones que muchos profesionales evitan, pero que son <strong>esenciales para el crecimiento y la salud organizacional</strong>.</p>
 
 <h4>El modelo de las tres conversaciones</h4>
-<p>Según investigadores de Harvard, toda conversación difícil contiene tres conversaciones simultáneas:</p>
+<p>Según el libro <em>Difficult Conversations</em> de Harvard, toda conversación difícil contiene en realidad tres conversaciones:</p>
 <ul>
-<li><strong>La conversación del "qué pasó":</strong> Cada persona tiene su versión de los hechos. El error es asumir que nuestra versión es la verdad absoluta. En lugar de debatir quién tiene razón, explora las percepciones de ambos.</li>
-<li><strong>La conversación de los sentimientos:</strong> Las emociones están siempre presentes, aunque no las nombremos. Reconocer y expresar las emociones de manera responsable es esencial.</li>
-<li><strong>La conversación de la identidad:</strong> Las conversaciones difíciles amenazan nuestra autoimagen. Pregúntate: ¿Qué me dice esto sobre mí? ¿Me estoy sintiendo atacado como persona o se está cuestionando mi comportamiento?</li>
+<li><strong>La conversación del «qué pasó»:</strong> las partes tienen versiones diferentes de los hechos. La clave es reconocer que cada uno tiene una perspectiva válida influida por su información y experiencia.</li>
+<li><strong>La conversación de los sentimientos:</strong> las emociones siempre están presentes aunque intentemos ocultarlas. Reconocerlas y expresarlas apropiadamente es esencial.</li>
+<li><strong>La conversación de la identidad:</strong> las situaciones difíciles cuestionan cómo nos vemos a nosotros mismos (¿soy competente?, ¿soy buena persona?). Gestionar estas amenazas a la identidad es clave para mantener la calma.</li>
 </ul>
 
-<h4>Preparación para conversaciones difíciles</h4>
-<p>Antes de iniciar una conversación difícil:</p>
+<h4>Preparación para una conversación difícil</h4>
 <ul>
-<li>Define claramente tu objetivo: ¿Qué resultado deseas? ¿Es realista?</li>
-<li>Anticipa las reacciones de la otra persona y prepara respuestas empáticas.</li>
-<li>Elige el momento y lugar adecuados: nunca en público, nunca cuando alguno está emocionalmente alterado.</li>
-<li>Comienza desde la "tercera historia": en lugar de empezar con tu versión o la suya, comienza describiendo la diferencia entre ambas perspectivas.</li>
+<li><strong>Clarifica tu propósito:</strong> ¿qué quieres lograr con esta conversación? ¿Resolver un problema, expresar una preocupación, establecer un límite?</li>
+<li><strong>Anticipa la perspectiva del otro:</strong> intenta entender cómo la otra persona ve la situación.</li>
+<li><strong>Elige el momento y lugar adecuados:</strong> privacidad, tiempo suficiente y un entorno neutral.</li>
+<li><strong>Practica la apertura:</strong> prepara cómo iniciarás la conversación sin generar defensividad.</li>
 </ul>
 
-<h4>La técnica DESC</h4>
-<p>Una estructura útil para abordar conversaciones difíciles:</p>
+<blockquote>«La conversación más importante que puedes tener es la que estás evitando.» — Reflexión del método de Harvard sobre conversaciones difíciles.</blockquote>
+
+<h4>Técnicas de comunicación efectiva</h4>
+<p>Durante la conversación, aplica estas técnicas:</p>
 <ul>
-<li><strong>D - Describir:</strong> Describe la situación o comportamiento específico de forma objetiva, sin juicios.</li>
-<li><strong>E - Expresar:</strong> Expresa cómo te afecta esa situación usando declaraciones en primera persona.</li>
-<li><strong>S - Sugerir:</strong> Propón una solución concreta o un cambio específico.</li>
-<li><strong>C - Consecuencias:</strong> Describe las consecuencias positivas de implementar el cambio.</li>
+<li><strong>Usa mensajes en «yo»:</strong> en lugar de «tú nunca cumples los plazos», di «yo me siento frustrado cuando los plazos no se cumplen porque afecta mi trabajo».</li>
+<li><strong>Escucha activamente:</strong> reformula lo que escuchas para confirmar que entendiste correctamente.</li>
+<li><strong>Evita generalizaciones:</strong> palabras como «siempre» y «nunca» generan defensividad.</li>
+<li><strong>Enfócate en comportamientos, no en personalidad:</strong> «el informe tuvo tres errores» es más constructivo que «eres descuidado».</li>
 </ul>
 
-<blockquote>Las conversaciones difíciles que evitamos hoy se convierten en los conflictos graves de mañana. El coraje de abordar lo incómodo con respeto y empatía es lo que distingue a los líderes de los espectadores.</blockquote>
-
-<h4>Ejemplo aplicado de DESC</h4>
-<p><em>"He notado que en las últimas tres reuniones de equipo, las decisiones se han tomado sin consultar al grupo (Describir). Esto me hace sentir que mi opinión no es valorada y me desmotiva (Expresar). Propongo que antes de cada decisión importante, hagamos una ronda rápida de opiniones (Sugerir). Creo que esto mejorará la calidad de nuestras decisiones y el compromiso de todo el equipo (Consecuencias)."</em></p>
-
-<h4>Manejo de reacciones defensivas</h4>
-<p>Cuando la otra persona se pone a la defensiva, evita escalar. Parafrasea lo que dijo para demostrar que la escuchaste, valida sus emociones sin necesariamente estar de acuerdo con su posición, y redirige la conversación hacia la búsqueda de soluciones conjuntas.</p>""",
-                "estimatedMinutes": 6
+<h4>Cuando la conversación se desborda</h4>
+<p>Si las emociones se intensifican demasiado, es válido pedir una pausa. «Creo que ambos necesitamos un momento para pensar. ¿Podemos retomar esto mañana a las 10?» Esto no es evitar el conflicto; es gestionarlo de forma madura.</p>"""
             },
             {
-                "title": "Introducción a la Mediación",
-                "content": """<h3>Introducción a la Mediación</h3>
-<p>La mediación es un proceso en el cual un tercero neutral e imparcial ayuda a las partes en conflicto a comunicarse y encontrar una solución mutuamente aceptable. A diferencia del arbitraje o la vía judicial, la mediación no impone soluciones; facilita que las propias partes lleguen a un acuerdo. Es una habilidad cada vez más valorada en entornos académicos, laborales y comunitarios.</p>
+                "title": "Mediación y Resolución de Conflictos",
+                "content": """<h3>Mediación y Resolución de Conflictos</h3>
+<p>Cuando las partes en conflicto no logran resolverlo por sí mismas, la <strong>mediación</strong> se convierte en una herramienta invaluable. Un mediador es un tercero neutral que facilita el diálogo entre las partes, ayudándolas a encontrar una solución mutuamente aceptable sin imponer su criterio. A diferencia de un juez o un árbitro, el mediador no decide quién tiene razón.</p>
 
-<h4>Principios fundamentales de la mediación</h4>
+<h4>¿Cuándo es necesaria la mediación?</h4>
+<p>La mediación es especialmente útil cuando:</p>
 <ul>
-<li><strong>Voluntariedad:</strong> Todas las partes participan por elección propia y pueden retirarse en cualquier momento.</li>
-<li><strong>Imparcialidad:</strong> El mediador no toma partido ni favorece a ninguna de las partes.</li>
-<li><strong>Confidencialidad:</strong> Lo que se discute en la mediación no se comparte fuera de ella.</li>
-<li><strong>Autodeterminación:</strong> Las partes mantienen el control sobre el resultado. El mediador facilita, no decide.</li>
+<li>Las partes han intentado resolver el conflicto directamente sin éxito.</li>
+<li>La comunicación se ha deteriorado hasta el punto de no poder dialogar constructivamente.</li>
+<li>Las emociones son tan intensas que impiden la objetividad.</li>
+<li>Hay un desequilibrio de poder significativo entre las partes.</li>
+<li>La relación entre las partes debe preservarse (compañeros de trabajo, socios, familiares).</li>
 </ul>
 
-<h4>El proceso de mediación paso a paso</h4>
+<h4>El proceso de mediación</h4>
 <p>Una mediación típica sigue estas etapas:</p>
 <ul>
-<li><strong>Apertura:</strong> El mediador establece las reglas del juego, explica el proceso y genera un ambiente de confianza.</li>
-<li><strong>Relato de las partes:</strong> Cada persona expone su perspectiva sin interrupciones. El mediador escucha activamente y toma notas.</li>
-<li><strong>Identificación de intereses:</strong> A través de preguntas, el mediador ayuda a descubrir los intereses subyacentes detrás de las posiciones expresadas.</li>
-<li><strong>Generación de opciones:</strong> Las partes, con ayuda del mediador, generan posibles soluciones mediante lluvia de ideas.</li>
-<li><strong>Evaluación y acuerdo:</strong> Las partes evalúan las opciones y seleccionan aquella que mejor satisface los intereses de todos. Se formaliza el acuerdo.</li>
+<li><strong>Apertura:</strong> el mediador establece las reglas (respeto, confidencialidad, voluntariedad) y cada parte expone su versión sin interrupciones.</li>
+<li><strong>Exploración:</strong> el mediador hace preguntas para identificar los intereses subyacentes de cada parte.</li>
+<li><strong>Generación de opciones:</strong> las partes, guiadas por el mediador, proponen posibles soluciones.</li>
+<li><strong>Negociación:</strong> se evalúan las opciones y se construye un acuerdo que ambas partes consideren justo.</li>
+<li><strong>Cierre:</strong> se formaliza el acuerdo, preferiblemente por escrito, y se establecen mecanismos de seguimiento.</li>
 </ul>
+
+<blockquote>«Un buen mediador no resuelve el conflicto; ayuda a las partes a descubrir que son capaces de resolverlo por sí mismas.»</blockquote>
 
 <h4>Habilidades del mediador</h4>
-<p>Un buen mediador domina varias habilidades clave:</p>
+<p>Ya sea que actúes como mediador formal o simplemente ayudes a dos compañeros a resolver un desacuerdo, estas habilidades son fundamentales:</p>
 <ul>
-<li><strong>Escucha activa profunda:</strong> Captar no solo las palabras sino las emociones y necesidades no expresadas.</li>
-<li><strong>Reformulación:</strong> Transformar declaraciones cargadas de emoción o juicio en lenguaje neutral y constructivo.</li>
-<li><strong>Preguntas poderosas:</strong> Usar preguntas abiertas que inviten a la reflexión y revelen intereses ocultos.</li>
-<li><strong>Gestión emocional:</strong> Manejar tanto sus propias emociones como las de las partes en conflicto.</li>
+<li><strong>Neutralidad:</strong> no tomar partido ni mostrar favoritismo.</li>
+<li><strong>Escucha empática:</strong> hacer que cada parte se sienta escuchada y validada.</li>
+<li><strong>Reformulación:</strong> transformar declaraciones hostiles en expresiones de intereses legítimos.</li>
+<li><strong>Gestión emocional:</strong> mantener la calma y ayudar a las partes a gestionar sus emociones.</li>
 </ul>
 
-<blockquote>Un mediador no resuelve el conflicto; crea las condiciones para que las partes lo resuelvan por sí mismas. El mejor acuerdo es aquel que ambas partes sienten como propio, no como impuesto.</blockquote>
+<h4>Resolución de conflictos en equipos de trabajo</h4>
+<p>En el contexto universitario y laboral, los conflictos en equipos son frecuentes. Las causas más comunes incluyen distribución desigual del trabajo, diferencias en estilos de trabajo, falta de comunicación y competencia por el reconocimiento. Abordar estos conflictos de forma temprana y directa, usando las herramientas de esta lección, previene que escalen hasta volverse destructivos.</p>
 
-<h4>Mediación en el contexto universitario</h4>
-<p>Los conflictos en equipos de trabajo, desacuerdos en organizaciones estudiantiles y tensiones en convivencia son oportunidades perfectas para practicar habilidades de mediación. Muchas universidades ofrecen programas de mediación entre pares que forman a estudiantes como mediadores voluntarios.</p>
-
-<h4>Cuándo la mediación no es apropiada</h4>
-<p>La mediación no es adecuada en todas las situaciones: cuando hay un desequilibrio de poder significativo, cuando existe violencia o amenazas, cuando una de las partes no actúa de buena fe, o cuando se requiere establecer un precedente legal. Reconocer estos límites es parte de la madurez profesional.</p>""",
-                "estimatedMinutes": 6
+<h4>Justicia restaurativa</h4>
+<p>Un enfoque innovador de resolución de conflictos es la <strong>justicia restaurativa</strong>, que en lugar de castigar al infractor, busca reparar el daño causado y restaurar las relaciones. Este enfoque, originario de las tradiciones indígenas, se aplica cada vez más en escuelas, universidades y organizaciones como alternativa a los sistemas disciplinarios punitivos.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "Según el modelo de Harvard, ¿cuál de los siguientes NO es uno de los cuatro principios de la negociación basada en principios?",
+                "question": "¿Cuál es la diferencia entre negociación distributiva e integrativa?",
+                "options": [
+                    "La distributiva es más moderna que la integrativa",
+                    "La distributiva compite por una 'torta fija' y la integrativa busca 'agrandar la torta'",
+                    "La distributiva es para empresas y la integrativa para personas",
+                    "No hay diferencia significativa entre ambas"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Cuál de estos NO es uno de los cuatro principios de negociación de Harvard?",
                 "options": [
                     "Separar a las personas del problema",
-                    "Centrarse en posiciones firmes e inamovibles",
-                    "Generar opciones de beneficio mutuo",
+                    "Concentrarse en intereses, no en posiciones",
+                    "Ganar la negociación a cualquier costo",
                     "Insistir en criterios objetivos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El modelo de Harvard dice centrarse en intereses, no en posiciones. Las posiciones firmes e inamovibles son precisamente lo que el método busca evitar."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué es la ZOPA en el contexto de una negociación?",
+                "question": "¿Qué significa BATNA?",
                 "options": [
-                    "Una técnica de persuasión agresiva",
-                    "El rango entre los puntos de resistencia de ambas partes donde un acuerdo es posible",
-                    "El momento en que una parte abandona la negociación",
-                    "Un tipo de mediación corporativa"
+                    "Best Approach To Negotiation Agreements",
+                    "Best Alternative to a Negotiated Agreement",
+                    "Basic Agreement for Trade and Negotiation Arrangements",
+                    "Bilateral Approach to Negotiation Analysis"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La ZOPA (Zona de Posible Acuerdo) es el rango entre los puntos de resistencia de ambas partes. Si no existe ZOPA, no hay acuerdo posible."
+                "correctAnswer": 1
             },
             {
-                "question": "En el modelo Thomas-Kilmann, ¿qué estilo combina alta asertividad y alta cooperación?",
+                "question": "¿Qué es la ZOPA en una negociación?",
                 "options": [
-                    "Competir",
-                    "Comprometer",
-                    "Colaborar",
-                    "Acomodar"
+                    "El punto donde ambas partes pierden",
+                    "La zona de posible acuerdo entre los puntos de reserva de ambas partes",
+                    "El momento de abandonar la negociación",
+                    "La primera oferta que se pone sobre la mesa"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Colaborar combina alta asertividad (defender tus intereses) con alta cooperación (satisfacer los intereses del otro), buscando soluciones que satisfagan plenamente a ambas partes."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué representa la 'S' en la técnica DESC para conversaciones difíciles?",
+                "question": "Según Thomas-Kilmann, el estilo 'colaborar' implica:",
                 "options": [
-                    "Silenciar las emociones durante la conversación",
-                    "Sugerir una solución concreta o un cambio específico",
-                    "Separar a las personas del problema",
-                    "Solicitar la intervención de un mediador"
+                    "Baja asertividad y alta cooperación",
+                    "Alta asertividad y baja cooperación",
+                    "Alta asertividad y alta cooperación",
+                    "Asertividad y cooperación medias"
                 ],
-                "correctAnswer": 1,
-                "explanation": "En la técnica DESC, la 'S' corresponde a 'Sugerir': proponer una solución concreta o un cambio específico después de describir la situación y expresar cómo te afecta."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál de los siguientes NO es un principio fundamental de la mediación?",
+                "question": "¿Cuándo es apropiado usar el estilo 'evitar' en un conflicto?",
                 "options": [
-                    "Voluntariedad",
-                    "Confidencialidad",
-                    "El mediador impone la solución final",
-                    "Imparcialidad"
+                    "Siempre, para mantener la paz",
+                    "Cuando el tema es trivial o necesitas tiempo para pensar",
+                    "Cuando el conflicto es muy importante",
+                    "Nunca, evitar es siempre negativo"
                 ],
-                "correctAnswer": 2,
-                "explanation": "En la mediación, el mediador NO impone soluciones. El principio de autodeterminación establece que las partes mantienen el control sobre el resultado."
+                "correctAnswer": 1
             },
             {
-                "question": "En el ejemplo de las hermanas y la naranja, ¿qué enseña sobre la diferencia entre posiciones e intereses?",
+                "question": "Los 'conflictos funcionales' se caracterizan por:",
                 "options": [
-                    "Que siempre hay que dividir los recursos en partes iguales",
-                    "Que explorar los intereses subyacentes puede satisfacer plenamente a ambas partes sin compromisos",
-                    "Que las personas nunca saben lo que realmente quieren",
-                    "Que la negociación es innecesaria si los recursos son abundantes"
+                    "Generar estrés y destruir relaciones",
+                    "Estimular la creatividad y mejorar la toma de decisiones",
+                    "Nunca llegar a una resolución",
+                    "Involucrar ataques personales"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Al explorar los intereses (una quería el jugo y la otra la cáscara), ambas obtuvieron el 100% de lo que necesitaban, demostrando que las posiciones ocultan intereses compatibles."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿qué porcentaje del éxito de una negociación depende de la preparación?",
+                "question": "Según el libro Difficult Conversations de Harvard, ¿cuántas 'conversaciones' contiene toda conversación difícil?",
                 "options": [
-                    "Aproximadamente el 20%",
-                    "Aproximadamente el 50%",
-                    "Aproximadamente el 80%",
-                    "Aproximadamente el 100%"
+                    "Dos",
+                    "Tres",
+                    "Cuatro",
+                    "Cinco"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La lección afirma que la preparación constituye el 80% de la negociación, enfatizando la importancia de investigar intereses, opciones, estándares y puntos de resistencia antes de negociar."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es el BATNA y por qué es importante?",
+                "question": "¿Qué técnica de comunicación reemplaza 'tú nunca cumples los plazos'?",
                 "options": [
-                    "Es una técnica de comunicación no verbal durante la negociación",
-                    "Es tu mejor alternativa si la negociación fracasa, y determina tu poder real en la mesa",
-                    "Es un tipo de contrato legal vinculante",
-                    "Es un método para calcular el precio justo de un producto"
+                    "Mensajes en 'yo': 'yo me siento frustrado cuando los plazos no se cumplen'",
+                    "Mensajes en 'nosotros': 'nosotros tenemos un problema de plazos'",
+                    "Mensajes indirectos: 'algunas personas no cumplen los plazos'",
+                    "Mensajes directos: 'eres irresponsable con los plazos'"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El BATNA (Best Alternative to a Negotiated Agreement) es lo que harás si la negociación fracasa. Define tu punto de resistencia y determina cuánto poder real tienes en la negociación."
+                "correctAnswer": 0
             },
             {
-                "question": "En el modelo Thomas-Kilmann, ¿cuándo es apropiado usar el estilo de 'evitar'?",
+                "question": "¿Cuál es el rol del mediador en un conflicto?",
                 "options": [
-                    "Siempre que haya un conflicto importante",
-                    "Cuando el asunto es trivial o cuando necesitas tiempo para calmarte",
-                    "Cuando quieres ganar a toda costa",
-                    "Cuando la otra parte tiene razón"
+                    "Decidir quién tiene la razón",
+                    "Imponer una solución justa",
+                    "Facilitar el diálogo para que las partes encuentren una solución",
+                    "Representar legalmente a una de las partes"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El estilo de evitar (baja asertividad, baja cooperación) es apropiado cuando el asunto es trivial o cuando necesitas tiempo para calmarte antes de abordar el conflicto."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué son las tres conversaciones simultáneas que contiene toda conversación difícil según Harvard?",
+                "question": "¿Cuál de estos NO es una etapa del proceso de mediación?",
                 "options": [
-                    "La conversación verbal, la no verbal y la escrita",
-                    "La conversación del 'qué pasó', la de los sentimientos y la de la identidad",
-                    "La conversación del pasado, del presente y del futuro",
-                    "La conversación técnica, la emocional y la financiera"
+                    "Apertura y establecimiento de reglas",
+                    "Exploración de intereses subyacentes",
+                    "Votación para elegir la mejor solución",
+                    "Generación de opciones"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Según Harvard, toda conversación difícil contiene: la conversación del 'qué pasó' (versiones de los hechos), la de los sentimientos (emociones presentes) y la de la identidad (amenaza a la autoimagen)."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuándo NO es apropiado utilizar la mediación como método de resolución de conflictos?",
+                "question": "La justicia restaurativa busca principalmente:",
                 "options": [
-                    "Cuando ambas partes desean resolver el conflicto",
-                    "Cuando hay un desequilibrio de poder significativo, violencia o mala fe",
-                    "Cuando el conflicto ocurre en un entorno universitario",
-                    "Cuando las partes no se conocen previamente"
+                    "Castigar severamente al infractor",
+                    "Reparar el daño causado y restaurar las relaciones",
+                    "Determinar quién es culpable",
+                    "Aplicar sanciones económicas"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La mediación no es adecuada cuando hay desequilibrio de poder significativo, violencia o amenazas, mala fe de alguna parte, o cuando se requiere establecer un precedente legal."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué habilidad del mediador consiste en transformar declaraciones cargadas de emoción en lenguaje neutral?",
+                "question": "Al prepararte para una conversación difícil, lo primero que debes hacer es:",
                 "options": [
-                    "Escucha activa profunda",
-                    "Reformulación",
-                    "Gestión emocional",
-                    "Preguntas poderosas"
+                    "Ensayar exactamente lo que vas a decir",
+                    "Clarificar tu propósito: ¿qué quieres lograr?",
+                    "Buscar aliados que te apoyen",
+                    "Documentar todas las faltas del otro"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La reformulación es la habilidad de transformar declaraciones cargadas de emoción o juicio en lenguaje neutral y constructivo, facilitando la comunicación entre las partes."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿qué hace que un conflicto pase de destructivo a constructivo?",
+                "question": "¿Qué error es común al evaluar tu BATNA?",
                 "options": [
-                    "Que una de las partes gane claramente",
-                    "Que se enfoque en el problema, se expresen necesidades con respeto y se busquen soluciones creativas",
-                    "Que se evite cualquier confrontación directa",
-                    "Que intervenga un superior jerárquico"
+                    "Tener múltiples alternativas",
+                    "Confundir deseos o aspiraciones con tu alternativa real",
+                    "Investigar las alternativas de la otra parte",
+                    "Mejorar tu BATNA antes de negociar"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Un conflicto se vuelve constructivo cuando se enfoca en el problema (no en la persona), se expresan necesidades con respeto y se buscan soluciones creativas en lugar de buscar 'ganar'."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué técnica de inteligencia emocional recomienda la lección para mantener un conflicto en territorio constructivo?",
+                "question": "Si las emociones se intensifican demasiado durante una conversación difícil, lo más apropiado es:",
                 "options": [
-                    "Elevar la voz para demostrar convicción",
-                    "Usar declaraciones en primera persona ('Yo siento...') en lugar de acusaciones ('Tú siempre...')",
-                    "Ignorar las emociones y enfocarse solo en los hechos",
-                    "Abandonar la conversación hasta que ambas partes se calmen completamente"
+                    "Subir el tono de voz para hacerte escuchar",
+                    "Ceder en todo para terminar la discusión",
+                    "Pedir una pausa y retomar la conversación después",
+                    "Llamar a un tercero para que decida"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Usar declaraciones en primera persona ('Yo siento...') en lugar de acusaciones ('Tú siempre...') ayuda a mantener el conflicto constructivo, junto con la respiración consciente y el parafraseo."
-            },
-            {
-                "question": "¿Por qué conocer el BATNA de la otra parte es tan importante como conocer el propio?",
-                "options": [
-                    "Para poder manipular a la otra persona",
-                    "Porque si sus alternativas son limitadas, estará más dispuesta a hacer concesiones",
-                    "Para saber cuándo abandonar la negociación",
-                    "Para poder copiar su estrategia de negociación"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Conocer el BATNA de la otra parte es crucial: si sus alternativas son limitadas, probablemente esté más dispuesta a hacer concesiones; si tiene muchas, necesitarás ofrecer más valor."
+                "correctAnswer": 2
             }
         ]
     },
-
     "Administración Financiera Personal": {
+        "emoji": "💰",
+        "level": "beginner",
+        "duration": "35min",
         "lessons": [
             {
-                "title": "El Arte del Presupuesto",
-                "content": """<h3>El Arte del Presupuesto</h3>
-<p>Un presupuesto es el mapa que te muestra exactamente a dónde va tu dinero y te permite decidir conscientemente cómo asignarlo. Sin un presupuesto, el dinero simplemente desaparece y al final del mes te preguntas dónde quedó. La elaboración de un presupuesto es la habilidad financiera más fundamental y la base sobre la cual se construye toda tu salud financiera.</p>
+                "title": "Fundamentos del Presupuesto Personal",
+                "content": """<h3>Fundamentos del Presupuesto Personal</h3>
+<p>Un presupuesto personal es la <strong>herramienta más poderosa para tomar el control de tu dinero</strong>. Consiste en un plan que asigna tus ingresos a diferentes categorías de gastos, ahorro e inversión. Sin un presupuesto, es fácil gastar más de lo que ganas y vivir en un ciclo constante de estrés financiero.</p>
 
 <h4>¿Por qué la mayoría no presupuesta?</h4>
-<p>Las razones más comunes para no llevar un presupuesto son: "No gano lo suficiente como para presupuestar", "Es demasiado complicado" o "Me limita la libertad". Todas son mitos. Presupuestar es especialmente importante cuando el dinero es limitado, puede ser tan simple como una hoja de papel, y en realidad te da más libertad porque sabes exactamente cuánto puedes gastar sin preocupaciones.</p>
+<p>A pesar de su importancia, estudios muestran que menos del 40% de las personas lleva un presupuesto formal. Las razones más comunes son: creer que no ganan suficiente para necesitarlo, pensar que es demasiado complicado, o simplemente tener miedo de ver la realidad de sus finanzas. La verdad es que <em>un presupuesto no restringe tu libertad; te la otorga</em>.</p>
 
-<h4>El método 50/30/20</h4>
-<p>Elizabeth Warren popularizó esta regla simple pero poderosa para distribuir tus ingresos:</p>
+<h4>La regla 50/30/20</h4>
+<p>Una de las metodologías más populares para crear un presupuesto es la regla 50/30/20, popularizada por la senadora Elizabeth Warren:</p>
 <ul>
-<li><strong>50% - Necesidades:</strong> Arriendo, alimentación, transporte, servicios básicos, seguros, deudas mínimas. Son gastos que no puedes eliminar.</li>
-<li><strong>30% - Deseos:</strong> Entretenimiento, restaurantes, ropa no esencial, suscripciones, hobbies. Son gastos que mejoran tu calidad de vida pero podrías reducir.</li>
-<li><strong>20% - Ahorro y deuda:</strong> Fondo de emergencia, inversiones, pago acelerado de deudas. Es tu futuro financiero.</li>
+<li><strong>50% para necesidades:</strong> vivienda, alimentación, transporte, servicios básicos, seguros y pagos mínimos de deudas.</li>
+<li><strong>30% para deseos:</strong> entretenimiento, restaurantes, compras no esenciales, suscripciones y ocio.</li>
+<li><strong>20% para ahorro e inversión:</strong> fondo de emergencia, ahorro a largo plazo, inversiones y pago acelerado de deudas.</li>
 </ul>
 
-<h4>Presupuesto base cero</h4>
-<p>En este método, cada peso que ingresa tiene un destino asignado antes de gastarlo. Ingresos menos gastos planificados debe dar exactamente cero. No significa que gastes todo; significa que asignas cada peso a una categoría, incluyendo ahorro e inversión. Este método es más detallado que el 50/30/20 pero ofrece mayor control.</p>
-
-<blockquote>Un presupuesto no te dice qué no puedes hacer; te muestra qué sí puedes hacer con confianza. Es la diferencia entre gastar con culpa y gastar con tranquilidad.</blockquote>
-
-<h4>Herramientas de presupuesto</h4>
-<p>Desde una simple hoja de cálculo en Google Sheets hasta aplicaciones como <em>Fintual</em>, <em>Fintonic</em>, <em>YNAB</em> o <em>Mint</em>, existen numerosas herramientas para facilitar el seguimiento. Lo más importante no es la herramienta, sino el hábito de registrar y revisar tus finanzas regularmente.</p>
-
-<h4>El presupuesto estudiantil</h4>
-<p>Como estudiante, tus ingresos pueden ser irregulares (mesadas, trabajos parciales, becas). Adapta tu presupuesto a esta realidad: calcula tu ingreso mensual promedio, prioriza necesidades absolutas, minimiza gastos hormiga (café diario, apps innecesarias) y destina aunque sea un pequeño porcentaje al ahorro. Cada peso ahorrado en esta etapa vale más que uno ahorrado después, gracias al interés compuesto.</p>""",
-                "estimatedMinutes": 6
-            },
-            {
-                "title": "Estrategias de Ahorro",
-                "content": """<h3>Estrategias de Ahorro</h3>
-<p>Ahorrar no es guardar lo que sobra después de gastar; es separar primero lo que vas a ahorrar y gastar lo que sobra. Este cambio de mentalidad, conocido como "pagarte a ti mismo primero", es la diferencia fundamental entre quienes logran construir patrimonio y quienes viven siempre al límite.</p>
-
-<h4>El fondo de emergencia: tu primera meta</h4>
-<p>Antes de cualquier otra meta financiera, necesitas un fondo de emergencia. Este fondo cubre gastos imprevistos: una emergencia médica, una reparación urgente o la pérdida temporal de ingresos. La recomendación general es acumular entre tres y seis meses de gastos esenciales. Como estudiante, una meta inicial de un millón de pesos o su equivalente es un excelente punto de partida.</p>
-
-<h4>Automatización: el secreto de los ahorradores exitosos</h4>
-<p>La fuerza de voluntad es un recurso limitado. Los ahorradores más consistentes no dependen de su disciplina; automatizan sus ahorros. Configura una transferencia automática el día que recibes tu ingreso, antes de que tengas la tentación de gastarlo. Lo que no ves, no lo extrañas.</p>
-
-<h4>Estrategias prácticas para estudiantes</h4>
+<h4>Pasos para crear tu presupuesto</h4>
 <ul>
-<li><strong>La regla de las 48 horas:</strong> Antes de cualquier compra no esencial mayor a cierto monto, espera 48 horas. Si después de ese tiempo aún la quieres y puedes pagarla, adelante.</li>
-<li><strong>Gastos hormiga:</strong> Un café de $2.000 diario son $60.000 al mes y $720.000 al año. Identifica estos pequeños gastos recurrentes y decide conscientemente cuáles valen la pena.</li>
-<li><strong>Retos de ahorro:</strong> El reto de las 52 semanas (ahorrar $1.000 la primera semana, $2.000 la segunda, etc.) puede generar más de $1.300.000 en un año.</li>
-<li><strong>Cuentas separadas:</strong> Tener una cuenta exclusiva para ahorros, separada de tu cuenta de gastos diarios, reduce la tentación de gastar lo ahorrado.</li>
+<li><strong>Paso 1:</strong> calcula tus ingresos totales mensuales (salario, becas, apoyo familiar, trabajos freelance).</li>
+<li><strong>Paso 2:</strong> registra todos tus gastos durante un mes completo. Usa una app o una hoja de cálculo.</li>
+<li><strong>Paso 3:</strong> clasifica tus gastos en categorías (necesidades, deseos, ahorro).</li>
+<li><strong>Paso 4:</strong> compara ingresos vs. gastos e identifica áreas de ajuste.</li>
+<li><strong>Paso 5:</strong> establece metas financieras específicas y asigna tu dinero según prioridades.</li>
 </ul>
 
-<blockquote>El ahorro no es un sacrificio; es un acto de generosidad hacia tu yo del futuro. Cada peso que ahorras hoy es una opción más que tendrás mañana: la opción de emprender, de viajar, de estudiar un posgrado o simplemente de vivir sin estrés financiero.</blockquote>
+<blockquote>«Un presupuesto no te dice que no puedes gastar; te dice que puedes gastar con tranquilidad.» — Dave Ramsey, adaptado.</blockquote>
 
-<h4>La psicología del ahorro</h4>
-<p>Los economistas conductuales han descubierto que las personas ahorran más cuando: el proceso es automático, cuando tienen metas específicas y emocionales (no solo números), cuando pueden visualizar su yo futuro, y cuando las tentaciones de gasto están lejos. Usa estos hallazgos a tu favor: pon nombre a tus metas de ahorro, visualiza lo que lograrás y aleja las tentaciones.</p>
-
-<h4>Ahorro vs. tacañería</h4>
-<p>Ahorrar no significa privarte de todo. Significa ser intencional con tu dinero. Gasta generosamente en lo que verdaderamente valoras y recorta sin piedad lo que no. La clave es la alineación entre tus gastos y tus valores personales.</p>""",
-                "estimatedMinutes": 6
+<h4>Herramientas digitales</h4>
+<p>Aplicaciones como Fintonic, Wallet, Money Manager o una simple hoja de Google Sheets pueden facilitar enormemente el proceso de presupuestar. La clave es elegir una herramienta que se adapte a tu estilo y usarla consistentemente. El mejor presupuesto es el que realmente usas.</p>"""
             },
             {
-                "title": "Introducción a la Inversión",
-                "content": """<h3>Introducción a la Inversión</h3>
-<p>Invertir es poner tu dinero a trabajar para que genere más dinero. Mientras que ahorrar protege tu capital, invertir lo hace crecer. La diferencia es crucial: el dinero guardado bajo el colchón pierde valor cada año por la inflación, pero el dinero invertido inteligentemente puede multiplicarse exponencialmente con el tiempo.</p>
+                "title": "El Poder del Ahorro",
+                "content": """<h3>El Poder del Ahorro</h3>
+<p>Ahorrar no es guardar lo que sobra después de gastar; es <strong>apartar primero para tus metas y vivir con el resto</strong>. Este cambio de mentalidad, conocido como «pagarse a uno mismo primero», es quizás el hábito financiero más transformador que puedes adoptar. Incluso cantidades pequeñas, ahorradas consistentemente, pueden cambiar tu situación financiera de forma dramática.</p>
+
+<h4>El fondo de emergencia</h4>
+<p>Antes de pensar en inversiones o metas a largo plazo, tu prioridad número uno debe ser construir un <strong>fondo de emergencia</strong>. Este fondo es un colchón de dinero líquido (disponible inmediatamente) que te protege ante imprevistos como una enfermedad, la pérdida de empleo o una reparación urgente.</p>
+<ul>
+<li><strong>Meta mínima:</strong> 3 meses de gastos básicos.</li>
+<li><strong>Meta ideal:</strong> 6 meses de gastos básicos.</li>
+<li><strong>Dónde guardarlo:</strong> en una cuenta de ahorros separada, no en tu cuenta corriente donde puedas gastarlo impulsivamente.</li>
+</ul>
+
+<h4>Estrategias para ahorrar como estudiante</h4>
+<p>Ahorrar con ingresos limitados es difícil pero no imposible. Estas estrategias te ayudarán:</p>
+<ul>
+<li><strong>Automatiza el ahorro:</strong> configura una transferencia automática a tu cuenta de ahorro el día que recibes ingresos.</li>
+<li><strong>Aplica la regla de las 24 horas:</strong> antes de comprar algo no esencial por más de cierta cantidad, espera 24 horas. Si al día siguiente aún lo quieres, cómpralo.</li>
+<li><strong>Identifica «gastos vampiro»:</strong> esos pequeños gastos recurrentes que individualmente parecen insignificantes pero que sumados representan cantidades importantes (café diario, suscripciones que no usas, apps premium).</li>
+<li><strong>Cocina en casa:</strong> la alimentación fuera de casa puede representar hasta el 40% del presupuesto de un estudiante.</li>
+</ul>
+
+<blockquote>«No se trata de cuánto ganas, sino de cuánto conservas. Un peso ahorrado es un peso ganado dos veces.»</blockquote>
+
+<h4>El ahorro como hábito</h4>
+<p>Las investigaciones en psicología financiera muestran que el ahorro es más un <em>hábito</em> que una capacidad matemática. Las personas que ahorran exitosamente no son necesariamente las que más ganan, sino las que han desarrollado el hábito de vivir por debajo de sus medios. Comienza con una cantidad pequeña — incluso el 5% de tus ingresos — y aumenta gradualmente. El hábito es más importante que la cantidad.</p>
+
+<h4>Metas de ahorro SMART</h4>
+<p>Tus metas de ahorro deben ser Específicas, Medibles, Alcanzables, Relevantes y con Tiempo definido. «Quiero ahorrar» es una intención. «Quiero ahorrar $500,000 para un viaje de estudios en 12 meses, apartando $42,000 mensuales» es una meta SMART que puedes ejecutar y medir.</p>"""
+            },
+            {
+                "title": "Introducción a las Inversiones",
+                "content": """<h3>Introducción a las Inversiones</h3>
+<p>Invertir es hacer que tu dinero <strong>trabaje para ti</strong>. Mientras que ahorrar protege tu dinero de gastos innecesarios, invertir lo hace crecer. Y gracias al interés compuesto — que veremos en detalle más adelante — empezar a invertir joven, aunque sea con cantidades pequeñas, puede generar resultados extraordinarios a largo plazo.</p>
 
 <h4>Conceptos fundamentales</h4>
 <ul>
-<li><strong>Rentabilidad:</strong> El retorno que obtienes de tu inversión, expresado como porcentaje. Mayor rentabilidad generalmente implica mayor riesgo.</li>
-<li><strong>Riesgo:</strong> La posibilidad de perder parte o todo tu dinero invertido. Todo rendimiento tiene un riesgo asociado.</li>
-<li><strong>Liquidez:</strong> La facilidad con la que puedes convertir tu inversión en dinero efectivo. Una cuenta de ahorro es muy líquida; una propiedad inmobiliaria, poco.</li>
-<li><strong>Diversificación:</strong> No poner todos los huevos en una sola canasta. Distribuir tus inversiones reduce el riesgo global de tu portafolio.</li>
+<li><strong>Rendimiento:</strong> es la ganancia que obtienes de tu inversión, expresada generalmente como un porcentaje anual.</li>
+<li><strong>Riesgo:</strong> es la posibilidad de perder parte o todo tu dinero. En general, a mayor rendimiento potencial, mayor riesgo.</li>
+<li><strong>Liquidez:</strong> es la facilidad con que puedes convertir tu inversión en efectivo. Una cuenta de ahorros tiene alta liquidez; un inmueble tiene baja liquidez.</li>
+<li><strong>Diversificación:</strong> es la estrategia de repartir tu dinero en diferentes tipos de inversiones para reducir el riesgo. «No pongas todos los huevos en una sola canasta.»</li>
 </ul>
 
-<h4>Tipos de inversión para principiantes</h4>
+<h4>Tipos de inversiones básicas</h4>
 <ul>
-<li><strong>Depósitos a plazo:</strong> Bajo riesgo, baja rentabilidad. Tu dinero queda "bloqueado" por un período a cambio de una tasa de interés fija.</li>
-<li><strong>Fondos mutuos:</strong> Un administrador profesional invierte el dinero de muchas personas en una canasta diversificada de activos. Ideal para principiantes.</li>
-<li><strong>ETFs (Exchange-Traded Funds):</strong> Similares a los fondos mutuos pero se negocian en bolsa como acciones. Generalmente tienen comisiones más bajas.</li>
-<li><strong>Acciones:</strong> Comprar una pequeña porción de una empresa. Mayor potencial de rentabilidad pero también mayor riesgo y volatilidad.</li>
+<li><strong>Renta fija (bonos, CDTs, letras del tesoro):</strong> prestas dinero al gobierno o a una empresa y recibes intereses fijos. Bajo riesgo, bajo rendimiento.</li>
+<li><strong>Renta variable (acciones):</strong> compras una parte de una empresa y participas en sus ganancias (y pérdidas). Mayor riesgo, mayor rendimiento potencial.</li>
+<li><strong>Fondos de inversión:</strong> un grupo de inversionistas aporta dinero a un fondo gestionado por profesionales que lo invierten de forma diversificada.</li>
+<li><strong>ETFs (fondos cotizados):</strong> similares a los fondos de inversión pero se compran y venden como acciones. Son una forma accesible y económica de diversificar.</li>
 </ul>
 
-<h4>La relación riesgo-rentabilidad</h4>
-<p>Esta es la ley fundamental de las inversiones: a mayor rentabilidad esperada, mayor riesgo. No existen inversiones de alta rentabilidad y bajo riesgo; si alguien te las ofrece, probablemente es una estafa. Como inversor joven, puedes asumir más riesgo porque tienes más tiempo para recuperarte de las caídas del mercado.</p>
+<blockquote>«El mejor momento para empezar a invertir fue hace 20 años. El segundo mejor momento es hoy.» — Proverbio financiero.</blockquote>
 
-<blockquote>El mejor momento para empezar a invertir fue hace diez años. El segundo mejor momento es hoy. No esperes a tener mucho dinero; comienza con lo que tengas. El hábito de invertir es más importante que el monto.</blockquote>
+<h4>El perfil de riesgo</h4>
+<p>Antes de invertir, debes conocer tu <strong>perfil de riesgo</strong>: la cantidad de riesgo que puedes y estás dispuesto a tolerar. Depende de tu edad, ingresos, objetivos financieros y temperamento personal. Un estudiante joven generalmente puede asumir más riesgo porque tiene más tiempo para recuperarse de pérdidas eventuales.</p>
 
-<h4>Errores comunes del inversor principiante</h4>
+<h4>Errores comunes de inversores principiantes</h4>
 <ul>
-<li>Invertir dinero que necesitarás a corto plazo.</li>
-<li>Dejarse llevar por las emociones: comprar cuando todo sube (euforia) y vender cuando todo baja (pánico).</li>
-<li>No diversificar: apostar todo a una sola acción o sector.</li>
-<li>Ignorar las comisiones, que pueden erosionar significativamente tus retornos a largo plazo.</li>
-</ul>
-
-<h4>Plataformas accesibles en Latinoamérica</h4>
-<p>Plataformas como <em>Fintual</em>, <em>Racional</em>, <em>GBM+</em> y <em>Mercado Pago</em> permiten comenzar a invertir con montos muy bajos y sin conocimientos técnicos avanzados. Investiga las opciones disponibles en tu país.</p>""",
-                "estimatedMinutes": 6
+<li>Invertir dinero que necesitan a corto plazo.</li>
+<li>Seguir «tips calientes» sin investigar.</li>
+<li>Vender en pánico cuando el mercado baja.</li>
+<li>No diversificar y concentrar todo en una inversión.</li>
+<li>Posponer el inicio por creer que necesitan mucho dinero.</li>
+</ul>"""
             },
             {
                 "title": "Manejo Inteligente de Deudas",
                 "content": """<h3>Manejo Inteligente de Deudas</h3>
-<p>No todas las deudas son malas. Existen deudas que pueden impulsar tu crecimiento y deudas que pueden destruir tu salud financiera. Aprender a distinguir entre ambas, y a manejar estratégicamente las que ya tienes, es una habilidad financiera crítica que muy pocas personas dominan.</p>
+<p>No todas las deudas son malas. La clave está en distinguir entre <strong>deuda buena y deuda mala</strong>, y en gestionar cualquier deuda de forma estratégica para que no se convierta en una carga que limite tu libertad financiera.</p>
 
 <h4>Deuda buena vs. deuda mala</h4>
 <ul>
-<li><strong>Deuda buena:</strong> Financia activos que generan valor o se aprecian con el tiempo. Ejemplos: crédito universitario (invierte en tu capital humano), hipoteca (adquieres un activo que generalmente se valoriza), préstamo para un negocio rentable.</li>
-<li><strong>Deuda mala:</strong> Financia consumo que se deprecia inmediatamente o no genera valor. Ejemplos: avance en efectivo de tarjeta de crédito para vacaciones, compras impulsivas a cuotas con altos intereses, préstamos para financiar un estilo de vida insostenible.</li>
+<li><strong>Deuda buena:</strong> se usa para adquirir activos que aumentan de valor o generan ingresos. Ejemplos: un crédito educativo que aumenta tu capacidad de generar ingresos, una hipoteca para una vivienda que se valoriza, un préstamo para iniciar un negocio viable.</li>
+<li><strong>Deuda mala:</strong> se usa para comprar cosas que pierden valor rápidamente y no generan ingresos. Ejemplos: financiar vacaciones con tarjeta de crédito, comprar ropa de moda a cuotas, adquirir el último celular a crédito.</li>
 </ul>
 
-<h4>Entendiendo las tasas de interés</h4>
-<p>La tasa de interés es el "precio" del dinero prestado. Diferencia entre:</p>
+<h4>Las tarjetas de crédito: herramienta o trampa</h4>
+<p>Las tarjetas de crédito son la fuente más común de deuda problemática entre jóvenes profesionales. Usadas correctamente, son una herramienta poderosa para construir historial crediticio y obtener beneficios. Usadas irresponsablemente, pueden generar deudas con tasas de interés <em>superiores al 30% anual</em>.</p>
 <ul>
-<li><strong>Tasa nominal:</strong> La tasa anunciada por el banco.</li>
-<li><strong>Tasa efectiva:</strong> La tasa real que pagas cuando se incluyen comisiones y la frecuencia de capitalización.</li>
-<li><strong>CAE (Carga Anual Equivalente):</strong> En Chile, el indicador que permite comparar el costo real de diferentes créditos incluyendo todos los costos asociados.</li>
+<li>Paga siempre el total de tu estado de cuenta, no el mínimo.</li>
+<li>Si no puedes pagar algo de contado, probablemente no puedes pagarlo.</li>
+<li>Usa la tarjeta como medio de pago, no como extensión de tu ingreso.</li>
 </ul>
 
 <h4>Estrategias para salir de deudas</h4>
 <p>Si ya tienes deudas, estas dos estrategias son las más efectivas:</p>
 <ul>
-<li><strong>Método avalancha:</strong> Paga primero la deuda con la tasa de interés más alta, haciendo pagos mínimos en las demás. Es matemáticamente óptimo: minimiza el total de intereses pagados.</li>
-<li><strong>Método bola de nieve:</strong> Paga primero la deuda más pequeña en monto, independientemente de la tasa. Es psicológicamente poderoso: las victorias rápidas generan motivación para continuar.</li>
+<li><strong>Método bola de nieve (Dave Ramsey):</strong> paga primero la deuda más pequeña, independientemente de la tasa de interés. La satisfacción psicológica de eliminar deudas te motiva a continuar.</li>
+<li><strong>Método avalancha:</strong> paga primero la deuda con la tasa de interés más alta. Matemáticamente, es la estrategia más eficiente porque ahorras más en intereses.</li>
 </ul>
 
-<blockquote>La deuda más peligrosa no es la más grande, sino la que no entiendes. Antes de firmar cualquier crédito, comprende completamente cuánto pagarás en total, cuál es la tasa efectiva y qué pasa si no puedes cumplir con los pagos.</blockquote>
+<blockquote>«La deuda es la esclavitud del hombre libre.» — Publio Siro. Aunque es una frase antigua, sigue siendo profundamente relevante para nuestras finanzas modernas.</blockquote>
 
-<h4>La trampa de la tarjeta de crédito</h4>
-<p>Las tarjetas de crédito son herramientas útiles cuando se pagan en su totalidad cada mes. Se vuelven peligrosas cuando solo pagas el mínimo: con tasas que pueden superar el 30% o 40% anual, una deuda de tarjeta puede duplicarse en pocos años. Si no puedes pagar el total, tienes un problema de gasto, no de ingreso.</p>
-
-<h4>Negociación con instituciones financieras</h4>
-<p>Si estás en problemas de deuda, contacta a tus acreedores antes de dejar de pagar. Muchos bancos ofrecen repactaciones, consolidaciones o programas de alivio. Ignorar las deudas siempre empeora la situación por los intereses moratorios y el daño a tu historial crediticio.</p>""",
-                "estimatedMinutes": 6
+<h4>El historial crediticio</h4>
+<p>Tu <strong>historial crediticio</strong> es un registro de cómo has manejado tus deudas. Un buen historial te permite acceder a mejores tasas de interés, créditos hipotecarios y hasta puede influir en procesos de selección laboral. Construirlo desde joven, con una tarjeta de crédito que pagas puntualmente, es una inversión en tu futuro financiero.</p>"""
             },
             {
-                "title": "El Poder del Interés Compuesto",
-                "content": """<h3>El Poder del Interés Compuesto</h3>
-<p>Albert Einstein supuestamente llamó al interés compuesto "la octava maravilla del mundo", añadiendo: "Quien lo entiende, lo gana; quien no, lo paga". Aunque la atribución es discutida, la afirmación es absolutamente cierta. El interés compuesto es la fuerza financiera más poderosa que existe y tu mayor aliado como joven inversor.</p>
+                "title": "El Interés Compuesto: La Octava Maravilla",
+                "content": """<h3>El Interés Compuesto: La Octava Maravilla</h3>
+<p>Albert Einstein supuestamente llamó al interés compuesto «la octava maravilla del mundo» y añadió: «quien lo entiende, lo gana; quien no, lo paga». Aunque la atribución es debatida, el poder del <strong>interés compuesto</strong> es indiscutible: es la fuerza que convierte pequeñas cantidades de dinero en fortunas, si se le da suficiente tiempo.</p>
 
-<h4>¿Cómo funciona?</h4>
-<p>El interés simple se calcula solo sobre el capital inicial. El interés compuesto se calcula sobre el capital inicial más los intereses acumulados previamente. En otras palabras, ganas intereses sobre tus intereses. Con el tiempo, este efecto de "bola de nieve" produce resultados extraordinarios.</p>
+<h4>¿Cómo funciona el interés compuesto?</h4>
+<p>El interés simple se calcula solo sobre el capital inicial. El interés compuesto se calcula sobre <em>el capital más los intereses acumulados</em>. Es decir, ganas intereses sobre tus intereses. Este efecto de «bola de nieve» se acelera con el tiempo, produciendo un crecimiento exponencial.</p>
 
-<h4>Un ejemplo que lo cambia todo</h4>
-<p>Imagina a dos personas:</p>
+<h4>Un ejemplo revelador</h4>
+<p>Imaginemos dos personas:</p>
 <ul>
-<li><strong>Ana</strong> comienza a invertir $50.000 al mes a los 22 años con un rendimiento del 8% anual. A los 32 años deja de aportar. Total invertido: $6.000.000 en 10 años.</li>
-<li><strong>Pedro</strong> comienza a invertir $50.000 al mes a los 32 años con el mismo rendimiento del 8%. Invierte hasta los 62 años. Total invertido: $18.000.000 en 30 años.</li>
+<li><strong>Ana</strong> invierte $100,000 mensuales desde los 20 hasta los 30 años (10 años) y luego deja de aportar. Total invertido: $12,000,000.</li>
+<li><strong>Carlos</strong> empieza a invertir $100,000 mensuales a los 30 años y continúa hasta los 60 (30 años). Total invertido: $36,000,000.</li>
 </ul>
-<p>A los 62 años, Ana tendrá más dinero que Pedro, a pesar de haber invertido un tercio del monto. ¿La razón? Los 10 años adicionales de crecimiento compuesto que tuvo el dinero de Ana.</p>
+<p>Con un rendimiento anual del 10%, al llegar a los 60 años, Ana tendría aproximadamente $382 millones, mientras que Carlos tendría $227 millones. <strong>Ana invirtió tres veces menos dinero pero terminó con más</strong>, gracias al tiempo extra que le dio al interés compuesto para trabajar.</p>
+
+<blockquote>«El tiempo es el mejor amigo del inversor y el peor enemigo del que posterga. Cada año que esperas para empezar a invertir te cuesta una fortuna en el futuro.»</blockquote>
 
 <h4>La regla del 72</h4>
-<p>Una forma rápida de estimar cuánto tarda tu dinero en duplicarse: divide 72 entre la tasa de rendimiento anual. Si tu inversión rinde 8% anual, tu dinero se duplica aproximadamente cada 9 años (72/8 = 9). Si rinde 6%, cada 12 años.</p>
+<p>La <strong>regla del 72</strong> es un atajo mental para calcular cuánto tiempo tarda tu dinero en duplicarse. Solo divide 72 entre la tasa de rendimiento anual:</p>
+<ul>
+<li>Al 6% anual: 72 ÷ 6 = <strong>12 años</strong> para duplicar tu dinero.</li>
+<li>Al 10% anual: 72 ÷ 10 = <strong>7.2 años</strong> para duplicar tu dinero.</li>
+<li>Al 12% anual: 72 ÷ 12 = <strong>6 años</strong> para duplicar tu dinero.</li>
+</ul>
 
-<blockquote>El tiempo es el ingrediente más importante del interés compuesto. Un joven de 20 años que ahorra poco tiene una ventaja enorme sobre un profesional de 40 años que ahorra mucho. Empezar temprano importa más que empezar con mucho.</blockquote>
-
-<h4>El interés compuesto trabaja en tu contra con las deudas</h4>
-<p>El mismo mecanismo que hace crecer tus inversiones hace crecer tus deudas. Una deuda de tarjeta de crédito con 36% de interés anual se duplica en solo 2 años si no la pagas. Por eso es urgente eliminar deudas con altas tasas de interés antes de comenzar a invertir agresivamente.</p>
-
-<h4>Inflación: el enemigo silencioso</h4>
-<p>La inflación reduce el poder adquisitivo de tu dinero. Si la inflación es del 4% anual, necesitas que tu dinero crezca al menos un 4% solo para mantener su valor. Cualquier rendimiento por debajo de la inflación significa que estás perdiendo poder de compra, aunque nominalmente tengas más dinero.</p>
-
-<h4>Comienza hoy, no mañana</h4>
-<p>El momento perfecto para comenzar a invertir no existe. Lo que sí existe es el costo de esperar. Cada mes que no inviertes es un mes de crecimiento compuesto que pierdes para siempre. Aunque sean $10.000 al mes, comienza hoy.</p>""",
-                "estimatedMinutes": 5
+<h4>El interés compuesto trabaja en tu contra también</h4>
+<p>El mismo principio que hace crecer tus inversiones hace crecer tus deudas. Una deuda de tarjeta de crédito al 30% anual se duplica en solo 2.4 años si no la pagas. Por eso es crucial pagar deudas de alto interés lo antes posible y empezar a invertir temprano.</p>"""
             },
             {
                 "title": "Planificación Financiera para Estudiantes",
                 "content": """<h3>Planificación Financiera para Estudiantes</h3>
-<p>La planificación financiera no es algo que se hace solo cuando tienes un sueldo alto. Como estudiante, estás en el momento perfecto para establecer hábitos financieros que definirán tu bienestar económico durante décadas. Las decisiones financieras que tomes ahora, por pequeñas que parezcan, tendrán un impacto amplificado por el tiempo.</p>
+<p>La planificación financiera no es un lujo reservado para personas con altos ingresos; es una <strong>necesidad para cualquier persona que quiera tener control sobre su futuro económico</strong>. Como estudiante, tienes una ventaja invaluable: tiempo. Y como hemos visto, el tiempo es el ingrediente más poderoso del interés compuesto.</p>
 
-<h4>Metas financieras SMART</h4>
-<p>Tus metas financieras deben ser:</p>
+<h4>Tu plan financiero en cinco pasos</h4>
 <ul>
-<li><strong>Específicas:</strong> "Ahorrar $500.000 para un fondo de emergencia" en vez de "ahorrar más".</li>
-<li><strong>Medibles:</strong> Que puedas rastrear tu progreso con números concretos.</li>
-<li><strong>Alcanzables:</strong> Realistas según tu situación actual de ingresos y gastos.</li>
-<li><strong>Relevantes:</strong> Alineadas con tus prioridades de vida reales.</li>
-<li><strong>Temporales:</strong> Con una fecha límite definida: "en 6 meses", "antes de diciembre".</li>
+<li><strong>Paso 1 — Diagnóstico:</strong> calcula tu patrimonio neto actual (activos menos deudas). No importa si es negativo; lo importante es conocer tu punto de partida.</li>
+<li><strong>Paso 2 — Metas:</strong> define metas financieras a corto (1 año), mediano (3-5 años) y largo plazo (10+ años). Sé específico con montos y fechas.</li>
+<li><strong>Paso 3 — Presupuesto:</strong> implementa el presupuesto que diseñaste en la primera lección y ajústalo mensualmente.</li>
+<li><strong>Paso 4 — Protección:</strong> construye tu fondo de emergencia y evalúa seguros básicos (salud, accidentes).</li>
+<li><strong>Paso 5 — Crecimiento:</strong> una vez cubiertos los pasos anteriores, empieza a invertir, aunque sea con cantidades mínimas.</li>
 </ul>
 
-<h4>Las etapas financieras del estudiante</h4>
+<h4>Errores financieros comunes de los universitarios</h4>
 <ul>
-<li><strong>Etapa 1 - Sobrevivencia:</strong> Cubre tus gastos básicos y construye un pequeño colchón de emergencia. Prioridad: no endeudarte.</li>
-<li><strong>Etapa 2 - Estabilidad:</strong> Fondo de emergencia de un mes de gastos, presupuesto funcionando, sin deudas de consumo. Prioridad: automatizar el ahorro.</li>
-<li><strong>Etapa 3 - Crecimiento:</strong> Fondo de emergencia de tres meses, primera inversión, ingresos adicionales a tu mesada o beca. Prioridad: hacer crecer tu dinero.</li>
+<li><strong>Vivir como si ya tuvieran el salario de profesional:</strong> la presión social lleva a muchos estudiantes a gastar en restaurantes, ropa y tecnología que no pueden costear.</li>
+<li><strong>No aprovechar los descuentos estudiantiles:</strong> software, transporte, museos, eventos — hay cientos de descuentos disponibles que muchos ignoran.</li>
+<li><strong>Endeudarse por presión social:</strong> financiar un estilo de vida que no corresponde a tu realidad actual es la receta para el estrés financiero.</li>
+<li><strong>No buscar fuentes adicionales de ingreso:</strong> tutorías, freelance, proyectos de investigación pagados — la creatividad para generar ingresos complementarios es una habilidad valiosa.</li>
 </ul>
 
-<h4>Fuentes de ingreso para estudiantes</h4>
-<p>No dependas exclusivamente de una fuente de ingreso. Opciones para generar ingresos como estudiante:</p>
-<ul>
-<li>Trabajos de medio tiempo relacionados con tu carrera (practicas, ayudantías).</li>
-<li>Freelance en habilidades que ya tienes (diseño, traducción, programación, tutoría).</li>
-<li>Becas y concursos académicos.</li>
-<li>Venta de apuntes, resúmenes o material de estudio.</li>
-<li>Emprendimientos pequeños: desde repostería hasta servicios digitales.</li>
-</ul>
-
-<blockquote>Tu mayor activo financiero como estudiante no es tu dinero; es tu tiempo. Tienes décadas por delante para que el interés compuesto trabaje a tu favor. Cada peso invertido a los 20 años vale más que diez pesos invertidos a los 50.</blockquote>
-
-<h4>Protegiendo tu futuro: seguros y previsión</h4>
-<p>Aunque parece lejano, entender cómo funciona el sistema de pensiones y seguros de tu país es importante. En muchos países latinoamericanos, la jubilación pública no será suficiente para mantener tu nivel de vida. Cuanto antes empieces a planificar, más opciones tendrás.</p>
+<blockquote>«La libertad financiera no se trata de ser millonario; se trata de que tus decisiones no estén limitadas por la falta de dinero.»</blockquote>
 
 <h4>Educación financiera continua</h4>
-<p>Los mercados, los instrumentos financieros y las regulaciones cambian constantemente. Comprométete con la educación financiera como un proceso continuo: lee libros como <em>Padre Rico, Padre Pobre</em>, <em>El Hombre Más Rico de Babilonia</em> o <em>Piense y Hágase Rico</em>; sigue blogs y podcasts financieros, y conversa sobre dinero con personas que admires financieramente.</p>""",
-                "estimatedMinutes": 6
+<p>Tu formación financiera no termina con este curso. Invierte tiempo regularmente en aprender sobre finanzas personales. Libros recomendados: <em>Padre Rico, Padre Pobre</em> de Robert Kiyosaki, <em>El Hombre Más Rico de Babilonia</em> de George Clason y <em>Los Secretos de la Mente Millonaria</em> de T. Harv Eker.</p>
+
+<h4>El mindset financiero</h4>
+<p>Más allá de las técnicas, la administración financiera exitosa requiere un cambio de <em>mentalidad</em>. Pasar de «no me alcanza» a «¿cómo puedo hacer que me alcance?» es el primer paso. Pasar de «el dinero es malo» a «el dinero es una herramienta que amplifica quien ya eres» es el segundo. Tu relación con el dinero refleja tu relación contigo mismo.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "¿Qué establece el método de presupuesto 50/30/20?",
+                "question": "¿Qué establece la regla 50/30/20 para el presupuesto?",
                 "options": [
                     "50% ahorro, 30% necesidades, 20% deseos",
-                    "50% necesidades, 30% deseos, 20% ahorro y deuda",
+                    "50% necesidades, 30% deseos, 20% ahorro e inversión",
                     "50% deseos, 30% ahorro, 20% necesidades",
-                    "50% inversión, 30% necesidades, 20% entretenimiento"
+                    "50% inversión, 30% necesidades, 20% deseos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El método 50/30/20 de Elizabeth Warren asigna 50% a necesidades, 30% a deseos y 20% a ahorro y pago de deudas."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál es la diferencia principal entre el método avalancha y el método bola de nieve para pagar deudas?",
+                "question": "¿Cuál es la meta ideal para un fondo de emergencia?",
                 "options": [
-                    "El avalancha paga primero la deuda más grande; el bola de nieve la más pequeña",
-                    "El avalancha paga primero la de mayor tasa de interés; el bola de nieve la de menor monto",
-                    "No hay diferencia, son el mismo método",
-                    "El avalancha es para deudas bancarias; el bola de nieve para deudas personales"
+                    "1 mes de gastos básicos",
+                    "3 meses de gastos básicos",
+                    "6 meses de gastos básicos",
+                    "12 meses de gastos básicos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El método avalancha prioriza la deuda con mayor tasa de interés (matemáticamente óptimo), mientras que el bola de nieve prioriza la de menor monto (psicológicamente motivador)."
+                "correctAnswer": 2
             },
             {
-                "question": "Según la regla del 72, ¿en cuántos años se duplica una inversión con 8% de rendimiento anual?",
+                "question": "¿Qué significa 'pagarse a uno mismo primero'?",
                 "options": [
-                    "6 años",
-                    "8 años",
-                    "9 años",
+                    "Comprar lo que quieras antes de pagar deudas",
+                    "Apartar dinero para ahorro antes de gastar en otras cosas",
+                    "Pagar tus necesidades antes que las de otros",
+                    "Invertir todo tu salario en tu negocio propio"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué son los 'gastos vampiro'?",
+                "options": [
+                    "Gastos que solo haces de noche",
+                    "Gastos grandes e inesperados",
+                    "Pequeños gastos recurrentes que parecen insignificantes pero suman cantidades importantes",
+                    "Gastos que otros hacen con tu dinero"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Cuál es la relación general entre rendimiento y riesgo en las inversiones?",
+                "options": [
+                    "A mayor rendimiento, menor riesgo",
+                    "A mayor rendimiento, mayor riesgo",
+                    "No hay relación entre rendimiento y riesgo",
+                    "El riesgo solo depende del tipo de inversión"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué es la diversificación en inversiones?",
+                "options": [
+                    "Invertir todo en la opción más rentable",
+                    "Repartir el dinero en diferentes tipos de inversiones para reducir riesgo",
+                    "Cambiar de inversión cada mes",
+                    "Invertir solo en empresas de diferentes países"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Cuál es un ejemplo de 'deuda buena'?",
+                "options": [
+                    "Financiar vacaciones con tarjeta de crédito",
+                    "Comprar ropa de marca a cuotas",
+                    "Un crédito educativo que aumenta tu capacidad de generar ingresos",
+                    "Comprar el último celular a crédito"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "El método 'bola de nieve' para pagar deudas consiste en:",
+                "options": [
+                    "Pagar primero la deuda con la tasa de interés más alta",
+                    "Pagar primero la deuda más pequeña para ganar motivación",
+                    "Consolidar todas las deudas en una sola",
+                    "Pagar solo los mínimos de todas las deudas"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "Según la regla del 72, ¿en cuántos años se duplica el dinero al 10% anual?",
+                "options": [
+                    "5 años",
+                    "7.2 años",
+                    "10 años",
                     "12 años"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La regla del 72 indica que dividiendo 72 entre la tasa de rendimiento obtienes el tiempo aproximado para duplicar tu inversión: 72/8 = 9 años."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es la diversificación en el contexto de inversiones?",
+                "question": "En el ejemplo de Ana y Carlos, ¿por qué Ana terminó con más dinero habiendo invertido menos?",
                 "options": [
-                    "Invertir todo tu dinero en la acción más rentable",
-                    "Distribuir las inversiones en diferentes activos para reducir el riesgo global",
-                    "Cambiar de inversión cada mes",
-                    "Invertir solo en instrumentos de bajo riesgo"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La diversificación consiste en distribuir las inversiones en diferentes activos ('no poner todos los huevos en una canasta') para reducir el riesgo global del portafolio."
-            },
-            {
-                "question": "En el ejemplo de Ana y Pedro, ¿por qué Ana termina con más dinero a pesar de invertir menos?",
-                "options": [
-                    "Porque obtuvo una tasa de interés más alta",
+                    "Porque tuvo suerte en el mercado",
+                    "Porque invirtió en mejores fondos",
                     "Porque empezó 10 años antes, dando más tiempo al interés compuesto",
-                    "Porque invirtió en mejores instrumentos financieros",
-                    "Porque no pagó impuestos sobre sus inversiones"
+                    "Porque invirtió cantidades más grandes"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Ana terminó con más dinero porque comenzó a invertir 10 años antes, dando más tiempo al efecto del interés compuesto. El tiempo es el factor más poderoso en el crecimiento de inversiones."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué es el presupuesto base cero?",
+                "question": "¿Cuál es el primer paso de un plan financiero personal?",
                 "options": [
-                    "Un presupuesto donde no se gasta nada durante un mes",
-                    "Un método donde cada peso que ingresa tiene un destino asignado, de modo que ingresos menos gastos planificados da exactamente cero",
-                    "Un sistema donde se parte de cero deudas antes de presupuestar",
-                    "Un presupuesto diseñado exclusivamente para personas sin ingresos"
+                    "Empezar a invertir inmediatamente",
+                    "Calcular tu patrimonio neto actual (activos menos deudas)",
+                    "Abrir una cuenta de ahorros",
+                    "Eliminar todas tus tarjetas de crédito"
                 ],
-                "correctAnswer": 1,
-                "explanation": "En el presupuesto base cero, cada peso tiene un destino asignado antes de gastarlo (incluyendo ahorro e inversión), de modo que ingresos menos gastos planificados da exactamente cero."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es la regla de las 48 horas aplicada al ahorro?",
+                "question": "¿Por qué las tarjetas de crédito pueden ser una trampa financiera?",
                 "options": [
-                    "Depositar tu ahorro dentro de las 48 horas de recibir tu ingreso",
-                    "Esperar 48 horas antes de cualquier compra no esencial mayor a cierto monto",
-                    "Revisar tu presupuesto cada 48 horas",
-                    "Cambiar de estrategia de inversión cada 48 horas"
+                    "Porque siempre cobran comisiones ocultas",
+                    "Porque generan intereses superiores al 30% anual si no pagas el total",
+                    "Porque los bancos pueden cerrarlas sin aviso",
+                    "Porque solo benefician a personas con altos ingresos"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La regla de las 48 horas sugiere esperar ese tiempo antes de cualquier compra no esencial significativa. Si después la sigues queriendo y puedes pagarla, adelante."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál es la diferencia entre tasa nominal y tasa efectiva de interés?",
+                "question": "¿Qué tipo de inversión ofrece bajo riesgo y bajo rendimiento?",
                 "options": [
-                    "Son exactamente lo mismo, solo cambia el nombre",
-                    "La nominal es la anunciada por el banco; la efectiva es la real incluyendo comisiones y capitalización",
-                    "La efectiva siempre es menor que la nominal",
-                    "La nominal aplica solo a inversiones y la efectiva solo a deudas"
+                    "Acciones de empresas tecnológicas",
+                    "Criptomonedas",
+                    "Renta fija (bonos, CDTs, letras del tesoro)",
+                    "Capital de riesgo"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La tasa nominal es la anunciada por el banco, mientras que la tasa efectiva es la real que pagas o recibes cuando se incluyen comisiones y la frecuencia de capitalización."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuántos meses de gastos esenciales se recomienda tener en un fondo de emergencia?",
+                "question": "¿Cuál es un error financiero común entre universitarios?",
                 "options": [
-                    "Uno a dos meses",
-                    "Tres a seis meses",
-                    "Doce meses",
-                    "Veinticuatro meses"
+                    "Buscar fuentes adicionales de ingreso",
+                    "Vivir como si ya tuvieran el salario de profesional",
+                    "Aprovechar descuentos estudiantiles",
+                    "Crear un presupuesto mensual"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La recomendación general es acumular entre tres y seis meses de gastos esenciales en un fondo de emergencia para cubrir imprevistos como emergencias médicas o pérdida de ingresos."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué concepto describe 'pagarte a ti mismo primero'?",
+                "question": "¿Qué es la 'liquidez' de una inversión?",
                 "options": [
-                    "Gastar en lo que quieras antes de pagar deudas",
-                    "Separar primero lo que vas a ahorrar y gastar lo que sobra",
-                    "Pagar tus deudas antes que cualquier otro gasto",
-                    "Invertir todo tu ingreso sin dejar nada para gastos"
+                    "El rendimiento que genera",
+                    "El riesgo de perder dinero",
+                    "La facilidad con que puedes convertirla en efectivo",
+                    "El monto mínimo para invertir"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Pagarte a ti mismo primero significa separar tu ahorro antes de gastar, no ahorrar lo que sobra. Este cambio de mentalidad es la diferencia fundamental entre quienes construyen patrimonio y quienes no."
-            },
-            {
-                "question": "Según la lección, ¿por qué las tarjetas de crédito se vuelven peligrosas?",
-                "options": [
-                    "Porque cobran comisiones anuales",
-                    "Porque al pagar solo el mínimo, las tasas del 30-40% anual pueden duplicar la deuda en pocos años",
-                    "Porque todas las compras con tarjeta son innecesarias",
-                    "Porque los bancos pueden cancelarlas sin previo aviso"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Las tarjetas de crédito son peligrosas cuando solo se paga el mínimo: con tasas que superan el 30-40% anual, una deuda puede duplicarse en pocos años por el interés compuesto en tu contra."
-            },
-            {
-                "question": "¿Qué es la liquidez en el contexto de inversiones?",
-                "options": [
-                    "La cantidad de dinero que ganas con una inversión",
-                    "La facilidad con la que puedes convertir tu inversión en dinero efectivo",
-                    "El riesgo de perder tu dinero invertido",
-                    "La tasa de interés que paga una inversi��n"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La liquidez es la facilidad con la que puedes convertir tu inversión en dinero efectivo. Una cuenta de ahorro es muy líquida; una propiedad inmobiliaria tiene baja liquidez."
-            },
-            {
-                "question": "¿Cuáles son las tres etapas financieras del estudiante según la lección?",
-                "options": [
-                    "Pobreza, clase media y riqueza",
-                    "Sobrevivencia, estabilidad y crecimiento",
-                    "Ahorro, inversión y jubilación",
-                    "Dependencia, independencia e interdependencia"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Las tres etapas son: Sobrevivencia (cubrir gastos básicos, no endeudarse), Estabilidad (fondo de emergencia, presupuesto funcionando) y Crecimiento (primera inversión, ingresos adicionales)."
-            },
-            {
-                "question": "¿Por qué la inflación es considerada 'el enemigo silencioso' de tus finanzas?",
-                "options": [
-                    "Porque hace que los bancos cobren más comisiones",
-                    "Porque reduce el poder adquisitivo de tu dinero, necesitando rendimientos superiores a la inflación solo para mantener su valor",
-                    "Porque elimina los intereses que generan tus inversiones",
-                    "Porque hace que todas las inversiones pierdan dinero"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La inflación reduce el poder adquisitivo del dinero. Si la inflación es del 4% anual, necesitas que tu dinero crezca al menos un 4% solo para mantener su valor real."
-            },
-            {
-                "question": "¿Cuál es la ley fundamental de las inversiones según la lección?",
-                "options": [
-                    "Toda inversión garantiza ganancias a largo plazo",
-                    "A mayor rentabilidad esperada, mayor riesgo",
-                    "Los fondos mutuos siempre superan a las acciones",
-                    "Las inversiones de bajo riesgo son siempre la mejor opción"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La ley fundamental es que a mayor rentabilidad esperada, mayor riesgo. No existen inversiones de alta rentabilidad y bajo riesgo; si alguien las ofrece, probablemente es una estafa."
+                "correctAnswer": 2
             }
         ]
     },
-
     "Adaptabilidad al Cambio": {
+        "emoji": "🦎",
+        "level": "beginner",
+        "duration": "25min",
         "lessons": [
             {
-                "title": "Gestión del Cambio: Entender las Transiciones",
-                "content": """<h3>Gestión del Cambio: Entender las Transiciones</h3>
-<p>El cambio es la única constante en la vida profesional moderna. Nuevas tecnologías, reestructuraciones organizacionales, cambios de carrera, pandemias globales: la capacidad de adaptarse al cambio se ha convertido en la competencia profesional más demandada del siglo XXI. Quienes prosperan no son los más fuertes ni los más inteligentes, sino los más adaptables.</p>
-
-<h4>El modelo de transiciones de Bridges</h4>
-<p>William Bridges distingue entre "cambio" y "transición". El cambio es externo y situacional (un nuevo jefe, una nueva tecnología, una nueva carrera). La transición es el proceso psicológico interno que experimentamos al adaptarnos. Bridges identifica tres fases:</p>
-<ul>
-<li><strong>Fin:</strong> Soltar lo viejo. Implica duelo, resistencia y nostalgia por lo conocido. Es la fase más difícil emocionalmente.</li>
-<li><strong>Zona neutral:</strong> El espacio entre lo viejo y lo nuevo. Es confuso e incómodo, pero también es donde ocurre la verdadera transformación y creatividad.</li>
-<li><strong>Nuevo comienzo:</strong> Adoptar la nueva realidad con energía, identidad renovada y nuevas habilidades.</li>
-</ul>
+                "title": "Comprendiendo la Gestión del Cambio",
+                "content": """<h3>Comprendiendo la Gestión del Cambio</h3>
+<p>Vivimos en una era de <strong>cambio acelerado y constante</strong>. La tecnología, los mercados laborales, las estructuras sociales y hasta los paradigmas científicos se transforman a una velocidad sin precedentes. En este contexto, la capacidad de adaptarse no es una ventaja competitiva; es una condición de supervivencia profesional.</p>
 
 <h4>¿Por qué resistimos el cambio?</h4>
-<p>La resistencia al cambio es una respuesta humana natural, no un defecto. Nuestro cerebro está programado para preferir lo predecible porque lo desconocido representaba peligro en nuestra evolución. Las razones más comunes de resistencia incluyen:</p>
+<p>A pesar de saber que el cambio es inevitable, nuestra respuesta natural es resistirlo. Esto tiene raíces evolutivas: nuestro cerebro está programado para preferir lo conocido y predecible porque, durante miles de años, lo desconocido representaba peligro. Las principales razones de la resistencia al cambio son:</p>
 <ul>
-<li>Miedo a lo desconocido y a la pérdida de control.</li>
-<li>Comodidad con el statu quo y los hábitos establecidos.</li>
-<li>Falta de información o comunicación sobre el cambio.</li>
-<li>Experiencias negativas con cambios anteriores.</li>
-<li>Amenaza percibida a la identidad o al estatus.</li>
+<li><strong>Miedo a lo desconocido:</strong> la incertidumbre genera ansiedad.</li>
+<li><strong>Pérdida de control:</strong> el cambio puede hacernos sentir que perdemos autonomía.</li>
+<li><strong>Comodidad del hábito:</strong> las rutinas establecidas son eficientes y cómodas.</li>
+<li><strong>Amenaza a la identidad:</strong> los cambios pueden cuestionar quiénes somos y qué valoramos.</li>
+<li><strong>Experiencias negativas previas:</strong> si cambios anteriores resultaron mal, esperamos que los futuros también lo sean.</li>
 </ul>
 
-<blockquote>La resistencia al cambio no es el enemigo; es información valiosa. Cuando sientes resistencia, pregúntate: ¿Qué miedo hay detrás? ¿Es un miedo racional o una respuesta automática a lo desconocido?</blockquote>
+<h4>La curva del cambio</h4>
+<p>El modelo de Elisabeth Kübler-Ross, originalmente desarrollado para el duelo, se aplica ampliamente a cualquier proceso de cambio significativo. Las etapas son:</p>
+<ul>
+<li><strong>Negación:</strong> «esto no me va a afectar».</li>
+<li><strong>Resistencia/Ira:</strong> «¿por qué tiene que cambiar?».</li>
+<li><strong>Exploración:</strong> «quizás hay oportunidades en esto».</li>
+<li><strong>Aceptación y compromiso:</strong> «voy a hacer que funcione».</li>
+</ul>
 
-<h4>La curva de Kübler-Ross aplicada al cambio</h4>
-<p>Elisabeth Kübler-Ross identificó cinco etapas del duelo que también aplican a los cambios profesionales: negación, ira, negociación, depresión y aceptación. No todos pasan por todas las etapas ni en el mismo orden, pero reconocerlas te ayuda a navegar el proceso con mayor consciencia.</p>
+<blockquote>«No es la especie más fuerte la que sobrevive, ni la más inteligente, sino la que mejor se adapta al cambio.» — Frecuentemente atribuida a Charles Darwin.</blockquote>
 
-<h4>Desarrollar resiliencia</h4>
-<p>La resiliencia no es resistir sin quebrarse; es la capacidad de recuperarse y crecer a partir de la adversidad. Se construye con prácticas concretas: mantener relaciones de apoyo, cultivar una mentalidad de crecimiento, cuidar tu salud física y emocional, y encontrar propósito en los momentos difíciles.</p>""",
-                "estimatedMinutes": 5
+<h4>El cambio como oportunidad</h4>
+<p>Los momentos de mayor cambio son también los de mayor oportunidad. Las crisis económicas generan nuevas industrias, las disrupciones tecnológicas crean nuevas carreras y los cambios sociales abren espacios para nuevas voces. La diferencia entre quienes prosperan y quienes se quedan atrás no está en evitar el cambio, sino en su capacidad para <em>navegar y aprovechar</em> la transformación.</p>"""
             },
             {
-                "title": "Salir de la Zona de Confort",
-                "content": """<h3>Salir de la Zona de Confort</h3>
-<p>La zona de confort es ese espacio mental donde todo es familiar, predecible y seguro. No es necesariamente un lugar cómodo; es un lugar conocido. Muchas personas confunden la familiaridad con la felicidad. Puedes estar infeliz en tu zona de confort, pero el miedo a lo desconocido te mantiene ahí. El crecimiento profesional y personal ocurre cuando te atreves a cruzar ese límite.</p>
+                "title": "Saliendo de la Zona de Confort",
+                "content": """<h3>Saliendo de la Zona de Confort</h3>
+<p>La <strong>zona de confort</strong> es el espacio psicológico donde te sientes seguro, en control y libre de ansiedad. Es donde están tus hábitos, rutinas y habilidades dominadas. Aunque suena agradable, permanecer permanentemente en la zona de confort es la forma más segura de estancar tu crecimiento personal y profesional.</p>
 
 <h4>Las tres zonas</h4>
-<p>El psicólogo Lev Vygotsky y otros han descrito tres zonas concéntricas que explican el aprendizaje y el crecimiento:</p>
+<p>El modelo de las tres zonas, popularizado por la psicología del rendimiento, describe tres estados:</p>
 <ul>
-<li><strong>Zona de confort:</strong> Haces cosas que ya dominas. Te sientes seguro pero no creces. Aquí se estancan las carreras.</li>
-<li><strong>Zona de aprendizaje (o de estiramiento):</strong> Enfrentas desafíos manejables que te exigen esfuerzo. Sientes incomodidad productiva. Aquí ocurre el crecimiento real.</li>
-<li><strong>Zona de pánico:</strong> Los desafíos son abrumadores, la ansiedad paraliza y el aprendizaje se bloquea. Estar aquí no es productivo.</li>
-</ul>
-<p>El objetivo es vivir frecuentemente en la zona de aprendizaje, no en la de pánico.</p>
-
-<h4>Incomodidad productiva</h4>
-<p>La incomodidad que sientes al hacer algo nuevo no es una señal de que algo está mal; es una señal de que estás creciendo. Hablar en público por primera vez, liderar un proyecto sin experiencia previa, aprender un idioma nuevo: todas son experiencias incómodas que expanden tus capacidades. La clave es distinguir entre incomodidad productiva (estiramiento) e incomodidad destructiva (pánico).</p>
-
-<h4>Estrategias para expandir tu zona de confort</h4>
-<ul>
-<li><strong>Pequeños pasos diarios:</strong> No necesitas saltar al vacío. Toma una ruta diferente al trabajo, habla con alguien nuevo, prueba una comida desconocida. Los pequeños actos de novedad entrenan tu cerebro para tolerar lo desconocido.</li>
-<li><strong>Desafíos progresivos:</strong> Si temes hablar en público, empieza opinando en una reunión pequeña, luego presenta ante tu equipo, después ante un grupo más grande.</li>
-<li><strong>Reencuadre cognitivo:</strong> En lugar de "Tengo miedo", dite "Estoy emocionado". La ansiedad y la emoción tienen respuestas fisiológicas casi idénticas.</li>
+<li><strong>Zona de confort:</strong> familiaridad y seguridad. Aquí no hay aprendizaje significativo porque no hay desafíos nuevos.</li>
+<li><strong>Zona de aprendizaje (o zona de expansión):</strong> incomodidad productiva. Te enfrentas a retos que estiran tus capacidades sin sobrepasarte. Es donde ocurre el verdadero crecimiento.</li>
+<li><strong>Zona de pánico:</strong> estrés excesivo que paraliza y perjudica el rendimiento. Si el desafío es demasiado grande o repentino, en lugar de aprender, te bloqueas.</li>
 </ul>
 
-<blockquote>Tu zona de confort no es un lugar seguro; es una prisión cómoda. Todo lo que deseas para tu carrera y tu vida está del otro lado de la incomodidad que hoy evitas.</blockquote>
+<h4>El objetivo: vivir en la zona de aprendizaje</h4>
+<p>El arte de la adaptabilidad consiste en mantenerte en la <em>zona de aprendizaje</em> la mayor parte del tiempo. Esto significa buscar activamente desafíos que te incomoden un poco, sin exponerte a situaciones que te paralicen de estrés. Con cada desafío superado, tu zona de confort se expande naturalmente.</p>
 
-<h4>La paradoja de la seguridad</h4>
-<p>Paradójicamente, quedarse en la zona de confort es la opción más riesgosa a largo plazo. En un mundo que cambia rápidamente, no adaptarse es quedarse atrás. La verdadera seguridad profesional no viene de hacer siempre lo mismo, sino de desarrollar la capacidad de aprender y adaptarte continuamente.</p>""",
-                "estimatedMinutes": 5
+<blockquote>«La vida comienza al final de tu zona de confort.» — Neale Donald Walsch. Aunque la zona de confort es necesaria para descansar y recuperarte, no es donde deberías vivir permanentemente.</blockquote>
+
+<h4>Estrategias prácticas para expandir tu zona de confort</h4>
+<ul>
+<li><strong>Micro-retos diarios:</strong> tomar una ruta diferente al trabajo, hablar con un desconocido, probar una comida nueva. Estas acciones pequeñas entrenan tu tolerancia a la incomodidad.</li>
+<li><strong>La técnica del «un poco más»:</strong> cada semana, haz algo que te incomode ligeramente más que la semana anterior.</li>
+<li><strong>Reinterpretar el miedo:</strong> la investigación muestra que la excitación y el miedo producen las mismas respuestas fisiológicas. Di «estoy emocionado» en lugar de «estoy asustado».</li>
+<li><strong>Documenta tus logros:</strong> lleva un registro de las veces que saliste de tu zona de confort y qué aprendiste. Esto construye confianza para futuros desafíos.</li>
+</ul>
+
+<h4>La zona de confort en la carrera profesional</h4>
+<p>En el ámbito profesional, quedarte en tu zona de confort significa hacer siempre el mismo tipo de trabajo, evitar proyectos desafiantes, rechazar oportunidades que requieran nuevas habilidades y no pedir retroalimentación. A corto plazo es cómodo; a largo plazo es una trampa que te hace obsoleto en un mercado laboral que exige reinvención constante.</p>"""
             },
             {
                 "title": "Agilidad de Aprendizaje (Learning Agility)",
                 "content": """<h3>Agilidad de Aprendizaje (Learning Agility)</h3>
-<p>La agilidad de aprendizaje es la capacidad de aprender rápidamente de las experiencias y aplicar ese aprendizaje a situaciones nuevas y desconocidas. No es cuánto sabes, sino qué tan rápido puedes aprender lo que necesitas. En un mundo donde el conocimiento técnico se vuelve obsoleto cada vez más rápido, esta competencia se ha convertido en el mejor predictor de éxito profesional a largo plazo.</p>
+<p>La <strong>agilidad de aprendizaje</strong> es la capacidad de aprender rápidamente de nuevas experiencias y aplicar ese aprendizaje en situaciones diferentes y desconocidas. En un mundo donde las habilidades técnicas se vuelven obsoletas en pocos años, esta meta-habilidad — la capacidad de aprender a aprender rápidamente — se ha convertido en el predictor más importante del éxito profesional a largo plazo.</p>
 
 <h4>Las cinco dimensiones de la agilidad de aprendizaje</h4>
-<p>Los investigadores de Korn Ferry identificaron cinco dimensiones:</p>
+<p>Según las investigaciones de Korn Ferry, la agilidad de aprendizaje tiene cinco componentes:</p>
 <ul>
-<li><strong>Agilidad mental:</strong> Sentirte cómodo con la complejidad y la ambigüedad. Capacidad de hacer conexiones entre ideas aparentemente no relacionadas.</li>
-<li><strong>Agilidad con las personas:</strong> Habilidad para trabajar con personas diversas, comunicarte efectivamente en diferentes contextos y leer situaciones sociales.</li>
-<li><strong>Agilidad con el cambio:</strong> Curiosidad, experimentación y disposición a probar cosas nuevas sin miedo al fracaso.</li>
-<li><strong>Agilidad con los resultados:</strong> Capacidad de obtener resultados en situaciones nuevas o difíciles, incluso cuando no tienes toda la información.</li>
-<li><strong>Autoconciencia:</strong> Conocer tus fortalezas y debilidades, buscar retroalimentación y reflexionar sobre tus experiencias.</li>
+<li><strong>Agilidad mental:</strong> la capacidad de analizar problemas desde múltiples perspectivas, pensar en términos de sistemas y manejar la ambigüedad.</li>
+<li><strong>Agilidad con personas:</strong> la habilidad de trabajar efectivamente con personas diversas, comunicarse con empatía y adaptarse a diferentes estilos interpersonales.</li>
+<li><strong>Agilidad con cambio:</strong> la disposición a experimentar, asumir riesgos calculados y sentirse cómodo con la incertidumbre.</li>
+<li><strong>Agilidad con resultados:</strong> la capacidad de obtener logros en situaciones nuevas y desafiantes donde no hay un camino claro.</li>
+<li><strong>Autoconocimiento:</strong> la comprensión honesta de tus fortalezas, debilidades y el impacto que tienes en los demás.</li>
 </ul>
 
-<h4>Mentalidad de crecimiento vs. mentalidad fija</h4>
-<p>Carol Dweck, psicóloga de Stanford, distingue entre dos mentalidades fundamentales:</p>
+<h4>Growth mindset: la mentalidad de crecimiento</h4>
+<p>La psicóloga Carol Dweck identificó dos tipos de mentalidad que determinan cómo enfrentamos los desafíos:</p>
 <ul>
-<li><strong>Mentalidad fija:</strong> Crees que tus habilidades son innatas e inmutables. Evitas desafíos por miedo al fracaso. "No soy bueno para las matemáticas".</li>
-<li><strong>Mentalidad de crecimiento:</strong> Crees que tus habilidades se desarrollan con esfuerzo y práctica. Los desafíos son oportunidades. "Aún no soy bueno en matemáticas".</li>
+<li><strong>Mentalidad fija:</strong> cree que las habilidades son innatas e inmutables. Evita los desafíos por miedo al fracaso.</li>
+<li><strong>Mentalidad de crecimiento:</strong> cree que las habilidades se desarrollan con esfuerzo y práctica. Ve los errores como oportunidades de aprendizaje.</li>
 </ul>
-<p>La palabra clave es "aún". Agregar "aún" a cualquier limitación la transforma de un veredicto final en un trabajo en progreso.</p>
 
-<blockquote>En el siglo XXI, lo que sabes hoy será insuficiente mañana. Tu verdadera ventaja competitiva no es tu conocimiento actual, sino tu velocidad de aprendizaje. Aprende a aprender y nunca serás obsoleto.</blockquote>
+<blockquote>«Aún no lo domino» es radicalmente diferente a «no puedo hacerlo». La primera frase implica un camino de aprendizaje; la segunda, una sentencia definitiva. — Inspirado en Carol Dweck.</blockquote>
 
-<h4>Aprender de los errores</h4>
-<p>Las personas con alta agilidad de aprendizaje tratan los errores como datos, no como fracasos. Después de cada experiencia significativa, positiva o negativa, se preguntan: ¿Qué funcionó? ¿Qué no funcionó? ¿Qué haré diferente la próxima vez? Este hábito de reflexión deliberada acelera exponencialmente el aprendizaje.</p>
+<h4>Desarrollando tu agilidad de aprendizaje</h4>
+<ul>
+<li>Busca experiencias de «primera vez»: proyectos nuevos, roles diferentes, contextos desconocidos.</li>
+<li>Después de cada experiencia significativa, reflexiona: ¿qué funcionó?, ¿qué no?, ¿qué haría diferente?</li>
+<li>Pide retroalimentación activamente a mentores, pares y subordinados.</li>
+<li>Lee ampliamente fuera de tu campo profesional para conectar ideas de diferentes disciplinas.</li>
+</ul>
 
-<h4>Práctica deliberada de la agilidad</h4>
-<p>Busca activamente situaciones que te obliguen a aprender algo nuevo: proyectos interdisciplinarios, roles de liderazgo en áreas desconocidas, viajes a culturas diferentes, lectura fuera de tu campo. Cuanto más diversas sean tus experiencias, más conexiones podrás hacer y más rápido aprenderás en el futuro.</p>""",
-                "estimatedMinutes": 5
+<h4>La importancia del fracaso productivo</h4>
+<p>Las personas con alta agilidad de aprendizaje no fracasan menos; fracasan <em>mejor</em>. Extraen lecciones de cada error, ajustan su enfoque rápidamente y no permiten que el miedo al fracaso les impida intentar cosas nuevas. En la cultura empresarial moderna, el concepto de «fracasar rápido y barato» se ha vuelto un principio de innovación.</p>"""
             },
             {
-                "title": "Reinvención Profesional y Pivoteo de Carrera",
-                "content": """<h3>Reinvención Profesional y Pivoteo de Carrera</h3>
-<p>La idea de elegir una carrera a los 18 años y dedicarte a ella toda la vida es cada vez menos realista. Según estudios del Foro Económico Mundial, los profesionales de hoy cambiarán de carrera entre cinco y siete veces a lo largo de su vida laboral. Aprender a pivotar, a reinventarte profesionalmente, es una habilidad de supervivencia en el siglo XXI.</p>
+                "title": "Pivoteo de Carrera y Reinvención Profesional",
+                "content": """<h3>Pivoteo de Carrera y Reinvención Profesional</h3>
+<p>La era del empleo estable de por vida en una sola empresa y un solo campo ha terminado. Los profesionales actuales cambiarán de empleo <strong>entre 10 y 15 veces</strong> durante su carrera, y muchos cambiarán de campo profesional al menos una vez. En lugar de ver esto como una amenaza, los profesionales adaptables lo ven como una oportunidad para reinventarse y crecer.</p>
 
-<h4>¿Qué es un pivoteo de carrera?</h4>
-<p>Un pivoteo de carrera no es empezar de cero; es redirigir tus habilidades, experiencia y conocimientos hacia una nueva dirección. Así como una startup pivotea cuando descubre que su modelo de negocio original no funciona, un profesional pivotea cuando sus intereses, el mercado o las circunstancias cambian.</p>
+<h4>¿Qué es un pivote de carrera?</h4>
+<p>Un pivote no es un salto al vacío; es un <strong>cambio estratégico que aprovecha tus habilidades existentes para moverte a un nuevo campo o rol</strong>. La metáfora viene del baloncesto: un pie permanece fijo (tus fortalezas y experiencia) mientras el otro se mueve hacia una nueva dirección.</p>
 
-<h4>Habilidades transferibles: tu capital oculto</h4>
-<p>Cuando piensas en cambiar de carrera, podrías sentir que "pierdes todo". En realidad, la mayoría de tus habilidades son transferibles:</p>
+<h4>Tipos de pivote</h4>
 <ul>
-<li><strong>Habilidades técnicas adaptables:</strong> Análisis de datos, gestión de proyectos, programación, diseño, investigación.</li>
-<li><strong>Habilidades blandas universales:</strong> Liderazgo, comunicación, resolución de problemas, trabajo en equipo, pensamiento crítico.</li>
-<li><strong>Conocimiento de industria aplicable:</strong> Entender regulaciones, tendencias de mercado, comportamiento del consumidor.</li>
-<li><strong>Red de contactos:</strong> Tus relaciones profesionales trascienden cualquier industria o cargo específico.</li>
+<li><strong>Pivote de industria:</strong> aplicas las mismas habilidades en un sector diferente (por ejemplo, de marketing en tecnología a marketing en salud).</li>
+<li><strong>Pivote de función:</strong> cambias de rol pero permaneces en la misma industria (por ejemplo, de ventas a gestión de producto en la misma empresa de software).</li>
+<li><strong>Pivote doble:</strong> cambias tanto de industria como de función. Es el más desafiante pero también el más transformador.</li>
 </ul>
 
-<h4>El proceso de reinvención</h4>
+<h4>Habilidades transferibles</h4>
+<p>Las <strong>habilidades transferibles</strong> son aquellas que puedes aplicar en cualquier campo: comunicación, pensamiento analítico, gestión de proyectos, trabajo en equipo, resolución de problemas. Identificar y comunicar tus habilidades transferibles es clave para un pivote exitoso.</p>
+
+<blockquote>«No estás empezando de cero; estás empezando desde tu experiencia. Cada habilidad que has desarrollado, cada relación que has construido y cada lección que has aprendido te acompaña en tu nuevo camino.»</blockquote>
+
+<h4>Pasos para un pivote exitoso</h4>
 <ul>
-<li><strong>Exploración:</strong> Investiga áreas que te interesan sin comprometerte. Lee, conversa con profesionales, toma cursos introductorios.</li>
-<li><strong>Experimentación:</strong> Prueba la nueva dirección con proyectos paralelos, voluntariado o trabajos freelance antes de hacer un cambio completo.</li>
-<li><strong>Transición:</strong> Planifica tu movimiento: ¿Necesitas formación adicional? ¿Puedes hacer la transición gradualmente? ¿Cuál es tu colchón financiero?</li>
-<li><strong>Integración:</strong> Construye tu nueva identidad profesional, actualiza tu marca personal y cultiva relaciones en tu nuevo campo.</li>
+<li><strong>Explora antes de saltar:</strong> investiga el nuevo campo, habla con profesionales, haz proyectos paralelos.</li>
+<li><strong>Construye un puente:</strong> busca roles «de transición» que combinen tu experiencia actual con el nuevo campo.</li>
+<li><strong>Invierte en aprendizaje:</strong> cursos, certificaciones, y experiencias prácticas en el nuevo campo.</li>
+<li><strong>Activa tu red:</strong> las conexiones son el recurso más importante en cualquier transición de carrera.</li>
+<li><strong>Ten paciencia:</strong> un pivote exitoso toma entre 1 y 3 años en promedio.</li>
 </ul>
 
-<blockquote>Cambiar de carrera no es admitir un fracaso; es demostrar la madurez de reconocer que has crecido y que tus intereses han evolucionado. Los profesionales más realizados no son los que nunca cambiaron de dirección, sino los que tuvieron el coraje de hacerlo.</blockquote>
-
-<h4>Historias de reinvención inspiradoras</h4>
-<p>Jeff Bezos dejó las finanzas para fundar Amazon. Sara Blakely fue vendedora puerta a puerta antes de crear Spanx. Muchos profesionales exitosos tienen trayectorias no lineales. Lo que tienen en común es la disposición a tomar riesgos calculados y la confianza en su capacidad de aprender.</p>""",
-                "estimatedMinutes": 5
+<h4>El mito de la vocación única</h4>
+<p>La idea de que cada persona tiene <em>una sola vocación</em> que debe descubrir es un mito limitante. La realidad es que la mayoría de las personas tienen múltiples intereses y talentos que pueden expresar a través de diferentes carreras a lo largo de su vida. Emilie Wapnick usa el término «multipotencial» para describir a personas cuyo potencial se expresa en múltiples campos.</p>"""
             },
             {
-                "title": "El Futuro del Trabajo",
-                "content": """<h3>El Futuro del Trabajo</h3>
-<p>El mundo laboral está experimentando una transformación sin precedentes, acelerada por la inteligencia artificial, la automatización, la globalización y los cambios demográficos. Entender estas tendencias no es un ejercicio académico; es una necesidad práctica para cualquier estudiante que quiera diseñar una carrera relevante y resiliente.</p>
+                "title": "El Futuro del Trabajo y las Carreras del Mañana",
+                "content": """<h3>El Futuro del Trabajo y las Carreras del Mañana</h3>
+<p>El mercado laboral está experimentando una transformación radical. La automatización, la inteligencia artificial, la economía gig, el trabajo remoto y los cambios demográficos están redefiniendo qué significa «trabajar». Según el Foro Económico Mundial, el <strong>65% de los niños que entran a primaria hoy trabajarán en empleos que aún no existen</strong>. Prepararse para este futuro requiere una mentalidad radicalmente diferente.</p>
 
-<h4>Tendencias que están transformando el trabajo</h4>
+<h4>Tendencias que transforman el trabajo</h4>
 <ul>
-<li><strong>Automatización e inteligencia artificial:</strong> Los trabajos rutinarios, tanto manuales como cognitivos, están siendo automatizados. Los trabajos que requieren creatividad, empatía, juicio complejo y pensamiento crítico son más difíciles de automatizar.</li>
-<li><strong>Trabajo remoto e híbrido:</strong> La pandemia demostró que muchos trabajos no requieren presencia física. Las empresas compiten ahora por talento global, lo que abre oportunidades pero también aumenta la competencia.</li>
-<li><strong>Economía gig y freelance:</strong> Cada vez más profesionales trabajan por proyecto en lugar de empleos fijos. Plataformas como Upwork, Fiverr y Toptal conectan talento global con empresas de todo el mundo.</li>
-<li><strong>Aprendizaje permanente:</strong> La vida útil del conocimiento técnico se reduce. Los profesionales necesitan reinventarse continuamente para mantenerse relevantes.</li>
+<li><strong>Automatización e IA:</strong> las tareas rutinarias y repetitivas serán automatizadas. Los trabajos que requieren creatividad, empatía y pensamiento crítico serán más valiosos.</li>
+<li><strong>Economía gig:</strong> cada vez más profesionales trabajan por proyectos, como freelancers o consultores independientes, en lugar de empleos fijos.</li>
+<li><strong>Trabajo remoto e híbrido:</strong> la pandemia aceleró una tendencia que ya existía. La capacidad de trabajar efectivamente de forma remota es ahora una habilidad básica.</li>
+<li><strong>Aprendizaje permanente:</strong> la vida útil de las habilidades técnicas se ha reducido a 3-5 años. La formación continua no es opcional; es obligatoria.</li>
 </ul>
 
 <h4>Habilidades a prueba de futuro</h4>
-<p>El Foro Económico Mundial identifica las habilidades más demandadas para los próximos años:</p>
+<p>Las habilidades que serán más valiosas en el futuro del trabajo son precisamente las que las máquinas <em>no pueden replicar fácilmente</em>:</p>
 <ul>
-<li>Pensamiento analítico e innovación.</li>
-<li>Aprendizaje activo y estrategias de aprendizaje.</li>
-<li>Resolución de problemas complejos.</li>
-<li>Pensamiento crítico y análisis.</li>
-<li>Creatividad, originalidad e iniciativa.</li>
-<li>Liderazgo e influencia social.</li>
-<li>Uso, monitoreo y control de tecnología.</li>
-<li>Resiliencia, tolerancia al estrés y flexibilidad.</li>
+<li>Pensamiento crítico y resolución de problemas complejos.</li>
+<li>Creatividad e innovación.</li>
+<li>Inteligencia emocional y habilidades interpersonales.</li>
+<li>Adaptabilidad y agilidad de aprendizaje.</li>
+<li>Colaboración intercultural y comunicación efectiva.</li>
+<li>Alfabetización digital y de datos.</li>
 </ul>
 
-<blockquote>No prepares tu carrera para el mundo que existe hoy; prepárala para el mundo que existirá mañana. Las habilidades técnicas te consiguen tu primer trabajo; las habilidades de adaptación te mantienen empleable toda la vida.</blockquote>
+<blockquote>«En un mundo donde el cambio es la única constante, la capacidad de aprender continuamente y adaptarse rápidamente es la habilidad más valiosa que puedes desarrollar.»</blockquote>
 
-<h4>La mentalidad del profesional del futuro</h4>
-<p>El profesional del futuro no es un experto en una sola cosa; es un aprendiz permanente que combina conocimiento técnico con habilidades humanas. Piensa en forma de T: profundidad en un área de especialización (la barra vertical) y amplitud de conocimiento en múltiples disciplinas (la barra horizontal).</p>
+<h4>Tu estrategia de carrera en un mundo cambiante</h4>
+<p>En lugar de planificar tu carrera como una línea recta hacia un destino fijo, piensa en ella como un <strong>portafolio de experiencias y habilidades</strong> que te permiten navegar diferentes oportunidades. Sé intencional pero flexible: ten una dirección general, pero mantente abierto a desvíos interesantes. Las carreras más satisfactorias rara vez siguen el camino que se planeó originalmente.</p>
 
-<h4>Preparándote desde la universidad</h4>
-<p>No te limites a estudiar tu carrera. Aprende habilidades complementarias: programación básica, análisis de datos, comunicación efectiva, un segundo idioma. Participa en proyectos interdisciplinarios. Desarrolla tu red de contactos. Y sobre todo, cultiva la mentalidad de que aprender es un proceso que nunca termina.</p>""",
-                "estimatedMinutes": 5
+<h4>La mentalidad del «beta permanente»</h4>
+<p>Reid Hoffman, cofundador de LinkedIn, propone vivir en «beta permanente» — nunca considerar que tu desarrollo profesional está terminado. Al igual que el software en versión beta, siempre estás en proceso de mejora, actualización y evolución. Esta mentalidad te mantiene hambriento de aprendizaje, abierto a feedback y listo para el cambio.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "Según el modelo de Bridges, ¿cuáles son las tres fases de una transición?",
+                "question": "¿Cuál de estas NO es una razón común para resistir el cambio?",
                 "options": [
-                    "Negación, aceptación, adaptación",
-                    "Fin, zona neutral, nuevo comienzo",
-                    "Resistencia, exploración, compromiso",
-                    "Análisis, planificación, ejecución"
+                    "Miedo a lo desconocido",
+                    "Comodidad del hábito",
+                    "Deseo de aprender cosas nuevas",
+                    "Pérdida de control"
                 ],
-                "correctAnswer": 1,
-                "explanation": "William Bridges identifica tres fases: Fin (soltar lo viejo), Zona neutral (entre lo viejo y lo nuevo) y Nuevo comienzo (adoptar la nueva realidad)."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Cuál es la diferencia entre la zona de aprendizaje y la zona de pánico?",
+                "question": "La curva del cambio de Kübler-Ross incluye estas etapas en orden:",
                 "options": [
-                    "No hay diferencia; ambas producen crecimiento",
-                    "La zona de aprendizaje tiene desafíos manejables; la de pánico tiene desafíos abrumadores que bloquean el aprendizaje",
-                    "La zona de pánico es más efectiva para el aprendizaje rápido",
-                    "La zona de aprendizaje es para principiantes; la de pánico para expertos"
+                    "Aceptación, exploración, resistencia, negación",
+                    "Negación, resistencia, exploración, aceptación",
+                    "Resistencia, negación, aceptación, exploración",
+                    "Exploración, negación, resistencia, aceptación"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La zona de aprendizaje presenta desafíos manejables que generan crecimiento, mientras que la zona de pánico es abrumadora y paraliza el aprendizaje."
+                "correctAnswer": 1
             },
             {
-                "question": "Según Carol Dweck, ¿qué caracteriza a la mentalidad de crecimiento?",
+                "question": "¿En cuál de las tres zonas ocurre el verdadero crecimiento personal?",
                 "options": [
-                    "Creer que las habilidades son innatas e inmutables",
-                    "Evitar desafíos para proteger la autoestima",
-                    "Creer que las habilidades se desarrollan con esfuerzo y práctica",
-                    "Enfocarse solo en las fortalezas naturales"
+                    "Zona de confort",
+                    "Zona de aprendizaje",
+                    "Zona de pánico",
+                    "Zona neutral"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La mentalidad de crecimiento, según Carol Dweck, es creer que las habilidades se desarrollan con esfuerzo y práctica, viendo los desafíos como oportunidades de aprendizaje."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuántas veces cambiará de carrera un profesional promedio según el Foro Económico Mundial?",
+                "question": "¿Qué son los 'micro-retos diarios' para expandir la zona de confort?",
                 "options": [
-                    "Una o dos veces",
-                    "Tres o cuatro veces",
-                    "Entre cinco y siete veces",
-                    "Más de diez veces"
+                    "Desafíos enormes que te obligan a cambiar drásticamente",
+                    "Pruebas estandarizadas de personalidad",
+                    "Pequeñas acciones cotidianas que entrenan tu tolerancia a la incomodidad",
+                    "Retos que solo puedes hacer con ayuda profesional"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Según el Foro Económico Mundial, los profesionales de hoy cambiarán de carrera entre cinco y siete veces a lo largo de su vida laboral."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué describe el modelo de profesional 'en forma de T'?",
+                "question": "Según Carol Dweck, una persona con 'mentalidad de crecimiento':",
                 "options": [
-                    "Un profesional que solo trabaja en tecnología",
-                    "Profundidad en un área de especialización y amplitud de conocimiento en múltiples disciplinas",
-                    "Un profesional que trabaja en tres áreas diferentes simultáneamente",
-                    "Un modelo de trabajo donde se dedica tiempo completo a una sola habilidad"
+                    "Cree que las habilidades son innatas e inmutables",
+                    "Evita los desafíos por miedo al fracaso",
+                    "Cree que las habilidades se desarrollan con esfuerzo y práctica",
+                    "Solo se enfoca en sus fortalezas naturales"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El profesional en forma de T combina profundidad en un área de especialización (barra vertical) con amplitud de conocimiento en múltiples disciplinas (barra horizontal)."
+                "correctAnswer": 2
             },
             {
-                "question": "Según la curva de Kübler-Ross aplicada al cambio profesional, ¿cuáles son las cinco etapas?",
+                "question": "¿Cuántas veces cambiará de empleo un profesional actual a lo largo de su carrera, aproximadamente?",
                 "options": [
-                    "Planificación, ejecución, evaluación, ajuste y consolidación",
-                    "Negación, ira, negociación, depresión y aceptación",
-                    "Exploración, experimentación, transición, integración y maestría",
-                    "Miedo, ansiedad, resignación, adaptación y satisfacción"
+                    "2-3 veces",
+                    "5-7 veces",
+                    "10-15 veces",
+                    "20-25 veces"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Kübler-Ross identificó cinco etapas del duelo aplicables al cambio profesional: negación, ira, negociación, depresión y aceptación, aunque no todos pasan por todas ni en el mismo orden."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué es la 'incomodidad productiva' según la lección sobre salir de la zona de confort?",
+                "question": "Un 'pivote de industria' consiste en:",
                 "options": [
-                    "Sentirse mal constantemente en el trabajo",
-                    "La incomodidad que sientes al hacer algo nuevo, que es señal de crecimiento y no de que algo está mal",
-                    "Un estado de ansiedad crónica que impide el aprendizaje",
-                    "La frustración de no poder dominar una habilidad rápidamente"
+                    "Cambiar de función dentro de la misma empresa",
+                    "Aplicar las mismas habilidades en un sector diferente",
+                    "Crear tu propia empresa",
+                    "Dejar de trabajar temporalmente para estudiar"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La incomodidad productiva es la sensación incómoda al hacer algo nuevo, que indica crecimiento. La clave es distinguirla de la incomodidad destructiva (zona de pánico)."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuáles son las cinco dimensiones de la agilidad de aprendizaje según Korn Ferry?",
+                "question": "¿Qué son las 'habilidades transferibles'?",
                 "options": [
-                    "Lectura, escritura, cálculo, análisis y síntesis",
-                    "Agilidad mental, con las personas, con el cambio, con los resultados y autoconciencia",
-                    "Velocidad, profundidad, amplitud, retención y aplicación",
-                    "Curiosidad, disciplina, persistencia, creatividad y colaboración"
+                    "Habilidades técnicas especializadas en un solo campo",
+                    "Habilidades que solo funcionan en una industria específica",
+                    "Habilidades aplicables en cualquier campo profesional",
+                    "Certificaciones reconocidas internacionalmente"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Korn Ferry identificó cinco dimensiones: agilidad mental, agilidad con las personas, agilidad con el cambio, agilidad con los resultados y autoconciencia."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué técnica sugiere la lección para reencuadrar el miedo al enfrentar nuevos desafíos?",
+                "question": "Según el Foro Económico Mundial, ¿qué porcentaje de los niños actuales trabajarán en empleos que aún no existen?",
                 "options": [
-                    "Ignorar completamente las emociones negativas",
-                    "En lugar de decir 'Tengo miedo', decir 'Estoy emocionado', ya que ambas respuestas fisiológicas son casi idénticas",
-                    "Evitar los desafíos hasta sentirse completamente preparado",
-                    "Consultar siempre con un profesional antes de tomar cualquier riesgo"
+                    "25%",
+                    "45%",
+                    "65%",
+                    "85%"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La lección sugiere el reencuadre cognitivo: decir 'Estoy emocionado' en vez de 'Tengo miedo', aprovechando que la ansiedad y la emoción tienen respuestas fisiológicas casi idénticas."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué son las habilidades transferibles en el contexto de un pivoteo de carrera?",
+                "question": "¿Cuál de estas habilidades será MENOS valiosa en el futuro del trabajo?",
                 "options": [
-                    "Habilidades que solo sirven en una industria específica",
-                    "Habilidades técnicas y blandas que pueden aplicarse en diferentes carreras e industrias",
-                    "Certificaciones oficiales reconocidas internacionalmente",
-                    "Habilidades que solo se aprenden en programas de MBA"
+                    "Pensamiento crítico",
+                    "Ejecución de tareas rutinarias y repetitivas",
+                    "Creatividad e innovación",
+                    "Inteligencia emocional"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Las habilidades transferibles incluyen habilidades técnicas adaptables (análisis de datos, gestión de proyectos), habilidades blandas universales (liderazgo, comunicación) y conocimiento de industria aplicable."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿por qué quedarse en la zona de confort es paradójicamente la opción más riesgosa?",
+                "question": "La mentalidad del 'beta permanente' propuesta por Reid Hoffman significa:",
                 "options": [
-                    "Porque las empresas despiden a quienes están demasiado cómodos",
-                    "Porque en un mundo que cambia rápidamente, no adaptarse es quedarse atrás",
-                    "Porque la zona de confort causa problemas de salud física",
-                    "Porque los salarios bajan si no cambias de trabajo frecuentemente"
+                    "Nunca sentirte satisfecho con tu trabajo",
+                    "Estar siempre en proceso de mejora y evolución profesional",
+                    "Solo aceptar trabajos temporales",
+                    "Probar muchas cosas sin comprometerte con ninguna"
                 ],
-                "correctAnswer": 1,
-                "explanation": "En un mundo que cambia rápidamente, no adaptarse es quedarse atrás. La verdadera seguridad profesional no viene de hacer siempre lo mismo, sino de desarrollar la capacidad de aprender y adaptarte."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué palabra clave transforma una limitación de un veredicto final en un trabajo en progreso según Carol Dweck?",
+                "question": "¿Cuánto tiempo toma en promedio un pivote de carrera exitoso?",
                 "options": [
-                    "Pero",
-                    "Quizás",
-                    "Aún",
-                    "Nunca"
+                    "1-3 meses",
+                    "6 meses",
+                    "1-3 años",
+                    "5-10 años"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La palabra 'aún' transforma cualquier limitación en un trabajo en progreso: 'No soy bueno en matemáticas' vs. 'Aún no soy bueno en matemáticas'. Esto refleja la mentalidad de crecimiento."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué tipo de trabajos son más difíciles de automatizar según la lección sobre el futuro del trabajo?",
+                "question": "Las cinco dimensiones de la agilidad de aprendizaje según Korn Ferry incluyen:",
                 "options": [
-                    "Trabajos rutinarios manuales",
-                    "Trabajos rutinarios cognitivos",
-                    "Trabajos que requieren creatividad, empatía, juicio complejo y pensamiento crítico",
-                    "Trabajos en el sector manufacturero"
+                    "Velocidad, memorización, concentración, disciplina y motivación",
+                    "Agilidad mental, con personas, con cambio, con resultados y autoconocimiento",
+                    "Lectura rápida, toma de notas, estudio grupal, práctica y evaluación",
+                    "Inteligencia verbal, lógica, espacial, musical y kinestésica"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Los trabajos que requieren creatividad, empatía, juicio complejo y pensamiento crítico son más difíciles de automatizar, a diferencia de los trabajos rutinarios tanto manuales como cognitivos."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál es la diferencia entre 'cambio' y 'transición' según William Bridges?",
+                "question": "Emilie Wapnick usa el término 'multipotencial' para describir a personas que:",
                 "options": [
-                    "Son sinónimos que describen el mismo proceso",
-                    "El cambio es externo y situacional; la transición es el proceso psicológico interno de adaptación",
-                    "El cambio es lento y la transición es rápida",
-                    "El cambio aplica a organizaciones y la transición a individuos"
+                    "Tienen un talento excepcional en un solo campo",
+                    "Nunca logran terminar lo que empiezan",
+                    "Expresan su potencial a través de múltiples campos",
+                    "Trabajan en varias empresas al mismo tiempo"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Bridges distingue entre cambio (externo y situacional, como un nuevo jefe) y transición (el proceso psicológico interno que experimentamos al adaptarnos al cambio)."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué proceso recomienda la lección para reinventarse profesionalmente?",
+                "question": "¿Cuál es la vida útil promedio de las habilidades técnicas en el mercado laboral actual?",
                 "options": [
-                    "Renunciar inmediatamente y buscar algo completamente nuevo",
-                    "Exploración, experimentación, transición e integración, de forma gradual",
-                    "Obtener un nuevo título universitario antes de hacer cualquier cambio",
-                    "Esperar a que una oportunidad perfecta aparezca espontáneamente"
+                    "1-2 años",
+                    "3-5 años",
+                    "7-10 años",
+                    "15-20 años"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El proceso recomendado es gradual: exploración (investigar áreas de interés), experimentación (probar con proyectos paralelos), transición (planificar el movimiento) e integración (construir nueva identidad profesional)."
+                "correctAnswer": 1
             }
         ]
     },
-
     "Aprender a Aprender": {
+        "emoji": "📖",
+        "level": "beginner",
+        "duration": "30min",
         "lessons": [
             {
-                "title": "Metacognición: Pensar Sobre Cómo Piensas",
-                "content": """<h3>Metacognición: Pensar Sobre Cómo Piensas</h3>
-<p>La metacognición es la capacidad de pensar sobre tu propio proceso de pensamiento. Es, literalmente, "pensar sobre cómo piensas y aprendes". Esta habilidad te permite monitorear, evaluar y ajustar tus estrategias de aprendizaje, convirtiéndote en un aprendiz mucho más efectivo y autónomo.</p>
+                "title": "Metacognición: Pensar sobre el Pensamiento",
+                "content": """<h3>Metacognición: Pensar sobre el Pensamiento</h3>
+<p>La <strong>metacognición</strong> es la capacidad de reflexionar sobre tus propios procesos de pensamiento y aprendizaje. Es «pensar sobre cómo piensas» y «aprender sobre cómo aprendes». Esta habilidad es lo que distingue a los aprendices expertos de los novatos: los expertos no solo saben más, sino que <em>saben cómo aprenden mejor</em> y pueden ajustar sus estrategias en consecuencia.</p>
 
-<h4>Los dos componentes de la metacognición</h4>
+<h4>Dos componentes de la metacognición</h4>
 <ul>
-<li><strong>Conocimiento metacognitivo:</strong> Lo que sabes sobre ti mismo como aprendiz. ¿En qué condiciones aprendes mejor? ¿Qué estrategias te funcionan? ¿Cuáles son tus fortalezas y debilidades cognitivas? ¿Qué tipo de tareas te resultan más difíciles?</li>
-<li><strong>Regulación metacognitiva:</strong> La capacidad de planificar, monitorear y evaluar tu aprendizaje en tiempo real. Antes de estudiar: ¿Cuál es mi objetivo? Durante: ¿Estoy entendiendo realmente? Después: ¿Qué aprendí? ¿Qué me falta?</li>
+<li><strong>Conocimiento metacognitivo:</strong> lo que sabes sobre tu propio aprendizaje. ¿En qué momento del día te concentras mejor? ¿Qué tipo de material te resulta más difícil? ¿Qué estrategias te funcionan y cuáles no?</li>
+<li><strong>Regulación metacognitiva:</strong> la capacidad de planificar, monitorear y evaluar tu aprendizaje. Antes de estudiar: ¿qué estrategia usaré? Durante: ¿estoy entendiendo realmente? Después: ¿qué aprendí y qué me falta?</li>
 </ul>
 
-<h4>El ciclo metacognitivo</h4>
-<p>Los aprendices expertos siguen un ciclo constante:</p>
+<h4>La ilusión de la competencia</h4>
+<p>Uno de los mayores obstáculos para el aprendizaje efectivo es la <strong>ilusión de la competencia</strong> — la creencia errónea de que entiendes algo cuando en realidad no lo dominas. Esto ocurre frecuentemente cuando:</p>
 <ul>
-<li><strong>Planificar:</strong> ¿Qué necesito aprender? ¿Cuánto tiempo tengo? ¿Qué estrategia usaré? ¿Qué ya sé sobre este tema?</li>
-<li><strong>Monitorear:</strong> ¿Estoy comprendiendo? ¿Necesito releer? ¿Debo cambiar de estrategia? ¿Puedo explicar esto con mis propias palabras?</li>
-<li><strong>Evaluar:</strong> ¿Logré mi objetivo? ¿Qué funcionó y qué no? ¿Qué haré diferente la próxima vez?</li>
+<li>Relees un texto y sientes que lo «entiendes» porque te resulta familiar (pero no podrías explicarlo sin mirarlo).</li>
+<li>Miras la solución de un ejercicio y piensas «ah, claro, yo lo sabía» (pero no podrías resolverlo solo).</li>
+<li>Subrayas pasivamente sin reflexionar sobre lo que significa el contenido.</li>
 </ul>
 
-<h4>La ilusión de competencia</h4>
-<p>Uno de los mayores obstáculos para el aprendizaje es la <em>ilusión de competencia</em>: creer que entiendes algo cuando en realidad solo lo reconoces. Leer un texto y sentir que "tiene sentido" no significa que lo hayas aprendido. Subrayar no es aprender. Releer no es aprender. Solo puedes verificar que aprendiste algo cuando eres capaz de recuperarlo de tu memoria sin mirar el material.</p>
+<blockquote>«La mayor barrera para el aprendizaje no es la falta de inteligencia sino la falta de conciencia sobre cómo aprendemos.» — Reflexión basada en investigaciones de John Flavell, pionero de la metacognición.</blockquote>
 
-<blockquote>El estudiante más peligroso no es el que sabe poco, sino el que cree saber más de lo que realmente sabe. La metacognición te protege de esta trampa al obligarte a verificar constantemente tu comprensión real.</blockquote>
-
-<h4>Preguntas metacognitivas poderosas</h4>
-<p>Incorpora estas preguntas a tu rutina de estudio:</p>
+<h4>Estrategias metacognitivas</h4>
+<p>Para mejorar tu metacognición, practica estas estrategias:</p>
 <ul>
-<li>¿Puedo explicar esto sin mirar mis apuntes?</li>
-<li>¿Cómo se conecta esto con lo que ya sabía?</li>
-<li>¿Cuáles son los conceptos más difíciles y por qué me cuestan?</li>
-<li>Si tuviera que enseñar esto a alguien, ¿podría hacerlo?</li>
-<li>¿Qué preguntas podría hacer un profesor en un examen sobre esto?</li>
+<li><strong>Antes de estudiar:</strong> establece un objetivo claro, activa conocimientos previos y elige la estrategia más apropiada.</li>
+<li><strong>Durante el estudio:</strong> hazte preguntas constantemente («¿entiendo esto?», «¿puedo explicarlo con mis palabras?»), identifica lo que no entiendes y busca aclarar dudas.</li>
+<li><strong>Después de estudiar:</strong> evalúa qué aprendiste, qué estrategias funcionaron y qué necesitas repasar.</li>
 </ul>
 
-<h4>Metacognición como hábito</h4>
-<p>La metacognición no es algo que se hace una vez; es un hábito que se desarrolla con la práctica. Al principio requiere esfuerzo consciente, pero con el tiempo se vuelve automático. Los estudiantes con buenas habilidades metacognitivas no solo obtienen mejores notas; aprenden más profundamente y retienen el conocimiento por más tiempo.</p>""",
-                "estimatedMinutes": 6
+<h4>El diario de aprendizaje</h4>
+<p>Una herramienta poderosa de metacognición es el <em>diario de aprendizaje</em>: un registro donde anotas qué estudiaste, qué estrategias usaste, qué te resultó difícil y qué ajustes harás la próxima vez. Con el tiempo, este diario te dará un mapa detallado de cómo aprendes mejor.</p>"""
             },
             {
-                "title": "Repetición Espaciada: La Ciencia del No Olvidar",
-                "content": """<h3>Repetición Espaciada: La Ciencia del No Olvidar</h3>
-<p>La repetición espaciada es una técnica de estudio respaldada por más de un siglo de investigación científica. Se basa en un hallazgo fundamental de la psicología cognitiva: la mejor manera de recordar algo a largo plazo no es estudiarlo muchas veces seguidas, sino revisarlo en intervalos crecientes de tiempo.</p>
+                "title": "Repetición Espaciada: El Poder del Tiempo",
+                "content": """<h3>Repetición Espaciada: El Poder del Tiempo</h3>
+<p>La <strong>repetición espaciada</strong> es una de las técnicas de estudio con mayor respaldo científico. Se basa en un principio simple pero poderoso: la información se retiene mejor cuando el repaso se distribuye a lo largo del tiempo en <em>intervalos crecientes</em>, en lugar de concentrarse en una sola sesión intensiva.</p>
 
 <h4>La curva del olvido de Ebbinghaus</h4>
-<p>En 1885, Hermann Ebbinghaus descubrió que olvidamos la mayor parte de lo aprendido muy rápidamente. Sin repaso, olvidamos aproximadamente el 70% de la información nueva en 24 horas y más del 90% en una semana. La curva del olvido desciende exponencialmente, pero cada repaso la "reinicia" y la hace descender más lentamente.</p>
-
-<h4>¿Cómo funciona la repetición espaciada?</h4>
-<p>En lugar de estudiar un tema intensamente una sola vez (atracón), lo revisas en intervalos progresivamente mayores:</p>
+<p>En 1885, el psicólogo Hermann Ebbinghaus demostró que sin repaso, olvidamos aproximadamente:</p>
 <ul>
-<li>Primera revisión: 1 día después del aprendizaje inicial.</li>
-<li>Segunda revisión: 3 días después de la primera.</li>
-<li>Tercera revisión: 7 días después de la segunda.</li>
-<li>Cuarta revisión: 21 días después.</li>
-<li>Quinta revisión: 2 meses después.</li>
+<li>El <strong>50%</strong> de lo aprendido en las primeras 24 horas.</li>
+<li>El <strong>70%</strong> en la primera semana.</li>
+<li>El <strong>90%</strong> en el primer mes.</li>
 </ul>
-<p>Cada revisión exitosa fortalece la memoria y permite extender el intervalo. Cada revisión fallida reduce el intervalo para reforzar el recuerdo.</p>
+<p>Sin embargo, cada vez que repasas la información en el momento justo antes de olvidarla, la curva del olvido se aplana. Después de varios repasos espaciados, la información se transfiere a la <strong>memoria a largo plazo</strong> y se retiene durante meses o años.</p>
 
-<h4>Flashcards y sistemas de repetición espaciada</h4>
-<p>Las flashcards son el vehículo ideal para la repetición espaciada. Herramientas digitales como <strong>Anki</strong> automatizan completamente el proceso: el algoritmo decide qué tarjetas mostrarte cada día basándose en tu historial de aciertos y errores. Otras opciones incluyen <em>Quizlet</em>, <em>RemNote</em> y <em>Mochi</em>.</p>
-
-<h4>Cómo crear buenas flashcards</h4>
+<h4>¿Cómo funciona en la práctica?</h4>
+<p>Un calendario típico de repetición espaciada para nueva información podría ser:</p>
 <ul>
-<li><strong>Una idea por tarjeta:</strong> No abarrotes información. Cada tarjeta debe testear un solo concepto.</li>
-<li><strong>Pregunta, no declaración:</strong> "¿Qué es la mitosis?" es mejor que "La mitosis es..."</li>
-<li><strong>Usa tus propias palabras:</strong> Reformular activa el procesamiento profundo.</li>
-<li><strong>Incluye contexto cuando sea necesario:</strong> Imágenes, ejemplos o conexiones con otros conceptos.</li>
+<li><strong>Día 1:</strong> aprendes el material.</li>
+<li><strong>Día 2:</strong> primer repaso (1 día después).</li>
+<li><strong>Día 4:</strong> segundo repaso (2 días después).</li>
+<li><strong>Día 8:</strong> tercer repaso (4 días después).</li>
+<li><strong>Día 16:</strong> cuarto repaso (8 días después).</li>
+<li><strong>Día 32:</strong> quinto repaso (16 días después).</li>
 </ul>
 
-<blockquote>Estudiar intensamente la noche antes del examen es la ilusión de aprendizaje más peligrosa. Puedes aprobar el examen, pero habrás olvidado casi todo en una semana. La repetición espaciada requiere menos tiempo total y produce recuerdos que duran años.</blockquote>
+<blockquote>«No estudies más; estudia más inteligentemente. La repetición espaciada te permite recordar más estudiando menos tiempo total.»</blockquote>
 
-<h4>La dificultad deseable</h4>
-<p>Robert Bjork acuñó el término "dificultad deseable" para describir por qué la repetición espaciada funciona: el esfuerzo de recordar algo justo antes de olvidarlo fortalece enormemente la memoria. Si la revisión es demasiado fácil, no aporta mucho. Si es demasiado difícil, frustra. El punto óptimo es ese momento en que "casi" lo olvidas.</p>""",
-                "estimatedMinutes": 6
+<h4>Herramientas para implementar la repetición espaciada</h4>
+<p>La aplicación más popular para repetición espaciada es <strong>Anki</strong>, un programa de tarjetas de memoria (flashcards) que utiliza un algoritmo para determinar cuándo debes repasar cada tarjeta. Otras opciones incluyen Quizlet (con modo de aprendizaje espaciado), RemNote y Mnemosyne.</p>
+
+<h4>¿Por qué los «maratones de estudio» no funcionan?</h4>
+<p>El estudio concentrado la noche antes de un examen (cramming) puede funcionar para pasar una prueba, pero la información se olvida rápidamente después. Es como llenar un vaso con agua que tiene un agujero en el fondo: entra mucho, pero se va casi todo. La repetición espaciada sella ese agujero gradualmente, creando retención verdadera y duradera.</p>
+
+<h4>Combinando con otras técnicas</h4>
+<p>La repetición espaciada es más efectiva cuando se combina con la <strong>recuperación activa</strong> (active recall), que veremos en la siguiente lección. En lugar de simplemente releer tus notas en cada repaso, intenta recordar la información activamente antes de verificarla. Esta combinación es considerada por los científicos del aprendizaje como la estrategia más poderosa disponible.</p>"""
             },
             {
                 "title": "Recuperación Activa (Active Recall)",
                 "content": """<h3>Recuperación Activa (Active Recall)</h3>
-<p>La recuperación activa, o active recall, es la práctica de intentar recordar información de memoria sin mirar el material de estudio. Es, según la investigación cognitiva, la técnica de estudio más efectiva que existe, superando ampliamente a la relectura, el subrayado y el resumen pasivo. Sin embargo, es la menos utilizada por los estudiantes porque se siente más difícil.</p>
+<p>La <strong>recuperación activa</strong> (active recall) es el proceso de intentar recordar información de memoria, sin mirar tus notas o el material fuente. Es, con diferencia, la técnica de estudio más efectiva según la ciencia cognitiva, superando ampliamente a la relectura, el subrayado y la elaboración de resúmenes.</p>
 
-<h4>¿Por qué funciona?</h4>
-<p>Cada vez que recuperas información de tu memoria, fortaleces las conexiones neuronales asociadas a ese recuerdo. Es como un sendero en el bosque: cuanto más lo recorres, más claro y accesible se vuelve. La relectura, en cambio, solo te da una sensación de familiaridad que confundes con aprendizaje real.</p>
+<h4>¿Por qué es tan efectiva?</h4>
+<p>Cada vez que intentas recuperar información de tu memoria, <strong>fortaleces las conexiones neuronales</strong> asociadas a esa información. Es como un músculo: cuanto más lo ejercitas, más fuerte se vuelve. El esfuerzo mental de recordar — aunque sea difícil e incómodo — es precisamente lo que genera el aprendizaje profundo. Los científicos llaman a esto el <em>efecto de prueba</em> (testing effect).</p>
 
-<h4>El efecto testing</h4>
-<p>Cientos de estudios confirman el <em>efecto testing</em>: evaluarte a ti mismo es una de las formas más poderosas de aprender, no solo de medir lo aprendido. Un estudio clásico de Karpicke y Blunt (2011) demostró que los estudiantes que practicaron recuperación activa recordaron un 50% más que los que estudiaron con mapas conceptuales, la técnica que ellos mismos consideraban más efectiva.</p>
-
-<h4>Técnicas de recuperación activa</h4>
+<h4>Cómo implementar la recuperación activa</h4>
 <ul>
-<li><strong>Cierra el libro y escribe:</strong> Después de leer una sección, cierra el libro e intenta escribir todo lo que recuerdas. Luego compara con el original.</li>
-<li><strong>Preguntas auto-generadas:</strong> Mientras lees, convierte los títulos y subtítulos en preguntas. Después, intenta responderlas sin mirar.</li>
-<li><strong>Enseña en voz alta:</strong> Explica el tema como si estuvieras dando una clase, sin notas. Los huecos en tu explicación revelan los huecos en tu comprensión.</li>
-<li><strong>Flashcards activas:</strong> Lee la pregunta, intenta responder mentalmente ANTES de voltear la tarjeta.</li>
-<li><strong>Práctica con problemas:</strong> En materias cuantitativas, resolver problemas sin mirar los ejemplos resueltos es la forma más efectiva de aprender.</li>
+<li><strong>Tarjetas de memoria (flashcards):</strong> crea tarjetas con una pregunta en un lado y la respuesta en el otro. Intenta responder antes de voltear la tarjeta.</li>
+<li><strong>Preguntas de práctica:</strong> después de leer un capítulo, cierra el libro y escribe todo lo que recuerdes. Luego verifica qué olvidaste.</li>
+<li><strong>La hoja en blanco:</strong> toma una hoja en blanco y escribe todo lo que sabes sobre un tema sin consultar ninguna fuente.</li>
+<li><strong>Enseñar a alguien:</strong> explica el concepto a un compañero o incluso a un objeto imaginario. Si no puedes explicarlo claramente, no lo entiendes bien.</li>
+<li><strong>Auto-exámenes:</strong> crea tus propios exámenes y resuélvelos días después.</li>
 </ul>
 
-<blockquote>Si estudiar se siente fácil, probablemente no estás aprendiendo. La recuperación activa se siente difícil e incómoda porque requiere esfuerzo cognitivo real. Pero es precisamente ese esfuerzo el que graba el conocimiento en tu memoria a largo plazo.</blockquote>
+<blockquote>«Estudiar es el proceso de construir conocimiento. Examinarte es el proceso de reforzarlo. Lo paradójico es que examinarte es más efectivo que estudiar para aprender.» — Basado en investigaciones de Henry Roediger y Jeffrey Karpicke.</blockquote>
 
-<h4>Relectura: por qué no funciona</h4>
-<p>La relectura es la técnica de estudio más popular y una de las menos efectivas. Cuando relees, tu cerebro reconoce las palabras y te da una falsa sensación de comprensión. Pero reconocer no es recordar. Puedes releer un capítulo cinco veces y ser incapaz de explicar sus ideas principales sin mirarlo. La relectura es pasiva; el aprendizaje requiere actividad mental.</p>
+<h4>El error como herramienta de aprendizaje</h4>
+<p>Cuando intentas recordar algo y fallas, tu cerebro crea un «espacio» que se llena más fácilmente la próxima vez que encuentras la información correcta. Por eso, <strong>equivocarte durante la práctica de recuperación es más valioso que acertar fácilmente</strong>. Si tus flashcards siempre te resultan fáciles, necesitas hacerlas más desafiantes.</p>
 
-<h4>Combinando recuperación activa y repetición espaciada</h4>
-<p>La combinación de ambas técnicas es la estrategia de estudio más poderosa conocida por la ciencia cognitiva. Practicar recuperación activa en intervalos espaciados maximiza tanto la profundidad de la comprensión como la durabilidad del recuerdo. Herramientas como Anki implementan exactamente esta combinación.</p>""",
-                "estimatedMinutes": 6
+<h4>¿Por qué el subrayado y la relectura no funcionan?</h4>
+<p>Estas técnicas son pasivas: no requieren que tu cerebro haga el esfuerzo de recuperar información. Releer un texto genera una sensación de familiaridad que confundes con comprensión. Subrayar da la ilusión de estar procesando activamente, pero sin el esfuerzo de recuperación, la información no se ancla en la memoria a largo plazo.</p>"""
             },
             {
-                "title": "La Técnica Feynman",
-                "content": """<h3>La Técnica Feynman</h3>
-<p>Richard Feynman, Premio Nobel de Física, era conocido no solo por su brillantez científica sino por su extraordinaria capacidad de explicar conceptos complejos en términos simples. Su método de aprendizaje, bautizado posteriormente como "Técnica Feynman", es una de las herramientas más poderosas para lograr una comprensión verdaderamente profunda de cualquier tema.</p>
+                "title": "La Técnica Feynman y Otras Estrategias",
+                "content": """<h3>La Técnica Feynman y Otras Estrategias</h3>
+<p>Richard Feynman, Premio Nobel de Física y uno de los científicos más brillantes del siglo XX, era famoso por su capacidad de explicar conceptos complejos de forma simple. Su método de aprendizaje, conocido como la <strong>Técnica Feynman</strong>, se ha convertido en una de las estrategias más populares para alcanzar una comprensión profunda de cualquier tema.</p>
 
 <h4>Los cuatro pasos de la Técnica Feynman</h4>
 <ul>
-<li><strong>Paso 1 - Elige un concepto:</strong> Selecciona el tema que quieres aprender o entender profundamente. Escribe el nombre del concepto en la parte superior de una hoja en blanco.</li>
-<li><strong>Paso 2 - Explícalo como si enseñaras a un niño:</strong> Escribe una explicación del concepto usando lenguaje simple, sin jerga técnica, como si se lo explicaras a alguien de 12 años. Usa analogías, ejemplos concretos y un lenguaje cotidiano.</li>
-<li><strong>Paso 3 - Identifica los huecos:</strong> Cuando te atasques, cuando no puedas explicar algo claramente o cuando recurras a jerga sin entenderla, has encontrado un hueco en tu comprensión. Vuelve al material de estudio y llena ese hueco.</li>
-<li><strong>Paso 4 - Simplifica y usa analogías:</strong> Revisa tu explicación, elimina la complejidad innecesaria y busca analogías que conecten el concepto nuevo con algo que tu audiencia ya conoce.</li>
+<li><strong>Paso 1 — Elige un concepto:</strong> selecciona el tema que quieres aprender y escríbelo en la parte superior de una hoja.</li>
+<li><strong>Paso 2 — Explícalo en lenguaje simple:</strong> escribe una explicación como si se la estuvieras dando a un niño de 12 años. Usa palabras simples, ejemplos concretos y analogías cotidianas. Nada de jerga técnica.</li>
+<li><strong>Paso 3 — Identifica las lagunas:</strong> cuando te atasques o tu explicación sea confusa, has encontrado una laguna en tu comprensión. Vuelve al material fuente y estudia esa parte específica.</li>
+<li><strong>Paso 4 — Simplifica y usa analogías:</strong> refina tu explicación hasta que sea clara, concisa y accesible. Si no puedes explicarlo de forma simple, no lo entiendes lo suficiente.</li>
 </ul>
 
-<h4>¿Por qué funciona?</h4>
-<p>La técnica funciona porque obliga a tu cerebro a procesar la información activamente en lugar de pasivamente. Cuando intentas explicar algo en términos simples, se revelan inmediatamente los puntos que no comprendes realmente. La jerga técnica a menudo oculta falta de comprensión; cuando la eliminas, queda expuesta tu comprensión real.</p>
+<blockquote>«Si no puedes explicar algo de forma sencilla, es que no lo entiendes lo suficientemente bien.» — Albert Einstein (frase comúnmente asociada también a Feynman).</blockquote>
 
-<h4>Ejemplo práctico: explicando la inflación</h4>
-<p><em>Intento 1 (con jerga):</em> "La inflación es el aumento sostenido del nivel general de precios causado por factores de demanda y oferta agregada."</p>
-<p><em>Intento 2 (Técnica Feynman):</em> "Imagina que tienes $10.000 y con eso puedes comprar 10 empanadas. La inflación es cuando, un año después, esos mismos $10.000 solo te alcanzan para 8 empanadas. Tu dinero no cambió, pero lo que puedes comprar con él sí. Es como si tu dinero se encogiera lentamente."</p>
+<h4>Interleaving (práctica intercalada)</h4>
+<p>El <strong>interleaving</strong> consiste en alternar entre diferentes temas o tipos de problemas durante una sesión de estudio, en lugar de practicar un solo tipo repetidamente (práctica en bloque). Aunque se siente más difícil y menos productivo, las investigaciones demuestran que el interleaving produce mejor retención y mayor capacidad de transferencia a nuevos problemas.</p>
 
-<blockquote>Si no puedes explicar algo de forma simple, no lo entiendes realmente. La verdadera comprensión no se demuestra usando palabras complicadas, sino haciendo que lo complicado se entienda con palabras simples.</blockquote>
+<h4>Elaboración</h4>
+<p>La <strong>elaboración</strong> implica conectar nueva información con conocimientos previos. Preguntas como «¿por qué funciona así?», «¿cómo se relaciona con lo que ya sé?» y «¿qué ejemplo de mi vida ilustra este concepto?» fuerzan a tu cerebro a procesar la información a un nivel más profundo.</p>
 
-<h4>El poder de las analogías</h4>
-<p>Las analogías son el superpoder de la Técnica Feynman. Conectar un concepto nuevo con algo familiar acelera dramáticamente la comprensión. El sistema inmunológico como un "ejército" que defiende el cuerpo, los electrones como "planetas" orbitando el núcleo, la memoria RAM como un "escritorio de trabajo": las buenas analogías hacen que lo abstracto se vuelva concreto.</p>
+<h4>Codificación dual</h4>
+<p>La <strong>codificación dual</strong> combina información verbal (palabras) con información visual (imágenes, diagramas, mapas mentales). Tu cerebro procesa y almacena estos dos tipos de información en sistemas diferentes, creando múltiples rutas de acceso a la misma información. Esto explica por qué los diagramas, infografías y esquemas son tan efectivos para el aprendizaje.</p>
 
-<h4>Aplicación en tu vida académica</h4>
-<p>Antes de cada examen, toma los conceptos clave y aplica la Técnica Feynman. Explícalos en voz alta o por escrito como si enseñaras a alguien que no sabe nada del tema. Los puntos donde te trabas son exactamente los puntos que necesitas repasar. Esta técnica te ahorrará horas de relectura ineficiente.</p>""",
-                "estimatedMinutes": 6
+<h4>La técnica Pomodoro</h4>
+<p>La <strong>técnica Pomodoro</strong> estructura el estudio en intervalos de 25 minutos de concentración intensa seguidos de 5 minutos de descanso. Después de 4 pomodoros, tomas un descanso largo de 15-30 minutos. Esta técnica combate la procrastinación y mantiene la concentración al hacer que el estudio se sienta manejable.</p>"""
             },
             {
-                "title": "Mitos del Aprendizaje y Estrategias Basadas en Evidencia",
-                "content": """<h3>Mitos del Aprendizaje y Estrategias Basadas en Evidencia</h3>
-<p>La industria de la educación y el desarrollo personal está plagada de mitos sobre cómo aprendemos. Estas creencias populares, aunque intuitivamente atractivas, no están respaldadas por la evidencia científica y pueden llevarte a invertir tiempo en estrategias ineficaces. Conocer la verdad te permitirá estudiar de forma más inteligente, no más difícil.</p>
+                "title": "Mitos del Aprendizaje y la Ciencia Real",
+                "content": """<h3>Mitos del Aprendizaje y la Ciencia Real</h3>
+<p>El campo de la educación está plagado de mitos que suenan intuitivos pero que <strong>no están respaldados por la evidencia científica</strong>. Creer en estos mitos no solo es inútil; puede ser perjudicial porque te lleva a invertir tiempo y energía en estrategias ineficaces. Veamos los más comunes y lo que la ciencia realmente dice.</p>
 
 <h4>Mito 1: Los estilos de aprendizaje</h4>
-<p>La idea de que cada persona tiene un "estilo de aprendizaje" dominante (visual, auditivo, kinestésico) es probablemente el mito educativo más extendido y resistente. Aunque es cierto que las personas tienen preferencias, <strong>no hay evidencia científica</strong> de que enseñar según el "estilo preferido" mejore el aprendizaje. Múltiples meta-análisis han demostrado que esta teoría no tiene sustento empírico. Lo que sí funciona es usar múltiples modalidades sensoriales para aprender cualquier tema.</p>
+<p>La idea de que cada persona aprende mejor de una forma específica — visual, auditivo, kinestésico — es probablemente el mito educativo más extendido y persistente. Aunque las personas tienen preferencias, <strong>décadas de investigación no han encontrado evidencia</strong> de que enseñar según el «estilo» preferido mejore el aprendizaje. Un estudio de 2008 publicado en <em>Psychological Science in the Public Interest</em> concluyó que no existe justificación adecuada para incorporar los estilos de aprendizaje en la práctica educativa.</p>
 
 <h4>Mito 2: Solo usamos el 10% del cerebro</h4>
-<p>Las neuroimágenes muestran que usamos prácticamente todo nuestro cerebro, aunque no todo al mismo tiempo. Este mito persiste porque es un gancho de marketing perfecto para productos que prometen "desbloquear" tu potencial cerebral.</p>
+<p>Las técnicas de neuroimagen demuestran que usamos <em>todo</em> nuestro cerebro, aunque no todas las regiones están activas simultáneamente. Diferentes actividades activan diferentes áreas, pero no hay un 90% de potencial «desaprovechado» esperando ser desbloqueado por alguna técnica mágica.</p>
 
-<h4>Mito 3: La multitarea es efectiva</h4>
-<p>El cerebro humano no hace verdadera multitarea con tareas cognitivas; alterna rápidamente entre ellas, con un costo de eficiencia significativo. Estudios muestran que la "multitarea" puede reducir la productividad hasta en un 40%. Estudiar con el teléfono al lado, alternando entre WhatsApp y los apuntes, es una de las formas más ineficientes de usar tu tiempo.</p>
+<h4>Mito 3: La multitarea es eficiente</h4>
+<p>El cerebro humano no puede realizar dos tareas cognitivas complejas simultáneamente. Lo que llamamos «multitarea» es en realidad <strong>cambio rápido de tareas</strong> (task switching), y cada cambio tiene un costo cognitivo: pérdida de tiempo, aumento de errores y mayor fatiga mental. Estudios muestran que la multitarea puede reducir la productividad hasta en un 40%.</p>
 
-<h4>Lo que SÍ funciona según la ciencia</h4>
+<h4>Mito 4: Releer y subrayar son técnicas de estudio efectivas</h4>
+<p>Como vimos en lecciones anteriores, estas técnicas pasivas generan la <em>ilusión de competencia</em> sin producir aprendizaje real. Las técnicas activas — recuperación activa, repetición espaciada, elaboración — son significativamente más efectivas, aunque requieran más esfuerzo.</p>
+
+<blockquote>«El hecho de que una estrategia de estudio sea popular no significa que sea efectiva. Muchas de las técnicas más usadas son las menos eficientes.» — Basado en el metaanálisis de Dunlosky et al. (2013).</blockquote>
+
+<h4>Mito 5: El talento es más importante que el esfuerzo</h4>
+<p>La investigación de Anders Ericsson sobre la <strong>práctica deliberada</strong> demuestra que la excelencia en cualquier campo es el resultado de miles de horas de práctica enfocada y con retroalimentación, no de un talento innato misterioso. Los expertos no nacen; se hacen a través de trabajo intencional y persistente.</p>
+
+<h4>Lo que sí funciona, según la ciencia</h4>
 <ul>
-<li><strong>Recuperación activa:</strong> Evaluarte a ti mismo es más efectivo que releer (ya cubierto en lecciones anteriores).</li>
-<li><strong>Repetición espaciada:</strong> Distribuir el estudio en el tiempo supera al estudio concentrado.</li>
-<li><strong>Intercalado (interleaving):</strong> Mezclar diferentes tipos de problemas o temas en una sesión de estudio es más efectivo que practicar un solo tipo repetidamente.</li>
-<li><strong>Elaboración:</strong> Conectar nueva información con lo que ya sabes, preguntándote "¿por qué?" y "¿cómo?"</li>
-<li><strong>Generación:</strong> Intentar resolver un problema antes de ver la solución mejora el aprendizaje posterior.</li>
-<li><strong>Reflexión:</strong> Tomarte unos minutos después de estudiar para reflexionar sobre lo aprendido consolida la memoria.</li>
-</ul>
-
-<blockquote>La popularidad de un método de estudio no garantiza su efectividad. El subrayado, la relectura y los estilos de aprendizaje son populares pero ineficaces. La recuperación activa, la repetición espaciada y el intercalado son impopulares pero extraordinariamente efectivos. Elige la evidencia sobre la intuición.</blockquote>
-
-<h4>Sueño, ejercicio y aprendizaje</h4>
-<p>La ciencia es clara: dormir menos de siete horas reduce significativamente la capacidad de aprender y recordar. El sueño consolida las memorias formadas durante el día. El ejercicio físico aeróbico aumenta la producción de BDNF, una proteína que promueve el crecimiento de nuevas neuronas. Estudiar toda la noche es contraproducente; dormir bien y hacer ejercicio son las estrategias de aprendizaje más subestimadas.</p>
-
-<h4>Construyendo tu sistema personal de aprendizaje</h4>
-<p>Con base en la evidencia, diseña tu propio sistema: usa la Técnica Feynman para comprender, flashcards con repetición espaciada para memorizar, recuperación activa para verificar, intercalado para profundizar y sueño de calidad para consolidar. Este sistema, aplicado consistentemente, te convertirá en un aprendiz de élite.</p>""",
-                "estimatedMinutes": 6
+<li>Recuperación activa (testing effect)</li>
+<li>Repetición espaciada</li>
+<li>Práctica intercalada (interleaving)</li>
+<li>Elaboración y conexión con conocimientos previos</li>
+<li>Sueño adecuado (crucial para la consolidación de la memoria)</li>
+<li>Ejercicio físico regular (mejora la neuroplasticidad)</li>
+</ul>"""
             }
         ],
         "quiz": [
             {
-                "question": "¿Qué es la 'ilusión de competencia' en el contexto del aprendizaje?",
+                "question": "¿Qué es la metacognición?",
                 "options": [
-                    "Creer que eres mejor estudiante que tus compañeros",
-                    "Creer que entiendes algo cuando en realidad solo lo reconoces",
-                    "Pensar que no necesitas estudiar porque eres inteligente",
-                    "Estudiar demasiado y sentirse agotado"
+                    "La capacidad de memorizar grandes cantidades de información",
+                    "La capacidad de reflexionar sobre tus propios procesos de pensamiento y aprendizaje",
+                    "Un tipo de inteligencia artificial",
+                    "La habilidad de leer rápidamente"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La ilusión de competencia es creer que entiendes algo cuando en realidad solo lo reconoces. Leer algo y sentir que 'tiene sentido' no significa que lo hayas aprendido realmente."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la curva del olvido de Ebbinghaus, ¿cuánta información nueva olvidamos en 24 horas sin repaso?",
+                "question": "¿Qué es la 'ilusión de la competencia'?",
                 "options": [
-                    "Aproximadamente 30%",
-                    "Aproximadamente 50%",
-                    "Aproximadamente 70%",
-                    "Aproximadamente 90%"
+                    "Creer que eres más inteligente que los demás",
+                    "La creencia errónea de que entiendes algo cuando no lo dominas realmente",
+                    "La tendencia a subestimar tus propias habilidades",
+                    "El miedo a demostrar lo que sabes"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Según Ebbinghaus, sin repaso olvidamos aproximadamente el 70% de la información nueva en 24 horas, lo que demuestra la necesidad de la repetición espaciada."
+                "correctAnswer": 1
+            },
+            {
+                "question": "Según Ebbinghaus, ¿qué porcentaje de lo aprendido olvidamos en las primeras 24 horas sin repaso?",
+                "options": [
+                    "20%",
+                    "35%",
+                    "50%",
+                    "75%"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué aplicación es la más popular para implementar la repetición espaciada?",
+                "options": [
+                    "Duolingo",
+                    "Anki",
+                    "Notion",
+                    "Google Calendar"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Por qué la recuperación activa es más efectiva que la relectura?",
+                "options": [
+                    "Porque toma menos tiempo",
+                    "Porque es más divertida",
+                    "Porque el esfuerzo de recordar fortalece las conexiones neuronales",
+                    "Porque no requiere material de estudio"
+                ],
+                "correctAnswer": 2
             },
             {
                 "question": "¿Cuál es el tercer paso de la Técnica Feynman?",
                 "options": [
-                    "Elegir un concepto para estudiar",
-                    "Explicar como si enseñaras a un niño",
-                    "Identificar los huecos en tu comprensión",
+                    "Elegir un concepto",
+                    "Explicar en lenguaje simple",
+                    "Identificar las lagunas de comprensión",
                     "Simplificar y usar analogías"
                 ],
-                "correctAnswer": 2,
-                "explanation": "El tercer paso de la Técnica Feynman es identificar los huecos: cuando no puedes explicar algo claramente, has encontrado un área que necesitas estudiar más."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué dice la evidencia científica sobre los estilos de aprendizaje (visual, auditivo, kinestésico)?",
+                "question": "¿Qué es el 'interleaving' (práctica intercalada)?",
                 "options": [
-                    "Son completamente ciertos y deben guiar toda la enseñanza",
-                    "Solo aplican a los niños, no a los adultos",
+                    "Estudiar un solo tema durante toda la sesión",
+                    "Alternar entre diferentes temas o tipos de problemas durante el estudio",
+                    "Estudiar en grupo alternando quién explica",
+                    "Cambiar de lugar de estudio frecuentemente"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué dice la ciencia sobre los 'estilos de aprendizaje' (visual, auditivo, kinestésico)?",
+                "options": [
+                    "Son la base de toda pedagogía moderna",
                     "No hay evidencia de que enseñar según el estilo preferido mejore el aprendizaje",
-                    "Solo el estilo visual está respaldado por la ciencia"
+                    "Solo funcionan con niños menores de 12 años",
+                    "Son válidos pero solo para el aprendizaje de idiomas"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Múltiples meta-análisis han demostrado que la teoría de los estilos de aprendizaje no tiene sustento empírico. Lo efectivo es usar múltiples modalidades sensoriales."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es el 'intercalado' (interleaving) como técnica de estudio?",
+                "question": "¿Por qué equivocarte durante la práctica de recuperación es valioso?",
                 "options": [
-                    "Estudiar un solo tema durante muchas horas seguidas",
-                    "Mezclar diferentes tipos de problemas o temas en una sesión de estudio",
-                    "Alternar entre estudiar y descansar cada 25 minutos",
-                    "Estudiar en grupo alternando quién explica"
+                    "Porque genera frustración que te motiva a estudiar más",
+                    "Porque tu cerebro crea un 'espacio' que se llena más fácilmente la próxima vez",
+                    "Porque los errores son irrelevantes para el aprendizaje",
+                    "Porque demuestra que el material es muy difícil"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El intercalado consiste en mezclar diferentes tipos de problemas o temas en una sesión de estudio, lo cual es más efectivo que practicar un solo tipo repetidamente."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuáles son los dos componentes de la metacognición?",
+                "question": "¿Qué es la 'codificación dual'?",
                 "options": [
-                    "Memoria a corto plazo y memoria a largo plazo",
-                    "Conocimiento metacognitivo y regulación metacognitiva",
-                    "Atención y concentración",
-                    "Pensamiento convergente y pensamiento divergente"
+                    "Estudiar en dos idiomas simultáneamente",
+                    "Combinar información verbal con información visual para crear múltiples rutas de acceso",
+                    "Memorizar usando solo imágenes",
+                    "Usar dos libros de texto diferentes sobre el mismo tema"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La metacognición tiene dos componentes: el conocimiento metacognitivo (lo que sabes sobre ti como aprendiz) y la regulación metacognitiva (planificar, monitorear y evaluar tu aprendizaje)."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué demostró el estudio de Karpicke y Blunt (2011) sobre la recuperación activa?",
+                "question": "La técnica Pomodoro estructura el estudio en intervalos de:",
                 "options": [
-                    "Que los mapas conceptuales son la técnica más efectiva",
-                    "Que los estudiantes que practicaron recuperación activa recordaron un 50% más que los que usaron mapas conceptuales",
-                    "Que la relectura es igual de efectiva que la recuperación activa",
-                    "Que el subrayado es la mejor técnica de estudio"
+                    "15 minutos de estudio y 10 de descanso",
+                    "25 minutos de estudio y 5 de descanso",
+                    "45 minutos de estudio y 15 de descanso",
+                    "60 minutos de estudio y 20 de descanso"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Karpicke y Blunt demostraron que los estudiantes que practicaron recuperación activa recordaron un 50% más que los que estudiaron con mapas conceptuales, incluso cuando estos últimos consideraban su técnica más efectiva."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es la 'dificultad deseable' según Robert Bjork?",
+                "question": "¿Cuánto puede reducir la productividad la multitarea según estudios?",
                 "options": [
-                    "Estudiar en condiciones incómodas para mejorar la concentración",
-                    "El esfuerzo de recordar algo justo antes de olvidarlo, que fortalece enormemente la memoria",
-                    "Elegir siempre los cursos más difíciles de la universidad",
-                    "Practicar habilidades que ya dominas para mantener la confianza"
+                    "10%",
+                    "20%",
+                    "40%",
+                    "60%"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La dificultad deseable describe cómo el esfuerzo de recordar algo justo antes de olvidarlo fortalece la memoria. Ni demasiado fácil ni demasiado difícil: el punto óptimo es ese momento en que 'casi' lo olvidas."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Por qué la relectura es una de las técnicas de estudio menos efectivas según la lección?",
+                "question": "La investigación de Anders Ericsson sobre la 'práctica deliberada' demuestra que:",
                 "options": [
-                    "Porque leer es una actividad que no involucra al cerebro",
-                    "Porque el cerebro reconoce las palabras y da una falsa sensación de comprensión sin que realmente se aprenda",
-                    "Porque los libros contienen información desactualizada",
-                    "Porque solo funciona para materias de humanidades"
+                    "El talento natural es el factor más importante del éxito",
+                    "La excelencia resulta de miles de horas de práctica enfocada con retroalimentación",
+                    "Solo las personas con IQ alto pueden alcanzar la excelencia",
+                    "La práctica solo sirve para habilidades físicas, no intelectuales"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Al releer, el cerebro reconoce las palabras y da una falsa sensación de comprensión (ilusión de competencia). Reconocer no es recordar; puedes releer cinco veces y ser incapaz de explicar las ideas principales."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál es el intervalo recomendado para la primera revisión en un sistema de repetición espaciada?",
+                "question": "¿Cuál de estas técnicas de estudio es la MENOS efectiva según la ciencia?",
                 "options": [
-                    "Inmediatamente después del aprendizaje",
-                    "1 día después del aprendizaje inicial",
-                    "1 semana después del aprendizaje inicial",
-                    "1 mes después del aprendizaje inicial"
+                    "Recuperación activa",
+                    "Repetición espaciada",
+                    "Subrayar y releer pasivamente",
+                    "Práctica intercalada"
                 ],
-                "correctAnswer": 1,
-                "explanation": "En la repetición espaciada, la primera revisión debe hacerse 1 día después del aprendizaje inicial, seguida de intervalos progresivamente mayores (3 días, 7 días, 21 días, 2 meses)."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué mito sobre el cerebro desmiente la lección con evidencia de neuroimágenes?",
+                "question": "¿Qué factor es crucial para la consolidación de la memoria, según la ciencia?",
                 "options": [
-                    "Que el cerebro no puede generar nuevas neuronas",
-                    "Que solo usamos el 10% del cerebro",
-                    "Que el cerebro izquierdo es lógico y el derecho creativo",
-                    "Que la inteligencia está determinada genéticamente"
+                    "Estudiar hasta altas horas de la noche",
+                    "Beber café durante el estudio",
+                    "Sueño adecuado",
+                    "Estudiar en silencio absoluto"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Las neuroimágenes muestran que usamos prácticamente todo nuestro cerebro, aunque no todo al mismo tiempo. El mito del 10% persiste como gancho de marketing para productos que prometen 'desbloquear' tu potencial."
-            },
-            {
-                "question": "¿Qué principio de buenas flashcards establece que cada tarjeta debe evaluar un solo concepto?",
-                "options": [
-                    "Pregunta, no declaración",
-                    "Una idea por tarjeta",
-                    "Usa tus propias palabras",
-                    "Incluye contexto visual"
-                ],
-                "correctAnswer": 1,
-                "explanation": "El principio de 'una idea por tarjeta' establece que no se debe abarrotar información en una sola flashcard; cada tarjeta debe testear un solo concepto para mayor efectividad."
-            },
-            {
-                "question": "¿Cómo afecta la multitarea al estudio según la evidencia científica?",
-                "options": [
-                    "Mejora la productividad porque el cerebro procesa información en paralelo",
-                    "No tiene ningún efecto significativo",
-                    "Puede reducir la productividad hasta en un 40% porque el cerebro alterna entre tareas con un costo de eficiencia",
-                    "Solo afecta negativamente a personas mayores de 30 años"
-                ],
-                "correctAnswer": 2,
-                "explanation": "El cerebro no hace verdadera multitarea cognitiva, sino que alterna rápidamente entre tareas con un costo significativo. Estudios muestran que puede reducir la productividad hasta en un 40%."
-            },
-            {
-                "question": "Según la lección, ¿qué papel juegan el sueño y el ejercicio en el aprendizaje?",
-                "options": [
-                    "Son irrelevantes para el proceso de aprendizaje",
-                    "El sueño consolida las memorias y el ejercicio aeróbico promueve el crecimiento de nuevas neuronas",
-                    "Solo el sueño importa; el ejercicio no tiene efecto cognitivo",
-                    "Dormir menos permite estudiar más horas y aprender más"
-                ],
-                "correctAnswer": 1,
-                "explanation": "El sueño consolida las memorias formadas durante el día, y el ejercicio aeróbico aumenta la producción de BDNF, una proteína que promueve el crecimiento de nuevas neuronas. Estudiar toda la noche es contraproducente."
-            },
-            {
-                "question": "¿Qué técnica consiste en intentar resolver un problema antes de ver la solución para mejorar el aprendizaje posterior?",
-                "options": [
-                    "Intercalado",
-                    "Elaboración",
-                    "Generación",
-                    "Reflexión"
-                ],
-                "correctAnswer": 2,
-                "explanation": "La generación consiste en intentar resolver un problema antes de ver la solución, lo cual mejora significativamente el aprendizaje posterior al activar procesos cognitivos más profundos."
+                "correctAnswer": 2
             }
         ]
     },
-
     "Elocuencia y Oratoria": {
+        "emoji": "🎙️",
+        "level": "intermediate",
+        "duration": "35min",
         "lessons": [
             {
-                "title": "Proyección Vocal y Dominio de la Voz",
-                "content": """<h3>Proyección Vocal y Dominio de la Voz</h3>
-<p>Tu voz es tu instrumento más poderoso como comunicador. No importa cuán brillante sea tu mensaje si tu audiencia no puede escucharte, si tu tono es monótono o si tu velocidad es inadecuada. La buena noticia es que la voz, como cualquier instrumento, se puede entrenar y mejorar significativamente con práctica deliberada.</p>
+                "title": "Proyección de Voz y Presencia Escénica",
+                "content": """<h3>Proyección de Voz y Presencia Escénica</h3>
+<p>La voz es la <strong>herramienta principal del orador</strong>. No importa cuán brillante sea tu contenido; si tu audiencia no puede escucharte claramente o si tu tono es monótono, tu mensaje se perderá. La buena noticia es que la proyección vocal no es un talento innato; es una habilidad que se desarrolla con técnica y práctica.</p>
 
-<h4>Anatomía de la voz efectiva</h4>
-<p>Una voz que cautiva tiene cuatro componentes que puedes controlar:</p>
+<h4>Fundamentos de la proyección vocal</h4>
 <ul>
-<li><strong>Volumen:</strong> No se trata de gritar, sino de proyectar. La proyección vocal viene del diafragma, no de la garganta. Imagina que tu voz debe alcanzar la última fila del auditorio.</li>
-<li><strong>Tono:</strong> La variación tonal mantiene la atención. Una voz que sube y baja naturalmente transmite emoción y énfasis. Una voz monótona, sin importar el contenido, induce al sueño.</li>
-<li><strong>Velocidad:</strong> El orador promedio habla a 150 palabras por minuto. Varía tu velocidad: más rápido para generar emoción, más lento para enfatizar ideas clave.</li>
-<li><strong>Pausas:</strong> La pausa es el arma secreta del orador experto. Una pausa bien colocada antes de una idea importante crea expectativa; después, le da tiempo al público para procesarla.</li>
+<li><strong>Respiración diafragmática:</strong> la base de una voz poderosa. En lugar de respirar con el pecho, inhala profundamente usando el diafragma (tu abdomen se expande). Esto proporciona el aire necesario para sostener frases largas sin quedarte sin aliento.</li>
+<li><strong>Volumen:</strong> no se trata de gritar, sino de proyectar. Imagina que tu voz debe llegar a la última fila sin esfuerzo visible. Practica hablando hacia una pared a 5 metros de distancia.</li>
+<li><strong>Articulación:</strong> pronuncia cada palabra con claridad. Los ejercicios de trabalenguas son excelentes para mejorar la dicción.</li>
+<li><strong>Velocidad:</strong> un error común es hablar demasiado rápido por nerviosismo. La velocidad ideal para un discurso es de 130-150 palabras por minuto.</li>
 </ul>
 
-<h4>Técnicas de respiración diafragmática</h4>
-<p>La respiración diafragmática es la base de una buena proyección vocal. En lugar de respirar superficialmente con el pecho, debes respirar profundamente expandiendo el abdomen. Ejercicio práctico: acuéstate boca arriba, coloca un libro sobre tu abdomen y respira de modo que el libro suba y baje. Practica esto 10 minutos diarios y tu capacidad de proyección mejorará notablemente.</p>
-
-<h4>Ejercicios de calentamiento vocal</h4>
+<h4>La musicalidad del habla</h4>
+<p>Los grandes oradores usan su voz como un instrumento musical, variando cuatro elementos:</p>
 <ul>
-<li><strong>Labios vibrantes:</strong> Haz vibrar tus labios como un motor (el sonido "brrr") durante 30 segundos. Relaja y calienta los músculos faciales.</li>
-<li><strong>Escalas vocales:</strong> Sube y baja por tu rango vocal con sonidos de vocales (aaa, eee, iii, ooo, uuu).</li>
-<li><strong>Trabalenguas:</strong> Practica trabalenguas a diferentes velocidades para mejorar la dicción y articulación.</li>
-<li><strong>Lectura en voz alta:</strong> Lee un texto variando deliberadamente el volumen, tono y velocidad.</li>
+<li><strong>Tono:</strong> alterna entre tonos graves (autoridad, seriedad) y agudos (entusiasmo, urgencia).</li>
+<li><strong>Ritmo:</strong> varía la velocidad para crear dinamismo. Acelera en momentos de emoción y desacelera para enfatizar ideas clave.</li>
+<li><strong>Volumen:</strong> un susurro estratégico puede ser más impactante que un grito.</li>
+<li><strong>Pausas:</strong> las pausas son una de las herramientas más poderosas y subutilizadas. Una pausa antes de una idea clave genera expectativa; después, permite que la audiencia la procese.</li>
 </ul>
 
-<blockquote>La voz es el vehículo de tus ideas. Puedes tener el mensaje más poderoso del mundo, pero si tu voz no lo transmite con claridad, energía y emoción, se perderá. Invertir en tu voz es invertir en tu capacidad de influir.</blockquote>
+<blockquote>«No es lo que dices, sino cómo lo dices. La misma frase puede inspirar o aburrir dependiendo de la voz que la pronuncia.»</blockquote>
 
-<h4>El poder del silencio</h4>
-<p>Los oradores principiantes temen el silencio y lo llenan con muletillas: "ehh", "o sea", "básicamente", "como que". Los oradores expertos abrazan el silencio. Una pausa de dos o tres segundos, que al orador le parece eterna, al público le parece natural y poderosa. Practica pausar deliberadamente después de cada idea principal.</p>
+<h4>Presencia escénica</h4>
+<p>La presencia escénica es la capacidad de <em>dominar el espacio</em> y captar la atención de la audiencia con tu sola presencia. Implica postura erguida, movimientos intencionales, contacto visual y una energía que transmita confianza y pasión. Antes de hablar, los primeros 5 segundos de silencio mientras estableces contacto visual son cruciales para captar la atención.</p>
 
-<h4>Cuidado de la voz</h4>
-<p>Tu voz es un músculo que necesita cuidado: hidrátate constantemente, evita gritar, no hables en ambientes ruidosos durante períodos prolongados y calienta tu voz antes de presentaciones importantes, igual que un atleta calienta antes de competir.</p>""",
-                "estimatedMinutes": 6
+<h4>Calentamiento vocal</h4>
+<p>Así como un atleta calienta antes de competir, un orador debe calentar su voz. Ejercicios simples: tararear escalas musicales, pronunciar vocales exageradas, hacer vibrar los labios (como un motor) y practicar trabalenguas durante 5 minutos antes de subir al escenario.</p>"""
             },
             {
-                "title": "Lenguaje Corporal en el Escenario",
-                "content": """<h3>Lenguaje Corporal en el Escenario</h3>
-<p>La comunicación no verbal representa, según diversos estudios, entre el 55% y el 93% del mensaje total que percibe tu audiencia. Tu postura, tus gestos, tu contacto visual y tu movimiento en el espacio comunican tanto o más que tus palabras. Dominar el lenguaje corporal es esencial para cualquier orador que quiera causar impacto real.</p>
+                "title": "Lenguaje Corporal del Orador",
+                "content": """<h3>Lenguaje Corporal del Orador</h3>
+<p>Las investigaciones de Albert Mehrabian sugieren que en la comunicación presencial, el <strong>55% del impacto proviene del lenguaje corporal</strong>, el 38% del tono de voz y solo el 7% de las palabras. Aunque estos porcentajes son debatidos en su aplicación exacta, el principio es claro: tu cuerpo comunica tanto o más que tus palabras.</p>
 
-<h4>Postura de poder</h4>
-<p>Tu postura comunica confianza o inseguridad antes de que digas una sola palabra. Una postura de orador efectiva incluye:</p>
+<h4>Postura y movimiento</h4>
 <ul>
-<li>Pies separados al ancho de los hombros, peso distribuido equitativamente.</li>
-<li>Hombros relajados y hacia atrás, pecho abierto.</li>
-<li>Cabeza erguida, mentón paralelo al suelo.</li>
-<li>Brazos a los lados o con gestos abiertos, nunca cruzados sobre el pecho.</li>
-</ul>
-<p>La investigadora Amy Cuddy demostró que adoptar "posturas de poder" (cuerpo expandido, brazos abiertos) durante dos minutos antes de una presentación puede aumentar la testosterona y reducir el cortisol, generando una sensación genuina de confianza.</p>
-
-<h4>Gestos que refuerzan el mensaje</h4>
-<ul>
-<li><strong>Gestos ilustradores:</strong> Acompañan y refuerzan tus palabras. Cuando dices "tres puntos importantes", muestras tres dedos. Cuando describes algo grande, abres los brazos.</li>
-<li><strong>Gestos de énfasis:</strong> Movimientos que subrayan ideas clave, como golpear suavemente una mano con la otra o señalar hacia la audiencia.</li>
-<li><strong>Zona de gesto efectiva:</strong> Los gestos más naturales y visibles ocurren entre la cintura y los hombros. Debajo de la cintura se ven débiles; sobre la cabeza, exagerados.</li>
+<li><strong>Postura de poder:</strong> párate con los pies separados al ancho de los hombros, espalda recta, hombros relajados. Esta postura proyecta confianza y autoridad. Amy Cuddy demostró que adoptar posturas de poder durante dos minutos antes de una presentación reduce el cortisol (estrés) y aumenta la testosterona (confianza).</li>
+<li><strong>Movimiento con propósito:</strong> no te quedes estático como una estatua ni te muevas nerviosamente. Muévete de forma intencional para marcar transiciones entre ideas, acercarte a la audiencia o enfatizar un punto.</li>
+<li><strong>Evita:</strong> balancearte de un pie a otro, cruzar los brazos, meter las manos en los bolsillos o jugar con un bolígrafo.</li>
 </ul>
 
 <h4>Contacto visual</h4>
-<p>El contacto visual es el conector emocional más poderoso entre el orador y la audiencia. En audiencias grandes, usa la técnica de "faros": divide mentalmente al público en secciones y dirige tu mirada a cada sección durante algunos segundos, haciendo contacto visual con individuos específicos. Cada persona sentirá que le hablas directamente.</p>
+<p>El contacto visual es tu herramienta más poderosa para <strong>conectar con la audiencia</strong>. No mires al suelo, al techo ni a tus diapositivas. En un grupo pequeño, mira directamente a los ojos de cada persona durante 3-5 segundos antes de pasar a la siguiente. En auditorios grandes, divide el espacio en secciones y dirige tu mirada a cada sección de forma rotativa.</p>
 
-<blockquote>Tu cuerpo habla antes que tu boca. Si tus palabras dicen "estoy entusiasmado con este proyecto" pero tu cuerpo está encogido y tus ojos miran al suelo, tu audiencia creerá a tu cuerpo, no a tus palabras.</blockquote>
-
-<h4>Movimiento en el escenario</h4>
-<p>El movimiento con propósito mantiene la atención y refuerza la estructura del discurso. Puedes asociar diferentes posiciones del escenario con diferentes partes de tu presentación: la izquierda para el pasado, el centro para el presente, la derecha para el futuro. Evita caminar sin rumbo o balancearte nerviosamente.</p>
-
-<h4>Errores comunes de lenguaje corporal</h4>
+<h4>Gestos</h4>
+<p>Los gestos efectivos son naturales, amplios y congruentes con el mensaje:</p>
 <ul>
-<li>Manos en los bolsillos: transmite desinterés o nerviosismo.</li>
-<li>Mirar solo a la pantalla o a las notas: desconecta de la audiencia.</li>
-<li>Balancearse de un pie a otro: distrae y comunica ansiedad.</li>
-<li>Gestos repetitivos: un mismo gesto repetido pierde impacto y se vuelve tic.</li>
-</ul>""",
-                "estimatedMinutes": 6
-            },
-            {
-                "title": "Estructura de Discursos Memorables",
-                "content": """<h3>Estructura de Discursos Memorables</h3>
-<p>Un gran discurso no es una improvisación afortunada; es una pieza cuidadosamente estructurada. Los oradores más memorables de la historia, desde Cicerón hasta Martin Luther King Jr., dominaron el arte de la estructura. Un discurso bien estructurado guía a la audiencia de forma natural desde el inicio hasta una conclusión poderosa.</p>
-
-<h4>La estructura clásica en tres actos</h4>
-<p>La estructura más efectiva y probada sigue el modelo de tres actos:</p>
-<ul>
-<li><strong>Apertura (10-15% del tiempo):</strong> Captura la atención, establece credibilidad y presenta tu tesis central. Nunca comiences con "Hola, mi nombre es..." o "Hoy voy a hablar sobre...".</li>
-<li><strong>Desarrollo (75-80% del tiempo):</strong> Presenta tus argumentos principales, evidencia, historias y datos. Organízalos en 3 a 5 puntos claros, cada uno con su propia mini-estructura.</li>
-<li><strong>Cierre (10-15% del tiempo):</strong> Resume, refuerza tu mensaje central y termina con un llamado a la acción o una frase memorable. La última frase es la que tu audiencia recordará.</li>
+<li><strong>Gestos ilustradores:</strong> acompañan y refuerzan las palabras. Si hablas de crecimiento, tus manos suben. Si hablas de amplitud, tus brazos se abren.</li>
+<li><strong>Gestos de enumeración:</strong> usar los dedos para contar puntos ayuda a la audiencia a seguir la estructura.</li>
+<li><strong>Palmas abiertas:</strong> transmiten honestidad y apertura.</li>
+<li><strong>Puño cerrado:</strong> transmite determinación y fuerza.</li>
 </ul>
 
-<h4>Técnicas de apertura que capturan</h4>
+<blockquote>«Tu cuerpo habla antes que tú. Cuando subes al escenario, tu audiencia ya ha formado una impresión basada en tu postura, tu caminar y tu expresión facial. Haz que esa primera impresión cuente.»</blockquote>
+
+<h4>Expresiones faciales</h4>
+<p>Tu rostro debe reflejar la emoción de tu mensaje. Si hablas de algo inspirador, sonríe. Si hablas de algo serio, muestra preocupación genuina. La incongruencia entre tu mensaje verbal y tu expresión facial confunde a la audiencia y reduce tu credibilidad. Practica frente a un espejo o grábate en video para identificar hábitos inconscientes.</p>"""
+            },
+            {
+                "title": "Estructura del Discurso",
+                "content": """<h3>Estructura del Discurso</h3>
+<p>Un discurso bien estructurado es como un edificio bien construido: tiene cimientos sólidos, una estructura lógica y un acabado memorable. Sin estructura, incluso las ideas más brillantes se pierden en un mar de información desorganizada. La audiencia necesita un <strong>mapa mental</strong> para seguir tu mensaje, y tu trabajo como orador es proporcionárselo.</p>
+
+<h4>La estructura clásica en tres partes</h4>
 <ul>
-<li><strong>Pregunta provocadora:</strong> "¿Qué harían si les quedara un solo año de vida?"</li>
-<li><strong>Estadística impactante:</strong> "Cada 40 segundos, una persona en el mundo se quita la vida."</li>
-<li><strong>Historia personal:</strong> "Hace tres años, recibí una llamada que cambió mi vida para siempre."</li>
-<li><strong>Declaración audaz:</strong> "Todo lo que les enseñaron sobre el éxito está equivocado."</li>
-<li><strong>Cita poderosa:</strong> Una frase que encapsule el tema y genere curiosidad.</li>
+<li><strong>Apertura (10-15% del tiempo):</strong> captura la atención, establece credibilidad y presenta la idea central. Una buena apertura puede ser una historia personal, una pregunta provocadora, un dato sorprendente o una cita poderosa.</li>
+<li><strong>Cuerpo (75-80% del tiempo):</strong> desarrolla tu argumento principal con 3-5 puntos de apoyo. Cada punto debe tener una afirmación clara, evidencia que la respalde y un ejemplo o historia que la ilustre.</li>
+<li><strong>Cierre (10-15% del tiempo):</strong> resume los puntos clave, conecta con la apertura (estructura circular) y termina con una llamada a la acción memorable.</li>
 </ul>
 
 <h4>La regla de tres</h4>
-<p>El cerebro humano procesa y recuerda información en grupos de tres con mayor facilidad. Los oradores más efectivos organizan sus ideas en tríadas: "Vine, vi, vencí" (Julio César); "Gobierno del pueblo, por el pueblo, para el pueblo" (Lincoln); "Tell them what you're going to tell them, tell them, then tell them what you told them."</p>
+<p>Desde los discursos de Aristóteles hasta los de Steve Jobs, la <strong>regla de tres</strong> es un principio universal de la retórica. Tres puntos son suficientes para ser convincente y pocos para ser memorables. «Vine, vi, vencí» (Julio César). «Gobierno del pueblo, por el pueblo, para el pueblo» (Abraham Lincoln). Estructura tu discurso en tres ideas principales siempre que sea posible.</p>
 
-<blockquote>Un discurso sin estructura es un viaje sin mapa: puede ser interesante, pero difícilmente llegará a su destino. La estructura no limita la creatividad; la canaliza para que cada palabra cuente.</blockquote>
+<blockquote>«Di lo que vas a decir, dilo, y luego di lo que dijiste. La repetición es la madre de la retención.» — Principio clásico de retórica.</blockquote>
 
-<h4>Transiciones efectivas</h4>
-<p>Las transiciones entre secciones son el pegamento de un buen discurso. En lugar de saltar abruptamente de un tema a otro, usa puentes: "Ahora que entendemos el problema, veamos la solución", "Esto nos lleva al segundo punto clave", "Pero la historia no termina ahí".</p>
+<h4>Técnicas de apertura poderosas</h4>
+<ul>
+<li><strong>Historia personal:</strong> «Cuando tenía 15 años, un profesor me dijo algo que cambió mi vida...»</li>
+<li><strong>Dato sorprendente:</strong> «Cada minuto, se suben 500 horas de video a YouTube.»</li>
+<li><strong>Pregunta retórica:</strong> «¿Alguna vez se han preguntado por qué recordamos solo el 10% de lo que leemos?»</li>
+<li><strong>Declaración audaz:</strong> «Todo lo que les enseñaron sobre productividad está equivocado.»</li>
+</ul>
 
-<h4>El cierre que resuena</h4>
-<p>Un buen cierre nunca es abrupto ni incluye "bueno, eso es todo" o "¿alguna pregunta?". Termina con fuerza: una frase que conecte con tu apertura (estructura circular), un llamado a la acción específico, una imagen emocional poderosa, o una pregunta que deje a la audiencia reflexionando.</p>""",
-                "estimatedMinutes": 6
+<h4>Transiciones</h4>
+<p>Las transiciones son los puentes que conectan las diferentes partes de tu discurso. Una buena transición resume lo anterior y anticipa lo siguiente: «Ya vimos por qué el problema es urgente. Ahora, veamos cómo podemos resolverlo.» Sin transiciones claras, la audiencia se pierde entre los puntos y siente que el discurso es caótico.</p>
+
+<h4>El cierre memorable</h4>
+<p>Nunca termines con «bueno, eso es todo» o «¿alguna pregunta?». Cierra con fuerza: una historia que conecte con la apertura, una cita inspiradora, un desafío para la audiencia o una visión del futuro. El cierre es lo último que tu audiencia recordará; hazlo <em>inolvidable</em>.</p>"""
             },
             {
-                "title": "Oratoria Improvisada",
-                "content": """<h3>Oratoria Improvisada</h3>
-<p>La oratoria improvisada, o impromptu speaking, es la capacidad de hablar de manera articulada, coherente y persuasiva sin preparación previa. Ocurre cuando tu jefe te pide tu opinión en una reunión, cuando un profesor señala tu nombre para responder, o cuando alguien te pide que "digas unas palabras". Es la forma más frecuente de oratoria y una de las habilidades más valiosas en el mundo profesional.</p>
+                "title": "Discurso Improvisado e Impromptu Speaking",
+                "content": """<h3>Discurso Improvisado e Impromptu Speaking</h3>
+<p>Hablar sin preparación previa es una de las situaciones más temidas en el ámbito profesional. Ya sea que te pidan tu opinión en una reunión, te inviten a «decir unas palabras» en un evento o debas responder una pregunta difícil en una entrevista, la capacidad de <strong>organizar tus ideas rápidamente y comunicarlas con claridad</strong> es una habilidad invaluable.</p>
 
-<h4>¿Por qué nos cuesta tanto improvisar?</h4>
-<p>El miedo a improvisar no es miedo a hablar; es miedo a no tener una estructura. Cuando no sabes qué decir, el cerebro entra en modo pánico: te quedas en blanco, divagas sin dirección o dices cosas de las que te arrepientes después. La solución no es ser más espontáneo, sino tener estructuras mentales listas para usar en cualquier momento.</p>
+<h4>¿Por qué nos paraliza la improvisación?</h4>
+<p>El miedo a improvisar surge de la combinación de presión social, falta de estructura mental y la creencia de que necesitamos decir algo perfecto. La realidad es que nadie espera perfección en un discurso improvisado; esperan <em>claridad, confianza y autenticidad</em>.</p>
 
-<h4>Estructuras para la improvisación</h4>
+<h4>Frameworks para la improvisación estructurada</h4>
+<p>La clave del discurso improvisado es tener <strong>estructuras mentales predefinidas</strong> que puedas llenar rápidamente con contenido. Estos son los frameworks más útiles:</p>
 <ul>
-<li><strong>PREP (Point, Reason, Example, Point):</strong> Expón tu punto, da una razón, ilustra con un ejemplo y repite tu punto. Ejemplo: "Creo que deberíamos usar marketing digital (punto) porque nuestro público objetivo está en redes sociales (razón). El mes pasado, nuestra publicación en Instagram generó más leads que toda la campaña impresa (ejemplo). Por eso insisto en priorizar lo digital (punto)."</li>
-<li><strong>Pasado-Presente-Futuro:</strong> Habla sobre cómo era antes la situación, cómo es ahora y cómo podría ser en el futuro.</li>
-<li><strong>Problema-Solución-Beneficio:</strong> Describe el problema, propón una solución y explica los beneficios.</li>
-<li><strong>Qué-Y qué-Ahora qué:</strong> Describe qué pasó, por qué importa y qué deberíamos hacer al respecto.</li>
+<li><strong>PREP (Point, Reason, Example, Point):</strong> Haz tu punto → Da la razón → Ilustra con un ejemplo → Repite tu punto. Ejemplo: «Creo que deberíamos invertir en formación (punto). Porque los empleados capacitados son más productivos (razón). El año pasado, después del curso de liderazgo, la productividad del equipo subió un 20% (ejemplo). Por eso, la formación debería ser una prioridad (punto).»</li>
+<li><strong>Pasado-Presente-Futuro:</strong> habla de cómo era antes, cómo es ahora y cómo será en el futuro.</li>
+<li><strong>Problema-Solución-Beneficio:</strong> describe el problema, propone una solución y explica los beneficios.</li>
+<li><strong>Qué-Y qué-Ahora qué:</strong> describe la situación, explica por qué importa y propone una acción.</li>
 </ul>
+
+<blockquote>«La improvisación no es hablar sin preparación; es estar tan preparado en tus frameworks que puedes llenarlos con contenido en cualquier momento.»</blockquote>
 
 <h4>Técnicas para ganar tiempo</h4>
-<p>Cuando te piden hablar sin preparación, puedes ganar segundos valiosos para organizar tus ideas:</p>
 <ul>
-<li>Parafrasea la pregunta: "Es una excelente pregunta. Lo que me están preguntando es..."</li>
-<li>Usa una pausa deliberada: toma un respiro profundo antes de responder.</li>
-<li>Comienza con lo que sabes: "Lo primero que me viene a la mente es..." mientras tu cerebro organiza el resto.</li>
+<li>Repite o reformula la pregunta: «Qué gran pregunta. Me preguntas sobre...»</li>
+<li>Reconoce la complejidad: «Este es un tema con muchas aristas. Permítanme enfocarme en lo que considero más importante.»</li>
+<li>Usa una pausa con confianza: 3-5 segundos de silencio mientras organizas tus ideas proyecta seguridad, no inseguridad.</li>
 </ul>
 
-<blockquote>La improvisación efectiva no es ausencia de preparación; es la preparación de toda una vida condensada en un momento. Cuanto más practiques hablar con estructura, más natural te saldrá improvisar cuando lo necesites.</blockquote>
-
-<h4>Practica diaria de improvisación</h4>
-<p>Ejercicios que puedes hacer solo o con amigos:</p>
-<ul>
-<li>Abre un diccionario al azar y habla durante un minuto sobre la primera palabra que veas.</li>
-<li>Pide a un amigo que te dé un tema y habla 90 segundos usando la estructura PREP.</li>
-<li>En reuniones, oblígate a contribuir con al menos una intervención articulada.</li>
-<li>Grábate respondiendo preguntas improvisadas y escúchate para identificar áreas de mejora.</li>
-</ul>
-
-<h4>La clave de la confianza</h4>
-<p>La confianza en la improvisación viene de la acumulación de experiencia. Cada vez que hablas sin preparación y sobrevives, tu cerebro registra que la situación no era tan peligrosa como temías. Con el tiempo, lo que antes te generaba ansiedad se convierte en una oportunidad para brillar.</p>""",
-                "estimatedMinutes": 6
+<h4>Práctica de improvisación</h4>
+<p>La improvisación se mejora con práctica deliberada. Un ejercicio clásico: pide a alguien que te dé un tema aleatorio (un objeto, un concepto, una noticia) y habla sobre él durante 60-90 segundos usando uno de los frameworks anteriores. Hazlo diariamente durante un mes y notarás una transformación notable en tu capacidad de articular ideas sobre la marcha.</p>"""
             },
             {
-                "title": "Recursos Retóricos y Figuras del Discurso",
-                "content": """<h3>Recursos Retóricos y Figuras del Discurso</h3>
-<p>La retórica, el arte de la persuasión a través del discurso, fue sistematizada por los antiguos griegos hace más de 2.500 años y sigue siendo extraordinariamente relevante hoy. Los recursos retóricos son herramientas lingüísticas que hacen que un mensaje sea más memorable, persuasivo y emocionalmente resonante. Los mejores oradores, desde políticos hasta CEOs, los utilizan deliberadamente.</p>
+                "title": "Retórica: El Arte de Persuadir",
+                "content": """<h3>Retórica: El Arte de Persuadir</h3>
+<p>La retórica, el arte de la persuasión mediante el lenguaje, fue desarrollada por los griegos hace más de 2,500 años y sigue siendo una de las habilidades más poderosas que puedes dominar. Aristóteles identificó <strong>tres modos de persuasión</strong> que todo orador debe equilibrar para ser verdaderamente convincente.</p>
 
-<h4>Los tres modos de persuasión de Aristóteles</h4>
+<h4>Los tres pilares de Aristóteles</h4>
 <ul>
-<li><strong>Ethos (credibilidad):</strong> La audiencia te cree porque confía en tu carácter, experiencia o autoridad. Se construye con honestidad, conocimiento demostrable y conexión genuina con el público.</li>
-<li><strong>Pathos (emoción):</strong> Apelas a las emociones de la audiencia a través de historias, imágenes vívidas y lenguaje emocional. Las decisiones humanas son primariamente emocionales.</li>
-<li><strong>Logos (lógica):</strong> Usas datos, estadísticas, razonamiento lógico y evidencia para sustentar tus argumentos. El logos sin pathos es aburrido; el pathos sin logos es manipulación.</li>
-</ul>
-<p>Los discursos más poderosos combinan los tres: credibilidad del orador, conexión emocional y sustento lógico.</p>
-
-<h4>Figuras retóricas esenciales</h4>
-<ul>
-<li><strong>Anáfora:</strong> Repetición de una palabra o frase al inicio de oraciones consecutivas. "Yo tengo un sueño... Yo tengo un sueño... Yo tengo un sueño" (Martin Luther King Jr.).</li>
-<li><strong>Tricolon:</strong> Agrupar ideas en tríadas. "Veni, vidi, vici." Tres elementos tienen ritmo y contundencia naturales.</li>
-<li><strong>Antítesis:</strong> Yuxtaponer ideas contrarias. "Un pequeño paso para el hombre, un gran salto para la humanidad."</li>
-<li><strong>Metáfora:</strong> Comparar dos cosas sin usar "como". "La educación es la llave que abre todas las puertas."</li>
-<li><strong>Pregunta retórica:</strong> Preguntar sin esperar respuesta para provocar reflexión. "¿Acaso no merecemos algo mejor?"</li>
+<li><strong>Ethos (credibilidad):</strong> la audiencia debe percibirte como alguien confiable, experto y con buenas intenciones. El ethos se construye con tu reputación, tu forma de vestir, tu postura, tu dominio del tema y tu honestidad. Sin ethos, ni los mejores argumentos convencerán.</li>
+<li><strong>Pathos (emoción):</strong> las decisiones humanas están profundamente influidas por las emociones. Las historias, las metáforas, las imágenes vívidas y la pasión del orador activan las emociones de la audiencia y hacen que el mensaje sea memorable.</li>
+<li><strong>Logos (lógica):</strong> los argumentos racionales, los datos, las estadísticas y las cadenas de razonamiento apelan al intelecto de la audiencia y dan sustento racional a tu mensaje.</li>
 </ul>
 
-<h4>El poder del storytelling</h4>
-<p>Las historias son el recurso retórico más poderoso. El cerebro humano está programado para procesar y recordar narrativas. Una estadística se olvida en minutos; una historia se recuerda por años. Toda buena historia tiene un personaje con el que la audiencia se identifica, un conflicto que genera tensión y una resolución que transmite tu mensaje.</p>
+<h4>Figuras retóricas poderosas</h4>
+<ul>
+<li><strong>Anáfora:</strong> repetir una palabra o frase al inicio de frases consecutivas. «Yo tengo un sueño... Yo tengo un sueño...» (Martin Luther King Jr.)</li>
+<li><strong>Antítesis:</strong> contrastar dos ideas opuestas. «Un pequeño paso para el hombre, un gran salto para la humanidad.»</li>
+<li><strong>Trícolon:</strong> una serie de tres elementos. «Sangre, sudor y lágrimas» (Winston Churchill).</li>
+<li><strong>Pregunta retórica:</strong> una pregunta que no espera respuesta pero que hace reflexionar. «¿Cuántos de ustedes quieren un futuro mejor para sus hijos?»</li>
+<li><strong>Metáfora:</strong> comparar algo abstracto con algo concreto. «La educación no es llenar un balde, sino encender un fuego.»</li>
+</ul>
 
-<blockquote>La retórica no es manipulación; es el arte de comunicar la verdad de manera que sea escuchada, comprendida y recordada. En un mundo saturado de información, la capacidad de hacer que tu mensaje destaque no es un lujo, es una necesidad.</blockquote>
+<blockquote>«El hombre es un animal político» decía Aristóteles, y la retórica es el instrumento con el cual el ciudadano participa en la vida pública, persuade y es persuadido.»</blockquote>
 
-<h4>Humor como herramienta retórica</h4>
-<p>El humor bien utilizado desarma la resistencia de la audiencia, humaniza al orador y hace que el mensaje sea más memorable. No necesitas ser comediante; observaciones inesperadas, autocrítica ligera y anécdotas con giros sorpresivos son formas accesibles de incorporar humor en tus presentaciones.</p>""",
-                "estimatedMinutes": 6
+<h4>El storytelling como herramienta retórica</h4>
+<p>Las historias son el vehículo más poderoso para la persuasión porque activan las mismas regiones del cerebro del oyente que se activarían si estuviera viviendo la experiencia. Una buena historia tiene un protagonista con el que la audiencia se identifica, un conflicto o desafío, un momento de transformación y una lección o moraleja que conecta con tu mensaje.</p>
+
+<h4>Ética de la persuasión</h4>
+<p>La retórica es una herramienta moralmente neutra — puede usarse para inspirar o para manipular. La diferencia radica en la <em>intención</em>: ¿buscas el beneficio de tu audiencia o solo el tuyo? Un orador ético persuade con argumentos honestos, respeta la autonomía de la audiencia y no explota sus vulnerabilidades emocionales.</p>"""
             },
             {
-                "title": "Habilidades de Debate",
-                "content": """<h3>Habilidades de Debate</h3>
-<p>El debate es una disciplina que combina investigación, pensamiento crítico, argumentación lógica y oratoria persuasiva. Participar en debates, ya sean formales o informales, agudiza tu capacidad de pensar rápidamente, construir argumentos sólidos y defender tu posición frente a objeciones. Es un gimnasio mental que fortalece habilidades transferibles a cualquier carrera.</p>
+                "title": "El Arte del Debate",
+                "content": """<h3>El Arte del Debate</h3>
+<p>El debate es una forma estructurada de discusión donde dos o más partes presentan y defienden posiciones opuestas sobre un tema. Más allá de ganar o perder, el debate es una <strong>herramienta extraordinaria para desarrollar pensamiento crítico, investigación rigurosa, escucha activa y comunicación persuasiva</strong>.</p>
 
-<h4>Estructura de un argumento sólido</h4>
-<p>El modelo de Toulmin ofrece una estructura clara para construir argumentos:</p>
+<h4>Tipos de debate</h4>
 <ul>
-<li><strong>Afirmación (Claim):</strong> Lo que afirmas ser verdadero. "La educación universitaria gratuita beneficia a toda la sociedad."</li>
-<li><strong>Evidencia (Data):</strong> Los datos que respaldan tu afirmación. Estadísticas, estudios, ejemplos concretos.</li>
-<li><strong>Garantía (Warrant):</strong> La conexión lógica entre tu evidencia y tu afirmación. Explica POR QUÉ tu evidencia soporta tu conclusión.</li>
-<li><strong>Respaldo (Backing):</strong> Evidencia adicional que respalda la garantía misma.</li>
-<li><strong>Refutación (Rebuttal):</strong> Anticipar y responder las objeciones más fuertes a tu argumento.</li>
+<li><strong>Debate parlamentario:</strong> simula un parlamento con gobierno (a favor) y oposición (en contra). Es el formato más popular en universidades latinoamericanas.</li>
+<li><strong>Debate Lincoln-Douglas:</strong> un debate de valores entre dos personas, enfocado en principios éticos y filosóficos.</li>
+<li><strong>Debate Karl Popper:</strong> tres contra tres, enfocado en la evidencia y la refutación rigurosa. Popular en torneos estudiantiles internacionales.</li>
+<li><strong>Debate público o foro:</strong> formato menos formal donde la audiencia participa activamente.</li>
 </ul>
 
-<h4>Falacias lógicas: errores a evitar y detectar</h4>
+<h4>Habilidades fundamentales del debate</h4>
 <ul>
-<li><strong>Ad hominem:</strong> Atacar a la persona en lugar del argumento. "No puedes opinar sobre salud porque no eres médico."</li>
-<li><strong>Hombre de paja:</strong> Distorsionar el argumento del oponente para hacerlo más fácil de atacar.</li>
-<li><strong>Falsa dicotomía:</strong> Presentar solo dos opciones cuando existen más. "O estás conmigo o estás contra mí."</li>
-<li><strong>Apelación a la autoridad:</strong> Usar el prestigio de una persona como evidencia sin verificar la validez del argumento.</li>
-<li><strong>Pendiente resbaladiza:</strong> Argumentar que un paso pequeño llevará inevitablemente a consecuencias extremas.</li>
+<li><strong>Argumentación:</strong> construir argumentos sólidos con afirmación, razonamiento y evidencia. Un buen argumento responde tres preguntas: ¿qué afirmo? ¿por qué? ¿cómo lo demuestro?</li>
+<li><strong>Refutación:</strong> identificar las debilidades en los argumentos del oponente y desmontarlos lógicamente. No es atacar a la persona, sino su razonamiento.</li>
+<li><strong>Escucha activa:</strong> para refutar efectivamente, debes escuchar con atención total lo que dice tu oponente.</li>
+<li><strong>Pensamiento rápido:</strong> la capacidad de organizar contraargumentos en tiempo real.</li>
 </ul>
 
-<h4>Técnicas de refutación</h4>
-<p>Refutar efectivamente es tan importante como argumentar:</p>
+<h4>Falacias lógicas comunes</h4>
+<p>Identificar falacias — errores en el razonamiento — es esencial tanto para evitarlas en tus argumentos como para detectarlas en los de otros:</p>
 <ul>
-<li><strong>Ataca la premisa:</strong> Demuestra que los supuestos del argumento son falsos o cuestionables.</li>
-<li><strong>Ataca la evidencia:</strong> Cuestiona la calidad, relevancia o actualidad de los datos presentados.</li>
-<li><strong>Ataca la lógica:</strong> Muestra que la conclusión no se sigue de las premisas, incluso si estas son ciertas.</li>
-<li><strong>Presenta contraejemplos:</strong> Un solo contraejemplo bien elegido puede derrumbar una generalización.</li>
+<li><strong>Ad hominem:</strong> atacar a la persona en lugar de su argumento.</li>
+<li><strong>Falsa dicotomía:</strong> presentar solo dos opciones cuando hay más.</li>
+<li><strong>Pendiente resbaladiza:</strong> afirmar que una acción llevará inevitablemente a consecuencias extremas.</li>
+<li><strong>Apelación a la autoridad:</strong> usar la opinión de un «experto» como prueba definitiva sin evidencia adicional.</li>
+<li><strong>Hombre de paja:</strong> distorsionar el argumento del oponente para hacerlo más fácil de atacar.</li>
 </ul>
 
-<blockquote>El objetivo del debate no es destruir al oponente; es encontrar la verdad a través del contraste de ideas. El mejor debatiente no es quien habla más fuerte, sino quien piensa con más claridad y escucha con más atención.</blockquote>
+<blockquote>«El debate no es una pelea con palabras; es una colaboración intelectual donde, al confrontar ideas opuestas, ambas partes se acercan más a la verdad.»</blockquote>
 
-<h4>Escucha activa en el debate</h4>
-<p>El error más común en el debate es preparar tu siguiente argumento mientras el oponente habla, en lugar de escuchar realmente lo que dice. Los mejores debatientes escuchan atentamente porque las mejores refutaciones surgen de lo que el oponente acaba de decir, no de un guion preparado.</p>
+<h4>Preparación para un debate</h4>
+<p>Un buen debatiente investiga <em>ambos lados</em> de la cuestión con la misma profundidad. Esto le permite anticipar los argumentos del oponente, preparar refutaciones sólidas y demostrar un entendimiento completo del tema. Los mejores debatientes pueden defender convincentemente una posición con la que personalmente no están de acuerdo.</p>
 
-<h4>El debate como herramienta de aprendizaje</h4>
-<p>Debatir a favor de una posición con la que no estás de acuerdo es un ejercicio extraordinario de empatía intelectual y pensamiento crítico. Te obliga a entender genuinamente la perspectiva del otro y a fortalecer tu propia posición al conocer sus puntos débiles.</p>""",
-                "estimatedMinutes": 5
+<h4>El debate como herramienta de vida</h4>
+<p>Las habilidades del debate trascienden la competencia formal. Te ayudan a defender tus ideas en reuniones de trabajo, a negociar con argumentos sólidos, a evaluar críticamente la información que consumes y a participar de forma constructiva en debates públicos sobre temas que afectan a tu comunidad.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "¿Cuáles son los cuatro componentes controlables de una voz efectiva?",
+                "question": "¿Qué es la respiración diafragmática?",
                 "options": [
-                    "Timbre, resonancia, vibrato y dicción",
-                    "Volumen, tono, velocidad y pausas",
-                    "Agudeza, gravedad, ritmo y melodía",
-                    "Fuerza, claridad, musicalidad y calidez"
+                    "Respirar por la boca mientras hablas",
+                    "Inhalar profundamente usando el diafragma, expandiendo el abdomen",
+                    "Contener la respiración antes de cada frase",
+                    "Respirar rápidamente para aumentar la energía"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Los cuatro componentes controlables de una voz efectiva son: volumen (proyección desde el diafragma), tono (variación tonal), velocidad y pausas estratégicas."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué estructura de improvisación consiste en Punto, Razón, Ejemplo y Punto?",
+                "question": "Según las investigaciones de Mehrabian, ¿qué porcentaje del impacto comunicativo proviene del lenguaje corporal?",
                 "options": [
-                    "Pasado-Presente-Futuro",
-                    "Problema-Solución-Beneficio",
-                    "PREP",
-                    "DESC"
+                    "7%",
+                    "38%",
+                    "55%",
+                    "80%"
                 ],
-                "correctAnswer": 2,
-                "explanation": "PREP (Point, Reason, Example, Point) es una estructura de improvisación que consiste en exponer un punto, dar una razón, ilustrar con un ejemplo y repetir el punto."
+                "correctAnswer": 2
             },
             {
-                "question": "Según Aristóteles, ¿cuáles son los tres modos de persuasión?",
+                "question": "¿Cuánto tiempo debe durar el contacto visual con una persona en un grupo pequeño?",
                 "options": [
-                    "Verdad, belleza y bondad",
-                    "Ethos, pathos y logos",
-                    "Análisis, síntesis y evaluación",
-                    "Introducción, desarrollo y conclusión"
+                    "Menos de 1 segundo",
+                    "3-5 segundos",
+                    "10-15 segundos",
+                    "Todo el discurso"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Aristóteles identificó tres modos de persuasión: ethos (credibilidad), pathos (emoción) y logos (lógica). Los discursos más poderosos combinan los tres."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Qué es la falacia del 'hombre de paja'?",
+                "question": "La regla de tres en retórica sugiere que:",
                 "options": [
-                    "Usar una metáfora inapropiada en un argumento",
+                    "Todo discurso debe durar exactamente 3 minutos",
+                    "Debes ensayar tres veces antes de hablar en público",
+                    "Tres puntos son suficientes para ser convincente y pocos para ser memorables",
+                    "Tres personas deben revisar tu discurso"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Cuál es la velocidad ideal de habla para un discurso según la lección?",
+                "options": [
+                    "80-100 palabras por minuto",
+                    "130-150 palabras por minuto",
+                    "200-220 palabras por minuto",
+                    "300+ palabras por minuto"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "El framework PREP para discursos improvisados significa:",
+                "options": [
+                    "Prepare, Rehearse, Execute, Perfect",
+                    "Point, Reason, Example, Point",
+                    "Problem, Response, Evidence, Plan",
+                    "Purpose, Research, Explain, Persuade"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué es una 'postura de poder' según Amy Cuddy?",
+                "options": [
+                    "Cruzar los brazos para mostrar autoridad",
+                    "Sentarse con los pies sobre la mesa",
+                    "Pararse con pies separados al ancho de los hombros, espalda recta",
+                    "Señalar con el dedo al hablar"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "El 'pathos' de Aristóteles se refiere a:",
+                "options": [
+                    "La credibilidad del orador",
+                    "Los argumentos lógicos y racionales",
+                    "La apelación a las emociones de la audiencia",
+                    "La estructura del discurso"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué figura retórica consiste en repetir una palabra al inicio de frases consecutivas?",
+                "options": [
+                    "Antítesis",
+                    "Metáfora",
+                    "Anáfora",
+                    "Trícolon"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "La falacia 'ad hominem' consiste en:",
+                "options": [
+                    "Presentar solo dos opciones cuando hay más",
+                    "Atacar a la persona en lugar de su argumento",
+                    "Distorsionar el argumento del oponente",
+                    "Afirmar que algo es cierto porque un experto lo dijo"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué tipo de debate es el más popular en universidades latinoamericanas?",
+                "options": [
+                    "Lincoln-Douglas",
+                    "Karl Popper",
+                    "Parlamentario",
+                    "Foro público"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Por qué un buen debatiente investiga ambos lados de la cuestión?",
+                "options": [
+                    "Porque no sabe qué posición le tocará defender",
+                    "Para anticipar argumentos del oponente y preparar refutaciones",
+                    "Porque es un requisito formal del debate",
+                    "Para mostrar indecisión y humildad"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Cuál es la técnica más subutilizada según la lección sobre proyección vocal?",
+                "options": [
+                    "El volumen alto",
+                    "La velocidad rápida",
+                    "Las pausas estratégicas",
+                    "Los gestos con las manos"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué debe hacer un orador ético según la lección?",
+                "options": [
+                    "Usar cualquier medio para convencer a la audiencia",
+                    "Persuadir con argumentos honestos respetando la autonomía de la audiencia",
+                    "Evitar mostrar emociones para parecer objetivo",
+                    "Presentar solo datos y estadísticas sin historias"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "La falacia del 'hombre de paja' consiste en:",
+                "options": [
+                    "Usar argumentos basados en la tradición",
+                    "Atacar personalmente al oponente",
                     "Distorsionar el argumento del oponente para hacerlo más fácil de atacar",
-                    "Usar la opinión de una persona famosa como evidencia",
-                    "Presentar solo dos opciones cuando existen más"
+                    "Presentar ejemplos ficticios como si fueran reales"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La falacia del hombre de paja consiste en distorsionar o simplificar excesivamente el argumento del oponente para crear una versión más débil que sea fácil de refutar."
-            },
-            {
-                "question": "¿Qué porcentaje del tiempo del discurso debería dedicarse al desarrollo según la estructura de tres actos?",
-                "options": [
-                    "50-60%",
-                    "60-70%",
-                    "75-80%",
-                    "85-90%"
-                ],
-                "correctAnswer": 2,
-                "explanation": "En la estructura de tres actos, el desarrollo ocupa el 75-80% del tiempo, mientras que la apertura y el cierre ocupan 10-15% cada uno."
-            },
-            {
-                "question": "¿Qué es la respiración diafragmática y por qué es importante para un orador?",
-                "options": [
-                    "Una técnica de meditación para reducir el estrés antes de hablar",
-                    "Respirar profundamente expandiendo el abdomen en lugar del pecho, siendo la base de una buena proyección vocal",
-                    "Un ejercicio para aumentar la capacidad pulmonar general",
-                    "Una técnica para hablar más rápido sin perder el aliento"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La respiración diafragmática es respirar profundamente expandiendo el abdomen en lugar del pecho. Es la base de una buena proyección vocal, ya que la proyección viene del diafragma, no de la garganta."
-            },
-            {
-                "question": "¿Qué demostró la investigadora Amy Cuddy sobre las posturas de poder?",
-                "options": [
-                    "Que las posturas no tienen ningún efecto en la confianza",
-                    "Que adoptar posturas de poder durante dos minutos puede aumentar la testosterona y reducir el cortisol",
-                    "Que solo los oradores profesionales pueden beneficiarse de las posturas de poder",
-                    "Que las posturas cerradas transmiten más autoridad"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Amy Cuddy demostró que adoptar 'posturas de poder' (cuerpo expandido, brazos abiertos) durante dos minutos antes de una presentación puede aumentar la testosterona y reducir el cortisol, generando confianza genuina."
-            },
-            {
-                "question": "¿Qué es la 'regla de tres' en oratoria?",
-                "options": [
-                    "Practicar el discurso al menos tres veces antes de presentarlo",
-                    "Limitar cada presentación a tres minutos máximo",
-                    "Organizar ideas en grupos de tres porque el cerebro las procesa y recuerda con mayor facilidad",
-                    "Usar tres diapositivas por cada punto del discurso"
-                ],
-                "correctAnswer": 2,
-                "explanation": "El cerebro procesa y recuerda información en grupos de tres con mayor facilidad, por lo que los oradores más efectivos organizan sus ideas en tríadas, como 'Vine, vi, vencí'."
-            },
-            {
-                "question": "¿Qué estructura de improvisación sigue el orden 'Qué - Y qué - Ahora qué'?",
-                "options": [
-                    "PREP",
-                    "Pasado-Presente-Futuro",
-                    "Problema-Solución-Beneficio",
-                    "Qué-Y qué-Ahora qué"
-                ],
-                "correctAnswer": 3,
-                "explanation": "La estructura 'Qué-Y qué-Ahora qué' describe qué pasó, por qué importa y qué deberíamos hacer al respecto, siendo una de las cuatro estructuras para la improvisación presentadas en la lección."
-            },
-            {
-                "question": "¿Qué es la falacia de la falsa dicotomía?",
-                "options": [
-                    "Atacar a la persona en lugar del argumento",
-                    "Presentar solo dos opciones cuando en realidad existen más alternativas",
-                    "Usar la opinión de un experto como única prueba",
-                    "Asumir que si algo sucedió después, fue causado por lo anterior"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La falsa dicotomía consiste en presentar solo dos opciones cuando existen más, como 'O estás conmigo o estás contra mí', limitando artificialmente las alternativas."
-            },
-            {
-                "question": "Según la lección, ¿cuál es la técnica de contacto visual recomendada para audiencias grandes?",
-                "options": [
-                    "Mirar un punto fijo en la pared del fondo",
-                    "La técnica de 'faros': dividir al público en secciones y dirigir la mirada a cada una",
-                    "Evitar el contacto visual para no ponerse nervioso",
-                    "Mirar solo a las personas de la primera fila"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La técnica de 'faros' consiste en dividir mentalmente al público en secciones y dirigir la mirada a cada sección durante algunos segundos, haciendo que cada persona sienta que le hablas directamente."
-            },
-            {
-                "question": "¿Por qué debatir a favor de una posición con la que no estás de acuerdo es un ejercicio valioso?",
-                "options": [
-                    "Porque te enseña a mentir convincentemente",
-                    "Porque es un ejercicio de empatía intelectual que te obliga a entender la perspectiva del otro y fortalecer tu propia posición",
-                    "Porque los debates siempre requieren que cambies de opinión",
-                    "Porque las mejores ideas siempre son las contrarias a las propias"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Debatir a favor de una posición contraria es un ejercicio de empatía intelectual y pensamiento crítico que obliga a entender genuinamente al otro y a conocer los puntos débiles de tu propia posición."
-            },
-            {
-                "question": "¿Qué diferencia hay entre los gestos ilustradores y los gestos de énfasis en oratoria?",
-                "options": [
-                    "No hay diferencia, son el mismo tipo de gesto",
-                    "Los ilustradores acompañan y refuerzan las palabras; los de énfasis subrayan ideas clave con movimientos específicos",
-                    "Los ilustradores se hacen con las manos; los de énfasis con la cabeza",
-                    "Los ilustradores son para audiencias pequeñas; los de énfasis para audiencias grandes"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Los gestos ilustradores acompañan y refuerzan las palabras (mostrar tres dedos al decir 'tres puntos'), mientras que los de énfasis subrayan ideas clave con movimientos como golpear una mano con la otra."
-            },
-            {
-                "question": "Según el modelo de Toulmin para construir argumentos, ¿qué es la 'garantía' (warrant)?",
-                "options": [
-                    "Una evidencia estadística que respalda la afirmación",
-                    "La conexión lógica entre la evidencia y la afirmación, que explica por qué la evidencia soporta la conclusi��n",
-                    "Un documento legal que certifica la veracidad del argumento",
-                    "La opinión de un experto que valida la posición"
-                ],
-                "correctAnswer": 1,
-                "explanation": "En el modelo de Toulmin, la garantía (warrant) es la conexión lógica entre la evidencia y la afirmación, explicando POR QUÉ la evidencia presentada soporta la conclusión."
-            },
-            {
-                "question": "¿Cuál es el error más común de los oradores principiantes respecto al silencio?",
-                "options": [
-                    "Hacer pausas demasiado largas que aburren a la audiencia",
-                    "Temer al silencio y llenarlo con muletillas como 'ehh', 'o sea', 'básicamente'",
-                    "Hablar demasiado lento confundiendo pausa con lentitud",
-                    "Usar el silencio para intimidar a la audiencia"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Los oradores principiantes temen el silencio y lo llenan con muletillas. Los expertos abrazan el silencio: una pausa de dos o tres segundos al público le parece natural y poderosa."
+                "correctAnswer": 2
             }
         ]
     },
-
     "El Mundo Actual: Perspectiva Histórica": {
+        "emoji": "🌐",
+        "level": "intermediate",
+        "duration": "35min",
         "lessons": [
             {
-                "title": "Patrones Históricos y Lecciones del Pasado",
-                "content": """<h3>Patrones Históricos y Lecciones del Pasado</h3>
-<p>Mark Twain observó que "la historia no se repite, pero rima". Comprender los patrones recurrentes de la historia nos permite interpretar mejor el presente y anticipar posibles futuros. No se trata de memorizar fechas y batallas, sino de entender las fuerzas profundas que mueven las sociedades: economía, tecnología, demografía, cultura e ideas.</p>
+                "title": "Patrones Históricos: Lecciones del Pasado",
+                "content": """<h3>Patrones Históricos: Lecciones del Pasado</h3>
+<p>George Santayana escribió: «Aquellos que no recuerdan el pasado están condenados a repetirlo.» La historia no es una sucesión aleatoria de eventos; contiene <strong>patrones recurrentes</strong> que, cuando los comprendemos, nos permiten interpretar mejor el presente y anticipar posibilidades futuras. Estudiar la historia no es un ejercicio nostálgico sino una herramienta analítica de primer orden.</p>
 
-<h4>Los ciclos de auge y declive</h4>
-<p>El historiador Ibn Jaldún, en el siglo XIV, fue pionero en identificar ciclos de ascenso y caída de civilizaciones. Más recientemente, Ray Dalio ha descrito ciclos de deuda a largo plazo que duran entre 75 y 100 años. Los imperios y las potencias surgen, alcanzan su apogeo y eventualmente declinan, a menudo por causas internas más que externas.</p>
+<h4>Patrones cíclicos en la historia</h4>
+<p>Diversos historiadores han identificado ciclos que se repiten a lo largo de las civilizaciones:</p>
 <ul>
-<li><strong>Fase de ascenso:</strong> Innovación, cohesión social, inversión en educación e infraestructura.</li>
-<li><strong>Fase de apogeo:</strong> Prosperidad, influencia cultural y militar, confianza colectiva.</li>
-<li><strong>Fase de declive:</strong> Desigualdad creciente, polarización política, deuda insostenible, pérdida de propósito común.</li>
+<li><strong>Auge y caída de imperios:</strong> desde Roma hasta el Imperio Británico, las grandes potencias siguen un patrón de expansión, apogeo, decadencia y colapso. Las causas recurrentes incluyen sobreexpansión militar, desigualdad interna y rigidez institucional.</li>
+<li><strong>Ciclos económicos:</strong> periodos de bonanza seguidos de crisis. La burbuja de los tulipanes (1637), el crack de 1929 y la crisis de 2008 comparten la misma mecánica: especulación excesiva, euforia irracional y corrección dolorosa.</li>
+<li><strong>Revoluciones sociales:</strong> cuando la desigualdad alcanza niveles insostenibles, las sociedades tienden a levantarse. La Revolución Francesa, la Revolución Mexicana y la Primavera Árabe comparten detonantes similares.</li>
 </ul>
 
-<h4>Las lecciones que se repiten</h4>
-<p>Ciertos patrones aparecen una y otra vez a lo largo de la historia:</p>
+<h4>La trampa de Tucídides</h4>
+<p>El historiador griego Tucídides observó que cuando una potencia emergente amenaza la posición de una potencia establecida, el resultado suele ser el conflicto. Graham Allison, de Harvard, analizó 16 casos históricos de este patrón y encontró que <strong>12 de ellos terminaron en guerra</strong>. La relación actual entre Estados Unidos y China es frecuentemente analizada bajo este marco.</p>
+
+<blockquote>«La historia no se repite, pero rima.» — Frecuentemente atribuida a Mark Twain. Los eventos no son idénticos, pero los patrones subyacentes se manifiestan una y otra vez en diferentes formas.</blockquote>
+
+<h4>¿Por qué estudiar historia?</h4>
 <ul>
-<li><strong>La trampa de Tucídides:</strong> Cuando una potencia emergente desafía a una potencia establecida, el conflicto es frecuente. Aplicable hoy a la relación entre Estados Unidos y China.</li>
-<li><strong>La complacencia de las élites:</strong> Cuando las clases dirigentes pierden contacto con la realidad de la mayoría, la inestabilidad social se vuelve inevitable.</li>
-<li><strong>El costo de la desigualdad extrema:</strong> Sociedades con niveles extremos de desigualdad tienden a experimentar revoluciones, reformas drásticas o colapsos.</li>
+<li>Desarrolla el <strong>pensamiento crítico</strong> al analizar causas y consecuencias de eventos complejos.</li>
+<li>Ofrece <strong>perspectiva</strong>: los problemas actuales, por graves que parezcan, no son los primeros de su tipo.</li>
+<li>Previene la <strong>manipulación</strong>: quienes desconocen la historia son más vulnerables a narrativas simplistas y propaganda.</li>
+<li>Fomenta la <strong>empatía</strong>: comprender las experiencias de personas en diferentes épocas y contextos amplia nuestra humanidad.</li>
 </ul>
 
-<blockquote>Estudiar historia no es un ejercicio nostálgico; es una herramienta de supervivencia intelectual. Quienes ignoran los patrones del pasado están condenados no a repetirlos exactamente, sino a ser sorprendidos por fuerzas que otros ya habían documentado.</blockquote>
-
-<h4>Historia y pensamiento crítico</h4>
-<p>La historia nos enseña a desconfiar de las narrativas simples. Cada evento histórico tiene múltiples causas y múltiples interpretaciones. Desarrollar la capacidad de analizar fuentes, considerar perspectivas diversas y reconocer los sesgos propios y ajenos es una habilidad transferible a cualquier campo profesional.</p>
-
-<h4>¿Por qué esto importa para un estudiante universitario?</h4>
-<p>Vivimos en una época de cambios acelerados que genera ansiedad y confusión. La perspectiva histórica proporciona contexto: muchos de los desafíos actuales tienen precedentes. Entenderlos nos da herramientas para navegar la incertidumbre con mayor lucidez y menos reactividad emocional.</p>""",
-                "estimatedMinutes": 6
+<h4>Historia contrafactual</h4>
+<p>Un ejercicio interesante es la <em>historia contrafactual</em>: ¿qué habría pasado si ciertos eventos no hubieran ocurrido? ¿Si Colón no hubiera llegado a América? ¿Si la Unión Soviética hubiera ganado la Guerra Fría? Aunque especulativo, este ejercicio nos ayuda a comprender qué tan contingente o inevitable fue cada evento y a no caer en el determinismo histórico.</p>"""
             },
             {
-                "title": "Globalización: Conexiones y Tensiones",
-                "content": """<h3>Globalización: Conexiones y Tensiones</h3>
-<p>La globalización es el proceso de creciente interconexión económica, cultural, tecnológica y política entre los países del mundo. Aunque el término se popularizó en las últimas décadas, la globalización tiene raíces antiguas: la Ruta de la Seda conectaba Asia con Europa hace más de dos mil años. Lo que ha cambiado es la velocidad, escala e intensidad de las conexiones globales.</p>
+                "title": "La Globalización: Historia y Presente",
+                "content": """<h3>La Globalización: Historia y Presente</h3>
+<p>La globalización — la creciente interconexión económica, cultural, tecnológica y política entre los países del mundo — no es un fenómeno exclusivamente moderno. Tiene <strong>raíces profundas en la historia</strong> y ha pasado por varias fases, cada una con sus beneficios y tensiones propias.</p>
 
-<h4>Las olas de globalización</h4>
+<h4>Fases históricas de la globalización</h4>
 <ul>
-<li><strong>Primera ola (1870-1914):</strong> Impulsada por el barco de vapor, el telégrafo y el patrón oro. El comercio mundial se disparó. Terminó abruptamente con la Primera Guerra Mundial.</li>
-<li><strong>Segunda ola (1945-1980):</strong> Instituciones como la ONU, el FMI y el Banco Mundial reconstruyeron el comercio internacional. Descolonización de Asia y África.</li>
-<li><strong>Tercera ola (1980-presente):</strong> Internet, caída del Muro de Berlín, ascenso de China, cadenas de suministro globales. La información y el capital fluyen a velocidades sin precedentes.</li>
+<li><strong>Globalización antigua (3000 a.C. - 1500 d.C.):</strong> la Ruta de la Seda conectó China con el Mediterráneo, permitiendo el intercambio de bienes, ideas y tecnologías. Los imperios Romano, Mongol y Otomano facilitaron el comercio transcontinental.</li>
+<li><strong>Globalización temprana moderna (1500-1800):</strong> los viajes de exploración europeos conectaron los continentes por primera vez de forma permanente. El intercambio colombino transformó la alimentación, la demografía y la ecología del mundo. Pero esta fase también trajo colonialismo, esclavitud y genocidio.</li>
+<li><strong>Globalización industrial (1800-1945):</strong> el vapor, el telégrafo y el ferrocarril aceleraron dramáticamente la conectividad global. Sin embargo, la competencia imperialista condujo a dos guerras mundiales.</li>
+<li><strong>Globalización contemporánea (1945-presente):</strong> instituciones como la ONU, el FMI y la OMC, junto con internet y los vuelos baratos, han creado un nivel de interconexión sin precedentes.</li>
 </ul>
 
-<h4>Beneficios de la globalización</h4>
-<p>La globalización ha sacado a cientos de millones de personas de la pobreza extrema, ha facilitado el intercambio de conocimiento y cultura, ha reducido el costo de bienes de consumo y ha creado oportunidades de trabajo y estudio internacionales. El acceso a información global y la conectividad digital han democratizado el conocimiento como nunca antes en la historia.</p>
-
-<h4>Críticas y tensiones</h4>
+<h4>Beneficios y críticas de la globalización</h4>
+<p>La globalización ha sacado a cientos de millones de personas de la pobreza extrema, ha facilitado el acceso a información y tecnología, y ha fomentado el intercambio cultural. Sin embargo, también ha generado:</p>
 <ul>
-<li><strong>Desigualdad:</strong> Los beneficios de la globalización no se distribuyen equitativamente. Mientras algunas regiones prosperan, otras quedan marginadas.</li>
-<li><strong>Pérdida de soberanía:</strong> Las decisiones económicas que afectan a millones se toman en centros financieros distantes, fuera del control democrático local.</li>
-<li><strong>Homogeneización cultural:</strong> La expansión de marcas y entretenimiento globales puede erosionar las culturas locales y las identidades nacionales.</li>
-<li><strong>Vulnerabilidad sistémica:</strong> Las cadenas de suministro globales son eficientes pero frágiles. La pandemia de COVID-19 reveló esta vulnerabilidad.</li>
+<li>Mayor desigualdad dentro de los países.</li>
+<li>Homogeneización cultural y pérdida de tradiciones locales.</li>
+<li>Vulnerabilidad a crisis globales (como se evidenció con la pandemia de COVID-19).</li>
+<li>Explotación laboral y ambiental en países en desarrollo.</li>
 </ul>
 
-<blockquote>La globalización no es inherentemente buena ni mala; es una fuerza que puede distribuirse de manera justa o injusta. La pregunta no es si queremos globalización, sino qué tipo de globalización queremos construir.</blockquote>
+<blockquote>«La globalización es un hecho, no una elección. La pregunta no es si estamos globalizados, sino cómo gestionamos esa globalización para que beneficie a todos.»</blockquote>
 
-<h4>Desglobalización y regionalización</h4>
-<p>Desde 2016, con el Brexit y el ascenso de movimientos nacionalistas, algunos analistas hablan de desglobalización o "slowbalización". Las tensiones geopolíticas entre Estados Unidos y China, las guerras comerciales y la revalorización de la producción local sugieren que el modelo de globalización ilimitada está siendo cuestionado y posiblemente redefinido.</p>
-
-<h4>Tu papel en un mundo globalizado</h4>
-<p>Como joven profesional, te beneficiarás y serás desafiado por la globalización. Desarrollar competencias interculturales, dominar idiomas, entender cadenas de valor globales y cultivar una perspectiva internacional te preparará para navegar este mundo interconectado.</p>""",
-                "estimatedMinutes": 6
+<h4>La desglobalización: ¿estamos retrocediendo?</h4>
+<p>En los últimos años, tendencias como el Brexit, las guerras comerciales entre potencias, el resurgimiento del nacionalismo y las disrupciones en cadenas de suministro han llevado a algunos analistas a hablar de <strong>desglobalización</strong> o <em>reglobalización</em> — una reorganización de la conectividad global en bloques regionales más que en un sistema verdaderamente global.</p>"""
             },
             {
-                "title": "Democracia: Evolución y Desafíos Contemporáneos",
-                "content": """<h3>Democracia: Evolución y Desafíos Contemporáneos</h3>
-<p>La democracia, gobierno del pueblo, es una de las ideas políticas más antiguas y a la vez más frágiles de la historia humana. Nacida en Atenas hace 2.500 años, ha atravesado siglos de evolución, retrocesos y reinvenciones. Hoy, cuando muchos la dan por sentada, enfrenta desafíos que exigen comprender su historia para defender su futuro.</p>
+                "title": "Democracia: Conquista y Desafíos",
+                "content": """<h3>Democracia: Conquista y Desafíos</h3>
+<p>La democracia — el sistema de gobierno donde el poder reside en el pueblo — es una de las grandes conquistas de la civilización humana. Sin embargo, no es un sistema natural ni inevitable; es una <strong>construcción frágil que requiere ciudadanos comprometidos</strong> para sobrevivir y prosperar.</p>
 
 <h4>Breve historia de la democracia</h4>
 <ul>
-<li><strong>Democracia ateniense (508 a.C.):</strong> Directa y participativa, pero limitada a hombres libres. Excluía a mujeres, esclavos y extranjeros.</li>
-<li><strong>Republicanismo romano:</strong> Instituciones representativas como el Senado, con sistema de pesos y contrapesos que influyó en las democracias modernas.</li>
-<li><strong>Revolución Americana (1776) y Francesa (1789):</strong> Nacimiento de las democracias representativas modernas, basadas en derechos individuales y soberanía popular.</li>
-<li><strong>Siglo XIX-XX:</strong> Expansión gradual del sufragio: clase trabajadora, mujeres, minorías étnicas. La democracia se vuelve (idealmente) universal.</li>
-<li><strong>Post-Guerra Fría (1989-2000s):</strong> Ola democratizadora global. Francis Fukuyama habla del "fin de la historia".</li>
-<li><strong>2010s-presente:</strong> Recesión democrática global. Según Freedom House, la democracia ha retrocedido durante más de 15 años consecutivos.</li>
+<li><strong>Atenas (siglo V a.C.):</strong> la democracia directa ateniense permitía a los ciudadanos varones libres participar directamente en las decisiones políticas. Excluía a mujeres, esclavos y extranjeros — un recordatorio de que la democracia ha sido siempre un proyecto en expansión.</li>
+<li><strong>República Romana:</strong> introdujo conceptos como la separación de poderes, el senado y la representación, aunque limitada a las élites.</li>
+<li><strong>Revoluciones modernas (siglos XVIII-XIX):</strong> la Revolución Americana (1776) y la Revolución Francesa (1789) establecieron los principios de soberanía popular, derechos individuales y gobierno constitucional.</li>
+<li><strong>Oleadas democratizadoras (siglo XX):</strong> Samuel Huntington identificó tres olas de democratización: post Primera Guerra Mundial, post Segunda Guerra Mundial y post Guerra Fría.</li>
 </ul>
-
-<h4>Desafíos actuales de la democracia</h4>
-<ul>
-<li><strong>Desinformación:</strong> Las redes sociales amplifican la desinformación y la polarización, dificultando el debate informado que la democracia requiere.</li>
-<li><strong>Populismo:</strong> Líderes que simplifican problemas complejos y dividen a la sociedad en "el pueblo" vs. "la élite", debilitando las instituciones democráticas.</li>
-<li><strong>Desigualdad:</strong> Cuando la democracia no logra reducir la desigualdad económica, los ciudadanos pierden confianza en el sistema.</li>
-<li><strong>Autoritarismo digital:</strong> Tecnologías de vigilancia que permiten a regímenes autoritarios controlar a sus poblaciones de formas antes imposibles.</li>
-</ul>
-
-<blockquote>La democracia no es un estado natural; es un logro civilizatorio que debe ser defendido activamente por cada generación. No se hereda; se construye cada día con la participación informada de sus ciudadanos.</blockquote>
 
 <h4>Democracia en América Latina</h4>
-<p>La región tiene una historia compleja con la democracia: períodos de dictaduras militares, transiciones democráticas en los años 80 y 90, y desafíos contemporáneos de gobernabilidad, corrupción e institucionalidad débil. Sin embargo, también hay ejemplos de resiliencia democrática y participación ciudadana que son motivo de esperanza.</p>
+<p>La región ha tenido una relación compleja con la democracia, oscilando entre periodos democráticos y dictaduras militares. Desde la tercera ola democratizadora en los años 80, la mayoría de los países latinoamericanos son democracias formales, pero enfrentan desafíos como la corrupción, la desigualdad, la debilidad institucional y la desconfianza ciudadana.</p>
 
-<h4>El ciudadano informado como pilar democrático</h4>
-<p>Thomas Jefferson afirmó que una democracia no puede funcionar sin ciudadanos informados. Tu responsabilidad como futuro profesional es mantenerte informado, participar en procesos democráticos, exigir rendición de cuentas a tus gobernantes y resistir la tentación de la apatía política.</p>""",
-                "estimatedMinutes": 6
+<blockquote>«La democracia es el peor sistema de gobierno, excepto por todos los demás que se han probado.» — Winston Churchill. Esta frase capta la esencia: la democracia es imperfecta, pero sus alternativas son peores.</blockquote>
+
+<h4>Amenazas actuales a la democracia</h4>
+<ul>
+<li><strong>Erosión democrática:</strong> líderes elegidos democráticamente que gradualmente debilitan las instituciones, la prensa y la oposición desde adentro.</li>
+<li><strong>Desinformación:</strong> las noticias falsas y la manipulación de redes sociales socavan la capacidad de los ciudadanos de tomar decisiones informadas.</li>
+<li><strong>Polarización:</strong> la división extrema de la sociedad en bandos irreconciliables dificulta el diálogo y el compromiso democrático.</li>
+<li><strong>Desigualdad:</strong> cuando grandes sectores de la población no ven beneficios materiales de la democracia, pierden fe en el sistema.</li>
+</ul>
+
+<h4>Tu papel como ciudadano democrático</h4>
+<p>La democracia no es un espectáculo que se observa desde las gradas; es un deporte que se juega en la cancha. Votar informadamente, participar en el debate público, vigilar a los gobernantes, respetar la diversidad de opiniones y defender los derechos de las minorías son actos fundamentales de ciudadanía democrática.</p>"""
             },
             {
-                "title": "Revoluciones Tecnológicas y sus Impactos Sociales",
-                "content": """<h3>Revoluciones Tecnológicas y sus Impactos Sociales</h3>
-<p>La historia de la humanidad puede contarse como una sucesión de revoluciones tecnológicas, cada una de las cuales transformó radicalmente la economía, la sociedad y la vida cotidiana. Entender los patrones de estas revoluciones nos ayuda a anticipar y navegar la transformación digital que estamos viviendo actualmente.</p>
+                "title": "Revoluciones Tecnológicas y sus Efectos Sociales",
+                "content": """<h3>Revoluciones Tecnológicas y sus Efectos Sociales</h3>
+<p>Cada revolución tecnológica ha transformado radicalmente la sociedad, la economía y las relaciones de poder. Comprender cómo las tecnologías del pasado cambiaron el mundo nos ayuda a <strong>anticipar y prepararnos para los cambios que las tecnologías actuales están generando</strong>.</p>
 
 <h4>Las grandes revoluciones tecnológicas</h4>
 <ul>
-<li><strong>Revolución Agrícola (10.000 a.C.):</strong> La domesticación de plantas y animales permitió asentamientos permanentes, división del trabajo y el surgimiento de civilizaciones.</li>
-<li><strong>Primera Revolución Industrial (1760-1840):</strong> La máquina de vapor transformó la manufactura y el transporte. Urbanización masiva, surgimiento de la clase obrera, transformación del paisaje.</li>
-<li><strong>Segunda Revolución Industrial (1870-1914):</strong> Electricidad, petróleo, acero y líneas de producción en masa. Nacen las grandes corporaciones y la sociedad de consumo.</li>
-<li><strong>Revolución Digital (1970-presente):</strong> Computadoras, internet, smartphones y ahora inteligencia artificial. Transformación de cada aspecto de la vida humana a una velocidad sin precedentes.</li>
+<li><strong>La imprenta (1440):</strong> Gutenberg democratizó el acceso al conocimiento. Antes, los libros eran lujos reservados para la élite. La imprenta hizo posible la Reforma Protestante, la revolución científica y la alfabetización masiva.</li>
+<li><strong>La Revolución Industrial (1760-1840):</strong> la máquina de vapor transformó la producción, el transporte y la urbanización. Millones de personas migraron del campo a las ciudades. Creó la clase obrera, el sindicalismo y eventualmente el estado de bienestar.</li>
+<li><strong>La electricidad y las comunicaciones (1870-1920):</strong> la bombilla, el teléfono, la radio y el automóvil transformaron la vida cotidiana y sentaron las bases de la sociedad de consumo moderna.</li>
+<li><strong>La Revolución Digital (1970-presente):</strong> el microprocesador, internet y los smartphones han creado la sociedad de la información. Más personas tienen acceso a un teléfono móvil que a agua potable.</li>
+<li><strong>La era de la IA (2020s-futuro):</strong> la inteligencia artificial está transformando industrias enteras, planteando preguntas fundamentales sobre el futuro del trabajo, la privacidad y la ética.</li>
 </ul>
 
-<h4>El patrón recurrente de las revoluciones tecnológicas</h4>
-<p>Carlota Pérez, economista venezolana, identificó un patrón que se repite en cada revolución tecnológica:</p>
+<h4>Patrones recurrentes en las revoluciones tecnológicas</h4>
+<p>Carlota Pérez, economista venezolana, identificó un patrón que se repite en cada revolución:</p>
 <ul>
-<li><strong>Irrupción:</strong> La nueva tecnología aparece y genera entusiasmo desmedido.</li>
-<li><strong>Frenesí:</strong> Especulación financiera, burbujas, desigualdad creciente. Los beneficios se concentran en pocos.</li>
-<li><strong>Punto de inflexión:</strong> Crisis que expone los excesos del frenesí. Regulación y reforma institucional.</li>
-<li><strong>Despliegue:</strong> La tecnología se distribuye ampliamente, los beneficios se democratizan y la sociedad se adapta.</li>
+<li><strong>Irrupción:</strong> la nueva tecnología aparece y genera entusiasmo entre los pioneros.</li>
+<li><strong>Frenesí:</strong> la especulación financiera genera burbujas (como la burbuja puntocom de 2000).</li>
+<li><strong>Punto de inflexión:</strong> la burbuja estalla, generando crisis y regulación.</li>
+<li><strong>Sinergia:</strong> la tecnología se integra en la sociedad y genera crecimiento inclusivo.</li>
+<li><strong>Madurez:</strong> la tecnología se agota y surgen las semillas de la siguiente revolución.</li>
 </ul>
 
-<h4>Inteligencia artificial: la revolución en curso</h4>
-<p>La IA generativa representa un salto cualitativo comparable a la invención de la imprenta o la electricidad. Sus implicaciones son profundas:</p>
-<ul>
-<li>Automatización de trabajos cognitivos que antes se consideraban exclusivamente humanos.</li>
-<li>Democratización del acceso a capacidades antes reservadas a expertos (programación, diseño, traducción).</li>
-<li>Riesgos de concentración de poder en pocas empresas tecnológicas.</li>
-<li>Desafíos éticos: sesgo algorítmico, privacidad, deepfakes, desinformación a escala.</li>
-</ul>
+<blockquote>«Toda tecnología suficientemente avanzada es indistinguible de la magia.» — Arthur C. Clarke. Lo que hoy parece ciencia ficción puede ser la realidad cotidiana de la próxima generación.</blockquote>
 
-<blockquote>Cada revolución tecnológica genera miedo y resistencia legítimos. Pero la historia muestra que las sociedades que abrazan la nueva tecnología y la regulan sabiamente prosperan, mientras que las que la rechazan o la ignoran quedan rezagadas.</blockquote>
-
-<h4>La brecha digital</h4>
-<p>Así como la revolución industrial creó divisiones entre países industrializados y no industrializados, la revolución digital está creando una brecha entre los que tienen acceso y alfabetización digital y los que no. Cerrar esta brecha es uno de los grandes desafíos de nuestro tiempo.</p>
-
-<h4>Lecciones para el presente</h4>
-<p>La historia tecnológica nos enseña que: las transiciones son dolorosas pero inevitables, que la regulación llega después de la innovación, que los beneficios eventualmente se distribuyen si hay presión social y política, y que la educación es la clave para adaptarse a cada nueva era.</p>""",
-                "estimatedMinutes": 6
+<h4>El dilema de la tecnología</h4>
+<p>Cada revolución tecnológica trae beneficios extraordinarios y riesgos significativos. Internet democratizó la información pero también creó la desinformación masiva. Los smartphones nos conectan globalmente pero también generan adicción y aislamiento. La clave no es temer la tecnología, sino <em>gobernarla de forma que maximice sus beneficios y minimice sus daños</em>.</p>"""
             },
             {
-                "title": "Fundamentos de Geopolítica Contemporánea",
-                "content": """<h3>Fundamentos de Geopolítica Contemporánea</h3>
-<p>La geopolítica estudia cómo la geografía, los recursos, la demografía y el poder moldean las relaciones entre los estados. Comprender los fundamentos geopolíticos del mundo actual te permite interpretar las noticias internacionales con mayor profundidad y entender por qué los conflictos, las alianzas y las tensiones globales ocurren donde y cuando ocurren.</p>
+                "title": "Geopolítica del Siglo XXI",
+                "content": """<h3>Geopolítica del Siglo XXI</h3>
+<p>La geopolítica estudia cómo la geografía, los recursos naturales y las relaciones de poder entre Estados moldean la política internacional. En el siglo XXI, el tablero geopolítico está experimentando una <strong>transformación profunda</strong> que redefine el orden mundial establecido después de la Segunda Guerra Mundial.</p>
 
-<h4>El orden mundial actual</h4>
-<p>Desde el fin de la Guerra Fría en 1991, el mundo ha transitado de un orden bipolar (EE.UU. vs. URSS) a un período unipolar con hegemonía estadounidense, y ahora hacia un orden multipolar donde varias potencias compiten por influencia:</p>
+<h4>Del unipolarismo al multipolarismo</h4>
+<p>Después del colapso de la Unión Soviética en 1991, Estados Unidos emergió como la única superpotencia global — un mundo unipolar. Sin embargo, en las últimas dos décadas, el ascenso de China, la resurgencia de Rusia, el crecimiento de India y la consolidación de la Unión Europea han creado un mundo cada vez más <strong>multipolar</strong>, donde el poder se distribuye entre varios centros.</p>
+
+<h4>Puntos calientes geopolíticos</h4>
 <ul>
-<li><strong>Estados Unidos:</strong> Sigue siendo la mayor potencia militar y económica, pero su influencia relativa disminuye.</li>
-<li><strong>China:</strong> Segunda economía mundial, con ambiciones de liderazgo global y un modelo alternativo de gobernanza.</li>
-<li><strong>Rusia:</strong> Potencia militar y energética que busca recuperar influencia en su entorno cercano.</li>
-<li><strong>Unión Europea:</strong> Poder económico y normativo, pero con desafíos de cohesión interna.</li>
-<li><strong>Potencias regionales:</strong> India, Brasil, Turquía, Arabia Saudita y otros actores con influencia creciente en sus regiones.</li>
+<li><strong>Relación EE.UU.-China:</strong> la competencia entre la potencia establecida y la potencia emergente define la geopolítica del siglo XXI. Se manifiesta en disputas comerciales, tecnológicas, militares y de influencia global.</li>
+<li><strong>Medio Oriente:</strong> conflictos históricos, recursos petroleros, rivalidades religiosas y sectarias, e intervenciones extranjeras mantienen la región como una de las más volátiles del planeta.</li>
+<li><strong>Europa y Rusia:</strong> la tensión entre la OTAN y Rusia, intensificada por el conflicto en Ucrania, ha reconfigurado la seguridad europea.</li>
+<li><strong>Indo-Pacífico:</strong> la región concentra las principales rutas comerciales marítimas del mundo y es escenario de disputas territoriales que involucran a China, Japón, Corea del Sur y los países del sudeste asiático.</li>
 </ul>
 
-<h4>Recursos estratégicos y conflictos</h4>
-<p>Muchos conflictos contemporáneos tienen raíces en la competencia por recursos:</p>
+<h4>Nuevos factores geopolíticos</h4>
+<p>La geopolítica del siglo XXI incorpora factores que los estrategas del pasado no contemplaban:</p>
 <ul>
-<li><strong>Petróleo y gas:</strong> Siguen siendo centrales en la geopolítica del Medio Oriente, Rusia y Venezuela.</li>
-<li><strong>Minerales críticos:</strong> Litio, cobalto, tierras raras y cobre son esenciales para la transición energética. Chile, Bolivia, Congo y China son actores clave.</li>
-<li><strong>Agua:</strong> La escasez de agua potable genera tensiones crecientes en Medio Oriente, Asia Central y el norte de África.</li>
-<li><strong>Datos:</strong> El "petróleo del siglo XXI". La competencia por el control de datos y tecnologías digitales define una nueva arena geopolítica.</li>
+<li><strong>Tecnología:</strong> la carrera por la inteligencia artificial, los semiconductores y la infraestructura 5G es el nuevo «espacio» de competencia entre potencias.</li>
+<li><strong>Cambio climático:</strong> la crisis climática redistribuye recursos, genera migraciones y puede detonar conflictos por agua y tierras cultivables.</li>
+<li><strong>Ciberseguridad:</strong> los ataques cibernéticos se han convertido en una herramienta de guerra y espionaje entre Estados.</li>
 </ul>
 
-<blockquote>La geopolítica no es un juego abstracto de potencias lejanas; sus consecuencias se sienten en el precio de la gasolina, en las cadenas de suministro que determinan qué productos puedes comprar, y en las oportunidades profesionales disponibles en tu país.</blockquote>
+<blockquote>«La geografía es destino» decía Napoleón. En el siglo XXI, podríamos añadir: la tecnología es destino. Quien controle las tecnologías clave controlará el orden mundial.»</blockquote>
 
 <h4>América Latina en el tablero geopolítico</h4>
-<p>La región es estratégicamente importante por sus recursos naturales (litio, cobre, petróleo, agricultura, agua dulce), su ubicación geográfica y su potencial demográfico. La competencia entre Estados Unidos y China por influencia en la región es una de las dinámicas geopolíticas más relevantes para los jóvenes latinoamericanos.</p>
-
-<h4>Cómo seguir la geopolítica</h4>
-<p>Fuentes recomendadas para mantenerte informado: <em>Foreign Affairs</em>, <em>The Economist</em>, <em>El Orden Mundial</em> (en español), podcasts como <em>Global Dispatches</em> y mapas interactivos de conflictos. La clave es consumir múltiples fuentes con perspectivas diversas para formar tu propio criterio.</p>""",
-                "estimatedMinutes": 6
+<p>La región se encuentra en una posición estratégica: posee recursos naturales críticos (litio, cobre, agua dulce, biodiversidad), está relativamente lejos de los principales conflictos globales y mantiene relaciones con todas las grandes potencias. La competencia entre Estados Unidos y China por influencia en América Latina se ha intensificado, ofreciendo tanto oportunidades como riesgos para los países de la región.</p>"""
             },
             {
                 "title": "Ciudadanía Informada en el Siglo XXI",
                 "content": """<h3>Ciudadanía Informada en el Siglo XXI</h3>
-<p>En una era de sobrecarga informativa, desinformación viral y polarización digital, la capacidad de informarse de manera crítica y responsable no es un lujo intelectual; es una necesidad democrática. Ser un ciudadano informado en el siglo XXI requiere habilidades que las generaciones anteriores no necesitaban: navegar el caos informativo con discernimiento, empatía y pensamiento crítico.</p>
+<p>Vivimos en la era de la información, pero paradójicamente, también en la era de la <strong>desinformación</strong>. Nunca en la historia los seres humanos tuvieron acceso a tanta información, y nunca fue tan difícil distinguir lo verdadero de lo falso. Ser un ciudadano informado en el siglo XXI requiere un conjunto de habilidades críticas que van mucho más allá de leer las noticias.</p>
 
-<h4>El ecosistema de la desinformación</h4>
-<p>Es importante distinguir entre diferentes tipos de información problemática:</p>
+<h4>El ecosistema informativo actual</h4>
 <ul>
-<li><strong>Misinformación:</strong> Información falsa difundida sin intención de engañar. Tu tío compartiendo una noticia falsa porque la creyó verdadera.</li>
-<li><strong>Desinformación:</strong> Información falsa creada y difundida deliberadamente para engañar. Campañas de propaganda, bots, medios de desinformación.</li>
-<li><strong>Malinformación:</strong> Información real usada fuera de contexto para dañar. Filtrar datos privados, sacar declaraciones de contexto.</li>
+<li><strong>Sobrecarga informativa:</strong> se generan 2.5 quintillones de bytes de datos diariamente. El desafío no es acceder a información, sino filtrar y evaluar la que es relevante y confiable.</li>
+<li><strong>Burbujas de filtro:</strong> los algoritmos de redes sociales y buscadores te muestran contenido que confirma tus creencias existentes, creando una «cámara de eco» que limita tu exposición a perspectivas diferentes.</li>
+<li><strong>Economía de la atención:</strong> los medios y las plataformas compiten por tu atención. El contenido sensacionalista, polarizante y emocional genera más clics, lo que distorsiona la representación de la realidad.</li>
+<li><strong>Desinformación y propaganda:</strong> actores estatales y no estatales producen y difunden información falsa de forma intencional para influir en la opinión pública.</li>
 </ul>
 
-<h4>Herramientas de verificación</h4>
+<h4>Herramientas de alfabetización mediática</h4>
+<p>Para navegar este ecosistema, necesitas un <strong>kit de herramientas críticas</strong>:</p>
 <ul>
-<li><strong>Método SIFT:</strong> Stop (detente antes de compartir), Investigate the source (investiga la fuente), Find better coverage (busca mejor cobertura), Trace claims (rastrea las afirmaciones hasta su origen).</li>
-<li><strong>Verificadores de hechos:</strong> Sitios como <em>Maldita.es</em>, <em>Chequeado</em>, <em>El Sabueso</em>, <em>Snopes</em> y <em>Politifact</em> verifican afirmaciones virales.</li>
-<li><strong>Búsqueda inversa de imágenes:</strong> Google Images y TinEye permiten verificar si una foto es real, actual y del contexto que se afirma.</li>
-<li><strong>Lectura lateral:</strong> En lugar de profundizar en un solo sitio, abre múltiples pestañas y verifica qué dicen otras fuentes sobre la misma afirmación.</li>
+<li><strong>Verificar la fuente:</strong> ¿quién publica esta información? ¿Qué intereses tiene? ¿Es un medio reconocido con estándares editoriales o una cuenta anónima?</li>
+<li><strong>Triangular información:</strong> busca la misma noticia en al menos tres fuentes independientes.</li>
+<li><strong>Detectar sesgos:</strong> todo medio tiene un sesgo. La clave no es buscar medios «neutrales» (no existen) sino ser consciente de los sesgos y consumir perspectivas diversas.</li>
+<li><strong>Verificar datos:</strong> usa sitios de fact-checking como Chequeado, Maldita.es o Verificado para contrastar afirmaciones que parecen dudosas.</li>
+<li><strong>Cuidado con las emociones:</strong> si una noticia te genera indignación inmediata, tómate un momento antes de compartirla. La desinformación a menudo apela a emociones fuertes.</li>
 </ul>
 
-<h4>Burbujas de filtro y cámaras de eco</h4>
-<p>Los algoritmos de redes sociales te muestran contenido que refuerza tus creencias existentes, creando "burbujas de filtro" que limitan tu exposición a perspectivas diferentes. Las "cámaras de eco" son comunidades donde todos piensan igual y las opiniones disidentes son rechazadas. Ambos fenómenos polarizan y empobrecen el debate público.</p>
+<blockquote>«En la era de la información, la ignorancia es una elección. Pero también lo es la sabiduría. Elegir pensar críticamente es un acto de responsabilidad cívica.»</blockquote>
 
-<h4>Cómo romper las burbujas</h4>
-<ul>
-<li>Sigue deliberadamente a personas y medios con perspectivas diferentes a las tuyas.</li>
-<li>Lee medios internacionales para obtener perspectivas fuera de tu contexto local.</li>
-<li>Antes de opinar sobre un tema, busca activamente los mejores argumentos del lado contrario.</li>
-<li>Participa en conversaciones con personas que piensen diferente, con genuina curiosidad y sin ánimo de convencer.</li>
-</ul>
+<h4>El sesgo de confirmación</h4>
+<p>El <strong>sesgo de confirmación</strong> es nuestra tendencia natural a buscar, interpretar y recordar información que confirma lo que ya creemos. Es el mayor obstáculo para el pensamiento crítico y el aliado más poderoso de la desinformación. Combatirlo requiere un esfuerzo deliberado por exponerte a perspectivas que desafíen tus creencias.</p>
 
-<blockquote>En el siglo XXI, el analfabeto no es quien no sabe leer, sino quien no sabe distinguir la información confiable de la basura informativa. Tu capacidad de discernimiento es tu superpoder democrático.</blockquote>
-
-<h4>De consumidor a ciudadano informado</h4>
-<p>El paso final es transformar tu consumo de información en acción cívica. Informarte sin actuar es voyeurismo intelectual. Usa tu conocimiento para votar informadamente, participar en conversaciones constructivas, exigir transparencia a tus autoridades y contribuir a una sociedad donde las decisiones se tomen sobre la base de hechos, no de mitos.</p>
-
-<h4>El compromiso con la verdad</h4>
-<p>En una era donde la verdad parece relativa, comprometerte con la honestidad intelectual es un acto revolucionario. Esto significa: admitir cuando estás equivocado, cambiar de opinión frente a evidencia nueva, no compartir información que no has verificado y tratar a quienes piensan diferente con respeto, aunque no con acuerdo.</p>""",
-                "estimatedMinutes": 5
+<h4>Tu responsabilidad como ciudadano digital</h4>
+<p>Cada vez que compartes un contenido en redes sociales, te conviertes en un <em>medio de comunicación</em>. Tus seguidores ven lo que publicas y forman opiniones basadas en ello. Antes de compartir, pregúntate: ¿es verdadero? ¿es útil? ¿es necesario? Esta simple reflexión puede frenar la propagación de desinformación desde su fuente más común: personas bien intencionadas que comparten sin verificar.</p>"""
             }
         ],
         "quiz": [
             {
-                "question": "¿Qué es la 'trampa de Tucídides' mencionada en la lección?",
+                "question": "¿Quién dijo 'aquellos que no recuerdan el pasado están condenados a repetirlo'?",
                 "options": [
-                    "Una estrategia militar de la antigua Grecia",
-                    "El riesgo de conflicto cuando una potencia emergente desafía a una establecida",
-                    "Un tipo de crisis económica cíclica",
-                    "Un fenómeno de desinformación en redes sociales"
+                    "Winston Churchill",
+                    "George Santayana",
+                    "Mark Twain",
+                    "Albert Einstein"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La trampa de Tucídides describe la tendencia al conflicto cuando una potencia emergente desafía a una establecida, aplicable hoy a la relación entre EE.UU. y China."
+                "correctAnswer": 1
             },
             {
-                "question": "Según Carlota Pérez, ¿cuáles son las fases de una revolución tecnológica?",
+                "question": "La 'trampa de Tucídides' se refiere a:",
                 "options": [
-                    "Invención, producción, distribución, obsolescencia",
-                    "Irrupción, frenesí, punto de inflexión, despliegue",
-                    "Investigación, desarrollo, comercialización, regulación",
-                    "Descubrimiento, adopción temprana, masificación, saturación"
+                    "La tendencia a repetir los mismos errores históricos",
+                    "El conflicto que surge cuando una potencia emergente amenaza a una establecida",
+                    "La caída inevitable de todos los imperios",
+                    "La corrupción que destruye las democracias desde adentro"
                 ],
-                "correctAnswer": 1,
-                "explanation": "Carlota Pérez identifica cuatro fases: irrupción (aparece la tecnología), frenesí (especulación), punto de inflexión (crisis) y despliegue (los beneficios se democratizan)."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál es la diferencia entre misinformación y desinformación?",
+                "question": "¿Cuántos de los 16 casos analizados por Graham Allison sobre la trampa de Tucídides terminaron en guerra?",
                 "options": [
-                    "Son sinónimos, no hay diferencia",
-                    "La misinformación es digital; la desinformación es impresa",
-                    "La misinformación se difunde sin intención de engañar; la desinformación es deliberada",
-                    "La desinformación es más antigua que la misinformación"
+                    "4",
+                    "8",
+                    "12",
+                    "16"
                 ],
-                "correctAnswer": 2,
-                "explanation": "La misinformación es información falsa difundida sin intención de engañar, mientras que la desinformación es creada y difundida deliberadamente para manipular."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué método de verificación de información propone los pasos Stop, Investigate, Find, Trace?",
+                "question": "¿Qué conectó la Ruta de la Seda en la globalización antigua?",
                 "options": [
-                    "Método PREP",
-                    "Método DESC",
-                    "Método SIFT",
-                    "Método SMART"
+                    "Europa con las Américas",
+                    "China con el Mediterráneo",
+                    "India con Japón",
+                    "África con el norte de Europa"
                 ],
-                "correctAnswer": 2,
-                "explanation": "El método SIFT (Stop, Investigate the source, Find better coverage, Trace claims) es una herramienta para verificar información antes de compartirla."
+                "correctAnswer": 1
             },
             {
-                "question": "Según la lección, ¿qué recurso natural es considerado 'el petróleo del siglo XXI'?",
+                "question": "Samuel Huntington identificó en la historia de la democracia:",
                 "options": [
-                    "El litio",
-                    "El agua potable",
-                    "Los datos",
-                    "Las tierras raras"
+                    "Tres olas de democratización",
+                    "Cinco fases de la democracia",
+                    "Siete revoluciones democráticas",
+                    "Diez principios universales"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Los datos son considerados 'el petróleo del siglo XXI' porque la competencia por el control de datos y tecnologías digitales define una nueva arena geopolítica fundamental."
+                "correctAnswer": 0
             },
             {
-                "question": "Según Ray Dalio, ¿cuánto duran aproximadamente los ciclos de deuda a largo plazo?",
+                "question": "¿Qué es la 'erosión democrática'?",
                 "options": [
-                    "Entre 10 y 20 años",
-                    "Entre 25 y 50 años",
-                    "Entre 75 y 100 años",
-                    "Más de 200 años"
+                    "La abolición violenta de la democracia por una revolución",
+                    "Líderes electos que gradualmente debilitan las instituciones democráticas desde adentro",
+                    "El desgaste natural de las leyes con el tiempo",
+                    "La disminución del interés de los jóvenes por la política"
                 ],
-                "correctAnswer": 2,
-                "explanation": "Ray Dalio ha descrito ciclos de deuda a largo plazo que duran entre 75 y 100 años, durante los cuales los imperios surgen, alcanzan su apogeo y eventualmente declinan."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál de las siguientes NO es una ola de globalización mencionada en la lección?",
-                "options": [
-                    "Primera ola (1870-1914) impulsada por el barco de vapor y el telégrafo",
-                    "Segunda ola (1945-1980) con instituciones como la ONU y el FMI",
-                    "Tercera ola (1980-presente) con internet y caída del Muro de Berlín",
-                    "Cuarta ola (2020-presente) impulsada por la inteligencia artificial"
-                ],
-                "correctAnswer": 3,
-                "explanation": "La lección describe tres olas de globalización: la primera (1870-1914), la segunda (1945-1980) y la tercera (1980-presente). No menciona una cuarta ola como categoría separada."
-            },
-            {
-                "question": "Según Freedom House, ¿qué ha ocurrido con la democracia global en las últimas décadas?",
-                "options": [
-                    "Ha experimentado una expansión constante e ininterrumpida",
-                    "Se ha mantenido exactamente igual que en los años 90",
-                    "Ha retrocedido durante más de 15 años consecutivos",
-                    "Solo ha retrocedido en América Latina"
-                ],
-                "correctAnswer": 2,
-                "explanation": "Según Freedom House, la democracia ha retrocedido durante más de 15 años consecutivos a nivel global, lo que se denomina 'recesión democrática'."
-            },
-            {
-                "question": "¿Qué es la 'malinformación' según la lección sobre ciudadanía informada?",
-                "options": [
-                    "Información falsa difundida sin intención de engañar",
-                    "Información falsa creada deliberadamente para manipular",
-                    "Información real usada fuera de contexto para dañar",
-                    "Información desactualizada que ya no es relevante"
-                ],
-                "correctAnswer": 2,
-                "explanation": "La malinformación es información real usada fuera de contexto para dañar, como filtrar datos privados o sacar declaraciones de contexto, a diferencia de la misinformación y desinformación."
-            },
-            {
-                "question": "¿Qué son las 'burbujas de filtro' en el ecosistema de información digital?",
-                "options": [
-                    "Sistemas de seguridad que protegen tu información personal",
-                    "Algoritmos de redes sociales que te muestran contenido que refuerza tus creencias existentes",
-                    "Grupos de debate donde se analizan diferentes perspectivas",
-                    "Herramientas de verificación de noticias falsas"
-                ],
-                "correctAnswer": 1,
-                "explanation": "Las burbujas de filtro son creadas por algoritmos de redes sociales que te muestran contenido que refuerza tus creencias existentes, limitando tu exposición a perspectivas diferentes."
-            },
-            {
-                "question": "¿Por qué la pandemia de COVID-19 reveló una vulnerabilidad de la globalización?",
-                "options": [
-                    "Porque demostró que la globalización no existe realmente",
-                    "Porque mostró que las cadenas de suministro globales son eficientes pero frágiles",
-                    "Porque causó el fin definitivo del comercio internacional",
-                    "Porque las vacunas no pudieron distribuirse internacionalmente"
-                ],
-                "correctAnswer": 1,
-                "explanation": "La pandemia reveló que las cadenas de suministro globales, aunque eficientes, son frágiles ante disrupciones importantes, siendo una de las principales críticas a la globalización."
-            },
-            {
-                "question": "Según la lección, ¿en qué fase de una revolución tecnológica se democratizan los beneficios?",
+                "question": "Según Carlota Pérez, ¿qué fase de una revolución tecnológica genera burbujas financieras?",
                 "options": [
                     "Irrupción",
                     "Frenesí",
-                    "Punto de inflexión",
-                    "Despliegue"
+                    "Sinergia",
+                    "Madurez"
                 ],
-                "correctAnswer": 3,
-                "explanation": "Según Carlota Pérez, en la fase de despliegue la tecnología se distribuye ampliamente, los beneficios se democratizan y la sociedad se adapta, después de la crisis del punto de inflexión."
+                "correctAnswer": 1
             },
             {
-                "question": "¿Cuál de los siguientes es un desafío actual de la democracia mencionado en la lección?",
+                "question": "¿Qué evento marcó el inicio del mundo 'unipolar' con EE.UU. como única superpotencia?",
                 "options": [
-                    "La falta de sistemas electorales en el mundo",
-                    "El autoritarismo digital: tecnologías de vigilancia que permiten controlar poblaciones",
-                    "La ausencia total de participación ciudadana en todos los países",
-                    "La eliminación de todos los partidos políticos"
+                    "El fin de la Segunda Guerra Mundial",
+                    "La Revolución Cubana",
+                    "El colapso de la Unión Soviética en 1991",
+                    "Los atentados del 11 de septiembre de 2001"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El autoritarismo digital es uno de los desafíos actuales: tecnologías de vigilancia que permiten a regímenes autoritarios controlar a sus poblaciones de formas antes imposibles."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué recurso estratégico es mencionado como esencial para la transición energética y por qué genera tensiones geopolíticas?",
+                "question": "¿Qué recursos naturales estratégicos posee América Latina que la posicionan geopolíticamente?",
                 "options": [
-                    "El petróleo, porque su precio es volátil",
-                    "El litio, cobalto y tierras raras, porque son esenciales para tecnologías verdes y están concentrados en pocos países",
-                    "El carbón, porque contamina demasiado",
-                    "El gas natural, porque es difícil de transportar"
+                    "Petróleo y gas natural exclusivamente",
+                    "Solo minerales de oro y plata",
+                    "Litio, cobre, agua dulce y biodiversidad",
+                    "Diamantes y uranio"
                 ],
-                "correctAnswer": 1,
-                "explanation": "El litio, cobalto, tierras raras y cobre son minerales críticos para la transición energética, y su concentración en países como Chile, Bolivia, Congo y China genera tensiones geopolíticas."
+                "correctAnswer": 2
             },
             {
-                "question": "¿Qué sugiere la lección para romper las burbujas de filtro informativas?",
+                "question": "¿Qué son las 'burbujas de filtro' en el ecosistema informativo?",
                 "options": [
-                    "Dejar de usar internet y redes sociales completamente",
-                    "Seguir deliberadamente a personas y medios con perspectivas diferentes a las propias",
-                    "Confiar únicamente en un solo medio de comunicación de prestigio",
-                    "Compartir toda la información que recibes sin verificar"
+                    "Filtros que protegen contra virus informáticos",
+                    "Algoritmos que te muestran contenido que confirma tus creencias existentes",
+                    "Sistemas de censura gubernamental",
+                    "Herramientas de verificación de noticias"
                 ],
-                "correctAnswer": 1,
-                "explanation": "La lección recomienda seguir deliberadamente a personas y medios con perspectivas diferentes, leer medios internacionales y buscar activamente los mejores argumentos del lado contrario."
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué es el sesgo de confirmación?",
+                "options": [
+                    "La tendencia a confirmar toda información que recibes como verdadera",
+                    "La necesidad de pedir confirmación antes de actuar",
+                    "La tendencia a buscar información que confirma lo que ya crees",
+                    "Un método científico para verificar hipótesis"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Cuál fue el efecto más transformador de la imprenta de Gutenberg?",
+                "options": [
+                    "Aumentar la riqueza de los monasterios",
+                    "Democratizar el acceso al conocimiento",
+                    "Crear la industria publicitaria",
+                    "Eliminar el analfabetismo por completo"
+                ],
+                "correctAnswer": 1
+            },
+            {
+                "question": "¿Qué se recomienda hacer antes de compartir una noticia en redes sociales?",
+                "options": [
+                    "Agregar un comentario emocional para generar más engagement",
+                    "Compartirla rápidamente antes de que otros lo hagan",
+                    "Preguntarte: ¿es verdadero? ¿es útil? ¿es necesario?",
+                    "Editarla para hacerla más interesante"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "¿Qué tendencia ha llevado a algunos analistas a hablar de 'desglobalización'?",
+                "options": [
+                    "El aumento del turismo internacional",
+                    "La expansión de tratados de libre comercio",
+                    "El resurgimiento del nacionalismo, guerras comerciales y disrupciones en cadenas de suministro",
+                    "La creación de nuevas organizaciones internacionales"
+                ],
+                "correctAnswer": 2
+            },
+            {
+                "question": "Según la lección, ¿cuántos bytes de datos se generan diariamente a nivel global?",
+                "options": [
+                    "2.5 millones",
+                    "2.5 billones",
+                    "2.5 trillones",
+                    "2.5 quintillones"
+                ],
+                "correctAnswer": 3
             }
         ]
     }
