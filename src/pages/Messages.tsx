@@ -836,24 +836,36 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   </div>
                 )}
 
-                {/* Input bar - WhatsApp style */}
+                {/* Input bar */}
                 <div className="msg-input-bar wa-input-bar">
                   <input ref={photoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePhotoSelect} />
 
                   {isRecordingAudio ? (
                     <div className="wa-recording-bar">
-                      <button className="wa-icon-btn wa-cancel-rec" onClick={cancelAudioRecording}>✕</button>
+                      <button className="wa-icon-btn wa-cancel-rec" onClick={cancelAudioRecording} title="Cancelar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
                       <div className="recording-indicator" style={{ flex: 1 }}>
                         <span className="recording-dot" />
                         <span style={{ fontWeight: 600 }}>{formatRecTime(recordingTime)}</span>
                       </div>
-                      <button className="wa-icon-btn wa-send-rec" onClick={stopAudioRecording}>✓</button>
+                      <button className="wa-icon-btn wa-send-rec" onClick={stopAudioRecording} title="Enviar audio">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </button>
                     </div>
                   ) : (
                     <>
-                      <button className="wa-icon-btn" onClick={() => photoInputRef.current?.click()} title="Enviar foto">📷</button>
-                      <button className="wa-icon-btn" title="Nota de video" onClick={() => alert('Videollamadas y notas de video próximamente')}>🎥</button>
-                      <button className="wa-icon-btn" title="Adjuntar archivo" disabled>📎</button>
+                      <div className="wa-actions-group">
+                        <button className="wa-icon-btn" onClick={() => photoInputRef.current?.click()} title="Enviar foto">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        </button>
+                        <button className="wa-icon-btn" title="Adjuntar archivo" disabled>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                        </button>
+                        <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title="Mensaje de voz">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </button>
+                      </div>
                       <input
                         value={newMsg}
                         onChange={e => setNewMsg(e.target.value)}
@@ -862,11 +874,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         disabled={sending}
                         className="wa-text-input"
                       />
-                      {newMsg.trim() ? (
-                        <button className="wa-send-btn" onClick={handleSend} disabled={sending}>➤</button>
-                      ) : (
-                        <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title="Mensaje de voz">🎤</button>
-                      )}
+                      <button className="wa-send-btn" onClick={handleSend} disabled={sending || !newMsg.trim()} title="Enviar">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                      </button>
                     </>
                   )}
                 </div>
