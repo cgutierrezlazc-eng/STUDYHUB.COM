@@ -38,11 +38,11 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
     <nav className={`sidebar ${className || ''}`}>
       <div className="sidebar-section">
         <div className="sidebar-section-title">Social</div>
-        <button className={`nav-item ${isActive('/') ? 'active' : ''}`} onClick={() => onNavigate('/')}>
-          <span className="nav-item-icon">🏠</span> Inicio
-        </button>
-        <button className={`nav-item ${currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate(user ? `/user/${user.id}` : '/')}>
+        <button className={`nav-item ${isActive('/') || currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
           <span className="nav-item-icon">👤</span> Mi Perfil
+        </button>
+        <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
+          <span className="nav-item-icon">🏠</span> Feed
         </button>
         <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
           <span className="nav-item-icon">👥</span> Comunidad

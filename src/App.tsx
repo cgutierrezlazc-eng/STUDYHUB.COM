@@ -214,7 +214,7 @@ export default function App() {
           <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
             <Routes>
-            <Route path="/" element={<Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} />} />
