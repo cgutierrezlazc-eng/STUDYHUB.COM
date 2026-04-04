@@ -1015,8 +1015,8 @@ def init_db():
     db = SessionLocal()
     try:
         owner = db.query(User).filter(User.email == "ceo@conniku.com").first()
+        import bcrypt
         if not owner:
-            import bcrypt
             from sqlalchemy import func
             max_num = db.query(func.max(User.user_number)).scalar() or 0
             owner = User(
@@ -1064,6 +1064,17 @@ def init_db():
             )
             db.add(owner)
             db.commit()
+            print("Owner account created: ceo@conniku.com")
+        else:
+            # Update existing owner password to match OWNER_PASSWORD env var
+            new_hash = bcrypt.hashpw(owner_password.encode(), bcrypt.gensalt()).decode()
+            owner.password_hash = new_hash
+            owner.is_admin = True
+            owner.role = "owner"
+            owner.email_verified = True
+            owner.subscription_status = "owner"
+            db.commit()
+            print("Owner account password updated: ceo@conniku.com")
     except Exception as e:
         db.rollback()
         print(f"Owner creation: {e}")
