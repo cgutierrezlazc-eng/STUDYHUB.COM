@@ -699,8 +699,8 @@ def delete_tutoring_listing(listing_id: str, user: User = Depends(get_current_us
     ).first()
     if not listing:
         raise HTTPException(403, "No tienes permiso")
-    from database import TutoringRequest
-    db.query(TutoringRequest).filter(TutoringRequest.listing_id == listing_id).delete(synchronize_session=False)
+    from database import TutoringListingRequest
+    db.query(TutoringListingRequest).filter(TutoringListingRequest.listing_id == listing_id).delete(synchronize_session=False)
     db.delete(listing)
     db.commit()
     return {"status": "deleted"}
@@ -709,7 +709,7 @@ def delete_tutoring_listing(listing_id: str, user: User = Depends(get_current_us
 @router.post("/tutoring/listings/{listing_id}/request")
 def request_tutoring(listing_id: str, data: dict,
                      user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import TutoringListing, TutoringRequest as TR
+    from database import TutoringListing, TutoringListingRequest as TR
     listing = db.query(TutoringListing).filter(TutoringListing.id == listing_id).first()
     if not listing:
         raise HTTPException(404, "Tutoría no encontrada")
@@ -757,7 +757,7 @@ def my_tutoring_listings(user: User = Depends(get_current_user), db: Session = D
 @router.get("/tutoring/requests")
 def get_tutoring_requests(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get tutoring requests for tutor or student."""
-    from database import TutoringRequest as TR, TutoringListing
+    from database import TutoringListingRequest as TR, TutoringListing
 
     # As tutor
     as_tutor = db.query(TR, User, TutoringListing).join(
@@ -792,7 +792,7 @@ def get_tutoring_requests(user: User = Depends(get_current_user), db: Session = 
 @router.put("/tutoring/requests/{request_id}/status")
 def update_tutoring_request_status(request_id: str, data: dict,
                                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import TutoringRequest as TR, TutoringListing
+    from database import TutoringListingRequest as TR, TutoringListing
     req = db.query(TR).filter(TR.id == request_id).first()
     if not req:
         raise HTTPException(404, "Solicitud no encontrada")

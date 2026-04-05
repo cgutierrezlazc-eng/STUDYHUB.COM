@@ -109,7 +109,7 @@ def migrate():
                     # Column might already exist (race condition) - safe to ignore
                     logger.debug(f"Column users.{col_name} skipped: {e}")
 
-    # Create tutoring_requests table if it doesn't exist
+    # Create tutoring_requests table if it doesn't exist (new mentoring system)
     if not inspector.has_table("tutoring_requests"):
         with engine.begin() as conn:
             conn.execute(text("""
@@ -125,6 +125,25 @@ def migrate():
                 )
             """))
             logger.info("Created tutoring_requests table.")
+
+    # Create tutoring_listing_requests table if it doesn't exist (job listings system)
+    if not inspector.has_table("tutoring_listing_requests"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE tutoring_listing_requests (
+                    id VARCHAR(16) PRIMARY KEY,
+                    listing_id VARCHAR(16) NOT NULL,
+                    student_id VARCHAR(16) NOT NULL,
+                    tutor_id VARCHAR(16) NOT NULL,
+                    message TEXT DEFAULT '',
+                    status VARCHAR(20) DEFAULT 'pending',
+                    scheduled_at TIMESTAMP,
+                    rating INTEGER,
+                    review TEXT,
+                    created_at TIMESTAMP
+                )
+            """))
+            logger.info("Created tutoring_listing_requests table.")
 
     logger.info("Migrations complete.")
 

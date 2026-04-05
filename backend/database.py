@@ -779,8 +779,8 @@ class TutoringListing(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
-class TutoringRequest(Base):
-    __tablename__ = "tutoring_requests"
+class TutoringListingRequest(Base):
+    __tablename__ = "tutoring_listing_requests"
     id = Column(String(16), primary_key=True, default=gen_id)
     listing_id = Column(String(16), ForeignKey("tutoring_listings.id", ondelete="CASCADE"), nullable=False)
     student_id = Column(String(16), ForeignKey("users.id"), nullable=False)
@@ -791,7 +791,7 @@ class TutoringRequest(Base):
     rating = Column(Integer, nullable=True)  # 1-5 from student
     review = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
-    __table_args__ = (UniqueConstraint("listing_id", "student_id", name="uq_tutoring_request"),)
+    __table_args__ = (UniqueConstraint("listing_id", "student_id", name="uq_tutoring_listing_request"),)
 
 
 # ─── Study Events ──────────────────────────────────────────
