@@ -45,6 +45,7 @@ const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
 const Search = React.lazy(() => import('./pages/Search'))
 const Conferences = React.lazy(() => import('./pages/Conferences'))
+const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -280,6 +281,7 @@ export default function App() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />
+            <Route path="*" element={<NotFound onNavigate={(path) => navigate(path)} />} />
           </Routes>
         </Suspense>
           </ErrorBoundary>

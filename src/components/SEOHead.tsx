@@ -145,4 +145,8 @@ export const PAGE_SEO: Record<string, SEOProps> = {
     title: 'Panel CEO',
     path: '/ceo',
   },
+  notFound: {
+    title: 'Pagina no encontrada',
+    description: 'La pagina que buscas no existe. Vuelve al inicio de Conniku.',
+  },
 }
