@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Conversation, ConversationMessage, UserBrief, ConversationFolder } from '../types'
+import { MessageSquare, Users, BookOpen, FolderOpen, AlertTriangle, Trash2, Hourglass, Inbox, Mic, Camera, Video, Paperclip, Globe, MoreVertical, Eye, Shield, Search as SearchIcon } from '../components/Icons'
 
 interface Props {
   conversationId?: string
@@ -342,26 +343,26 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 className={`msg-tab ${sidebarTab === 'chats' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('chats')}
               >
-                💬 Chats
+                {MessageSquare({ size: 16 })} Chats
                 {totalUnread > 0 && <span className="msg-tab-badge">{totalUnread}</span>}
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'friends' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('friends')}
               >
-                👥 Amigos
+                {Users({ size: 16 })} Amigos
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'groups' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('groups')}
               >
-                📚 Grupos
+                {BookOpen({ size: 16 })} Grupos
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'requests' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('requests')}
               >
-                📩 Solicitudes
+                {Inbox({ size: 16 })} Solicitudes
                 {incomingRequests.length > 0 && <span className="msg-tab-badge">{incomingRequests.length}</span>}
               </button>
             </div>
@@ -377,7 +378,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 {folders.length > 0 && (
                   <div className="msg-folders">
                     {folders.map(f => (
-                      <div key={f.id} className="msg-folder-label">📁 {f.name}</div>
+                      <div key={f.id} className="msg-folder-label">{FolderOpen({ size: 14 })} {f.name}</div>
                     ))}
                   </div>
                 )}
@@ -388,7 +389,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     <div className="msg-empty">{t('msg.loading')}</div>
                   ) : conversations.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>{MessageSquare({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>{t('msg.noConversations')}</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Empieza una conversación con tus compañeros</p>
                       <button className="btn btn-primary btn-sm" onClick={() => setSidebarTab('friends')}>Ver amigos</button>
@@ -403,7 +404,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                           onClick={() => setActiveConv(conv.id)}
                         >
                           <div className="msg-conv-avatar wa-avatar">
-                            {conv.type === 'group_study' ? '👥' : (
+                            {conv.type === 'group_study' ? Users() : (
                               other?.avatar ?
                                 <img src={other.avatar} alt="" /> :
                                 <span>{(other?.firstName?.[0] || conv.name?.[0] || '?').toUpperCase()}</span>
@@ -411,7 +412,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                           </div>
                           <div className="msg-conv-info">
                             <div className="msg-conv-name">
-                              {conv.type === 'group_study' && <span style={{ marginRight: 4, fontSize: 12 }}>📚</span>}
+                              {conv.type === 'group_study' && <span style={{ marginRight: 4, fontSize: 12 }}>{BookOpen({ size: 12 })}</span>}
                               {conv.name}
                               {conv.unreadCount > 0 && <span className="msg-badge">{conv.unreadCount}</span>}
                             </div>
@@ -441,7 +442,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-sidebar-header" style={{ padding: '8px 12px' }}>
                   <input
                     className="msg-friends-search"
-                    placeholder="🔍 Buscar amigo..."
+                    placeholder="Buscar amigo..."
                     value={friendsFilter}
                     onChange={e => setFriendsFilter(e.target.value)}
                     style={{
@@ -455,7 +456,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-conv-list">
                   {friends.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>👥</div>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>{Users({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>Sin amigos aún</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Agrega amigos desde la Comunidad para chatear</p>
                       <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>Ir a Comunidad</button>
@@ -495,7 +496,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
                           {friend.conversationId ? (
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>💬</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{MessageSquare({ size: 11 })}</span>
                           ) : (
                             <span style={{
                               fontSize: 10, color: 'var(--accent)', fontWeight: 600,
@@ -523,7 +524,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-conv-list">
                   {groupChats.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>📚</div>
+                      <div style={{ fontSize: 48, marginBottom: 12 }}>{BookOpen({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>Sin grupos</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
                         Crea un grupo de estudio con tus compañeros de asignatura
@@ -538,7 +539,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         onClick={() => { setActiveConv(conv.id); setSidebarTab('chats') }}
                       >
                         <div className="msg-conv-avatar wa-avatar">
-                          <span>📚</span>
+                          <span>{BookOpen()}</span>
                         </div>
                         <div className="msg-conv-info">
                           <div className="msg-conv-name">
@@ -567,7 +568,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               <div className="msg-conv-list">
                 {incomingRequests.length === 0 && sentRequests.length === 0 ? (
                   <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>📩</div>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>{Inbox({ size: 48 })}</div>
                     <h3 style={{ margin: '0 0 8px' }}>Sin solicitudes</h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                       Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí
@@ -646,7 +647,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                               </div>
                               <div className="msg-conv-info">
                                 <div className="msg-conv-name">{other?.firstName} {other?.lastName}</div>
-                                <div className="msg-conv-preview">⏳ Esperando respuesta...</div>
+                                <div className="msg-conv-preview">{Hourglass({ size: 12 })} Esperando respuesta...</div>
                               </div>
                             </div>
                           )
@@ -667,7 +668,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-chat-header wa-header">
                   <div className="wa-header-left" onClick={() => otherParticipant && onNavigate(`/user/${otherParticipant.id}`)}>
                     <div className="wa-header-avatar">
-                      {activeConversation.type === 'group_study' ? '📚' : (
+                      {activeConversation.type === 'group_study' ? BookOpen() : (
                         otherParticipant?.avatar ?
                           <img src={otherParticipant.avatar} alt="" /> :
                           <span>{(otherParticipant?.firstName?.[0] || '?').toUpperCase()}</span>
@@ -683,22 +684,22 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     </div>
                   </div>
                   <div className="wa-header-actions">
-                    <button className="wa-icon-btn" title="Llamada de voz" disabled>📞</button>
-                    <button className="wa-icon-btn" title="Videollamada" disabled>📹</button>
+                    <button className="wa-icon-btn" title="Llamada de voz" disabled>{Mic({ size: 16 })}</button>
+                    <button className="wa-icon-btn" title="Videollamada" disabled>{Video({ size: 16 })}</button>
                     <div style={{ position: 'relative' }}>
-                      <button className="wa-icon-btn" onClick={() => setShowContactMenu(!showContactMenu)}>⋮</button>
+                      <button className="wa-icon-btn" onClick={() => setShowContactMenu(!showContactMenu)}>{MoreVertical({ size: 16 })}</button>
                       {showContactMenu && (
                         <div className="wa-dropdown-menu">
                           {otherParticipant && (
                             <>
                               <button onClick={() => { onNavigate(`/user/${otherParticipant.id}`); setShowContactMenu(false) }}>
-                                👤 Ver perfil
+                                {Eye({ size: 14 })} Ver perfil
                               </button>
                               <button onClick={handleBlockUser}>
-                                🚫 Bloquear contacto
+                                {Shield({ size: 14 })} Bloquear contacto
                               </button>
                               <button onClick={handleReportUser} className="wa-danger">
-                                ⚠️ Denunciar
+                                {AlertTriangle({ size: 14 })} Denunciar
                               </button>
                             </>
                           )}
@@ -734,14 +735,14 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                 </div>
                               ) : isAudio && msg.documentPath ? (
                                 <div className="wa-audio-msg">
-                                  <span>🎤</span>
+                                  <span>{Mic({ size: 14 })}</span>
                                   <audio controls src={msg.documentPath} style={{ height: 32, maxWidth: 220 }} />
                                 </div>
                               ) : (
                                 <>
                                   {msg.content}
                                   {msg.messageType === 'document' && msg.documentName && (
-                                    <div className="msg-document">📎 {msg.documentName}</div>
+                                    <div className="msg-document">{Paperclip({ size: 12 })} {msg.documentName}</div>
                                   )}
                                 </>
                               )}
@@ -752,14 +753,14 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                   e.stopPropagation()
                                   const btn = e.currentTarget
                                   if (btn.dataset.translated) {
-                                    btn.textContent = '🌐'
+                                    btn.textContent = 'Aa'
                                     btn.title = 'Traducir'
                                     const original = btn.dataset.original || ''
                                     const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
                                     if (contentEl) contentEl.textContent = original
                                     delete btn.dataset.translated
                                   } else {
-                                    btn.textContent = '⏳'
+                                    btn.textContent = '...'
                                     try {
                                       const result = await api.translateText(msg.content, user?.language || 'es')
                                       const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
@@ -767,11 +768,11 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                         btn.dataset.original = contentEl.textContent || ''
                                         contentEl.textContent = result.translated
                                       }
-                                      btn.textContent = '↩️'
+                                      btn.textContent = 'Aa'
                                       btn.title = 'Ver original'
                                       btn.dataset.translated = 'true'
                                     } catch {
-                                      btn.textContent = '🌐'
+                                      btn.textContent = 'Aa'
                                     }
                                   }
                                 }}
@@ -781,13 +782,13 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                   fontSize: 11, padding: '2px 4px', opacity: 0.5,
                                   position: 'absolute', bottom: 2, right: 2,
                                 }}
-                              >🌐</button>
+                              >{Globe({ size: 11 })}</button>
                             )}
                             <div className="msg-meta wa-meta">
                               <span>{formatTime(msg.createdAt)}</span>
                               {isMine && <span className="wa-check">✓✓</span>}
                               {isMine && !msg.isDeleted && (
-                                <button className="msg-delete-btn" onClick={() => deleteMsg(msg.id)}>🗑</button>
+                                <button className="msg-delete-btn" onClick={() => deleteMsg(msg.id)}>{Trash2({ size: 14 })}</button>
                               )}
                             </div>
                           </>
@@ -807,7 +808,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   }}>
                     <div style={{ flex: 1, fontSize: 13 }}>
                       {activeConversation.participants.find(p => p.role === 'admin')?.id === user?.id ? (
-                        <span style={{ color: 'var(--text-muted)' }}>⏳ Esperando que acepten tu solicitud de mensaje...</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{Hourglass({ size: 14 })} Esperando que acepten tu solicitud de mensaje...</span>
                       ) : (
                         <span><strong>{otherParticipant?.firstName}</strong> quiere enviarte un mensaje</span>
                       )}
@@ -883,7 +884,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               </>
             ) : (
               <div className="msg-no-chat">
-                <div className="msg-no-chat-icon">💬</div>
+                <div className="msg-no-chat-icon">{MessageSquare({ size: 48 })}</div>
                 <h3>{t('msg.selectChat')}</h3>
                 <p style={{ color: 'var(--text-muted)', maxWidth: 320, margin: '8px auto 0' }}>
                   Selecciona una conversación o elige un amigo para empezar a chatear

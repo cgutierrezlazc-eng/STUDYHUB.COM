@@ -19,7 +19,7 @@ from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 
-from database import get_db, User, gen_id, DATA_DIR, TutoringRequest
+from database import get_db, User, UserSession, gen_id, DATA_DIR, TutoringRequest
 from middleware import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -93,6 +93,81 @@ def get_admin_email() -> str:
         except:
             pass
     return ""
+
+
+# ─── Device Session Tracking ───────────────────────────────────
+
+def _parse_device_info(user_agent: str) -> tuple[str, str]:
+    """Parse User-Agent header to extract device name and type."""
+    ua = (user_agent or "").lower()
+    device_type = "web"
+    device_name = "Navegador desconocido"
+
+    # Detect device type
+    if "mobile" in ua or "android" in ua or "iphone" in ua:
+        device_type = "mobile"
+    elif "tablet" in ua or "ipad" in ua:
+        device_type = "tablet"
+    elif "electron" in ua or "desktop" in ua:
+        device_type = "desktop"
+
+    # Detect browser/OS
+    if "chrome" in ua and "edg" not in ua and "opr" not in ua:
+        browser = "Chrome"
+    elif "firefox" in ua:
+        browser = "Firefox"
+    elif "safari" in ua and "chrome" not in ua:
+        browser = "Safari"
+    elif "edg" in ua:
+        browser = "Edge"
+    elif "opr" in ua or "opera" in ua:
+        browser = "Opera"
+    else:
+        browser = "Navegador"
+
+    if "windows" in ua:
+        device_name = f"{browser} en Windows"
+    elif "macintosh" in ua or "mac os" in ua:
+        device_name = f"{browser} en Mac"
+    elif "iphone" in ua:
+        device_name = f"{browser} en iPhone"
+    elif "ipad" in ua:
+        device_name = f"{browser} en iPad"
+    elif "android" in ua:
+        device_name = f"{browser} en Android"
+    elif "linux" in ua:
+        device_name = f"{browser} en Linux"
+    else:
+        device_name = browser
+
+    return device_name, device_type
+
+
+def _register_session(db: Session, user_id: str, token: str, request: Request = None):
+    """Register a new device session after login/register."""
+    import hashlib as _hl
+    user_agent = ""
+    ip_address = ""
+    if request:
+        user_agent = request.headers.get("user-agent", "")
+        ip_address = request.client.host if request.client else ""
+
+    device_name, device_type = _parse_device_info(user_agent)
+    token_hash = _hl.sha256(token.encode()).hexdigest()
+
+    session = UserSession(
+        id=gen_id(),
+        user_id=user_id,
+        device_name=device_name,
+        device_type=device_type,
+        ip_address=ip_address,
+        token_hash=token_hash,
+        last_active=datetime.utcnow(),
+        is_active=True,
+    )
+    db.add(session)
+    db.commit()
+    return session
 
 
 # ─── Request/Response Models ────────────────────────────────────
@@ -397,6 +472,59 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
             except Exception:
                 pass
 
+    # ─── Auto-friend CEO ──────────────────────────────────────
+    try:
+        ceo_email = get_admin_email()
+        if ceo_email:
+            ceo_user = db.query(User).filter(User.email == ceo_email).first()
+            if ceo_user and ceo_user.id != user.id:
+                from database import Friendship, Conversation, ConversationParticipant, Message
+                # Create bidirectional friendship
+                existing = db.query(Friendship).filter(
+                    ((Friendship.requester_id == user.id) & (Friendship.addressee_id == ceo_user.id)) |
+                    ((Friendship.requester_id == ceo_user.id) & (Friendship.addressee_id == user.id))
+                ).first()
+                if not existing:
+                    f1 = Friendship(id=gen_id(), requester_id=ceo_user.id, addressee_id=user.id, status="accepted")
+                    db.add(f1)
+
+                    # Create conversation and send welcome message
+                    conv = Conversation(
+                        id=gen_id(),
+                        type="direct",
+                        created_by=ceo_user.id,
+                    )
+                    db.add(conv)
+                    db.flush()
+
+                    # Add both participants
+                    db.add(ConversationParticipant(id=gen_id(), conversation_id=conv.id, user_id=ceo_user.id))
+                    db.add(ConversationParticipant(id=gen_id(), conversation_id=conv.id, user_id=user.id))
+
+                    # Send welcome message
+                    gendered_greeting = "a" if getattr(user, 'gender', None) == 'female' else "o"
+                    welcome_msg = Message(
+                        id=gen_id(),
+                        conversation_id=conv.id,
+                        sender_id=ceo_user.id,
+                        content=(
+                            f"¡Hola {user.first_name}! 👋\n\n"
+                            f"Soy Cristian, el fundador de Conniku. Antes que nada, bienvenid{gendered_greeting} a esta comunidad que construimos juntos.\n\n"
+                            f"Te cuento un poco: soy estudiante igual que tú, y creé Conniku porque sentía que nos faltaban herramientas que realmente nos entendieran. "
+                            f"Esto no es solo una plataforma — es un proyecto que nace de las mismas necesidades que tienes tú.\n\n"
+                            f"Me agregué como tu amigo porque quiero que sepas que estoy aquí. Si tienes ideas, sugerencias, problemas o simplemente quieres conversar "
+                            f"sobre cómo mejorar tu experiencia, escríbeme directamente. Leo todos los mensajes personalmente.\n\n"
+                            f"¡Éxito en todo lo que viene! 🚀\n\n"
+                            f"— Cristian\n"
+                            f"Fundador, alma de Conniku y estudiante como tú"
+                        ),
+                    )
+                    db.add(welcome_msg)
+                    db.commit()
+    except Exception as e:
+        print(f"[Auto-friend CEO] Error: {e}")
+        # Non-critical, don't fail registration
+
     # Send verification email
     try:
         from notifications import _send_email_async, _email_template
@@ -466,6 +594,10 @@ Estamos felices de tenerte aqu\u00ed. Conniku es tu plataforma para estudiar, co
         pass
 
     token = create_access_token(user.id)
+    try:
+        _register_session(db, user.id, token, request)
+    except Exception as e:
+        logger.warning(f"Session tracking failed on register: {e}")
     return {
         "token": token,
         "user": user_to_dict(user),
@@ -493,6 +625,10 @@ def login(req: LoginRequest, request: Request = None, db: Session = Depends(get_
     db.commit()
 
     token = create_access_token(user.id)
+    try:
+        _register_session(db, user.id, token, request)
+    except Exception as e:
+        logger.warning(f"Session tracking failed on login: {e}")
     return {"token": token, "user": user_to_dict(user)}
 
 
@@ -582,7 +718,54 @@ def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = D
         db.refresh(user)
 
     token = create_access_token(user.id)
+    try:
+        _register_session(db, user.id, token, request)
+    except Exception as e:
+        logger.warning(f"Session tracking failed on google auth: {e}")
     return {"token": token, "user": user_to_dict(user)}
+
+
+@router.get("/sessions")
+def get_sessions(request: Request, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get all active sessions for the current user (multi-device tracking)."""
+    import hashlib as _hl
+    sessions = db.query(UserSession).filter(
+        UserSession.user_id == user.id,
+        UserSession.is_active == True
+    ).order_by(UserSession.last_active.desc()).all()
+
+    # Detect current session by token hash
+    current_token_hash = ""
+    auth_header = request.headers.get("authorization", "")
+    if auth_header.startswith("Bearer "):
+        current_token_hash = _hl.sha256(auth_header[7:].encode()).hexdigest()
+
+    return {
+        "sessions": [{
+            "id": s.id,
+            "deviceName": s.device_name,
+            "deviceType": s.device_type,
+            "ipAddress": s.ip_address,
+            "lastActive": s.last_active.isoformat() if s.last_active else "",
+            "createdAt": s.created_at.isoformat() if s.created_at else "",
+            "current": s.token_hash == current_token_hash if current_token_hash else False,
+        } for s in sessions],
+        "totalDevices": len(sessions),
+    }
+
+
+@router.delete("/sessions/{session_id}")
+def revoke_session(session_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Revoke/deactivate a specific device session."""
+    session = db.query(UserSession).filter(
+        UserSession.id == session_id,
+        UserSession.user_id == user.id,
+    ).first()
+    if not session:
+        raise HTTPException(404, "Sesión no encontrada")
+    session.is_active = False
+    db.commit()
+    return {"ok": True, "message": "Sesión cerrada correctamente"}
 
 
 @router.get("/me")

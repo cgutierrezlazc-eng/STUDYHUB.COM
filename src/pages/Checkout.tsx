@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useAuth } from '../services/auth'
+import { Star, Lock } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -314,7 +315,7 @@ export default function Checkout({ onNavigate }: Props) {
           <p style={styles.summaryTitle}>Resumen del pedido</p>
 
           <div style={styles.planRow}>
-            <div style={styles.planIcon}>⭐</div>
+            <div style={styles.planIcon}>{Star({ size: 22, color: '#fff' })}</div>
             <div>
               <p style={styles.planName}>Plan Estudiante PRO</p>
               <p style={styles.planSub}>Acceso completo a todas las funciones</p>
@@ -363,7 +364,7 @@ export default function Checkout({ onNavigate }: Props) {
               style={paymentTab === 'card' ? styles.tabActive : styles.tab}
               onClick={() => setPaymentTab('card')}
             >
-              💳 Tarjeta
+              Tarjeta
             </button>
             <button
               style={paymentTab === 'paypal' ? styles.tabActive : styles.tab}
@@ -472,13 +473,13 @@ export default function Checkout({ onNavigate }: Props) {
             {/* Security badges */}
             <div style={styles.badges}>
               <div style={styles.badge}>
-                <span>🔒</span> Pago seguro
+                <span>{Lock({ size: 14 })}</span> Pago seguro
               </div>
               <div style={styles.badge}>
                 <span>↩</span> Cancelar en cualquier momento
               </div>
               <div style={styles.badge}>
-                <span>📧</span> Factura por email
+                <span>@</span> Factura por email
               </div>
             </div>
           </form>

@@ -91,12 +91,14 @@ export default function MilestonePopup({ type, title, description, icon, onClose
           }}>
             {title}
           </h2>
-          <p style={{
+          <div style={{
             margin: 0, fontSize: 14, color: 'rgba(255,255,255,0.7)', lineHeight: 1.5,
             animation: 'milestoneFadeUp 0.5s ease 0.4s both',
           }}>
-            {description}
-          </p>
+            {description.split('\n').map((line, i) => (
+              <p key={i} style={{ margin: line === '' ? 0 : '0 0 6px' }}>{line}</p>
+            ))}
+          </div>
         </div>
 
         {shared ? (

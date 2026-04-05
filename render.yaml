@@ -22,8 +22,10 @@ services:
         fromDatabase:
           name: conniku-db
           property: connectionString
-      # AI features — set this in Render dashboard
+      # AI features — set these in Render dashboard
       - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
         sync: false
       # Email notifications
       - key: SMTP_HOST

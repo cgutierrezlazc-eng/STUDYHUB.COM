@@ -20,7 +20,7 @@ from sqlalchemy import desc
 from database import init_db, get_db, User, gen_id
 from middleware import get_current_user
 from document_processor import DocumentProcessor
-from ai_engine import AIEngine
+from gemini_engine import AIEngine
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -48,6 +48,8 @@ from chile_tax_routes import router as finance_router
 from rewards_routes import router as rewards_router
 from search_routes import router as search_router
 from news_routes import router as news_router
+from cv_routes import router as cv_router
+from push_routes import router as push_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -121,6 +123,8 @@ app.include_router(finance_router)
 app.include_router(rewards_router)
 app.include_router(search_router)
 app.include_router(news_router)
+app.include_router(cv_router)
+app.include_router(push_router)
 
 # Storage paths
 DATA_DIR = Path.home() / ".conniku"
@@ -727,6 +731,15 @@ class ExportDocxRequest(BaseModel):
     content: str
     title: str = "Conniku Document"
 
+class ExportPdfRequest(BaseModel):
+    content: str
+    title: str = "Conniku Document"
+    messages: list = []  # For chat export
+
+class SummaryRequest(BaseModel):
+    detail_level: str = "comprehensive"  # brief, standard, comprehensive
+    export_format: str = ""  # "", "docx", "pdf"
+
 
 @app.post("/projects/{project_id}/chat/export-docx")
 def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depends(get_current_user)):
@@ -754,6 +767,118 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
         )
     except Exception as e:
         raise HTTPException(500, f"Error generando documento: {str(e)}")
+
+
+# ─── Summary generation & export ─────────────────────────────
+@app.post("/projects/{project_id}/summary")
+def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
+                     user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    check_chat_limit(user)
+
+    summary = ai_engine.generate_summary(project_id, user.language or "es", req.detail_level)
+
+    # If export requested, generate the file directly
+    if req.export_format == "docx":
+        from docx_generator import summary_to_docx
+        file_path = summary_to_docx(summary, summary.get("title", "Resumen de Estudio"))
+        return FileResponse(
+            file_path,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename=f"{summary.get('title', 'Resumen')}.docx",
+        )
+    elif req.export_format == "pdf":
+        from docx_generator import summary_to_pdf
+        file_path = summary_to_pdf(summary, summary.get("title", "Resumen de Estudio"))
+        return FileResponse(file_path, media_type="application/pdf",
+                            filename=f"{summary.get('title', 'Resumen')}.pdf")
+
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return summary
+
+
+@app.post("/projects/{project_id}/summary/export-docx")
+def export_summary_docx(project_id: str, data: dict,
+                        user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    from middleware import get_tier
+    tier = get_tier(user)
+    if tier == "free":
+        raise HTTPException(403, "Exportar requiere Plan Pro o superior.")
+    from docx_generator import summary_to_docx
+    title = data.get("title", "Resumen de Estudio")
+    file_path = summary_to_docx(data, title)
+    return FileResponse(
+        file_path,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename=f"{title}.docx",
+    )
+
+
+@app.post("/projects/{project_id}/summary/export-pdf")
+def export_summary_pdf(project_id: str, data: dict,
+                       user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    from middleware import get_tier
+    tier = get_tier(user)
+    if tier == "free":
+        raise HTTPException(403, "Exportar requiere Plan Pro o superior.")
+    from docx_generator import summary_to_pdf
+    title = data.get("title", "Resumen de Estudio")
+    file_path = summary_to_pdf(data, title)
+    return FileResponse(file_path, media_type="application/pdf",
+                        filename=f"{title}.pdf")
+
+
+# ─── Chat PDF export ─────────────────────────────────────────
+@app.post("/projects/{project_id}/chat/export-pdf")
+def export_chat_pdf(project_id: str, req: ExportPdfRequest,
+                    user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    from middleware import get_tier
+    tier = get_tier(user)
+    if tier == "free":
+        raise HTTPException(403, "Exportar a PDF requiere Plan Pro o superior.")
+    from docx_generator import chat_to_pdf
+    file_path = chat_to_pdf(req.messages, req.title)
+    return FileResponse(file_path, media_type="application/pdf",
+                        filename=f"{req.title}.pdf")
+
+
+# ─── Concept map ─────────────────────────────────────────────
+@app.post("/projects/{project_id}/concept-map")
+def generate_concept_map(project_id: str, user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    check_chat_limit(user)
+    result = ai_engine.generate_concept_map(project_id, user.language or "es")
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return result
+
+
+# ─── Visual explanation ──────────────────────────────────────
+class VisualExplainRequest(BaseModel):
+    topic: str
+
+@app.post("/projects/{project_id}/explain-visual")
+def explain_with_visuals(project_id: str, req: VisualExplainRequest,
+                         user: User = Depends(get_current_user)):
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+    check_chat_limit(user)
+    result = ai_engine.explain_with_visuals(project_id, req.topic, user.language or "es")
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return result
 
 
 @app.post("/projects/{project_id}/study-plan")

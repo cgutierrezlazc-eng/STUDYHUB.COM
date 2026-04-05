@@ -58,6 +58,36 @@ function createWindow() {
     mainWindow?.show();
   });
 
+  // Message notifications
+  ipcMain.on('show-notification', (_event, { title, body, icon }) => {
+    const { Notification } = require('electron');
+    if (Notification.isSupported()) {
+      const notification = new Notification({
+        title: title || 'Conniku',
+        body: body || '',
+        icon: path.join(__dirname, '../public/icon.png'),
+        silent: false,
+      });
+      notification.on('click', () => {
+        mainWindow?.show();
+        mainWindow?.focus();
+      });
+      notification.show();
+    }
+  });
+
+  // Badge count for dock/taskbar
+  ipcMain.on('set-badge-count', (_event, count: number) => {
+    if (process.platform === 'darwin') {
+      app.dock?.setBadge(count > 0 ? String(count) : '');
+    } else if (process.platform === 'win32') {
+      mainWindow?.setOverlayIcon(
+        count > 0 ? nativeImage.createFromDataURL('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==') : null,
+        count > 0 ? `${count} mensajes` : ''
+      );
+    }
+  });
+
   mainWindow.on('close', (e) => {
     e.preventDefault();
     mainWindow?.hide();

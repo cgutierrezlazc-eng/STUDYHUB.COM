@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -128,7 +129,7 @@ export default function Feed({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header">
-        <h2>{'\u{1F3E0}'} Inicio</h2>
+        <h2>{Home({ size: 22 })} Inicio</h2>
         <p>Actividad de tu red de estudio</p>
       </div>
 
@@ -173,7 +174,7 @@ export default function Feed({ onNavigate }: Props) {
                       <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
                       <button onClick={() => imageInputRef.current?.click()} style={{
                         background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px',
-                      }} title="Agregar foto">{'\u{1F4F7}'}</button>
+                      }} title="Agregar foto">{Camera({ size: 18 })}</button>
                     </div>
                     <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={posting || (!newPostContent.trim() && !postImage)}>
                       {posting ? 'Publicando...' : 'Publicar'}
@@ -188,7 +189,7 @@ export default function Feed({ onNavigate }: Props) {
               <div className="loading-dots"><span /><span /><span /></div>
             ) : posts.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
-                <div style={{ fontSize: 48 }}>{'\u{1F4E2}'}</div>
+                <div style={{ fontSize: 48 }}>{Megaphone({ size: 48 })}</div>
                 <h3>Tu feed est&aacute; vac&iacute;o</h3>
                 <p>Agrega amigos para ver su actividad aqu&iacute;</p>
                 <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => onNavigate('/friends')}>
@@ -273,7 +274,7 @@ export default function Feed({ onNavigate }: Props) {
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {'\u{1F4AC}'} {post.commentCount || 0} Comentarios
+                        {MessageSquare({ size: 14 })} {post.commentCount || 0} Comentarios
                       </button>
                       <button onClick={async () => {
                         try {
@@ -284,7 +285,7 @@ export default function Feed({ onNavigate }: Props) {
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: post.bookmarked ? 'var(--accent)' : 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {post.bookmarked ? '\u{1F516}' : '\u{1F516}'} Guardar
+                        {SaveIcon({ size: 14 })} Guardar
                       </button>
                       <button onClick={async () => {
                         const comment = prompt('Agrega un comentario (opcional):')
@@ -296,7 +297,7 @@ export default function Feed({ onNavigate }: Props) {
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {'\u2197\uFE0F'} Compartir
+                        {Share2({ size: 14 })} Compartir
                       </button>
                     </div>
 
@@ -380,10 +381,10 @@ export default function Feed({ onNavigate }: Props) {
             <div className="card" style={{ padding: 16 }}>
               <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Accesos r&aacute;pidos</h4>
               {[
-                { icon: '\u{1F4C5}', label: 'Calendario', path: '/calendar' },
-                { icon: '\u{1F4DA}', label: 'Marketplace', path: '/marketplace' },
-                { icon: '\u{1F4CA}', label: 'Dashboard', path: '/dashboard' },
-                { icon: '\u{1F464}', label: 'Mi Perfil', path: user ? `/user/${user.id}` : '/profile' },
+                { icon: Calendar({ size: 16 }), label: 'Calendario', path: '/calendar' },
+                { icon: BookOpen({ size: 16 }), label: 'Marketplace', path: '/marketplace' },
+                { icon: BarChart3({ size: 16 }), label: 'Dashboard', path: '/dashboard' },
+                { icon: UsersIcon({ size: 16 }), label: 'Mi Perfil', path: user ? `/user/${user.id}` : '/profile' },
               ].map(link => (
                 <button key={link.path} onClick={() => onNavigate(link.path)} style={{
                   display: 'flex', alignItems: 'center', gap: 8, width: '100%',

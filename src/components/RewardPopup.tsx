@@ -1,4 +1,5 @@
 import React from 'react'
+import { Star } from './Icons'
 
 interface Props {
   type: 'pro' | 'max'
@@ -15,7 +16,7 @@ export default function RewardPopup({ type, onClose }: Props) {
           background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 50%, #C4882A 100%)',
           padding: '30px 24px 24px', color: '#fff',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 10 }}>⭐</div>
+          <div style={{ fontSize: 48, marginBottom: 10 }}>{Star({ size: 48 })}</div>
           <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4, margin: 0 }}>
             {type === 'pro' ? '3 cursos completados' : '6 cursos completados'}
           </h3>

@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { AlertTriangle } from './Icons'
 
 interface Props {
   children: ReactNode
@@ -45,7 +46,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           padding: 24,
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: 48 }}>⚠️</div>
+          <div style={{ fontSize: 48 }}>{AlertTriangle({ size: 48 })}</div>
           <h2 style={{ margin: 0, fontSize: 22 }}>Algo salió mal</h2>
           <p style={{ margin: 0, color: 'var(--text-secondary, #999)', maxWidth: 400 }}>
             Ha ocurrido un error inesperado. Puedes intentar recargar la página.

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { SharedDoc } from '../types'
+import { BookOpen, GraduationCap, Download } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -99,7 +100,7 @@ export default function Marketplace({ onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>📚 Marketplace de Apuntes</h2>
+            <h2>{BookOpen({ size: 20 })} Marketplace de Apuntes</h2>
             <p>Comparte y descubre material de estudio de otros estudiantes</p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowShare(true)}>+ Compartir Apuntes</button>
@@ -128,7 +129,7 @@ export default function Marketplace({ onNavigate }: Props) {
           <div className="loading-dots"><span /><span /><span /></div>
         ) : documents.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>📚</div>
+            <div style={{ fontSize: 48 }}>{BookOpen({ size: 48 })}</div>
             <h3>No hay apuntes todavía</h3>
             <p>Sé el primero en compartir material de estudio con la comunidad</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowShare(true)}>
@@ -152,8 +153,8 @@ export default function Marketplace({ onNavigate }: Props) {
                   </div>
                   {doc.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>{doc.description.slice(0, 100)}</p>}
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-                    {doc.university && <span>🏫 {doc.university}</span>}
-                    {doc.career && <span> · 🎓 {doc.career}</span>}
+                    {doc.university && <span>{doc.university}</span>}
+                    {doc.career && <span> · {GraduationCap({ size: 14 })} {doc.career}</span>}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     {renderStars(doc.rating, doc.id)}
@@ -178,7 +179,7 @@ export default function Marketplace({ onNavigate }: Props) {
                           {doc.author.firstName}
                         </button>
                       )}
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>📥 {doc.downloads}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>{Download({ size: 12 })} {doc.downloads}</span>
                     </div>
                     <button className="btn btn-primary btn-xs" onClick={() => handleDownload(doc.id)}>
                       Descargar

@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Calendar, Link, Users } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
 }
 
 const EVENT_TYPES = [
-  { value: 'study_session', label: '📖 Sesión de Estudio', color: 'var(--accent-blue)' },
-  { value: 'exam_prep', label: '📝 Preparación de Examen', color: 'var(--accent-orange)' },
-  { value: 'tutoring', label: '🎓 Tutoría', color: 'var(--accent-green)' },
-  { value: 'social', label: '🎉 Social', color: 'var(--accent-purple)' },
+  { value: 'study_session', label: 'Sesión de Estudio', color: 'var(--accent-blue)' },
+  { value: 'exam_prep', label: 'Preparación de Examen', color: 'var(--accent-orange)' },
+  { value: 'tutoring', label: 'Tutoría', color: 'var(--accent-green)' },
+  { value: 'social', label: 'Social', color: 'var(--accent-purple)' },
 ]
 
 export default function Events({ onNavigate }: Props) {
@@ -67,7 +68,7 @@ export default function Events({ onNavigate }: Props) {
     <>
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div><h2>📅 Eventos</h2><p>Sesiones de estudio, preparación de exámenes y más</p></div>
+          <div><h2>{Calendar({ size: 20 })} Eventos</h2><p>Sesiones de estudio, preparación de exámenes y más</p></div>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Crear Evento</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -79,7 +80,7 @@ export default function Events({ onNavigate }: Props) {
         {loading ? <div className="loading-dots"><span /><span /><span /></div> :
         events.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>📅</div>
+            <div style={{ fontSize: 48 }}>{Calendar({ size: 48 })}</div>
             <h3>No hay eventos {tab === 'my' ? 'registrados' : 'próximos'}</h3>
             <p>Crea uno para estudiar con la comunidad</p>
           </div>
@@ -105,9 +106,9 @@ export default function Events({ onNavigate }: Props) {
                     </div>
                     {event.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>{event.description.slice(0, 120)}</p>}
                     <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
-                      {event.location && <span>📍 {event.location}</span>}
-                      {event.meetingLink && <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)' }}>🔗 Unirse</a>}
-                      <span>👥 {event.attendeeCount}{event.maxAttendees ? `/${event.maxAttendees}` : ''} asistentes</span>
+                      {event.location && <span>{event.location}</span>}
+                      {event.meetingLink && <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Link({ size: 14 })} Unirse</a>}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {event.attendeeCount}{event.maxAttendees ? `/${event.maxAttendees}` : ''} asistentes</span>
                       {event.organizer && <span>Organiza: {event.organizer.firstName}</span>}
                     </div>
                   </div>

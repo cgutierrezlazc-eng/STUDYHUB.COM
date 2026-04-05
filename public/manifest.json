@@ -2,6 +2,7 @@
   "name": "Conniku",
   "short_name": "Conniku",
   "description": "Comunidad de estudio para estudiantes universitarios",
+  "id": "/",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F5F3EF",
@@ -9,6 +10,7 @@
   "orientation": "any",
   "categories": ["education", "productivity", "social"],
   "lang": "es",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192.png",
@@ -22,5 +24,6 @@
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "screenshots": []
 }

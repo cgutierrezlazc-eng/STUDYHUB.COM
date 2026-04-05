@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
+import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff } from '../components/Icons'
 
 interface Props {
   userId: string
@@ -261,7 +262,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <>
               <input ref={coverPhotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleCoverChange} />
               <button className="fb-cover-edit-btn" onClick={() => coverPhotoRef.current?.click()}>
-                📷 {profile.coverPhoto ? 'Cambiar portada' : 'Agregar foto de portada'}
+                {Camera({ size: 14 })} {profile.coverPhoto ? 'Cambiar portada' : 'Agregar foto de portada'}
               </button>
             </>
           )}
@@ -279,7 +280,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {isOwn && (
               <>
                 <input ref={profilePhotoRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleProfilePhotoChange} />
-                <div className="fb-photo-overlay">📷</div>
+                <div className="fb-photo-overlay">{Camera({ size: 14 })}</div>
               </>
             )}
           </div>
@@ -323,23 +324,23 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     </>
                   ) : profile.friendshipStatus === 'pending' ? (
                     <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24, cursor: 'default', opacity: 0.8 }} disabled>
-                      ⏳ Invitación Enviada
+                      {Hourglass({ size: 14 })} Invitación Enviada
                     </button>
                   ) : profile.friendshipStatus === 'rejected' ? (
                     <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
                   ) : (
                     <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
                   )}
-                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate(`/messages?new=${userId}`)}>💬 Mensaje</button>
+                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate(`/messages?new=${userId}`)}>{MessageSquare({ size: 14 })} Mensaje</button>
                   <div style={{ position: 'relative' }}>
                     <button className="btn btn-secondary btn-sm" onClick={() => setShowMoreMenu(!showMoreMenu)} style={{ borderRadius: 24, padding: '6px 14px' }}>Más ···</button>
                     {showMoreMenu && (
                       <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, minWidth: 220, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
-                        <button onClick={handleBlock} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>🚫 Bloquear usuario</button>
-                        <button onClick={() => { setShowReportModal(true); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>🚨 Reportar usuario</button>
-                        <button onClick={() => { alert('Usuario silenciado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>🔇 Silenciar publicaciones</button>
+                        <button onClick={handleBlock} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{XCircle({ size: 14 })} Bloquear usuario</button>
+                        <button onClick={() => { setShowReportModal(true); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} Reportar usuario</button>
+                        <button onClick={() => { alert('Usuario silenciado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{EyeOff({ size: 14 })} Silenciar publicaciones</button>
                         <div style={{ height: 1, background: 'var(--border)' }} />
-                        <button onClick={() => { alert('Reporte enviado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>⚠️ No colabora en grupo</button>
+                        <button onClick={() => { alert('Reporte enviado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} No colabora en grupo</button>
                       </div>
                     )}
                   </div>
@@ -387,11 +388,11 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <div className="fb-wall-sidebar">
               <div className="card fb-info-card">
                 <h4>Información Académica</h4>
-                <div className="fb-info-item"><span className="fb-info-icon">🎓</span><span>Estudia <strong>{profile.career}</strong></span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">🏛️</span><span>{profile.university}</span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">📚</span><span>Semestre {profile.semester}</span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>Estudia <strong>{profile.career}</strong></span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{profile.university}</span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>Semestre {profile.semester}</span></div>
                 {profile.studyDays > 0 && (
-                  <div className="fb-info-item"><span className="fb-info-icon">📅</span><span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span></div>
+                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span></div>
                 )}
               </div>
 
@@ -410,13 +411,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   )}
                   {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
                     <div className="fb-info-item" style={{ flexWrap: 'wrap' }}>
-                      <span className="fb-info-icon">📖</span>
+                      <span className="fb-info-icon">{BookOpen({ size: 14 })}</span>
                       <span style={{ fontSize: 12 }}>{profile.mentoringSubjects.join(', ')}</span>
                     </div>
                   )}
                   <div className="fb-info-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? '🎁' : '💰'}</span>
+                      <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? 'Gratis' : 'Precio'}</span>
                       <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
                         {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${profile.mentoringPricePerHour || 0} USD/hora`}
                       </span>
@@ -493,7 +494,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     {isOwn && (
                       <button className="btn btn-secondary btn-sm" style={{ width: '100%', borderRadius: 24, marginTop: 8 }}
                         onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }}>
-                        {profile.bio ? '✏️ Editar bio' : '+ Agregar bio'}
+                        {profile.bio ? <>{Pencil({ size: 14 })} Editar bio</> : '+ Agregar bio'}
                       </button>
                     )}
                   </>
@@ -529,7 +530,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   <div className="fb-composer-actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <input ref={postImageRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePostImageSelect} />
                     <button className="fb-composer-action-btn" onClick={() => postImageRef.current?.click()}>
-                      🖼️ Foto
+                      {Image({ size: 14 })} Foto
                     </button>
                     {/* Visibility selector */}
                     <div style={{ position: 'relative' }}>
@@ -541,9 +542,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)',
                           color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
                         }}>
-                        {postVisibility === 'friends' ? '🌐 Amigos' :
-                         postVisibility === 'university' ? '🎓 Mi universidad' :
-                         postVisibility === 'private' ? '🔒 Solo yo' : '👥 Específicos'}
+                        {postVisibility === 'friends' ? <>{Globe({ size: 14 })} Amigos</> :
+                         postVisibility === 'university' ? <>{GraduationCap({ size: 14 })} Mi universidad</> :
+                         postVisibility === 'private' ? <>{Lock({ size: 14 })} Solo yo</> : <>{Users({ size: 14 })} Específicos</>}
                         <span style={{ fontSize: 10, marginLeft: 2 }}>▼</span>
                       </button>
                       {showVisibilityMenu && (
@@ -554,9 +555,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                         }}>
                           {[
-                            { value: 'friends', icon: '🌐', label: 'Todos mis amigos', desc: 'Visible para todos tus contactos' },
-                            { value: 'university', icon: '🎓', label: 'Mi universidad', desc: 'Solo amigos de tu universidad' },
-                            { value: 'private', icon: '🔒', label: 'Solo mi muro', desc: 'Solo visible en tu perfil' },
+                            { value: 'friends', icon: Globe({ size: 16 }), label: 'Todos mis amigos', desc: 'Visible para todos tus contactos' },
+                            { value: 'university', icon: GraduationCap({ size: 16 }), label: 'Mi universidad', desc: 'Solo amigos de tu universidad' },
+                            { value: 'private', icon: Lock({ size: 16 }), label: 'Solo mi muro', desc: 'Solo visible en tu perfil' },
                           ].map(opt => (
                             <button key={opt.value} type="button"
                               onClick={() => { setPostVisibility(opt.value as any); setShowVisibilityMenu(false) }}
@@ -603,10 +604,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         return (
                           <div key={item.id} className="card" style={{ padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
                             <span style={{ fontSize: 20 }}>
-                              {item.activityType === 'quiz_generated' ? '📝' :
-                               item.activityType === 'guide_generated' ? '📖' :
-                               item.activityType === 'document_uploaded' ? '📄' :
-                               item.activityType === 'friend_added' ? '🤝' : '⚡'}
+                              {item.activityType === 'quiz_generated' ? FileText({ size: 20 }) :
+                               item.activityType === 'guide_generated' ? BookOpen({ size: 20 }) :
+                               item.activityType === 'document_uploaded' ? FileText({ size: 20 }) :
+                               item.activityType === 'friend_added' ? Users({ size: 20 }) : Zap({ size: 20 })}
                             </span>
                             <div>
                               <span style={{ fontSize: 14 }}>{item.content}</span>
@@ -651,7 +652,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                             <div className="fb-post-image"><img src={item.imageUrl} alt="" /></div>
                           )}
                           <div className="fb-post-stats">
-                            {item.likes > 0 && <span>&#10084;&#65039; {item.likes}</span>}
+                            {item.likes > 0 && <span>{Heart({ size: 14, color: '#ef4444' })} {item.likes}</span>}
                             {item.commentCount > 0 && (
                               <span className="fb-comment-count" onClick={() => toggleComments(item.id)}>
                                 {item.commentCount} comentario{item.commentCount !== 1 ? 's' : ''}
@@ -663,10 +664,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                               className={`fb-action-btn ${item.liked ? 'liked' : ''}`}
                               onClick={() => handleLike(item.id)}
                             >
-                              {item.liked ? '❤️' : '🤍'} Me gusta
+                              {Heart({ size: 14, color: item.liked ? '#ef4444' : undefined })} Me gusta
                             </button>
                             <button className="fb-action-btn" onClick={() => toggleComments(item.id)}>
-                              💬 Comentar
+                              {MessageSquare({ size: 14 })} Comentar
                             </button>
                           </div>
                           {expandedComments.has(item.id) && (
@@ -794,7 +795,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {/* Posts */}
               {posts.length === 0 ? (
                 <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>📝</div>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>{FileText({ size: 48 })}</div>
                   <p style={{ color: 'var(--text-muted)' }}>No hay publicaciones todavía</p>
                   {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Comparte algo con tus compañeros</p>}
                 </div>
@@ -831,7 +832,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     )}
 
                     <div className="fb-post-stats">
-                      {post.likes > 0 && <span>❤️ {post.likes}</span>}
+                      {post.likes > 0 && <span>{Heart({ size: 14, color: '#ef4444' })} {post.likes}</span>}
                       {post.commentCount > 0 && (
                         <span className="fb-comment-count" onClick={() => toggleComments(post.id)}>
                           {post.commentCount} comentario{post.commentCount !== 1 ? 's' : ''}
@@ -844,10 +845,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         className={`fb-action-btn ${post.liked ? 'liked' : ''}`}
                         onClick={() => handleLike(post.id)}
                       >
-                        {post.liked ? '❤️' : '🤍'} Me gusta
+                        {Heart({ size: 14, color: post.liked ? '#ef4444' : undefined })} Me gusta
                       </button>
                       <button className="fb-action-btn" onClick={() => toggleComments(post.id)}>
-                        💬 Comentar
+                        {MessageSquare({ size: 14 })} Comentar
                       </button>
                     </div>
 
@@ -1006,7 +1007,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <h3>Fotos</h3>
             {allPhotos.length === 0 ? (
               <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>📷</div>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>{Camera({ size: 48 })}</div>
                 <p style={{ color: 'var(--text-muted)' }}>No hay fotos todavía</p>
               </div>
             ) : (
@@ -1057,7 +1058,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
             {tutoringSuccess ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>{CheckCircle({ size: 48 })}</div>
                 <h3 style={{ margin: '0 0 8px' }}>Solicitud enviada</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                   {profile?.firstName} recibirá tu solicitud y podrá aceptarla o rechazarla.

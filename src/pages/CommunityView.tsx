@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Users, Star, Shield, ThumbsUp, MessageSquare, Globe, Lock, ClipboardList, Trash2, Megaphone, Pin } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -124,19 +125,19 @@ export default function CommunityView({ onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
           <div style={{ width: 56, height: 56, borderRadius: 12, background: 'linear-gradient(135deg, var(--accent)33, var(--accent-purple)33)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
-            {community.avatar || '🏘️'}
+            {community.avatar || Globe({ size: 36 })}
           </div>
           <div style={{ flex: 1 }}>
             <h2 style={{ margin: 0 }}>{community.name}</h2>
             <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
-              👥 {community.memberCount} miembros · {community.category}
-              {community.university && ` · 🏫 ${community.university}`}
+              {Users({ size: 14 })} {community.memberCount} miembros · {community.category}
+              {community.university && <> · {community.university}</>}
             </p>
           </div>
           {community.isMember ? (
             <div style={{ display: 'flex', gap: 8 }}>
               {community.memberRole && <span className="badge" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)', padding: '4px 12px', borderRadius: 12, fontSize: 12 }}>
-                {isAdmin ? '⭐ Admin' : isMod ? '🛡️ Mod' : '✓ Miembro'}
+                {isAdmin ? <>{Star({ size: 14 })} Admin</> : isMod ? <>{Shield({ size: 14 })} Mod</> : '✓ Miembro'}
               </span>}
               <button className="btn btn-secondary btn-sm" onClick={handleLeave}>Salir</button>
             </div>
@@ -162,10 +163,10 @@ export default function CommunityView({ onNavigate }: Props) {
               </div>
             )}
             {posts.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>📢</div><h3>Sin publicaciones aún</h3><p>Sé el primero en compartir algo</p></div>
+              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{Megaphone({ size: 48 })}</div><h3>Sin publicaciones aún</h3><p>Sé el primero en compartir algo</p></div>
             ) : posts.map(post => (
               <div key={post.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
-                {post.isPinned && <div style={{ fontSize: 12, color: 'var(--accent-orange)', fontWeight: 600, marginBottom: 8 }}>📌 Fijado</div>}
+                {post.isPinned && <div style={{ fontSize: 12, color: 'var(--accent-orange)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Pin({ size: 12 })} Fijado</div>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <div onClick={() => onNavigate(`/user/${post.author?.id}`)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', overflow: 'hidden', fontSize: 14 }}>
                     {post.author?.avatar ? <img src={post.author.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : (post.author?.firstName?.[0] || '?')}
@@ -176,19 +177,19 @@ export default function CommunityView({ onNavigate }: Props) {
                   </div>
                   {(isMod || post.author?.id === user?.id) && (
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {isMod && <button onClick={() => handlePin(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }} title="Fijar">📌</button>}
-                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)' }} title="Eliminar">🗑</button>
+                      {isMod && <button onClick={() => handlePin(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center' }} title="Fijar">{Pin({ size: 14 })}</button>}
+                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)', display: 'flex', alignItems: 'center' }} title="Eliminar">{Trash2({ size: 14 })}</button>
                     </div>
                   )}
                 </div>
                 <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{post.content}</p>
                 {post.imageUrl && <img src={post.imageUrl} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 8, maxHeight: 300, objectFit: 'cover' }} />}
                 <div style={{ display: 'flex', gap: 12, borderTop: '1px solid var(--border-color)', paddingTop: 8 }}>
-                  <button onClick={() => handleLike(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: post.liked ? 'var(--accent)' : 'var(--text-muted)' }}>
-                    👍 {post.likeCount || 0}
+                  <button onClick={() => handleLike(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: post.liked ? 'var(--accent)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {ThumbsUp({ size: 14 })} {post.likeCount || 0}
                   </button>
-                  <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-muted)' }}>
-                    💬 {post.commentCount || 0}
+                  <button onClick={() => toggleComments(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {MessageSquare({ size: 14 })} {post.commentCount || 0}
                   </button>
                 </div>
                 {expandedComments.has(post.id) && (
@@ -229,7 +230,7 @@ export default function CommunityView({ onNavigate }: Props) {
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>@{m.user?.username}</div>
                 </div>
                 <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: m.role === 'admin' ? 'var(--accent-orange)22' : m.role === 'moderator' ? 'var(--accent-blue)22' : 'var(--bg-secondary)', color: m.role === 'admin' ? 'var(--accent-orange)' : m.role === 'moderator' ? 'var(--accent-blue)' : 'var(--text-muted)' }}>
-                  {m.role === 'admin' ? '⭐ Admin' : m.role === 'moderator' ? '🛡️ Mod' : 'Miembro'}
+                  {m.role === 'admin' ? <>{Star({ size: 12 })} Admin</> : m.role === 'moderator' ? <>{Shield({ size: 12 })} Mod</> : 'Miembro'}
                 </span>
               </div>
             ))}
@@ -242,13 +243,13 @@ export default function CommunityView({ onNavigate }: Props) {
             {community.description && <p style={{ fontSize: 14, lineHeight: 1.6 }}>{community.description}</p>}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
               <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Categoría</strong><div>{community.category}</div></div>
-              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tipo</strong><div>{community.type === 'public' ? '🌐 Pública' : '🔒 Privada'}</div></div>
+              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tipo</strong><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{community.type === 'public' ? <>{Globe({ size: 14 })} Pública</> : <>{Lock({ size: 14 })} Privada</>}</div></div>
               {community.university && <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Universidad</strong><div>{community.university}</div></div>}
               <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Creada</strong><div>{community.createdAt ? new Date(community.createdAt).toLocaleDateString('es') : ''}</div></div>
             </div>
             {community.rules && (
               <div style={{ marginTop: 16 }}>
-                <h4>📋 Reglas</h4>
+                <h4>{ClipboardList({ size: 16 })} Reglas</h4>
                 <div style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: 12, fontSize: 14, whiteSpace: 'pre-wrap' }}>{community.rules}</div>
               </div>
             )}

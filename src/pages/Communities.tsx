@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { BookOpen, GraduationCap, Globe, Lock, MessageSquare, Users, Search as SearchIcon } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -8,12 +9,12 @@ interface Props {
 
 const CATEGORIES = [
   { value: '', label: 'Todas' },
-  { value: 'materia', label: '📚 Materia' },
-  { value: 'carrera', label: '🎓 Carrera' },
-  { value: 'universidad', label: '🏫 Universidad' },
-  { value: 'estudio', label: '📖 Grupo de Estudio' },
-  { value: 'hobby', label: '🎨 Hobby' },
-  { value: 'general', label: '💬 General' },
+  { value: 'materia', label: 'Materia' },
+  { value: 'carrera', label: 'Carrera' },
+  { value: 'universidad', label: 'Universidad' },
+  { value: 'estudio', label: 'Grupo de Estudio' },
+  { value: 'hobby', label: 'Hobby' },
+  { value: 'general', label: 'General' },
 ]
 
 export default function Communities({ onNavigate }: Props) {
@@ -72,7 +73,7 @@ export default function Communities({ onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>🏘️ Comunidades</h2>
+            <h2>{Users({ size: 22 })} Comunidades</h2>
             <p>Únete a grupos de estudio y conecta con estudiantes</p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Crear Comunidad</button>
@@ -103,7 +104,7 @@ export default function Communities({ onNavigate }: Props) {
           <div className="loading-dots"><span /><span /><span /></div>
         ) : communities.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>🏘️</div>
+            <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
             <h3>{tab === 'my' ? 'Aún no te has unido a ninguna comunidad' : 'No se encontraron comunidades'}</h3>
             <p>{tab === 'my' ? 'Explora y únete a comunidades de tu interés' : 'Sé el primero en crear una'}</p>
             {tab === 'my' && <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setTab('explore')}>Explorar</button>}
@@ -114,13 +115,13 @@ export default function Communities({ onNavigate }: Props) {
               <div key={c.id} className="card" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
                 onClick={() => onNavigate(`/communities/${c.id}`)}>
                 <div style={{ height: 80, background: `linear-gradient(135deg, var(--accent)33, var(--accent-purple)33)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: 36 }}>{c.avatar || '🏘️'}</span>
+                  <span style={{ fontSize: 36 }}>{c.avatar || Globe({ size: 36 })}</span>
                 </div>
                 <div style={{ padding: 16 }}>
                   <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{c.name}</h4>
                   {c.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.description}</p>}
                   <div style={{ display: 'flex', gap: 8, fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-                    <span>👥 {c.memberCount} miembros</span>
+                    <span>{Users({ size: 14 })} {c.memberCount} miembros</span>
                     {c.category && <span style={{ background: 'var(--accent)15', color: 'var(--accent)', padding: '2px 8px', borderRadius: 10, fontSize: 11 }}>{c.category}</span>}
                   </div>
                   <div onClick={e => e.stopPropagation()}>
@@ -158,8 +159,8 @@ export default function Communities({ onNavigate }: Props) {
               <div className="auth-field"><label>Tipo</label>
                 <select value={comType} onChange={e => setComType(e.target.value)}
                   style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  <option value="public">🌐 Pública</option>
-                  <option value="private">🔒 Privada</option>
+                  <option value="public">Pública</option>
+                  <option value="private">Privada</option>
                 </select>
               </div>
               <div className="auth-field"><label>Reglas (opcional)</label>

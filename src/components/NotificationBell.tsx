@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { api } from '../services/api'
+import { Bell } from './Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -97,7 +98,7 @@ export default function NotificationBell({ onNavigate }: Props) {
           color: 'var(--text-primary)',
         }}
       >
-        {'\uD83D\uDD14'}
+        {Bell({ size: 20 })}
         {unreadCount > 0 && (
           <span style={{
             position: 'absolute', top: 0, right: 0,
@@ -137,7 +138,7 @@ export default function NotificationBell({ onNavigate }: Props) {
             <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando...</div>
           ) : notifications.length === 0 ? (
             <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: 32, marginBottom: 8 }}>{'\uD83D\uDD14'}</div>
+              <div style={{ fontSize: 32, marginBottom: 8 }}>{Bell({ size: 32 })}</div>
               <p style={{ fontSize: 13 }}>No tienes notificaciones</p>
             </div>
           ) : (

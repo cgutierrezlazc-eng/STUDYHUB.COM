@@ -17,10 +17,10 @@ export default function TermsOfService({ onClose }: Props) {
 
           {lang !== 'es' && (
             <div style={{ background: 'var(--bg-secondary)', padding: 16, borderRadius: 8, marginBottom: 16, fontSize: 13 }}>
-              {lang === 'en' ? '📋 These terms are written in Spanish as Conniku SpA is incorporated under Chilean law. By creating your account, you accept all terms below in their entirety. An English summary: your data is private; subscriptions auto-renew; Conniku is not an accredited educational institution; certificates are non-academic completion records; all disputes are governed by Chilean law.' :
-               lang === 'pt' ? '📋 Estes termos estão em espanhol conforme a lei chilena. Ao criar sua conta, você aceita todos os termos integralmente. Resumo: seus dados são privados; assinaturas renovam automaticamente; Conniku não é uma instituição educacional acreditada; certificados são constâncias de finalização não acadêmicas.' :
-               lang === 'fr' ? "📋 Ces conditions sont en espagnol selon la loi chilienne. En créant votre compte, vous acceptez toutes les conditions intégralement. Résumé: vos données sont privées; les abonnements se renouvellent automatiquement; Conniku n'est pas un établissement d'enseignement accrédité." :
-               '📋 These terms are in Spanish (Chilean law). By creating your account, you accept all terms below in their entirety.'}
+              {lang === 'en' ? 'These terms are written in Spanish as Conniku SpA is incorporated under Chilean law. By creating your account, you accept all terms below in their entirety. An English summary: your data is private; subscriptions auto-renew; Conniku is not an accredited educational institution; certificates are non-academic completion records; all disputes are governed by Chilean law.' :
+               lang === 'pt' ? 'Estes termos estão em espanhol conforme a lei chilena. Ao criar sua conta, você aceita todos os termos integralmente. Resumo: seus dados são privados; assinaturas renovam automaticamente; Conniku não é uma instituição educacional acreditada; certificados são constâncias de finalização não acadêmicas.' :
+               lang === 'fr' ? "Ces conditions sont en espagnol selon la loi chilienne. En créant votre compte, vous acceptez toutes les conditions intégralement. Résumé: vos données sont privées; les abonnements se renouvellent automatiquement; Conniku n'est pas un établissement d'enseignement accrédité." :
+               'These terms are in Spanish (Chilean law). By creating your account, you accept all terms below in their entirety.'}
             </div>
           )}
 
@@ -299,12 +299,22 @@ export default function TermsOfService({ onClose }: Props) {
           <p>Para apelaciones de moderación: <strong>moderacion@conniku.com</strong></p>
           <p style={{ marginTop: 16 }}>
             <strong>Conniku SpA</strong><br />
+            Cristian — Fundador, alma de Conniku y estudiante como tú<br />
             Santiago, Chile<br />
             www.conniku.com
           </p>
 
           <div style={{ marginTop: 24, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, fontSize: 12, color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
             <strong>NOTA DE PROTECCIÓN MARCARIA:</strong> La marca CONNIKU, su logotipo, isologo, identidad visual, tipografías distintivas, paleta cromática institucional, el slogan y todos los elementos gráficos asociados son propiedad de Conniku SpA y se encuentran en proceso de registro ante INAPI (Chile), con extensión programada a IMPI (México), INPI (Argentina), INPI (Brasil) y demás oficinas de propiedad industrial a nivel global. El uso no autorizado será perseguido conforme a la ley. Conniku SpA se reserva todos los derechos no expresamente concedidos en estos Términos.
+          </div>
+
+          <div style={{ marginTop: 24, padding: 20, background: 'var(--bg-secondary)', borderRadius: 12, border: '1px solid var(--border)', textAlign: 'center' }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+              Cristian — Fundador, alma de Conniku y estudiante como tú
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
+              Representante Legal de Conniku SpA
+            </p>
           </div>
 
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Flame, Globe, Users } from './Icons'
 
 interface Props {
   currentPath: string
@@ -29,7 +30,7 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
         <div className="rp-widget">
           <h4 className="rp-widget-title">Tu Progreso</h4>
           <div className="rp-progress-row">
-            <span style={{ fontSize: 24 }}>🔥</span>
+            <span style={{ fontSize: 24 }}>{Flame({ size: 24 })}</span>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{stats.streakDays || 0} días</div>
               <div className="rp-label">Racha de estudio</div>
@@ -80,11 +81,11 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
           {communities.map(c => (
             <div key={c.id} className="rp-person" onClick={() => onNavigate(`/communities/${c.id}`)}>
               <div className="rp-avatar" style={{ borderRadius: 8 }}>
-                {c.avatar || '🏘️'}
+                {c.avatar || Globe({ size: 24 })}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="rp-person-name">{c.name}</div>
-                <div className="rp-label">👥 {c.memberCount} miembros</div>
+                <div className="rp-label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {c.memberCount} miembros</div>
               </div>
             </div>
           ))}

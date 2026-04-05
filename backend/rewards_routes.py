@@ -12,12 +12,44 @@ from middleware import get_current_user
 router = APIRouter(prefix="/rewards", tags=["rewards"])
 
 
+COURSE_REWARD_CYCLE_DAYS = 365  # 12-month window for course rewards
+
+
+def get_course_reward_window(user_id: str, db: Session):
+    """Get the current 12-month course reward window.
+    Returns (courses_in_window, days_remaining, window_start).
+    The window starts from the first course completed that falls within the
+    current active 12-month period.
+    """
+    now = datetime.utcnow()
+    window_start = now - timedelta(days=COURSE_REWARD_CYCLE_DAYS)
+
+    # Get all completed courses within the last 12 months, ordered by date
+    completions = db.query(UserCourseProgress).filter(
+        UserCourseProgress.user_id == user_id,
+        UserCourseProgress.completed == True,
+        UserCourseProgress.completed_at != None,
+        UserCourseProgress.completed_at >= window_start,
+    ).order_by(UserCourseProgress.completed_at.asc()).all()
+
+    if not completions:
+        return 0, COURSE_REWARD_CYCLE_DAYS, now
+
+    # Window starts from first completion in period
+    first_completion = completions[0].completed_at
+    window_end = first_completion + timedelta(days=COURSE_REWARD_CYCLE_DAYS)
+    days_remaining = max(0, (window_end - now).days)
+
+    return len(completions), days_remaining, first_completion
+
+
 REWARD_RULES = [
     {"id": "birthday", "title": "🎂 Feliz Cumpleaños", "description": "1 mes MAX gratis por tu cumpleaños", "tier": "max", "days": 30},
     {"id": "perfect_quiz", "title": "🏆 Quiz Perfecto", "description": "1 mes PRO gratis por obtener 10/10", "tier": "pro", "days": 30},
     {"id": "streak_30", "title": "🔥 Racha 30 Días", "description": "1 semana PRO por 30 días consecutivos", "tier": "pro", "days": 7},
     {"id": "streak_100", "title": "🔥 Racha Centenaria", "description": "1 mes MAX por 100 días consecutivos", "tier": "max", "days": 30},
-    {"id": "courses_5", "title": "📚 5 Cursos Completados", "description": "1 mes PRO por completar 5 cursos", "tier": "pro", "days": 30},
+    {"id": "courses_3", "title": "📚 3 Cursos Completados", "description": "1 mes PRO gratis por completar 3 cursos", "tier": "pro", "days": 30},
+    {"id": "courses_6", "title": "🎓 6 Cursos Completados", "description": "1 mes MAX gratis por completar 6 cursos", "tier": "max", "days": 30},
     {"id": "graduated", "title": "🎓 Graduado", "description": "2 meses MAX por graduarte", "tier": "max", "days": 60},
     {"id": "mentor_10", "title": "🧭 Super Mentor", "description": "1 mes MAX por completar 10 mentorías", "tier": "max", "days": 30},
     {"id": "league_top3_x4", "title": "⭐ Campeón de Liga", "description": "1 mes PRO por ser top 3 en liga 4 veces", "tier": "pro", "days": 30},
@@ -27,26 +59,23 @@ REWARD_RULES = [
 ]
 
 
-def grant_reward(user: User, reward_id: str, tier: str, days: int, db: Session) -> bool:
-    """Grant premium time as reward. Returns True if newly granted."""
-    # Check if already granted recently (prevent duplicates)
-    existing_rewards = json.loads(user.badges or "[]")
-    reward_key = f"reward_{reward_id}"
-
-    # Check if this specific reward was given in the last period
-    # Store granted rewards with dates in a simple format
-    if hasattr(user, 'mood_data'):
-        granted = json.loads(user.mood_data or "[]")
-        for g in granted:
-            if isinstance(g, dict) and g.get("reward") == reward_id:
-                granted_date = g.get("date", "")
-                if granted_date:
-                    try:
-                        gd = datetime.fromisoformat(granted_date)
-                        if (datetime.utcnow() - gd).days < days:
-                            return False  # Already granted recently
-                    except ValueError:
-                        pass
+def grant_reward(user: User, reward_id: str, tier: str, days: int, db: Session, cooldown_days: int = 0) -> bool:
+    """Grant premium time as reward. Returns True if newly granted.
+    cooldown_days: custom cooldown to prevent re-grant (default = reward days).
+    """
+    cooldown = cooldown_days if cooldown_days > 0 else days
+    # Check if already granted within cooldown period (prevent duplicates)
+    granted = json.loads(user.mood_data or "[]") if user.mood_data else []
+    for g in granted:
+        if isinstance(g, dict) and g.get("reward") == reward_id:
+            granted_date = g.get("date", "")
+            if granted_date:
+                try:
+                    gd = datetime.fromisoformat(granted_date)
+                    if (datetime.utcnow() - gd).days < cooldown:
+                        return False  # Already granted in this cycle
+                except ValueError:
+                    pass
 
     # Apply the reward
     tier_order = {"free": 0, "pro": 1, "max": 2}
@@ -118,13 +147,16 @@ def check_rewards(user: User = Depends(get_current_user), db: Session = Depends(
         if grant_reward(user, "streak_100", "max", 30, db):
             rewards_granted.append("streak_100")
 
-    # 5. 5 courses completed
-    course_count = db.query(func.count(UserCourseProgress.id)).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.completed == True
-    ).scalar() or 0
-    if course_count >= 5:
-        if grant_reward(user, "courses_5", "pro", 30, db):
-            rewards_granted.append("courses_5")
+    # 5. Course rewards (12-month window)
+    courses_in_window, _days_left, _ws = get_course_reward_window(user.id, db)
+    if courses_in_window >= 3:
+        if grant_reward(user, "courses_3", "pro", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
+            rewards_granted.append("courses_3")
+
+    # 5b. 6 courses in window → MAX
+    if courses_in_window >= 6:
+        if grant_reward(user, "courses_6", "max", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
+            rewards_granted.append("courses_6")
 
     # 6. Graduated
     if user.is_graduated:
@@ -174,14 +206,15 @@ def check_rewards(user: User = Depends(get_current_user), db: Session = Depends(
 def get_available_rewards(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """List all possible rewards with current progress."""
     quiz_count = db.query(func.count(QuizHistory.id)).filter(QuizHistory.user_id == user.id).scalar() or 0
-    course_count = db.query(func.count(UserCourseProgress.id)).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.completed == True).scalar() or 0
     mentor_count = db.query(func.count(MentorshipRelation.id)).filter(
         MentorshipRelation.mentor_id == user.id, MentorshipRelation.status == "completed").scalar() or 0
     comment_count = db.query(func.count(CommunityPostComment.id)).filter(
         CommunityPostComment.author_id == user.id).scalar() or 0
     perfect_quiz = db.query(QuizHistory).filter(
         QuizHistory.user_id == user.id, QuizHistory.score_1_to_10 >= 9.5).first()
+
+    # Course rewards use 12-month window
+    courses_in_window, course_days_left, _ = get_course_reward_window(user.id, db)
 
     # Check granted
     granted_ids = set()
@@ -195,7 +228,8 @@ def get_available_rewards(user: User = Depends(get_current_user), db: Session = 
         "perfect_quiz": {"current": "Mejor: " + str(db.query(func.max(QuizHistory.score_1_to_10)).filter(QuizHistory.user_id == user.id).scalar() or 0) + "/10", "target": "10/10", "met": perfect_quiz is not None},
         "streak_30": {"current": f"{user.streak_days or 0} días", "target": "30 días", "met": (user.streak_days or 0) >= 30},
         "streak_100": {"current": f"{user.streak_days or 0} días", "target": "100 días", "met": (user.streak_days or 0) >= 100},
-        "courses_5": {"current": f"{course_count} cursos", "target": "5 cursos", "met": course_count >= 5},
+        "courses_3": {"current": f"{courses_in_window}/3 cursos ({course_days_left} días restantes)", "target": "3 cursos en 12 meses", "met": courses_in_window >= 3},
+        "courses_6": {"current": f"{courses_in_window}/6 cursos ({course_days_left} días restantes)", "target": "6 cursos en 12 meses", "met": courses_in_window >= 6},
         "graduated": {"current": "Graduado" if user.is_graduated else "Estudiando", "target": "Graduarse", "met": user.is_graduated},
         "mentor_10": {"current": f"{mentor_count} mentorías", "target": "10 mentorías", "met": mentor_count >= 10},
         "referrals_10": {"current": f"{user.referral_count or 0} referidos", "target": "10 referidos", "met": (user.referral_count or 0) >= 10},

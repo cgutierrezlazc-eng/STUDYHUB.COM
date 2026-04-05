@@ -8,7 +8,7 @@ from sqlalchemy import desc, func
 from database import (get_db, User, QuizHistory, ScheduledQuiz, CalendarEvent,
                       gen_id)
 from middleware import get_current_user
-from ai_engine import AIEngine
+from gemini_engine import AIEngine
 
 router = APIRouter(prefix="/quiz-system", tags=["quiz-system"])
 ai_engine = AIEngine()

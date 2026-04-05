@@ -13,7 +13,7 @@ from sqlalchemy import desc, func
 
 from database import get_db, User, UserDownload, gen_id
 from middleware import get_current_user, get_tier, get_tier_limits, require_tier
-from ai_engine import AIEngine
+from gemini_engine import AIEngine
 
 router = APIRouter(prefix="/search", tags=["search"])
 ai_engine = AIEngine()

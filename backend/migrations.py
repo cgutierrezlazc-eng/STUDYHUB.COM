@@ -88,6 +88,18 @@ def migrate():
         ("professional_title", "VARCHAR(255) DEFAULT ''"),
         # Study start date
         ("study_start_date", "VARCHAR(10) DEFAULT ''"),
+        # Reward tracking (JSON array of granted rewards with dates)
+        ("mood_data", "TEXT DEFAULT '[]'"),
+        # CV / Resume fields
+        ("cv_headline", "VARCHAR(255) DEFAULT ''"),
+        ("cv_summary", "TEXT DEFAULT ''"),
+        ("cv_experience", "TEXT DEFAULT ''"),
+        ("cv_skills", "TEXT DEFAULT ''"),
+        ("cv_certifications", "TEXT DEFAULT ''"),
+        ("cv_languages", "TEXT DEFAULT ''"),
+        ("cv_portfolio", "TEXT DEFAULT ''"),
+        ("cv_visibility", "VARCHAR(20) DEFAULT 'private'"),
+        ("cv_file_path", "VARCHAR(500) DEFAULT ''"),
     ]
 
     inspector = inspect(engine)

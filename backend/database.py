@@ -82,6 +82,17 @@ class User(Base):
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
     provider = Column(String(20), default="email")  # email | google
 
+    # CV / Resume fields
+    cv_headline = Column(String(255), default="")
+    cv_summary = Column(Text, default="")
+    cv_experience = Column(Text, default="")
+    cv_skills = Column(Text, default="")
+    cv_certifications = Column(Text, default="")
+    cv_languages = Column(Text, default="")
+    cv_portfolio = Column(Text, default="")
+    cv_visibility = Column(String(20), default="private")  # public | recruiters | private
+    cv_file_path = Column(String(500), default="")
+
     email_verified = Column(Boolean, nullable=False, default=False)
     verification_code = Column(String(10), nullable=True)
     is_banned = Column(Boolean, nullable=False, default=False)
@@ -120,6 +131,9 @@ class User(Base):
     weekly_study_goal_hours = Column(Float, default=10.0)
     pomodoro_total_sessions = Column(Integer, default=0)
     pomodoro_total_minutes = Column(Integer, default=0)
+
+    # Reward tracking (JSON array of granted rewards with dates)
+    mood_data = Column(Text, default="[]")
 
     # Password recovery
     reset_code = Column(String(10), nullable=True)
@@ -1032,6 +1046,35 @@ class UserDownload(Base):
     source_url = Column(Text, default="")  # original URL
     mime_type = Column(String(100), default="")
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ─── User Sessions (Multi-Device Tracking) ───────────────────────
+
+class UserSession(Base):
+    __tablename__ = "user_sessions"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    device_name = Column(String(255), default="")  # "Chrome en Windows", "Safari en iPhone"
+    device_type = Column(String(20), default="web")  # web, mobile, desktop, tablet
+    ip_address = Column(String(100), default="")
+    token_hash = Column(String(64), default="")  # SHA-256 hash of token for identification
+    last_active = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    is_active = Column(Boolean, default=True)
+
+
+# ─── Push Subscriptions (Web Push Notifications) ──────────────────
+
+class PushSubscription(Base):
+    __tablename__ = "push_subscriptions"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    endpoint = Column(Text, nullable=False)
+    p256dh = Column(String(255), default="")
+    auth = Column(String(255), default="")
+    device_name = Column(String(255), default="Dispositivo")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ─── Init ────────────────────────────────────────────────────────

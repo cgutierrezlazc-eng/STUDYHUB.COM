@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
+import { BookOpen, MessageSquare, Target, Smile } from './Icons'
 
 interface Props {
   onComplete: () => void
@@ -12,27 +13,27 @@ export default function Onboarding({ onComplete }: Props) {
 
   const steps = [
     {
-      icon: '👋',
+      icon: Smile({ size: 32 }),
       title: t('onb.welcomeTitle'),
       desc: t('onb.welcomeDesc'),
     },
     {
-      icon: '📚',
+      icon: BookOpen({ size: 32 }),
       title: t('onb.subjectsTitle'),
       desc: t('onb.subjectsDesc'),
     },
     {
-      icon: '📚',
+      icon: BookOpen({ size: 32 }),
       title: t('onb.studyTitle'),
       desc: t('onb.studyDesc'),
     },
     {
-      icon: '💬',
+      icon: MessageSquare({ size: 32 }),
       title: t('onb.chatTitle'),
       desc: t('onb.chatDesc'),
     },
     {
-      icon: '🎯',
+      icon: Target({ size: 32 }),
       title: t('onb.readyTitle'),
       desc: t('onb.readyDesc'),
     },

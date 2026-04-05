@@ -161,20 +161,57 @@ body {
   display: flex;
 }
 
+/* Custom scrollbars — thin branded sliders */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  margin: 4px 0;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border-radius: 3px;
+  border-radius: 99px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* Sidebar scrollbar */
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(128,128,128,0.25);
+  border-radius: 99px;
+}
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(128,128,128,0.45);
+}
+
+/* Page body smooth scroll */
+.page-body {
+  scroll-behavior: smooth;
+}
+
+/* Ensure all scrollable containers show scrollbar on hover */
+.page-body:hover::-webkit-scrollbar-thumb,
+.sidebar:hover::-webkit-scrollbar-thumb {
   background: var(--text-muted);
 }
 
@@ -2971,6 +3008,11 @@ body.touch-device select {
 /* ═══════════════════════════════════════════════════════════════
    Breakpoint: Very small height (landscape phones)
    ═══════════════════════════════════════════════════════════════ */
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 @media (max-height: 500px) and (orientation: landscape) {
   .mobile-bottom-nav { height: 48px; }
   .mobile-nav-label { display: none; }
@@ -2978,4 +3020,101 @@ body.touch-device select {
   .topbar { height: 44px; }
   .app-layout { padding-top: 44px; }
   .sidebar { top: 44px; height: calc(100vh - 44px); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Breakpoint: Wearables / Smartwatches (≤ 280px)
+   Compact notification-style layout for Apple Watch, WearOS, etc.
+   Typical: 184×184 to 227×227px (40-45mm watches)
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 280px) {
+  /* Hide all navigation — watch shows content only */
+  .topbar, .sidebar, .right-panel, .mobile-bottom-nav,
+  .page-header, .fb-cover-photo, .fb-profile-actions { display: none !important; }
+
+  .app-layout { padding-top: 0; }
+  .main-content { margin-left: 0 !important; width: 100% !important; }
+  .page-body { padding: 6px !important; }
+
+  /* Typography: legible on tiny screens */
+  body { font-size: 11px; line-height: 1.3; }
+  h1, h2, h3 { font-size: 13px !important; margin: 4px 0 !important; }
+  p { margin: 2px 0; }
+
+  /* Cards become full-width compact blocks */
+  .card, .stat-card, .wa-bubble {
+    border-radius: 8px !important;
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+  }
+
+  /* Notification preview for watch */
+  .watch-notification {
+    padding: 8px;
+    border-radius: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    max-width: 200px;
+    margin: 4px auto;
+  }
+  .watch-notification .watch-notif-title {
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .watch-notification .watch-notif-body {
+    font-size: 10px;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .watch-notification .watch-notif-time {
+    font-size: 9px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* Chat messages compact */
+  .wa-bubble { max-width: 95% !important; font-size: 11px !important; padding: 6px 8px !important; }
+  .wa-msg-text { font-size: 11px !important; }
+  .wa-time { font-size: 8px !important; }
+  .msg-input-bar { padding: 4px !important; }
+  .msg-input-bar input { font-size: 11px !important; padding: 6px 8px !important; }
+  .msg-input-bar button { padding: 6px 10px !important; font-size: 11px !important; }
+
+  /* Stats grid single column */
+  .stats-grid, .quick-shortcuts, .suggestions-grid, .card-grid,
+  .friends-grid { grid-template-columns: 1fr !important; gap: 4px !important; }
+
+  /* Buttons compact */
+  button, .btn { padding: 4px 8px !important; font-size: 10px !important; border-radius: 6px !important; }
+
+  /* Scrollbar hidden on watch */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+
+  /* Modals full screen on watch */
+  .modal { width: 100% !important; max-width: 100% !important; border-radius: 0 !important;
+    max-height: 100vh; margin: 0; }
+  .modal-overlay { padding: 0; }
+}
+
+/* Watch chat bubbles (also applies at max-height: 280px for landscape wearables) */
+@media (max-height: 280px) {
+  .watch-chat-bubble {
+    padding: 6px 10px; border-radius: 10px; font-size: 11px;
+    max-width: 180px; word-wrap: break-word;
+  }
+  .watch-chat-bubble.sent { background: var(--accent); color: #fff; margin-left: auto; }
+  .watch-chat-bubble.received { background: var(--bg-secondary); color: var(--text-primary); }
+  .watch-chat-input {
+    font-size: 11px; padding: 6px 8px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg-secondary); width: 100%;
+  }
 }

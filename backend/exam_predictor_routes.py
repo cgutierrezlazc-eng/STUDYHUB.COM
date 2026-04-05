@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db, User, QuizHistory
 from middleware import get_current_user, require_tier
-from ai_engine import AIEngine
+from gemini_engine import AIEngine
 
 router = APIRouter(prefix="/exam-predictor", tags=["exam-predictor"])
 ai_engine = AIEngine()

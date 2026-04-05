@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
+import { Users, Hourglass, Inbox } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -130,7 +131,7 @@ export default function Friends({ onNavigate }: Props) {
             {friends.length === 0 ? (
               suggestions.length === 0 ? (
                 <div className="friends-empty">
-                  <div style={{ fontSize: 48 }}>👥</div>
+                  <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
                   <h3>Aún no tienes conexiones</h3>
                   <p>Busca estudiantes de tu universidad y envíales una solicitud</p>
                   <div className="friends-search-bar" style={{ marginTop: 16, marginBottom: 12 }}>
@@ -145,7 +146,7 @@ export default function Friends({ onNavigate }: Props) {
                 </div>
               ) : (
                 <div className="friends-empty">
-                  <div style={{ fontSize: 48 }}>👥</div>
+                  <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
                   <h3>Aún no tienes conexiones</h3>
                   <p>Agrega compañeros de las sugerencias de arriba o busca estudiantes</p>
                   <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
@@ -181,7 +182,7 @@ export default function Friends({ onNavigate }: Props) {
           <div className="friends-grid">
             {requests.length === 0 ? (
               <div className="friends-empty">
-                <div style={{ fontSize: 48 }}>📬</div>
+                <div style={{ fontSize: 48 }}>{Inbox({ size: 48 })}</div>
                 <h3>No tienes solicitudes pendientes</h3>
               </div>
             ) : (
@@ -214,7 +215,7 @@ export default function Friends({ onNavigate }: Props) {
           <div className="friends-grid">
             {sentRequests.length === 0 ? (
               <div className="friends-empty">
-                <div style={{ fontSize: 48 }}>📤</div>
+                <div style={{ fontSize: 48 }}>{Inbox({ size: 48 })}</div>
                 <h3>No has enviado solicitudes</h3>
                 <p>Busca compañeros y enviales una solicitud de amistad</p>
                 <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
@@ -237,7 +238,7 @@ export default function Friends({ onNavigate }: Props) {
                   </div>
                   <div className="friend-actions" onClick={e => e.stopPropagation()}>
                     <span className="badge" style={{ background: 'var(--accent-blue)', color: '#fff', padding: '6px 14px', borderRadius: 20, fontSize: 12 }}>
-                      ⏳ Invitación Enviada
+                      {Hourglass({ size: 14 })} Invitación Enviada
                     </span>
                   </div>
                 </div>

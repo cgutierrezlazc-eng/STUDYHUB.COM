@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Briefcase, Sparkles, Search as SearchIcon, ClipboardList, GraduationCap, Users, FileText, Briefcase as BuildingIcon, Lock, Globe, RefreshCw, Star, CheckCircle, XCircle, Hourglass, Eye, Target, Map, BookOpen } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -187,7 +188,7 @@ export default function Jobs({ onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>💼 Oportunidades</h2>
+            <h2>{Briefcase()} Oportunidades</h2>
             <p>Conecta con empresas y encuentra tu próximo paso profesional</p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -195,7 +196,7 @@ export default function Jobs({ onNavigate }: Props) {
               onClick={toggleOpenToWork}
               className={`btn btn-sm ${careerStatus?.isOpenToOpportunities ? 'btn-primary' : 'btn-secondary'}`}
             >
-              {careerStatus?.isOpenToOpportunities ? '✨ Explorando Oportunidades' : '🔍 Activar Visibilidad'}
+              {careerStatus?.isOpenToOpportunities ? <>{Sparkles()} Explorando Oportunidades</> : <>{SearchIcon()} Activar Visibilidad</>}
             </button>
             <button className="btn btn-primary" onClick={() => setShowPostForm(true)}>+ Publicar Oferta</button>
           </div>
@@ -209,7 +210,7 @@ export default function Jobs({ onNavigate }: Props) {
               if (t === 'tutoring') loadTutorings()
               if (t === 'recruiter') loadRecruiter()
             }}>
-              {t === 'listings' ? '📋 Ofertas' : t === 'tutoring' ? '🎓 Tutorías' : t === 'candidates' ? '👥 Talentos' : t === 'my-apps' ? '📄 Mis Postulaciones' : t === 'my-listings' ? '🏢 Mis Ofertas' : '🔑 Soy Reclutador'}
+              {t === 'listings' ? <>{ClipboardList({ size: 14 })} Ofertas</> : t === 'tutoring' ? <>{GraduationCap({ size: 14 })} Tutorías</> : t === 'candidates' ? <>{Users({ size: 14 })} Talentos</> : t === 'my-apps' ? <>{FileText({ size: 14 })} Mis Postulaciones</> : t === 'my-listings' ? <>{BuildingIcon({ size: 14 })} Mis Ofertas</> : <>{Lock({ size: 14 })} Soy Reclutador</>}
             </button>
           ))}
         </div>
@@ -238,7 +239,7 @@ export default function Jobs({ onNavigate }: Props) {
           loading ? <div className="loading-dots"><span /><span /><span /></div> :
           jobs.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
-              <div style={{ fontSize: 48 }}>💼</div>
+              <div>{Briefcase({ size: 48 })}</div>
               <h3>No hay ofertas disponibles</h3>
               <p>Sé el primero en publicar una oportunidad</p>
             </div>
@@ -248,7 +249,7 @@ export default function Jobs({ onNavigate }: Props) {
                 <div key={job.id} className="card" style={{ padding: 20, cursor: 'pointer' }} onClick={() => setSelectedJob(job)}>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                     <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
-                      {job.companyLogo ? <img src={job.companyLogo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} /> : '🏢'}
+                      {job.companyLogo ? <img src={job.companyLogo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
                     </div>
                     <div style={{ flex: 1 }}>
                       <h4 style={{ margin: 0, fontSize: 16 }}>{job.jobTitle}</h4>
@@ -257,8 +258,8 @@ export default function Jobs({ onNavigate }: Props) {
                         <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>
                           {JOB_TYPES.find(t => t.value === job.jobType)?.label || job.jobType}
                         </span>
-                        {job.location && <span style={{ color: 'var(--text-muted)' }}>📍 {job.location}</span>}
-                        {job.isRemote && <span style={{ color: 'var(--accent-green)' }}>🌐 Remoto</span>}
+                        {job.location && <span style={{ color: 'var(--text-muted)' }}>{Map({ size: 12 })} {job.location}</span>}
+                        {job.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 12 })} Remoto</span>}
                         {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency) && (
                           <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</span>
                         )}
@@ -266,7 +267,7 @@ export default function Jobs({ onNavigate }: Props) {
                       </div>
                     </div>
                     {job.applied ? (
-                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12 }}>✓ Aplicado</span>
+                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} Aplicado</span>
                     ) : (
                       <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); setSelectedJob(job); setShowApply(true) }}>Aplicar</button>
                     )}
@@ -289,7 +290,7 @@ export default function Jobs({ onNavigate }: Props) {
                   </div>
                   <div>
                     <div style={{ fontWeight: 600, fontSize: 14 }}>{c.user?.firstName} {c.user?.lastName}
-                      {c.user?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>🎓</span>}
+                      {c.user?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>{GraduationCap({ size: 14 })}</span>}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.user?.career} — {c.user?.university}</div>
                   </div>
@@ -301,7 +302,7 @@ export default function Jobs({ onNavigate }: Props) {
                 </div>
               </div>
             ))}
-            {candidates.length === 0 && <div className="empty-state" style={{ gridColumn: '1/-1', padding: 40 }}><div style={{ fontSize: 48 }}>👥</div><h3>No hay talentos disponibles</h3></div>}
+            {candidates.length === 0 && <div className="empty-state" style={{ gridColumn: '1/-1', padding: 40 }}><div>{Users({ size: 48 })}</div><h3>No hay talentos disponibles</h3></div>}
           </div>
         )}
 
@@ -309,11 +310,11 @@ export default function Jobs({ onNavigate }: Props) {
         {tab === 'my-apps' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {myApps.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>📄</div><h3>No has aplicado a ofertas</h3></div>
+              <div className="empty-state" style={{ padding: 40 }}><div>{FileText({ size: 48 })}</div><h3>No has aplicado a ofertas</h3></div>
             ) : myApps.map((a: any) => (
               <div key={a.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
-                  {a.job?.companyLogo ? <img src={a.job.companyLogo} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} /> : '🏢'}
+                  {a.job?.companyLogo ? <img src={a.job.companyLogo} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{a.job?.jobTitle}</div>
@@ -324,7 +325,7 @@ export default function Jobs({ onNavigate }: Props) {
                   background: a.status === 'interview' ? 'rgba(5,150,105,0.08)' : a.status === 'accepted' ? 'rgba(5,150,105,0.15)' : a.status === 'rejected' ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)',
                   color: a.status === 'interview' ? 'var(--accent-green)' : a.status === 'accepted' ? 'var(--accent-green)' : a.status === 'rejected' ? 'var(--accent-red)' : 'var(--text-muted)',
                 }}>
-                  {a.status === 'pending' ? '⏳ Pendiente' : a.status === 'reviewed' ? '👀 Revisada' : a.status === 'interview' ? '🎯 Entrevista' : a.status === 'accepted' ? '✅ Aceptada' : '❌ Rechazada'}
+                  {a.status === 'pending' ? <>{Hourglass({ size: 12 })} Pendiente</> : a.status === 'reviewed' ? <>{Eye({ size: 12 })} Revisada</> : a.status === 'interview' ? <>{Target({ size: 12 })} Entrevista</> : a.status === 'accepted' ? <>{CheckCircle({ size: 12 })} Aceptada</> : <>{XCircle({ size: 12 })} Rechazada</>}
                 </span>
               </div>
             ))}
@@ -339,7 +340,7 @@ export default function Jobs({ onNavigate }: Props) {
             </div>
             {tutorings.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
-                <div style={{ fontSize: 48 }}>🎓</div>
+                <div>{GraduationCap({ size: 48 })}</div>
                 <h3>No hay tutorías disponibles</h3>
                 <p>Los estudiantes de último año y graduados pueden ofrecer tutorías</p>
               </div>
@@ -354,8 +355,8 @@ export default function Jobs({ onNavigate }: Props) {
                       <div>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>
                           {t.tutor?.firstName} {t.tutor?.lastName}
-                          {t.tutor?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>🎓</span>}
-                          {t.tutor?.isSeniorYear && !t.tutor?.isGraduated && <span title="Último año" style={{ marginLeft: 4 }}>🎒</span>}
+                          {t.tutor?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>{GraduationCap({ size: 14 })}</span>}
+                          {t.tutor?.isSeniorYear && !t.tutor?.isGraduated && <span title="Último año" style={{ marginLeft: 4 }}>{BookOpen({ size: 14 })}</span>}
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.tutor?.career} · {t.tutor?.university}</div>
                       </div>
@@ -363,7 +364,7 @@ export default function Jobs({ onNavigate }: Props) {
                     <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{t.subject}</h4>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 12 }}>
                       <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>
-                        {t.modality === 'online' ? '🌐 Online' : t.modality === 'presencial' ? '📍 Presencial' : '🔄 Híbrido'}
+                        {t.modality === 'online' ? <>{Globe({ size: 12 })} Online</> : t.modality === 'presencial' ? <>{Map({ size: 12 })} Presencial</> : <>{RefreshCw({ size: 12 })} Híbrido</>}
                       </span>
                       <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>{t.sessionDuration} min</span>
                       {t.isFree ? (
@@ -376,7 +377,7 @@ export default function Jobs({ onNavigate }: Props) {
                     {t.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{t.description}</p>}
                     {t.ratingCount > 0 && (
                       <div style={{ fontSize: 12, color: 'var(--accent-orange)', marginBottom: 8 }}>
-                        ⭐ {t.rating}/5 ({t.ratingCount} reseñas) · {t.totalSessions} sesiones
+                        {Star({ size: 12 })} {t.rating}/5 ({t.ratingCount} reseñas) · {t.totalSessions} sesiones
                       </div>
                     )}
                     <button className="btn btn-primary btn-sm" style={{ width: '100%' }} onClick={() => handleRequestTutoring(t.id)}>
@@ -396,7 +397,7 @@ export default function Jobs({ onNavigate }: Props) {
               <div className="card" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
                   <div style={{ width: 56, height: 56, borderRadius: 12, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
-                    {recruiterProfile.companyLogo ? <img src={recruiterProfile.companyLogo} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} /> : '🏢'}
+                    {recruiterProfile.companyLogo ? <img src={recruiterProfile.companyLogo} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
                   </div>
                   <div>
                     <h3 style={{ margin: 0 }}>{recruiterProfile.companyName}</h3>
@@ -407,7 +408,7 @@ export default function Jobs({ onNavigate }: Props) {
                     background: recruiterProfile.verificationStatus === 'verified' ? 'rgba(5,150,105,0.08)' : recruiterProfile.verificationStatus === 'rejected' ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)',
                     color: recruiterProfile.verificationStatus === 'verified' ? 'var(--accent-green)' : recruiterProfile.verificationStatus === 'rejected' ? 'var(--accent-red)' : 'var(--text-muted)',
                   }}>
-                    {recruiterProfile.verificationStatus === 'verified' ? '✅ Verificado' : recruiterProfile.verificationStatus === 'rejected' ? '❌ Rechazado' : '⏳ En revisión'}
+                    {recruiterProfile.verificationStatus === 'verified' ? <>{CheckCircle({ size: 12 })} Verificado</> : recruiterProfile.verificationStatus === 'rejected' ? <>{XCircle({ size: 12 })} Rechazado</> : <>{Hourglass({ size: 12 })} En revisión</>}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
@@ -424,7 +425,7 @@ export default function Jobs({ onNavigate }: Props) {
               </div>
             ) : (
               <div className="card" style={{ padding: 24 }}>
-                <h3 style={{ marginTop: 0 }}>🏢 Registrarse como Reclutador</h3>
+                <h3 style={{ marginTop: 0 }}>{BuildingIcon()} Registrarse como Reclutador</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>Registra tu empresa para publicar ofertas y buscar talento verificado</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   <div className="auth-field"><label>Empresa *</label>
@@ -549,7 +550,7 @@ export default function Jobs({ onNavigate }: Props) {
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '80vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
                 <div style={{ width: 56, height: 56, borderRadius: 12, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
-                  {selectedJob.companyLogo ? <img src={selectedJob.companyLogo} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} /> : '🏢'}
+                  {selectedJob.companyLogo ? <img src={selectedJob.companyLogo} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
                 </div>
                 <div>
                   <h3 style={{ margin: 0 }}>{selectedJob.jobTitle}</h3>
@@ -558,8 +559,8 @@ export default function Jobs({ onNavigate }: Props) {
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, fontSize: 13 }}>
                 <span style={{ background: 'var(--bg-tertiary)', padding: '4px 12px', borderRadius: 12 }}>{JOB_TYPES.find(t => t.value === selectedJob.jobType)?.label}</span>
-                {selectedJob.location && <span>📍 {selectedJob.location}</span>}
-                {selectedJob.isRemote && <span style={{ color: 'var(--accent-green)' }}>🌐 Remoto</span>}
+                {selectedJob.location && <span>{Map({ size: 13 })} {selectedJob.location}</span>}
+                {selectedJob.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 13 })} Remoto</span>}
                 {formatSalary(selectedJob.salaryMin, selectedJob.salaryMax, selectedJob.salaryCurrency) && <span style={{ fontWeight: 600, color: 'var(--accent-green)' }}>{formatSalary(selectedJob.salaryMin, selectedJob.salaryMax, selectedJob.salaryCurrency)}</span>}
               </div>
               <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{selectedJob.description}</div>
@@ -591,7 +592,7 @@ export default function Jobs({ onNavigate }: Props) {
                   </select></div>
                 <div className="auth-field"><label>Modalidad</label>
                   <select value={tutoringForm.modality} onChange={e => setTutoringForm({...tutoringForm, modality: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    <option value="online">🌐 Online</option><option value="presencial">📍 Presencial</option><option value="hybrid">🔄 Híbrido</option>
+                    <option value="online">Online</option><option value="presencial">Presencial</option><option value="hybrid">Híbrido</option>
                   </select></div>
                 <div className="auth-field"><label>Duración sesión</label>
                   <select value={tutoringForm.session_duration} onChange={e => setTutoringForm({...tutoringForm, session_duration: Number(e.target.value)})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>

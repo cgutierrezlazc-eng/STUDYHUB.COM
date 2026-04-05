@@ -147,6 +147,64 @@ export const api = {
   generateFlashcards: (projectId: string) =>
     request(`/projects/${projectId}/flashcards`, { method: 'POST' }),
 
+  // ─── Summary & Advanced AI ────────────────────────────────
+  generateSummary: (projectId: string, detailLevel: string = 'comprehensive', exportFormat: string = '') =>
+    request(`/projects/${projectId}/summary`, {
+      method: 'POST',
+      body: JSON.stringify({ detail_level: detailLevel, export_format: exportFormat }),
+    }),
+
+  exportSummaryDocx: async (projectId: string, summaryData: any, title: string = 'Resumen de Estudio') => {
+    const token = getToken();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/projects/${projectId}/summary/export-docx`, {
+      method: 'POST', headers, body: JSON.stringify({ ...summaryData, title }),
+    });
+    if (!res.ok) throw new Error('Export Error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${title}.docx`; a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  exportSummaryPdf: async (projectId: string, summaryData: any, title: string = 'Resumen de Estudio') => {
+    const token = getToken();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/projects/${projectId}/summary/export-pdf`, {
+      method: 'POST', headers, body: JSON.stringify({ ...summaryData, title }),
+    });
+    if (!res.ok) throw new Error('Export Error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${title}.pdf`; a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  exportChatPdf: async (projectId: string, messages: any[], title: string = 'Chat de Estudio') => {
+    const token = getToken();
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/projects/${projectId}/chat/export-pdf`, {
+      method: 'POST', headers, body: JSON.stringify({ content: '', messages, title }),
+    });
+    if (!res.ok) throw new Error('Export Error');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${title}.pdf`; a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  generateConceptMap: (projectId: string) =>
+    request(`/projects/${projectId}/concept-map`, { method: 'POST' }),
+
+  explainWithVisuals: (projectId: string, topic: string) =>
+    request(`/projects/${projectId}/explain-visual`, {
+      method: 'POST',
+      body: JSON.stringify({ topic }),
+    }),
+
   // ─── Math ──────────────────────────────────────────────────
   solvemath: (expression: string, step_by_step: boolean = true) =>
     request('/math/solve', {
@@ -788,6 +846,92 @@ export const api = {
   deleteDownload: (downloadId: string) =>
     request(`/search/downloads/${downloadId}`, { method: 'DELETE' }),
 
+  // ─── CV Upload ─────────────────────────────────────────────
+  uploadCV: async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const token = getToken()
+    const res = await fetch(`${API_BASE}/cv/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data.detail || 'Error uploading CV')
+    }
+    return res.json()
+  },
+
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
 };
+
+// ─── Push Notifications ─────────────────────────────────────────
+
+export async function getVapidKey(): Promise<string> {
+  const res = await fetch(`${API_BASE}/push/vapid-key`)
+  const data = await res.json()
+  return data.publicKey || ''
+}
+
+export async function subscribeToPush(subscription: PushSubscriptionJSON, deviceName: string) {
+  const token = localStorage.getItem('conniku_token')
+  return fetch(`${API_BASE}/push/subscribe`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({
+      endpoint: subscription.endpoint,
+      keys: subscription.keys,
+      device_name: deviceName,
+    }),
+  })
+}
+
+export async function initPushNotifications() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+
+  try {
+    const registration = await navigator.serviceWorker.register('/sw-push.js')
+    const vapidKey = await getVapidKey()
+    if (!vapidKey) return
+
+    const existing = await registration.pushManager.getSubscription()
+    if (existing) return // Already subscribed
+
+    const permission = await Notification.requestPermission()
+    if (permission !== 'granted') return
+
+    const subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(vapidKey) as BufferSource,
+    })
+
+    const deviceName = _getDeviceName()
+    await subscribeToPush(subscription.toJSON(), deviceName)
+  } catch (e) {
+    console.log('[Push] Setup error:', e)
+  }
+}
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const rawData = window.atob(base64)
+  const outputArray = new Uint8Array(rawData.length)
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i)
+  }
+  return outputArray
+}
+
+function _getDeviceName(): string {
+  const ua = navigator.userAgent
+  if (/iPhone/.test(ua)) return 'Safari en iPhone'
+  if (/iPad/.test(ua)) return 'Safari en iPad'
+  if (/Android/.test(ua)) return 'Chrome en Android'
+  if (/Mac/.test(ua)) return 'Navegador en Mac'
+  if (/Windows/.test(ua)) return 'Navegador en Windows'
+  if (/Linux/.test(ua)) return 'Navegador en Linux'
+  return 'Navegador'
+}

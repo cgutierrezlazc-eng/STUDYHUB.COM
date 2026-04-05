@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { CalendarEvent, Project } from '../types'
+import { Calendar as CalendarIcon, ListChecks, ClipboardList, Clock, BookOpen, AlertTriangle, CheckCircle, Target, Check, X } from '../components/Icons'
 
 interface Props {
   projects: Project[]
@@ -9,10 +10,10 @@ interface Props {
 }
 
 const EVENT_TYPES = [
-  { value: 'task', label: 'Tarea', emoji: '📝' },
-  { value: 'exam', label: 'Examen', emoji: '📋' },
-  { value: 'deadline', label: 'Entrega', emoji: '⏰' },
-  { value: 'study_session', label: 'Sesión de Estudio', emoji: '📖' },
+  { value: 'task', label: 'Tarea', icon: () => ListChecks({ size: 20 }) },
+  { value: 'exam', label: 'Examen', icon: () => ClipboardList({ size: 20 }) },
+  { value: 'deadline', label: 'Entrega', icon: () => Clock({ size: 20 }) },
+  { value: 'study_session', label: 'Sesión de Estudio', icon: () => BookOpen({ size: 20 }) },
 ]
 
 export default function Calendar({ projects, onNavigate }: Props) {
@@ -98,7 +99,10 @@ export default function Calendar({ projects, onNavigate }: Props) {
     return d.toLocaleDateString('es', { weekday: 'short', month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
   }
 
-  const getTypeEmoji = (type: string) => EVENT_TYPES.find(t => t.value === type)?.emoji || '📝'
+  const getTypeIcon = (type: string) => {
+    const found = EVENT_TYPES.find(t => t.value === type)
+    return found ? found.icon() : ListChecks({ size: 20 })
+  }
 
   const renderEvent = (event: CalendarEvent) => {
     const isOverdue = !event.completed && new Date(event.dueDate) < now
@@ -114,22 +118,22 @@ export default function Calendar({ projects, onNavigate }: Props) {
           background: event.completed ? 'var(--accent-green)' : 'transparent', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12,
         }}>
-          {event.completed && '✓'}
+          {event.completed && Check({ size: 12 })}
         </button>
-        <span style={{ fontSize: 20 }}>{getTypeEmoji(event.eventType)}</span>
+        <span style={{ fontSize: 20 }}>{getTypeIcon(event.eventType)}</span>
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 600, fontSize: 14, textDecoration: event.completed ? 'line-through' : 'none' }}>
             {event.title}
           </div>
           <div style={{ fontSize: 12, color: isOverdue ? 'var(--accent-red)' : 'var(--text-muted)' }}>
-            {isOverdue && '⚠️ '}{formatDate(event.dueDate)}
+            {isOverdue && <>{AlertTriangle({ size: 12 })} </>}{formatDate(event.dueDate)}
             {event.description && ` · ${event.description.slice(0, 50)}`}
           </div>
         </div>
         <button onClick={() => handleDelete(event.id)} style={{
           background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)',
           fontSize: 16, padding: 4, opacity: 0.5,
-        }}>✕</button>
+        }}>{X({ size: 14 })}</button>
       </div>
     )
   }
@@ -139,7 +143,7 @@ export default function Calendar({ projects, onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>📅 Calendario</h2>
+            <h2>{CalendarIcon()} Calendario</h2>
             <p>Organiza tus tareas, exámenes y entregas</p>
           </div>
           <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nuevo Evento</button>
@@ -159,7 +163,7 @@ export default function Calendar({ projects, onNavigate }: Props) {
           <div className="loading-dots"><span /><span /><span /></div>
         ) : events.length === 0 && !showForm ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>📅</div>
+            <div style={{ fontSize: 48 }}>{CalendarIcon({ size: 48 })}</div>
             <h3>Sin eventos todavía</h3>
             <p>Agrega tareas, exámenes y fechas de entrega para mantenerte organizado</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowForm(true)}>
@@ -170,19 +174,19 @@ export default function Calendar({ projects, onNavigate }: Props) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {overdue.length > 0 && filter !== 'completed' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--accent-red)', marginBottom: 8 }}>⚠️ Atrasados ({overdue.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--accent-red)', marginBottom: 8 }}>{AlertTriangle({ size: 14 })} Atrasados ({overdue.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{overdue.map(renderEvent)}</div>
               </div>
             )}
             {upcoming.length > 0 && filter !== 'completed' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>📌 Próximos ({upcoming.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{Target({ size: 14 })} Próximos ({upcoming.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{upcoming.map(renderEvent)}</div>
               </div>
             )}
             {completed.length > 0 && filter !== 'pending' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>✅ Completados ({completed.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{CheckCircle({ size: 14 })} Completados ({completed.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{completed.map(renderEvent)}</div>
               </div>
             )}
@@ -201,7 +205,7 @@ export default function Calendar({ projects, onNavigate }: Props) {
                 <label>Tipo</label>
                 <select value={eventType} onChange={e => setEventType(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                   {EVENT_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.emoji} {t.label}</option>
+                    <option key={t.value} value={t.value}>{t.label}</option>
                   ))}
                 </select>
               </div>

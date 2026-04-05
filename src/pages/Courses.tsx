@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import MilestonePopup from '../components/MilestonePopup'
+import { AlertTriangle, CheckCircle, FileText, Medal, Star, Target, BookOpen } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -114,12 +115,36 @@ export default function Courses({ onNavigate }: Props) {
           ...prev,
           progress: { ...prev.progress, completed: true, quizPassed: true, certificateId: result.certificateId },
         }))
-        setMilestonePopup({
-          type: 'course_completed',
-          title: '¡Curso completado!',
-          description: `Has completado ${courseDetail.title} con ${result.score}%`,
-          icon: '🎓',
-        })
+
+        // Show reward popup if any rewards were granted, otherwise show progress message
+        const rewards = result.rewardsGranted || []
+        const progressInfo = result.courseRewardProgress
+
+        if (rewards.length > 0) {
+          const reward = rewards[rewards.length - 1] // Show highest reward (MAX > PRO)
+          setMilestonePopup({
+            type: 'reward',
+            title: reward.title,
+            description: progressInfo?.message
+              ? `${reward.description}\n\n${progressInfo.message}`
+              : `${reward.description} — ¡Disfruta tu suscripción ${reward.tier.toUpperCase()}!`,
+            icon: reward.tier === 'max' ? '👑' : '⭐',
+          })
+        } else if (progressInfo?.message) {
+          setMilestonePopup({
+            type: 'course_completed',
+            title: '¡Curso completado!',
+            description: `${courseDetail.title} — ${result.score}%\n\n${progressInfo.message}`,
+            icon: '🎓',
+          })
+        } else {
+          setMilestonePopup({
+            type: 'course_completed',
+            title: '¡Curso completado!',
+            description: `Has completado ${courseDetail.title} con ${result.score}%`,
+            icon: '🎓',
+          })
+        }
       }
     } catch (err: any) {
       console.error('Quiz submission failed:', err)
@@ -184,7 +209,7 @@ export default function Courses({ onNavigate }: Props) {
               background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
               display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#B91C1C',
             }}>
-              ⚠️ {courseError}
+              {AlertTriangle({ size: 14 })} {courseError}
               <button style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#B91C1C', fontWeight: 600, fontSize: 12 }}
                 onClick={() => { setCourseError(null); openCourse(courseDetail.id) }}>
                 Reintentar
@@ -295,7 +320,7 @@ export default function Courses({ onNavigate }: Props) {
                         color: courseDetail.progress?.quizPassed || quizMode ? '#fff' : 'var(--text-muted)',
                         border: courseDetail.progress?.quizPassed || quizMode ? 'none' : '2px solid var(--border)',
                       }}>
-                        {courseDetail.progress?.quizPassed ? '✓' : '📝'}
+                        {courseDetail.progress?.quizPassed ? '✓' : FileText({ size: 13 })}
                       </div>
                       <div>
                         <div style={{ fontSize: 13, fontWeight: quizMode ? 600 : 400, color: quizMode ? catColor : 'var(--text-primary)' }}>
@@ -404,7 +429,7 @@ export default function Courses({ onNavigate }: Props) {
                         background: quizResult.passed ? 'rgba(5,150,105,0.08)' : 'rgba(239,68,68,0.06)',
                         fontSize: 48,
                       }}>
-                        {quizResult.passed ? '🎉' : '📚'}
+                        {quizResult.passed ? CheckCircle({ size: 48, color: 'var(--accent-green)' }) : BookOpen({ size: 48 })}
                       </div>
                       <h2 style={{ margin: '0 0 8px', fontSize: 24, color: 'var(--text-primary)' }}>
                         {quizResult.passed ? '¡Curso aprobado!' : 'No alcanzaste el mínimo'}
@@ -436,7 +461,7 @@ export default function Courses({ onNavigate }: Props) {
                           borderRadius: 10, border: '1px solid rgba(5,150,105,0.15)', maxWidth: 400, margin: '8px auto 0',
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 18 }}>🏅</span>
+                            <span style={{ fontSize: 18 }}>{Medal({ size: 18 })}</span>
                             <strong style={{ color: '#059669', fontSize: 14 }}>Constancia de finalización emitida</strong>
                           </div>
                           <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
@@ -484,9 +509,9 @@ export default function Courses({ onNavigate }: Props) {
                         <div style={{
                           display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)',
                         }}>
-                          <span>📝 {courseDetail.quiz.questions.length} preguntas</span>
-                          <span>✅ {Object.keys(quizAnswers).length} respondidas</span>
-                          <span>🎯 Mínimo: 70%</span>
+                          <span>{FileText({ size: 12 })} {courseDetail.quiz.questions.length} preguntas</span>
+                          <span>{CheckCircle({ size: 12 })} {Object.keys(quizAnswers).length} respondidas</span>
+                          <span>{Target({ size: 12 })} Mínimo: 70%</span>
                         </div>
                       </div>
 
@@ -626,7 +651,7 @@ export default function Courses({ onNavigate }: Props) {
             width: 42, height: 42, borderRadius: '50%',
             background: 'rgba(255,255,255,0.15)', display: 'flex',
             alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20,
-          }}>⭐</div>
+          }}>{Star({ size: 20 })}</div>
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>Gana beneficios completando cursos</div>
             <div style={{ fontSize: 11, opacity: 0.85, lineHeight: 1.4 }}>
@@ -642,7 +667,7 @@ export default function Courses({ onNavigate }: Props) {
           </div>
           <button className={`tab ${tab === 'my-certs' ? 'active' : ''}`}
             onClick={() => { setTab(tab === 'my-certs' ? 'catalog' : 'my-certs'); if (tab !== 'my-certs') loadCertificates() }}>
-            🏅 Mis Certificados
+            {Medal({ size: 14 })} Mis Certificados
           </button>
         </div>
         {tab === 'catalog' && (
@@ -664,7 +689,7 @@ export default function Courses({ onNavigate }: Props) {
         {tab === 'my-certs' ? (
           certificates.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
-              <div style={{ fontSize: 48 }}>🏅</div>
+              <div style={{ fontSize: 48 }}>{Medal({ size: 48 })}</div>
               <h3>Aún no tienes certificados</h3>
               <p>Completa cursos para obtener certificados que se agregan a tu perfil profesional</p>
               <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setTab('catalog')}>Ver Cursos</button>
@@ -679,7 +704,7 @@ export default function Courses({ onNavigate }: Props) {
                     Puntuación: {cert.score}% · {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es') : ''}
                   </div>
                   <div style={{ padding: 8, background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: 'var(--accent-green)' }}>
-                    🏅 Certificado verificado · ID: {cert.certificateId?.slice(0, 8)}
+                    {Medal({ size: 12 })} Certificado verificado · ID: {cert.certificateId?.slice(0, 8)}
                   </div>
                 </div>
               ))}
@@ -689,7 +714,7 @@ export default function Courses({ onNavigate }: Props) {
           <div className="loading-dots"><span /><span /><span /></div>
         ) : error ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>⚠️</div>
+            <div style={{ fontSize: 48 }}>{AlertTriangle({ size: 48 })}</div>
             <h3>Error al cargar cursos</h3>
             <p style={{ color: 'var(--text-muted)' }}>{error}</p>
             <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => { setLoading(true); loadCourses() }}>
@@ -698,7 +723,7 @@ export default function Courses({ onNavigate }: Props) {
           </div>
         ) : courses.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>📚</div>
+            <div style={{ fontSize: 48 }}>{BookOpen({ size: 48 })}</div>
             <h3>No hay cursos disponibles</h3>
             <p style={{ color: 'var(--text-muted)' }}>
               {selectedCategory ? 'No se encontraron cursos en esta categoría.' : 'Los cursos estarán disponibles próximamente.'}
@@ -714,7 +739,7 @@ export default function Courses({ onNavigate }: Props) {
             {/* Featured courses */}
             {courses.filter(c => c.isFeatured && !selectedCategory).length > 0 && (
               <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontSize: 15, marginBottom: 12 }}>⭐ Cursos Destacados</h3>
+                <h3 style={{ fontSize: 15, marginBottom: 12 }}>{Star({ size: 16 })} Cursos Destacados</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
                   {courses.filter(c => c.isFeatured).map(course => {
                     const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
@@ -737,7 +762,7 @@ export default function Courses({ onNavigate }: Props) {
                         </div>
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{course.description}</p>
                         {course.progress?.completed && (
-                          <div style={{ marginTop: 10, fontSize: 12, color: '#059669', fontWeight: 600 }}>✅ Completado · 🏅 Certificado</div>
+                          <div style={{ marginTop: 10, fontSize: 12, color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} Completado · {Medal({ size: 12 })} Certificado</div>
                         )}
                       </div>
                     )
@@ -770,7 +795,7 @@ export default function Courses({ onNavigate }: Props) {
                         </div>
                       </div>
                       {course.progress?.completed ? (
-                        <span style={{ fontSize: 18 }}>🏅</span>
+                        <span style={{ fontSize: 18 }}>{Medal({ size: 18 })}</span>
                       ) : course.progress?.started ? (
                         <div style={{ textAlign: 'center' }}>
                           <div style={{ fontSize: 12, fontWeight: 700, color: cc }}>{course.progress.completedLessons}/{course.lessonCount}</div>

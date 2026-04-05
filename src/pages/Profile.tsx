@@ -4,8 +4,9 @@ import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
 import { LanguageSkill } from '../types'
 import MilestonePopup from '../components/MilestonePopup'
+import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationCap, Users, Pencil, Lock, Settings, ClipboardList } from '../components/Icons'
 
-type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email'
+type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv'
 
 export default function Profile() {
   const { user, updateProfile, logout } = useAuth()
@@ -19,6 +20,19 @@ export default function Profile() {
   const [usernameError, setUsernameError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState({ ...user! })
+  const [cvVisibility, setCvVisibility] = useState<'public' | 'recruiters' | 'private'>((user as any).cvVisibility || 'private')
+  const [cvData, setCvData] = useState({
+    headline: (user as any).cvHeadline || '',
+    summary: (user as any).cvSummary || '',
+    experience: (user as any).cvExperience || '',
+    skills: (user as any).cvSkills || '',
+    certifications: (user as any).cvCertifications || '',
+    languages: (user as any).cvLanguages || '',
+    portfolio: (user as any).cvPortfolio || '',
+  })
+  const [cvUploading, setCvUploading] = useState(false)
+  const [cvUploadMsg, setCvUploadMsg] = useState('')
+  const cvFileRef = useRef<HTMLInputElement>(null)
   const [showPasswordChange, setShowPasswordChange] = useState(false)
   const [currentPw, setCurrentPw] = useState('')
   const [newPw, setNewPw] = useState('')
@@ -27,6 +41,30 @@ export default function Profile() {
   const [pwSuccess, setPwSuccess] = useState(false)
 
   if (!user) return null
+
+  const handleCvUpload = async (file: File) => {
+    setCvUploading(true)
+    setCvUploadMsg('')
+    try {
+      const res = await api.uploadCV(file)
+      if (res.draft) {
+        setCvData({
+          headline: res.draft.headline || cvData.headline,
+          summary: res.draft.summary || cvData.summary,
+          experience: res.draft.experience || cvData.experience,
+          skills: res.draft.skills || cvData.skills,
+          certifications: res.draft.certifications || cvData.certifications,
+          languages: res.draft.languages || cvData.languages,
+          portfolio: res.draft.portfolio || cvData.portfolio,
+        })
+      }
+      setCvUploadMsg(res.message || 'CV procesado. Revisa y corrige los campos antes de guardar.')
+    } catch (err: any) {
+      setCvUploadMsg(err.message || 'Error al subir el CV.')
+    } finally {
+      setCvUploading(false)
+    }
+  }
 
   const update = (field: string, value: string | number) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -86,13 +124,14 @@ export default function Profile() {
     { value: 'advanced', label: t('skill.advanced'), desc: t('skill.advancedDesc') },
   ]
 
-  const SECTIONS: { id: Section; label: string; icon: string }[] = [
-    { id: 'profile', label: 'Mi Perfil', icon: '👤' },
-    { id: 'academic', label: 'Académico', icon: '🎓' },
-    { id: 'appearance', label: 'Apariencia', icon: '🎨' },
-    { id: 'notifications', label: 'Notificaciones', icon: '🔔' },
-    { id: 'security', label: 'Seguridad', icon: '🔒' },
-    ...(user.role === 'owner' ? [{ id: 'email' as Section, label: 'Correo Corporativo', icon: '✉️' }] : []),
+  const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
+    { id: 'profile', label: 'Mi Perfil', icon: Users({ size: 16 }) },
+    { id: 'academic', label: 'Académico', icon: GraduationCap({ size: 16 }) },
+    { id: 'cv', label: 'Curriculum Vitae', icon: ClipboardList({ size: 16 }) },
+    { id: 'appearance', label: 'Apariencia', icon: Settings({ size: 16 }) },
+    { id: 'notifications', label: 'Notificaciones', icon: Bell({ size: 16 }) },
+    { id: 'security', label: 'Seguridad', icon: Lock({ size: 16 }) },
+    ...(user.role === 'owner' ? [{ id: 'email' as Section, label: 'Correo Corporativo', icon: CheckCircle({ size: 16 }) }] : []),
   ]
 
   const ToggleRow = ({ label, desc, defaultOn = true }: { label: string; desc: string; defaultOn?: boolean }) => (
@@ -155,7 +194,7 @@ export default function Profile() {
               {user.emailVerified ? (
                 <span className="pf-badge pf-badge-green">✓ Correo verificado</span>
               ) : (
-                <span className="pf-badge pf-badge-orange">⚠ Correo sin verificar</span>
+                <span className="pf-badge pf-badge-orange">{AlertTriangle({ size: 14 })} Correo sin verificar</span>
               )}
               {user.role === 'owner' && <span className="pf-badge pf-badge-blue">Owner / CEO</span>}
               {user.isAdmin && user.role !== 'owner' && <span className="pf-badge pf-badge-purple">Administrador</span>}
@@ -286,9 +325,9 @@ export default function Profile() {
                 <h3>Estado Académico</h3>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                   {([
-                    { value: 'estudiante', label: '🎓 Estudiante' },
-                    { value: 'egresado', label: '📋 Egresado' },
-                    { value: 'titulado', label: '🏅 Titulado' },
+                    { value: 'estudiante', label: 'Estudiante' },
+                    { value: 'egresado', label: 'Egresado' },
+                    { value: 'titulado', label: 'Titulado' },
                   ] as const).map(opt => (
                     <button key={opt.value}
                       className={`pf-skill-btn ${((user as any).academicStatus || 'estudiante') === opt.value ? 'active' : ''}`}
@@ -320,15 +359,15 @@ export default function Profile() {
                 {/* Mentoring for titulado/egresado */}
                 {((user as any).academicStatus === 'titulado' || (user as any).academicStatus === 'egresado') && (
                   <div style={{ background: 'var(--bg-tertiary, #f0f4f8)', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
-                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14 }}>🤝 Ayuda a otros estudiantes</h4>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14 }}>{Users({ size: 14 })} Ayuda a otros estudiantes</h4>
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
                       Selecciona los servicios que quieres ofrecer. La coordinación se realiza por el chat de la plataforma.
                     </p>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       {[
-                        { id: 'ayudantias', label: '📚 Ayudantías' },
-                        { id: 'cursos', label: '🎯 Cursos' },
-                        { id: 'clases_particulares', label: '👨‍🏫 Clases particulares' },
+                        { id: 'ayudantias', label: 'Ayudantías' },
+                        { id: 'cursos', label: 'Cursos' },
+                        { id: 'clases_particulares', label: 'Clases particulares' },
                       ].map(svc => {
                         const services: string[] = (user as any).mentoringServices || []
                         const selected = services.includes(svc.id)
@@ -352,7 +391,7 @@ export default function Profile() {
                     {((user as any).mentoringServices || []).length > 0 && (
                       <div style={{ marginTop: 12, background: 'rgba(45,138,86,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(45,138,86,0.2)' }}>
                         <p style={{ fontSize: 12, color: '#2D8A56', margin: 0 }}>
-                          💬 Toda coordinación se realiza a través del <strong>chat de la plataforma</strong> para garantizar seguridad.
+                          {MessageSquare({ size: 14 })} Toda coordinación se realiza a través del <strong>chat de la plataforma</strong> para garantizar seguridad.
                         </p>
                       </div>
                     )}
@@ -375,6 +414,151 @@ export default function Profile() {
               </div>
             )}
 
+            {/* ─── Curriculum Vitae ─── */}
+            {activeSection === 'cv' && (
+              <div className="pf-section">
+                <h3 style={{ marginTop: 0, marginBottom: 4 }}>Curriculum Vitae</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>
+                  Construye tu CV profesional. Los reclutadores podrán verlo según tu configuración de privacidad.
+                </p>
+
+                {/* CV File Upload */}
+                <div
+                  onClick={() => !cvUploading && cvFileRef.current?.click()}
+                  onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
+                  onDrop={e => {
+                    e.preventDefault(); e.stopPropagation()
+                    const f = e.dataTransfer.files?.[0]
+                    if (f) handleCvUpload(f)
+                  }}
+                  style={{
+                    border: '2px dashed var(--border)',
+                    borderRadius: 12,
+                    padding: '28px 20px',
+                    textAlign: 'center',
+                    cursor: cvUploading ? 'wait' : 'pointer',
+                    marginBottom: 20,
+                    background: 'var(--bg-secondary)',
+                    transition: 'border-color 0.2s',
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <input
+                    ref={cvFileRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    style={{ display: 'none' }}
+                    onChange={e => {
+                      const f = e.target.files?.[0]
+                      if (f) handleCvUpload(f)
+                      e.target.value = ''
+                    }}
+                  />
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
+                    {cvUploading ? 'Procesando CV...' : 'Sube tu CV (PDF o Word)'}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Arrastra tu archivo aqui o haz clic para seleccionar. Maximo 10 MB.
+                  </div>
+                </div>
+
+                {cvUploadMsg && (
+                  <div style={{
+                    padding: '10px 14px',
+                    borderRadius: 8,
+                    marginBottom: 16,
+                    fontSize: 13,
+                    background: cvUploadMsg.includes('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
+                    color: cvUploadMsg.includes('Error') ? '#ef4444' : '#22c55e',
+                    border: `1px solid ${cvUploadMsg.includes('Error') ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)'}`,
+                  }}>
+                    {cvUploadMsg}
+                  </div>
+                )}
+
+                {/* Visibility Selector */}
+                <div style={{ marginBottom: 24 }}>
+                  <label className="pf-label">Visibilidad del CV</label>
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    {[
+                      { value: 'public' as const, label: 'Público', desc: 'Visible para todos' },
+                      { value: 'recruiters' as const, label: 'Solo Reclutadores', desc: 'Solo reclutadores verificados' },
+                      { value: 'private' as const, label: 'Privado', desc: 'Solo tú puedes verlo' },
+                    ].map(opt => (
+                      <button key={opt.value} onClick={() => setCvVisibility(opt.value)} style={{
+                        flex: 1, padding: '12px 16px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
+                        background: cvVisibility === opt.value ? 'var(--accent)' : 'var(--bg-secondary)',
+                        color: cvVisibility === opt.value ? '#fff' : 'var(--text-primary)',
+                        border: `1px solid ${cvVisibility === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+                        transition: 'all 0.2s',
+                      }}>
+                        <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
+                        <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{opt.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CV Fields */}
+                <div className="pf-form-group">
+                  <label className="pf-label">Titular profesional</label>
+                  <input className="pf-input" placeholder="Ej: Estudiante de Ingeniería Civil, 8vo semestre"
+                    value={cvData.headline} onChange={e => setCvData({...cvData, headline: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Resumen profesional</label>
+                  <textarea className="pf-input" rows={4} placeholder="Describe brevemente tu perfil, objetivos y lo que te distingue..."
+                    value={cvData.summary} onChange={e => setCvData({...cvData, summary: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Experiencia</label>
+                  <textarea className="pf-input" rows={4} placeholder="Prácticas profesionales, trabajos anteriores, proyectos relevantes..."
+                    value={cvData.experience} onChange={e => setCvData({...cvData, experience: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Habilidades</label>
+                  <textarea className="pf-input" rows={3} placeholder="Excel avanzado, Python, Photoshop, Liderazgo, Trabajo en equipo..."
+                    value={cvData.skills} onChange={e => setCvData({...cvData, skills: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Certificaciones</label>
+                  <textarea className="pf-input" rows={3} placeholder="Certificaciones obtenidas, cursos completados..."
+                    value={cvData.certifications} onChange={e => setCvData({...cvData, certifications: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Idiomas</label>
+                  <input className="pf-input" placeholder="Español (nativo), Inglés (avanzado), Portugués (intermedio)..."
+                    value={cvData.languages} onChange={e => setCvData({...cvData, languages: e.target.value})} />
+                </div>
+
+                <div className="pf-form-group">
+                  <label className="pf-label">Portafolio / Links</label>
+                  <input className="pf-input" placeholder="GitHub, LinkedIn, portafolio web..."
+                    value={cvData.portfolio} onChange={e => setCvData({...cvData, portfolio: e.target.value})} />
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+                  <button className="btn btn-primary" onClick={async () => {
+                    await updateProfile({ cvVisibility, cvHeadline: cvData.headline, cvSummary: cvData.summary, cvExperience: cvData.experience, cvSkills: cvData.skills, cvCertifications: cvData.certifications, cvLanguages: cvData.languages, cvPortfolio: cvData.portfolio } as any)
+                    setSaved(true); setTimeout(() => setSaved(false), 2000)
+                  }}>Guardar CV</button>
+                </div>
+              </div>
+            )}
+
             {/* ─── Apariencia ─── */}
             {activeSection === 'appearance' && (
               <div className="pf-section">
@@ -382,10 +566,10 @@ export default function Profile() {
                 <p className="pf-hint">Elige la apariencia que prefieras para Conniku</p>
                 <div className="theme-selector">
                   {([
-                    { id: 'nocturno', name: '☀️ Sereno', desc: 'Cálido y profesional', colors: ['#F5F3EF', '#2563EB', '#1D2939'] },
-                    { id: 'calido', name: '🌙 Noche Calma', desc: 'Oscuro y suave', colors: ['#111318', '#60A5FA', '#ECECEF'] },
-                    { id: 'profesional', name: '🌿 Bosque', desc: 'Verde y natural', colors: ['#F2F5F0', '#16A34A', '#1A2E1A'] },
-                    { id: 'vibrante', name: '🌊 Océano', desc: 'Azul profundo', colors: ['#0F172A', '#38BDF8', '#F1F5F9'] },
+                    { id: 'nocturno', name: 'Sereno', desc: 'Cálido y profesional', colors: ['#F5F3EF', '#2563EB', '#1D2939'] },
+                    { id: 'calido', name: 'Noche Calma', desc: 'Oscuro y suave', colors: ['#111318', '#60A5FA', '#ECECEF'] },
+                    { id: 'profesional', name: 'Bosque', desc: 'Verde y natural', colors: ['#F2F5F0', '#16A34A', '#1A2E1A'] },
+                    { id: 'vibrante', name: 'Océano', desc: 'Azul profundo', colors: ['#0F172A', '#38BDF8', '#F1F5F9'] },
                   ] as const).map(theme => (
                     <button key={theme.id} className={`theme-card ${(user.theme || 'nocturno') === theme.id ? 'active' : ''}`}
                       onClick={() => {
@@ -584,7 +768,7 @@ export default function Profile() {
                   ].map(account => (
                     <div key={account.email} className="pf-email-row">
                       <div className={`pf-email-icon ${account.status}`}>
-                        {account.status === 'active' ? '✉️' : '⏳'}
+                        {account.status === 'active' ? CheckCircle({ size: 14 }) : Hourglass({ size: 14 })}
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>{account.label}</div>

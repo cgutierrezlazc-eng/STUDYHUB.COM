@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { FolderOpen, Search as SearchIcon, FileText, Trash2, Brain, Link, Download, Save, Hourglass, GraduationCap } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -86,12 +87,12 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>🔍 Búsqueda Académica</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{SearchIcon({ size: 20 })} Búsqueda Académica</h2>
             <p>Encuentra recursos de estudio en toda la web — contenido seguro y académico</p>
           </div>
           <button className={`btn btn-sm ${showDownloads ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setShowDownloads(!showDownloads); if (!showDownloads) loadDownloads() }}>
-            📁 Mis Descargas {storageInfo ? `(${storageInfo.percent}%)` : ''}
+            {FolderOpen({ size: 16 })} Mis Descargas {storageInfo ? `(${storageInfo.percent}%)` : ''}
           </button>
         </div>
 
@@ -109,7 +110,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
             autoFocus
           />
           <button className="btn btn-primary" onClick={() => handleSearch()} disabled={loading} style={{ padding: '12px 24px' }}>
-            {loading ? '⏳' : '🔍'} Buscar
+            {loading ? Hourglass() : SearchIcon()} Buscar
           </button>
         </div>
       </div>
@@ -119,7 +120,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {showDownloads && (
           <div className="card" style={{ padding: 20, marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 15 }}>📁 Mis Descargas</h3>
+              <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{FolderOpen({ size: 16 })} Mis Descargas</h3>
               {storageInfo && (
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   {fmtSize(storageInfo.used)} / {fmtSize(storageInfo.limit)} ({storageInfo.percent}%)
@@ -137,12 +138,12 @@ export default function Search({ onNavigate, initialQuery }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {downloads.map(d => (
                   <div key={d.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8 }}>
-                    <span style={{ fontSize: 18 }}>📄</span>
+                    <span style={{ fontSize: 18 }}>{FileText()}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.filename}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.sizeFormatted} · {d.createdAt?.split('T')[0]}</div>
                     </div>
-                    <button onClick={() => handleDeleteDownload(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: 14 }} title="Eliminar">🗑</button>
+                    <button onClick={() => handleDeleteDownload(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: 14 }} title="Eliminar">{Trash2({ size: 14 })}</button>
                   </div>
                 ))}
               </div>
@@ -154,7 +155,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {aiSummary && (
           <div className="card" style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid var(--accent)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <span style={{ fontSize: 16 }}>🤖</span>
+              <span style={{ fontSize: 16 }}>{Brain()}</span>
               <strong style={{ fontSize: 14 }}>Resumen IA</strong>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'pre-wrap' }}>{aiSummary}</p>
@@ -170,7 +171,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
                 <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{results.length} resultados para "{query}"</span>
                 <button className="btn btn-secondary btn-sm" onClick={handleAiSummary} disabled={loadingSummary}>
-                  {loadingSummary ? '⏳ Analizando...' : '🤖 Resumir con IA'}
+                  {loadingSummary ? <>{Hourglass()} Analizando...</> : <>{Brain()} Resumir con IA</>}
                 </button>
               </div>
             )}
@@ -185,7 +186,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
                   <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 8px', lineHeight: 1.6 }}>{r.snippet}</p>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <a href={r.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-xs">
-                      🔗 Abrir
+                      {Link()} Abrir
                     </a>
                     {r.fileFormat && (
                       <button className="btn btn-secondary btn-xs" onClick={() => {
@@ -195,13 +196,13 @@ export default function Search({ onNavigate, initialQuery }: Props) {
                           window.open(r.url, '_blank')
                         }
                       }}>
-                        📥 Descargar {r.fileFormat}
+                        {Download()} Descargar {r.fileFormat}
                       </button>
                     )}
                     <button className="btn btn-secondary btn-xs"
                       onClick={() => handleDownloadToConniku(r.url, `${r.title || 'pagina'}.html`)}
                       disabled={downloading === r.url}>
-                      {downloading === r.url ? '⏳' : '💾'} Guardar en Conniku
+                      {downloading === r.url ? Hourglass() : Save()} Guardar en Conniku
                     </button>
                   </div>
                 </div>
@@ -217,7 +218,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
           </>
         ) : !loading && query && (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>🔍</div>
+            <div style={{ fontSize: 48 }}>{SearchIcon({ size: 48 })}</div>
             <h3>No se encontraron resultados</h3>
             <p>Intenta con otras palabras clave o verifica tu búsqueda</p>
           </div>
@@ -226,7 +227,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {/* Empty state */}
         {!loading && !query && results.length === 0 && (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>🎓</div>
+            <div style={{ fontSize: 48 }}>{GraduationCap({ size: 48 })}</div>
             <h3>Buscador Académico de Conniku</h3>
             <p>Busca artículos, PDFs, tutoriales, investigaciones y recursos de estudio</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { Gem, CheckCircle, Hourglass, ClipboardList, Star, Crown, BookOpen, Brain, Rocket, Save, Compass, Download, Zap } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -19,7 +20,7 @@ export default function Subscription({ onNavigate }: Props) {
     // Check URL params for success/cancel
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true') {
-      alert('¡Suscripción activada! Bienvenido a Conniku PRO 🎉')
+      alert('¡Suscripción activada! Bienvenido a Conniku PRO')
       window.history.replaceState({}, '', '/subscription')
     }
     if (params.get('cancelled') === 'true') {
@@ -57,7 +58,7 @@ export default function Subscription({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header">
-        <h2>💎 Suscripción</h2>
+        <h2>{Gem()} Suscripción</h2>
         <p>Potencia tu estudio con Conniku PRO</p>
       </div>
       <div className="page-body">
@@ -67,7 +68,7 @@ export default function Subscription({ onNavigate }: Props) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 16 }}>
-                  {isActive ? '✅ Conniku PRO Activo' : isTrial ? `⏳ Período de Prueba (${subStatus.trialDaysLeft} días restantes)` : '📋 Plan Gratuito'}
+                  {isActive ? <>{CheckCircle()} Conniku PRO Activo</> : isTrial ? <>{Hourglass()} Período de Prueba ({subStatus.trialDaysLeft} días restantes)</> : <>{ClipboardList()} Plan Gratuito</>}
                 </h3>
                 <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
                   {isActive && subStatus.expiresAt ? `Próxima renovación: ${new Date(subStatus.expiresAt).toLocaleDateString('es')}` :
@@ -132,7 +133,7 @@ export default function Subscription({ onNavigate }: Props) {
               {/* PRO Plan */}
               <div className="card" style={{ padding: 24, border: '2px solid var(--accent)', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>MÁS POPULAR</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>⭐ Pro</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Star({ size: 14 })} Pro</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
                   ${selectedPlan === 'monthly' ? '5' : '39.99'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
@@ -153,7 +154,7 @@ export default function Subscription({ onNavigate }: Props) {
                   <li>✓ Sin anuncios</li>
                   <li>✓ Exportar DOCX</li>
                   <li>✓ Crear comunidades</li>
-                  <li>✓ Predictor de examen 🔮</li>
+                  <li>✓ Predictor de examen</li>
                   <li>✓ CV Generator</li>
                   <li>✓ 2 GB almacenamiento</li>
                   <li>✓ +20% XP bonus</li>
@@ -170,7 +171,7 @@ export default function Subscription({ onNavigate }: Props) {
               {/* MAX Plan */}
               <div className="card" style={{ padding: 24, border: '2px solid var(--accent-purple)', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent-purple)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>PREMIUM</div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>👑 Max</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Crown({ size: 14 })} Max</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
                   ${selectedPlan === 'monthly' ? '13' : '99.99'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
@@ -194,7 +195,7 @@ export default function Subscription({ onNavigate }: Props) {
                   <li>✓ +50% XP bonus</li>
                   <li>✓ Soporte prioritario</li>
                   <li>✓ Early access features</li>
-                  <li>✓ Badge 👑 exclusivo</li>
+                  <li>✓ Badge exclusivo</li>
                 </ul>
                 <button className="btn btn-primary" style={{ width: '100%', marginTop: 20, background: 'var(--accent-purple)' }}
                   onClick={handleSubscribe} disabled={loading}>
@@ -230,18 +231,18 @@ export default function Subscription({ onNavigate }: Props) {
             <h3 style={{ fontSize: 16, marginBottom: 16 }}>Tu Plan PRO Incluye</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
               {[
-                { icon: '📚', label: 'Asignaturas ilimitadas' },
-                { icon: '📚', label: 'Chat con tus documentos ilimitado' },
-                { icon: '🧠', label: 'Quizzes ilimitados' },
-                { icon: '🃏', label: 'Flashcards FSRS' },
-                { icon: '🚀', label: 'Upload to Study' },
-                { icon: '💾', label: '5 GB almacenamiento' },
-                { icon: '🧭', label: 'Modo Socrático' },
-                { icon: '📥', label: 'Exportar a Word' },
-                { icon: '⚡', label: 'Soporte prioritario' },
+                { icon: BookOpen({ size: 24 }), label: 'Asignaturas ilimitadas' },
+                { icon: BookOpen({ size: 24 }), label: 'Chat con tus documentos ilimitado' },
+                { icon: Brain({ size: 24 }), label: 'Quizzes ilimitados' },
+                { icon: ClipboardList({ size: 24 }), label: 'Flashcards FSRS' },
+                { icon: Rocket({ size: 24 }), label: 'Upload to Study' },
+                { icon: Save({ size: 24 }), label: '5 GB almacenamiento' },
+                { icon: Compass({ size: 24 }), label: 'Modo Socrático' },
+                { icon: Download({ size: 24 }), label: 'Exportar a Word' },
+                { icon: Zap({ size: 24 }), label: 'Soporte prioritario' },
               ].map(f => (
                 <div key={f.label} className="card" style={{ padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 4 }}>{f.icon}</div>
+                  <div style={{ marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{f.icon}</div>
                   <div style={{ fontSize: 12, fontWeight: 600 }}>{f.label}</div>
                 </div>
               ))}

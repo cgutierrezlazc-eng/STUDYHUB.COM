@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useI18n } from '../services/i18n'
 import { useAuth } from '../services/auth'
+import { Lightbulb, MessageSquare } from '../components/Icons'
 
 const CONTACT_EMAIL = 'soporte@conniku.com'
 
@@ -54,10 +55,10 @@ export default function Suggestions() {
   }
 
   const typeOptions = [
-    { value: 'feature', label: t('sug.feature'), icon: '💡' },
-    { value: 'bug', label: t('sug.bug'), icon: '🐛' },
-    { value: 'improvement', label: t('sug.improvement'), icon: '🔧' },
-    { value: 'other', label: t('sug.other'), icon: '💬' },
+    { value: 'feature', label: t('sug.feature'), icon: Lightbulb({ size: 18 }) },
+    { value: 'bug', label: t('sug.bug'), icon: Lightbulb({ size: 18 }) },
+    { value: 'improvement', label: t('sug.improvement'), icon: Lightbulb({ size: 18 }) },
+    { value: 'other', label: t('sug.other'), icon: MessageSquare({ size: 18 }) },
   ]
 
   return (
@@ -122,7 +123,7 @@ export default function Suggestions() {
           <div>
             {/* Contact card */}
             <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-              <h4 style={{ fontSize: 14, marginBottom: 12 }}>📧 {t('sug.contact')}</h4>
+              <h4 style={{ fontSize: 14, marginBottom: 12 }}>{t('sug.contact')}</h4>
               <a href={`mailto:${CONTACT_EMAIL}`} className="sug-email">{CONTACT_EMAIL}</a>
             </div>
 

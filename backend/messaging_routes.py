@@ -482,6 +482,25 @@ def send_message(
             if recipient:
                 notify_new_message(db, recipient, user, req.content[:100])
 
+    # Send push notifications to other participants
+    try:
+        from push_routes import send_push_to_user
+        sender_name = f"{user.first_name} {user.last_name}".strip()
+        other_parts_push = db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conv_id,
+            ConversationParticipant.user_id != user.id,
+        ).all()
+        for op in other_parts_push:
+            send_push_to_user(
+                user_id=op.user_id,
+                title=f"Mensaje de {sender_name}",
+                body=req.content[:100],
+                url="/messages",
+                db=db,
+            )
+    except Exception as e:
+        print(f"[Push] Notification error: {e}")
+
     return message_to_dict(msg, db)
 
 

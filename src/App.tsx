@@ -12,9 +12,11 @@ import Onboarding from './components/Onboarding'
 import ConferencePanel from './components/ConferencePanel'
 import WelcomeModal from './components/WelcomeModal'
 import ErrorBoundary from './components/ErrorBoundary'
+import PWAInstallPrompt from './components/PWAInstallPrompt'
+import AppAvailableBanner from './components/AppAvailableBanner'
 import Landing from './pages/Landing'
 import { Project } from './types'
-import { api } from './services/api'
+import { api, initPushNotifications } from './services/api'
 
 // ─── Lazy-loaded pages (code-split) ──────────────────────────────
 const Dashboard = lazy(() => import('./pages/Dashboard'))
@@ -119,6 +121,13 @@ export default function App() {
       if (Date.now() - createdAt < fiveMinutes && !welcomed) {
         setShowWelcome(true)
       }
+    }
+  }, [user])
+
+  // Initialize push notifications when user is logged in
+  useEffect(() => {
+    if (user) {
+      initPushNotifications()
     }
   }, [user])
 
@@ -278,6 +287,9 @@ export default function App() {
           localStorage.setItem('conniku_welcomed', 'true')
         }} />
       )}
+
+      <PWAInstallPrompt />
+      <AppAvailableBanner />
     </div>
   )
 }

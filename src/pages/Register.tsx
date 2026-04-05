@@ -6,6 +6,7 @@ import { api } from '../services/api'
 import TermsOfService from '../components/TermsOfService'
 import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency'
 import { searchUniversities, getUniversitiesForCountry, University } from '../data/universities'
+import { Brain, Users, BookOpen, Camera, Eye, EyeOff, Inbox } from '../components/Icons'
 
 interface Props {
   onSwitchToLogin: () => void
@@ -223,19 +224,19 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
           </div>
         </div>
         <div className="auth-free-badge">
-          <span>🎁</span> Gratis por 7 días — sin tarjeta de crédito
+          Gratis por 7 días — sin tarjeta de crédito
         </div>
         <div className="auth-features">
           <div className="auth-feature">
-            <span className="auth-feature-icon">🧠</span>
+            <span className="auth-feature-icon">{Brain({ size: 20 })}</span>
             <div><strong>Estudia de forma interactiva</strong><p>Sube tus documentos y videos, estudia con herramientas inteligentes</p></div>
           </div>
           <div className="auth-feature">
-            <span className="auth-feature-icon">👥</span>
+            <span className="auth-feature-icon">{Users({ size: 20 })}</span>
             <div><strong>{t('feat.community')}</strong><p>{t('feat.communityDesc')}</p></div>
           </div>
           <div className="auth-feature">
-            <span className="auth-feature-icon">📖</span>
+            <span className="auth-feature-icon">{BookOpen({ size: 20 })}</span>
             <div><strong>Guías, quizzes y flashcards</strong><p>Genera material de estudio automáticamente</p></div>
           </div>
         </div>
@@ -294,7 +295,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 <label>{t('auth.password')}</label>
                 <div className="auth-password-wrap">
                   <input type={showPassword ? 'text' : 'password'} placeholder={t('pwd.min')} value={form.password} onChange={e => update('password', e.target.value)} />
-                  <button type="button" className="auth-eye" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>{showPassword ? '🙈' : '👁'}</button>
+                  <button type="button" className="auth-eye" onClick={() => setShowPassword(!showPassword)} tabIndex={-1}>{showPassword ? EyeOff({ size: 16 }) : Eye({ size: 16 })}</button>
                 </div>
                 {form.password.length > 0 && (
                   <div className="auth-strength">
@@ -317,7 +318,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 {form.avatar ? (
                   <img src={form.avatar} alt="Avatar" className="auth-avatar-img" />
                 ) : (
-                  <div className="auth-avatar-placeholder"><span>📷</span><small>{t('reg.uploadPhoto')}</small></div>
+                  <div className="auth-avatar-placeholder"><span>{Camera({ size: 20 })}</span><small>{t('reg.uploadPhoto')}</small></div>
                 )}
               </div>
 
@@ -813,7 +814,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
           {step === 3 && (
             <div className="auth-verification">
-              <div className="auth-verification-icon">📧</div>
+              <div className="auth-verification-icon">{Inbox({ size: 48 })}</div>
               <p>{t('reg.verificationSent')}</p>
               <p className="auth-verification-hint">{t('reg.verificationHint')}</p>
               <div className="auth-field">

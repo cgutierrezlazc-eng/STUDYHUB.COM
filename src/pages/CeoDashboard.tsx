@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -109,12 +110,12 @@ export default function CeoDashboard({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header">
-        <h2>🏢 Panel CEO — Conniku</h2>
+        <h2>{Briefcase({ size: 22 })} Panel CEO — Conniku</h2>
         <p>Vista exclusiva del estado completo de la plataforma</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           {(['overview', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
             <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview() }}>
-              {t === 'overview' ? '📊 Resumen' : t === 'certifications' ? '🎓 Certificaciones' : t === 'financial' ? '💰 Finanzas' : t === 'f129' ? '📋 F129 SII' : t === 'fraud' ? '🛡️ Anti-Fraude' : '✅ Compliance'}
+              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
             </button>
           ))}
         </div>
@@ -150,12 +151,12 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div className="card" style={{ padding: 20 }}>
-                  <h4 style={{ marginTop: 0 }}>💰 Ganancia Neta</h4>
+                  <h4 style={{ marginTop: 0 }}>{Gem({ size: 16 })} Ganancia Neta</h4>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>${fmt(weeklyReport.revenue?.gananciaNetaClp)} CLP</div>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Después de Stripe + IVA 19%</p>
                 </div>
                 <div className="card" style={{ padding: 20 }}>
-                  <h4 style={{ marginTop: 0 }}>📊 Engagement</h4>
+                  <h4 style={{ marginTop: 0 }}>{BarChart3({ size: 16 })} Engagement</h4>
                   <div style={{ fontSize: 13 }}>
                     <div>Posts: {weeklyReport.engagement?.wallPosts} | Comunidad: {weeklyReport.engagement?.communityPosts}</div>
                     <div>Mensajes: {weeklyReport.engagement?.messages} | Quizzes: {weeklyReport.engagement?.quizzesTaken}</div>
@@ -233,7 +234,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
             <div>
               {!f129 ? (
                 <div className="card" style={{ padding: 24, textAlign: 'center' }}>
-                  <h3>📋 Generar F129</h3>
+                  <h3>{ClipboardList({ size: 18 })} Generar F129</h3>
                   <p style={{ color: 'var(--text-muted)' }}>Genera el formulario F129 para declarar IVA ante el SII</p>
                   <button className="btn btn-primary" onClick={() => loadF129()}>Generar Período Actual</button>
                 </div>
@@ -241,9 +242,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 <div>
                   <div className="card" style={{ padding: 24, marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                      <h3 style={{ margin: 0 }}>📋 F129 — {f129.periodoTexto}</h3>
+                      <h3 style={{ margin: 0 }}>{ClipboardList({ size: 18 })} F129 — {f129.periodoTexto}</h3>
                       <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 12, background: f129.estado === 'generado' ? 'var(--bg-tertiary)' : 'rgba(5,150,105,0.08)', color: f129.estado === 'generado' ? 'var(--text-muted)' : 'var(--accent-green)' }}>
-                        {f129.estado === 'generado' ? '⏳ Pendiente de envío' : '✅ Enviado'}
+                        {f129.estado === 'generado' ? <>{Hourglass({ size: 12 })} Pendiente de envío</> : <>{CheckCircle({ size: 12 })} Enviado</>}
                       </span>
                     </div>
                     <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
@@ -259,9 +260,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Plazo: {f129.plazoDeclaracion}</p>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-primary" onClick={submitF129}>📤 Enviar al SII</button>
-                    <a href={f129.urlSii} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">🔗 Portal SII</a>
-                    <button className="btn btn-secondary" onClick={() => loadF129()}>🔄 Regenerar</button>
+                    <button className="btn btn-primary" onClick={submitF129}>Enviar al SII</button>
+                    <a href={f129.urlSii} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">{Link({ size: 14 })} Portal SII</a>
+                    <button className="btn btn-secondary" onClick={() => loadF129()}>{RefreshCw({ size: 14 })} Regenerar</button>
                   </div>
                 </div>
               )}
@@ -272,7 +273,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {tab === 'fraud' && fraudReport && (
             <div>
               <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-                <h4 style={{ marginTop: 0 }}>🛡️ Referidos — Detección de Fraude</h4>
+                <h4 style={{ marginTop: 0 }}>{Shield({ size: 16 })} Referidos — Detección de Fraude</h4>
                 <p style={{ fontSize: 14 }}>Total referidos: <strong>{fraudReport.totalReferrals}</strong></p>
               </div>
               {fraudReport.suspiciousAccounts?.length > 0 ? (
@@ -290,7 +291,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   </div>
                 ))
               ) : (
-                <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>✅</div><h3>Sin actividad sospechosa</h3></div>
+                <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{CheckCircle({ size: 48 })}</div><h3>Sin actividad sospechosa</h3></div>
               )}
             </div>
           )}
@@ -298,7 +299,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {/* COMPLIANCE */}
           {tab === 'compliance' && compliance && (
             <div className="card" style={{ padding: 24 }}>
-              <h3 style={{ marginTop: 0 }}>✅ Estado de Cumplimiento Legal</h3>
+              <h3 style={{ marginTop: 0 }}>{CheckCircle({ size: 18 })} Estado de Cumplimiento Legal</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                 {compliance.requirements?.map((req: string, i: number) => (
                   <div key={i} style={{ fontSize: 14, padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8 }}>{req}</div>
@@ -306,14 +307,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
               </div>
               {compliance.pending?.length > 0 && (
                 <div style={{ marginTop: 16 }}>
-                  <h4 style={{ color: 'var(--accent-orange)' }}>⏳ Pendientes</h4>
+                  <h4 style={{ color: 'var(--accent-orange)' }}>{Hourglass({ size: 16 })} Pendientes</h4>
                   {compliance.pending.map((p: string, i: number) => (
                     <div key={i} style={{ fontSize: 13, padding: 8, color: 'var(--accent-orange)' }}>• {p}</div>
                   ))}
                 </div>
               )}
               <div style={{ marginTop: 16 }}>
-                <h4>📋 Notas Legales</h4>
+                <h4>{ClipboardList({ size: 16 })} Notas Legales</h4>
                 {compliance.legalNotes?.map((n: string, i: number) => (
                   <div key={i} style={{ fontSize: 13, padding: 4, color: 'var(--text-muted)' }}>• {n}</div>
                 ))}
@@ -326,13 +327,13 @@ export default function CeoDashboard({ onNavigate }: Props) {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                  <h3 style={{ fontSize: 17, margin: '0 0 4px' }}>🎓 Gestión de Certificaciones</h3>
+                  <h3 style={{ fontSize: 17, margin: '0 0 4px' }}>{GraduationCap({ size: 18 })} Gestión de Certificaciones</h3>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
                     Certifica manualmente a usuarios, revoca certificados o revisa el progreso de cada estudiante.
                   </p>
                 </div>
                 <button className="btn btn-secondary btn-sm" onClick={loadProgressOverview} disabled={certLoading}>
-                  🔄 Actualizar
+                  {RefreshCw({ size: 14 })} Actualizar
                 </button>
               </div>
 
@@ -345,7 +346,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   border: `1px solid ${certMessage.type === 'success' ? 'rgba(5,150,105,0.15)' : 'rgba(239,68,68,0.15)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
-                  {certMessage.type === 'success' ? '✅' : '⚠️'} {certMessage.text}
+                  {certMessage.type === 'success' ? CheckCircle({ size: 14 }) : AlertTriangle({ size: 14 })} {certMessage.text}
                   <button onClick={() => setCertMessage(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: 'inherit' }}>×</button>
                 </div>
               )}
@@ -357,13 +358,13 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   {/* Summary cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: '👥', color: '#2D62C8' },
-                      { label: 'Certificados emitidos', value: progressData.summary.totalCertificatesIssued, icon: '🏅', color: '#059669' },
-                      { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: '📖', color: '#C4882A' },
-                      { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: '📚', color: '#5B5FC7' },
+                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: Users({ size: 24 }), color: '#2D62C8' },
+                      { label: 'Certificados emitidos', value: progressData.summary.totalCertificatesIssued, icon: Medal({ size: 24 }), color: '#059669' },
+                      { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: BookOpen({ size: 24 }), color: '#C4882A' },
+                      { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: BookOpen({ size: 24 }), color: '#5B5FC7' },
                     ].map((card, i) => (
                       <div key={i} className="card" style={{ padding: 16, textAlign: 'center' }}>
-                        <div style={{ fontSize: 24, marginBottom: 4 }}>{card.icon}</div>
+                        <div style={{ fontSize: 24, marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{card.icon}</div>
                         <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{card.label}</div>
                       </div>
@@ -393,7 +394,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   </div>
 
                   {/* Search */}
-                  <input type="text" placeholder="🔍 Buscar por nombre o correo..." value={certSearch}
+                  <input type="text" placeholder="Buscar por nombre o correo..." value={certSearch}
                     onChange={e => setCertSearch(e.target.value)}
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)',
@@ -436,10 +437,10 @@ export default function CeoDashboard({ onNavigate }: Props) {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                               <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>
-                                🏅 {userData.completedCount} completados
+                                {Medal({ size: 14 })} {userData.completedCount} completados
                               </span>
                               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                📖 {userData.totalStarted} iniciados
+                                {BookOpen({ size: 14 })} {userData.totalStarted} iniciados
                               </span>
                               {userSelected.length > 0 && (
                                 <button onClick={() => handleCertify(userData.userId)} disabled={certifying}
@@ -447,7 +448,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                     padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
                                     background: '#059669', color: '#fff', fontSize: 12, fontWeight: 600,
                                   }}>
-                                  {certifying ? '...' : `🎓 Certificar ${userSelected.length} curso(s)`}
+                                  {certifying ? '...' : <>{GraduationCap({ size: 14 })} Certificar {userSelected.length} curso(s)</>}
                                 </button>
                               )}
                             </div>
@@ -459,7 +460,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                             {completedCourses.length > 0 && (
                               <div style={{ marginBottom: completedCourses.length > 0 && incompleteCourses.length > 0 ? 12 : 0 }}>
                                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#059669', marginBottom: 6 }}>
-                                  ✅ Certificados obtenidos
+                                  {CheckCircle({ size: 12 })} Certificados obtenidos
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                   {completedCourses.map((c: any) => (
@@ -494,7 +495,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                   color: 'var(--text-muted)', marginBottom: 6,
                                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 }}>
-                                  <span>📋 Cursos disponibles para certificar</span>
+                                  <span>{ClipboardList({ size: 12 })} Cursos disponibles para certificar</span>
                                   <button onClick={() => selectAllCoursesForUser(userData.userId, incompleteCourses.map((c: any) => c.id))}
                                     style={{
                                       background: 'none', border: 'none', cursor: 'pointer',
@@ -545,7 +546,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
                             {completedCourses.length === progressData.courses.length && (
                               <div style={{ textAlign: 'center', padding: 12, color: '#059669', fontSize: 13, fontWeight: 600 }}>
-                                🎉 Todos los cursos completados
+                                {CheckCircle({ size: 16 })} Todos los cursos completados
                               </div>
                             )}
                           </div>
@@ -555,7 +556,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
                   {progressData.users.length === 0 && (
                     <div className="empty-state" style={{ padding: 40 }}>
-                      <div style={{ fontSize: 48 }}>📭</div>
+                      <div style={{ fontSize: 48 }}>{ClipboardList({ size: 48 })}</div>
                       <h3>Sin actividad aún</h3>
                       <p style={{ color: 'var(--text-muted)' }}>Ningún usuario ha empezado cursos todavía.</p>
                     </div>
@@ -563,7 +564,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 </>
               ) : (
                 <div className="empty-state" style={{ padding: 40 }}>
-                  <div style={{ fontSize: 48 }}>🎓</div>
+                  <div style={{ fontSize: 48 }}>{GraduationCap({ size: 48 })}</div>
                   <h3>Carga los datos de progreso</h3>
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
                     Cargar datos

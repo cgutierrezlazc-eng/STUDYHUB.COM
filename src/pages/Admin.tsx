@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { AdminStats } from '../types'
+import { BarChart3, Users, AlertTriangle, ClipboardList, CheckCircle, XCircle, Gem, Shield } from '../components/Icons'
 
 export default function Admin() {
   const { user } = useAuth()
@@ -154,15 +155,15 @@ export default function Admin() {
 
   if (!user?.isAdmin) return <div className="page-body"><p>No tienes acceso al panel de administración.</p></div>
 
-  const TABS = [
-    { id: 'stats', label: 'Dashboard', icon: '📊' },
-    { id: 'users', label: 'Usuarios', icon: '👥' },
-    { id: 'subscribers', label: 'Suscriptores', icon: '💳' },
-    ...(user?.role === 'owner' ? [{ id: 'payments', label: 'Pagos/Finanzas', icon: '💰' }] : []),
-    { id: 'reports', label: `Reportes${stats?.pendingReports ? ` (${stats.pendingReports})` : ''}`, icon: '🚨' },
-    { id: 'flagged', label: 'Mensajes Flag.', icon: '⚠️' },
-    { id: 'blocks', label: 'Bloqueos', icon: '🚫' },
-    { id: 'logs', label: 'Registro', icon: '📋' },
+  const TABS: { id: string; label: string; icon: React.ReactNode }[] = [
+    { id: 'stats', label: 'Dashboard', icon: BarChart3({ size: 14 }) },
+    { id: 'users', label: 'Usuarios', icon: Users({ size: 14 }) },
+    { id: 'subscribers', label: 'Suscriptores', icon: Gem({ size: 14 }) },
+    ...(user?.role === 'owner' ? [{ id: 'payments', label: 'Pagos/Finanzas', icon: Gem({ size: 14 }) }] : []),
+    { id: 'reports', label: `Reportes${stats?.pendingReports ? ` (${stats.pendingReports})` : ''}`, icon: AlertTriangle({ size: 14 }) },
+    { id: 'flagged', label: 'Mensajes Flag.', icon: AlertTriangle({ size: 14 }) },
+    { id: 'blocks', label: 'Bloqueos', icon: Shield({ size: 14 }) },
+    { id: 'logs', label: 'Registro', icon: ClipboardList({ size: 14 }) },
   ]
 
   return (
@@ -752,9 +753,9 @@ export default function Admin() {
                 <div className="admin-detail-item"><label>Fecha Nacimiento</label><span>{selectedUser.birthDate || '—'}</span></div>
                 <div className="admin-detail-item"><label>Idioma</label><span>{selectedUser.language}</span></div>
                 <div className="admin-detail-item"><label>Proveedor</label><span>{selectedUser.provider}</span></div>
-                <div className="admin-detail-item"><label>Email Verificado</label><span>{selectedUser.emailVerified ? '✅ Sí' : '❌ No'}</span></div>
-                <div className="admin-detail-item"><label>Estado</label><span>{selectedUser.isBanned ? '🚫 Baneado' : '✅ Activo'}</span></div>
-                <div className="admin-detail-item"><label>Admin</label><span>{selectedUser.isAdmin ? '✅ Sí' : '❌ No'}</span></div>
+                <div className="admin-detail-item"><label>Email Verificado</label><span>{selectedUser.emailVerified ? <>{CheckCircle({ size: 14 })} Sí</> : <>{XCircle({ size: 14 })} No</>}</span></div>
+                <div className="admin-detail-item"><label>Estado</label><span>{selectedUser.isBanned ? <>{XCircle({ size: 14 })} Baneado</> : <>{CheckCircle({ size: 14 })} Activo</>}</span></div>
+                <div className="admin-detail-item"><label>Admin</label><span>{selectedUser.isAdmin ? <>{CheckCircle({ size: 14 })} Sí</> : <>{XCircle({ size: 14 })} No</>}</span></div>
                 <div className="admin-detail-item"><label>Suscripción</label><span>{selectedUser.subscriptionStatus}</span></div>
                 <div className="admin-detail-item"><label>Tema</label><span>{selectedUser.theme}</span></div>
                 <div className="admin-detail-item"><label>Mensajes Enviados</label><span>{selectedUser.messageCount ?? '—'}</span></div>

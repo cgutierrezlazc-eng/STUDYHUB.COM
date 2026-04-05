@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, func
 
 from database import (get_db, User, Course, CourseLesson, CourseQuiz,
                       UserCourseProgress, StudentCV, gen_id)
@@ -495,7 +495,7 @@ def generate_course_content(course_id: str, user: User = Depends(get_current_use
 
     # Try AI generation
     try:
-        from ai_engine import AIEngine
+        from gemini_engine import AIEngine
         ai = AIEngine()
     except Exception:
         raise HTTPException(503, "El contenido de este curso aún no está disponible. Estamos trabajando en agregarlo.")
@@ -620,6 +620,9 @@ def submit_quiz(course_id: str, data: dict,
     progress.quiz_score = score
     progress.quiz_passed = passed
 
+    rewards_granted = []
+    course_reward_progress = None
+
     if passed:
         progress.completed = True
         progress.completed_at = datetime.utcnow()
@@ -628,6 +631,71 @@ def submit_quiz(course_id: str, data: dict,
         from gamification import award_xp
         award_xp(user, 30, db)
 
+        # Course-completion rewards use a 12-month rolling window
+        from rewards_routes import (grant_reward, REWARD_RULES,
+                                    get_course_reward_window, COURSE_REWARD_CYCLE_DAYS)
+
+        courses_in_window, days_left, _ = get_course_reward_window(user.id, db)
+
+        # 3 courses in window → 1 month PRO
+        if courses_in_window >= 3:
+            if grant_reward(user, "courses_3", "pro", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
+                rule = next((r for r in REWARD_RULES if r["id"] == "courses_3"), {})
+                rewards_granted.append({
+                    "id": "courses_3", "title": rule.get("title", ""),
+                    "description": rule.get("description", ""), "tier": "pro", "days": 30,
+                })
+
+        # 6 courses in window → 1 month MAX
+        if courses_in_window >= 6:
+            if grant_reward(user, "courses_6", "max", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
+                rule = next((r for r in REWARD_RULES if r["id"] == "courses_6"), {})
+                rewards_granted.append({
+                    "id": "courses_6", "title": rule.get("title", ""),
+                    "description": rule.get("description", ""), "tier": "max", "days": 30,
+                })
+
+        # Perfect quiz reward
+        if score == 100:
+            if grant_reward(user, "perfect_quiz", "pro", 30, db):
+                rule = next((r for r in REWARD_RULES if r["id"] == "perfect_quiz"), {})
+                rewards_granted.append({
+                    "id": "perfect_quiz", "title": rule.get("title", ""),
+                    "description": rule.get("description", ""), "tier": "pro", "days": 30,
+                })
+
+        # Build progress message for the user
+        # Tell them how many more courses they need and how much time is left
+        if courses_in_window < 3:
+            remaining = 3 - courses_in_window
+            course_reward_progress = {
+                "coursesInWindow": courses_in_window,
+                "daysLeft": days_left,
+                "nextTarget": 3,
+                "coursesNeeded": remaining,
+                "nextTier": "PRO",
+                "message": f"¡Te {'falta' if remaining == 1 else 'faltan'} {remaining} curso{'s' if remaining != 1 else ''} más para ganar 1 mes PRO gratis! Tienes {days_left} días restantes.",
+            }
+        elif courses_in_window < 6:
+            remaining = 6 - courses_in_window
+            course_reward_progress = {
+                "coursesInWindow": courses_in_window,
+                "daysLeft": days_left,
+                "nextTarget": 6,
+                "coursesNeeded": remaining,
+                "nextTier": "MAX",
+                "message": f"¡Ya ganaste tu mes PRO! Te {'falta' if remaining == 1 else 'faltan'} {remaining} curso{'s' if remaining != 1 else ''} más para ganar 1 mes MAX gratis. Tienes {days_left} días restantes.",
+            }
+        else:
+            course_reward_progress = {
+                "coursesInWindow": courses_in_window,
+                "daysLeft": days_left,
+                "nextTarget": None,
+                "coursesNeeded": 0,
+                "nextTier": None,
+                "message": "¡Felicidades! Has completado todos los hitos de cursos en este ciclo. 🎉",
+            }
+
     db.commit()
 
     course = db.query(Course).filter(Course.id == course_id).first()
@@ -635,6 +703,8 @@ def submit_quiz(course_id: str, data: dict,
         "score": score, "passed": passed, "correct": correct, "total": len(questions),
         "certificateId": progress.certificate_id if passed else None,
         "courseTitle": course.title if course else "",
+        "rewardsGranted": rewards_granted,
+        "courseRewardProgress": course_reward_progress,
     }
 
 

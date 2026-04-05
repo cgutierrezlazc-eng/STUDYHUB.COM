@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { api } from '../services/api'
+import { CheckCircle } from './Icons'
 
 interface Props {
   onBack: () => void
@@ -140,7 +141,7 @@ export default function ForgotPassword({ onBack }: Props) {
 
           {step === 'done' && (
             <div style={{ textAlign: 'center', padding: 20 }}>
-              <div style={{ fontSize: 48 }}>✅</div>
+              <div style={{ fontSize: 48 }}>{CheckCircle({ size: 48, color: 'var(--accent-green)' })}</div>
               <h3 style={{ marginTop: 16 }}>Contraseña Actualizada</h3>
               <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>
                 Tu contraseña ha sido cambiada exitosamente. Ya puedes iniciar sesión.

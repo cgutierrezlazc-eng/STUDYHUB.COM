@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Video, Link } from './Icons'
 
 const CONFERENCES = {
   live: [
@@ -49,7 +50,7 @@ export default function ConferencePanel() {
         cursor: 'pointer', zIndex: 100, textTransform: 'uppercase',
         boxShadow: '-2px 0 10px rgba(0,0,0,0.15)',
       }}>
-        🎥 Conferencias
+        {Video({ size: 16 })} Conferencias
       </div>
 
       {/* Modal */}
@@ -87,7 +88,7 @@ export default function ConferencePanel() {
                   <div style={{ textAlign: 'right' }}>
                     <span style={{ fontSize: 10, fontWeight: 600, padding: '4px 10px', borderRadius: 6, background: '#FEE2E2', color: '#DC2626' }}>EN VIVO</span>
                     <a href={c.link} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: 10, color: '#DC2626', fontWeight: 600, textDecoration: 'none', marginTop: 6 }}>
-                      🔗 Unirse vía Zoom
+                      {Link({ size: 14 })} Unirse vía Zoom
                     </a>
                   </div>
                 </div>

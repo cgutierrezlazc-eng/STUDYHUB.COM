@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Project, Document, ChatMessage } from '../types'
 import { api } from '../services/api'
+import { FileText, FileUp, Pencil, Trash2, Upload, Film, FolderOpen, PlayCircle, Video, Download, MessageSquare, Brain, BookOpen, Rocket, Hourglass, Lightbulb, Camera, Mic, Save, ClipboardList, SquareFunction, Map, RotateCcw, Dumbbell, AlertTriangle, Sparkles, Link } from '../components/Icons'
 
 interface VideoDoc {
   id: string
@@ -43,7 +44,7 @@ function formatSize(bytes: number) {
 export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const { id } = useParams<{ id: string }>()
   const project = projects.find(p => p.id === id)
-  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'live'>('docs')
+  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'summary' | 'live'>('docs')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -75,6 +76,13 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false)
   const [isGeneratingFlashcards, setIsGeneratingFlashcards] = useState(false)
   const [socraticMode, setSocraticMode] = useState(false)
+  // Summary / AI advanced
+  const [summaryData, setSummaryData] = useState<any>(null)
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
+  const [summaryDetailLevel, setSummaryDetailLevel] = useState<'brief' | 'standard' | 'comprehensive'>('comprehensive')
+  const [conceptMap, setConceptMap] = useState<any>(null)
+  const [isGeneratingMap, setIsGeneratingMap] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<number | null>(null)
@@ -238,6 +246,17 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     }
   }
 
+  const handleExportChatPdf = async () => {
+    try {
+      const chatMessages = messages.map(m => ({
+        role: m.role, content: m.content, timestamp: m.timestamp,
+      }))
+      await api.exportChatPdf(project.id, chatMessages, `${project.name}-chat`)
+    } catch {
+      alert('No se pudo exportar. Verifica que el backend esté corriendo.')
+    }
+  }
+
   const handleAddYoutube = async () => {
     if (!youtubeUrl.trim()) return
     setAddingVideo(true)
@@ -371,7 +390,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             {showProjectMenu && (
               <div className="wa-dropdown-menu" style={{ position: 'absolute', right: 0, top: '100%', marginTop: 4, minWidth: 180, zIndex: 10 }}>
                 <button onClick={() => { setRenameValue(project.name); setShowRenameModal(true); setShowProjectMenu(false) }}>
-                  ✏️ Renombrar
+                  {Pencil()} Renombrar
                 </button>
                 <button className="wa-danger" onClick={() => {
                   if (confirm('¿Eliminar esta asignatura y todos sus documentos?')) {
@@ -379,7 +398,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     onDelete(project.id)
                   }
                 }}>
-                  🗑 Eliminar Asignatura
+                  {Trash2()} Eliminar Asignatura
                 </button>
               </div>
             )}
@@ -400,6 +419,9 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           </button>
           <button className={`tab ${tab === 'flashcards' ? 'active' : ''}`} onClick={() => setTab('flashcards')}>
             Flashcards
+          </button>
+          <button className={`tab ${tab === 'summary' ? 'active' : ''}`} onClick={() => setTab('summary')}>
+            Resumen IA
           </button>
           <button className={`tab ${tab === 'live' ? 'active' : ''}`} onClick={() => setTab('live')}>
             Clases en Vivo
@@ -453,7 +475,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               onChange={handleFileUpload}
             />
             <div className="upload-zone" onClick={handleElectronFileSelect}>
-              <div className="upload-zone-icon">📄</div>
+              <div className="upload-zone-icon">{FileUp({ size: 40 })}</div>
               <h3>Arrastra archivos aquí o haz click para seleccionar</h3>
               <p>PDF, Word, Excel, PowerPoint, TXT, CSV, Imágenes</p>
             </div>
@@ -492,7 +514,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   }}
                   disabled={isGeneratingGuide}
                 >
-                  {isGeneratingGuide ? '⏳ Generando...' : '🚀 Upload to Study — Generar Todo'}
+                  {isGeneratingGuide ? <>{Hourglass()} Generando...</> : <>{Rocket()} Upload to Study — Generar Todo</>}
                 </button>
               </div>
             )}
@@ -529,7 +551,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             {/* Videos / YouTube */}
             <div style={{ marginTop: 28 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <h3 style={{ margin: 0 }}>🎬 Videos y Clases</h3>
+                <h3 style={{ margin: 0 }}>{Film()} Videos y Clases</h3>
                 <button className="btn btn-secondary btn-sm" onClick={() => setShowVideoModal(true)}>
                   + Agregar Video
                 </button>
@@ -562,7 +584,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     onChange={handleVideoUpload}
                   />
                   <button className="btn btn-secondary" style={{ width: '100%' }} onClick={() => videoInputRef.current?.click()} disabled={addingVideo}>
-                    📁 Seleccionar archivo
+                    {FolderOpen()} Seleccionar archivo
                   </button>
                   <button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }} onClick={() => setShowVideoModal(false)}>
                     Cancelar
@@ -575,7 +597,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   {videos.map(v => (
                     <div key={v.id} className="doc-item">
                       <div className="doc-icon" style={{ background: 'var(--accent-primary)22', color: 'var(--accent-primary)' }}>
-                        {v.sourceType === 'youtube' ? '▶' : '🎥'}
+                        {v.sourceType === 'youtube' ? PlayCircle() : Video()}
                       </div>
                       <div className="doc-info">
                         <div className="doc-name">{v.title || 'Video sin título'}</div>
@@ -598,10 +620,18 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
         {tab === 'chat' && (
           <div className="chat-container" style={{ height: 'calc(100vh - 240px)' }}>
+            {/* Chat toolbar */}
+            {messages.length > 0 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
+                <button className="btn btn-secondary btn-xs" onClick={() => handleExportChatPdf()} title="Exportar todo el chat como PDF">
+                  {Download()} Exportar Chat PDF
+                </button>
+              </div>
+            )}
             <div className="chat-messages">
               {messages.length === 0 && (
                 <div className="empty-state">
-                  <div className="empty-state-icon">💬</div>
+                  <div className="empty-state-icon">{MessageSquare({ size: 40 })}</div>
                   <h3>Chatea sobre tus documentos</h3>
                   <p>Hazme preguntas sobre el material de {project.name}</p>
                 </div>
@@ -615,7 +645,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                       onClick={() => handleExportDocx(msg.content)}
                       title="Descargar como Word"
                     >
-                      📥 Word
+                      {Download()} Word
                     </button>
                   )}
                 </div>
@@ -636,7 +666,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 title={socraticMode ? 'Modo Socrático: ON (te guío con preguntas)' : 'Modo Socrático: OFF (respuestas directas)'}
                 style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
               >
-                🧠 {socraticMode ? 'Socrático' : 'Directo'}
+                {Brain()} {socraticMode ? 'Socrático' : 'Directo'}
               </button>
                 <button
                   onClick={() => {
@@ -654,7 +684,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         setChatInput('')
                         const userMsg: ChatMessage = {
                           id: Date.now().toString(), role: 'user',
-                          content: '📷 Escaneando problema...', timestamp: new Date().toISOString(), projectId: project.id,
+                          content: 'Escaneando problema...', timestamp: new Date().toISOString(), projectId: project.id,
                         }
                         setMessages(prev => [...prev, userMsg])
                         try {
@@ -680,7 +710,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   title="Escanear problema con cámara"
                   style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
                 >
-                  📷 Escanear
+                  {Camera()} Escanear
                 </button>
               <textarea
                 className="chat-input"
@@ -706,7 +736,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           <>
             {!guide ? (
               <div className="empty-state">
-                <div className="empty-state-icon">📖</div>
+                <div className="empty-state-icon">{BookOpen({ size: 40 })}</div>
                 <h3>Genera una guía de estudio</h3>
                 <p>Conniku analizará todos los documentos de {project.name} y creará material de estudio personalizado</p>
                 <button
@@ -741,12 +771,12 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             {/* Initial state: no questions generated yet */}
             {quizQuestions.length === 0 && !isGeneratingQuiz && (
               <div className="empty-state">
-                <div className="empty-state-icon">🧠</div>
+                <div className="empty-state-icon">{Brain({ size: 40 })}</div>
                 <h3>Quiz de Repaso</h3>
                 <p>Genera preguntas automáticas basadas en tus documentos</p>
                 {project.documents.length === 0 ? (
                   <p style={{ color: 'var(--warning)', fontSize: 13, marginTop: 8 }}>
-                    ⚠️ Sube al menos un documento para generar un quiz.
+                    {AlertTriangle()} Sube al menos un documento para generar un quiz.
                   </p>
                 ) : (
                   <button
@@ -777,7 +807,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             {/* Loading state */}
             {isGeneratingQuiz && (
               <div className="empty-state">
-                <div className="empty-state-icon" style={{ animation: 'pulse 1.5s infinite' }}>🧠</div>
+                <div className="empty-state-icon" style={{ animation: 'pulse 1.5s infinite' }}>{Brain({ size: 40 })}</div>
                 <h3>Generando quiz...</h3>
                 <p>Analizando tus documentos para crear preguntas</p>
               </div>
@@ -886,7 +916,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 {/* Score summary */}
                 <div className="card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
                   <div style={{ fontSize: 48, marginBottom: 8 }}>
-                    {quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? '📚' : '💪'}
+                    {quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? BookOpen({ size: 40 }) : Dumbbell({ size: 40 })}
                   </div>
                   <h2 style={{ margin: '0 0 8px' }}>
                     {quizScore} / {quizQuestions.length} correctas
@@ -909,7 +939,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         setQuizResult(null)
                       }}
                     >
-                      🔄 Reintentar
+                      {RotateCcw()} Reintentar
                     </button>
                     <button
                       className="btn btn-primary"
@@ -931,7 +961,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         }
                       }}
                     >
-                      ✨ Nuevo Quiz
+                      {Sparkles()} Nuevo Quiz
                     </button>
                   </div>
                 </div>
@@ -992,7 +1022,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                           marginTop: 8,
                           lineHeight: 1.5,
                         }}>
-                          💡 {q.explanation}
+                          {Lightbulb()} {q.explanation}
                         </div>
                       )}
                     </div>
@@ -1007,7 +1037,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           <>
             {flashcards.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-state-icon">🃏</div>
+                <div className="empty-state-icon">{Brain({ size: 40 })}</div>
                 <h3>Flashcards con Repetición Espaciada</h3>
                 <p>Genera flashcards inteligentes que se adaptan a tu ritmo de aprendizaje</p>
                 <button
@@ -1168,11 +1198,215 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
           </>
         )}
 
+        {tab === 'summary' && (
+          <div style={{ maxWidth: 900, margin: '0 auto' }}>
+            {/* Controls */}
+            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>Nivel de detalle</label>
+                  <select
+                    value={summaryDetailLevel}
+                    onChange={e => setSummaryDetailLevel(e.target.value as any)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14 }}
+                  >
+                    <option value="brief">Breve — Puntos clave</option>
+                    <option value="standard">Estándar — Resumen completo</option>
+                    <option value="comprehensive">Completo — Análisis profundo con diagramas</option>
+                  </select>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (!project) return
+                    setIsGeneratingSummary(true)
+                    try {
+                      const data = await api.generateSummary(project.id, summaryDetailLevel)
+                      setSummaryData(data)
+                    } catch (err: any) { console.error(err) }
+                    setIsGeneratingSummary(false)
+                  }}
+                  disabled={isGeneratingSummary || !project?.documents.length}
+                  className="btn btn-primary"
+                  style={{ height: 42, padding: '0 24px', whiteSpace: 'nowrap' }}
+                >
+                  {isGeneratingSummary ? <>{Hourglass()} Generando...</> : <>{Sparkles()} Generar Resumen IA</>}
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!project) return
+                    setIsGeneratingMap(true)
+                    try {
+                      const data = await api.generateConceptMap(project.id)
+                      setConceptMap(data)
+                    } catch (err: any) { console.error(err) }
+                    setIsGeneratingMap(false)
+                  }}
+                  disabled={isGeneratingMap || !project?.documents.length}
+                  className="btn btn-secondary"
+                  style={{ height: 42, padding: '0 20px', whiteSpace: 'nowrap' }}
+                >
+                  {isGeneratingMap ? <>{Hourglass()} ...</> : <>{Map()} Mapa Conceptual</>}
+                </button>
+              </div>
+              {!project?.documents.length && (
+                <p style={{ margin: '12px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
+                  Sube documentos primero para generar resúmenes inteligentes.
+                </p>
+              )}
+            </div>
+
+            {/* Summary content */}
+            {summaryData && (
+              <div className="card" style={{ padding: 24 }}>
+                {/* Export buttons */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                  <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {summaryData.title || 'Resumen de Estudio'}
+                  </h2>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={async () => {
+                        if (!project) return
+                        setIsExporting(true)
+                        try { await api.exportSummaryDocx(project.id, summaryData, summaryData.title || 'Resumen') } catch (e: any) { console.error(e) }
+                        setIsExporting(false)
+                      }}
+                      disabled={isExporting}
+                      className="btn btn-secondary btn-sm"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+                      Word
+                    </button>
+                    <button
+                      onClick={async () => {
+                        if (!project) return
+                        setIsExporting(true)
+                        try { await api.exportSummaryPdf(project.id, summaryData, summaryData.title || 'Resumen') } catch (e: any) { console.error(e) }
+                        setIsExporting(false)
+                      }}
+                      disabled={isExporting}
+                      className="btn btn-secondary btn-sm"
+                      style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+                      PDF
+                    </button>
+                  </div>
+                </div>
+
+                {/* Rendered HTML summary */}
+                {summaryData.htmlContent && (
+                  <div
+                    className="lesson-content"
+                    dangerouslySetInnerHTML={{ __html: summaryData.htmlContent }}
+                    style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-primary)' }}
+                  />
+                )}
+
+                {/* Key terms */}
+                {summaryData.keyTerms?.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2D62C8', marginBottom: 12 }}>{BookOpen()} Glosario de Términos</h3>
+                    <div style={{ display: 'grid', gap: 8 }}>
+                      {summaryData.keyTerms.map((term: any, i: number) => (
+                        <div key={i} style={{ padding: '10px 14px', background: 'var(--bg-secondary)', borderRadius: 8, borderLeft: '3px solid #2D62C8' }}>
+                          <strong style={{ color: 'var(--text-primary)' }}>{term.term}</strong>
+                          <span style={{ color: 'var(--text-secondary)', marginLeft: 8 }}>{term.definition}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Formulas */}
+                {summaryData.formulas?.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2D62C8', marginBottom: 12 }}>{SquareFunction()} Fórmulas Importantes</h3>
+                    <div style={{ display: 'grid', gap: 8 }}>
+                      {summaryData.formulas.map((f: any, i: number) => (
+                        <div key={i} style={{ padding: '12px 14px', background: '#151B1E', borderRadius: 8, color: '#fff' }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>{f.name}</div>
+                          <code style={{ fontSize: 15, color: '#60A5FA' }}>{f.latex}</code>
+                          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', marginTop: 6 }}>{f.explanation}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Study tips */}
+                {summaryData.studyTips?.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <h3 style={{ fontSize: 16, fontWeight: 700, color: '#2D62C8', marginBottom: 12 }}>{Lightbulb()} Tips de Estudio</h3>
+                    <ul style={{ margin: 0, paddingLeft: 20 }}>
+                      {summaryData.studyTips.map((tip: string, i: number) => (
+                        <li key={i} style={{ marginBottom: 6, color: 'var(--text-secondary)', fontSize: 14 }}>{tip}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Concept Map */}
+            {conceptMap && conceptMap.nodes?.length > 0 && (
+              <div className="card" style={{ padding: 24, marginTop: 20 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>{Map()} Mapa Conceptual</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
+                  {conceptMap.nodes.map((node: any) => (
+                    <div key={node.id} style={{
+                      padding: '10px 16px', borderRadius: 10,
+                      background: node.type === 'main' ? '#2D62C8' : node.type === 'sub' ? 'rgba(45,98,200,0.15)' : 'var(--bg-secondary)',
+                      color: node.type === 'main' ? '#fff' : 'var(--text-primary)',
+                      border: `1.5px solid ${node.type === 'main' ? '#2D62C8' : 'var(--border-color)'}`,
+                      fontSize: node.type === 'main' ? 15 : 13,
+                      fontWeight: node.type === 'main' ? 700 : node.type === 'sub' ? 600 : 400,
+                      textAlign: 'center', minWidth: 100,
+                    }}>
+                      {node.label}
+                    </div>
+                  ))}
+                </div>
+                {conceptMap.edges?.length > 0 && (
+                  <div style={{ marginTop: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
+                    <strong>Relaciones:</strong>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+                      {conceptMap.edges.map((edge: any, i: number) => {
+                        const from = conceptMap.nodes.find((n: any) => n.id === edge.from)
+                        const to = conceptMap.nodes.find((n: any) => n.id === edge.to)
+                        return (
+                          <span key={i} style={{ padding: '4px 10px', background: 'var(--bg-secondary)', borderRadius: 6, fontSize: 12 }}>
+                            {from?.label || edge.from} → <em>{edge.label}</em> → {to?.label || edge.to}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Loading states */}
+            {isGeneratingSummary && (
+              <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>{Brain({ size: 40 })}</div>
+                <p style={{ fontSize: 15, color: 'var(--text-secondary)' }}>
+                  Gemini está analizando tus documentos y creando un resumen inteligente...
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  Esto puede tomar unos segundos dependiendo de la cantidad de material.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
         {tab === 'live' && (
           <div className="live-class-container">
             {/* Zoom / Meeting Link */}
             <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-              <h3 style={{ marginTop: 0 }}>🔗 Enlace de Clase en Vivo</h3>
+              <h3 style={{ marginTop: 0 }}>{Link({ size: 16 })} Enlace de Clase en Vivo</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 12 }}>
                 Pega el enlace de Zoom, Google Meet u otra plataforma para acceder a tu clase directamente
               </p>
@@ -1204,7 +1438,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     className="btn btn-primary"
                     style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
                   >
-                    🎥 Unirse a la Clase
+                    {Video()} Unirse a la Clase
                   </a>
                   <span style={{ color: 'var(--text-muted)', fontSize: 12, wordBreak: 'break-all' }}>
                     {savedZoomLink}
@@ -1215,7 +1449,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
             {/* Recording */}
             <div className="card" style={{ padding: 20, marginBottom: 20 }}>
-              <h3 style={{ marginTop: 0 }}>🎙️ Grabar Clase</h3>
+              <h3 style={{ marginTop: 0 }}>{Mic()} Grabar Clase</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 12 }}>
                 Graba el audio de tu clase para transcribirlo y agregarlo como material de estudio
               </p>
@@ -1242,13 +1476,13 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 <div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                     <button className="btn btn-secondary" onClick={handleDownloadRecording}>
-                      💾 Guardar en mi Computador
+                      {Save()} Guardar en mi Computador
                     </button>
                     <button className="btn btn-primary" onClick={handleTranscribeAndSave} disabled={savingTranscription}>
-                      {savingTranscription ? 'Enviando...' : '📝 Transcribir y Guardar en esta Asignatura'}
+                      {savingTranscription ? 'Enviando...' : <>{ClipboardList()} Transcribir y Guardar en esta Asignatura</>}
                     </button>
                     <button className="btn btn-secondary" onClick={() => { setRecordedBlob(null); setLiveTranscription('') }}>
-                      🗑 Descartar
+                      {Trash2()} Descartar
                     </button>
                   </div>
                   <audio controls src={URL.createObjectURL(recordedBlob!)} style={{ width: '100%', marginTop: 8 }} />
@@ -1264,7 +1498,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
             {/* Save transcription to project selector */}
             <div className="card" style={{ padding: 20 }}>
-              <h3 style={{ marginTop: 0 }}>📋 Transcripciones de Clases</h3>
+              <h3 style={{ marginTop: 0 }}>{ClipboardList()} Transcripciones de Clases</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
                 Las grabaciones transcritas aparecerán automáticamente en la pestaña <strong>Documentos</strong> de esta asignatura
                 y estarán disponibles en el <strong>Chat con tus Documentos</strong> para consultar el contenido de tus clases.
@@ -1273,7 +1507,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 <div className="doc-list" style={{ marginTop: 12 }}>
                   {videos.filter(v => v.status === 'done').map(v => (
                     <div key={v.id} className="doc-item">
-                      <div className="doc-icon" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)' }}>📝</div>
+                      <div className="doc-icon" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)' }}>{ClipboardList()}</div>
                       <div className="doc-info">
                         <div className="doc-name">{v.title || 'Transcripción de clase'}</div>
                         <div className="doc-meta">Transcripción disponible</div>
