@@ -16,9 +16,9 @@ import bcrypt
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
-from database import get_db, User, gen_id, DATA_DIR
+from database import get_db, User, gen_id, DATA_DIR, TutoringRequest
 from middleware import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -112,10 +112,15 @@ class RegisterRequest(BaseModel):
     username: Optional[str] = None
     tos_accepted: bool = False
     referral_code: Optional[str] = None
-    academic_status: str = "estudiante"  # estudiante | egresado | titulado
+    academic_status: str = "estudiante"
+    graduation_status_year: Optional[int] = None
+    title_year: Optional[int] = None
     offers_mentoring: bool = False
-    mentoring_services: list = []  # ["ayudantias","cursos","clases_particulares"]
-    mentoring_subjects: list = []  # subjects they can teach
+    mentoring_services: list = []
+    mentoring_subjects: list = []
+    mentoring_description: str = ""
+    mentoring_price_type: str = "free"
+    mentoring_price_per_hour: Optional[float] = None
     professional_title: str = ""
 
 
@@ -141,9 +146,14 @@ class UpdateProfileRequest(BaseModel):
     avatar: Optional[str] = None
     theme: Optional[str] = None
     academic_status: Optional[str] = None
+    graduation_status_year: Optional[int] = None
+    title_year: Optional[int] = None
     offers_mentoring: Optional[bool] = None
     mentoring_services: Optional[list] = None
     mentoring_subjects: Optional[list] = None
+    mentoring_description: Optional[str] = None
+    mentoring_price_type: Optional[str] = None
+    mentoring_price_per_hour: Optional[float] = None
     professional_title: Optional[str] = None
 
 
@@ -208,9 +218,15 @@ def user_to_dict(user: User) -> dict:
         "pomodoroTotalMinutes": getattr(user, 'pomodoro_total_minutes', 0) or 0,
         "weeklyStudyGoalHours": getattr(user, 'weekly_study_goal_hours', 10.0) or 10.0,
         "academicStatus": getattr(user, 'academic_status', 'estudiante') or "estudiante",
+        "graduationStatusYear": getattr(user, 'graduation_status_year', None),
+        "titleYear": getattr(user, 'title_year', None),
         "offersMentoring": getattr(user, 'offers_mentoring', False) or False,
         "mentoringServices": _json.loads(getattr(user, 'mentoring_services', None) or "[]"),
         "mentoringSubjects": _json.loads(getattr(user, 'mentoring_subjects', None) or "[]"),
+        "mentoringDescription": getattr(user, 'mentoring_description', '') or "",
+        "mentoringPriceType": getattr(user, 'mentoring_price_type', 'free') or "free",
+        "mentoringPricePerHour": getattr(user, 'mentoring_price_per_hour', None),
+        "mentoringCurrency": getattr(user, 'mentoring_currency', 'CLP') or "CLP",
         "professionalTitle": getattr(user, 'professional_title', '') or "",
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
@@ -304,9 +320,14 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         is_admin=is_admin,
         role="user",
         academic_status=req.academic_status if req.academic_status in ("estudiante", "egresado", "titulado") else "estudiante",
+        graduation_status_year=req.graduation_status_year,
+        title_year=req.title_year if req.academic_status == "titulado" else None,
         offers_mentoring=req.offers_mentoring if req.academic_status in ("egresado", "titulado") else False,
         mentoring_services=_json.dumps(req.mentoring_services) if req.mentoring_services else "[]",
         mentoring_subjects=_json.dumps(req.mentoring_subjects) if req.mentoring_subjects else "[]",
+        mentoring_description=html.escape(req.mentoring_description or ""),
+        mentoring_price_type=req.mentoring_price_type if req.mentoring_price_type in ("free", "paid") else "free",
+        mentoring_price_per_hour=req.mentoring_price_per_hour if req.mentoring_price_type == "paid" else None,
         professional_title=html.escape(req.professional_title or ""),
         tos_accepted_at=datetime.utcnow() if req.tos_accepted else None,
         onboarding_completed=False,
@@ -695,6 +716,206 @@ def setup_owner(req: OwnerSetupRequest, db: Session = Depends(get_db)):
     user.email_verified = True
     db.commit()
     return {"success": True, "message": "Owner password updated"}
+
+
+# ─── Pydantic models for tutoring ────────────────────────────
+
+class TutoringRequestCreate(BaseModel):
+    tutor_id: str
+    subject: str
+    message: str = ""
+
+class TutoringRequestRespond(BaseModel):
+    action: str  # "accepted" or "rejected"
+
+
+# ─── Tutoring request endpoints ──────────────────────────────
+
+@router.post("/tutoring-request")
+def send_tutoring_request(
+    req: TutoringRequestCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Student sends a tutoring request to a tutor."""
+    if user.id == req.tutor_id:
+        raise HTTPException(400, "You cannot send a tutoring request to yourself")
+
+    tutor = db.query(User).filter(User.id == req.tutor_id).first()
+    if not tutor:
+        raise HTTPException(404, "Tutor not found")
+    if not tutor.offers_mentoring:
+        raise HTTPException(400, "This user does not offer mentoring")
+
+    # Check for duplicate pending request
+    existing = (
+        db.query(TutoringRequest)
+        .filter(
+            TutoringRequest.student_id == user.id,
+            TutoringRequest.tutor_id == req.tutor_id,
+            TutoringRequest.subject == req.subject,
+            TutoringRequest.status == "pending",
+        )
+        .first()
+    )
+    if existing:
+        raise HTTPException(409, "You already have a pending request for this subject with this tutor")
+
+    tr = TutoringRequest(
+        id=gen_id(),
+        student_id=user.id,
+        tutor_id=req.tutor_id,
+        subject=req.subject,
+        message=req.message,
+        status="pending",
+        created_at=datetime.utcnow(),
+    )
+    db.add(tr)
+    db.commit()
+    db.refresh(tr)
+
+    return {
+        "id": tr.id,
+        "student_id": tr.student_id,
+        "tutor_id": tr.tutor_id,
+        "subject": tr.subject,
+        "message": tr.message,
+        "status": tr.status,
+        "created_at": tr.created_at.isoformat() if tr.created_at else None,
+        "responded_at": None,
+    }
+
+
+@router.get("/tutoring-requests")
+def list_tutoring_requests(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all tutoring requests where the current user is student or tutor."""
+    requests = (
+        db.query(TutoringRequest)
+        .filter(
+            or_(
+                TutoringRequest.student_id == user.id,
+                TutoringRequest.tutor_id == user.id,
+            )
+        )
+        .order_by(TutoringRequest.created_at.desc())
+        .all()
+    )
+
+    # Gather all user IDs we need to look up
+    other_ids = set()
+    for r in requests:
+        other_ids.add(r.student_id)
+        other_ids.add(r.tutor_id)
+
+    users_map = {}
+    if other_ids:
+        found_users = db.query(User).filter(User.id.in_(other_ids)).all()
+        for u in found_users:
+            users_map[u.id] = {
+                "id": u.id,
+                "username": u.username,
+                "name": f"{u.first_name} {u.last_name}".strip(),
+                "avatar": u.avatar,
+            }
+
+    result = []
+    for r in requests:
+        result.append({
+            "id": r.id,
+            "student_id": r.student_id,
+            "tutor_id": r.tutor_id,
+            "subject": r.subject,
+            "message": r.message,
+            "status": r.status,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+            "responded_at": r.responded_at.isoformat() if r.responded_at else None,
+            "student": users_map.get(r.student_id),
+            "tutor": users_map.get(r.tutor_id),
+        })
+
+    return result
+
+
+@router.post("/tutoring-request/{request_id}/respond")
+def respond_tutoring_request(
+    request_id: str,
+    req: TutoringRequestRespond,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor accepts or rejects a tutoring request."""
+    if req.action not in ("accepted", "rejected"):
+        raise HTTPException(400, "Action must be 'accepted' or 'rejected'")
+
+    tr = db.query(TutoringRequest).filter(TutoringRequest.id == request_id).first()
+    if not tr:
+        raise HTTPException(404, "Tutoring request not found")
+    if tr.tutor_id != user.id:
+        raise HTTPException(403, "Only the tutor can respond to this request")
+    if tr.status != "pending":
+        raise HTTPException(400, f"Request is already {tr.status}")
+
+    tr.status = req.action
+    tr.responded_at = datetime.utcnow()
+    db.commit()
+    db.refresh(tr)
+
+    return {
+        "id": tr.id,
+        "student_id": tr.student_id,
+        "tutor_id": tr.tutor_id,
+        "subject": tr.subject,
+        "message": tr.message,
+        "status": tr.status,
+        "created_at": tr.created_at.isoformat() if tr.created_at else None,
+        "responded_at": tr.responded_at.isoformat() if tr.responded_at else None,
+    }
+
+
+@router.get("/tutors")
+def list_tutors(
+    subject: Optional[str] = None,
+    price_type: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    """List users who offer mentoring, with optional filters."""
+    import json as _json
+
+    query = db.query(User).filter(User.offers_mentoring == True, User.is_banned == False)
+
+    if price_type:
+        if price_type not in ("free", "paid"):
+            raise HTTPException(400, "price_type must be 'free' or 'paid'")
+        query = query.filter(User.mentoring_price_type == price_type)
+
+    tutors = query.all()
+
+    result = []
+    for t in tutors:
+        subjects = _json.loads(t.mentoring_subjects or "[]")
+        if subject and subject.lower() not in [s.lower() for s in subjects]:
+            continue
+        result.append({
+            "id": t.id,
+            "username": t.username,
+            "name": f"{t.first_name} {t.last_name}".strip(),
+            "avatar": t.avatar,
+            "university": t.university,
+            "career": t.career,
+            "academic_status": t.academic_status,
+            "professional_title": t.professional_title,
+            "mentoring_subjects": subjects,
+            "mentoring_services": _json.loads(t.mentoring_services or "[]"),
+            "mentoring_description": t.mentoring_description,
+            "mentoring_price_type": t.mentoring_price_type,
+            "mentoring_price_per_hour": t.mentoring_price_per_hour,
+            "mentoring_currency": t.mentoring_currency,
+        })
+
+    return result
 
 
 @router.delete("/me")

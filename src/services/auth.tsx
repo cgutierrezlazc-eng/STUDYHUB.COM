@@ -111,6 +111,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         offers_mentoring: formData.offersMentoring || false,
         mentoring_services: formData.mentoringServices || [],
         professional_title: formData.professionalTitle || '',
+        mentoring_subjects: formData.mentoringSubjects || [],
+        mentoring_description: formData.mentoringDescription || '',
+        mentoring_price_type: formData.mentoringPriceType || 'free',
+        mentoring_price_per_hour: formData.mentoringPricePerHour || null,
+        graduation_status_year: formData.graduationStatusYear || null,
+        title_year: formData.titleYear || null,
       }
       const data = await api.register(payload)
       localStorage.setItem(TOKEN_KEY, data.token)
@@ -148,6 +154,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if ((data as any).mentoringServices !== undefined) payload.mentoring_services = (data as any).mentoringServices
       if ((data as any).mentoringSubjects !== undefined) payload.mentoring_subjects = (data as any).mentoringSubjects
       if ((data as any).professionalTitle !== undefined) payload.professional_title = (data as any).professionalTitle
+      if ((data as any).mentoringDescription !== undefined) payload.mentoring_description = (data as any).mentoringDescription
+      if ((data as any).mentoringPriceType !== undefined) payload.mentoring_price_type = (data as any).mentoringPriceType
+      if ((data as any).mentoringPricePerHour !== undefined) payload.mentoring_price_per_hour = (data as any).mentoringPricePerHour
+      if ((data as any).graduationStatusYear !== undefined) payload.graduation_status_year = (data as any).graduationStatusYear
+      if ((data as any).titleYear !== undefined) payload.title_year = (data as any).titleYear
 
       const updated = await api.updateMe(payload)
       setUser(updated)

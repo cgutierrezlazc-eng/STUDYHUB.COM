@@ -26,6 +26,11 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showTutoringModal, setShowTutoringModal] = useState(false)
+  const [tutoringSubject, setTutoringSubject] = useState('')
+  const [tutoringMessage, setTutoringMessage] = useState('')
+  const [tutoringLoading, setTutoringLoading] = useState(false)
+  const [tutoringSuccess, setTutoringSuccess] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const profilePhotoRef = useRef<HTMLInputElement>(null)
@@ -53,6 +58,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     setActivityLoading(true)
     try { setActivityFeed(await api.getActivityFeed()) } catch (err: any) { console.error('Failed to load activity feed:', err) }
     setActivityLoading(false)
+  }
+
+  const handleSendTutoringRequest = async () => {
+    if (!tutoringSubject.trim()) return
+    setTutoringLoading(true)
+    try {
+      await api.sendMentoringRequest({ tutor_id: userId, subject: tutoringSubject, message: tutoringMessage })
+      setTutoringSuccess(true)
+      setTimeout(() => { setShowTutoringModal(false); setTutoringSuccess(false); setTutoringSubject(''); setTutoringMessage('') }, 2000)
+    } catch (err: any) { alert(err.message || 'Error al enviar solicitud') }
+    setTutoringLoading(false)
   }
 
   const handlePost = async () => {
@@ -197,6 +213,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   if (!profile) return <div className="page-body"><div className="empty-state"><h3>Usuario no encontrado</h3></div></div>
 
   const isOwn = profile.isOwnProfile
+  const isOtherUser = !isOwn
   const canPost = isOwn || profile.isFriend
   const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase()
 
@@ -358,6 +375,43 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <div className="fb-info-item"><span className="fb-info-icon">🏛️</span><span>{profile.university}</span></div>
                 <div className="fb-info-item"><span className="fb-info-icon">📚</span><span>Semestre {profile.semester}</span></div>
               </div>
+
+              {/* Tutoring card */}
+              {profile.offersMentoring && (
+                <div className="card fb-info-card">
+                  <h4>Ofrece Tutorías</h4>
+                  {profile.mentoringServices && profile.mentoringServices.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                      {profile.mentoringServices.map((s: string) => (
+                        <span key={s} style={{ padding: '3px 8px', background: 'rgba(45,98,200,0.1)', color: '#2D62C8', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                          {s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
+                    <div className="fb-info-item" style={{ flexWrap: 'wrap' }}>
+                      <span className="fb-info-icon">📖</span>
+                      <span style={{ fontSize: 12 }}>{profile.mentoringSubjects.join(', ')}</span>
+                    </div>
+                  )}
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? '🎁' : '💰'}</span>
+                    <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                      {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${(profile.mentoringPricePerHour || 0).toLocaleString()} ${profile.mentoringCurrency || 'CLP'}/hora`}
+                    </span>
+                  </div>
+                  {isOtherUser && user && profile.academicStatus !== 'estudiante' && (
+                    <button onClick={() => setShowTutoringModal(true)}
+                      style={{
+                        width: '100%', marginTop: 8, padding: '8px 12px', background: '#2D62C8', color: '#fff',
+                        border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                      }}>
+                      Solicitar Tutoría
+                    </button>
+                  )}
+                </div>
+              )}
 
               {/* Photos card */}
               {allPhotos.length > 0 && (
@@ -720,7 +774,61 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   <span className="fb-about-label">Amigos</span>
                   <span>{profile.friendCount} conexiones</span>
                 </div>
+                {profile.academicStatus && profile.academicStatus !== 'estudiante' && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">Estado académico</span>
+                    <span style={{ textTransform: 'capitalize' }}>{profile.academicStatus}</span>
+                  </div>
+                )}
+                {profile.professionalTitle && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">Título</span>
+                    <span>{profile.professionalTitle}</span>
+                  </div>
+                )}
               </div>
+
+              {/* Tutoring section in about */}
+              {profile.offersMentoring && (
+                <>
+                  <h3 style={{ marginTop: 24 }}>Servicios de Tutoría</h3>
+                  <div className="fb-about-grid">
+                    {profile.mentoringServices && profile.mentoringServices.length > 0 && (
+                      <div className="fb-about-item">
+                        <span className="fb-about-label">Servicios</span>
+                        <span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span>
+                      </div>
+                    )}
+                    {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
+                      <div className="fb-about-item">
+                        <span className="fb-about-label">Materias</span>
+                        <span>{profile.mentoringSubjects.join(', ')}</span>
+                      </div>
+                    )}
+                    {profile.mentoringDescription && (
+                      <div className="fb-about-item">
+                        <span className="fb-about-label">Descripción</span>
+                        <span>{profile.mentoringDescription}</span>
+                      </div>
+                    )}
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">Precio</span>
+                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                        {profile.mentoringPriceType === 'free' ? 'Gratis (voluntariado)' : `$${(profile.mentoringPricePerHour || 0).toLocaleString()} ${profile.mentoringCurrency || 'CLP'} por hora`}
+                      </span>
+                    </div>
+                  </div>
+                  {isOtherUser && user && (
+                    <button onClick={() => setShowTutoringModal(true)}
+                      style={{
+                        marginTop: 12, padding: '10px 20px', background: '#2D62C8', color: '#fff',
+                        border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14,
+                      }}>
+                      Solicitar Tutoría
+                    </button>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -774,6 +882,86 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
         )}
       </div>
+
+      {/* Tutoring Request Modal */}
+      {showTutoringModal && (
+        <div className="modal-overlay" onClick={() => setShowTutoringModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            {tutoringSuccess ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <h3 style={{ margin: '0 0 8px' }}>Solicitud enviada</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                  {profile?.firstName} recibirá tu solicitud y podrá aceptarla o rechazarla.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ margin: '0 0 4px' }}>Solicitar tutoría a {profile?.firstName} {profile?.lastName}</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+                  {profile?.mentoringPriceType === 'free'
+                    ? 'Este tutor ofrece sus servicios de forma gratuita.'
+                    : `Precio: $${(profile?.mentoringPricePerHour || 0).toLocaleString()} ${profile?.mentoringCurrency || 'CLP'}/hora`
+                  }
+                </p>
+                <div style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Materia o tema *</label>
+                  {profile?.mentoringSubjects && profile.mentoringSubjects.length > 0 ? (
+                    <select value={tutoringSubject} onChange={e => setTutoringSubject(e.target.value)}
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                      <option value="">Seleccionar materia</option>
+                      {profile.mentoringSubjects.map((s: string) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                      <option value="__other">Otro tema</option>
+                    </select>
+                  ) : (
+                    <input
+                      placeholder="Ej: Cálculo, Física, etc."
+                      value={tutoringSubject}
+                      onChange={e => setTutoringSubject(e.target.value)}
+                      className="form-input"
+                    />
+                  )}
+                  {tutoringSubject === '__other' && (
+                    <input
+                      placeholder="Especifica el tema"
+                      value=""
+                      onChange={e => setTutoringSubject(e.target.value)}
+                      className="form-input"
+                      style={{ marginTop: 8 }}
+                    />
+                  )}
+                </div>
+                <div style={{ marginBottom: 16 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Mensaje (opcional)</label>
+                  <textarea
+                    placeholder="Describe brevemente en qué necesitas ayuda..."
+                    value={tutoringMessage}
+                    onChange={e => setTutoringMessage(e.target.value)}
+                    rows={3}
+                    className="form-input"
+                  />
+                </div>
+                <div style={{ background: 'rgba(45,98,200,0.06)', borderRadius: 8, padding: '10px 12px', marginBottom: 16, border: '1px solid rgba(45,98,200,0.15)' }}>
+                  <p style={{ fontSize: 11, color: '#2D62C8', margin: 0 }}>
+                    Una vez aceptada tu solicitud, podrán coordinar todo a través del chat de Conniku.
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowTutoringModal(false)}>Cancelar</button>
+                  <button
+                    style={{ padding: '8px 20px', background: '#2D62C8', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, opacity: tutoringLoading || !tutoringSubject.trim() ? 0.6 : 1 }}
+                    onClick={handleSendTutoringRequest}
+                    disabled={tutoringLoading || !tutoringSubject.trim()}>
+                    {tutoringLoading ? 'Enviando...' : 'Enviar Solicitud'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Report Modal */}
       {showReportModal && (

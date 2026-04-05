@@ -66,6 +66,24 @@ export const api = {
   completeOnboarding: () =>
     request('/auth/complete-onboarding', { method: 'POST' }),
 
+  // ─── Mentoring Requests ─────────────────────────────────────
+  sendMentoringRequest: (data: { tutor_id: string; subject: string; message?: string }) =>
+    request('/auth/tutoring-request', { method: 'POST', body: JSON.stringify(data) }),
+
+  getMyMentoringRequests: () =>
+    request('/auth/tutoring-requests'),
+
+  respondMentoringRequest: (requestId: string, action: 'accepted' | 'rejected') =>
+    request(`/auth/tutoring-request/${requestId}/respond`, { method: 'POST', body: JSON.stringify({ action }) }),
+
+  searchTutors: (params?: { subject?: string; price_type?: string }) => {
+    const qs = new URLSearchParams()
+    if (params?.subject) qs.set('subject', params.subject)
+    if (params?.price_type) qs.set('price_type', params.price_type)
+    const q = qs.toString()
+    return request(`/auth/tutors${q ? '?' + q : ''}`)
+  },
+
   // ─── Projects ──────────────────────────────────────────────
   getProjects: () => request('/projects'),
   createProject: (data: { name: string; description: string; color: string }) =>

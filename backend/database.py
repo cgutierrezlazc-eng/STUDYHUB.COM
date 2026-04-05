@@ -68,10 +68,16 @@ class User(Base):
     is_senior_year = Column(Boolean, default=False)  # Last year of studies
     total_semesters = Column(Integer, default=8)  # Total semesters in their program
     academic_status = Column(String(20), default="estudiante")  # estudiante | egresado | titulado
-    # Mentoring preferences (for titulados/egresados)
+    graduation_status_year = Column(Integer, nullable=True)  # Year of egreso
+    title_year = Column(Integer, nullable=True)  # Year of titulo (for titulados)
+    # Tutoring preferences (for titulados/egresados)
     offers_mentoring = Column(Boolean, default=False)
-    mentoring_services = Column(Text, default="[]")  # JSON: ["ayudantias","cursos","clases_particulares"]
+    mentoring_services = Column(Text, default="[]")  # JSON: ["ayudantias","clases_particulares"]
     mentoring_subjects = Column(Text, default="[]")  # JSON: subjects they can teach
+    mentoring_description = Column(Text, default="")  # What they specifically offer
+    mentoring_price_type = Column(String(10), default="free")  # free | paid
+    mentoring_price_per_hour = Column(Float, nullable=True)  # Price per hour if paid
+    mentoring_currency = Column(String(5), default="CLP")  # Currency for price
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
     provider = Column(String(20), default="email")  # email | google
 
@@ -686,6 +692,20 @@ class CourseQuiz(Base):
     id = Column(String(16), primary_key=True, default=gen_id)
     course_id = Column(String(16), ForeignKey("courses.id", ondelete="CASCADE"), nullable=False)
     questions = Column(Text, default="[]")  # JSON: [{question, options[], correctAnswer, explanation}]
+
+
+# ─── Tutoring Requests ──────────────────────────────────────
+
+class TutoringRequest(Base):
+    __tablename__ = "tutoring_requests"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    student_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    tutor_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    subject = Column(String(255), nullable=False)
+    message = Column(Text, default="")
+    status = Column(String(20), default="pending")  # pending | accepted | rejected | completed
+    created_at = Column(DateTime, default=datetime.utcnow)
+    responded_at = Column(DateTime, nullable=True)
 
 
 class UserCourseProgress(Base):

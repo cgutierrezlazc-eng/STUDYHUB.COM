@@ -79,6 +79,12 @@ def migrate():
         ("offers_mentoring", "BOOLEAN DEFAULT FALSE"),
         ("mentoring_services", "TEXT DEFAULT '[]'"),
         ("mentoring_subjects", "TEXT DEFAULT '[]'"),
+        ("graduation_status_year", "INTEGER"),
+        ("title_year", "INTEGER"),
+        ("mentoring_description", "TEXT DEFAULT ''"),
+        ("mentoring_price_type", "VARCHAR(10) DEFAULT 'free'"),
+        ("mentoring_price_per_hour", "FLOAT"),
+        ("mentoring_currency", "VARCHAR(5) DEFAULT 'CLP'"),
         ("professional_title", "VARCHAR(255) DEFAULT ''"),
     ]
 
@@ -102,6 +108,23 @@ def migrate():
                 except Exception as e:
                     # Column might already exist (race condition) - safe to ignore
                     logger.debug(f"Column users.{col_name} skipped: {e}")
+
+    # Create tutoring_requests table if it doesn't exist
+    if not inspector.has_table("tutoring_requests"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE tutoring_requests (
+                    id VARCHAR(16) PRIMARY KEY,
+                    student_id VARCHAR(16) NOT NULL,
+                    tutor_id VARCHAR(16) NOT NULL,
+                    subject VARCHAR(255) NOT NULL,
+                    message TEXT DEFAULT '',
+                    status VARCHAR(20) DEFAULT 'pending',
+                    created_at TIMESTAMP,
+                    responded_at TIMESTAMP
+                )
+            """))
+            logger.info("Created tutoring_requests table.")
 
     logger.info("Migrations complete.")
 

@@ -380,6 +380,7 @@ def get_user_profile(
             or_(Friendship.requester_id == user_id, Friendship.addressee_id == user_id),
         ).count()
 
+        import json as _json
         return {
             "id": target.id,
             "username": target.username,
@@ -397,6 +398,15 @@ def get_user_profile(
             "friendCount": friend_count,
             "isOwnProfile": False,
             "restricted": False,
+            "academicStatus": getattr(target, 'academic_status', 'estudiante') or "estudiante",
+            "offersMentoring": getattr(target, 'offers_mentoring', False) or False,
+            "mentoringServices": _json.loads(getattr(target, 'mentoring_services', None) or "[]"),
+            "mentoringSubjects": _json.loads(getattr(target, 'mentoring_subjects', None) or "[]"),
+            "mentoringDescription": getattr(target, 'mentoring_description', '') or "",
+            "mentoringPriceType": getattr(target, 'mentoring_price_type', 'free') or "free",
+            "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
+            "mentoringCurrency": getattr(target, 'mentoring_currency', 'CLP') or "CLP",
+            "professionalTitle": getattr(target, 'professional_title', '') or "",
         }
 
     # Full profile for friends and own profile
@@ -417,6 +427,7 @@ def get_user_profile(
         or_(Friendship.requester_id == user_id, Friendship.addressee_id == user_id),
     ).count()
 
+    import json as _json
     return {
         **user_brief(target),
         "isFriend": is_friend,
@@ -425,6 +436,15 @@ def get_user_profile(
         "friendCount": friend_count,
         "isOwnProfile": is_own,
         "restricted": False,
+        "academicStatus": getattr(target, 'academic_status', 'estudiante') or "estudiante",
+        "offersMentoring": getattr(target, 'offers_mentoring', False) or False,
+        "mentoringServices": _json.loads(getattr(target, 'mentoring_services', None) or "[]"),
+        "mentoringSubjects": _json.loads(getattr(target, 'mentoring_subjects', None) or "[]"),
+        "mentoringDescription": getattr(target, 'mentoring_description', '') or "",
+        "mentoringPriceType": getattr(target, 'mentoring_price_type', 'free') or "free",
+        "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
+        "mentoringCurrency": getattr(target, 'mentoring_currency', 'CLP') or "CLP",
+        "professionalTitle": getattr(target, 'professional_title', '') or "",
     }
 
 

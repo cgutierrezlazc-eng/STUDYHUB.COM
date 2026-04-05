@@ -39,9 +39,32 @@ export interface User {
   offersMentoring?: boolean;
   mentoringServices?: string[];
   mentoringSubjects?: string[];
+  graduationStatusYear?: number;
+  titleYear?: number;
+  mentoringDescription?: string;
+  mentoringPriceType?: 'free' | 'paid';
+  mentoringPricePerHour?: number;
+  mentoringCurrency?: string;
   professionalTitle?: string;
   createdAt: string;
   lastLogin: string;
+}
+
+export interface TutoringRequest {
+  id: string;
+  studentId: string;
+  tutorId: string;
+  subject: string;
+  message: string;
+  status: 'pending' | 'accepted' | 'rejected' | 'completed';
+  createdAt: string;
+  respondedAt?: string;
+  studentName?: string;
+  studentAvatar?: string;
+  studentUsername?: string;
+  tutorName?: string;
+  tutorAvatar?: string;
+  tutorUsername?: string;
 }
 
 export interface Project {
