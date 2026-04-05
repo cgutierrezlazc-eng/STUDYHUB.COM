@@ -9,7 +9,6 @@ import RightPanel from './components/RightPanel'
 import MobileBottomNav from './components/MobileBottomNav'
 import NewProjectModal from './components/NewProjectModal'
 import Onboarding from './components/Onboarding'
-import ConferencePanel from './components/ConferencePanel'
 import WelcomeModal from './components/WelcomeModal'
 import ErrorBoundary from './components/ErrorBoundary'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
@@ -280,8 +279,6 @@ export default function App() {
           onNavigate={(path) => navigate(path)}
         />
       )}
-
-      <ConferencePanel />
 
       {showWelcome && (
         <WelcomeModal onAccept={() => {

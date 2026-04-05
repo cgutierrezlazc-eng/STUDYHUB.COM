@@ -2414,6 +2414,88 @@ h1, h2, h3,
 }
 .fb-cover-edit-btn:hover { background: rgba(0,0,0,0.7); }
 
+/* ─── Cover Photo Modal ──────────────────────────────────── */
+.cover-modal {
+  background: var(--bg-card); border-radius: 16px; width: 95%; max-width: 580px;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  display: flex; flex-direction: column;
+}
+.cover-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.cover-modal-close {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  padding: 4px; border-radius: 8px;
+}
+.cover-modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
+.cover-modal-preview {
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  background: var(--bg-hover); margin: 16px 20px 0; border-radius: 10px;
+  background-size: cover; background-position: center;
+}
+.cover-modal-tabs {
+  display: flex; gap: 0; margin: 16px 20px 0; border-bottom: 2px solid var(--border);
+}
+.cover-modal-tab {
+  flex: 1; padding: 10px 16px; background: none; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--text-muted);
+  border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s;
+}
+.cover-modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.cover-modal-tab:hover { color: var(--text-primary); }
+.cover-modal-body { padding: 16px 20px; min-height: 180px; }
+.cover-filter-bar {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.cover-filter-chip {
+  padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+  background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer;
+  font-size: 12px; font-weight: 500; transition: all 0.15s;
+}
+.cover-filter-chip.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.cover-filter-chip:hover:not(.active) { background: var(--bg-hover); }
+.cover-templates-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 10px; max-height: 260px; overflow-y: auto; padding-right: 4px;
+}
+.cover-template-card {
+  border: 2px solid transparent; border-radius: 10px; cursor: pointer;
+  overflow: hidden; background: var(--bg-secondary); transition: all 0.15s;
+  display: flex; flex-direction: column;
+}
+.cover-template-card:hover { border-color: var(--text-muted); }
+.cover-template-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(45,98,200,0.3); }
+.cover-template-swatch { height: 60px; width: 100%; }
+.cover-template-name {
+  padding: 6px 8px; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  text-align: center;
+}
+.cover-upload-area {
+  display: flex; align-items: center; justify-content: center; min-height: 180px;
+}
+.cover-upload-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 32px 40px; border: 2px dashed var(--border); border-radius: 12px;
+  background: var(--bg-secondary); color: var(--text-secondary); cursor: pointer;
+  transition: all 0.2s; width: 100%;
+}
+.cover-upload-btn:hover { border-color: var(--accent); background: var(--bg-hover); }
+.cover-modal-footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 14px 20px; border-top: 1px solid var(--border);
+}
+
+@media (max-width: 480px) {
+  .cover-modal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; margin-top: auto; }
+  .cover-templates-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+  .cover-modal-preview { height: 100px; }
+  .cover-filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+  .cover-filter-chip { white-space: nowrap; flex-shrink: 0; }
+}
+
 .fb-profile-photo-section {
   display: flex; align-items: flex-end; gap: 16px; padding: 0 24px;
   margin-top: -50px; position: relative; z-index: 2; flex-wrap: wrap;

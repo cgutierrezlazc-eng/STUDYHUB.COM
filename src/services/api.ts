@@ -354,9 +354,9 @@ export const api = {
   // ─── Wall Posts ───────────────────────────────────────────
   getWallPosts: (userId: string, page: number = 1) =>
     request(`/social/wall/${userId}/posts?page=${page}`),
-  createWallPost: (wallOwnerId: string, content: string, imageUrl?: string, visibility?: string, visibleTo?: string[]) =>
+  createWallPost: (wallOwnerId: string, content: string, imageUrl?: string, visibility?: string, visibleTo?: string[], visibilityListId?: string) =>
     request(`/social/wall/${wallOwnerId}/posts`, {
-      method: 'POST', body: JSON.stringify({ content, image_url: imageUrl, visibility: visibility || 'friends', visible_to: visibleTo || [] }),
+      method: 'POST', body: JSON.stringify({ content, image_url: imageUrl, visibility: visibility || 'friends', visible_to: visibleTo || [], visibility_list_id: visibilityListId || null }),
     }),
 
   createMilestonePost: (data: { type: string; content: string; visibility?: string }) =>
@@ -383,6 +383,18 @@ export const api = {
     request(`/social/users/${userId}/report`, { method: 'POST', body: JSON.stringify({ reason }) }),
   getFriendSuggestions: () =>
     request('/social/friend-suggestions'),
+
+  // ─── Friend Lists ─────────────────────────────────────────
+  getFriendLists: () =>
+    request('/social/friend-lists'),
+  createFriendList: (name: string) =>
+    request('/social/friend-lists', { method: 'POST', body: JSON.stringify({ name }) }),
+  addToFriendList: (listId: string, friendId: string) =>
+    request(`/social/friend-lists/${listId}/members`, { method: 'POST', body: JSON.stringify({ friendId }) }),
+  removeFromFriendList: (listId: string, friendId: string) =>
+    request(`/social/friend-lists/${listId}/members/${friendId}`, { method: 'DELETE' }),
+  deleteFriendList: (listId: string) =>
+    request(`/social/friend-lists/${listId}`, { method: 'DELETE' }),
 
   // ─── News & Announcements ─────────────────────────────────
   getUniversityNews: () =>

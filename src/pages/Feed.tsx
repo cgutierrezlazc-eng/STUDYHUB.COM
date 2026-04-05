@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon } from '../components/Icons'
+import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -25,11 +25,31 @@ export default function Feed({ onNavigate }: Props) {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
   const [hoveredReaction, setHoveredReaction] = useState<string | null>(null)
+  const [postVisibility, setPostVisibility] = useState<string>('public')
+  const [postVisibilityListId, setPostVisibilityListId] = useState<string | null>(null)
+  const [friendLists, setFriendLists] = useState<any[]>([])
+  const [showVisibilityMenu, setShowVisibilityMenu] = useState(false)
+  const [showListSubmenu, setShowListSubmenu] = useState(false)
+  const [newListName, setNewListName] = useState('')
+  const [creatingList, setCreatingList] = useState(false)
+  const visibilityRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     loadFeed()
     api.getFriendSuggestions().then(data => setSuggestions((data || []).slice(0, 4))).catch(() => {})
+    api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (visibilityRef.current && !visibilityRef.current.contains(e.target as Node)) {
+        setShowVisibilityMenu(false)
+        setShowListSubmenu(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   const loadFeed = async (p: number = 1) => {
@@ -51,14 +71,56 @@ export default function Feed({ onNavigate }: Props) {
     if (!user) return
     setPosting(true)
     try {
-      await api.createWallPost(user.id, newPostContent, postImage || undefined)
+      await api.createWallPost(
+        user.id, newPostContent, postImage || undefined,
+        postVisibility, undefined,
+        postVisibility === 'list' ? postVisibilityListId || undefined : undefined
+      )
       setNewPostContent('')
       setPostImage(null)
+      setPostVisibility('public')
+      setPostVisibilityListId(null)
       loadFeed(1)
     } catch (err: any) {
       alert(err.message || 'Error al publicar')
     }
     setPosting(false)
+  }
+
+  const handleCreateFriendList = async () => {
+    if (!newListName.trim()) return
+    setCreatingList(true)
+    try {
+      const list = await api.createFriendList(newListName.trim())
+      setFriendLists(prev => [...prev, { ...list, memberCount: 0, members: [] }])
+      setPostVisibility('list')
+      setPostVisibilityListId(list.id)
+      setNewListName('')
+      setShowListSubmenu(false)
+      setShowVisibilityMenu(false)
+    } catch (err: any) {
+      alert(err.message || 'Error al crear lista')
+    }
+    setCreatingList(false)
+  }
+
+  const visibilityOptions: Record<string, { icon: React.ReactNode; label: string }> = {
+    public: { icon: Globe({ size: 14 }), label: 'Publico' },
+    friends: { icon: UsersIcon({ size: 14 }), label: 'Solo amigos' },
+    private: { icon: Lock({ size: 14 }), label: 'Solo yo' },
+    list: { icon: ListChecks({ size: 14 }), label: 'Lista de amigos' },
+  }
+
+  const getVisibilityLabel = () => {
+    if (postVisibility === 'list' && postVisibilityListId) {
+      const list = friendLists.find(l => l.id === postVisibilityListId)
+      return list ? list.name : 'Lista'
+    }
+    return visibilityOptions[postVisibility]?.label || 'Publico'
+  }
+
+  const getVisibilityIcon = () => {
+    return visibilityOptions[postVisibility]?.icon || Globe({ size: 14 })
   }
 
   const handleReact = async (postId: string, reactionType: string) => {
@@ -169,12 +231,130 @@ export default function Feed({ onNavigate }: Props) {
                       }}>{'\u2715'}</button>
                     </div>
                   )}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
-                    <div style={{ display: 'flex', gap: 8 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 8, flexWrap: 'wrap', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
                       <button onClick={() => imageInputRef.current?.click()} style={{
                         background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px',
                       }} title="Agregar foto">{Camera({ size: 18 })}</button>
+
+                      {/* Visibility selector */}
+                      <div ref={visibilityRef} style={{ position: 'relative' }}>
+                        <button
+                          onClick={() => { setShowVisibilityMenu(!showVisibilityMenu); setShowListSubmenu(false) }}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 4, padding: '4px 10px',
+                            border: '1px solid var(--border-color)', borderRadius: 16,
+                            background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                            cursor: 'pointer', fontSize: 12, fontFamily: 'inherit',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {getVisibilityIcon()} {getVisibilityLabel()}
+                          <span style={{ fontSize: 10, marginLeft: 2 }}>{'\u25BC'}</span>
+                        </button>
+
+                        {showVisibilityMenu && (
+                          <div style={{
+                            position: 'absolute', top: '100%', left: 0, marginTop: 4, zIndex: 20,
+                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                            borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                            minWidth: 200, overflow: 'hidden',
+                          }}>
+                            {Object.entries(visibilityOptions).map(([key, opt]) => (
+                              key !== 'list' ? (
+                                <button key={key} onClick={() => {
+                                  setPostVisibility(key)
+                                  setPostVisibilityListId(null)
+                                  setShowVisibilityMenu(false)
+                                  setShowListSubmenu(false)
+                                }} style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                                  padding: '10px 14px', border: 'none', background: postVisibility === key ? 'var(--accent-alpha, rgba(79,140,255,0.1))' : 'transparent',
+                                  color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                  fontFamily: 'inherit',
+                                }}>
+                                  <span style={{ display: 'flex', alignItems: 'center', opacity: 0.7 }}>{opt.icon}</span>
+                                  <span>{opt.label}</span>
+                                  {postVisibility === key && key !== 'list' && <span style={{ marginLeft: 'auto', color: 'var(--accent)', fontSize: 14 }}>{'\u2713'}</span>}
+                                </button>
+                              ) : (
+                                <div key={key} style={{ position: 'relative' }}>
+                                  <button onClick={() => setShowListSubmenu(!showListSubmenu)} style={{
+                                    display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                                    padding: '10px 14px', border: 'none', background: postVisibility === 'list' ? 'var(--accent-alpha, rgba(79,140,255,0.1))' : 'transparent',
+                                    color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13, textAlign: 'left',
+                                    fontFamily: 'inherit',
+                                  }}>
+                                    <span style={{ display: 'flex', alignItems: 'center', opacity: 0.7 }}>{opt.icon}</span>
+                                    <span>{opt.label}</span>
+                                    <span style={{ marginLeft: 'auto', fontSize: 10 }}>{'\u25B6'}</span>
+                                  </button>
+
+                                  {showListSubmenu && (
+                                    <div style={{
+                                      position: 'absolute', left: 0, top: '100%', marginTop: 2,
+                                      background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                                      borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                                      minWidth: 200, maxHeight: 260, overflowY: 'auto',
+                                    }}>
+                                      {friendLists.length > 0 ? friendLists.map(fl => (
+                                        <button key={fl.id} onClick={() => {
+                                          setPostVisibility('list')
+                                          setPostVisibilityListId(fl.id)
+                                          setShowVisibilityMenu(false)
+                                          setShowListSubmenu(false)
+                                        }} style={{
+                                          display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                                          padding: '10px 14px', border: 'none', fontSize: 13,
+                                          background: postVisibilityListId === fl.id ? 'var(--accent-alpha, rgba(79,140,255,0.1))' : 'transparent',
+                                          color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left',
+                                          fontFamily: 'inherit',
+                                        }}>
+                                          <span>{fl.name}</span>
+                                          <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>{fl.memberCount || 0}</span>
+                                          {postVisibilityListId === fl.id && <span style={{ color: 'var(--accent)', fontSize: 14 }}>{'\u2713'}</span>}
+                                        </button>
+                                      )) : (
+                                        <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)' }}>
+                                          No tienes listas todavia
+                                        </div>
+                                      )}
+                                      <div style={{ borderTop: '1px solid var(--border-color)', padding: '8px 10px' }}>
+                                        <div style={{ display: 'flex', gap: 6 }}>
+                                          <input
+                                            value={newListName}
+                                            onChange={e => setNewListName(e.target.value)}
+                                            onKeyDown={e => e.key === 'Enter' && handleCreateFriendList()}
+                                            placeholder="Nueva lista..."
+                                            style={{
+                                              flex: 1, padding: '6px 10px', borderRadius: 8, fontSize: 12,
+                                              border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                                              color: 'var(--text-primary)', fontFamily: 'inherit',
+                                            }}
+                                          />
+                                          <button
+                                            onClick={handleCreateFriendList}
+                                            disabled={creatingList || !newListName.trim()}
+                                            style={{
+                                              padding: '6px 10px', borderRadius: 8, border: 'none',
+                                              background: 'var(--accent)', color: '#fff', cursor: 'pointer',
+                                              fontSize: 12, fontFamily: 'inherit', whiteSpace: 'nowrap',
+                                              opacity: creatingList || !newListName.trim() ? 0.5 : 1,
+                                            }}
+                                          >
+                                            {creatingList ? '...' : 'Crear'}
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={posting || (!newPostContent.trim() && !postImage)}>
                       {posting ? 'Publicando...' : 'Publicar'}
@@ -215,7 +395,21 @@ export default function Feed({ onNavigate }: Props) {
                         <div style={{ fontWeight: 600, fontSize: 14, cursor: 'pointer' }} onClick={() => onNavigate(`/user/${post.authorId || post.author?.id}`)}>
                           {post.authorName || `${post.author?.firstName || ''} ${post.author?.lastName || ''}`}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{timeAgo(post.createdAt)}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {timeAgo(post.createdAt)}
+                          {post.visibility && post.visibility !== 'public' && (
+                            <span title={
+                              post.visibility === 'friends' ? 'Solo amigos' :
+                              post.visibility === 'private' ? 'Solo yo' :
+                              post.visibility === 'list' ? 'Lista de amigos' : post.visibility
+                            } style={{ display: 'inline-flex', opacity: 0.6 }}>
+                              {post.visibility === 'friends' ? UsersIcon({ size: 11 }) :
+                               post.visibility === 'private' ? Lock({ size: 11 }) :
+                               post.visibility === 'list' ? ListChecks({ size: 11 }) :
+                               Globe({ size: 11 })}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 

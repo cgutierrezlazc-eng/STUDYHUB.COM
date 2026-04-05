@@ -562,6 +562,18 @@ export default function Profile() {
             {/* ─── Apariencia ─── */}
             {activeSection === 'appearance' && (
               <div className="pf-section">
+                <h3>Foto de Portada</h3>
+                <p className="pf-hint">Personaliza la portada de tu perfil con una plantilla o imagen propia</p>
+                <button
+                  className="btn btn-secondary"
+                  style={{ marginBottom: 20 }}
+                  onClick={() => { window.location.href = '/my-profile' }}
+                >
+                  {Pencil({ size: 14 })} Cambiar foto de portada
+                </button>
+
+                <div className="pf-divider" />
+
                 <h3>Tema Visual</h3>
                 <p className="pf-hint">Elige la apariencia que prefieras para Conniku</p>
                 <div className="theme-selector">
