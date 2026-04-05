@@ -121,7 +121,7 @@ def _conference_to_dict(conf: VideoConference, participant_count: int = 0) -> di
         "conference_type": conf.conference_type,
         "external_url": conf.external_url,
         "jitsi_room": conf.jitsi_room,
-        "jitsi_url": f"https://meet.jit.si/{conf.jitsi_room}" if conf.jitsi_room else "",
+        "jitsi_url": f"https://8x8.vc/{conf.jitsi_room}" if conf.jitsi_room else "",
         "scheduled_at": conf.scheduled_at.isoformat() if conf.scheduled_at else None,
         "duration_minutes": conf.duration_minutes,
         "is_recording": conf.is_recording,
@@ -159,10 +159,11 @@ def create_conference(
 
     conf_id = gen_id()
 
-    # Generate Jitsi room name
+    # Generate Jitsi room name (8x8 JaaS format)
+    JAAS_APP_ID = "vpaas-magic-cookie-42121e07130c4200bc06173ce83d8db9"
     jitsi_room = ""
     if req.conference_type == "jitsi":
-        jitsi_room = f"conniku-{conf_id}"
+        jitsi_room = f"{JAAS_APP_ID}/conniku-{conf_id}"
 
     # Parse scheduled datetime
     scheduled = None
@@ -336,7 +337,7 @@ def join_conference(
 
     join_url = ""
     if conf.conference_type == "jitsi" and conf.jitsi_room:
-        join_url = f"https://meet.jit.si/{conf.jitsi_room}"
+        join_url = f"https://8x8.vc/{conf.jitsi_room}"
     elif conf.external_url:
         join_url = conf.external_url
 

@@ -178,7 +178,7 @@ export default function Conferences({ onNavigate }: Props) {
           </button>
         </div>
         <iframe
-          src={`https://meet.jit.si/${room}?#config.prejoinPageEnabled=false&config.startWithAudioMuted=true`}
+          src={`https://8x8.vc/${room}#config.prejoinPageEnabled=false&config.startWithAudioMuted=true&interfaceConfig.SHOW_JITSI_WATERMARK=false&interfaceConfig.SHOW_BRAND_WATERMARK=false&interfaceConfig.SHOW_POWERED_BY=false`}
           style={{ width: '100%', flex: 1, border: 'none' }}
           allow="camera; microphone; fullscreen; display-capture; autoplay; clipboard-write"
         />
