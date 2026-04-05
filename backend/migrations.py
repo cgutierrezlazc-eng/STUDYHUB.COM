@@ -86,6 +86,8 @@ def migrate():
         ("mentoring_price_per_hour", "FLOAT"),
         ("mentoring_currency", "VARCHAR(5) DEFAULT 'USD'"),
         ("professional_title", "VARCHAR(255) DEFAULT ''"),
+        # Study start date
+        ("study_start_date", "VARCHAR(10) DEFAULT ''"),
     ]
 
     inspector = inspect(engine)

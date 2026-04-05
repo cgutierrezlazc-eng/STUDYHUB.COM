@@ -265,6 +265,14 @@ export default function Profile() {
                     {isEditing ? <input className="form-input" value={form.career} onChange={e => update('career', e.target.value)} /> : <p>{user.career || '—'}</p>}
                   </div>
                   <div className="pf-field">
+                    <label>Inicio de estudios</label>
+                    {isEditing ? (
+                      <input type="date" className="form-input" value={form.studyStartDate || ''} onChange={e => update('studyStartDate', e.target.value)} max={new Date().toISOString().split('T')[0]} min="2000-01-01" />
+                    ) : (
+                      <p>{user.studyStartDate ? `${user.studyStartDate} (${(user.studyDays || 0).toLocaleString()} días)` : '—'}</p>
+                    )}
+                  </div>
+                  <div className="pf-field">
                     <label>{t('reg.semester')}</label>
                     {isEditing ? (
                       <select className="form-input" value={form.semester} onChange={e => update('semester', parseInt(e.target.value))}>

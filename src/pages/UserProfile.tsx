@@ -390,6 +390,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <div className="fb-info-item"><span className="fb-info-icon">🎓</span><span>Estudia <strong>{profile.career}</strong></span></div>
                 <div className="fb-info-item"><span className="fb-info-icon">🏛️</span><span>{profile.university}</span></div>
                 <div className="fb-info-item"><span className="fb-info-icon">📚</span><span>Semestre {profile.semester}</span></div>
+                {profile.studyDays > 0 && (
+                  <div className="fb-info-item"><span className="fb-info-icon">📅</span><span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span></div>
+                )}
               </div>
 
               {/* Tutoring card */}
@@ -915,6 +918,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   <span className="fb-about-label">Semestre</span>
                   <span>Semestre {profile.semester}</span>
                 </div>
+                {profile.studyDays > 0 && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">Días estudiando</span>
+                    <span style={{ fontWeight: 600, color: '#2D62C8' }}>{profile.studyDays.toLocaleString()} días</span>
+                  </div>
+                )}
                 {profile.bio && (
                   <div className="fb-about-item">
                     <span className="fb-about-label">Bio</span>

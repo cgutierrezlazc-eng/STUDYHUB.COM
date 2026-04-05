@@ -62,6 +62,7 @@ class User(Base):
     country = Column(String(5), default="CL")  # ISO country code
     country_currency = Column(String(5), default="CLP")  # User's local currency
     birth_date = Column(String(20), default="")
+    study_start_date = Column(String(10), default="")  # YYYY-MM-DD when user started studying
     bio = Column(Text, default="")
     is_graduated = Column(Boolean, default=False)
     graduation_year = Column(Integer, nullable=True)

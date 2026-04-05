@@ -66,6 +66,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     graduationStatusYear: null as number | null,
     titleYear: null as number | null,
     professionalTitle: '',
+    studyStartDate: '',
   })
 
   const update = (field: string, value: string | number | boolean) => {
@@ -500,6 +501,24 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               <div className="auth-field">
                 <label>{t('reg.career')}</label>
                 <input placeholder={t('reg.careerPlaceholder')} value={form.career} onChange={e => update('career', e.target.value)} />
+              </div>
+
+              {/* Study Start Date */}
+              <div className="auth-field">
+                <label>Fecha de inicio de estudios</label>
+                <input
+                  type="date"
+                  value={form.studyStartDate}
+                  onChange={e => update('studyStartDate', e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  min="2000-01-01"
+                />
+                <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                  {form.studyStartDate
+                    ? `${Math.max(0, Math.floor((Date.now() - new Date(form.studyStartDate).getTime()) / 86400000))} días estudiando`
+                    : 'Indica cuándo comenzaste tus estudios superiores'
+                  }
+                </small>
               </div>
 
               {/* Academic Status */}

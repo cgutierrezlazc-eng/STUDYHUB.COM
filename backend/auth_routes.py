@@ -124,6 +124,7 @@ class RegisterRequest(BaseModel):
     mentoring_price_type: str = "free"
     mentoring_price_per_hour: Optional[float] = None
     professional_title: str = ""
+    study_start_date: str = ""
 
 
 class LoginRequest(BaseModel):
@@ -157,6 +158,7 @@ class UpdateProfileRequest(BaseModel):
     mentoring_price_type: Optional[str] = None
     mentoring_price_per_hour: Optional[float] = None
     professional_title: Optional[str] = None
+    study_start_date: Optional[str] = None
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -178,6 +180,17 @@ class VerifyEmailRequest(BaseModel):
 
 
 # ─── Helper: serialize user ─────────────────────────────────────
+
+def _calc_study_days(study_start_date: str) -> int:
+    """Calculate number of days since the user started studying."""
+    if not study_start_date:
+        return 0
+    try:
+        start = date.fromisoformat(study_start_date)
+        return max(0, (date.today() - start).days)
+    except (ValueError, TypeError):
+        return 0
+
 
 def user_to_dict(user: User) -> dict:
     import json as _json
@@ -230,6 +243,8 @@ def user_to_dict(user: User) -> dict:
         "mentoringPricePerHour": getattr(user, 'mentoring_price_per_hour', None),
         "mentoringCurrency": getattr(user, 'mentoring_currency', 'USD') or "USD",
         "professionalTitle": getattr(user, 'professional_title', '') or "",
+        "studyStartDate": getattr(user, 'study_start_date', '') or "",
+        "studyDays": _calc_study_days(getattr(user, 'study_start_date', '') or ""),
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }
@@ -331,6 +346,7 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         mentoring_price_type=req.mentoring_price_type if req.mentoring_price_type in ("free", "paid") else "free",
         mentoring_price_per_hour=req.mentoring_price_per_hour if req.mentoring_price_type == "paid" else None,
         professional_title=html.escape(req.professional_title or ""),
+        study_start_date=req.study_start_date or "",
         tos_accepted_at=datetime.utcnow() if req.tos_accepted else None,
         onboarding_completed=False,
         theme="nocturno",

@@ -117,6 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         mentoring_price_per_hour: formData.mentoringPricePerHour || null,
         graduation_status_year: formData.graduationStatusYear || null,
         title_year: formData.titleYear || null,
+        study_start_date: formData.studyStartDate || '',
       }
       const data = await api.register(payload)
       localStorage.setItem(TOKEN_KEY, data.token)
@@ -159,6 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if ((data as any).mentoringPricePerHour !== undefined) payload.mentoring_price_per_hour = (data as any).mentoringPricePerHour
       if ((data as any).graduationStatusYear !== undefined) payload.graduation_status_year = (data as any).graduationStatusYear
       if ((data as any).titleYear !== undefined) payload.title_year = (data as any).titleYear
+      if ((data as any).studyStartDate !== undefined) payload.study_start_date = (data as any).studyStartDate
 
       const updated = await api.updateMe(payload)
       setUser(updated)
