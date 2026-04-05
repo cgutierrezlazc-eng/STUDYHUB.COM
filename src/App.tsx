@@ -4,6 +4,7 @@ import { useAuth } from './services/auth'
 import { isNative } from './services/capacitor'
 import { useDevice } from './hooks/useDevice'
 import Sidebar from './components/Sidebar'
+import SEOHead, { PAGE_SEO } from './components/SEOHead'
 import TopBar from './components/TopBar'
 import RightPanel from './components/RightPanel'
 import MobileBottomNav from './components/MobileBottomNav'
@@ -58,6 +59,26 @@ function PageLoader() {
       <div className="loading-dots"><span /><span /><span /></div>
     </div>
   )
+}
+
+/** Auto-applies SEO meta tags based on current route */
+function SEORouter() {
+  const location = useLocation()
+  const path = location.pathname
+
+  const routeMap: Record<string, string> = {
+    '/': 'profile', '/dashboard': 'dashboard', '/feed': 'profile',
+    '/courses': 'courses', '/jobs': 'jobs', '/communities': 'communities',
+    '/events': 'events', '/messages': 'messages', '/friends': 'friends',
+    '/mentorship': 'mentoring', '/marketplace': 'marketplace', '/search': 'search',
+    '/calendar': 'calendar', '/profile': 'profile', '/subscription': 'subscription',
+    '/admin': 'admin', '/ceo': 'ceo',
+  }
+
+  const seoKey = routeMap[path]
+  const seo = seoKey ? PAGE_SEO[seoKey] : undefined
+
+  return <SEOHead title={seo?.title} description={seo?.description} path={path} />
 }
 
 export default function App() {
@@ -155,8 +176,10 @@ export default function App() {
   }
 
   if (!user) {
+    const authSEO = authView === 'login' ? PAGE_SEO.login : authView === 'register' ? PAGE_SEO.register : PAGE_SEO.landing
     return (
       <Suspense fallback={<PageLoader />}>
+        <SEOHead {...authSEO} />
         {authView === 'landing' && <Landing onLogin={() => setAuthView('login')} onRegister={() => setAuthView('register')} />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && <Login onSwitchToRegister={() => setAuthView('register')} onForgotPassword={() => setAuthView('forgot')} onBack={() => setAuthView('landing')} />}
@@ -229,6 +252,7 @@ export default function App() {
         <main className="main-content">
           <ErrorBoundary>
           <Suspense fallback={<PageLoader />}>
+            <SEORouter />
             <Routes>
             <Route path="/" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />

@@ -7,17 +7,83 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="theme-color" content="#2563EB" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="manifest" href="/manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/icon-192.png" />
-    <title>Conniku - Comunidad de estudio universitario</title>
-    <meta name="description" content="Conniku es la comunidad de estudio para estudiantes universitarios. Guías de estudio, quizzes, flashcards, comunidades, bolsa de empleo y más." />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <link rel="canonical" href="https://conniku.com/" />
+
+    <!-- Primary Meta -->
+    <title>Conniku — Plataforma de estudio para universitarios</title>
+    <meta name="description" content="Conniku es la plataforma integral para estudiantes universitarios en Latinoamerica. Cursos, comunidad, bolsa de trabajo, herramientas de estudio y desarrollo profesional." />
+    <meta name="keywords" content="conniku, universidad, estudiantes, estudio, cursos, comunidad, bolsa de trabajo, curriculum, flashcards, quizzes, latinoamerica, chile, educacion" />
+    <meta name="author" content="Conniku SpA" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://conniku.com/" />
+    <meta property="og:title" content="Conniku — Plataforma de estudio para universitarios" />
+    <meta property="og:description" content="Cursos, comunidad, bolsa de trabajo y herramientas de estudio para universitarios en Latinoamerica." />
+    <meta property="og:image" content="https://conniku.com/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:site_name" content="Conniku" />
+    <meta property="og:locale" content="es_CL" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://conniku.com/" />
+    <meta name="twitter:title" content="Conniku — Plataforma de estudio para universitarios" />
+    <meta name="twitter:description" content="Cursos, comunidad, bolsa de trabajo y herramientas de estudio para universitarios en Latinoamerica." />
+    <meta name="twitter:image" content="https://conniku.com/icon-512.png" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Conniku",
+      "url": "https://conniku.com",
+      "description": "Plataforma integral de estudio para estudiantes universitarios en Latinoamerica. Cursos, comunidad, bolsa de trabajo y desarrollo profesional.",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "USD",
+        "lowPrice": "0",
+        "highPrice": "13",
+        "offerCount": "3"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Conniku SpA",
+        "url": "https://conniku.com",
+        "logo": "https://conniku.com/icon-512.png",
+        "foundingDate": "2024",
+        "founder": {
+          "@type": "Person",
+          "name": "Cristian Gutierrez Lazcano"
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "addressCountry": "CL"
+        }
+      },
+      "inLanguage": ["es", "en", "pt"],
+      "audience": {
+        "@type": "EducationalAudience",
+        "educationalRole": "student"
+      }
+    }
+    </script>
+
+    <!-- Fonts & CSS -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;450;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
     <style>
-      /* Prevent pull-to-refresh on native */
       html, body { overscroll-behavior-y: contain; }
     </style>
   </head>

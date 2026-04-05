@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { HashRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { AuthProvider } from './services/auth'
 import { I18nProvider } from './services/i18n'
 import { isNative, initNative } from './services/capacitor'
@@ -23,9 +23,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     <ErrorBoundary>
       <I18nProvider>
         <AuthProvider>
-          <HashRouter>
+          <BrowserRouter>
             <App />
-          </HashRouter>
+          </BrowserRouter>
         </AuthProvider>
       </I18nProvider>
     </ErrorBoundary>

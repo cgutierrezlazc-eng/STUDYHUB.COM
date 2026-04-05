@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /ceo
+Disallow: /messages
+Disallow: /settings
+Disallow: /checkout
+
+Sitemap: https://conniku.com/sitemap.xml
