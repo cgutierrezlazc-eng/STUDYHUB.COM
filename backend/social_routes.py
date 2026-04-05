@@ -405,7 +405,7 @@ def get_user_profile(
             "mentoringDescription": getattr(target, 'mentoring_description', '') or "",
             "mentoringPriceType": getattr(target, 'mentoring_price_type', 'free') or "free",
             "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
-            "mentoringCurrency": getattr(target, 'mentoring_currency', 'CLP') or "CLP",
+            "mentoringCurrency": getattr(target, 'mentoring_currency', 'USD') or "USD",
             "professionalTitle": getattr(target, 'professional_title', '') or "",
         }
 
@@ -443,7 +443,7 @@ def get_user_profile(
         "mentoringDescription": getattr(target, 'mentoring_description', '') or "",
         "mentoringPriceType": getattr(target, 'mentoring_price_type', 'free') or "free",
         "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
-        "mentoringCurrency": getattr(target, 'mentoring_currency', 'CLP') or "CLP",
+        "mentoringCurrency": getattr(target, 'mentoring_currency', 'USD') or "USD",
         "professionalTitle": getattr(target, 'professional_title', '') or "",
     }
 

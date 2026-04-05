@@ -77,7 +77,7 @@ class User(Base):
     mentoring_description = Column(Text, default="")  # What they specifically offer
     mentoring_price_type = Column(String(10), default="free")  # free | paid
     mentoring_price_per_hour = Column(Float, nullable=True)  # Price per hour if paid
-    mentoring_currency = Column(String(5), default="CLP")  # Currency for price
+    mentoring_currency = Column(String(5), default="USD")  # Currency for price (stored in USD)
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
     provider = Column(String(20), default="email")  # email | google
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { formatPriceDisplay } from '../utils/currency'
 
 interface Props {
   userId: string
@@ -395,11 +396,19 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                       <span style={{ fontSize: 12 }}>{profile.mentoringSubjects.join(', ')}</span>
                     </div>
                   )}
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? '🎁' : '💰'}</span>
-                    <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
-                      {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${(profile.mentoringPricePerHour || 0).toLocaleString()} ${profile.mentoringCurrency || 'CLP'}/hora`}
-                    </span>
+                  <div className="fb-info-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? '🎁' : '💰'}</span>
+                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                        {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${profile.mentoringPricePerHour || 0} USD/hora`}
+                      </span>
+                    </div>
+                    {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
+                      const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                      return prices.localText ? (
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 24 }}>≈ {prices.localText}/hora</span>
+                      ) : null
+                    })()}
                   </div>
                   {isOtherUser && user && profile.academicStatus !== 'estudiante' && (
                     <button onClick={() => setShowTutoringModal(true)}
@@ -813,9 +822,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     )}
                     <div className="fb-about-item">
                       <span className="fb-about-label">Precio</span>
-                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
-                        {profile.mentoringPriceType === 'free' ? 'Gratis (voluntariado)' : `$${(profile.mentoringPricePerHour || 0).toLocaleString()} ${profile.mentoringCurrency || 'CLP'} por hora`}
-                      </span>
+                      <div>
+                        <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                          {profile.mentoringPriceType === 'free' ? 'Gratis (voluntariado)' : `$${profile.mentoringPricePerHour || 0} USD por hora`}
+                        </span>
+                        {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
+                          const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                          return prices.localText ? (
+                            <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>≈ {prices.localText} (conversión aprox.)</span>
+                          ) : null
+                        })()}
+                      </div>
                     </div>
                   </div>
                   {isOtherUser && user && (
@@ -901,7 +918,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
                   {profile?.mentoringPriceType === 'free'
                     ? 'Este tutor ofrece sus servicios de forma gratuita.'
-                    : `Precio: $${(profile?.mentoringPricePerHour || 0).toLocaleString()} ${profile?.mentoringCurrency || 'CLP'}/hora`
+                    : (() => {
+                        const priceText = `Precio: $${profile?.mentoringPricePerHour || 0} USD/hora`
+                        if (user?.country && profile?.mentoringPricePerHour) {
+                          const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                          return prices.localText ? `${priceText} (≈ ${prices.localText})` : priceText
+                        }
+                        return priceText
+                      })()
                   }
                 </p>
                 <div style={{ marginBottom: 12 }}>

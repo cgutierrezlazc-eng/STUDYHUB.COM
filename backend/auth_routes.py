@@ -226,7 +226,7 @@ def user_to_dict(user: User) -> dict:
         "mentoringDescription": getattr(user, 'mentoring_description', '') or "",
         "mentoringPriceType": getattr(user, 'mentoring_price_type', 'free') or "free",
         "mentoringPricePerHour": getattr(user, 'mentoring_price_per_hour', None),
-        "mentoringCurrency": getattr(user, 'mentoring_currency', 'CLP') or "CLP",
+        "mentoringCurrency": getattr(user, 'mentoring_currency', 'USD') or "USD",
         "professionalTitle": getattr(user, 'professional_title', '') or "",
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",

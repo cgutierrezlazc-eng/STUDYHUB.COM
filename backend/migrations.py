@@ -84,7 +84,7 @@ def migrate():
         ("mentoring_description", "TEXT DEFAULT ''"),
         ("mentoring_price_type", "VARCHAR(10) DEFAULT 'free'"),
         ("mentoring_price_per_hour", "FLOAT"),
-        ("mentoring_currency", "VARCHAR(5) DEFAULT 'CLP'"),
+        ("mentoring_currency", "VARCHAR(5) DEFAULT 'USD'"),
         ("professional_title", "VARCHAR(255) DEFAULT ''"),
     ]
 

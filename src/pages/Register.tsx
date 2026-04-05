@@ -4,6 +4,7 @@ import { useI18n, LANGUAGES } from '../services/i18n'
 import { Gender, Language } from '../types'
 import { api } from '../services/api'
 import TermsOfService from '../components/TermsOfService'
+import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency'
 
 interface Props {
   onSwitchToLogin: () => void
@@ -188,6 +189,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     return { level: 3, label: t('pwd.strong'), color: '#22c55e' }
   }
   const strength = passwordStrength()
+
+  const localCurrency = getCurrencyForCountry(form.country)
 
   const GENDER_OPTIONS: { value: Gender; label: string; icon: string }[] = [
     { value: 'male', label: t('reg.genderMale'), icon: '♂' },
@@ -561,16 +564,28 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
                       {form.mentoringPriceType === 'paid' && (
                         <div className="auth-field" style={{ marginBottom: 12 }}>
-                          <label style={{ fontSize: 13, fontWeight: 600 }}>Precio por hora (CLP)</label>
-                          <input
-                            type="number"
-                            placeholder="Ej: 10000"
-                            value={form.mentoringPricePerHour || ''}
-                            onChange={e => setForm(prev => ({ ...prev, mentoringPricePerHour: parseInt(e.target.value) || null }))}
-                            min={0}
-                            style={{ fontSize: 13 }}
-                          />
-                          <small style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+                          <label style={{ fontSize: 13, fontWeight: 600 }}>Precio por hora (USD)</label>
+                          <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 600 }}>$</span>
+                            <input
+                              type="number"
+                              placeholder="Ej: 10"
+                              value={form.mentoringPricePerHour || ''}
+                              onChange={e => setForm(prev => ({ ...prev, mentoringPricePerHour: parseFloat(e.target.value) || null }))}
+                              min={1}
+                              step={0.5}
+                              style={{ fontSize: 13, paddingLeft: 28 }}
+                            />
+                          </div>
+                          {form.mentoringPricePerHour && localCurrency.code !== 'USD' && (
+                            <div style={{ background: 'rgba(45,98,200,0.05)', borderRadius: 6, padding: '6px 10px', marginTop: 6, border: '1px solid rgba(45,98,200,0.1)' }}>
+                              <span style={{ fontSize: 12, color: '#2D62C8', fontWeight: 600 }}>
+                                ≈ {formatUsdToLocal(form.mentoringPricePerHour, form.country)} /hora
+                              </span>
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>(conversión aproximada)</span>
+                            </div>
+                          )}
+                          <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
                             Se transparente con tu precio. Los acuerdos se realizan por el chat de la plataforma.
                           </small>
                         </div>
