@@ -797,6 +797,40 @@ class Certificate(Base):
     is_public = Column(Boolean, default=True)
 
 
+# ─── Social Media Accounts & Cross-Posting ─────────────────
+
+class SocialMediaAccount(Base):
+    __tablename__ = "social_media_accounts"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    platform = Column(String(30), nullable=False)  # twitter, linkedin, facebook, instagram, tiktok
+    platform_username = Column(String(255), default="")
+    platform_user_id = Column(String(255), default="")
+    access_token = Column(Text, default="")  # Encrypted in production
+    refresh_token = Column(Text, default="")
+    token_expires_at = Column(DateTime, nullable=True)
+    page_id = Column(String(255), default="")  # For Facebook/LinkedIn pages
+    is_active = Column(Boolean, default=True)
+    connected_at = Column(DateTime, default=datetime.utcnow)
+    last_posted_at = Column(DateTime, nullable=True)
+    post_count = Column(Integer, default=0)
+
+
+class CrossPost(Base):
+    __tablename__ = "cross_posts"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    image_url = Column(Text, nullable=True)
+    wall_post_id = Column(String(16), nullable=True)  # Link to Conniku wall post if created
+    platforms = Column(Text, default="[]")  # JSON: ["twitter", "linkedin", "conniku"]
+    results = Column(Text, default="[]")  # JSON: [{platform, status, externalId, error}]
+    scheduled_at = Column(DateTime, nullable=True)  # null = posted immediately
+    posted_at = Column(DateTime, nullable=True)
+    status = Column(String(20), default="draft")  # draft, posted, scheduled, failed, partial
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 # ─── Email Log ────────────────────────────────────────────
 
 class EmailLog(Base):
