@@ -750,6 +750,17 @@ export const api = {
   getSubscriptionStatus: () => request('/payments/subscription-status'),
   getStripeHealth: () => request('/payments/health'),
 
+  // ─── Mercado Pago ─────────────────────────────────────────
+  getMpHealth: () => request('/payments/mp/health'),
+  getMpPlans: () => request('/payments/mp/plans'),
+  createMpSubscription: (plan: string) =>
+    request('/payments/mp/create-subscription', { method: 'POST', body: JSON.stringify({ plan }) }),
+  createMpCheckout: (plan: string) =>
+    request('/payments/mp/create-checkout', { method: 'POST', body: JSON.stringify({ plan }) }),
+  getMpSubscriptionStatus: () => request('/payments/mp/subscription-status'),
+  cancelMpSubscription: () =>
+    request('/payments/mp/cancel-subscription', { method: 'POST' }),
+
   // ─── Study Rooms ──────────────────────────────────────────
   createStudyRoom: (data: { name: string; description?: string; room_type?: string; subject?: string; max_participants?: number; pomodoro_work_min?: number; pomodoro_break_min?: number }) =>
     request('/study-rooms', { method: 'POST', body: JSON.stringify(data) }),

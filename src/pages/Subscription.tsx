@@ -13,17 +13,24 @@ export default function Subscription({ onNavigate }: Props) {
   const [loading, setLoading] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly')
   const [localPrices, setLocalPrices] = useState<any>(null)
+  const [mpPlans, setMpPlans] = useState<any>(null)
+  const [selectedTier, setSelectedTier] = useState<'pro' | 'max'>('pro')
 
   useEffect(() => {
     api.getSubscriptionStatus().then(setSubStatus).catch(() => {})
     api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
-    // Check URL params for success/cancel
+    api.getMpPlans().then(setMpPlans).catch(() => {})
+    // Check URL params for success/cancel (Stripe + Mercado Pago)
     const params = new URLSearchParams(window.location.search)
-    if (params.get('success') === 'true') {
-      alert('¡Suscripción activada! Bienvenido a Conniku PRO')
+    if (params.get('success') === 'true' || params.get('mp_status') === 'approved') {
+      alert('¡Suscripcion activada! Bienvenido a Conniku PRO')
       window.history.replaceState({}, '', '/subscription')
     }
-    if (params.get('cancelled') === 'true') {
+    if (params.get('cancelled') === 'true' || params.get('mp_status') === 'failed') {
+      window.history.replaceState({}, '', '/subscription')
+    }
+    if (params.get('mp_status') === 'pending') {
+      alert('Tu pago esta pendiente. Te notificaremos cuando se confirme.')
       window.history.replaceState({}, '', '/subscription')
     }
   }, [])
@@ -31,9 +38,17 @@ export default function Subscription({ onNavigate }: Props) {
   const handleSubscribe = async () => {
     setLoading(true)
     try {
-      const result = await api.createCheckoutSession(selectedPlan)
-      if (result.url) {
-        window.location.href = result.url
+      // Try Mercado Pago first (available in Chile)
+      const planKey = `${selectedTier}_${selectedPlan}`
+      const result = await api.createMpCheckout(planKey)
+      if (result.url || result.initPoint) {
+        window.location.href = result.url || result.initPoint
+        return
+      }
+      // Fallback to Stripe
+      const stripeResult = await api.createCheckoutSession(selectedPlan)
+      if (stripeResult.url) {
+        window.location.href = stripeResult.url
       }
     } catch (err: any) {
       alert(err.message || 'Error al iniciar el pago')
@@ -43,12 +58,22 @@ export default function Subscription({ onNavigate }: Props) {
 
   const handleManageSubscription = async () => {
     try {
+      // Check if user has MP subscription
+      if (subStatus?.provider === 'mercadopago' || subStatus?.hasMercadoPago) {
+        if (confirm('¿Deseas cancelar tu suscripcion?')) {
+          await api.cancelMpSubscription()
+          alert('Suscripcion cancelada')
+          window.location.reload()
+        }
+        return
+      }
+      // Stripe portal
       const result = await api.createPortalSession()
       if (result.url) {
         window.location.href = result.url
       }
     } catch (err: any) {
-      alert(err.message || 'Error al abrir el portal')
+      alert(err.message || 'Error al gestionar suscripcion')
     }
   }
 
@@ -135,16 +160,14 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>MÁS POPULAR</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Star({ size: 14 })} Pro</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '5' : '39.99'}
-                  <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
+                  ${selectedPlan === 'monthly' ? '2.990' : '29.900'}
+                  <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}> CLP/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
-                {localPrices?.plans && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    ≈ {localPrices.plans[selectedPlan === 'monthly' ? 'pro_monthly' : 'pro_yearly']?.formatted} {localPrices.currency}
-                  </div>
-                )}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  ≈ USD ${selectedPlan === 'monthly' ? '3' : '30'}/{ selectedPlan === 'monthly' ? 'mes' : 'año'}
+                </div>
                 {selectedPlan === 'yearly' && (
-                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $6.67/mes · Ahorras $40/año</div>
+                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $2.492/mes · Ahorras $5.980/año</div>
                 )}
                 {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Para estudiar en serio</div>
@@ -160,8 +183,8 @@ export default function Subscription({ onNavigate }: Props) {
                   <li>✓ +20% XP bonus</li>
                 </ul>
                 <button className="btn btn-primary" style={{ width: '100%', marginTop: 20 }}
-                  onClick={handleSubscribe} disabled={loading}>
-                  {loading ? 'Procesando...' : 'Comenzar Prueba Gratis (7 días)'}
+                  onClick={() => { setSelectedTier('pro'); handleSubscribe() }} disabled={loading}>
+                  {loading ? 'Procesando...' : 'Comenzar Prueba Gratis (7 dias)'}
                 </button>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>
                   Cobro automático {selectedPlan === 'monthly' ? 'mensual' : 'anual'} · Cancela cuando quieras
@@ -173,16 +196,14 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent-purple)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>PREMIUM</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Crown({ size: 14 })} Max</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '13' : '99.99'}
-                  <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
+                  ${selectedPlan === 'monthly' ? '6.990' : '69.900'}
+                  <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}> CLP/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
-                {localPrices?.plans && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    ≈ {localPrices.plans[selectedPlan === 'monthly' ? 'max_monthly' : 'max_yearly']?.formatted} {localPrices.currency}
-                  </div>
-                )}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  ≈ USD ${selectedPlan === 'monthly' ? '7' : '70'}/{selectedPlan === 'monthly' ? 'mes' : 'año'}
+                </div>
                 {selectedPlan === 'yearly' && (
-                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $8.33/mes · Ahorras $56/año</div>
+                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $5.825/mes · Ahorras $13.980/año</div>
                 )}
                 {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Para liderar y dominar</div>
@@ -198,12 +219,30 @@ export default function Subscription({ onNavigate }: Props) {
                   <li>✓ Badge exclusivo</li>
                 </ul>
                 <button className="btn btn-primary" style={{ width: '100%', marginTop: 20, background: 'var(--accent-purple)' }}
-                  onClick={handleSubscribe} disabled={loading}>
+                  onClick={() => { setSelectedTier('max'); handleSubscribe() }} disabled={loading}>
                   {loading ? 'Procesando...' : 'Activar Max'}
                 </button>
                 <p style={{ fontSize: 11, color: 'var(--text-muted)', textAlign: 'center', marginTop: 8 }}>
-                  Cobro automático {selectedPlan === 'monthly' ? 'mensual' : 'anual'} · Stripe seguro
+                  Cobro automatico {selectedPlan === 'monthly' ? 'mensual' : 'anual'} · Pago seguro
                 </p>
+              </div>
+            </div>
+
+            {/* Payment Methods */}
+            <div style={{ textAlign: 'center', margin: '24px auto 0', maxWidth: 700 }}>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>Metodos de pago aceptados</p>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                {['Mercado Pago', 'Visa', 'Mastercard', 'AMEX', 'Webpay', 'PayPal', 'Google Pay'].map(m => (
+                  <span key={m} style={{
+                    padding: '5px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                    background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                    border: '1px solid var(--border-subtle)',
+                  }}>{m}</span>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 10, alignItems: 'center' }}>
+                <svg viewBox="0 0 24 24" width={14} height={14} fill="none" stroke="#22c55e" strokeWidth={2} strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Pagos seguros con encriptacion SSL · Sin almacenar datos de tarjeta</span>
               </div>
             </div>
 
@@ -213,7 +252,7 @@ export default function Subscription({ onNavigate }: Props) {
               {[
                 { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, cancela en cualquier momento desde tu portal de suscripción. No hay contratos ni compromisos.' },
                 { q: '¿Qué pasa con mis datos si cancelo?', a: 'Tus datos se mantienen. Simplemente pierdes acceso a las funciones PRO y vuelves al plan gratuito.' },
-                { q: '¿Qué métodos de pago aceptan?', a: 'Tarjeta de crédito/débito (Visa, Mastercard, AMEX) procesado de forma segura por Stripe.' },
+                { q: '¿Que metodos de pago aceptan?', a: 'Mercado Pago (tarjetas, transferencia, Webpay), PayPal, Google Pay y tarjetas internacionales (Visa, Mastercard, AMEX).' },
                 { q: '¿La prueba gratis tiene costo?', a: 'No. Los primeros 7 días son completamente gratis. Solo se cobra si decides continuar.' },
               ].map((faq, i) => (
                 <div key={i} style={{ marginBottom: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8 }}>

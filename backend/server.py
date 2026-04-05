@@ -38,6 +38,7 @@ from course_routes import router as course_router
 from event_routes import router as event_router
 from mentorship_routes import router as mentorship_router
 from payment_routes import router as payment_router
+from mercadopago_routes import router as mp_router
 from study_room_routes import router as study_room_router
 from quiz_system_routes import router as quiz_system_router
 from pomodoro_routes import router as pomodoro_router
@@ -115,6 +116,7 @@ app.include_router(course_router)
 app.include_router(event_router)
 app.include_router(mentorship_router)
 app.include_router(payment_router)
+app.include_router(mp_router)
 app.include_router(study_room_router)
 app.include_router(quiz_system_router)
 app.include_router(pomodoro_router)
