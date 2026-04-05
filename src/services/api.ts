@@ -606,6 +606,12 @@ export const api = {
     request(`/courses/${courseId}/lessons/${lessonId}/complete`, { method: 'POST' }),
   submitCourseQuiz: (courseId: string, answers: Record<string, number>) =>
     request(`/courses/${courseId}/quiz/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),
+  // ─── Exercises (never repeat) ───────────────────────────
+  getExercises: (courseId: string, count: number = 5) =>
+    request(`/courses/${courseId}/exercises`, { method: 'POST', body: JSON.stringify({ count }) }),
+  submitExercises: (courseId: string, answers: Record<string, number>, questions: any[]) =>
+    request(`/courses/${courseId}/exercises/submit`, { method: 'POST', body: JSON.stringify({ answers, questions }) }),
+
   getMyCertificates: () => request('/courses/certificates/my'),
   getUserCertificates: (userId: string) => request(`/courses/certificates/${userId}`),
 

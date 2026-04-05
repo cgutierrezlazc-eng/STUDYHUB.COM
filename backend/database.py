@@ -764,6 +764,22 @@ class UserCourseProgress(Base):
     __table_args__ = (UniqueConstraint("user_id", "course_id", name="uq_user_course"),)
 
 
+# ─── Exercise History (never-repeating exercises) ─────────
+
+class UserExerciseHistory(Base):
+    __tablename__ = "user_exercise_history"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    course_id = Column(String(16), ForeignKey("courses.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_hash = Column(String(64), nullable=False)  # SHA256 of the question text
+    answered_at = Column(DateTime, default=datetime.utcnow)
+    was_correct = Column(Boolean, default=False)
+
+    __table_args__ = (
+        Index("ix_exercise_user_course", "user_id", "course_id"),
+    )
+
+
 # ─── Certificates ─────────────────────────────────────────
 
 class Certificate(Base):

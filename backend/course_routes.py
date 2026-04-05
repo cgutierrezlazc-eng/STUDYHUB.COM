@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from database import (get_db, User, Course, CourseLesson, CourseQuiz,
-                      UserCourseProgress, StudentCV, gen_id)
+                      UserCourseProgress, UserExerciseHistory, StudentCV, gen_id)
 from middleware import get_current_user
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -719,6 +719,281 @@ def submit_quiz(course_id: str, data: dict,
         "courseTitle": course.title if course else "",
         "rewardsGranted": rewards_granted,
         "courseRewardProgress": course_reward_progress,
+    }
+
+
+# ─── Dynamic Exercises (never repeat) ─────────────────────
+
+def _hash_question(text: str) -> str:
+    """SHA256 hash of question text for deduplication."""
+    import hashlib
+    return hashlib.sha256(text.strip().lower().encode()).hexdigest()
+
+
+class ExerciseRequest(BaseModel):
+    count: int = 5
+
+
+@router.post("/{course_id}/exercises")
+def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
+                  user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get exercises that NEVER repeat for this user. Generates new ones if all have been seen."""
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(404, "Curso no encontrado")
+
+    # Check user has completed at least 1 lesson
+    progress = db.query(UserCourseProgress).filter(
+        UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id
+    ).first()
+    completed_lessons = json.loads(progress.completed_lessons or "[]") if progress else []
+    if len(completed_lessons) == 0:
+        raise HTTPException(400, "Debes completar al menos una leccion antes de practicar ejercicios.")
+
+    # Get all existing quiz questions for this course
+    quiz = db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).first()
+    all_questions = json.loads(quiz.questions or "[]") if quiz else []
+
+    # Get hashes of questions this user has already answered
+    seen_hashes = {row.question_hash for row in db.query(UserExerciseHistory.question_hash).filter(
+        UserExerciseHistory.user_id == user.id,
+        UserExerciseHistory.course_id == course_id,
+    ).all()}
+
+    # Filter unseen questions
+    unseen = [q for q in all_questions if _hash_question(q["question"]) not in seen_hashes]
+
+    count = min(data.count, 10)  # Cap at 10
+
+    if len(unseen) >= count:
+        # Enough unseen static questions - return random selection
+        import random
+        selected = random.sample(unseen, count)
+        # Compute exercise stats
+        total_answered = db.query(UserExerciseHistory).filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+        ).count()
+        total_correct = db.query(UserExerciseHistory).filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+            UserExerciseHistory.was_correct == True,
+        ).count()
+        return {
+            "questions": selected,
+            "source": "static",
+            "stats": {
+                "totalAnswered": total_answered,
+                "totalCorrect": total_correct,
+                "accuracy": round((total_correct / max(total_answered, 1)) * 100),
+            },
+        }
+
+    # Not enough unseen questions - generate new ones
+    # Gather lesson content for context
+    lessons = db.query(CourseLesson).filter(
+        CourseLesson.course_id == course_id
+    ).order_by(CourseLesson.order_index).all()
+
+    lesson_summaries = "\n".join([
+        f"Leccion {i+1}: {l.title}\n{l.content[:600]}" for i, l in enumerate(lessons)
+    ])
+
+    # Build list of already-seen question texts to avoid
+    seen_questions_text = "\n".join([
+        f"- {q['question']}" for q in all_questions if _hash_question(q["question"]) in seen_hashes
+    ][:50])  # Limit to avoid token overflow
+
+    need = count - len(unseen)
+
+    try:
+        from gemini_engine import AIEngine
+        ai = AIEngine()
+    except Exception:
+        # If AI not available, return whatever unseen we have
+        import random
+        selected = unseen if unseen else random.sample(all_questions, min(count, len(all_questions)))
+        total_answered = db.query(UserExerciseHistory).filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+        ).count()
+        total_correct = db.query(UserExerciseHistory).filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+            UserExerciseHistory.was_correct == True,
+        ).count()
+        return {
+            "questions": selected,
+            "source": "fallback",
+            "stats": {
+                "totalAnswered": total_answered,
+                "totalCorrect": total_correct,
+                "accuracy": round((total_correct / max(total_answered, 1)) * 100),
+            },
+        }
+
+    lang = user.language or "es"
+    system = f"""Eres un experto en desarrollo personal y profesional. Genera preguntas de practica de alta calidad.
+Responde SOLO con JSON valido. Las preguntas deben ser:
+- Basadas en el contenido de las lecciones
+- Diferentes a las preguntas ya existentes
+- Practicas y que evaluen comprension, no solo memoria
+- En {'espanol' if lang == 'es' else 'ingles' if lang == 'en' else lang}"""
+
+    prompt = f"""Genera exactamente {need} preguntas de practica NUEVAS para el curso "{course.title}".
+Descripcion: {course.description}
+
+Contenido de las lecciones:
+{lesson_summaries}
+
+IMPORTANTE: Las siguientes preguntas YA EXISTEN. NO las repitas ni hagas preguntas similares:
+{seen_questions_text}
+
+Formato JSON (responde SOLO con el JSON):
+{{
+  "questions": [
+    {{
+      "question": "Pregunta sobre el contenido",
+      "options": ["Opcion A", "Opcion B", "Opcion C", "Opcion D"],
+      "correctAnswer": 0,
+      "explanation": "Por que esta es la respuesta correcta"
+    }}
+  ]
+}}"""
+
+    try:
+        result_text = ai._call_claude(system, prompt, model="claude-sonnet-4-20250514")
+        start = result_text.find('{')
+        end = result_text.rfind('}') + 1
+        if start >= 0 and end > start:
+            result = json.loads(result_text[start:end])
+        else:
+            result = json.loads(result_text)
+
+        new_questions = result.get("questions", [])
+
+        # Append new questions to the course quiz (persist them)
+        if new_questions and quiz:
+            all_questions.extend(new_questions)
+            quiz.questions = json.dumps(all_questions)
+            db.commit()
+        elif new_questions and not quiz:
+            quiz = CourseQuiz(
+                id=gen_id(), course_id=course_id,
+                questions=json.dumps(new_questions),
+            )
+            db.add(quiz)
+            db.commit()
+
+        # Combine unseen static + newly generated
+        import random
+        selected = unseen + new_questions
+        if len(selected) > count:
+            selected = random.sample(selected, count)
+
+    except Exception as e:
+        print(f"Exercise generation error for course {course_id}: {e}")
+        import random
+        selected = unseen if unseen else random.sample(all_questions, min(count, len(all_questions)))
+
+    total_answered = db.query(UserExerciseHistory).filter(
+        UserExerciseHistory.user_id == user.id,
+        UserExerciseHistory.course_id == course_id,
+    ).count()
+    total_correct = db.query(UserExerciseHistory).filter(
+        UserExerciseHistory.user_id == user.id,
+        UserExerciseHistory.course_id == course_id,
+        UserExerciseHistory.was_correct == True,
+    ).count()
+
+    return {
+        "questions": selected,
+        "source": "generated",
+        "stats": {
+            "totalAnswered": total_answered,
+            "totalCorrect": total_correct,
+            "accuracy": round((total_correct / max(total_answered, 1)) * 100),
+        },
+    }
+
+
+class ExerciseSubmitRequest(BaseModel):
+    answers: dict  # {questionIndex: selectedOption}
+    questions: list  # The questions array that was served
+
+
+@router.post("/{course_id}/exercises/submit")
+def submit_exercises(course_id: str, data: ExerciseSubmitRequest,
+                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Submit exercise answers. Records each question in history so it never repeats."""
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        raise HTTPException(404, "Curso no encontrado")
+
+    questions = data.questions
+    answers = data.answers
+    correct = 0
+    results = []
+
+    for i, q in enumerate(questions):
+        user_answer = answers.get(str(i))
+        is_correct = user_answer == q.get("correctAnswer")
+        if is_correct:
+            correct += 1
+
+        # Record in exercise history
+        q_hash = _hash_question(q["question"])
+        existing = db.query(UserExerciseHistory).filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+            UserExerciseHistory.question_hash == q_hash,
+        ).first()
+        if not existing:
+            db.add(UserExerciseHistory(
+                id=gen_id(),
+                user_id=user.id,
+                course_id=course_id,
+                question_hash=q_hash,
+                was_correct=is_correct,
+            ))
+
+        results.append({
+            "question": q["question"],
+            "userAnswer": user_answer,
+            "correctAnswer": q.get("correctAnswer"),
+            "isCorrect": is_correct,
+            "explanation": q.get("explanation", ""),
+        })
+
+    # Award 10 XP for completing an exercise set
+    from gamification import award_xp
+    award_xp(user, 10, db)
+    db.commit()
+
+    score = round((correct / max(len(questions), 1)) * 100)
+
+    # Updated stats
+    total_answered = db.query(UserExerciseHistory).filter(
+        UserExerciseHistory.user_id == user.id,
+        UserExerciseHistory.course_id == course_id,
+    ).count()
+    total_correct_all = db.query(UserExerciseHistory).filter(
+        UserExerciseHistory.user_id == user.id,
+        UserExerciseHistory.course_id == course_id,
+        UserExerciseHistory.was_correct == True,
+    ).count()
+
+    return {
+        "score": score,
+        "correct": correct,
+        "total": len(questions),
+        "results": results,
+        "xpAwarded": 10,
+        "stats": {
+            "totalAnswered": total_answered,
+            "totalCorrect": total_correct_all,
+            "accuracy": round((total_correct_all / max(total_answered, 1)) * 100),
+        },
     }
 
 

@@ -39,6 +39,15 @@ export default function Courses({ onNavigate }: Props) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [milestonePopup, setMilestonePopup] = useState<{type: string, title: string, description: string, icon: string} | null>(null)
 
+  // ─── Exercise state ───
+  const [exerciseMode, setExerciseMode] = useState(false)
+  const [exercises, setExercises] = useState<any[]>([])
+  const [exerciseAnswers, setExerciseAnswers] = useState<Record<string, number>>({})
+  const [exerciseResult, setExerciseResult] = useState<any>(null)
+  const [exerciseError, setExerciseError] = useState<string | null>(null)
+  const [exerciseStats, setExerciseStats] = useState<any>(null)
+  const [exerciseLoading, setExerciseLoading] = useState(false)
+
   useEffect(() => { loadCourses() }, [])
 
   const loadCourses = async () => {
@@ -64,6 +73,11 @@ export default function Courses({ onNavigate }: Props) {
       setQuizMode(false)
       setQuizResult(null)
       setQuizAnswers({})
+      setExerciseMode(false)
+      setExercises([])
+      setExerciseAnswers({})
+      setExerciseResult(null)
+      setExerciseStats(null)
       setSidebarOpen(false)
 
       if (data.needsGeneration) {
@@ -149,6 +163,36 @@ export default function Courses({ onNavigate }: Props) {
     } catch (err: any) {
       console.error('Quiz submission failed:', err)
       setQuizError('Error al enviar el examen. Intenta de nuevo.')
+    }
+  }
+
+  const loadExercises = async () => {
+    if (!courseDetail) return
+    setExerciseLoading(true)
+    setExerciseError(null)
+    setExerciseResult(null)
+    setExerciseAnswers({})
+    try {
+      const data = await api.getExercises(courseDetail.id, 5)
+      setExercises(data.questions || [])
+      setExerciseStats(data.stats || null)
+    } catch (err: any) {
+      console.error('Failed to load exercises:', err)
+      setExerciseError(err.message || 'No se pudieron cargar los ejercicios.')
+    }
+    setExerciseLoading(false)
+  }
+
+  const handleSubmitExercises = async () => {
+    if (!courseDetail || exercises.length === 0) return
+    setExerciseError(null)
+    try {
+      const result = await api.submitExercises(courseDetail.id, exerciseAnswers, exercises)
+      setExerciseResult(result)
+      setExerciseStats(result.stats || null)
+    } catch (err: any) {
+      console.error('Exercise submission failed:', err)
+      setExerciseError('Error al enviar ejercicios. Intenta de nuevo.')
     }
   }
 
@@ -263,7 +307,7 @@ export default function Courses({ onNavigate }: Props) {
                 {lessons.map((lesson: any, i: number) => {
                   const isActive = i === activeLesson && !quizMode
                   return (
-                    <button key={lesson.id} onClick={() => { setActiveLesson(i); setQuizMode(false); setSidebarOpen(false) }}
+                    <button key={lesson.id} onClick={() => { setActiveLesson(i); setQuizMode(false); setExerciseMode(false); setSidebarOpen(false) }}
                       style={{
                         display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 10px',
                         borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
@@ -307,7 +351,7 @@ export default function Courses({ onNavigate }: Props) {
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', padding: '8px 8px 4px' }}>
                       Evaluación
                     </div>
-                    <button onClick={() => { setQuizMode(true); setSidebarOpen(false) }}
+                    <button onClick={() => { setQuizMode(true); setExerciseMode(false); setSidebarOpen(false) }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', width: '100%',
                         borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left',
@@ -333,12 +377,243 @@ export default function Courses({ onNavigate }: Props) {
                     </button>
                   </>
                 )}
+
+                {/* Ejercicios link - visible after completing at least 1 lesson */}
+                {completedCount > 0 && (
+                  <>
+                    <div style={{ height: 1, background: 'var(--border)', margin: '8px 8px' }} />
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', padding: '8px 8px 4px' }}>
+                      Practica
+                    </div>
+                    <button onClick={() => { setExerciseMode(true); setQuizMode(false); setSidebarOpen(false); if (exercises.length === 0 && !exerciseLoading) loadExercises() }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', width: '100%',
+                        borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left',
+                        background: exerciseMode ? `${catColor}0D` : 'transparent',
+                      }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13,
+                        background: exerciseMode ? catColor : 'transparent',
+                        color: exerciseMode ? '#fff' : 'var(--text-muted)',
+                        border: exerciseMode ? 'none' : '2px solid var(--border)',
+                      }}>
+                        {Target({ size: 13 })}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: exerciseMode ? 600 : 400, color: exerciseMode ? catColor : 'var(--text-primary)' }}>
+                          Ejercicios
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          Preguntas que nunca se repiten
+                        </div>
+                      </div>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
             {/* ─── Main content ─── */}
             <div style={{ flex: 1, minWidth: 0, padding: '24px 32px 60px', overflowY: 'auto' }}>
-              {!quizMode && currentLesson ? (
+              {exerciseMode ? (
+                <div style={{ maxWidth: 720 }}>
+                  {exerciseLoading ? (
+                    <div style={{ textAlign: 'center', padding: 60 }}>
+                      <div className="loading-dots"><span /><span /><span /></div>
+                      <p style={{ color: 'var(--text-muted)', marginTop: 12, fontSize: 14 }}>Preparando ejercicios...</p>
+                    </div>
+                  ) : exerciseError && exercises.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 40 }}>
+                      <p style={{ color: '#DC2626', fontSize: 14 }}>{exerciseError}</p>
+                      <button onClick={loadExercises} style={{
+                        padding: '10px 20px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                        background: catColor, color: '#fff', fontSize: 13, fontWeight: 600, marginTop: 12,
+                      }}>Reintentar</button>
+                    </div>
+                  ) : exerciseResult ? (
+                    <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                      <div style={{
+                        width: 100, height: 100, borderRadius: '50%', margin: '0 auto 20px',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: exerciseResult.score >= 70 ? 'rgba(5,150,105,0.08)' : 'rgba(239,68,68,0.06)',
+                        fontSize: 48,
+                      }}>
+                        {exerciseResult.score >= 70 ? CheckCircle({ size: 48, color: 'var(--accent-green)' }) : Target({ size: 48 })}
+                      </div>
+                      <h2 style={{ margin: '0 0 8px', fontSize: 24, color: 'var(--text-primary)' }}>
+                        {exerciseResult.score >= 70 ? 'Muy bien!' : 'Sigue practicando'}
+                      </h2>
+                      <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 14 }}>
+                        +{exerciseResult.xpAwarded} XP ganados por completar esta practica
+                      </p>
+                      <div style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 20,
+                        background: 'var(--bg-secondary)', borderRadius: 12, padding: '16px 28px', marginBottom: 24,
+                      }}>
+                        <div>
+                          <div style={{ fontSize: 36, fontWeight: 700, color: exerciseResult.score >= 70 ? '#059669' : '#DC2626' }}>{exerciseResult.score}%</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Puntuacion</div>
+                        </div>
+                        <div style={{ width: 1, height: 40, background: 'var(--border)' }} />
+                        <div>
+                          <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--text-primary)' }}>{exerciseResult.correct}/{exerciseResult.total}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Correctas</div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      {exerciseStats && (
+                        <div style={{
+                          margin: '0 auto 24px', maxWidth: 360, padding: '14px 18px',
+                          background: 'var(--bg-secondary)', borderRadius: 10, fontSize: 13,
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Total ejercicios resueltos</span>
+                            <strong>{exerciseStats.totalAnswered}</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Precision general</span>
+                            <strong style={{ color: exerciseStats.accuracy >= 70 ? '#059669' : '#DC2626' }}>{exerciseStats.accuracy}%</strong>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Answer details */}
+                      <div style={{ textAlign: 'left', marginBottom: 24 }}>
+                        {exerciseResult.results?.map((r: any, ri: number) => (
+                          <div key={ri} style={{
+                            padding: '14px 16px', marginBottom: 8, borderRadius: 8,
+                            background: r.isCorrect ? 'rgba(5,150,105,0.05)' : 'rgba(239,68,68,0.04)',
+                            border: `1px solid ${r.isCorrect ? 'rgba(5,150,105,0.15)' : 'rgba(239,68,68,0.12)'}`,
+                          }}>
+                            <p style={{ fontWeight: 600, fontSize: 13, margin: '0 0 4px', color: 'var(--text-primary)' }}>
+                              {r.isCorrect ? '✓' : '✗'} {r.question}
+                            </p>
+                            {!r.isCorrect && r.explanation && (
+                              <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>{r.explanation}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <button onClick={loadExercises} style={{
+                        padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                        background: catColor, color: '#fff', fontSize: 14, fontWeight: 600,
+                      }}>
+                        Generar mas ejercicios
+                      </button>
+                    </div>
+                  ) : exercises.length > 0 ? (
+                    <div>
+                      {/* Exercise header */}
+                      <div style={{ marginBottom: 28 }}>
+                        <div style={{
+                          fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase',
+                          color: catColor, marginBottom: 6,
+                        }}>
+                          Practica — Ejercicios que nunca se repiten
+                        </div>
+                        <h2 style={{ margin: '0 0 6px', fontSize: 22, color: 'var(--text-primary)' }}>
+                          {courseDetail.title}
+                        </h2>
+                        <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 14 }}>
+                          Cada vez que practiques recibiras preguntas diferentes. Nuestro sistema avanzado se asegura de que nunca veas la misma pregunta dos veces.
+                        </p>
+                        {exerciseStats && exerciseStats.totalAnswered > 0 && (
+                          <div style={{
+                            display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)',
+                          }}>
+                            <span>{Target({ size: 12 })} {exerciseStats.totalAnswered} ejercicios resueltos</span>
+                            <span>{CheckCircle({ size: 12 })} {exerciseStats.accuracy}% precision</span>
+                          </div>
+                        )}
+                        <div style={{
+                          display: 'flex', gap: 16, marginTop: 8, fontSize: 12, color: 'var(--text-muted)',
+                        }}>
+                          <span>{FileText({ size: 12 })} {exercises.length} preguntas</span>
+                          <span>{CheckCircle({ size: 12 })} {Object.keys(exerciseAnswers).length} respondidas</span>
+                        </div>
+                      </div>
+
+                      {/* Exercise questions */}
+                      {exercises.map((q: any, qi: number) => (
+                        <div key={qi} style={{
+                          marginBottom: 20, padding: '18px 20px',
+                          background: '#fff', borderRadius: 10,
+                          border: `1px solid ${exerciseAnswers[String(qi)] !== undefined ? `${catColor}30` : 'var(--border)'}`,
+                          transition: 'border-color 0.2s',
+                        }}>
+                          <p style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.5 }}>
+                            <span style={{ color: catColor, marginRight: 6 }}>{qi + 1}.</span>
+                            {q.question}
+                          </p>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {q.options.map((opt: string, oi: number) => {
+                              const isSelected = exerciseAnswers[String(qi)] === oi
+                              return (
+                                <button key={oi} onClick={() => setExerciseAnswers(prev => ({ ...prev, [String(qi)]: oi }))}
+                                  style={{
+                                    padding: '10px 14px', borderRadius: 8, textAlign: 'left', cursor: 'pointer',
+                                    border: `1.5px solid ${isSelected ? catColor : 'var(--border)'}`,
+                                    background: isSelected ? `${catColor}08` : '#fff',
+                                    color: 'var(--text-primary)', fontSize: 13.5, lineHeight: 1.5,
+                                    display: 'flex', alignItems: 'flex-start', gap: 10,
+                                    transition: 'all 0.15s',
+                                  }}>
+                                  <span style={{
+                                    width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 1,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 11, fontWeight: 600,
+                                    background: isSelected ? catColor : 'transparent',
+                                    color: isSelected ? '#fff' : 'var(--text-muted)',
+                                    border: isSelected ? 'none' : '2px solid var(--border)',
+                                  }}>
+                                    {String.fromCharCode(65 + oi)}
+                                  </span>
+                                  {opt}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+
+                      {exerciseError && (
+                        <div style={{
+                          padding: '12px 16px', marginBottom: 16, borderRadius: 8,
+                          background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
+                          fontSize: 13, color: '#DC2626',
+                        }}>
+                          {exerciseError}
+                        </div>
+                      )}
+
+                      {/* Submit */}
+                      <div style={{
+                        position: 'sticky', bottom: 0, background: 'var(--bg-primary)',
+                        padding: '16px 0', borderTop: '1px solid var(--border)',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                          {Object.keys(exerciseAnswers).length}/{exercises.length} respondidas
+                        </span>
+                        <button onClick={handleSubmitExercises}
+                          disabled={Object.keys(exerciseAnswers).length < exercises.length}
+                          style={{
+                            padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                            background: Object.keys(exerciseAnswers).length < exercises.length ? 'var(--border)' : catColor,
+                            color: Object.keys(exerciseAnswers).length < exercises.length ? 'var(--text-muted)' : '#fff',
+                            fontSize: 14, fontWeight: 600,
+                            opacity: Object.keys(exerciseAnswers).length < exercises.length ? 0.6 : 1,
+                          }}>
+                          Enviar respuestas
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : !quizMode && !exerciseMode && currentLesson ? (
                 <div>
                   {/* Lesson header */}
                   <div style={{ marginBottom: 24 }}>
@@ -407,7 +682,7 @@ export default function Courses({ onNavigate }: Props) {
                           Siguiente →
                         </button>
                       ) : allLessonsComplete && courseDetail.quiz ? (
-                        <button onClick={() => setQuizMode(true)}
+                        <button onClick={() => { setQuizMode(true); setExerciseMode(false) }}
                           style={{
                             padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
                             background: catColor, color: '#fff', fontSize: 13, fontWeight: 600,

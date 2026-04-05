@@ -458,8 +458,24 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
         {!compact && !mid && (
           <div style={{ display: 'flex', gap: 28, fontSize: 13, color: vars.textSecondary, fontWeight: 500 }}>
-            {['Plataforma', 'Planes', 'Comunidad', 'Cursos', 'Empleo'].map(item => (
-              <a key={item} href="#" onClick={e => e.preventDefault()} style={{ color: 'inherit', textDecoration: 'none' }}>{item}</a>
+            {[
+              { label: 'Plataforma', target: 'plataforma' },
+              { label: 'Planes', target: 'planes' },
+              { label: 'Comunidad', target: 'comunidad' },
+              { label: 'Cursos', target: 'comunidad' },
+              { label: 'Empleo', target: 'comunidad' },
+            ].map(item => (
+              <a
+                key={item.label}
+                href={`#${item.target}`}
+                onClick={e => {
+                  e.preventDefault()
+                  document.getElementById(item.target)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }}
+                style={{ color: 'inherit', textDecoration: 'none' }}
+              >
+                {item.label}
+              </a>
             ))}
           </div>
         )}
@@ -479,7 +495,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
       </nav>
 
       {/* ─── Hero ─── */}
-      <section style={{ background: vars.bgPrimary, padding: compact ? '48px 16px' : mid ? '56px 28px' : '72px 40px' }}>
+      <section id="plataforma" style={{ background: vars.bgPrimary, padding: compact ? '48px 16px' : mid ? '56px 28px' : '72px 40px' }}>
         <div style={{
           maxWidth: 1200, margin: '0 auto',
           display: 'flex', alignItems: compact ? 'flex-start' : 'center',
@@ -779,7 +795,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
       </section>
 
       {/* ─── Features ─── */}
-      <section style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
+      <section id="comunidad" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <h2 style={{ fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 4 }}>
             Todo lo que necesitas en un solo lugar
@@ -852,7 +868,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
+      <section id="planes" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
         <div style={{ maxWidth: 780, margin: '0 auto' }}>
           <h2 style={{ textAlign: 'center', fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 6 }}>
             Planes para cada estudiante
