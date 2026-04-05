@@ -1008,9 +1008,14 @@ def my_certificates(user: User = Depends(get_current_user), db: Session = Depend
 
     return [{
         "certificateId": p.certificate_id,
+        "courseId": c.id,
         "courseTitle": c.title, "courseEmoji": c.emoji,
         "courseCategory": c.category,
+        "courseDifficulty": c.difficulty,
+        "estimatedMinutes": c.estimated_minutes,
+        "lessonCount": c.lesson_count,
         "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
+        "startedAt": p.started_at.isoformat() if p.started_at else "",
         "userName": f"{user.first_name} {user.last_name}",
     } for p, c in completed]
 
@@ -1030,9 +1035,14 @@ def user_certificates(user_id: str, db: Session = Depends(get_db)):
 
     return [{
         "certificateId": p.certificate_id,
+        "courseId": c.id,
         "courseTitle": c.title, "courseEmoji": c.emoji,
         "courseCategory": c.category,
+        "courseDifficulty": c.difficulty,
+        "estimatedMinutes": c.estimated_minutes,
+        "lessonCount": c.lesson_count,
         "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
+        "startedAt": p.started_at.isoformat() if p.started_at else "",
         "userName": f"{u.first_name} {u.last_name}",
     } for p, c in completed]
 

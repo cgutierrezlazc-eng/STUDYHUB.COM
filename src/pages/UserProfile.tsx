@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
-import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff } from '../components/Icons'
+import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
 
 const COVER_TEMPLATES = [
   // General
@@ -65,9 +65,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
+  const [completedCourses, setCompletedCourses] = useState<any[]>([])
+  const [coursesLoading, setCoursesLoading] = useState(false)
+  const [selectedCert, setSelectedCert] = useState<any>(null)
   const [friendsList, setFriendsList] = useState<any[]>([])
   const [activityFeed, setActivityFeed] = useState<any[]>([])
   const [activityLoading, setActivityLoading] = useState(false)
@@ -120,6 +123,18 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setCvData(data)
     } catch (err) { console.error('Failed to load CV:', err) }
     finally { setCvLoading(false) }
+  }
+
+  const loadCompletedCourses = async () => {
+    try {
+      setCoursesLoading(true)
+      const targetId = userId || user?.id
+      if (!targetId) return
+      const isOwn = user && userId === user.id
+      const data = isOwn ? await api.getMyCertificates() : await api.getUserCertificates(targetId)
+      setCompletedCourses(data || [])
+    } catch (err) { console.error('Failed to load courses:', err) }
+    finally { setCoursesLoading(false) }
   }
 
   const loadProfile = async () => {
@@ -466,6 +481,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </button>
         <button className={`fb-tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends() }}>
           Amigos
+        </button>
+        <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
+          Cursos
         </button>
         <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
           Curriculum
@@ -1094,6 +1112,79 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
         )}
 
+        {activeTab === 'courses' && (
+          <div style={{ maxWidth: 800 }}>
+            {coursesLoading ? (
+              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+                <div className="loading-dots"><span /><span /><span /></div>
+                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando cursos...</p>
+              </div>
+            ) : completedCourses.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ marginBottom: 12 }}>{GraduationCap({ size: 48, color: 'var(--text-muted)' })}</div>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                  {isOwn ? 'Aun no has completado ningun curso. Comienza uno en la seccion de Cursos.' : 'Este usuario aun no ha completado cursos.'}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {Trophy({ size: 22, color: '#f59e0b' })}
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>{completedCourses.length} cursos completados</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Haz clic en un curso para ver el certificado</div>
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+                  {completedCourses.map((cert: any) => {
+                    const catColors: Record<string, string> = {
+                      comunicacion: '#0891b2', liderazgo: '#4f46e5', emocional: '#db2777',
+                      pensamiento: '#0284c7', productividad: '#16a34a', carrera: '#1e40af',
+                      etica: '#78716c', soft_skills: '#9333ea',
+                    }
+                    const accentColor = catColors[cert.courseCategory] || '#2D62C8'
+                    return (
+                      <div
+                        key={cert.certificateId || cert.courseId}
+                        onClick={() => setSelectedCert({ ...cert, accentColor })}
+                        className="card"
+                        style={{
+                          padding: 0, cursor: 'pointer', overflow: 'hidden',
+                          transition: 'transform 0.15s, box-shadow 0.15s',
+                          border: '1px solid var(--border-subtle)',
+                        }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = 'none'; (e.currentTarget as HTMLElement).style.boxShadow = 'none' }}
+                      >
+                        {/* Color bar top */}
+                        <div style={{ height: 4, background: accentColor }} />
+                        <div style={{ padding: '16px 16px 14px' }}>
+                          <div style={{ fontSize: 28, marginBottom: 8 }}>{cert.courseEmoji || '📚'}</div>
+                          <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.3, marginBottom: 6, minHeight: 34 }}>
+                            {cert.courseTitle}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
+                            {CheckCircle({ size: 12, color: '#22c55e' })}
+                            <span>Nota: {cert.score}%</span>
+                            <span style={{ margin: '0 2px' }}>·</span>
+                            <span>{cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es', { month: 'short', year: 'numeric' }) : ''}</span>
+                          </div>
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
+                            color: accentColor, fontWeight: 600,
+                          }}>
+                            {Award({ size: 12 })} Ver certificado
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {activeTab === 'cv' && (
           <div style={{ maxWidth: 700 }}>
             {cvLoading ? (
@@ -1426,6 +1517,104 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary btn-sm" onClick={() => setShowReportModal(false)}>Cancelar</button>
               <button className="btn btn-danger btn-sm" onClick={handleReport} disabled={!reportReason.trim()}>Enviar Reporte</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Certificate Modal */}
+      {selectedCert && (
+        <div className="modal-overlay" onClick={() => setSelectedCert(null)} style={{ zIndex: 1000 }}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: '90%', maxWidth: 680, background: '#fff', borderRadius: 12, overflow: 'hidden',
+            boxShadow: '0 20px 60px rgba(0,0,0,0.3)', position: 'relative',
+          }}>
+            {/* Close button */}
+            <button onClick={() => setSelectedCert(null)} style={{
+              position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.15)',
+              border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
+              color: '#fff', fontSize: 18, fontWeight: 700,
+            }}>×</button>
+
+            {/* Certificate visual */}
+            <div style={{
+              background: `linear-gradient(135deg, ${selectedCert.accentColor}22 0%, #fff 50%, ${selectedCert.accentColor}11 100%)`,
+              padding: '40px 32px 32px', textAlign: 'center', position: 'relative',
+              borderBottom: `4px solid ${selectedCert.accentColor}`,
+            }}>
+              {/* Top accent bar */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: selectedCert.accentColor }} />
+
+              {/* Decorative border */}
+              <div style={{
+                border: `2px solid ${selectedCert.accentColor}33`, borderRadius: 8, padding: '32px 24px',
+                background: 'rgba(255,255,255,0.8)',
+              }}>
+                {/* Logo / Platform */}
+                <div style={{ fontSize: 12, fontWeight: 600, color: selectedCert.accentColor, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
+                  Conniku
+                </div>
+
+                <div style={{ fontSize: 22, fontWeight: 700, color: '#151B1E', marginBottom: 4, letterSpacing: 0.5 }}>
+                  CERTIFICADO DE COMPLETACION
+                </div>
+                <div style={{ fontSize: 12, color: '#8E99A4', marginBottom: 24 }}>
+                  Plataforma de Aprendizaje
+                </div>
+
+                <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>Se certifica que</div>
+
+                <div style={{ fontSize: 26, fontWeight: 700, color: selectedCert.accentColor, marginBottom: 8 }}>
+                  {selectedCert.userName || profile?.firstName + ' ' + profile?.lastName}
+                </div>
+
+                <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 16 }}>ha completado satisfactoriamente el curso</div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
+                  <span style={{ fontSize: 36 }}>{selectedCert.courseEmoji || '📚'}</span>
+                  <span style={{ fontSize: 20, fontWeight: 700, color: '#151B1E' }}>{selectedCert.courseTitle}</span>
+                </div>
+
+                {/* Details row */}
+                <div style={{
+                  display: 'flex', justifyContent: 'center', gap: 24, fontSize: 12, color: '#8E99A4',
+                  marginBottom: 20, flexWrap: 'wrap',
+                }}>
+                  <span>Nota: <strong style={{ color: '#151B1E' }}>{selectedCert.score}%</strong></span>
+                  {selectedCert.estimatedMinutes && (
+                    <span>Duracion: <strong style={{ color: '#151B1E' }}>{Math.round(selectedCert.estimatedMinutes / 60)}h {selectedCert.estimatedMinutes % 60}m</strong></span>
+                  )}
+                  {selectedCert.lessonCount && (
+                    <span>Lecciones: <strong style={{ color: '#151B1E' }}>{selectedCert.lessonCount}</strong></span>
+                  )}
+                  <span>Fecha: <strong style={{ color: '#151B1E' }}>{selectedCert.completedAt ? new Date(selectedCert.completedAt).toLocaleDateString('es') : ''}</strong></span>
+                </div>
+
+                {/* Signature */}
+                <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: 16, marginTop: 8 }}>
+                  <div style={{ width: 160, margin: '0 auto', borderBottom: '1px solid #CBD5E1', marginBottom: 6 }} />
+                  <div style={{ fontSize: 11, color: '#6B7280' }}>Cristian — Fundador de Conniku</div>
+                </div>
+
+                {/* Verification */}
+                {selectedCert.certificateId && (
+                  <div style={{ marginTop: 16, fontSize: 10, color: '#A0AEC0' }}>
+                    ID: {selectedCert.certificateId}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{
+              padding: '14px 24px', display: 'flex', justifyContent: 'center', gap: 12,
+              background: '#f9fafb', borderTop: '1px solid #f0f0f0',
+            }}>
+              <button onClick={() => setSelectedCert(null)} style={{
+                padding: '8px 20px', background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 500,
+              }}>Cerrar</button>
             </div>
           </div>
         </div>
