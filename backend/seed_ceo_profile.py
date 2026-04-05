@@ -9,7 +9,7 @@ Or via API endpoint: POST /admin/seed-ceo-profile (owner only)
 import json
 from datetime import datetime, timedelta
 
-from database import SessionLocal, User, Course, CourseLesson, CourseQuiz, UserCourseProgress, gen_id
+from database import SessionLocal, User, Course, CourseLesson, CourseQuiz, UserCourseProgress, StudentCV, gen_id
 
 
 def seed_ceo_with_db(db, owner):
@@ -127,6 +127,64 @@ def seed_ceo_with_db(db, owner):
     # ─── Cover Photo ───────────────────────────────────────
     owner.cover_type = "template"
     owner.cover_photo = "gradient-blue-purple"
+
+    db.flush()
+
+    # ─── Student CV (public curriculum) ────────────────────
+    cv = db.query(StudentCV).filter(StudentCV.user_id == owner.id).first()
+    if not cv:
+        cv = StudentCV(id=gen_id(), user_id=owner.id)
+        db.add(cv)
+
+    cv.headline = "CEO & Fundador de Conniku | Estudiante de Ing. Comercial ADVANCE"
+    cv.about_me = (
+        "Soy Cristian Gutierrez Lazcano, fundador de Conniku y estudiante de Ingenieria Comercial "
+        "ADVANCE en la Universidad del Alba, Chile. Mi mision es transformar la experiencia "
+        "universitaria creando herramientas que conecten a los estudiantes con su comunidad, "
+        "su desarrollo profesional y su bienestar. Creo firmemente que la educacion puede ser "
+        "mas humana, accesible y efectiva cuando se construye pensando en las personas."
+    )
+    cv.skills = json.dumps([
+        "Liderazgo Estrategico", "Gestion de Proyectos", "Emprendimiento",
+        "Comunicacion Efectiva", "Trabajo en Equipo", "Pensamiento Critico",
+        "Negociacion", "Marketing Digital", "Analisis de Datos",
+        "Planificacion Financiera", "Innovacion", "Design Thinking",
+    ])
+    cv.tools = json.dumps([
+        "React", "TypeScript", "Python", "FastAPI", "PostgreSQL",
+        "Git", "Vercel", "Figma", "Google Analytics", "Notion",
+    ])
+    cv.languages_spoken = json.dumps([
+        {"language": "Espanol", "level": "Nativo"},
+        {"language": "Ingles", "level": "Avanzado (C1)"},
+        {"language": "Portugues", "level": "Intermedio (B1)"},
+    ])
+    cv.experience = json.dumps([
+        {
+            "title": "CEO & Fundador",
+            "company": "Conniku SpA",
+            "dates": "Enero 2024 - Presente",
+            "description": "Liderando el desarrollo de la plataforma educativa integral para estudiantes universitarios. Responsable de la vision del producto, desarrollo tecnologico, estrategia de crecimiento y relaciones con stakeholders."
+        },
+    ])
+    cv.projects_portfolio = json.dumps([
+        {
+            "title": "Conniku",
+            "role": "Fundador y Desarrollador Principal",
+            "description": "Plataforma educativa integral que conecta estudiantes universitarios con herramientas de estudio, comunidad y desarrollo profesional.",
+            "tools": ["React", "TypeScript", "Python", "FastAPI", "PostgreSQL"],
+            "link": "https://conniku.com",
+            "impact": "Plataforma en produccion con usuarios activos en Chile."
+        },
+    ])
+    cv.volunteering = json.dumps([])
+    cv.interests = json.dumps([
+        "Tecnologia Educativa", "Startups", "Inteligencia de Negocios",
+        "Musica", "Deportes", "Lectura",
+    ])
+    cv.testimonials = json.dumps([])
+    cv.visibility = "public"
+    cv.updated_at = datetime.utcnow()
 
     db.flush()
 

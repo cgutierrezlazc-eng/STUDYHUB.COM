@@ -65,7 +65,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv'>('wall')
+  const [cvData, setCvData] = useState<any>(null)
+  const [cvLoading, setCvLoading] = useState(false)
   const [friendsList, setFriendsList] = useState<any[]>([])
   const [activityFeed, setActivityFeed] = useState<any[]>([])
   const [activityLoading, setActivityLoading] = useState(false)
@@ -106,6 +108,18 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setUniversityNews(data.items || [])
     } catch (err) { console.error('Failed to load news:', err) }
     finally { setNewsLoading(false) }
+  }
+
+  const loadCV = async () => {
+    try {
+      setCvLoading(true)
+      const targetId = userId || user?.id
+      if (!targetId) return
+      const isOwn = user && userId === user.id
+      const data = isOwn ? await api.getMyCV() : await api.getUserCV(targetId)
+      setCvData(data)
+    } catch (err) { console.error('Failed to load CV:', err) }
+    finally { setCvLoading(false) }
   }
 
   const loadProfile = async () => {
@@ -452,6 +466,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </button>
         <button className={`fb-tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends() }}>
           Amigos
+        </button>
+        <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
+          Curriculum
         </button>
       </div>
 
@@ -1074,6 +1091,170 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </>
               )}
             </div>
+          </div>
+        )}
+
+        {activeTab === 'cv' && (
+          <div style={{ maxWidth: 700 }}>
+            {cvLoading ? (
+              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+                <div className="loading-dots"><span /><span /><span /></div>
+                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando curriculum...</p>
+              </div>
+            ) : !cvData || (!cvData.headline && !cvData.aboutMe && (!cvData.skills || cvData.skills.length === 0) && (!cvData.experience || cvData.experience.length === 0)) ? (
+              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                  {isOwn ? 'Aun no has completado tu curriculum. Ve a Cursos > tu CV para llenarlo.' : 'Este usuario aun no ha completado su curriculum.'}
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Headline */}
+                {cvData.headline && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h3 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)' }}>{cvData.headline}</h3>
+                    {cvData.aboutMe && (
+                      <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{cvData.aboutMe}</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Experience */}
+                {cvData.experience && cvData.experience.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Zap({ size: 16, color: '#2D62C8' })} Experiencia
+                    </h4>
+                    {cvData.experience.map((exp: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.experience.length - 1 ? 16 : 0, paddingBottom: i < cvData.experience.length - 1 ? 16 : 0, borderBottom: i < cvData.experience.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{exp.title}</div>
+                        <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{exp.company}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{exp.dates}</div>
+                        {exp.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>{exp.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Projects / Portfolio */}
+                {cvData.projectsPortfolio && cvData.projectsPortfolio.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {BookOpen({ size: 16, color: '#2D62C8' })} Proyectos
+                    </h4>
+                    {cvData.projectsPortfolio.map((proj: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, paddingBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, borderBottom: i < cvData.projectsPortfolio.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{proj.title}</div>
+                        {proj.role && <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{proj.role}</div>}
+                        {proj.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>{proj.description}</p>}
+                        {proj.tools && proj.tools.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                            {proj.tools.map((t: string, j: number) => (
+                              <span key={j} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#2D62C8', marginTop: 6, display: 'inline-block' }}>{proj.link}</a>}
+                        {proj.impact && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>{proj.impact}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skills & Tools */}
+                {((cvData.skills && cvData.skills.length > 0) || (cvData.tools && cvData.tools.length > 0)) && (
+                  <div className="card" style={{ padding: 20 }}>
+                    {cvData.skills && cvData.skills.length > 0 && (
+                      <>
+                        <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {CheckCircle({ size: 16, color: '#22c55e' })} Habilidades
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: cvData.tools?.length ? 18 : 0 }}>
+                          {cvData.skills.map((s: string, i: number) => (
+                            <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'rgba(45,98,200,0.1)', color: '#2D62C8', fontWeight: 500, border: '1px solid rgba(45,98,200,0.2)' }}>{s}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {cvData.tools && cvData.tools.length > 0 && (
+                      <>
+                        <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {Pencil({ size: 16, color: '#f59e0b' })} Herramientas
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {cvData.tools.map((t: string, i: number) => (
+                            <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontWeight: 500, border: '1px solid rgba(245,158,11,0.2)' }}>{t}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Languages */}
+                {cvData.languagesSpoken && cvData.languagesSpoken.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Globe({ size: 16, color: '#2D62C8' })} Idiomas
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {cvData.languagesSpoken.map((l: any, i: number) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{l.language}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '3px 10px', borderRadius: 12 }}>{l.level}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Volunteering */}
+                {cvData.volunteering && cvData.volunteering.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Heart({ size: 16, color: '#ef4444' })} Voluntariado
+                    </h4>
+                    {cvData.volunteering.map((v: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.volunteering.length - 1 ? 12 : 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{v.role}</div>
+                        <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{v.org}</div>
+                        {v.dates && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{v.dates}</div>}
+                        {v.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>{v.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interests */}
+                {cvData.interests && cvData.interests.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)' }}>Intereses</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {cvData.interests.map((interest: string, i: number) => (
+                        <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>{interest}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Testimonials */}
+                {cvData.testimonials && cvData.testimonials.length > 0 && (
+                  <div className="card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)' }}>Recomendaciones</h4>
+                    {cvData.testimonials.map((t: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.testimonials.length - 1 ? 14 : 0, padding: 14, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: '3px solid #2D62C8' }}>
+                        <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>"{t.text}"</p>
+                        <div style={{ marginTop: 8, fontSize: 12 }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.name}</span>
+                          {t.role && <span style={{ color: 'var(--text-muted)' }}> — {t.role}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 
