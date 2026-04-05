@@ -48,13 +48,10 @@ def seed_ceo_with_db(db, owner):
     )
 
     # ─── CV Fields ─────────────────────────────────────────
-    owner.cv_headline = "CEO & Fundador de Conniku | Ing. Comercial | Emprendedor EdTech"
+    owner.cv_headline = "Director Ejecutivo & Fundador — Conniku"
     owner.cv_summary = (
-        "Emprendedor y lider tecnologico con experiencia en desarrollo de productos digitales "
-        "enfocados en educacion superior. Fundador de Conniku, la plataforma integral para "
-        "estudiantes universitarios que conecta herramientas de estudio, comunidad y desarrollo "
-        "profesional en un solo lugar. Formacion en Ingenieria Comercial con enfasis en "
-        "gestion de proyectos, innovacion y liderazgo."
+        "Dirijo Conniku, plataforma EdTech para universitarios en Latinoamerica. "
+        "Enfocado en estrategia de producto, crecimiento y equipos de alto rendimiento."
     )
     owner.cv_experience = json.dumps([
         {
@@ -64,16 +61,13 @@ def seed_ceo_with_db(db, owner):
             "startDate": "2024-01",
             "endDate": "",
             "current": True,
-            "description": "Liderando el desarrollo de la plataforma educativa integral para estudiantes universitarios. Responsable de la vision del producto, desarrollo tecnologico, estrategia de crecimiento y relaciones con stakeholders."
+            "description": "Lidero la vision, estrategia y crecimiento de la plataforma. Responsable de producto, tecnologia y relaciones con stakeholders."
         },
     ])
     owner.cv_skills = json.dumps([
-        "Liderazgo", "Gestion de Proyectos", "Emprendimiento",
-        "Comunicacion Efectiva", "Trabajo en Equipo",
-        "Pensamiento Estrategico", "Marketing Digital",
-        "Analisis de Datos", "Desarrollo de Negocios",
-        "Planificacion Financiera", "Innovacion",
-        "Tecnologia Educativa", "Product Management",
+        "Direccion Estrategica", "Desarrollo de Negocios", "Product Management",
+        "Liderazgo de Equipos", "Growth Strategy", "Fundraising",
+        "Negociacion", "Planificacion Financiera", "Toma de Decisiones",
     ])
     owner.cv_certifications = json.dumps([])
     owner.cv_languages = json.dumps([
@@ -136,51 +130,46 @@ def seed_ceo_with_db(db, owner):
         cv = StudentCV(id=gen_id(), user_id=owner.id)
         db.add(cv)
 
-    cv.headline = "CEO & Fundador de Conniku | Estudiante de Ing. Comercial ADVANCE"
+    cv.headline = "Director Ejecutivo & Fundador — Conniku"
     cv.about_me = (
-        "Soy Cristian Gutierrez Lazcano, fundador de Conniku y estudiante de Ingenieria Comercial "
-        "ADVANCE en la Universidad del Alba, Chile. Mi mision es transformar la experiencia "
-        "universitaria creando herramientas que conecten a los estudiantes con su comunidad, "
-        "su desarrollo profesional y su bienestar. Creo firmemente que la educacion puede ser "
-        "mas humana, accesible y efectiva cuando se construye pensando en las personas."
+        "Dirijo Conniku, plataforma EdTech orientada a transformar la experiencia universitaria "
+        "en Latinoamerica. Enfocado en estrategia de producto, crecimiento y construccion de "
+        "equipos de alto rendimiento."
     )
     cv.skills = json.dumps([
-        "Liderazgo Estrategico", "Gestion de Proyectos", "Emprendimiento",
-        "Comunicacion Efectiva", "Trabajo en Equipo", "Pensamiento Critico",
-        "Negociacion", "Marketing Digital", "Analisis de Datos",
-        "Planificacion Financiera", "Innovacion", "Design Thinking",
+        "Direccion Estrategica", "Desarrollo de Negocios", "Product Management",
+        "Liderazgo de Equipos", "Growth Strategy", "Fundraising",
+        "Negociacion", "Planificacion Financiera", "Toma de Decisiones",
     ])
     cv.tools = json.dumps([
-        "React", "TypeScript", "Python", "FastAPI", "PostgreSQL",
-        "Git", "Vercel", "Figma", "Google Analytics", "Notion",
+        "Notion", "Figma", "Google Analytics", "Vercel", "Slack",
     ])
     cv.languages_spoken = json.dumps([
         {"language": "Espanol", "level": "Nativo"},
-        {"language": "Ingles", "level": "Avanzado (C1)"},
-        {"language": "Portugues", "level": "Intermedio (B1)"},
+        {"language": "Ingles", "level": "Avanzado"},
+        {"language": "Portugues", "level": "Intermedio"},
     ])
     cv.experience = json.dumps([
         {
             "title": "CEO & Fundador",
             "company": "Conniku SpA",
-            "dates": "Enero 2024 - Presente",
-            "description": "Liderando el desarrollo de la plataforma educativa integral para estudiantes universitarios. Responsable de la vision del producto, desarrollo tecnologico, estrategia de crecimiento y relaciones con stakeholders."
+            "dates": "2024 - Presente",
+            "description": "Lidero la vision, estrategia y crecimiento de la plataforma educativa para universitarios. Responsable de producto, tecnologia y relaciones con stakeholders."
         },
     ])
     cv.projects_portfolio = json.dumps([
         {
             "title": "Conniku",
-            "role": "Fundador y Desarrollador Principal",
-            "description": "Plataforma educativa integral que conecta estudiantes universitarios con herramientas de estudio, comunidad y desarrollo profesional.",
-            "tools": ["React", "TypeScript", "Python", "FastAPI", "PostgreSQL"],
+            "role": "Fundador",
+            "description": "Plataforma integral para estudiantes universitarios: comunidad, herramientas de estudio y desarrollo profesional.",
+            "tools": [],
             "link": "https://conniku.com",
-            "impact": "Plataforma en produccion con usuarios activos en Chile."
+            "impact": "En produccion con usuarios activos en Chile."
         },
     ])
     cv.volunteering = json.dumps([])
     cv.interests = json.dumps([
-        "Tecnologia Educativa", "Startups", "Inteligencia de Negocios",
-        "Musica", "Deportes", "Lectura",
+        "EdTech", "Startups", "Estrategia de Negocios", "Musica", "Deportes",
     ])
     cv.testimonials = json.dumps([])
     cv.visibility = "public"
