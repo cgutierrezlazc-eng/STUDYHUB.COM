@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox, Send, Megaphone, Pencil } from '../components/Icons'
+import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox, Send, Megaphone, Pencil, Trash2 } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -44,6 +44,8 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [broadcastCta, setBroadcastCta] = useState('')
   const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('')
   const [broadcastSending, setBroadcastSending] = useState(false)
+  const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
+  const [deletingEmail, setDeletingEmail] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'owner') return
@@ -115,6 +117,49 @@ export default function CeoDashboard({ onNavigate }: Props) {
       setSelectedEmail(detail)
       setEmailView('detail')
     } catch (e: any) { console.error('Error:', e) }
+  }
+
+  const handleDeleteEmail = async (emailId: string) => {
+    if (!confirm('¿Eliminar este email del historial?')) return
+    setDeletingEmail(true)
+    try {
+      await api.ceoDeleteEmail(emailId)
+      setEmailInbox(prev => prev.filter(e => e.id !== emailId))
+      setEmailTotal(prev => prev - 1)
+      if (emailView === 'detail') setEmailView('inbox')
+    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    setDeletingEmail(false)
+  }
+
+  const handleDeleteSelectedEmails = async () => {
+    if (selectedEmails.size === 0) return
+    if (!confirm(`¿Eliminar ${selectedEmails.size} email(s) del historial?`)) return
+    setDeletingEmail(true)
+    try {
+      await api.ceoDeleteEmailsBulk([...selectedEmails])
+      setEmailInbox(prev => prev.filter(e => !selectedEmails.has(e.id)))
+      setEmailTotal(prev => prev - selectedEmails.size)
+      setSelectedEmails(new Set())
+    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    setDeletingEmail(false)
+  }
+
+  const toggleEmailSelection = (emailId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedEmails(prev => {
+      const next = new Set(prev)
+      if (next.has(emailId)) next.delete(emailId)
+      else next.add(emailId)
+      return next
+    })
+  }
+
+  const toggleSelectAllEmails = () => {
+    if (selectedEmails.size === emailInbox.length) {
+      setSelectedEmails(new Set())
+    } else {
+      setSelectedEmails(new Set(emailInbox.map(e => e.id)))
+    }
   }
 
   const toggleCourseSelection = (userId: string, courseId: string) => {
@@ -708,34 +753,68 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     </div>
                   ) : (
                     <>
+                      {/* Bulk actions bar */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, padding: '6px 0' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
+                          <input type="checkbox" checked={selectedEmails.size === emailInbox.length && emailInbox.length > 0} onChange={toggleSelectAllEmails}
+                            style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                          Seleccionar todos
+                        </label>
+                        {selectedEmails.size > 0 && (
+                          <button onClick={handleDeleteSelectedEmails} disabled={deletingEmail}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 12px', fontSize: 12, fontWeight: 600,
+                              background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 8, cursor: 'pointer',
+                            }}>
+                            {Trash2({ size: 13 })} Eliminar ({selectedEmails.size})
+                          </button>
+                        )}
+                      </div>
+
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {emailInbox.map((e: any) => (
-                          <div key={e.id} onClick={() => viewEmailDetail(e.id)} className="card"
+                          <div key={e.id} className="card"
                             style={{
-                              padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+                              padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
                               transition: 'background 0.1s',
+                              background: selectedEmails.has(e.id) ? 'var(--bg-hover)' : '',
                             }}
-                            onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--bg-hover)')}
-                            onMouseLeave={ev => (ev.currentTarget.style.background = '')}
+                            onMouseEnter={ev => { if (!selectedEmails.has(e.id)) ev.currentTarget.style.background = 'var(--bg-hover)' }}
+                            onMouseLeave={ev => { if (!selectedEmails.has(e.id)) ev.currentTarget.style.background = '' }}
                           >
-                            <div style={{
-                              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                              background: e.status === 'sent' ? '#22c55e' : '#ef4444',
-                            }} />
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                {e.subject}
+                            <input type="checkbox" checked={selectedEmails.has(e.id)} onClick={(ev) => toggleEmailSelection(e.id, ev)} readOnly
+                              style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--accent-blue)', flexShrink: 0 }} />
+                            <div onClick={() => viewEmailDetail(e.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                              <div style={{
+                                width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                                background: e.status === 'sent' ? '#22c55e' : '#ef4444',
+                              }} />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {e.subject}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                                  Para: {e.to} · {e.sentAt ? new Date(e.sentAt).toLocaleDateString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                                </div>
                               </div>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                                Para: {e.to} · {e.sentAt ? new Date(e.sentAt).toLocaleDateString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
-                              </div>
+                              <span style={{
+                                fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
+                                background: 'var(--bg-secondary)', color: 'var(--text-muted)', flexShrink: 0,
+                              }}>
+                                {e.type}
+                              </span>
                             </div>
-                            <span style={{
-                              fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
-                              background: 'var(--bg-secondary)', color: 'var(--text-muted)', flexShrink: 0,
-                            }}>
-                              {e.type}
-                            </span>
+                            <button onClick={(ev) => { ev.stopPropagation(); handleDeleteEmail(e.id) }}
+                              title="Eliminar"
+                              style={{
+                                background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 6, color: 'var(--text-muted)',
+                                opacity: 0.4, transition: 'opacity 0.15s, color 0.15s', flexShrink: 0,
+                              }}
+                              onMouseEnter={ev => { ev.currentTarget.style.opacity = '1'; ev.currentTarget.style.color = '#dc2626' }}
+                              onMouseLeave={ev => { ev.currentTarget.style.opacity = '0.4'; ev.currentTarget.style.color = 'var(--text-muted)' }}
+                            >
+                              {Trash2({ size: 14 })}
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -756,9 +835,15 @@ export default function CeoDashboard({ onNavigate }: Props) {
               {/* EMAIL DETAIL */}
               {emailView === 'detail' && selectedEmail && (
                 <div>
-                  <button className="btn btn-secondary btn-sm" onClick={() => setEmailView('inbox')} style={{ marginBottom: 12 }}>
-                    ← Volver al historial
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setEmailView('inbox')}>
+                      ← Volver al historial
+                    </button>
+                    <button className="btn btn-sm" onClick={() => handleDeleteEmail(selectedEmail.id)} disabled={deletingEmail}
+                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {Trash2({ size: 13 })} {deletingEmail ? 'Eliminando...' : 'Eliminar'}
+                    </button>
+                  </div>
                   <div className="card" style={{ padding: 20 }}>
                     <div style={{ marginBottom: 16 }}>
                       <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>{selectedEmail.subject}</h3>

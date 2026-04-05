@@ -849,6 +849,10 @@ export const api = {
   getCeoEmailStats: () => request('/email/ceo/stats'),
   ceoBroadcastEmail: (subject: string, body: string, filter?: string, ctaText?: string, ctaUrl?: string) =>
     request('/email/ceo/broadcast', { method: 'POST', body: JSON.stringify({ subject, body, filter: filter || 'all', ctaText: ctaText || '', ctaUrl: ctaUrl || '' }) }),
+  ceoDeleteEmail: (emailId: string) =>
+    request(`/email/ceo/email/${emailId}`, { method: 'DELETE' }),
+  ceoDeleteEmailsBulk: (ids: string[]) =>
+    request('/email/ceo/emails/bulk', { method: 'DELETE', body: JSON.stringify({ ids }) }),
 
   // ─── Document Download ────────────────────────────────────
   downloadProjectDocument: (projectId: string, docName: string) =>

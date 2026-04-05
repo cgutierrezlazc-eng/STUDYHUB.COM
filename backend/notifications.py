@@ -90,17 +90,41 @@ def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = ""
 <body style="margin:0;padding:0;background:#F5F3EF;font-family:Inter,-apple-system,sans-serif">
 <div style="max-width:560px;margin:0 auto;padding:32px 16px">
     <div style="text-align:center;margin-bottom:24px">
-        <span style="font-size:22px;font-weight:700;color:#1D2939">Conniku</span>
+        <span style="font-size:22px;font-weight:700;color:#1D2939">conni<span style="color:#2D62C8">ku</span></span>
     </div>
     <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #E5E7EB">
         <h2 style="margin:0 0 16px;font-size:18px;color:#1D2939">{title}</h2>
         <div style="font-size:14px;line-height:1.7;color:#475467">{body}</div>
         {cta_html}
     </div>
-    <div style="text-align:center;margin-top:24px;font-size:12px;color:#98A2B3">
-        <p>Este correo fue enviado por Conniku.</p>
-        <p>Contacto: <a href="mailto:{CEO_EMAIL}" style="color:#2563EB">{CEO_EMAIL}</a></p>
-        <p><a href="{FRONTEND_URL}" style="color:#2563EB">conniku.com</a></p>
+    <!-- Professional Signature -->
+    <div style="margin-top:28px;padding:20px 24px;background:#fff;border-radius:10px;border:1px solid #E5E7EB">
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
+            <tr>
+                <td style="width:48px;vertical-align:top;padding-right:16px">
+                    <div style="width:44px;height:44px;border-radius:10px;background:#2D62C8;display:flex;align-items:center;justify-content:center">
+                        <span style="color:#fff;font-weight:700;font-size:16px;line-height:44px;text-align:center;display:block;width:44px">CK</span>
+                    </div>
+                </td>
+                <td style="vertical-align:top">
+                    <p style="margin:0;font-size:14px;font-weight:700;color:#1D2939">Equipo Conniku</p>
+                    <p style="margin:2px 0 0;font-size:12px;color:#6B7280">Plataforma de Desarrollo Universitario</p>
+                    <div style="margin-top:8px;border-top:1px solid #E5E7EB;padding-top:8px">
+                        <p style="margin:0;font-size:11px;color:#98A2B3">
+                            <a href="https://conniku.com" style="color:#2D62C8;text-decoration:none;font-weight:600">conniku.com</a>
+                            &nbsp;&middot;&nbsp;
+                            <a href="mailto:{CEO_EMAIL}" style="color:#2D62C8;text-decoration:none">{CEO_EMAIL}</a>
+                        </p>
+                        <p style="margin:4px 0 0;font-size:10px;color:#D1D5DB;letter-spacing:0.3px">
+                            Cursos &middot; Comunidad &middot; Bolsa de Trabajo &middot; Tutorias
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="text-align:center;margin-top:16px;font-size:10px;color:#D1D5DB">
+        <p style="margin:0">&copy; {datetime.utcnow().year} Conniku. Todos los derechos reservados.</p>
     </div>
 </div></body></html>'''
 
@@ -245,6 +269,44 @@ def ceo_email_detail(
         "sentAt": e.sent_at.isoformat() if e.sent_at else "",
         "replyTo": e.reply_to,
     }
+
+
+@router.delete("/ceo/email/{email_id}")
+def ceo_delete_email(
+    email_id: str,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    """Delete an email log entry."""
+    if user.role != "owner":
+        raise HTTPException(403, "Solo el owner")
+
+    from database import EmailLog
+    e = db.query(EmailLog).filter(EmailLog.id == email_id).first()
+    if not e:
+        raise HTTPException(404, "Email no encontrado")
+
+    db.delete(e)
+    db.commit()
+    return {"status": "deleted", "id": email_id}
+
+
+@router.delete("/ceo/emails/bulk")
+def ceo_delete_emails_bulk(
+    data: dict,
+    user: User = Depends(get_current_user), db: Session = Depends(get_db),
+):
+    """Delete multiple email log entries."""
+    if user.role != "owner":
+        raise HTTPException(403, "Solo el owner")
+
+    ids = data.get("ids", [])
+    if not ids:
+        raise HTTPException(400, "No se proporcionaron IDs")
+
+    from database import EmailLog
+    deleted = db.query(EmailLog).filter(EmailLog.id.in_(ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"status": "deleted", "count": deleted}
 
 
 @router.post("/ceo/send")
