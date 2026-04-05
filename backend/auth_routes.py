@@ -577,6 +577,13 @@ def get_me(user: User = Depends(get_current_user)):
 @router.put("/me")
 def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     import json as _json
+    from social_routes import create_milestone_post
+
+    # Save old values for milestone detection
+    old_university = getattr(user, "university", "") or ""
+    old_academic_status = getattr(user, "academic_status", "") or ""
+    old_offers_mentoring = getattr(user, "offers_mentoring", False) or False
+
     updates = req.dict(exclude_none=True)
     json_list_fields = {"secondary_languages", "mentoring_services", "mentoring_subjects"}
     for key, value in updates.items():
@@ -594,9 +601,36 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
         db_key = key
         if hasattr(user, db_key):
             setattr(user, db_key, value)
+
+    # Detect milestone-worthy changes
+    milestones = []
+    new_university = getattr(user, "university", "") or ""
+    new_academic_status = getattr(user, "academic_status", "") or ""
+    new_offers_mentoring = getattr(user, "offers_mentoring", False) or False
+
+    if new_university and new_university != old_university:
+        create_milestone_post(db, user.id, "university_change",
+            f"Ahora estudia en {new_university}")
+        milestones.append({"type": "university_change", "university": new_university})
+
+    if new_academic_status and new_academic_status != old_academic_status:
+        status_labels = {"estudiante": "Estudiante", "egresado": "Egresado/a", "titulado": "Titulado/a"}
+        label = status_labels.get(new_academic_status, new_academic_status)
+        create_milestone_post(db, user.id, "academic_status",
+            f"Ha actualizado su estado académico a {label}")
+        milestones.append({"type": "academic_status", "status": new_academic_status})
+
+    if new_offers_mentoring and not old_offers_mentoring:
+        create_milestone_post(db, user.id, "tutoring_started",
+            "Ha comenzado a ofrecer servicios de tutoría")
+        milestones.append({"type": "tutoring_started"})
+
     db.commit()
     db.refresh(user)
-    return user_to_dict(user)
+    result = user_to_dict(user)
+    if milestones:
+        result["milestones"] = milestones
+    return result
 
 
 @router.put("/me/username")

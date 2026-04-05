@@ -37,6 +37,24 @@ LEAGUE_TIERS = ["bronce", "plata", "oro", "diamante"]
 LEAGUE_NAMES = {"bronce": "Bronce", "plata": "Plata", "oro": "Oro", "diamante": "Diamante"}
 LEAGUE_EMOJIS = {"bronce": "\ud83e\udd49", "plata": "\ud83e\udd48", "oro": "\ud83e\udd47", "diamante": "\ud83d\udc8e"}
 
+def _create_auto_milestone(db: Session, user_id: str, milestone_type: str, content: str):
+    """Create an automatic milestone wall post for the user."""
+    try:
+        post = WallPost(
+            id=gen_id(),
+            wall_owner_id=user_id,
+            author_id=user_id,
+            content=content,
+            visibility="friends",
+            is_milestone=True,
+            milestone_type=milestone_type,
+        )
+        db.add(post)
+    except Exception as e:
+        import logging
+        logging.getLogger("conniku.gamification").warning(f"Failed to create milestone: {e}")
+
+
 XP_REWARDS = {
     "chat_message": 5,
     "quiz_complete": 25,
@@ -51,10 +69,13 @@ XP_REWARDS = {
 }
 
 
-def award_xp(user: User, amount: int, db: Session):
-    """Add XP, update level, and track weekly league XP."""
+def award_xp(user: User, amount: int, db: Session) :
+    """Add XP, update level, and track weekly league XP.
+    Returns milestone dict if user leveled up, else None."""
+    old_level = user.level or 1
     user.xp = (user.xp or 0) + amount
     user.level = (user.xp // 100) + 1
+    new_level = user.level
 
     # Update weekly league XP
     today = date.today()
@@ -73,14 +94,24 @@ def award_xp(user: User, amount: int, db: Session):
         )
         db.add(membership)
 
+    # Detect level up → auto milestone post
+    if new_level > old_level:
+        _create_auto_milestone(db, user.id, "level_up",
+            f"Ha alcanzado el nivel {new_level}. ¡Sigue así!")
+        return {"type": "level_up", "level": new_level}
+    return None
 
-def check_streak(user: User, db: Session):
-    """Smart streak: check activity, apply freeze if needed."""
+
+def check_streak(user: User, db: Session) :
+    """Smart streak: check activity, apply freeze if needed.
+    Returns milestone dict if streak milestone reached."""
     today_str = date.today().isoformat()
     yesterday_str = (date.today() - timedelta(days=1)).isoformat()
 
     if user.last_active_date == today_str:
-        return  # Already checked today
+        return None  # Already checked today
+
+    old_streak = user.streak_days or 0
 
     if user.last_active_date == yesterday_str:
         # Consecutive day - increment streak
@@ -90,16 +121,24 @@ def check_streak(user: User, db: Session):
         # Missed a day - try to use streak freeze
         days_gap = (date.today() - date.fromisoformat(user.last_active_date)).days
         if days_gap <= 2 and (user.streak_freeze_count or 0) > 0:
-            # Use a freeze - maintain streak
             user.streak_freeze_count = (user.streak_freeze_count or 0) - 1
             user.streak_days = (user.streak_days or 0) + 1
         else:
-            # Streak broken
             user.streak_days = 1
     else:
         user.streak_days = 1
 
     user.last_active_date = today_str
+    new_streak = user.streak_days
+
+    # Detect streak milestones
+    streak_milestones = [3, 7, 14, 30, 50, 100, 365]
+    for ms in streak_milestones:
+        if old_streak < ms <= new_streak:
+            _create_auto_milestone(db, user.id, "streak",
+                f"¡{new_streak} días consecutivos de estudio! Racha imparable.")
+            return {"type": "streak", "days": new_streak}
+    return None
 
 
 def check_badges(user: User, db: Session) -> list[str]:
@@ -160,10 +199,18 @@ def check_badges(user: User, db: Session) -> list[str]:
         if tier == "diamante": earned.add("league_diamond")
 
     new_badges = list(earned)
+    newly_earned = [b for b in new_badges if b not in current]
     if set(new_badges) != set(current):
         user.badges = json.dumps(new_badges)
 
-    return new_badges
+    # Auto-create milestone posts for newly earned badges
+    for badge_id in newly_earned:
+        info = BADGE_INFO.get(badge_id, {})
+        if info:
+            _create_auto_milestone(db, user.id, "badge",
+                f"Ha obtenido la insignia {info.get('emoji', '')} {info.get('name', badge_id)}: {info.get('description', '')}")
+
+    return new_badges, newly_earned
 
 
 # ─── Study Session Tracking ────────────────────────────────────
@@ -313,8 +360,8 @@ def get_league(user: User = Depends(get_current_user), db: Session = Depends(get
 
 @router.get("/stats")
 def get_stats(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    check_streak(user, db)
-    badges_list = check_badges(user, db)
+    streak_milestone = check_streak(user, db)
+    badges_list, newly_earned = check_badges(user, db)
     db.commit()
 
     # Study time
@@ -340,6 +387,21 @@ def get_stats(user: User = Depends(get_current_user), db: Session = Depends(get_
         "avatar": u.avatar, "xp": u.xp or 0, "level": u.level or 1,
     } for u in top]
 
+    # Collect pending milestones for frontend popup
+    milestones = []
+    if streak_milestone:
+        milestones.append(streak_milestone)
+    if newly_earned:
+        for bid in newly_earned:
+            info = BADGE_INFO.get(bid, {})
+            milestones.append({
+                "type": "badge",
+                "badgeId": bid,
+                "name": info.get("name", bid),
+                "emoji": info.get("emoji", ""),
+                "description": info.get("description", ""),
+            })
+
     return {
         "xp": user.xp or 0,
         "level": user.level or 1,
@@ -349,6 +411,7 @@ def get_stats(user: User = Depends(get_current_user), db: Session = Depends(get_
         "nextLevelXp": ((user.level or 1) * 100),
         "totalStudySeconds": total_seconds,
         "leaderboard": leaderboard,
+        "milestones": milestones,
     }
 
 

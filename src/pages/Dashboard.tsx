@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Project } from '../types'
+import MilestonePopup from '../components/MilestonePopup'
 
 interface Props {
   projects: Project[]
@@ -32,9 +33,23 @@ export default function Dashboard({ projects, onNavigate }: Props) {
   const [studyTime, setStudyTime] = useState<any>(null)
   const [league, setLeague] = useState<any>(null)
   const [friendActivity, setFriendActivity] = useState<any[]>([])
+  const [milestonePopup, setMilestonePopup] = useState<any>(null)
 
   useEffect(() => {
-    api.getGamificationStats().then(setStats).catch(() => {})
+    api.getGamificationStats().then(data => {
+      setStats(data)
+      // Show milestone popup if there are new milestones
+      if (data.milestones && data.milestones.length > 0) {
+        const m = data.milestones[0]
+        if (m.type === 'level_up') {
+          setMilestonePopup({ type: 'level_up', title: '¡Nuevo nivel!', description: `Has alcanzado el nivel ${m.level}`, icon: '⬆️' })
+        } else if (m.type === 'streak') {
+          setMilestonePopup({ type: 'streak', title: '¡Racha increíble!', description: `${m.days} días consecutivos de estudio`, icon: '🔥' })
+        } else if (m.type === 'badge') {
+          setMilestonePopup({ type: 'badge', title: '¡Nueva insignia!', description: `${m.emoji} ${m.name}: ${m.description}`, icon: m.emoji || '🏅' })
+        }
+      }
+    }).catch(() => {})
     api.getStudyTime().then(setStudyTime).catch(() => {})
     api.getLeague().then(setLeague).catch(() => {})
     api.getActivityFeed(1).then(data => setFriendActivity((data.items || data).slice(0, 5))).catch(() => {})
@@ -300,6 +315,17 @@ export default function Dashboard({ projects, onNavigate }: Props) {
           )}
         </div>
       </div>
+
+      {/* Milestone Popup */}
+      {milestonePopup && (
+        <MilestonePopup
+          type={milestonePopup.type}
+          title={milestonePopup.title}
+          description={milestonePopup.description}
+          icon={milestonePopup.icon}
+          onClose={() => setMilestonePopup(null)}
+        />
+      )}
     </>
   )
 }

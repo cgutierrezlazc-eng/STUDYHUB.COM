@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
 import { LanguageSkill } from '../types'
+import MilestonePopup from '../components/MilestonePopup'
 
 type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email'
 
@@ -12,6 +13,7 @@ export default function Profile() {
   const [activeSection, setActiveSection] = useState<Section>('profile')
   const [isEditing, setIsEditing] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [milestonePopup, setMilestonePopup] = useState<any>(null)
   const [editingUsername, setEditingUsername] = useState(false)
   const [newUsername, setNewUsername] = useState('')
   const [usernameError, setUsernameError] = useState('')
@@ -30,11 +32,24 @@ export default function Profile() {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const handleSave = () => {
-    updateProfile(form)
+  const handleSave = async () => {
+    const result: any = await updateProfile(form)
     setIsEditing(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
+    // Check if profile update triggered any milestones
+    if (result?.milestones?.length > 0) {
+      const m = result.milestones[0]
+      const milestoneMap: Record<string, { title: string; icon: string }> = {
+        university_change: { title: '¡Nueva universidad!', icon: '🎓' },
+        academic_status: { title: '¡Estado actualizado!', icon: '📜' },
+        tutoring_started: { title: '¡Ahora eres tutor!', icon: '👨‍🏫' },
+      }
+      const info = milestoneMap[m.type]
+      if (info) {
+        setMilestonePopup({ type: m.type, title: info.title, description: m.university || m.status || 'Has comenzado a ofrecer servicios de tutoría', icon: info.icon })
+      }
+    }
   }
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -603,6 +618,17 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Milestone Popup */}
+      {milestonePopup && (
+        <MilestonePopup
+          type={milestonePopup.type}
+          title={milestonePopup.title}
+          description={milestonePopup.description}
+          icon={milestonePopup.icon}
+          onClose={() => setMilestonePopup(null)}
+        />
+      )}
     </>
   )
 }

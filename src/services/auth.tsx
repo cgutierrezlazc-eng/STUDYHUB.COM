@@ -162,9 +162,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const updated = await api.updateMe(payload)
       setUser(updated)
+      return updated
     } catch {
       // Fallback: update locally
       setUser(prev => prev ? { ...prev, ...data } : null)
+      return null
     }
   }
 
