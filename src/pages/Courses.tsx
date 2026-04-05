@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import MilestonePopup from '../components/MilestonePopup'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -35,6 +36,7 @@ export default function Courses({ onNavigate }: Props) {
   const [certificates, setCertificates] = useState<any[]>([])
   const [tab, setTab] = useState<'catalog' | 'my-certs'>('catalog')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [milestonePopup, setMilestonePopup] = useState<{type: string, title: string, description: string, icon: string} | null>(null)
 
   useEffect(() => { loadCourses() }, [])
 
@@ -112,6 +114,12 @@ export default function Courses({ onNavigate }: Props) {
           ...prev,
           progress: { ...prev.progress, completed: true, quizPassed: true, certificateId: result.certificateId },
         }))
+        setMilestonePopup({
+          type: 'course_completed',
+          title: '¡Curso completado!',
+          description: `Has completado ${courseDetail.title} con ${result.score}%`,
+          icon: '🎓',
+        })
       }
     } catch (err: any) {
       console.error('Quiz submission failed:', err)
@@ -568,6 +576,16 @@ export default function Courses({ onNavigate }: Props) {
         {sidebarOpen && (
           <div onClick={() => setSidebarOpen(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 199 }} />
+        )}
+
+        {milestonePopup && (
+          <MilestonePopup
+            type={milestonePopup.type}
+            title={milestonePopup.title}
+            description={milestonePopup.description}
+            icon={milestonePopup.icon}
+            onClose={() => setMilestonePopup(null)}
+          />
         )}
 
         <style>{`

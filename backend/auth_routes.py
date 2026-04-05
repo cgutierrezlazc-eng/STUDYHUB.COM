@@ -7,6 +7,7 @@ import random
 import string
 import hashlib
 import html
+import logging
 from datetime import datetime, date, timedelta
 from typing import Optional
 from collections import defaultdict
@@ -22,6 +23,7 @@ from database import get_db, User, gen_id, DATA_DIR, TutoringRequest
 from middleware import create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 # ─── Rate limiting for sensitive endpoints ─────────────────────
 _rate_limits: dict[str, list[datetime]] = defaultdict(list)
@@ -398,6 +400,54 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         _send_email_async(user.email, "Verifica tu cuenta de Conniku", verify_html)
     except Exception:
         pass  # Don't block registration if email fails
+
+    # Send welcome chat message with prizes info
+    try:
+        from database import Conversation, ConversationParticipant, Message, gen_id as _gen_id
+        # Create a system conversation for welcome
+        conv = Conversation(
+            id=_gen_id(),
+            type="direct",
+            name="Bienvenida Conniku",
+            description="Mensaje de bienvenida",
+        )
+        db.add(conv)
+        db.flush()
+
+        # Add user as participant
+        db.add(ConversationParticipant(id=_gen_id(), conversation_id=conv.id, user_id=user.id))
+
+        # Welcome message
+        welcome_content = """\u00a1Bienvenido/a a Conniku! \U0001f389
+
+Estamos felices de tenerte aqu\u00ed. Conniku es tu plataforma para estudiar, conectar y crecer profesionalmente.
+
+\U0001f3c6 **Programa de Premios:**
+\u2022 Completa **3 cursos** \u2192 Acceso Pro gratis por 1 mes
+\u2022 Completa **6 cursos** \u2192 Acceso Max gratis por 1 mes
+\u2022 Mant\u00e9n una racha de **30 d\u00edas** \u2192 Badge exclusivo + 500 XP
+\u2022 Invita amigos con tu c\u00f3digo de referido \u2192 7 d\u00edas Pro por cada amigo
+
+\U0001f4da **\u00bfPor d\u00f3nde empezar?**
+1. Completa tu perfil con foto y bio
+2. Explora los cursos disponibles
+3. Conecta con compa\u00f1eros de tu universidad
+4. Sube tus documentos de estudio
+
+\u00a1Mucho \u00e9xito en tu camino! \U0001f4aa"""
+
+        msg = Message(
+            id=_gen_id(),
+            conversation_id=conv.id,
+            sender_id=None,  # System message
+            content=welcome_content,
+            message_type="system",
+        )
+        db.add(msg)
+        db.commit()
+    except Exception as e:
+        logger.warning(f"Welcome message failed: {e}")
+        pass
 
     token = create_access_token(user.id)
     return {

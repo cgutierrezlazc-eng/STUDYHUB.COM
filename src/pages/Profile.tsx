@@ -444,6 +444,37 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
+                <h3>Universidad</h3>
+                <div className="pf-toggles">
+                  {/* University News Toggle */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>Noticias de mi universidad</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Recibir noticias oficiales de tu universidad en tu muro</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const current = localStorage.getItem('conniku_university_news') !== 'false'
+                        localStorage.setItem('conniku_university_news', current ? 'false' : 'true')
+                        // Force re-render
+                        setForm(prev => ({ ...prev }))
+                      }}
+                      style={{
+                        width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
+                        background: localStorage.getItem('conniku_university_news') !== 'false' ? '#2D62C8' : 'var(--bg-tertiary)',
+                        position: 'relative', transition: 'background 0.2s',
+                      }}>
+                      <div style={{
+                        width: 22, height: 22, borderRadius: 11, background: '#fff',
+                        position: 'absolute', top: 2, transition: 'left 0.2s',
+                        left: localStorage.getItem('conniku_university_news') !== 'false' ? 24 : 2,
+                      }} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pf-divider" />
+
                 <h3>Notificaciones por Email</h3>
                 <div className="pf-toggles">
                   <ToggleRow label="Notificaciones por email" desc="Recibir emails sobre actividad de amigos y mensajes" />

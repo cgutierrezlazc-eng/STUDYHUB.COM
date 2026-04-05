@@ -326,6 +326,16 @@ export const api = {
   getFriendSuggestions: () =>
     request('/social/friend-suggestions'),
 
+  // ─── News & Announcements ─────────────────────────────────
+  getUniversityNews: () =>
+    request('/news/university'),
+
+  getAnnouncements: () =>
+    request('/news/announcements'),
+
+  createAnnouncement: (data: { content: string; target: string; image_url?: string }) =>
+    request('/news/announcements', { method: 'POST', body: JSON.stringify(data) }),
+
   // ─── Word Export ──────────────────────────────────────────
   exportDocx: async (projectId: string, content: string, title: string = 'Conniku Document') => {
     const token = getToken();

@@ -47,6 +47,7 @@ from exam_predictor_routes import router as exam_predictor_router
 from chile_tax_routes import router as finance_router
 from rewards_routes import router as rewards_router
 from search_routes import router as search_router
+from news_routes import router as news_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -119,6 +120,7 @@ app.include_router(exam_predictor_router)
 app.include_router(finance_router)
 app.include_router(rewards_router)
 app.include_router(search_router)
+app.include_router(news_router)
 
 # Storage paths
 DATA_DIR = Path.home() / ".conniku"

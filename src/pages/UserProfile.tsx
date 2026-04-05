@@ -696,6 +696,22 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               )}
 
+              {/* University News Section - only on own profile */}
+              {isOwn && localStorage.getItem('conniku_university_news') !== 'false' && (
+                <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--border)', borderRadius: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                    <span style={{ fontSize: 22 }}>📰</span>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Noticias de {profile.university || 'tu universidad'}</h4>
+                  </div>
+                  <div style={{
+                    padding: 16, background: 'var(--bg-tertiary, #f5f5f5)', borderRadius: 8,
+                    color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', lineHeight: 1.5,
+                  }}>
+                    Las noticias de tu universidad aparecerán aquí próximamente
+                  </div>
+                </div>
+              )}
+
               {/* Posts */}
               {posts.length === 0 ? (
                 <div className="card" style={{ textAlign: 'center', padding: 40 }}>
