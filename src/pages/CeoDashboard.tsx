@@ -357,7 +357,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   {/* Summary cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: '👥', color: '#1A3A7A' },
+                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: '👥', color: '#2D62C8' },
                       { label: 'Certificados emitidos', value: progressData.summary.totalCertificatesIssued, icon: '🏅', color: '#059669' },
                       { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: '📖', color: '#C4882A' },
                       { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: '📚', color: '#5B5FC7' },
@@ -380,9 +380,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
                       <button key={s} onClick={() => setCertScoreOverride(s)}
                         style={{
                           padding: '4px 14px', borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                          border: certScoreOverride === s ? '2px solid #1A3A7A' : '1px solid var(--border)',
+                          border: certScoreOverride === s ? '2px solid #2D62C8' : '1px solid var(--border)',
                           background: certScoreOverride === s ? 'rgba(26,58,122,0.08)' : '#fff',
-                          color: certScoreOverride === s ? '#1A3A7A' : 'var(--text-secondary)',
+                          color: certScoreOverride === s ? '#2D62C8' : 'var(--text-secondary)',
                         }}>
                         {s}%
                       </button>
@@ -423,7 +423,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                           }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <div style={{
-                                width: 36, height: 36, borderRadius: '50%', background: '#1A3A7A',
+                                width: 36, height: 36, borderRadius: '50%', background: '#2D62C8',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 color: '#fff', fontWeight: 700, fontSize: 14,
                               }}>
@@ -498,7 +498,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                   <button onClick={() => selectAllCoursesForUser(userData.userId, incompleteCourses.map((c: any) => c.id))}
                                     style={{
                                       background: 'none', border: 'none', cursor: 'pointer',
-                                      fontSize: 10, color: '#1A3A7A', fontWeight: 700, textTransform: 'uppercase',
+                                      fontSize: 10, color: '#2D62C8', fontWeight: 700, textTransform: 'uppercase',
                                     }}>
                                     {incompleteCourses.every((c: any) => userSelected.includes(c.id)) ? 'Deseleccionar todos' : 'Seleccionar todos'}
                                   </button>
@@ -513,14 +513,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                           display: 'flex', alignItems: 'center', gap: 6,
                                           padding: '5px 10px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
                                           background: isSelected ? 'rgba(26,58,122,0.08)' : '#fff',
-                                          border: `1.5px solid ${isSelected ? '#1A3A7A' : 'var(--border)'}`,
-                                          color: isSelected ? '#1A3A7A' : 'var(--text-secondary)',
+                                          border: `1.5px solid ${isSelected ? '#2D62C8' : 'var(--border)'}`,
+                                          color: isSelected ? '#2D62C8' : 'var(--text-secondary)',
                                           transition: 'all 0.15s',
                                         }}>
                                         <span style={{
                                           width: 16, height: 16, borderRadius: 4, flexShrink: 0,
                                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                          background: isSelected ? '#1A3A7A' : 'transparent',
+                                          background: isSelected ? '#2D62C8' : 'transparent',
                                           border: isSelected ? 'none' : '2px solid var(--border)',
                                           color: '#fff', fontSize: 10,
                                         }}>

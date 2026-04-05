@@ -132,7 +132,14 @@ export default function App() {
   if (isLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', flexDirection: 'column', gap: 16 }}>
-        <img src="/logo.svg" alt="Conniku" style={{ height: 48, objectFit: 'contain' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ width: 42, height: 42, borderRadius: 12, background: '#2D62C8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg viewBox="0 0 40 40" width={24} height={24}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
+          </div>
+          <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 36, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+            conni<span style={{ color: '#2D62C8' }}>ku</span>
+          </span>
+        </div>
         <div className="loading-dots"><span /><span /><span /></div>
       </div>
     )

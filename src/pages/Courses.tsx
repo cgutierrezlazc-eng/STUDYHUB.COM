@@ -14,7 +14,7 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 
 const CATEGORY_COLORS: Record<string, string> = {
   communication: '#5B5FC7', leadership: '#2D8A56', emotional: '#C4882A',
-  thinking: '#1A3A7A', productivity: '#0891B2', ethics: '#7C3AED', career: '#DB2777',
+  thinking: '#2D62C8', productivity: '#0891B2', ethics: '#7C3AED', career: '#DB2777',
 }
 
 export default function Courses({ onNavigate }: Props) {
@@ -140,7 +140,7 @@ export default function Courses({ onNavigate }: Props) {
     const completedCount = lessons.filter((l: any) => l.completed).length
     const allLessonsComplete = lessons.length > 0 && completedCount === lessons.length
     const progressPercent = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0
-    const catColor = CATEGORY_COLORS[courseDetail.category] || '#1A3A7A'
+    const catColor = CATEGORY_COLORS[courseDetail.category] || '#2D62C8'
 
     return (
       <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
@@ -617,7 +617,7 @@ export default function Courses({ onNavigate }: Props) {
       <div className="page-header">
         {/* Reward banner */}
         <div style={{
-          background: 'linear-gradient(135deg, #1A3A7A 0%, #2D5FAA 100%)',
+          background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 100%)',
           borderRadius: 12, padding: '14px 20px',
           display: 'flex', alignItems: 'center', gap: 14,
           marginBottom: 16, color: '#fff',
@@ -717,7 +717,7 @@ export default function Courses({ onNavigate }: Props) {
                 <h3 style={{ fontSize: 15, marginBottom: 12 }}>⭐ Cursos Destacados</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
                   {courses.filter(c => c.isFeatured).map(course => {
-                    const cc = CATEGORY_COLORS[course.category] || '#1A3A7A'
+                    const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
                     return (
                       <div key={course.id} className="card" style={{
                         padding: 20, cursor: 'pointer', borderLeft: `4px solid ${cc}`,
@@ -749,7 +749,7 @@ export default function Courses({ onNavigate }: Props) {
             {/* All courses grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
               {courses.map(course => {
-                const cc = CATEGORY_COLORS[course.category] || '#1A3A7A'
+                const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
                 return (
                   <div key={course.id} className="card" style={{
                     padding: 16, cursor: 'pointer',

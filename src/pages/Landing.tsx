@@ -11,8 +11,8 @@ function LogoMark({ size = 34 }: { size?: number }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: size * 0.29,
-      background: '#1A3A7A', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      boxShadow: '0 2px 8px rgba(26,58,122,0.35)', flexShrink: 0,
+      background: '#2D62C8', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      boxShadow: '0 2px 8px rgba(45,98,200,0.35)', flexShrink: 0,
     }}>
       <svg viewBox="0 0 40 40" width={size * 0.58} height={size * 0.58}>
         <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
@@ -23,8 +23,8 @@ function LogoMark({ size = 34 }: { size?: number }) {
 
 function LogoType({ size = 36 }: { size?: number }) {
   return (
-    <span style={{ fontSize: size, fontWeight: 700, color: '#151B1E', letterSpacing: '-0.05em', lineHeight: 1 }}>
-      conni<span style={{ color: '#1A3A7A' }}>ku</span>
+    <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: size, fontWeight: 700, color: '#151B1E', letterSpacing: '-0.05em', lineHeight: 1 }}>
+      conni<span style={{ color: '#2D62C8' }}>ku</span>
     </span>
   )
 }
@@ -163,7 +163,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                   background: vars.bgCard, borderRadius: 12, border: `1px solid ${vars.border}`,
                   boxShadow: '0 6px 24px rgba(0,0,0,0.09)', overflow: 'hidden',
                 }}>
-                  <div style={{ height: 44, background: 'linear-gradient(135deg, #1A3A7A, #2D62C8)' }} />
+                  <div style={{ height: 44, background: 'linear-gradient(135deg, #2D62C8, #2D62C8)' }} />
                   <div style={{ padding: '0 12px 12px', textAlign: 'center' }}>
                     <div style={{
                       width: 40, height: 40, borderRadius: '50%', border: `3px solid ${vars.bgCard}`,

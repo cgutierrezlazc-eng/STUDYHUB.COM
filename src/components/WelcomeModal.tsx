@@ -15,11 +15,16 @@ export default function WelcomeModal({ onAccept }: Props) {
       }}>
         {/* Header */}
         <div style={{
-          background: 'linear-gradient(135deg, #1A3A7A 0%, #2D5FAA 60%, #4A90B8 100%)',
+          background: 'linear-gradient(135deg, #2D62C8 0%, #3A75D9 60%, #4B8AE8 100%)',
           padding: '28px 32px 22px', color: '#fff',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-            <img src="/logo.svg" alt="Conniku" style={{ height: 24, objectFit: 'contain', filter: 'brightness(10)' }} />
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg viewBox="0 0 40 40" width={16} height={16}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
+            </div>
+            <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 20, fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>
+              conni<span style={{ opacity: 0.85 }}>ku</span>
+            </span>
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, margin: 0 }}>Bienvenido a Conniku</h2>
           <p style={{ fontSize: 13, opacity: 0.8, margin: 0 }}>Nos alegra que estés aquí</p>
@@ -68,9 +73,9 @@ export default function WelcomeModal({ onAccept }: Props) {
               type="checkbox"
               checked={accepted}
               onChange={e => setAccepted(e.target.checked)}
-              style={{ width: 16, height: 16, accentColor: '#1A3A7A', cursor: 'pointer' }}
+              style={{ width: 16, height: 16, accentColor: '#2D62C8', cursor: 'pointer' }}
             />
-            Acepto los <strong style={{ color: '#1A3A7A' }}>Términos y Condiciones</strong> de la plataforma
+            Acepto los <strong style={{ color: '#2D62C8' }}>Términos y Condiciones</strong> de la plataforma
           </label>
           <button
             onClick={onAccept}

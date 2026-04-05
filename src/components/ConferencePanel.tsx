@@ -34,7 +34,7 @@ export default function ConferencePanel() {
     width: 50, height: 50, borderRadius: '50%',
     background: '#E8EDF7', display: 'flex', alignItems: 'center',
     justifyContent: 'center', fontSize: 16, fontWeight: 700,
-    color: '#1A3A7A', flexShrink: 0,
+    color: '#2D62C8', flexShrink: 0,
   }
 
   return (
@@ -43,7 +43,7 @@ export default function ConferencePanel() {
       <div onClick={() => setOpen(true)} style={{
         position: 'fixed', right: 0, top: '50%', transform: 'translateY(-50%)',
         writingMode: 'vertical-rl', textOrientation: 'mixed',
-        background: 'linear-gradient(180deg, #1A3A7A, #C4882A)',
+        background: 'linear-gradient(180deg, #2D62C8, #C4882A)',
         color: '#fff', padding: '16px 10px', borderRadius: '8px 0 0 8px',
         fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
         cursor: 'pointer', zIndex: 100, textTransform: 'uppercase',
@@ -60,7 +60,7 @@ export default function ConferencePanel() {
           }}>
             {/* Header */}
             <div style={{
-              background: 'linear-gradient(135deg, #1A3A7A 0%, #2D5FAA 50%, #C4882A 100%)',
+              background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 50%, #C4882A 100%)',
               padding: 30, color: '#fff', position: 'relative',
             }}>
               <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, margin: 0 }}>Conferencias Conniku</h2>

@@ -12,7 +12,7 @@ export default function RewardPopup({ type, onClose }: Props) {
         maxWidth: 420, overflow: 'hidden', textAlign: 'center', padding: 0,
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #1A3A7A 0%, #2D5FAA 50%, #C4882A 100%)',
+          background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 50%, #C4882A 100%)',
           padding: '30px 24px 24px', color: '#fff',
         }}>
           <div style={{ fontSize: 48, marginBottom: 10 }}>⭐</div>
