@@ -748,6 +748,7 @@ export const api = {
   createPortalSession: () =>
     request('/payments/create-portal-session', { method: 'POST' }),
   getSubscriptionStatus: () => request('/payments/subscription-status'),
+  getStripeHealth: () => request('/payments/health'),
 
   // ─── Study Rooms ──────────────────────────────────────────
   createStudyRoom: (data: { name: string; description?: string; room_type?: string; subject?: string; max_participants?: number; pomodoro_work_min?: number; pomodoro_break_min?: number }) =>
