@@ -17,9 +17,9 @@ from database import (
 from middleware import get_current_user
 from notification_routes import create_notification
 try:
-    from notifications import notify_friend_request, notify_friend_accepted, notify_wall_post
+    from notifications import notify_friend_request, notify_friend_accepted, notify_wall_post, notify_mention, notify_comment
 except ImportError:
-    notify_friend_request = notify_friend_accepted = notify_wall_post = None
+    notify_friend_request = notify_friend_accepted = notify_wall_post = notify_mention = notify_comment = None
 
 router = APIRouter(prefix="/social", tags=["social"])
 
@@ -46,6 +46,7 @@ def process_hashtags(db, content: str, post_id: str, post_type: str = "wall"):
 
 def process_mentions(db, content: str, actor_id: str, link: str = ""):
     usernames = extract_mentions(content)
+    actor = db.query(User).filter(User.id == actor_id).first()
     for username in usernames:
         mentioned = db.query(User).filter(User.username == username).first()
         if mentioned and mentioned.id != actor_id:
@@ -53,6 +54,11 @@ def process_mentions(db, content: str, actor_id: str, link: str = ""):
             create_notification(db, mentioned.id, "mention",
                 f"Te mencionaron en una publicación",
                 body=content[:100], link=link, actor_id=actor_id)
+            if notify_mention and actor:
+                try:
+                    notify_mention(db, mentioned, actor, content[:150])
+                except Exception:
+                    pass
 
 
 # ─── Request Models ────────────────────────────────────────────
@@ -715,13 +721,20 @@ def add_comment(
     db.commit()
     db.refresh(comment)
 
-    # In-app notification
+    # In-app notification + email
     if post.author_id != user.id:
         content = body.content.strip()
         create_notification(db, post.author_id, "comment",
             f"{user.first_name} comentó en tu publicación",
             body=content[:100], link=f"/user/{post.wall_owner_id}",
             actor_id=user.id, reference_id=post.id)
+        if notify_comment:
+            try:
+                post_author = db.query(User).filter(User.id == post.author_id).first()
+                if post_author:
+                    notify_comment(db, post_author, user, content[:150])
+            except Exception:
+                pass
         db.commit()
 
     author = db.query(User).filter(User.id == comment.author_id).first()

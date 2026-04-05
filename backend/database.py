@@ -797,6 +797,23 @@ class Certificate(Base):
     is_public = Column(Boolean, default=True)
 
 
+# ─── Email Log ────────────────────────────────────────────
+
+class EmailLog(Base):
+    __tablename__ = "email_logs"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    from_email = Column(String(255), nullable=False)
+    to_email = Column(String(255), nullable=False)
+    subject = Column(String(500), nullable=False)
+    body_html = Column(Text, default="")
+    email_type = Column(String(50), default="manual")  # manual, notification, welcome, certificate, contact, etc.
+    status = Column(String(20), default="sent")  # sent, failed, queued
+    error_message = Column(Text, nullable=True)
+    sent_at = Column(DateTime, default=datetime.utcnow)
+    read_at = Column(DateTime, nullable=True)
+    reply_to = Column(String(255), nullable=True)
+
+
 # ─── Recruiter Profiles ────────────────────────────────────
 
 class RecruiterProfile(Base):

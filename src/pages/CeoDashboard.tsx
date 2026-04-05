@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox } from '../components/Icons'
+import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox, Send, Megaphone, Pencil } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -15,7 +15,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [compliance, setComplianceStatus] = useState<any>(null)
   const [f129, setF129] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications'>('overview')
+  const [tab, setTab] = useState<'overview' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications' | 'email'>('overview')
   const [progressData, setProgressData] = useState<any>(null)
   const [certSearch, setCertSearch] = useState('')
   const [certLoading, setCertLoading] = useState(false)
@@ -23,6 +23,27 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [certScoreOverride, setCertScoreOverride] = useState(100)
   const [certifying, setCertifying] = useState(false)
   const [certMessage, setCertMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  // Email state
+  const [emailInbox, setEmailInbox] = useState<any[]>([])
+  const [emailStats, setEmailStats] = useState<any>(null)
+  const [emailLoading, setEmailLoading] = useState(false)
+  const [emailPage, setEmailPage] = useState(1)
+  const [emailTotal, setEmailTotal] = useState(0)
+  const [emailFilter, setEmailFilter] = useState('')
+  const [emailView, setEmailView] = useState<'inbox' | 'compose' | 'broadcast' | 'detail'>('inbox')
+  const [selectedEmail, setSelectedEmail] = useState<any>(null)
+  const [composeTo, setComposeTo] = useState('')
+  const [composeSubject, setComposeSubject] = useState('')
+  const [composeBody, setComposeBody] = useState('')
+  const [composeCta, setComposeCta] = useState('')
+  const [composeCtaUrl, setComposeCtaUrl] = useState('')
+  const [composeSending, setComposeSending] = useState(false)
+  const [broadcastSubject, setBroadcastSubject] = useState('')
+  const [broadcastBody, setBroadcastBody] = useState('')
+  const [broadcastFilter, setBroadcastFilter] = useState('all')
+  const [broadcastCta, setBroadcastCta] = useState('')
+  const [broadcastCtaUrl, setBroadcastCtaUrl] = useState('')
+  const [broadcastSending, setBroadcastSending] = useState(false)
 
   useEffect(() => {
     if (user?.role !== 'owner') return
@@ -45,6 +66,55 @@ export default function CeoDashboard({ onNavigate }: Props) {
       setProgressData(data)
     } catch (e: any) { console.error('Failed to load progress overview:', e) }
     setCertLoading(false)
+  }
+
+  const loadEmailData = async (page = 1, filter = '') => {
+    setEmailLoading(true)
+    try {
+      const [inbox, stats] = await Promise.all([
+        api.getCeoEmailInbox(page, filter),
+        api.getCeoEmailStats(),
+      ])
+      setEmailInbox(inbox.emails || [])
+      setEmailTotal(inbox.total || 0)
+      setEmailPage(page)
+      setEmailStats(stats)
+    } catch (e: any) { console.error('Email load error:', e) }
+    setEmailLoading(false)
+  }
+
+  const handleSendEmail = async () => {
+    if (!composeTo || !composeSubject || !composeBody) return
+    setComposeSending(true)
+    try {
+      await api.ceoSendEmail(composeTo, composeSubject, composeBody, composeCta, composeCtaUrl)
+      setComposeTo(''); setComposeSubject(''); setComposeBody(''); setComposeCta(''); setComposeCtaUrl('')
+      setEmailView('inbox')
+      loadEmailData(1, emailFilter)
+    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    setComposeSending(false)
+  }
+
+  const handleBroadcast = async () => {
+    if (!broadcastSubject || !broadcastBody) return
+    if (!confirm(`¿Enviar email masivo a usuarios (${broadcastFilter})? Esta accion no se puede deshacer.`)) return
+    setBroadcastSending(true)
+    try {
+      const result = await api.ceoBroadcastEmail(broadcastSubject, broadcastBody, broadcastFilter, broadcastCta, broadcastCtaUrl)
+      alert(`Email enviado a ${result.recipients} usuarios.`)
+      setBroadcastSubject(''); setBroadcastBody(''); setBroadcastCta(''); setBroadcastCtaUrl('')
+      setEmailView('inbox')
+      loadEmailData(1, emailFilter)
+    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    setBroadcastSending(false)
+  }
+
+  const viewEmailDetail = async (emailId: string) => {
+    try {
+      const detail = await api.getCeoEmailDetail(emailId)
+      setSelectedEmail(detail)
+      setEmailView('detail')
+    } catch (e: any) { console.error('Error:', e) }
   }
 
   const toggleCourseSelection = (userId: string, courseId: string) => {
@@ -113,9 +183,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
         <h2>{Briefcase({ size: 22 })} Panel CEO — Conniku</h2>
         <p>Vista exclusiva del estado completo de la plataforma</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          {(['overview', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
-            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview() }}>
-              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
+          {(['overview', 'email', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
+            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview(); if (t === 'email' && emailInbox.length === 0) loadEmailData() }}>
+              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'email' ? <>{Inbox({ size: 14 })} Email</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
             </button>
           ))}
         </div>
@@ -569,6 +639,231 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
                     Cargar datos
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* EMAIL TAB */}
+          {tab === 'email' && (
+            <div>
+              {/* Email Stats */}
+              {emailStats && (
+                <div className="stats-grid" style={{ marginBottom: 20 }}>
+                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
+                    <div className="stat-value">{emailStats.total}</div>
+                    <div className="stat-label">Emails Totales</div>
+                  </div>
+                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
+                    <div className="stat-value">{emailStats.sent}</div>
+                    <div className="stat-label">Enviados</div>
+                  </div>
+                  <div className="stat-card" style={{ borderLeft: '4px solid #ef4444' }}>
+                    <div className="stat-value">{emailStats.failed}</div>
+                    <div className="stat-label">Fallidos</div>
+                  </div>
+                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
+                    <div className="stat-value">{emailStats.thisWeek}</div>
+                    <div className="stat-label">Esta Semana</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-navigation */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                <button className={`tab ${emailView === 'inbox' ? 'active' : ''}`} onClick={() => setEmailView('inbox')}>
+                  {Inbox({ size: 14 })} Historial
+                </button>
+                <button className={`tab ${emailView === 'compose' ? 'active' : ''}`} onClick={() => setEmailView('compose')}>
+                  {Pencil({ size: 14 })} Redactar
+                </button>
+                <button className={`tab ${emailView === 'broadcast' ? 'active' : ''}`} onClick={() => setEmailView('broadcast')}>
+                  {Megaphone({ size: 14 })} Masivo
+                </button>
+              </div>
+
+              {/* EMAIL INBOX/HISTORY */}
+              {emailView === 'inbox' && (
+                <div>
+                  {/* Type filter */}
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+                    {['', 'welcome', 'contact', 'manual', 'broadcast', 'friend_request', 'message', 'certificate', 'subscription', 'payment'].map(f => (
+                      <button key={f} onClick={() => { setEmailFilter(f); loadEmailData(1, f) }}
+                        style={{
+                          padding: '4px 10px', fontSize: 11, borderRadius: 12, cursor: 'pointer',
+                          background: emailFilter === f ? 'var(--accent-blue)' : 'var(--bg-secondary)',
+                          color: emailFilter === f ? '#fff' : 'var(--text-muted)',
+                          border: '1px solid ' + (emailFilter === f ? 'var(--accent-blue)' : 'var(--border-subtle)'),
+                        }}>
+                        {f || 'Todos'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {emailLoading ? (
+                    <div className="loading-dots"><span /><span /><span /></div>
+                  ) : emailInbox.length === 0 ? (
+                    <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                      <p>No hay emails registrados todavia.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                        {emailInbox.map((e: any) => (
+                          <div key={e.id} onClick={() => viewEmailDetail(e.id)} className="card"
+                            style={{
+                              padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+                              transition: 'background 0.1s',
+                            }}
+                            onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--bg-hover)')}
+                            onMouseLeave={ev => (ev.currentTarget.style.background = '')}
+                          >
+                            <div style={{
+                              width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                              background: e.status === 'sent' ? '#22c55e' : '#ef4444',
+                            }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {e.subject}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                                Para: {e.to} · {e.sentAt ? new Date(e.sentAt).toLocaleDateString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                              </div>
+                            </div>
+                            <span style={{
+                              fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
+                              background: 'var(--bg-secondary)', color: 'var(--text-muted)', flexShrink: 0,
+                            }}>
+                              {e.type}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Pagination */}
+                      {emailTotal > 50 && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
+                          <button className="btn btn-secondary btn-sm" disabled={emailPage <= 1} onClick={() => loadEmailData(emailPage - 1, emailFilter)}>Anterior</button>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>Pagina {emailPage} de {Math.ceil(emailTotal / 50)}</span>
+                          <button className="btn btn-secondary btn-sm" disabled={emailPage >= Math.ceil(emailTotal / 50)} onClick={() => loadEmailData(emailPage + 1, emailFilter)}>Siguiente</button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* EMAIL DETAIL */}
+              {emailView === 'detail' && selectedEmail && (
+                <div>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setEmailView('inbox')} style={{ marginBottom: 12 }}>
+                    ← Volver al historial
+                  </button>
+                  <div className="card" style={{ padding: 20 }}>
+                    <div style={{ marginBottom: 16 }}>
+                      <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>{selectedEmail.subject}</h3>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                        <span><strong>De:</strong> {selectedEmail.from}</span>
+                        <span><strong>Para:</strong> {selectedEmail.to}</span>
+                        <span><strong>Tipo:</strong> {selectedEmail.type}</span>
+                        <span><strong>Estado:</strong> <span style={{ color: selectedEmail.status === 'sent' ? '#22c55e' : '#ef4444' }}>{selectedEmail.status}</span></span>
+                        <span><strong>Fecha:</strong> {selectedEmail.sentAt ? new Date(selectedEmail.sentAt).toLocaleString('es') : ''}</span>
+                      </div>
+                      {selectedEmail.error && (
+                        <div style={{ marginTop: 8, padding: '8px 12px', background: '#fef2f2', borderRadius: 6, fontSize: 12, color: '#dc2626' }}>
+                          {AlertTriangle({ size: 14 })} {selectedEmail.error}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16 }}>
+                      <div dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml || '<p>Sin contenido</p>' }}
+                        style={{ fontSize: 14, lineHeight: 1.6, maxHeight: 500, overflow: 'auto' }} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* COMPOSE EMAIL */}
+              {emailView === 'compose' && (
+                <div className="card" style={{ padding: 24, maxWidth: 640 }}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{Send({ size: 18 })} Redactar Email</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <input className="form-input" placeholder="Destinatario (email)" value={composeTo} onChange={e => setComposeTo(e.target.value)} />
+                    <input className="form-input" placeholder="Asunto" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
+                    <textarea className="form-input" rows={8} placeholder="Cuerpo del mensaje (texto plano, se aplicara la plantilla de Conniku)" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input className="form-input" style={{ flex: 1 }} placeholder="Texto del boton CTA (opcional)" value={composeCta} onChange={e => setComposeCta(e.target.value)} />
+                      <input className="form-input" style={{ flex: 1 }} placeholder="URL del boton (opcional)" value={composeCtaUrl} onChange={e => setComposeCtaUrl(e.target.value)} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button className="btn btn-secondary" onClick={() => setEmailView('inbox')}>Cancelar</button>
+                      <button className="btn btn-primary" onClick={handleSendEmail} disabled={composeSending || !composeTo || !composeSubject || !composeBody}>
+                        {composeSending ? 'Enviando...' : 'Enviar Email'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* BROADCAST EMAIL */}
+              {emailView === 'broadcast' && (
+                <div className="card" style={{ padding: 24, maxWidth: 640 }}>
+                  <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>{Megaphone({ size: 18 })} Email Masivo</h3>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Envia un email a multiples usuarios a la vez. Usa con responsabilidad.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, display: 'block' }}>Audiencia</label>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        {[{ v: 'all', l: 'Todos los usuarios' }, { v: 'active', l: 'Activos (7 dias)' }, { v: 'premium', l: 'Premium' }].map(opt => (
+                          <button key={opt.v} onClick={() => setBroadcastFilter(opt.v)}
+                            style={{
+                              padding: '6px 14px', fontSize: 12, borderRadius: 8, cursor: 'pointer',
+                              background: broadcastFilter === opt.v ? 'var(--accent-blue)' : 'var(--bg-secondary)',
+                              color: broadcastFilter === opt.v ? '#fff' : 'var(--text-secondary)',
+                              border: '1px solid ' + (broadcastFilter === opt.v ? 'var(--accent-blue)' : 'var(--border-subtle)'),
+                            }}>
+                            {opt.l}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <input className="form-input" placeholder="Asunto" value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)} />
+                    <textarea className="form-input" rows={8} placeholder="Cuerpo del mensaje" value={broadcastBody} onChange={e => setBroadcastBody(e.target.value)} />
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input className="form-input" style={{ flex: 1 }} placeholder="Texto del boton CTA (opcional)" value={broadcastCta} onChange={e => setBroadcastCta(e.target.value)} />
+                      <input className="form-input" style={{ flex: 1 }} placeholder="URL del boton (opcional)" value={broadcastCtaUrl} onChange={e => setBroadcastCtaUrl(e.target.value)} />
+                    </div>
+                    <div style={{ background: 'rgba(239,68,68,0.06)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(239,68,68,0.15)' }}>
+                      <p style={{ fontSize: 11, color: '#dc2626', margin: 0 }}>
+                        {AlertTriangle({ size: 12 })} Esto enviara un email a todos los usuarios del grupo seleccionado. No se puede deshacer.
+                      </p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                      <button className="btn btn-secondary" onClick={() => setEmailView('inbox')}>Cancelar</button>
+                      <button className="btn btn-primary" onClick={handleBroadcast} disabled={broadcastSending || !broadcastSubject || !broadcastBody}
+                        style={{ background: broadcastSending ? undefined : '#dc2626' }}>
+                        {broadcastSending ? 'Enviando...' : `Enviar a ${broadcastFilter === 'all' ? 'Todos' : broadcastFilter === 'active' ? 'Activos' : 'Premium'}`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Email type breakdown */}
+              {emailView === 'inbox' && emailStats?.byType && Object.keys(emailStats.byType).length > 0 && (
+                <div className="card" style={{ padding: 16, marginTop: 16 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Desglose por tipo</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {Object.entries(emailStats.byType).sort((a: any, b: any) => b[1] - a[1]).map(([type, count]: any) => (
+                      <div key={type} style={{
+                        padding: '6px 12px', borderRadius: 8, background: 'var(--bg-secondary)',
+                        fontSize: 12, display: 'flex', gap: 6, alignItems: 'center',
+                      }}>
+                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{count}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{type}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

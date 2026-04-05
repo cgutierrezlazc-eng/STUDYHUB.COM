@@ -840,6 +840,16 @@ export const api = {
   getReferralFraudReport: () => request('/referrals/admin/fraud-report'),
   getComplianceStatus: () => request('/finance/compliance-status'),
 
+  // ─── CEO Email Management ─────────────────────────────────
+  getCeoEmailInbox: (page?: number, emailType?: string) =>
+    request(`/email/ceo/inbox?page=${page || 1}${emailType ? `&email_type=${emailType}` : ''}`),
+  getCeoEmailDetail: (emailId: string) => request(`/email/ceo/email/${emailId}`),
+  ceoSendEmail: (to: string, subject: string, body: string, ctaText?: string, ctaUrl?: string) =>
+    request('/email/ceo/send', { method: 'POST', body: JSON.stringify({ to_email: to, subject, body, cta_text: ctaText || '', cta_url: ctaUrl || '' }) }),
+  getCeoEmailStats: () => request('/email/ceo/stats'),
+  ceoBroadcastEmail: (subject: string, body: string, filter?: string, ctaText?: string, ctaUrl?: string) =>
+    request('/email/ceo/broadcast', { method: 'POST', body: JSON.stringify({ subject, body, filter: filter || 'all', ctaText: ctaText || '', ctaUrl: ctaUrl || '' }) }),
+
   // ─── Document Download ────────────────────────────────────
   downloadProjectDocument: (projectId: string, docName: string) =>
     request(`/projects/${projectId}/documents/${encodeURIComponent(docName)}/download`),
