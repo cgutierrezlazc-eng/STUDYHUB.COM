@@ -117,6 +117,60 @@ def unban_user(user_id: str, admin: User = Depends(require_admin), db: Session =
     return {"unbanned": True}
 
 
+@router.delete("/users/{user_id}")
+def delete_user(user_id: str, admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Permanently delete a user account. Owner only."""
+    if admin.role != "owner":
+        raise HTTPException(403, "Solo el propietario puede eliminar cuentas")
+
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(404, "Usuario no encontrado")
+
+    if target.role == "owner":
+        raise HTTPException(400, "No se puede eliminar la cuenta del propietario")
+
+    username = target.username
+    email = target.email
+
+    # Delete related data
+    from database import (
+        WallPost, PostLike, PostComment, Friendship, FriendRequest,
+        ConversationParticipant, Message, UserCourseProgress,
+        StudentCV, PushSubscription, UserExerciseHistory,
+    )
+    db.query(PostLike).filter(PostLike.user_id == user_id).delete()
+    db.query(PostComment).filter(PostComment.user_id == user_id).delete()
+    db.query(WallPost).filter(WallPost.author_id == user_id).delete()
+    db.query(WallPost).filter(WallPost.wall_owner_id == user_id).delete()
+    db.query(Friendship).filter(
+        (Friendship.user_id == user_id) | (Friendship.friend_id == user_id)
+    ).delete(synchronize_session=False)
+    db.query(FriendRequest).filter(
+        (FriendRequest.sender_id == user_id) | (FriendRequest.receiver_id == user_id)
+    ).delete(synchronize_session=False)
+    db.query(ConversationParticipant).filter(
+        ConversationParticipant.user_id == user_id
+    ).delete()
+    db.query(Message).filter(Message.sender_id == user_id).delete()
+    db.query(UserCourseProgress).filter(UserCourseProgress.user_id == user_id).delete()
+    db.query(StudentCV).filter(StudentCV.user_id == user_id).delete()
+    db.query(PushSubscription).filter(PushSubscription.user_id == user_id).delete()
+    db.query(UserExerciseHistory).filter(UserExerciseHistory.user_id == user_id).delete()
+
+    db.add(ModerationLog(
+        id=gen_id(),
+        user_id=user_id,
+        action="delete_account",
+        reason=f"Cuenta eliminada: {username} ({email})",
+        admin_id=admin.id,
+    ))
+
+    db.delete(target)
+    db.commit()
+    return {"deleted": True, "username": username}
+
+
 # ─── Flagged Messages ───────────────────────────────────────────
 
 @router.get("/messages/flagged")

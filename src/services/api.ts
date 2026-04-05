@@ -278,6 +278,8 @@ export const api = {
     request(`/admin/users/${id}/ban`, { method: 'POST', body: JSON.stringify({ reason }) }),
   adminUnbanUser: (id: string) =>
     request(`/admin/users/${id}/unban`, { method: 'POST' }),
+  adminDeleteUser: (id: string) =>
+    request(`/admin/users/${id}`, { method: 'DELETE' }),
   adminGetFlaggedMessages: (page: number = 1) =>
     request(`/admin/messages/flagged?page=${page}`),
   adminDeleteMessage: (id: string) =>
@@ -645,6 +647,7 @@ export const api = {
   updateCV: (data: any) =>
     request('/courses/cv', { method: 'PUT', body: JSON.stringify(data) }),
   getUserCV: (userId: string) => request(`/courses/cv/${userId}`),
+  getPublicCVs: (search?: string) => request(`/courses/cv-public/all${search ? `?search=${encodeURIComponent(search)}` : ''}`),
 
   // ─── Recruiter ────────────────────────────────────────────
   registerRecruiter: (data: any) =>

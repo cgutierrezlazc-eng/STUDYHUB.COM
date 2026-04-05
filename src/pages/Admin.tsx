@@ -102,6 +102,17 @@ export default function Admin() {
     try { await api.adminUnbanUser(userId); loadUsers(); loadStats() } catch {}
   }
 
+  const handleDeleteUser = async (userId: string, username: string) => {
+    if (!confirm(`¿Estás seguro de ELIMINAR permanentemente la cuenta de @${username}? Esta acción NO se puede deshacer.`)) return
+    if (!confirm(`Confirma nuevamente: eliminar a @${username} y todos sus datos.`)) return
+    try {
+      await api.adminDeleteUser(userId)
+      loadUsers(); loadStats()
+    } catch (err: any) {
+      alert(err?.message || 'Error al eliminar usuario')
+    }
+  }
+
   const handleDeleteMsg = async (msgId: string) => {
     try { await api.adminDeleteMessage(msgId); loadFlagged() } catch {}
   }
@@ -348,6 +359,10 @@ export default function Admin() {
                           ) : u.id !== user?.id ? (
                             <button className="btn btn-secondary btn-xs" onClick={() => handleRemoveAdmin(u.id)}>Quitar Admin</button>
                           ) : null}
+                          {user?.role === 'owner' && u.role !== 'owner' && (
+                            <button className="btn btn-xs" style={{ background: '#7f1d1d', color: '#fca5a5', border: 'none' }}
+                              onClick={() => handleDeleteUser(u.id, u.username)}>Eliminar</button>
+                          )}
                         </div>
                       </td>
                     </tr>

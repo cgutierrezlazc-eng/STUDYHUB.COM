@@ -1282,3 +1282,56 @@ def get_user_cv(user_id: str, user: User = Depends(get_current_user), db: Sessio
         "interests": json.loads(cv.interests or "[]"),
         "visibility": cv.visibility or "public",
     }
+
+
+@router.get("/cv-public/all")
+def list_public_cvs(
+    search: str = "",
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all public CVs for the job board."""
+    query = db.query(StudentCV).filter(StudentCV.visibility == "public")
+    cvs = query.all()
+
+    results = []
+    for cv in cvs:
+        if not cv.headline and not cv.about_me:
+            continue  # Skip empty CVs
+
+        u = db.query(User).filter(User.id == cv.user_id).first()
+        if not u:
+            continue
+
+        # Search filter
+        if search:
+            search_lower = search.lower()
+            match = (
+                search_lower in (cv.headline or "").lower()
+                or search_lower in (cv.about_me or "").lower()
+                or search_lower in (u.first_name or "").lower()
+                or search_lower in (u.last_name or "").lower()
+                or search_lower in (u.career or "").lower()
+                or search_lower in (u.university or "").lower()
+                or any(search_lower in s.lower() for s in json.loads(cv.skills or "[]"))
+            )
+            if not match:
+                continue
+
+        results.append({
+            "userId": u.id,
+            "firstName": u.first_name,
+            "lastName": u.last_name,
+            "username": u.username,
+            "avatar": u.avatar,
+            "university": u.university or "",
+            "career": u.career or "",
+            "headline": cv.headline or "",
+            "aboutMe": cv.about_me or "",
+            "skills": json.loads(cv.skills or "[]"),
+            "tools": json.loads(cv.tools or "[]"),
+            "experience": json.loads(cv.experience or "[]"),
+            "updatedAt": cv.updated_at.isoformat() if cv.updated_at else "",
+        })
+
+    return {"cvs": results, "total": len(results)}

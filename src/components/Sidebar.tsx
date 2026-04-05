@@ -115,7 +115,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
           <span className="nav-item-icon">{Icons.fileText}</span> Apuntes
         </button>
         <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
-          <span className="nav-item-icon">{Icons.briefcase}</span> Oportunidades
+          <span className="nav-item-icon">{Icons.briefcase}</span> Bolsa de Trabajo
         </button>
         <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
           <span className="nav-item-icon">{Icons.sprout}</span> Cursos

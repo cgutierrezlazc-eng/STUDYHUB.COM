@@ -22,7 +22,10 @@ const EXP_LEVELS: Record<string, string> = {
 
 export default function Jobs({ onNavigate }: Props) {
   const { user } = useAuth()
-  const [tab, setTab] = useState<'listings' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'>('listings')
+  const [tab, setTab] = useState<'listings' | 'cvs' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'>('listings')
+  const [publicCVs, setPublicCVs] = useState<any[]>([])
+  const [cvSearch, setCvSearch] = useState('')
+  const [cvLoading, setCvLoading] = useState(false)
   const [jobs, setJobs] = useState<any[]>([])
   const [candidates, setCandidates] = useState<any[]>([])
   const [myApps, setMyApps] = useState<any[]>([])
@@ -89,6 +92,15 @@ export default function Jobs({ onNavigate }: Props) {
       const data = await api.getTutoringListings()
       setTutorings(data.listings || [])
     } catch (err: any) { console.error('Failed to load tutorings:', err) }
+  }
+
+  const loadPublicCVs = async (q?: string) => {
+    setCvLoading(true)
+    try {
+      const data = await api.getPublicCVs(q || undefined)
+      setPublicCVs(data.cvs || [])
+    } catch (err) { console.error('Failed to load public CVs:', err) }
+    setCvLoading(false)
   }
 
   const loadRecruiter = async () => {
@@ -188,8 +200,8 @@ export default function Jobs({ onNavigate }: Props) {
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>{Briefcase()} Oportunidades</h2>
-            <p>Conecta con empresas y encuentra tu próximo paso profesional</p>
+            <h2>{Briefcase()} Bolsa de Trabajo</h2>
+            <p>Conecta con empresas, muestra tu perfil profesional y encuentra tu proximo paso</p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
@@ -202,15 +214,16 @@ export default function Jobs({ onNavigate }: Props) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          {(['listings', 'tutoring', 'candidates', 'my-apps', 'my-listings', 'recruiter'] as const).map(t => (
+          {(['listings', 'cvs', 'tutoring', 'candidates', 'my-apps', 'my-listings', 'recruiter'] as const).map(t => (
             <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => {
               setTab(t)
+              if (t === 'cvs') loadPublicCVs()
               if (t === 'candidates') loadCandidates()
               if (t === 'my-apps') loadMyApps()
               if (t === 'tutoring') loadTutorings()
               if (t === 'recruiter') loadRecruiter()
             }}>
-              {t === 'listings' ? <>{ClipboardList({ size: 14 })} Ofertas</> : t === 'tutoring' ? <>{GraduationCap({ size: 14 })} Tutorías</> : t === 'candidates' ? <>{Users({ size: 14 })} Talentos</> : t === 'my-apps' ? <>{FileText({ size: 14 })} Mis Postulaciones</> : t === 'my-listings' ? <>{BuildingIcon({ size: 14 })} Mis Ofertas</> : <>{Lock({ size: 14 })} Soy Reclutador</>}
+              {t === 'listings' ? <>{ClipboardList({ size: 14 })} Ofertas</> : t === 'cvs' ? <>{FileText({ size: 14 })} Curriculums</> : t === 'tutoring' ? <>{GraduationCap({ size: 14 })} Tutorias</> : t === 'candidates' ? <>{Users({ size: 14 })} Talentos</> : t === 'my-apps' ? <>{FileText({ size: 14 })} Mis Postulaciones</> : t === 'my-listings' ? <>{BuildingIcon({ size: 14 })} Mis Ofertas</> : <>{Lock({ size: 14 })} Soy Reclutador</>}
             </button>
           ))}
         </div>
@@ -231,6 +244,91 @@ export default function Jobs({ onNavigate }: Props) {
               </select>
             )}
             <button className="btn btn-primary" onClick={() => tab === 'listings' ? loadJobs() : loadCandidates()}>Buscar</button>
+          </div>
+        )}
+
+        {/* Public CVs / Curriculums */}
+        {tab === 'cvs' && (
+          <div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              <input value={cvSearch} onChange={e => setCvSearch(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && loadPublicCVs(cvSearch)}
+                placeholder="Buscar por nombre, carrera, habilidad, universidad..."
+                style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
+              <button className="btn btn-primary" onClick={() => loadPublicCVs(cvSearch)}>{SearchIcon({ size: 14 })} Buscar</button>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Perfiles profesionales de estudiantes que han decidido hacer publico su curriculum para aumentar su visibilidad laboral.
+            </p>
+            {cvLoading ? <div className="loading-dots"><span /><span /><span /></div> :
+            publicCVs.length === 0 ? (
+              <div className="empty-state" style={{ padding: 40 }}>
+                <div>{FileText({ size: 48 })}</div>
+                <h3>No hay curriculums publicos todavia</h3>
+                <p>Completa tu curriculum en tu perfil y ponlo en visibilidad publica para aparecer aqui.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {publicCVs.map(cv => (
+                  <div key={cv.userId} className="card" style={{ padding: 18, cursor: 'pointer' }}
+                    onClick={() => onNavigate(`/user/${cv.userId}`)}>
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      <div style={{
+                        width: 50, height: 50, borderRadius: '50%', flexShrink: 0,
+                        background: cv.avatar ? `url(${cv.avatar}) center/cover` : 'linear-gradient(135deg, #2D62C8, #5B8DEF)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontWeight: 700, fontSize: 18,
+                      }}>
+                        {!cv.avatar && (cv.firstName?.charAt(0) || '?')}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>
+                          {cv.firstName} {cv.lastName}
+                        </div>
+                        <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{cv.headline}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                          {cv.career && <span>{cv.career}</span>}
+                          {cv.career && cv.university && <span> · </span>}
+                          {cv.university && <span>{cv.university}</span>}
+                        </div>
+                        {cv.aboutMe && (
+                          <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5,
+                            overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+                            {cv.aboutMe}
+                          </p>
+                        )}
+                        {cv.skills && cv.skills.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 10 }}>
+                            {cv.skills.slice(0, 6).map((s: string, i: number) => (
+                              <span key={i} style={{
+                                fontSize: 11, padding: '3px 8px', borderRadius: 12,
+                                background: 'rgba(45,98,200,0.1)', color: '#2D62C8',
+                                border: '1px solid rgba(45,98,200,0.15)',
+                              }}>{s}</span>
+                            ))}
+                            {cv.skills.length > 6 && (
+                              <span style={{ fontSize: 11, color: 'var(--text-muted)', padding: '3px 6px' }}>
+                                +{cv.skills.length - 6} mas
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {cv.experience && cv.experience.length > 0 && (
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                            {Briefcase({ size: 12 })} {cv.experience[0].title} en {cv.experience[0].company}
+                            {cv.experience.length > 1 && <span> · +{cv.experience.length - 1} mas</span>}
+                          </div>
+                        )}
+                      </div>
+                      <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); onNavigate(`/user/${cv.userId}`) }}
+                        style={{ flexShrink: 0 }}>
+                        Ver Perfil
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
