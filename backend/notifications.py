@@ -1,6 +1,6 @@
 """Email notification system for Conniku.
-Uses 3 emails: noreply@ (sends), contacto@ (receives user messages), ceo@ (admin).
-All notification emails include reply-to: contacto@conniku.com
+All emails consolidated through ceo@conniku.com (single account).
+Future: expand to separate noreply@, contacto@, ceo@ when more accounts are purchased.
 """
 import os
 import smtplib
@@ -26,7 +26,7 @@ SMTP_PASS = os.environ.get("SMTP_PASS", "")
 SMTP_FROM = os.environ.get("SMTP_FROM", os.environ.get("CEO_EMAIL", "ceo@conniku.com"))
 REPLY_TO = os.environ.get("SMTP_REPLY_TO", os.environ.get("CEO_EMAIL", "ceo@conniku.com"))
 CEO_EMAIL = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "contacto@conniku.com")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "ceo@conniku.com")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 
 
@@ -98,8 +98,8 @@ def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = ""
         {cta_html}
     </div>
     <div style="text-align:center;margin-top:24px;font-size:12px;color:#98A2B3">
-        <p>Este correo fue enviado por Conniku. No respondas a este mensaje.</p>
-        <p>Para contactarnos: <a href="mailto:{CONTACT_EMAIL}" style="color:#2563EB">{CONTACT_EMAIL}</a></p>
+        <p>Este correo fue enviado por Conniku.</p>
+        <p>Contacto: <a href="mailto:{CEO_EMAIL}" style="color:#2563EB">{CEO_EMAIL}</a></p>
         <p><a href="{FRONTEND_URL}" style="color:#2563EB">conniku.com</a></p>
     </div>
 </div></body></html>'''
@@ -361,7 +361,6 @@ def send_contact_message(data: ContactMessage):
     if len(data.message) > 2000:
         raise HTTPException(400, "Mensaje muy largo (máximo 2000 caracteres)")
 
-    # Send to contact email (which forwards to CEO)
     body = f"""
     <p><strong>De:</strong> {data.name} ({data.email})</p>
     <p><strong>Asunto:</strong> {data.subject}</p>
@@ -369,9 +368,7 @@ def send_contact_message(data: ContactMessage):
     <p>{data.message.replace(chr(10), '<br>')}</p>
     """
     html = _email_template(f"Nuevo mensaje: {data.subject}", body)
-    _send_email_async(CONTACT_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email, email_type="contact")
-
-    # Also send to CEO directly
+    # All contact messages go to CEO (single consolidated account)
     _send_email_async(CEO_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email, email_type="contact")
 
     return {"status": "sent", "message": "Mensaje enviado. Te responderemos a la brevedad."}
@@ -395,7 +392,7 @@ def send_contact_from_profile(data: dict, user: User = Depends(get_current_user)
     <p>{message.replace(chr(10), '<br>')}</p>
     """
     html = _email_template(f"Mensaje de @{user.username}: {subject}", body)
-    _send_email_async(CONTACT_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email, email_type="contact")
+    # All contact messages go to CEO (single consolidated account)
     _send_email_async(CEO_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email, email_type="contact")
 
     return {"status": "sent", "message": "Mensaje enviado al equipo de Conniku."}
@@ -577,7 +574,7 @@ def notify_payment_failed(user: User):
     <p>Hola {user.first_name},</p>
     <p>No pudimos procesar tu ultimo pago. Tu suscripcion podria verse afectada si no se resuelve pronto.</p>
     <p><strong>Tienes 3 dias</strong> para actualizar tu metodo de pago y mantener tu plan activo.</p>
-    <p>Si necesitas ayuda, escribenos a <a href="mailto:{CONTACT_EMAIL}" style="color:#2563EB">{CONTACT_EMAIL}</a>.</p>
+    <p>Si necesitas ayuda, escribenos a <a href="mailto:{CEO_EMAIL}" style="color:#2563EB">{CEO_EMAIL}</a>.</p>
     """
     html = _email_template("Pago no procesado", body, "Actualizar Pago", f"{FRONTEND_URL}/subscription")
     _send_email_async(user.email, "Problema con tu pago — Conniku", html, email_type="payment")

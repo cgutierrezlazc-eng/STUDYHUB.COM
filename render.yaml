@@ -37,7 +37,7 @@ services:
       - key: SMTP_PASS
         sync: false
       - key: SMTP_FROM
-        value: noreply@conniku.com
+        value: ceo@conniku.com
       # Stripe payments (configure when ready)
       - key: STRIPE_SECRET_KEY
         sync: false

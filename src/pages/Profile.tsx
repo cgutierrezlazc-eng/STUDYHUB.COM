@@ -773,8 +773,8 @@ export default function Profile() {
                 </p>
                 <div className="pf-toggles">
                   {[
-                    { email: 'contacto@conniku.com', label: 'Contacto General', desc: 'Soporte y consultas de usuarios', status: 'active' },
-                    { email: 'cristian.a.gutierrez@conniku.com', label: 'CEO / Fundador', desc: 'Correo personal del propietario', status: 'active' },
+                    { email: 'ceo@conniku.com', label: 'CEO / Principal', desc: 'Cuenta consolidada — notificaciones, contacto y administración', status: 'active' },
+                    { email: 'contacto@conniku.com', label: 'Contacto General', desc: 'Soporte y consultas de usuarios', status: 'pending' },
                     { email: 'soporte@conniku.com', label: 'Soporte Técnico', desc: 'Tickets de soporte y ayuda', status: 'pending' },
                     { email: 'pagos@conniku.com', label: 'Facturación', desc: 'Recibos, facturas y pagos', status: 'pending' },
                   ].map(account => (
