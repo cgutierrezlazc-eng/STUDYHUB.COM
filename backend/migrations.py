@@ -100,6 +100,9 @@ def migrate():
         ("cv_portfolio", "TEXT DEFAULT ''"),
         ("cv_visibility", "VARCHAR(20) DEFAULT 'private'"),
         ("cv_file_path", "VARCHAR(500) DEFAULT ''"),
+        # Cover photo
+        ("cover_photo", "VARCHAR(500) DEFAULT ''"),
+        ("cover_type", "VARCHAR(20) DEFAULT 'template'"),
     ]
 
     inspector = inspect(engine)
@@ -167,6 +170,7 @@ def migrate():
             ("visible_to", "TEXT DEFAULT '[]'"),
             ("is_milestone", "BOOLEAN DEFAULT FALSE"),
             ("milestone_type", "VARCHAR(50)"),
+            ("visibility_list_id", "VARCHAR(16)"),
         ]
         with engine.begin() as conn:
             for col_name, col_type in wall_post_columns:
@@ -178,6 +182,32 @@ def migrate():
                         logger.info(f"Added column wall_posts.{col_name}")
                     except Exception as e:
                         logger.debug(f"Column wall_posts.{col_name} skipped: {e}")
+
+    # Create friend_lists table
+    if not inspector.has_table("friend_lists"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE friend_lists (
+                    id VARCHAR(16) PRIMARY KEY,
+                    user_id VARCHAR(16) NOT NULL,
+                    name VARCHAR(100) NOT NULL,
+                    created_at TIMESTAMP
+                )
+            """))
+            logger.info("Created friend_lists table.")
+
+    # Create friend_list_members table
+    if not inspector.has_table("friend_list_members"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE friend_list_members (
+                    id VARCHAR(16) PRIMARY KEY,
+                    list_id VARCHAR(16) NOT NULL,
+                    friend_id VARCHAR(16) NOT NULL,
+                    UNIQUE(list_id, friend_id)
+                )
+            """))
+            logger.info("Created friend_list_members table.")
 
     logger.info("Migrations complete.")
 

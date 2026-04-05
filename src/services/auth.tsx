@@ -161,6 +161,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if ((data as any).graduationStatusYear !== undefined) payload.graduation_status_year = (data as any).graduationStatusYear
       if ((data as any).titleYear !== undefined) payload.title_year = (data as any).titleYear
       if ((data as any).studyStartDate !== undefined) payload.study_start_date = (data as any).studyStartDate
+      if ((data as any).coverPhoto !== undefined) payload.cover_photo = (data as any).coverPhoto
+      if ((data as any).coverType !== undefined) payload.cover_type = (data as any).coverType
 
       const updated = await api.updateMe(payload)
       setUser(updated)

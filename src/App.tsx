@@ -44,6 +44,7 @@ const Mentorship = React.lazy(() => import('./pages/Mentorship'))
 const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
 const Search = React.lazy(() => import('./pages/Search'))
+const Conferences = React.lazy(() => import('./pages/Conferences'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -251,6 +252,7 @@ export default function App() {
             <Route path="/communities" element={<Communities onNavigate={(path) => navigate(path)} />} />
             <Route path="/communities/:id" element={<CommunityView onNavigate={(path) => navigate(path)} />} />
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
+            <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />

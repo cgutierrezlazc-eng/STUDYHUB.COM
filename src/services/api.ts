@@ -612,6 +612,16 @@ export const api = {
   adminRevokeCertificate: (userId: string, courseId: string) =>
     request(`/courses/admin/revoke-certificate?user_id=${userId}&course_id=${courseId}`, { method: 'POST' }),
 
+  // ─── Certificates (verified) ──────────────────────────────
+  generateCertificate: (courseId: string, data: any) =>
+    request(`/certificates/generate/${courseId}`, { method: 'POST', body: JSON.stringify(data) }),
+  getMyVerifiedCertificates: () => request('/certificates/my'),
+  downloadCertificate: (certId: string) => `${API_BASE}/certificates/download/${certId}`,
+  verifyCertificate: async (code: string) => {
+    const res = await fetch(`${API_BASE}/certificates/verify/${code}`);
+    return res.json();
+  },
+
   // ─── Student CV ───────────────────────────────────────────
   getMyCV: () => request('/courses/cv'),
   updateCV: (data: any) =>
@@ -862,6 +872,38 @@ export const api = {
     }
     return res.json()
   },
+
+  // ─── Cover Photo ──────────────────────────────────────────
+  updateCoverPhoto: async (data: FormData) => {
+    const token = getToken()
+    const res = await fetch(`${API_BASE}/auth/profile/cover`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: data,
+    })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      throw new Error(d.detail || 'Error al actualizar portada')
+    }
+    return res.json()
+  },
+
+  // ─── Conferences ──────────────────────────────────────────
+  createConference: (data: any) =>
+    request('/conferences/create', { method: 'POST', body: JSON.stringify(data) }),
+  getConferences: (status?: string) =>
+    request(`/conferences/${status ? `?status=${status}` : ''}`),
+  getConference: (id: string) => request(`/conferences/${id}`),
+  joinConference: (id: string) =>
+    request(`/conferences/${id}/join`, { method: 'POST' }),
+  leaveConference: (id: string) =>
+    request(`/conferences/${id}/leave`, { method: 'POST' }),
+  endConference: (id: string) =>
+    request(`/conferences/${id}/end`, { method: 'POST' }),
+  getConferenceTranscription: (id: string) =>
+    request(`/conferences/${id}/transcription`),
+  deleteConference: (id: string) =>
+    request(`/conferences/${id}`, { method: 'DELETE' }),
 
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),

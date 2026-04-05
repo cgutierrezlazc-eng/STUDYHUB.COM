@@ -11,7 +11,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, desc
 
 from database import (
-    get_db, User, Friendship, WallPost, PostLike, PostComment, PostReaction, BlockedUser, UserReport, gen_id
+    get_db, User, Friendship, WallPost, PostLike, PostComment, PostReaction, BlockedUser, UserReport,
+    FriendList, FriendListMember, gen_id
 )
 from middleware import get_current_user
 from notification_routes import create_notification
@@ -63,8 +64,9 @@ class FriendRequestBody(BaseModel):
 class WallPostBody(BaseModel):
     content: str
     image_url: Optional[str] = None
-    visibility: str = "friends"  # friends | university | private | specific
+    visibility: str = "friends"  # public | friends | university | private | specific | list
     visible_to: Optional[List[str]] = None  # user IDs for "specific" visibility
+    visibility_list_id: Optional[str] = None  # friend list ID for "list" visibility
 
 
 class CommentBody(BaseModel):
@@ -89,6 +91,8 @@ def user_brief(u: User) -> dict:
         "career": u.career,
         "semester": u.semester,
         "bio": u.bio or "",
+        "coverPhoto": getattr(u, 'cover_photo', '') or "",
+        "coverType": getattr(u, 'cover_type', 'template') or "template",
     }
 
 
@@ -410,6 +414,8 @@ def get_user_profile(
             "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
             "mentoringCurrency": getattr(target, 'mentoring_currency', 'USD') or "USD",
             "professionalTitle": getattr(target, 'professional_title', '') or "",
+            "coverPhoto": getattr(target, 'cover_photo', '') or "",
+            "coverType": getattr(target, 'cover_type', 'template') or "template",
         }
 
     # Full profile for friends and own profile
@@ -487,13 +493,16 @@ def create_wall_post(
             )
         user.storage_used_bytes = current_used + image_size
 
+    valid_visibilities = ("public", "friends", "university", "private", "specific", "list")
+    vis = body.visibility if body.visibility in valid_visibilities else "friends"
     post = WallPost(
         author_id=user.id,
         wall_owner_id=wall_owner_id,
         content=body.content.strip(),
         image_url=body.image_url,
-        visibility=body.visibility if body.visibility in ("friends", "university", "private", "specific") else "friends",
+        visibility=vis,
         visible_to=json.dumps(body.visible_to or []),
+        visibility_list_id=body.visibility_list_id if vis == "list" else None,
     )
     db.add(post)
     db.commit()
@@ -788,6 +797,17 @@ def get_feed(
                 visible_ids = json.loads(getattr(post, "visible_to", None) or "[]")
                 if user.id not in visible_ids:
                     continue
+            if visibility == "list":
+                list_id = getattr(post, "visibility_list_id", None)
+                if list_id:
+                    is_member = db.query(FriendListMember).filter(
+                        FriendListMember.list_id == list_id,
+                        FriendListMember.friend_id == user.id,
+                    ).first()
+                    if not is_member:
+                        continue
+                else:
+                    continue
 
         author = db.query(User).filter(User.id == post.author_id).first()
         wall_owner = db.query(User).filter(User.id == post.wall_owner_id).first()
@@ -861,6 +881,17 @@ def get_activity_feed(
             if visibility == "specific":
                 visible_ids = json.loads(getattr(post, "visible_to", None) or "[]")
                 if user.id not in visible_ids:
+                    continue
+            if visibility == "list":
+                list_id = getattr(post, "visibility_list_id", None)
+                if list_id:
+                    is_member = db.query(FriendListMember).filter(
+                        FriendListMember.list_id == list_id,
+                        FriendListMember.friend_id == user.id,
+                    ).first()
+                    if not is_member:
+                        continue
+                else:
                     continue
 
         author = db.query(User).filter(User.id == post.author_id).first()
@@ -1512,3 +1543,91 @@ def share_post(post_id: str, data: dict, user: User = Depends(get_current_user),
     award_xp(user, 3, db)
     db.commit()
     return {"status": "shared", "postId": shared_post.id}
+
+
+# ─── Friend Lists ─────────────────────────────────────────────
+
+@router.post("/friend-lists")
+def create_friend_list(
+    data: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    name = (data.get("name") or "").strip()
+    if not name:
+        raise HTTPException(400, "Nombre requerido")
+    fl = FriendList(id=gen_id(), user_id=user.id, name=name)
+    db.add(fl)
+    db.commit()
+    return {"id": fl.id, "name": fl.name}
+
+
+@router.get("/friend-lists")
+def get_friend_lists(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    lists = db.query(FriendList).filter(FriendList.user_id == user.id).all()
+    result = []
+    for fl in lists:
+        members = db.query(FriendListMember).filter(FriendListMember.list_id == fl.id).all()
+        result.append({
+            "id": fl.id,
+            "name": fl.name,
+            "memberCount": len(members),
+            "members": [m.friend_id for m in members],
+        })
+    return result
+
+
+@router.post("/friend-lists/{list_id}/members")
+def add_to_friend_list(
+    list_id: str,
+    data: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    fl = db.query(FriendList).filter(FriendList.id == list_id, FriendList.user_id == user.id).first()
+    if not fl:
+        raise HTTPException(404, "Lista no encontrada")
+    friend_id = data.get("friendId")
+    existing = db.query(FriendListMember).filter(
+        FriendListMember.list_id == list_id, FriendListMember.friend_id == friend_id
+    ).first()
+    if not existing:
+        db.add(FriendListMember(id=gen_id(), list_id=list_id, friend_id=friend_id))
+        db.commit()
+    return {"status": "added"}
+
+
+@router.delete("/friend-lists/{list_id}/members/{friend_id}")
+def remove_from_friend_list(
+    list_id: str,
+    friend_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    fl = db.query(FriendList).filter(FriendList.id == list_id, FriendList.user_id == user.id).first()
+    if not fl:
+        raise HTTPException(404, "Lista no encontrada")
+    member = db.query(FriendListMember).filter(
+        FriendListMember.list_id == list_id, FriendListMember.friend_id == friend_id
+    ).first()
+    if member:
+        db.delete(member)
+        db.commit()
+    return {"status": "removed"}
+
+
+@router.delete("/friend-lists/{list_id}")
+def delete_friend_list(
+    list_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    fl = db.query(FriendList).filter(FriendList.id == list_id, FriendList.user_id == user.id).first()
+    if fl:
+        db.query(FriendListMember).filter(FriendListMember.list_id == list_id).delete()
+        db.delete(fl)
+        db.commit()
+    return {"status": "deleted"}

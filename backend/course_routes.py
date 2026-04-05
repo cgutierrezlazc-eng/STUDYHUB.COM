@@ -631,6 +631,20 @@ def submit_quiz(course_id: str, data: dict,
         from gamification import award_xp
         award_xp(user, 30, db)
 
+        # Auto-generate certificate with PDF, email, and CV entry
+        try:
+            from certificate_routes import generate_certificate_for_user
+            course_obj = db.query(Course).filter(Course.id == course_id).first()
+            if course_obj:
+                estimated_hours = max(1, (course_obj.estimated_minutes or 30) // 60) or 1
+                generate_certificate_for_user(
+                    user, course_id, course_obj.title,
+                    course_obj.category or "default",
+                    estimated_hours, float(score), db
+                )
+        except Exception as e:
+            print(f"[Cert] Auto-generation on quiz pass error: {e}")
+
         # Course-completion rewards use a 12-month rolling window
         from rewards_routes import (grant_reward, REWARD_RULES,
                                     get_course_reward_window, COURSE_REWARD_CYCLE_DAYS)

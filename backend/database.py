@@ -80,6 +80,8 @@ class User(Base):
     mentoring_price_per_hour = Column(Float, nullable=True)  # Price per hour if paid
     mentoring_currency = Column(String(5), default="USD")  # Currency for price (stored in USD)
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
+    cover_photo = Column(String(500), default="")  # URL or template ID
+    cover_type = Column(String(20), default="template")  # "template" or "custom"
     provider = Column(String(20), default="email")  # email | google
 
     # CV / Resume fields
@@ -266,6 +268,25 @@ class Friendship(Base):
     )
 
 
+class FriendList(Base):
+    __tablename__ = "friend_lists"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    name = Column(String(100), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class FriendListMember(Base):
+    __tablename__ = "friend_list_members"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    list_id = Column(String(16), ForeignKey("friend_lists.id", ondelete="CASCADE"), nullable=False, index=True)
+    friend_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint("list_id", "friend_id", name="uq_list_member"),
+    )
+
+
 class WallPost(Base):
     __tablename__ = "wall_posts"
 
@@ -274,8 +295,9 @@ class WallPost(Base):
     wall_owner_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
     image_url = Column(Text, nullable=True)
-    visibility = Column(String(30), default="friends")  # friends | university | private | specific
+    visibility = Column(String(30), default="friends")  # public | friends | university | private | specific | list
     visible_to = Column(Text, default="[]")  # JSON array of user IDs for "specific" visibility
+    visibility_list_id = Column(String(16), nullable=True)  # If visibility="list", which friend list
     is_milestone = Column(Boolean, default=False)  # Auto-generated milestone posts
     milestone_type = Column(String(50), nullable=True)  # course_completed, level_up, streak, badge, university_change, etc.
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -742,6 +764,23 @@ class UserCourseProgress(Base):
     __table_args__ = (UniqueConstraint("user_id", "course_id", name="uq_user_course"),)
 
 
+# ─── Certificates ─────────────────────────────────────────
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    course_id = Column(String(16), nullable=False)
+    course_name = Column(String(255), nullable=False)
+    course_area = Column(String(50), default="")  # For color coding: comunicacion, liderazgo, etc.
+    issued_at = Column(DateTime, default=datetime.utcnow)
+    certificate_code = Column(String(50), unique=True)  # Unique verification code
+    hours_completed = Column(Integer, default=0)
+    final_grade = Column(Float, default=0)
+    pdf_path = Column(String(500), default="")
+    is_public = Column(Boolean, default=True)
+
+
 # ─── Recruiter Profiles ────────────────────────────────────
 
 class RecruiterProfile(Base):
@@ -1075,6 +1114,45 @@ class PushSubscription(Base):
     device_name = Column(String(255), default="Dispositivo")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ─── Video Conferences ────────────────────────────────────────────
+
+class VideoConference(Base):
+    __tablename__ = "video_conferences"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    project_id = Column(String(255), nullable=True)  # null = general study group
+    creator_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, default="")
+    conference_type = Column(String(20), default="jitsi")  # jitsi, zoom, meet, teams, other
+    external_url = Column(Text, default="")  # For zoom/meet/teams links
+    jitsi_room = Column(String(255), default="")  # Jitsi room name
+    scheduled_at = Column(DateTime, nullable=True)
+    duration_minutes = Column(Integer, default=60)
+    is_recording = Column(Boolean, default=False)
+    recording_path = Column(String(500), default="")
+    transcription = Column(Text, default="")
+    transcription_status = Column(String(20), default="none")  # none, processing, done, error
+    status = Column(String(20), default="scheduled")  # scheduled, live, ended
+    max_participants = Column(Integer, default=50)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    ended_at = Column(DateTime, nullable=True)
+
+    creator = relationship("User", foreign_keys=[creator_id])
+
+
+class ConferenceParticipant(Base):
+    __tablename__ = "conference_participants"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    conference_id = Column(String(16), ForeignKey("video_conferences.id"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    joined_at = Column(DateTime, default=datetime.utcnow)
+    left_at = Column(DateTime, nullable=True)
+    role = Column(String(20), default="participant")  # host, moderator, participant
+
+    conference = relationship("VideoConference", foreign_keys=[conference_id])
+    user = relationship("User", foreign_keys=[user_id])
 
 
 # ─── Init ────────────────────────────────────────────────────────

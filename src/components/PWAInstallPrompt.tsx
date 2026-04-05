@@ -10,6 +10,7 @@ export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [showBanner, setShowBanner] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
+  const [isIPad, setIsIPad] = useState(false)
   const [showIOSGuide, setShowIOSGuide] = useState(false)
 
   useEffect(() => {
@@ -21,12 +22,15 @@ export default function PWAInstallPrompt() {
     const dismissed = localStorage.getItem('pwa-install-dismissed')
     if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return
 
-    // iOS detection
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+    // iPad detection (includes modern iPads that report as MacIntel)
+    const iPadDetected = /iPad/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    const iPhoneDetected = /iPhone|iPod/.test(navigator.userAgent)
+    const isIOSDevice = (iPhoneDetected || iPadDetected) && !(window as any).MSStream
+
     setIsIOS(isIOSDevice)
+    setIsIPad(iPadDetected)
 
     if (isIOSDevice) {
-      // Show iOS guide after 3 seconds
       const timer = setTimeout(() => setShowBanner(true), 3000)
       return () => clearTimeout(timer)
     }
@@ -38,7 +42,19 @@ export default function PWAInstallPrompt() {
       setTimeout(() => setShowBanner(true), 2000)
     }
     window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+
+    // Listen for banner trigger from AppAvailableBanner
+    const triggerHandler = () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt()
+      }
+    }
+    window.addEventListener('conniku-trigger-pwa-install', triggerHandler)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+      window.removeEventListener('conniku-trigger-pwa-install', triggerHandler)
+    }
   }, [])
 
   const handleInstall = async () => {
@@ -63,6 +79,8 @@ export default function PWAInstallPrompt() {
 
   if (!showBanner) return null
 
+  const deviceLabel = isIPad ? 'iPad' : 'iPhone'
+
   return (
     <>
       <div style={{
@@ -81,7 +99,13 @@ export default function PWAInstallPrompt() {
         <div style={{ flex: 1 }}>
           <div style={{ fontWeight: 700, fontSize: 14 }}>Instala Conniku</div>
           <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-            {isIOS ? 'Agrega Conniku a tu pantalla de inicio' : 'Instala la app para una mejor experiencia'}
+            {isIOS
+              ? `Agrega Conniku a tu ${deviceLabel} desde aqui`
+              : 'Instala la app para estudiar mas comodo'
+            }
+          </div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2, opacity: 0.8 }}>
+            Pronto tambien en las tiendas de apps
           </div>
         </div>
         <button onClick={handleInstall} style={{
@@ -97,16 +121,21 @@ export default function PWAInstallPrompt() {
         </button>
       </div>
 
-      {/* iOS Guide Modal */}
+      {/* iOS/iPad Guide Modal */}
       {showIOSGuide && (
         <div className="modal-overlay" onClick={handleDismiss}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 380, textAlign: 'center', padding: 28 }}>
-            <h3 style={{ marginTop: 0 }}>Instalar en iPhone/iPad</h3>
+            <h3 style={{ marginTop: 0 }}>Instalar en tu {deviceLabel}</h3>
             <div style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--text-secondary)', textAlign: 'left' }}>
-              <p><strong>1.</strong> Toca el boton <strong>Compartir</strong> (el cuadrado con flecha hacia arriba) en Safari</p>
+              <p>
+                <strong>1.</strong> {isIPad ? 'En tu iPad, toca' : 'Toca'} el boton <strong>Compartir</strong> (el cuadrado con flecha hacia arriba) en Safari
+              </p>
               <p><strong>2.</strong> Desplaza hacia abajo y toca <strong>"Agregar a pantalla de inicio"</strong></p>
               <p><strong>3.</strong> Toca <strong>"Agregar"</strong> en la esquina superior derecha</p>
             </div>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12, lineHeight: 1.5 }}>
+              Estamos trabajando para llegar a la App Store pronto. Mientras tanto, la version web funciona igual de bien.
+            </p>
             <button className="btn btn-primary" onClick={handleDismiss} style={{ marginTop: 16, width: '100%' }}>Entendido</button>
           </div>
         </div>

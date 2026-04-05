@@ -14,7 +14,7 @@ from collections import defaultdict
 
 import bcrypt
 
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -234,6 +234,8 @@ class UpdateProfileRequest(BaseModel):
     mentoring_price_per_hour: Optional[float] = None
     professional_title: Optional[str] = None
     study_start_date: Optional[str] = None
+    cover_photo: Optional[str] = None
+    cover_type: Optional[str] = None
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -318,6 +320,8 @@ def user_to_dict(user: User) -> dict:
         "mentoringPricePerHour": getattr(user, 'mentoring_price_per_hour', None),
         "mentoringCurrency": getattr(user, 'mentoring_currency', 'USD') or "USD",
         "professionalTitle": getattr(user, 'professional_title', '') or "",
+        "coverPhoto": getattr(user, 'cover_photo', '') or "",
+        "coverType": getattr(user, 'cover_type', 'template') or "template",
         "studyStartDate": getattr(user, 'study_start_date', '') or "",
         "studyDays": _calc_study_days(getattr(user, 'study_start_date', '') or ""),
         "createdAt": user.created_at.isoformat() if user.created_at else "",
@@ -830,6 +834,49 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
     if milestones:
         result["milestones"] = milestones
     return result
+
+
+@router.post("/profile/cover")
+async def update_cover_photo(
+    file: UploadFile = File(None),
+    template_id: str = Form(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update user cover photo: either upload a custom image or select a template."""
+    import pathlib
+    if file:
+        # Validate file type
+        allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+        if file.content_type not in allowed_types:
+            raise HTTPException(400, "Formato de imagen no soportado. Usa JPG, PNG, WebP o GIF.")
+        # Read and check size (max 5MB)
+        content = await file.read()
+        if len(content) > 5 * 1024 * 1024:
+            raise HTTPException(400, "La imagen no puede superar 5MB.")
+        # Save file
+        ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
+        covers_dir = pathlib.Path.home() / ".conniku" / "uploads" / "covers"
+        covers_dir.mkdir(parents=True, exist_ok=True)
+        file_path = covers_dir / f"{user.id}.{ext}"
+        # Remove old cover files for this user
+        for old_file in covers_dir.glob(f"{user.id}.*"):
+            old_file.unlink(missing_ok=True)
+        with open(file_path, "wb") as f:
+            f.write(content)
+        user.cover_photo = f"/uploads/covers/{user.id}.{ext}"
+        user.cover_type = "custom"
+    elif template_id:
+        user.cover_photo = template_id
+        user.cover_type = "template"
+    else:
+        raise HTTPException(400, "Debes enviar una imagen o seleccionar una plantilla.")
+
+    db.commit()
+    return {
+        "coverPhoto": user.cover_photo,
+        "coverType": user.cover_type,
+    }
 
 
 @router.put("/me/username")

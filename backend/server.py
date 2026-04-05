@@ -50,6 +50,8 @@ from search_routes import router as search_router
 from news_routes import router as news_router
 from cv_routes import router as cv_router
 from push_routes import router as push_router
+from certificate_routes import router as certificate_router
+from conference_routes import router as conference_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -125,6 +127,8 @@ app.include_router(search_router)
 app.include_router(news_router)
 app.include_router(cv_router)
 app.include_router(push_router)
+app.include_router(certificate_router)
+app.include_router(conference_router)
 
 # Storage paths
 DATA_DIR = Path.home() / ".conniku"
@@ -132,8 +136,20 @@ PROJECTS_DIR = DATA_DIR / "projects"
 DATA_DIR.mkdir(exist_ok=True)
 PROJECTS_DIR.mkdir(exist_ok=True)
 
+COVERS_DIR = DATA_DIR / "uploads" / "covers"
+COVERS_DIR.mkdir(parents=True, exist_ok=True)
+
 doc_processor = DocumentProcessor()
 ai_engine = AIEngine()
+
+
+@app.get("/uploads/covers/{filename}")
+async def serve_cover_photo(filename: str):
+    """Serve uploaded cover photo files."""
+    file_path = COVERS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Imagen no encontrada")
+    return FileResponse(str(file_path))
 
 # ─── Chat rate limiting (tier-aware) ───────────────────────────
 # In-memory tracker: { user_id: [datetime, datetime, ...] }
