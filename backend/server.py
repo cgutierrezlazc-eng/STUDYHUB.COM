@@ -130,6 +130,17 @@ app.include_router(push_router)
 app.include_router(certificate_router)
 app.include_router(conference_router)
 
+
+@app.post("/admin/seed-ceo-profile")
+def seed_ceo_profile(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Seed the CEO profile with complete data and all courses completed. Owner only."""
+    if user.role != "owner":
+        raise HTTPException(403, "Solo el owner puede ejecutar este seed")
+    from seed_ceo_profile import seed_ceo_with_db
+    result = seed_ceo_with_db(db, user)
+    return result
+
+
 # Storage paths
 DATA_DIR = Path.home() / ".conniku"
 PROJECTS_DIR = DATA_DIR / "projects"
