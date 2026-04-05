@@ -34,12 +34,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [tutoringMessage, setTutoringMessage] = useState('')
   const [tutoringLoading, setTutoringLoading] = useState(false)
   const [tutoringSuccess, setTutoringSuccess] = useState(false)
+  const [universityNews, setUniversityNews] = useState<any[]>([])
+  const [newsLoading, setNewsLoading] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const profilePhotoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { loadProfile(); loadPosts(); loadFriends() }, [userId])
-  useEffect(() => { if (user && userId === user.id) loadActivityFeed() }, [userId, user])
+  useEffect(() => { if (user && userId === user.id) { loadActivityFeed(); loadUniversityNews() } }, [userId, user])
+
+  const loadUniversityNews = async () => {
+    if (localStorage.getItem('conniku_university_news') === 'false') return
+    try {
+      setNewsLoading(true)
+      const data = await api.getUniversityNews()
+      setUniversityNews(data.items || [])
+    } catch (err) { console.error('Failed to load news:', err) }
+    finally { setNewsLoading(false) }
+  }
 
   const loadProfile = async () => {
     try {
@@ -698,16 +710,80 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
               {/* University News Section - only on own profile */}
               {isOwn && localStorage.getItem('conniku_university_news') !== 'false' && (
-                <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--border)', borderRadius: 12 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                    <span style={{ fontSize: 22 }}>📰</span>
-                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Noticias de {profile.university || 'tu universidad'}</h4>
+                <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
+                  {/* Header */}
+                  <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border, #2a3038)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)' }}>
+                        Noticias de {profile.university || 'tu universidad'}
+                      </h4>
+                    </div>
+                    {universityNews.length > 0 && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', background: 'var(--bg-tertiary, #151B1E)', padding: '3px 8px', borderRadius: 10 }}>
+                        {universityNews.length} {universityNews.length === 1 ? 'noticia' : 'noticias'}
+                      </span>
+                    )}
                   </div>
-                  <div style={{
-                    padding: 16, background: 'var(--bg-tertiary, #f5f5f5)', borderRadius: 8,
-                    color: 'var(--text-muted)', fontSize: 13, textAlign: 'center', lineHeight: 1.5,
-                  }}>
-                    Las noticias de tu universidad aparecerán aquí próximamente
+
+                  {/* Content */}
+                  <div style={{ padding: '12px 16px' }}>
+                    {newsLoading ? (
+                      <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13 }}>
+                        Cargando noticias...
+                      </div>
+                    ) : universityNews.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13, lineHeight: 1.5 }}>
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 8 }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+                        <div>Las noticias de tu universidad se actualizan cada 3 horas</div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                        {universityNews.map((item: any, idx: number) => (
+                          <a
+                            key={idx}
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              display: 'flex', gap: 12, padding: 12, borderRadius: 10,
+                              background: 'var(--bg-tertiary, #151B1E)', textDecoration: 'none',
+                              border: '1px solid transparent', transition: 'border-color 0.2s, background 0.2s',
+                              cursor: 'pointer',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D62C8'; e.currentTarget.style.background = 'rgba(45,98,200,0.06)' }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)' }}
+                          >
+                            {item.imageUrl && (
+                              <img
+                                src={item.imageUrl}
+                                alt=""
+                                style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                                onError={e => (e.currentTarget.style.display = 'none')}
+                              />
+                            )}
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', lineHeight: 1.4, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                {item.title}
+                              </div>
+                              {item.summary && (
+                                <div style={{ fontSize: 12, color: 'var(--text-muted, #8a9bae)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                  {item.summary}
+                                </div>
+                              )}
+                              {item.published && (
+                                <div style={{ fontSize: 11, color: 'var(--text-muted, #6b7a8d)', marginTop: 4 }}>
+                                  {item.published}
+                                </div>
+                              )}
+                            </div>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #6b7a8d)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
