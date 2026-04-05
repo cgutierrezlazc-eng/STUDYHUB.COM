@@ -27,6 +27,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [showMoreMenu, setShowMoreMenu] = useState(false)
   const [reportReason, setReportReason] = useState('')
   const [showReportModal, setShowReportModal] = useState(false)
+  const [postVisibility, setPostVisibility] = useState<'friends' | 'university' | 'private' | 'specific'>('friends')
+  const [showVisibilityMenu, setShowVisibilityMenu] = useState(false)
   const [showTutoringModal, setShowTutoringModal] = useState(false)
   const [tutoringSubject, setTutoringSubject] = useState('')
   const [tutoringMessage, setTutoringMessage] = useState('')
@@ -75,9 +77,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const handlePost = async () => {
     if (!newPost.trim() && !postImage) return
     try {
-      await api.createWallPost(userId, newPost, postImage || undefined)
+      await api.createWallPost(userId, newPost, postImage || undefined, postVisibility)
       setNewPost('')
       setPostImage(null)
+      setPostVisibility('friends')
       loadPosts()
     } catch (err: any) {
       alert(err.message || 'Error al publicar')
@@ -508,13 +511,60 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                       <button className="fb-remove-image" onClick={() => setPostImage(null)}>✕</button>
                     </div>
                   )}
-                  <div className="fb-composer-actions">
+                  <div className="fb-composer-actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <input ref={postImageRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePostImageSelect} />
                     <button className="fb-composer-action-btn" onClick={() => postImageRef.current?.click()}>
                       🖼️ Foto
                     </button>
+                    {/* Visibility selector */}
+                    <div style={{ position: 'relative' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowVisibilityMenu(!showVisibilityMenu)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
+                          borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)',
+                          color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
+                        }}>
+                        {postVisibility === 'friends' ? '🌐 Amigos' :
+                         postVisibility === 'university' ? '🎓 Mi universidad' :
+                         postVisibility === 'private' ? '🔒 Solo yo' : '👥 Específicos'}
+                        <span style={{ fontSize: 10, marginLeft: 2 }}>▼</span>
+                      </button>
+                      {showVisibilityMenu && (
+                        <div style={{
+                          position: 'absolute', bottom: '100%', left: 0, marginBottom: 4,
+                          background: 'var(--bg-card)', border: '1px solid var(--border)',
+                          borderRadius: 10, padding: 4, minWidth: 200, zIndex: 100,
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                        }}>
+                          {[
+                            { value: 'friends', icon: '🌐', label: 'Todos mis amigos', desc: 'Visible para todos tus contactos' },
+                            { value: 'university', icon: '🎓', label: 'Mi universidad', desc: 'Solo amigos de tu universidad' },
+                            { value: 'private', icon: '🔒', label: 'Solo mi muro', desc: 'Solo visible en tu perfil' },
+                          ].map(opt => (
+                            <button key={opt.value} type="button"
+                              onClick={() => { setPostVisibility(opt.value as any); setShowVisibilityMenu(false) }}
+                              style={{
+                                display: 'flex', alignItems: 'flex-start', gap: 8, width: '100%',
+                                padding: '8px 10px', border: 'none', borderRadius: 8, cursor: 'pointer',
+                                background: postVisibility === opt.value ? 'rgba(45,98,200,0.08)' : 'transparent',
+                                color: 'var(--text-primary)', textAlign: 'left',
+                              }}>
+                              <span style={{ fontSize: 16 }}>{opt.icon}</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 600 }}>{opt.label}</div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{opt.desc}</div>
+                              </div>
+                              {postVisibility === opt.value && <span style={{ marginLeft: 'auto', color: '#2D62C8', fontWeight: 700 }}>✓</span>}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <button
                       className="btn btn-primary btn-sm"
+                      style={{ marginLeft: 'auto' }}
                       onClick={handlePost}
                       disabled={!newPost.trim() && !postImage}
                     >

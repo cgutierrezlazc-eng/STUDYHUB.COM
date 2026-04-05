@@ -145,6 +145,26 @@ def migrate():
             """))
             logger.info("Created tutoring_listing_requests table.")
 
+    # Add new columns to wall_posts table (visibility & milestone support)
+    if inspector.has_table("wall_posts"):
+        existing_wp_columns = {col["name"] for col in inspector.get_columns("wall_posts")}
+        wall_post_columns = [
+            ("visibility", "VARCHAR(30) DEFAULT 'friends'"),
+            ("visible_to", "TEXT DEFAULT '[]'"),
+            ("is_milestone", "BOOLEAN DEFAULT FALSE"),
+            ("milestone_type", "VARCHAR(50)"),
+        ]
+        with engine.begin() as conn:
+            for col_name, col_type in wall_post_columns:
+                if col_name not in existing_wp_columns:
+                    try:
+                        conn.execute(text(
+                            f"ALTER TABLE wall_posts ADD COLUMN {col_name} {col_type}"
+                        ))
+                        logger.info(f"Added column wall_posts.{col_name}")
+                    except Exception as e:
+                        logger.debug(f"Column wall_posts.{col_name} skipped: {e}")
+
     logger.info("Migrations complete.")
 
 

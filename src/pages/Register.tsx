@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n, LANGUAGES } from '../services/i18n'
 import { Gender, Language } from '../types'
 import { api } from '../services/api'
 import TermsOfService from '../components/TermsOfService'
 import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency'
+import { searchUniversities, getUniversitiesForCountry, University } from '../data/universities'
 
 interface Props {
   onSwitchToLogin: () => void
@@ -26,6 +27,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
   const [expectedCode, setExpectedCode] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   const usernameTimer = useRef<any>(null)
+  const [uniSearch, setUniSearch] = useState('')
+  const [showUniDropdown, setShowUniDropdown] = useState(false)
+  const [selectedUni, setSelectedUni] = useState<University | null>(null)
+  const uniInputRef = useRef<HTMLInputElement>(null)
 
   const STEP_TITLES = [t('reg.step1'), t('reg.step2'), t('reg.step3'), t('reg.stepFinal')]
   const STEP_SUBTITLES = [t('reg.subtitle1'), t('reg.subtitle2'), t('reg.subtitle3'), t('reg.subtitleFinal')]
@@ -189,6 +194,11 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     return { level: 3, label: t('pwd.strong'), color: '#22c55e' }
   }
   const strength = passwordStrength()
+
+  const uniResults = useMemo(() => {
+    if (!uniSearch || uniSearch.length < 2) return []
+    return searchUniversities(uniSearch, form.country).slice(0, 15)
+  }, [uniSearch, form.country])
 
   const localCurrency = getCurrencyForCountry(form.country)
 
@@ -396,9 +406,89 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                   ))}
                 </select>
               </div>
-              <div className="auth-field">
-                <label>{t('reg.university')}</label>
-                <input placeholder={t('reg.universityPlaceholder')} value={form.university} onChange={e => update('university', e.target.value)} />
+              <div className="auth-field" style={{ position: 'relative' }}>
+                <label>{t('reg.university')} *</label>
+                <div style={{ position: 'relative' }}>
+                  {selectedUni && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+                      background: 'rgba(45,98,200,0.06)', border: '1px solid rgba(45,98,200,0.2)',
+                      borderRadius: 8, marginBottom: 6,
+                    }}>
+                      {selectedUni.logoUrl && (
+                        <img src={selectedUni.logoUrl} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'contain' }}
+                          onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                      )}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600 }}>{selectedUni.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{selectedUni.shortName} · {selectedUni.type === 'cft' ? 'CFT' : selectedUni.type === 'instituto' ? 'Instituto' : 'Universidad'}</div>
+                      </div>
+                      <button type="button" onClick={() => { setSelectedUni(null); setUniSearch(''); update('university', '') }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, padding: '2px 6px' }}>✕</button>
+                    </div>
+                  )}
+                  {!selectedUni && (
+                    <>
+                      <input
+                        ref={uniInputRef}
+                        placeholder="Buscar universidad, instituto o CFT..."
+                        value={uniSearch}
+                        onChange={e => { setUniSearch(e.target.value); setShowUniDropdown(true) }}
+                        onFocus={() => setShowUniDropdown(true)}
+                        style={{ width: '100%' }}
+                      />
+                      {showUniDropdown && uniSearch.length >= 2 && (
+                        <div style={{
+                          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+                          background: 'var(--bg-card)', border: '1px solid var(--border)',
+                          borderRadius: 10, maxHeight: 260, overflowY: 'auto',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.18)', marginTop: 4,
+                        }}>
+                          {uniResults.length === 0 ? (
+                            <div style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 13 }}>
+                              No se encontraron resultados. Puedes escribir el nombre manualmente.
+                              <button type="button" onClick={() => { update('university', uniSearch); setShowUniDropdown(false) }}
+                                style={{ display: 'block', marginTop: 6, color: '#2D62C8', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                                Usar "{uniSearch}" como nombre
+                              </button>
+                            </div>
+                          ) : (
+                            uniResults.map(uni => (
+                              <button key={uni.id} type="button"
+                                onClick={() => {
+                                  setSelectedUni(uni)
+                                  update('university', uni.name)
+                                  setUniSearch('')
+                                  setShowUniDropdown(false)
+                                }}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                                  padding: '8px 14px', border: 'none', borderBottom: '1px solid var(--border)',
+                                  background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                                  color: 'var(--text-primary)',
+                                }}>
+                                {uni.logoUrl ? (
+                                  <img src={uni.logoUrl} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'contain', flexShrink: 0 }}
+                                    onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
+                                ) : (
+                                  <div style={{ width: 28, height: 28, borderRadius: 4, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>
+                                    {uni.shortName.slice(0, 2)}
+                                  </div>
+                                )}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uni.name}</div>
+                                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                    {uni.shortName} · {uni.type === 'cft' ? 'CFT' : uni.type === 'instituto' ? 'IP' : uni.type === 'university' ? 'University' : 'Universidad'}
+                                  </div>
+                                </div>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
               <div className="auth-field">
                 <label>{t('reg.career')}</label>

@@ -1,6 +1,7 @@
 """
 Social routes: friendships, wall posts, likes, comments, public profiles.
 """
+import json
 from datetime import datetime
 from typing import Optional, List
 
@@ -62,6 +63,8 @@ class FriendRequestBody(BaseModel):
 class WallPostBody(BaseModel):
     content: str
     image_url: Optional[str] = None
+    visibility: str = "friends"  # friends | university | private | specific
+    visible_to: Optional[List[str]] = None  # user IDs for "specific" visibility
 
 
 class CommentBody(BaseModel):
@@ -489,6 +492,8 @@ def create_wall_post(
         wall_owner_id=wall_owner_id,
         content=body.content.strip(),
         image_url=body.image_url,
+        visibility=body.visibility if body.visibility in ("friends", "university", "private", "specific") else "friends",
+        visible_to=json.dumps(body.visible_to or []),
     )
     db.add(post)
     db.commit()
@@ -518,6 +523,10 @@ def create_wall_post(
         "wallOwnerId": post.wall_owner_id,
         "content": post.content,
         "imageUrl": post.image_url,
+        "visibility": post.visibility,
+        "visibleTo": json.loads(post.visible_to or "[]"),
+        "isMilestone": post.is_milestone,
+        "milestoneType": post.milestone_type,
         "likes": 0,
         "liked": False,
         "comments": [],
@@ -555,6 +564,10 @@ def get_wall_posts(
             "wallOwnerId": post.wall_owner_id,
             "content": post.content,
             "imageUrl": post.image_url,
+            "visibility": getattr(post, "visibility", "friends"),
+            "visibleTo": json.loads(getattr(post, "visible_to", None) or "[]"),
+            "isMilestone": getattr(post, "is_milestone", False),
+            "milestoneType": getattr(post, "milestone_type", None),
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
@@ -757,8 +770,25 @@ def get_feed(
         WallPost.author_id.in_(friend_ids)
     ).order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
+    # Get current user's university for "university" visibility filtering
+    user_university = getattr(user, "university", None)
+
     result = []
     for post in posts:
+        # Visibility filtering
+        visibility = getattr(post, "visibility", "friends") or "friends"
+        if post.author_id != user.id:
+            if visibility == "private":
+                continue
+            if visibility == "university":
+                post_author = db.query(User).filter(User.id == post.author_id).first()
+                if not user_university or not post_author or getattr(post_author, "university", None) != user_university:
+                    continue
+            if visibility == "specific":
+                visible_ids = json.loads(getattr(post, "visible_to", None) or "[]")
+                if user.id not in visible_ids:
+                    continue
+
         author = db.query(User).filter(User.id == post.author_id).first()
         wall_owner = db.query(User).filter(User.id == post.wall_owner_id).first()
         like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
@@ -771,6 +801,10 @@ def get_feed(
             "wallOwner": user_brief(wall_owner) if wall_owner else None,
             "content": post.content,
             "imageUrl": post.image_url,
+            "visibility": visibility,
+            "visibleTo": json.loads(getattr(post, "visible_to", None) or "[]"),
+            "isMilestone": getattr(post, "is_milestone", False),
+            "milestoneType": getattr(post, "milestone_type", None),
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
@@ -810,8 +844,25 @@ def get_activity_feed(
         WallPost.author_id.in_(friend_ids)
     ).order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
+    # Get current user's university for "university" visibility filtering
+    user_university = getattr(user, "university", None)
+
     result = []
     for post in posts:
+        # Visibility filtering
+        visibility = getattr(post, "visibility", "friends") or "friends"
+        if post.author_id != user.id:
+            if visibility == "private":
+                continue
+            if visibility == "university":
+                post_author = db.query(User).filter(User.id == post.author_id).first()
+                if not user_university or not post_author or getattr(post_author, "university", None) != user_university:
+                    continue
+            if visibility == "specific":
+                visible_ids = json.loads(getattr(post, "visible_to", None) or "[]")
+                if user.id not in visible_ids:
+                    continue
+
         author = db.query(User).filter(User.id == post.author_id).first()
         wall_owner = db.query(User).filter(User.id == post.wall_owner_id).first()
         like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
@@ -825,6 +876,10 @@ def get_activity_feed(
             "wallOwner": user_brief(wall_owner) if wall_owner else None,
             "content": post.content,
             "imageUrl": post.image_url,
+            "visibility": visibility,
+            "visibleTo": json.loads(getattr(post, "visible_to", None) or "[]"),
+            "isMilestone": getattr(post, "is_milestone", False),
+            "milestoneType": getattr(post, "milestone_type", None),
             "likes": like_count,
             "liked": liked,
             "commentCount": comment_count,
@@ -836,6 +891,70 @@ def get_activity_feed(
     # TODO: Merge academic activity items (quiz_generated, guide_generated,
     #       document_uploaded, friend_added) and sort by createdAt.
     return result
+
+
+# ─── Milestone Posts ─────────────────────────────────────────
+
+def create_milestone_post(db, user_id, milestone_type, content, visibility="friends"):
+    """Auto-create a milestone post on user's wall."""
+    post = WallPost(
+        id=gen_id(),
+        wall_owner_id=user_id,
+        author_id=user_id,
+        content=content,
+        visibility=visibility,
+        is_milestone=True,
+        milestone_type=milestone_type,
+    )
+    db.add(post)
+    db.commit()
+    return post
+
+
+@router.post("/milestone")
+def post_milestone(data: dict, user=Depends(get_current_user), db=Depends(get_db)):
+    milestone_type = data.get("type", "")
+    content = data.get("content", "")
+    visibility = data.get("visibility", "friends")
+    visible_to = data.get("visible_to", [])
+
+    if not content.strip():
+        raise HTTPException(400, "El contenido no puede estar vacío")
+
+    if visibility not in ("friends", "university", "private", "specific"):
+        visibility = "friends"
+
+    post = WallPost(
+        id=gen_id(),
+        wall_owner_id=user.id,
+        author_id=user.id,
+        content=content.strip(),
+        visibility=visibility,
+        visible_to=json.dumps(visible_to),
+        is_milestone=True,
+        milestone_type=milestone_type,
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+
+    author = db.query(User).filter(User.id == user.id).first()
+    return {
+        "id": post.id,
+        "author": user_brief(author) if author else None,
+        "wallOwnerId": post.wall_owner_id,
+        "content": post.content,
+        "imageUrl": post.image_url,
+        "visibility": post.visibility,
+        "visibleTo": json.loads(post.visible_to or "[]"),
+        "isMilestone": post.is_milestone,
+        "milestoneType": post.milestone_type,
+        "likes": 0,
+        "liked": False,
+        "comments": [],
+        "commentCount": 0,
+        "createdAt": post.created_at.isoformat(),
+    }
 
 
 # ─── Block / Unblock ──────────────────────────────────────────

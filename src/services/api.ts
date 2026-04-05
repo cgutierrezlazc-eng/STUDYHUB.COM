@@ -296,10 +296,13 @@ export const api = {
   // ─── Wall Posts ───────────────────────────────────────────
   getWallPosts: (userId: string, page: number = 1) =>
     request(`/social/wall/${userId}/posts?page=${page}`),
-  createWallPost: (wallOwnerId: string, content: string, imageUrl?: string) =>
+  createWallPost: (wallOwnerId: string, content: string, imageUrl?: string, visibility?: string, visibleTo?: string[]) =>
     request(`/social/wall/${wallOwnerId}/posts`, {
-      method: 'POST', body: JSON.stringify({ content, image_url: imageUrl }),
+      method: 'POST', body: JSON.stringify({ content, image_url: imageUrl, visibility: visibility || 'friends', visible_to: visibleTo || [] }),
     }),
+
+  createMilestonePost: (data: { type: string; content: string; visibility?: string }) =>
+    request('/social/milestone', { method: 'POST', body: JSON.stringify(data) }),
   deleteWallPost: (postId: string) =>
     request(`/social/posts/${postId}`, { method: 'DELETE' }),
   toggleLike: (postId: string) =>

@@ -259,6 +259,10 @@ class WallPost(Base):
     wall_owner_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
     image_url = Column(Text, nullable=True)
+    visibility = Column(String(30), default="friends")  # friends | university | private | specific
+    visible_to = Column(Text, default="[]")  # JSON array of user IDs for "specific" visibility
+    is_milestone = Column(Boolean, default=False)  # Auto-generated milestone posts
+    milestone_type = Column(String(50), nullable=True)  # course_completed, level_up, streak, badge, university_change, etc.
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
