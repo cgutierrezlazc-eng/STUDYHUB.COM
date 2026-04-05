@@ -510,6 +510,30 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
                   {form.mentoringServices.length > 0 && (
                     <>
+                      {/* PRO plan requirement warning */}
+                      <div style={{
+                        background: 'linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.15))',
+                        borderRadius: 10, padding: '14px 16px', marginBottom: 14,
+                        border: '2px solid rgba(245,158,11,0.4)',
+                        position: 'relative', overflow: 'hidden',
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                          <div style={{
+                            background: 'linear-gradient(135deg, #F59E0B, #D97706)', borderRadius: 8,
+                            padding: '6px 10px', fontWeight: 800, fontSize: 12, color: '#fff',
+                            letterSpacing: 0.5, flexShrink: 0, marginTop: 1,
+                          }}>PRO</div>
+                          <div>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: '#92400E', margin: '0 0 4px' }}>
+                              Plan PRO requerido para ofrecer tutorías
+                            </p>
+                            <p style={{ fontSize: 12, color: '#A16207', margin: 0, lineHeight: 1.5 }}>
+                              Para que tus servicios sean visibles a <strong>todos los usuarios</strong> (Free, Pro y Max), necesitas tener al menos el <strong>plan Pro activo</strong>. Puedes completar tu registro ahora y activar el plan Pro desde tu perfil para comenzar a recibir solicitudes.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Subjects */}
                       <div className="auth-field" style={{ marginBottom: 12 }}>
                         <label style={{ fontSize: 13, fontWeight: 600 }}>Materias que puedes enseñar</label>
