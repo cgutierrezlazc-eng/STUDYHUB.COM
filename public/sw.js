@@ -1,12 +1,12 @@
-// Conniku Service Worker v6.0
+// Conniku Service Worker v7.0
 // Full offline support + push notifications + background sync
-// v6: Force icon refresh for all users — official Conniku C logo
+// v7: Fix diagonal C logo orientation in all icons
 
-const SW_VERSION = 'v6';
-const CACHE_NAME = 'conniku-v6';
-const STATIC_CACHE = 'conniku-static-v6';
-const API_CACHE = 'conniku-api-v6';
-const IMAGE_CACHE = 'conniku-images-v6';
+const SW_VERSION = 'v7';
+const CACHE_NAME = 'conniku-v7';
+const STATIC_CACHE = 'conniku-static-v7';
+const API_CACHE = 'conniku-api-v7';
+const IMAGE_CACHE = 'conniku-images-v7';
 
 // App shell files to precache (with cache-busting)
 const APP_SHELL = [
