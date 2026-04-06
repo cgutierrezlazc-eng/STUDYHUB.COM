@@ -1878,3 +1878,74 @@ def get_tutor_public_profile(
     result["upcoming_classes"] = [_class_to_dict(c) for c in upcoming]
 
     return result
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  CONTRACT — Contrato de Prestacion de Servicios
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/my-contract")
+def get_my_contract(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Generate and return the Contrato de Prestacion de Servicios PDF for the current tutor."""
+    from fastapi.responses import Response
+    from tutor_contract import generate_tutor_contract
+
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    tutor_data = {
+        "tutor_id": profile.id,
+        "tutor_name": f"{user.first_name or ''} {user.last_name or ''}".strip() or "Sin nombre",
+        "tutor_rut": profile.rut or "__.___.__-_",
+        "tutor_professional_title": profile.professional_title or "Profesional independiente",
+        "tutor_address": "Santiago, Chile",
+        "tutor_email": user.email,
+        "tutor_role_number": profile.tutor_role_number or "",
+    }
+
+    try:
+        pdf_bytes = generate_tutor_contract(tutor_data)
+    except Exception as e:
+        logger.error(f"Error generating tutor contract PDF: {e}")
+        raise HTTPException(status_code=500, detail="Error al generar el contrato")
+
+    filename = f"Contrato_Conniku_{profile.tutor_role_number or profile.id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
+@router.post("/my-contract/sign")
+def sign_my_contract(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Mark the tutor's contract as digitally signed (Ley 19.799)."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    if profile.contract_signed:
+        return {
+            "message": "El contrato ya fue firmado anteriormente",
+            "contract_signed": True,
+            "contract_signed_at": profile.contract_signed_at.isoformat() if profile.contract_signed_at else None,
+        }
+
+    profile.contract_signed = True
+    profile.contract_signed_at = datetime.utcnow()
+    db.commit()
+
+    logger.info(f"Tutor {profile.tutor_role_number} ({user.email}) signed contract at {profile.contract_signed_at}")
+
+    return {
+        "message": "Contrato firmado exitosamente conforme a Ley 19.799",
+        "contract_signed": True,
+        "contract_signed_at": profile.contract_signed_at.isoformat(),
+    }

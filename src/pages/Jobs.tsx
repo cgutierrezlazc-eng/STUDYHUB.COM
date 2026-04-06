@@ -433,6 +433,25 @@ export default function Jobs({ onNavigate }: Props) {
         {/* Tutoring Tab */}
         {tab === 'tutoring' && (
           <>
+            {/* Banner: Tutores Verificados */}
+            <div style={{ background: 'linear-gradient(135deg, #FFF7ED, #FFFBEB)', border: '2px solid #F59E0B', borderRadius: 16, padding: 24, marginBottom: 20, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  {GraduationCap({ size: 24 })}
+                  <h3 style={{ margin: 0, fontSize: 18, color: '#92400E' }}>Tutores Verificados por Conniku</h3>
+                </div>
+                <p style={{ margin: 0, fontSize: 14, color: '#78350F' }}>Profesionales verificados, clases garantizadas y pagos seguros a través de la plataforma.</p>
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button className="btn btn-sm" onClick={() => onNavigate('/tutores')} style={{ background: '#F59E0B', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10, fontWeight: 600, cursor: 'pointer' }}>
+                  {SearchIcon({ size: 14 })} Buscar Tutores
+                </button>
+                <button className="btn btn-sm" onClick={() => onNavigate('/tutores?apply=true')} style={{ background: '#92400E', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10, fontWeight: 600, cursor: 'pointer' }}>
+                  Quiero ser Tutor
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
               <button className="btn btn-primary btn-sm" onClick={() => setShowTutoringForm(true)}>+ Ofrecer Tutoría</button>
             </div>

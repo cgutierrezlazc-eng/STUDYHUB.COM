@@ -65,7 +65,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
@@ -95,6 +95,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverSaving, setCoverSaving] = useState(false)
   const [coverFilter, setCoverFilter] = useState<string>('all')
+  const [tutorProfile, setTutorProfile] = useState<any>(null)
+  const [tutorClasses, setTutorClasses] = useState<any[]>([])
+  const [tutorPayments, setTutorPayments] = useState<any>(null)
+  const [tutorLoading, setTutorLoading] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -102,6 +106,11 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
   useEffect(() => { loadProfile(); loadPosts(); loadFriends() }, [userId])
   useEffect(() => { if (user && userId === user.id) { loadActivityFeed(); loadUniversityNews() } }, [userId, user])
+  useEffect(() => {
+    if (user && userId === user.id) {
+      api.getMyTutorProfile().then(tp => setTutorProfile(tp)).catch(() => setTutorProfile(null))
+    }
+  }, [userId, user])
 
   const loadUniversityNews = async () => {
     if (localStorage.getItem('conniku_university_news') === 'false') return
@@ -157,6 +166,21 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     setActivityLoading(true)
     try { setActivityFeed(await api.getActivityFeed()) } catch (err: any) { console.error('Failed to load activity feed:', err) }
     setActivityLoading(false)
+  }
+
+  const loadTutorData = async () => {
+    setTutorLoading(true)
+    try {
+      const [tp, classes, payments] = await Promise.all([
+        api.getMyTutorProfile(),
+        api.getTutorClasses('role=tutor&status=upcoming'),
+        api.getMyTutorPayments()
+      ])
+      setTutorProfile(tp)
+      setTutorClasses(classes?.items || classes || [])
+      setTutorPayments(payments)
+    } catch (err) { console.error('Failed to load tutor data:', err) }
+    setTutorLoading(false)
   }
 
   const handleSendTutoringRequest = async () => {
@@ -488,6 +512,15 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
           Curriculum
         </button>
+        {isOwn && tutorProfile && (
+          <button
+            className={`fb-tab ${activeTab === 'servicios' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('servicios'); loadTutorData() }}
+            style={activeTab === 'servicios' ? { borderColor: '#d97706', color: '#d97706' } : {}}
+          >
+            Servicios
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
@@ -1393,6 +1426,149 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <div className="card" style={{ textAlign: 'center', padding: 40, gridColumn: '1 / -1' }}>
                   <p style={{ color: 'var(--text-muted)' }}>No hay amigos para mostrar</p>
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'servicios' && tutorProfile && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Header con rol y estado */}
+            <div className="card" style={{ padding: 20, borderLeft: '4px solid #d97706', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ margin: 0, color: '#92400e', fontSize: 18 }}>
+                    {Award({ size: 20 })} Prestador de Servicios
+                  </h3>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: '#a16207' }}>
+                    Rol N° {String(tutorProfile.roleNumber || tutorProfile.id || 0).padStart(4, '0')}
+                  </p>
+                </div>
+                <span style={{
+                  padding: '4px 14px',
+                  borderRadius: 20,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.5,
+                  background: tutorProfile.status === 'approved' ? '#dcfce7' : tutorProfile.status === 'suspended' ? '#fee2e2' : '#fef9c3',
+                  color: tutorProfile.status === 'approved' ? '#166534' : tutorProfile.status === 'suspended' ? '#991b1b' : '#854d0e',
+                  border: `1px solid ${tutorProfile.status === 'approved' ? '#86efac' : tutorProfile.status === 'suspended' ? '#fca5a5' : '#fde047'}`
+                }}>
+                  {tutorProfile.status === 'approved' ? 'Aprobado' : tutorProfile.status === 'suspended' ? 'Suspendido' : 'Pendiente'}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalStudents || 0}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Estudiantes Totales</div>
+              </div>
+              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>
+                  {tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : '—'}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Calificación Promedio</div>
+              </div>
+              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalHours || 0}h</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Horas Impartidas</div>
+              </div>
+            </div>
+
+            {/* Rating y clases */}
+            <div className="card" style={{ padding: 20 }}>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Medal({ size: 16 })} Calificación y Clases</h4>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                <div style={{ display: 'flex', gap: 2 }}>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <span key={star} style={{ color: star <= Math.round(tutorProfile.averageRating || 0) ? '#f59e0b' : '#d1d5db', fontSize: 20 }}>★</span>
+                  ))}
+                </div>
+                <span style={{ fontWeight: 600, fontSize: 15 }}>{tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : 'Sin calificaciones'}</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>({tutorProfile.totalRatings || 0} evaluaciones)</span>
+              </div>
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+                Total de clases impartidas: <strong>{tutorProfile.totalClasses || 0}</strong>
+              </p>
+            </div>
+
+            {/* Próximas clases */}
+            <div className="card" style={{ padding: 20 }}>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Calendar({ size: 16 })} Próximas Clases</h4>
+              {tutorLoading ? (
+                <div className="loading-dots"><span /><span /><span /></div>
+              ) : tutorClasses.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {tutorClasses.slice(0, 10).map((cls: any) => (
+                    <div key={cls.id} style={{ padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14 }}>{cls.subject || cls.topic || 'Clase'}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {cls.studentName || cls.student?.firstName || 'Estudiante'} — {cls.scheduledAt ? new Date(cls.scheduledAt).toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Sin fecha'}
+                          </div>
+                        </div>
+                        {cls.zoomLink && (
+                          <a href={cls.zoomLink} target="_blank" rel="noopener noreferrer"
+                            style={{ padding: '4px 12px', background: '#2563eb', color: '#fff', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                            Zoom
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>No tienes clases programadas próximamente.</p>
+              )}
+            </div>
+
+            {/* Resumen de pagos */}
+            <div className="card" style={{ padding: 20 }}>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{FileText({ size: 16 })} Resumen de Pagos</h4>
+              {tutorPayments ? (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
+                    <div style={{ padding: 12, background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0' }}>
+                      <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>Total Ganado</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: '#15803d' }}>
+                        ${(tutorPayments.totalEarned || tutorPayments.total || 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a' }}>
+                      <div style={{ fontSize: 12, color: '#92400e', fontWeight: 600 }}>Pagos Pendientes</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: '#d97706' }}>
+                        ${(tutorPayments.pendingAmount || 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Último Pago</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>
+                        {tutorPayments.lastPaymentDate
+                          ? new Date(tutorPayments.lastPaymentDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
+                          : 'Sin pagos aún'}
+                      </div>
+                    </div>
+                  </div>
+                  {(tutorPayments.pendingAmount > 0 || tutorPayments.pendingPayments?.length > 0) && (
+                    <button
+                      onClick={() => onNavigate('/tutor/pagos/boleta')}
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '8px 16px', background: '#d97706', color: '#fff',
+                        border: 'none', borderRadius: 8, cursor: 'pointer',
+                        fontWeight: 600, fontSize: 13
+                      }}
+                    >
+                      {FileText({ size: 14 })} Subir Boleta de Honorarios
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>No hay información de pagos disponible.</p>
               )}
             </div>
           </div>

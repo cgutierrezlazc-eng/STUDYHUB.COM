@@ -47,6 +47,7 @@ const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
 const HRDashboard = React.lazy(() => import('./pages/HRDashboard'))
 const Search = React.lazy(() => import('./pages/Search'))
 const Conferences = React.lazy(() => import('./pages/Conferences'))
+const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
@@ -290,6 +291,7 @@ export default function App() {
             <Route path="/communities/:id" element={<CommunityView onNavigate={(path) => navigate(path)} />} />
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
+            <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
