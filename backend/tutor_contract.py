@@ -75,7 +75,13 @@ CLAUSULAS = {
             "(90%) restante del valor bruto sera pagado al/la PRESTADOR/A en los terminos "
             "establecidos en la clausula siguiente. Las tarifas por hora seran fijadas por el/la "
             "PRESTADOR/A dentro de los rangos permitidos por la Plataforma y podran ser modificadas "
-            "con efecto para futuras clases."
+            "con efecto para futuras clases. Los estudiantes con suscripcion MAX vigente en la "
+            "Plataforma tendran derecho a un descuento del cincuenta por ciento (50%) sobre el "
+            "valor de las clases de tutoria. Este descuento sera asumido proporcionalmente: "
+            "Conniku SpA absorbe el 50% del descuento sobre su comision y el/la PRESTADOR/A "
+            "absorbe el 50% restante sobre su tarifa. Al aceptar el presente contrato, el/la "
+            "PRESTADOR/A acepta expresamente esta condicion como parte integral de las politicas "
+            "comerciales de la Plataforma."
         ),
     },
     "QUINTO": {
@@ -141,8 +147,9 @@ CLAUSULAS = {
             "enviado a traves de la Plataforma o por correo electronico con al menos treinta (30) "
             "dias corridos de anticipacion. No obstante lo anterior, Conniku SpA podra poner "
             "termino inmediato al contrato en caso de: (a) Incumplimiento grave de las obligaciones "
-            "del/la PRESTADOR/A; (b) Evaluacion promedio inferior a 2.0 sobre 5.0 mantenida por "
-            "mas de 30 dias; (c) Infraccion a la clausula de confidencialidad; (d) Conducta que "
+            "del/la PRESTADOR/A; (b) Evaluacion promedio inferior a 4.0 sobre 10.0 (2.0/5.0) "
+            "transcurridos seis (6) meses desde la verificacion, resultando en la eliminacion "
+            "automatica e irrevocable del derecho a ejercer como tutor en la Plataforma; (c) Infraccion a la clausula de confidencialidad; (d) Conducta que "
             "atente contra la integridad o reputacion de la Plataforma. Los pagos pendientes por "
             "clases ya confirmadas seran liquidados dentro de los 15 dias habiles siguientes al "
             "termino del contrato."

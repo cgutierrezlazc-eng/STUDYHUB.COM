@@ -65,7 +65,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
@@ -99,6 +99,28 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [tutorClasses, setTutorClasses] = useState<any[]>([])
   const [tutorPayments, setTutorPayments] = useState<any>(null)
   const [tutorLoading, setTutorLoading] = useState(false)
+  // Student tutorias tab state
+  const [studentClasses, setStudentClasses] = useState<any[]>([])
+  const [studentClassesLoading, setStudentClassesLoading] = useState(false)
+  const [studentPayments, setStudentPayments] = useState<any[]>([])
+  const [studentPaymentsLoading, setStudentPaymentsLoading] = useState(false)
+  const [showBookingForm, setShowBookingForm] = useState(false)
+  const [bookingTutorId, setBookingTutorId] = useState('')
+  const [bookingSubject, setBookingSubject] = useState('')
+  const [bookingDate, setBookingDate] = useState('')
+  const [bookingType, setBookingType] = useState<'individual' | 'group'>('individual')
+  const [bookingNotes, setBookingNotes] = useState('')
+  const [bookingSaving, setBookingSaving] = useState(false)
+  const [tutorDirectoryList, setTutorDirectoryList] = useState<any[]>([])
+  const [showExamModal, setShowExamModal] = useState(false)
+  const [examClassId, setExamClassId] = useState<string | null>(null)
+  const [examData, setExamData] = useState<any>(null)
+  const [examAnswers, setExamAnswers] = useState<Record<string, any>>({})
+  const [examTimeLeft, setExamTimeLeft] = useState(3600)
+  const [examSubmitting, setExamSubmitting] = useState(false)
+  const [examResult, setExamResult] = useState<any>(null)
+  const [examLoading, setExamLoading] = useState(false)
+  const [studentClassFilter, setStudentClassFilter] = useState<'upcoming' | 'past' | 'all'>('all')
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -182,6 +204,133 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     } catch (err) { console.error('Failed to load tutor data:', err) }
     setTutorLoading(false)
   }
+
+  const loadStudentTutoringData = async () => {
+    setStudentClassesLoading(true)
+    setStudentPaymentsLoading(true)
+    try {
+      const [classes, payments, directory] = await Promise.all([
+        api.getMyTutoringClasses().catch(() => []),
+        api.getMyTutoringPayments().catch(() => []),
+        api.getTutorDirectory().catch(() => ({ items: [] })),
+      ])
+      setStudentClasses(classes?.items || classes || [])
+      setStudentPayments(payments?.items || payments || [])
+      setTutorDirectoryList(directory?.items || directory || [])
+    } catch (err) { console.error('Failed to load student tutoring data:', err) }
+    setStudentClassesLoading(false)
+    setStudentPaymentsLoading(false)
+  }
+
+  const handleBookSession = async () => {
+    if (!bookingTutorId || !bookingSubject.trim() || !bookingDate) return
+    setBookingSaving(true)
+    try {
+      await api.bookTutoringSession({
+        tutor_id: bookingTutorId,
+        subject: bookingSubject,
+        preferred_date: bookingDate,
+        class_type: bookingType,
+        notes: bookingNotes || undefined,
+      })
+      setShowBookingForm(false)
+      setBookingTutorId('')
+      setBookingSubject('')
+      setBookingDate('')
+      setBookingType('individual')
+      setBookingNotes('')
+      loadStudentTutoringData()
+      // Add to calendar
+      try {
+        await api.createCalendarEvent({
+          title: `Tutoria: ${bookingSubject}`,
+          description: `Clase de tutoria - ${bookingType === 'individual' ? 'Individual' : 'Grupal'}`,
+          event_type: 'tutoring',
+          due_date: bookingDate,
+          color: '#7c3aed',
+        })
+      } catch (e) { /* calendar integration optional */ }
+      // Schedule notification reminders
+      scheduleClassReminders(bookingSubject, bookingDate)
+    } catch (err: any) { alert(err.message || 'Error al reservar sesion') }
+    setBookingSaving(false)
+  }
+
+  const scheduleClassReminders = (subject: string, dateStr: string) => {
+    const classTime = new Date(dateStr).getTime()
+    const now = Date.now()
+    const oneHourBefore = classTime - 60 * 60 * 1000
+    const fifteenMinBefore = classTime - 15 * 60 * 1000
+    if (oneHourBefore > now) {
+      setTimeout(() => {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Tutoria en 1 hora', { body: `Tu clase de ${subject} comienza en 1 hora`, icon: '/logo.png' })
+        }
+      }, oneHourBefore - now)
+    }
+    if (fifteenMinBefore > now) {
+      setTimeout(() => {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('Tutoria en 15 minutos', { body: `Tu clase de ${subject} comienza en 15 minutos`, icon: '/logo.png' })
+        }
+      }, fifteenMinBefore - now)
+    }
+  }
+
+  const handleStartExam = async (classId: string) => {
+    setExamClassId(classId)
+    setExamLoading(true)
+    setShowExamModal(true)
+    setExamResult(null)
+    setExamAnswers({})
+    setExamTimeLeft(3600)
+    try {
+      const data = await api.getTutoringExam(classId)
+      setExamData(data)
+    } catch (err: any) {
+      alert(err.message || 'Error al cargar examen')
+      setShowExamModal(false)
+    }
+    setExamLoading(false)
+  }
+
+  const handleSubmitExam = async () => {
+    if (!examClassId) return
+    setExamSubmitting(true)
+    try {
+      const result = await api.submitTutoringExam(examClassId, examAnswers)
+      setExamResult(result)
+      loadStudentTutoringData()
+    } catch (err: any) { alert(err.message || 'Error al enviar examen') }
+    setExamSubmitting(false)
+  }
+
+  // Exam timer effect
+  useEffect(() => {
+    if (!showExamModal || examResult || examLoading || !examData) return
+    if (examTimeLeft <= 0) {
+      handleSubmitExam()
+      return
+    }
+    const timer = setInterval(() => {
+      setExamTimeLeft(prev => {
+        if (prev <= 1) { clearInterval(timer); return 0 }
+        return prev - 1
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [showExamModal, examResult, examLoading, examData, examTimeLeft])
+
+  // Schedule reminders for upcoming classes on load
+  useEffect(() => {
+    if (studentClasses.length > 0) {
+      studentClasses.forEach((cls: any) => {
+        if (cls.scheduledAt && cls.status !== 'completed' && cls.status !== 'cancelled') {
+          scheduleClassReminders(cls.subject || cls.topic || 'Tutoria', cls.scheduledAt)
+        }
+      })
+    }
+  }, [studentClasses])
 
   const handleSendTutoringRequest = async () => {
     if (!tutoringSubject.trim()) return
@@ -519,6 +668,15 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             style={activeTab === 'servicios' ? { borderColor: '#d97706', color: '#d97706' } : {}}
           >
             Servicios
+          </button>
+        )}
+        {isOwn && (
+          <button
+            className={`fb-tab ${activeTab === 'tutorias' ? 'active' : ''}`}
+            onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData() }}
+            style={activeTab === 'tutorias' ? { borderColor: '#7c3aed', color: '#7c3aed' } : {}}
+          >
+            {GraduationCap({ size: 14 })} Tutorias
           </button>
         )}
       </div>
@@ -1573,7 +1731,480 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
           </div>
         )}
+        {activeTab === 'tutorias' && isOwn && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 900 }}>
+            {/* Header */}
+            <div className="card" style={{ padding: 20, borderLeft: '4px solid #7c3aed', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <h3 style={{ margin: 0, color: '#5b21b6', fontSize: 18 }}>
+                    {GraduationCap({ size: 20 })} Mis Tutorias
+                  </h3>
+                  <p style={{ margin: '4px 0 0', fontSize: 13, color: '#7c3aed' }}>
+                    Gestiona las clases en las que estas inscrito como estudiante
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowBookingForm(true)}
+                  style={{
+                    padding: '8px 18px', background: '#7c3aed', color: '#fff',
+                    border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}
+                >
+                  {Calendar({ size: 14 })} Reservar Clase
+                </button>
+              </div>
+            </div>
+
+            {/* Class Filter */}
+            <div style={{ display: 'flex', gap: 8 }}>
+              {(['all', 'upcoming', 'past'] as const).map(f => (
+                <button key={f} onClick={() => setStudentClassFilter(f)}
+                  style={{
+                    padding: '6px 16px', borderRadius: 20, border: '1px solid',
+                    borderColor: studentClassFilter === f ? '#7c3aed' : 'var(--border)',
+                    background: studentClassFilter === f ? '#7c3aed' : 'var(--bg-card)',
+                    color: studentClassFilter === f ? '#fff' : 'var(--text-secondary)',
+                    cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                  }}
+                >
+                  {f === 'all' ? 'Todas' : f === 'upcoming' ? 'Proximas' : 'Pasadas'}
+                </button>
+              ))}
+            </div>
+
+            {/* Enrolled Classes */}
+            <div className="card" style={{ padding: 20 }}>
+              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{Calendar({ size: 16 })} Clases Inscritas</h4>
+              {studentClassesLoading ? (
+                <div className="loading-dots"><span /><span /><span /></div>
+              ) : (() => {
+                const now = new Date()
+                const filtered = studentClasses.filter((cls: any) => {
+                  if (studentClassFilter === 'all') return true
+                  const clsDate = new Date(cls.scheduledAt || cls.created_at)
+                  if (studentClassFilter === 'upcoming') return clsDate >= now || cls.status === 'upcoming' || cls.status === 'scheduled'
+                  return clsDate < now || cls.status === 'completed' || cls.status === 'past'
+                })
+                return filtered.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    {filtered.map((cls: any) => {
+                      const clsDate = cls.scheduledAt ? new Date(cls.scheduledAt) : null
+                      const isUpcoming = clsDate && clsDate > now
+                      const countdown = isUpcoming ? Math.max(0, clsDate.getTime() - now.getTime()) : 0
+                      const cdHours = Math.floor(countdown / 3600000)
+                      const cdMins = Math.floor((countdown % 3600000) / 60000)
+                      const hasExam = cls.examAvailable || cls.exam_status === 'pending'
+                      const examCompleted = cls.exam_status === 'completed' || cls.examScore !== undefined
+                      return (
+                        <div key={cls.id} style={{
+                          padding: 16, borderRadius: 10, border: '1px solid',
+                          borderColor: isUpcoming ? '#c4b5fd' : 'var(--border-subtle)',
+                          background: isUpcoming ? 'rgba(124,58,237,0.04)' : 'var(--bg-secondary)',
+                          position: 'relative',
+                        }}>
+                          {/* Exam badge */}
+                          {hasExam && !examCompleted && (
+                            <div style={{
+                              position: 'absolute', top: -8, right: 12, background: '#ef4444', color: '#fff',
+                              padding: '2px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700,
+                              animation: 'pulse 2s infinite',
+                            }}>
+                              Examen Pendiente
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: 1 }}>
+                              {/* Tutor avatar */}
+                              <div style={{
+                                width: 44, height: 44, borderRadius: '50%', background: '#7c3aed',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: '#fff', fontWeight: 700, fontSize: 16, flexShrink: 0, overflow: 'hidden',
+                              }}>
+                                {cls.tutor?.avatar
+                                  ? <img src={cls.tutor.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  : (cls.tutor?.firstName?.[0] || cls.tutorName?.[0] || 'T')}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-primary)' }}>
+                                  {cls.subject || cls.topic || 'Clase de Tutoria'}
+                                </div>
+                                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>
+                                  Tutor: {cls.tutor?.firstName ? `${cls.tutor.firstName} ${cls.tutor.lastName || ''}` : cls.tutorName || 'Sin asignar'}
+                                </div>
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                                  {clsDate && (
+                                    <span>{Calendar({ size: 12 })} {clsDate.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                                  )}
+                                  <span style={{ textTransform: 'capitalize' }}>{cls.classType || cls.class_type || 'individual'}</span>
+                                </div>
+                                {/* Countdown for upcoming */}
+                                {isUpcoming && countdown > 0 && (
+                                  <div style={{
+                                    marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    padding: '3px 10px', background: 'rgba(124,58,237,0.1)', borderRadius: 12,
+                                    fontSize: 12, fontWeight: 600, color: '#7c3aed',
+                                  }}>
+                                    {Hourglass({ size: 12 })} Faltan {cdHours > 0 ? `${cdHours}h ` : ''}{cdMins}min
+                                  </div>
+                                )}
+                                {/* Exam result in history */}
+                                {examCompleted && (
+                                  <div style={{
+                                    marginTop: 6, display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    padding: '3px 10px', borderRadius: 12, fontSize: 12, fontWeight: 600,
+                                    background: (cls.examScore || 0) >= 60 ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                                    color: (cls.examScore || 0) >= 60 ? '#15803d' : '#dc2626',
+                                  }}>
+                                    {(cls.examScore || 0) >= 60 ? CheckCircle({ size: 12 }) : XCircle({ size: 12 })} Examen: {cls.examScore || 0}% — {(cls.examScore || 0) >= 60 ? 'Aprobado' : 'Reprobado'}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                              <span style={{
+                                padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 600,
+                                background: cls.status === 'completed' ? '#dcfce7' : cls.status === 'cancelled' ? '#fee2e2' : '#f5f3ff',
+                                color: cls.status === 'completed' ? '#166534' : cls.status === 'cancelled' ? '#991b1b' : '#5b21b6',
+                              }}>
+                                {cls.status === 'completed' ? 'Completada' : cls.status === 'cancelled' ? 'Cancelada' : cls.status === 'confirmed' ? 'Confirmada' : 'Programada'}
+                              </span>
+                              {cls.zoomLink && isUpcoming && (
+                                <a href={cls.zoomLink} target="_blank" rel="noopener noreferrer"
+                                  style={{ padding: '4px 12px', background: '#2563eb', color: '#fff', borderRadius: 6, fontSize: 12, fontWeight: 600, textDecoration: 'none' }}>
+                                  Unirse
+                                </a>
+                              )}
+                              {hasExam && !examCompleted && (
+                                <button onClick={() => handleStartExam(cls.id)}
+                                  style={{
+                                    padding: '5px 14px', background: '#ef4444', color: '#fff',
+                                    border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                                  }}>
+                                  Dar Examen
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
+                    <div style={{ marginBottom: 8 }}>{BookOpen({ size: 36, color: 'var(--text-muted)' })}</div>
+                    <p style={{ fontSize: 14 }}>No tienes clases inscritas</p>
+                    <p style={{ fontSize: 12 }}>Reserva una clase con un tutor del directorio</p>
+                  </div>
+                )
+              })()}
+            </div>
+
+            {/* Payment History */}
+            <div className="card" style={{ padding: 20 }}>
+              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{FileText({ size: 16 })} Historial de Pagos</h4>
+              {studentPaymentsLoading ? (
+                <div className="loading-dots"><span /><span /><span /></div>
+              ) : studentPayments.length > 0 ? (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', color: 'var(--text-muted)', fontWeight: 600 }}>Tutor</th>
+                        <th style={{ textAlign: 'left', padding: '8px 12px', color: 'var(--text-muted)', fontWeight: 600 }}>Materia</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px', color: 'var(--text-muted)', fontWeight: 600 }}>Monto</th>
+                        <th style={{ textAlign: 'right', padding: '8px 12px', color: 'var(--text-muted)', fontWeight: 600 }}>Fecha</th>
+                        <th style={{ textAlign: 'center', padding: '8px 12px', color: 'var(--text-muted)', fontWeight: 600 }}>Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {studentPayments.map((p: any, idx: number) => (
+                        <tr key={p.id || idx} style={{ borderBottom: '1px solid var(--border-subtle)' }}>
+                          <td style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{
+                              width: 28, height: 28, borderRadius: '50%', background: '#7c3aed',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              color: '#fff', fontWeight: 700, fontSize: 11, flexShrink: 0, overflow: 'hidden',
+                            }}>
+                              {p.tutor?.avatar
+                                ? <img src={p.tutor.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                : (p.tutor?.firstName?.[0] || p.tutorName?.[0] || 'T')}
+                            </div>
+                            {p.tutor?.firstName ? `${p.tutor.firstName} ${p.tutor.lastName || ''}` : p.tutorName || 'Tutor'}
+                          </td>
+                          <td style={{ padding: '10px 12px' }}>{p.subject || p.topic || '—'}</td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#5b21b6' }}>
+                            ${(p.amount || 0).toLocaleString()}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', color: 'var(--text-muted)' }}>
+                            {p.paidAt || p.created_at ? new Date(p.paidAt || p.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <span style={{
+                              padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 600,
+                              background: p.status === 'paid' || p.status === 'completed' ? '#dcfce7' : '#fef9c3',
+                              color: p.status === 'paid' || p.status === 'completed' ? '#166534' : '#854d0e',
+                            }}>
+                              {p.status === 'paid' || p.status === 'completed' ? 'Pagado' : 'Pendiente'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, textAlign: 'center', padding: 20 }}>
+                  No tienes pagos registrados
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Booking Form Modal */}
+      {showBookingForm && (
+        <div className="modal-overlay" onClick={() => setShowBookingForm(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 500 }}>
+            <h3 style={{ margin: '0 0 4px', color: '#5b21b6' }}>{Calendar({ size: 20 })} Reservar Clase de Tutoria</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Completa los datos para solicitar una sesion con un tutor
+            </p>
+
+            {/* Tutor select */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Tutor *</label>
+              <select value={bookingTutorId} onChange={e => setBookingTutorId(e.target.value)}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                <option value="">Seleccionar tutor</option>
+                {tutorDirectoryList.map((t: any) => (
+                  <option key={t.id || t.userId} value={t.id || t.userId}>
+                    {t.firstName || t.name || 'Tutor'} {t.lastName || ''} — {(t.subjects || t.mentoringSubjects || []).join(', ') || 'General'}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Subject */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Materia / Tema *</label>
+              <input
+                placeholder="Ej: Calculo Diferencial, Fisica Mecanica..."
+                value={bookingSubject}
+                onChange={e => setBookingSubject(e.target.value)}
+                className="form-input"
+              />
+            </div>
+
+            {/* Date & Time */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Fecha y hora preferida *</label>
+              <input
+                type="datetime-local"
+                value={bookingDate}
+                onChange={e => setBookingDate(e.target.value)}
+                className="form-input"
+                min={new Date().toISOString().slice(0, 16)}
+              />
+            </div>
+
+            {/* Class type */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 6 }}>Tipo de clase</label>
+              <div style={{ display: 'flex', gap: 10 }}>
+                {(['individual', 'group'] as const).map(type => (
+                  <button key={type} onClick={() => setBookingType(type)}
+                    style={{
+                      flex: 1, padding: '10px 14px', borderRadius: 8, cursor: 'pointer',
+                      border: '2px solid', fontWeight: 600, fontSize: 13,
+                      borderColor: bookingType === type ? '#7c3aed' : 'var(--border)',
+                      background: bookingType === type ? 'rgba(124,58,237,0.08)' : 'var(--bg-secondary)',
+                      color: bookingType === type ? '#7c3aed' : 'var(--text-secondary)',
+                    }}
+                  >
+                    {type === 'individual' ? 'Individual' : 'Grupal'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Notas para el tutor (opcional)</label>
+              <textarea
+                placeholder="Describe en que necesitas ayuda, dudas especificas, etc."
+                value={bookingNotes}
+                onChange={e => setBookingNotes(e.target.value)}
+                rows={3}
+                className="form-input"
+              />
+            </div>
+
+            <div style={{ background: 'rgba(124,58,237,0.06)', borderRadius: 8, padding: '10px 12px', marginBottom: 16, border: '1px solid rgba(124,58,237,0.15)' }}>
+              <p style={{ fontSize: 11, color: '#7c3aed', margin: 0 }}>
+                La clase se agregara automaticamente a tu calendario con alertas 1 hora y 15 minutos antes.
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowBookingForm(false)}>Cancelar</button>
+              <button
+                onClick={handleBookSession}
+                disabled={bookingSaving || !bookingTutorId || !bookingSubject.trim() || !bookingDate}
+                style={{
+                  padding: '8px 20px', background: '#7c3aed', color: '#fff',
+                  border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                  opacity: bookingSaving || !bookingTutorId || !bookingSubject.trim() || !bookingDate ? 0.6 : 1,
+                }}
+              >
+                {bookingSaving ? 'Reservando...' : 'Confirmar Reserva'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam Modal */}
+      {showExamModal && (
+        <div className="modal-overlay" style={{ zIndex: 1100 }} onClick={() => {}}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{
+            maxWidth: 680, maxHeight: '90vh', overflow: 'auto',
+            background: 'var(--bg-card)', borderRadius: 14,
+          }}>
+            {examLoading ? (
+              <div style={{ textAlign: 'center', padding: 40 }}>
+                <div className="loading-dots"><span /><span /><span /></div>
+                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando examen...</p>
+              </div>
+            ) : examResult ? (
+              /* Exam Result */
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <div style={{
+                  width: 80, height: 80, borderRadius: '50%', margin: '0 auto 16px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: (examResult.score || 0) >= 60 ? '#dcfce7' : '#fee2e2',
+                  border: `3px solid ${(examResult.score || 0) >= 60 ? '#22c55e' : '#ef4444'}`,
+                }}>
+                  <span style={{ fontSize: 28, fontWeight: 700, color: (examResult.score || 0) >= 60 ? '#15803d' : '#dc2626' }}>
+                    {examResult.score || 0}%
+                  </span>
+                </div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 22, color: (examResult.score || 0) >= 60 ? '#15803d' : '#dc2626' }}>
+                  {(examResult.score || 0) >= 60 ? 'Aprobado' : 'Reprobado'}
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 8 }}>
+                  {(examResult.score || 0) >= 60
+                    ? 'Felicitaciones, has aprobado el examen.'
+                    : 'No alcanzaste el puntaje minimo (60%). Puedes intentar de nuevo si el tutor lo permite.'}
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
+                  Respuestas correctas: {examResult.correct || 0} de {examResult.total || 0}
+                </p>
+                <button onClick={() => { setShowExamModal(false); setExamResult(null); setExamData(null); setExamAnswers({}) }}
+                  className="btn btn-primary" style={{ marginTop: 16 }}>
+                  Cerrar
+                </button>
+              </div>
+            ) : examData ? (
+              /* Exam Questions */
+              <div>
+                {/* Header with timer */}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginBottom: 20, paddingBottom: 14, borderBottom: '2px solid var(--border)',
+                }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 18 }}>Examen de Tutoria</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
+                      {examData.questions?.length || 0} preguntas
+                    </p>
+                  </div>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    padding: '6px 14px', borderRadius: 8, fontWeight: 700, fontSize: 16,
+                    background: examTimeLeft < 300 ? '#fee2e2' : examTimeLeft < 600 ? '#fef9c3' : 'var(--bg-secondary)',
+                    color: examTimeLeft < 300 ? '#dc2626' : examTimeLeft < 600 ? '#d97706' : 'var(--text-primary)',
+                    border: `1px solid ${examTimeLeft < 300 ? '#fca5a5' : examTimeLeft < 600 ? '#fde047' : 'var(--border)'}`,
+                    fontFamily: 'monospace',
+                  }}>
+                    {Hourglass({ size: 16 })}
+                    {String(Math.floor(examTimeLeft / 60)).padStart(2, '0')}:{String(examTimeLeft % 60).padStart(2, '0')}
+                  </div>
+                </div>
+
+                {/* Questions */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  {(examData.questions || []).map((q: any, idx: number) => (
+                    <div key={q.id || idx} style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 10, border: '1px solid var(--border-subtle)' }}>
+                      <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10, color: 'var(--text-primary)' }}>
+                        <span style={{ color: '#7c3aed', marginRight: 6 }}>{idx + 1}.</span>
+                        {q.question || q.text}
+                      </div>
+                      {q.type === 'multiple_choice' || q.options ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {(q.options || []).map((opt: any, oi: number) => {
+                            const optValue = typeof opt === 'string' ? opt : opt.text || opt.label
+                            const optKey = typeof opt === 'string' ? opt : opt.id || String(oi)
+                            const isSelected = examAnswers[q.id || idx] === optKey
+                            return (
+                              <button key={oi} onClick={() => setExamAnswers(prev => ({ ...prev, [q.id || idx]: optKey }))}
+                                style={{
+                                  padding: '10px 14px', borderRadius: 8, textAlign: 'left', cursor: 'pointer',
+                                  border: '2px solid',
+                                  borderColor: isSelected ? '#7c3aed' : 'var(--border)',
+                                  background: isSelected ? 'rgba(124,58,237,0.08)' : 'transparent',
+                                  color: 'var(--text-primary)', fontSize: 13,
+                                }}
+                              >
+                                <span style={{ fontWeight: 600, marginRight: 8, color: isSelected ? '#7c3aed' : 'var(--text-muted)' }}>
+                                  {String.fromCharCode(65 + oi)}.
+                                </span>
+                                {optValue}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      ) : (
+                        /* Short answer */
+                        <textarea
+                          placeholder="Escribe tu respuesta..."
+                          value={examAnswers[q.id || idx] || ''}
+                          onChange={e => setExamAnswers(prev => ({ ...prev, [q.id || idx]: e.target.value }))}
+                          rows={3}
+                          className="form-input"
+                          style={{ fontSize: 13 }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Submit */}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  marginTop: 20, paddingTop: 14, borderTop: '2px solid var(--border)',
+                }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                    {Object.keys(examAnswers).length} de {examData.questions?.length || 0} respondidas
+                  </span>
+                  <button onClick={handleSubmitExam}
+                    disabled={examSubmitting}
+                    style={{
+                      padding: '10px 24px', background: '#7c3aed', color: '#fff',
+                      border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14,
+                      opacity: examSubmitting ? 0.6 : 1,
+                    }}
+                  >
+                    {examSubmitting ? 'Enviando...' : 'Entregar Examen'}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Tutoring Request Modal */}
       {showTutoringModal && (

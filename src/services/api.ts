@@ -1015,6 +1015,31 @@ export const api = {
   getTutorContract: () => request('/tutors/my-contract'),
   signTutorContract: () => request('/tutors/my-contract/sign', { method: 'POST' }),
 
+  // ─── Student Tutoring (classes I attend as student) ────────
+  getMyTutoringClasses: (params?: string) => request(`/tutors/my-enrolled-classes${params ? `?${params}` : ''}`),
+  bookTutoringSession: (data: { tutor_id: string; subject: string; preferred_date: string; class_type: string; notes?: string }) =>
+    request('/tutors/classes/book', { method: 'POST', body: JSON.stringify(data) }),
+  getMyTutoringPayments: (params?: string) => request(`/tutors/my-student-payments${params ? `?${params}` : ''}`),
+  getTutoringExam: (classId: string) => request(`/tutors/classes/${classId}/exam`),
+  submitTutoringExam: (classId: string, answers: Record<string, any>) =>
+    request(`/tutors/classes/${classId}/exam/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),
+
+  // ─── Tutor Exam Management (tutor side) ────────────────────
+  createTutorExam: (classId: string, data: any) => request(`/tutors/classes/${classId}/exam`, { method: 'POST', body: JSON.stringify(data) }),
+  enableTutorExam: (classId: string) => request(`/tutors/classes/${classId}/exam/enable`, { method: 'PUT' }),
+  getTutorExamResults: (classId: string) => request(`/tutors/classes/${classId}/exam/results`),
+
+  // ─── Tutor Availability ───────────────────────────────────
+  getMyAvailability: () => request('/tutors/my-availability'),
+  setMyAvailability: (slots: any[]) => request('/tutors/my-availability', { method: 'PUT', body: JSON.stringify({ slots }) }),
+  addBlockedDates: (data: any) => request('/tutors/my-blocked-dates', { method: 'POST', body: JSON.stringify(data) }),
+  removeBlockedDate: (id: string) => request(`/tutors/my-blocked-dates/${id}`, { method: 'DELETE' }),
+  getTutorAvailability: (tutorId: string) => request(`/tutors/${tutorId}/availability`),
+
+  // ─── Admin Tutor Management ───────────────────────────────
+  enforceRatings: () => request('/tutors/admin/enforce-ratings', { method: 'POST' }),
+  applyAsOwnerTutor: () => request('/tutors/apply-as-owner', { method: 'POST' }),
+
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
 };

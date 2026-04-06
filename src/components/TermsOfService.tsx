@@ -246,6 +246,8 @@ export default function TermsOfService({ onClose }: Props) {
           <p>29.4. El tutor es íntegramente responsable del pago de la retención de impuestos al SII sobre su boleta de honorarios (actualmente 13.75%).</p>
           <p>29.5. Una vez recibida y validada la boleta de honorarios, Conniku procederá al pago dentro de un plazo máximo de 7 días hábiles.</p>
           <p>29.6. El tutor podrá elegir frecuencia de pago: por clase realizada, quincenal o mensual.</p>
+          <p>29.7. Los estudiantes con suscripción MAX vigente tendrán derecho a un descuento del 50% sobre el valor de las clases de tutoría. Este descuento se asume proporcionalmente entre Conniku y el tutor. Al registrarse como tutor, el prestador acepta expresamente esta condición comercial.</p>
+          <p>29.8. Los tutores cuya evaluación promedio sea inferior a 4.0 sobre 10.0 (equivalente a 2.0 sobre 5.0) transcurridos seis (6) meses desde su verificación, perderán automáticamente e irrevocablemente el derecho a ejercer como tutor en la Plataforma.</p>
 
           <h3>Artículo 30. Clases y Obligaciones del Tutor</h3>
           <p>30.1. El tutor deberá crear las sesiones de clase en la Plataforma con descripción detallada del contenido, materiales, duración, precio y disponibilidad horaria.</p>
@@ -253,6 +255,8 @@ export default function TermsOfService({ onClose }: Props) {
           <p>30.3. El número máximo de estudiantes por clase grupal es 5. El tutor deberá establecer tarifas diferenciadas para clases individuales y grupales.</p>
           <p>30.4. Si el tutor no se presenta a una clase confirmada y pagada, el estudiante recibirá un reembolso del 100% del monto pagado dentro de 5 a 7 días hábiles.</p>
           <p>30.5. El tutor deberá mantener un estándar de calidad mínimo. Tutores con calificación promedio inferior a 2.5 sobre 5.0 podrán ser suspendidos.</p>
+          <p>30.6. El tutor deberá preparar un examen de evaluación para cada sesión o ciclo de sesiones, el cual será habilitado por el tutor al finalizar la clase. El estudiante dispondrá de 60 minutos para completar el examen. La nota mínima de aprobación es 60%. Los resultados serán visibles en el perfil del estudiante y del tutor.</p>
+          <p>30.7. El tutor deberá subir el material de apoyo de cada clase a la Plataforma antes o durante la sesión, el cual quedará disponible para el estudiante en su historial de clases.</p>
 
           <h3>Artículo 31. Derechos y Obligaciones del Estudiante en Servicios de Tutoría</h3>
           <p>31.1. El estudiante deberá confirmar la realización de cada clase dentro de las 48 horas siguientes a su finalización. Transcurrido dicho plazo sin confirmación ni disputa, la clase se considerará realizada satisfactoriamente.</p>

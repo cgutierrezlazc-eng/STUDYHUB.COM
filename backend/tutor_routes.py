@@ -10,7 +10,11 @@ import os
 import random
 import string
 import logging
+import smtplib
+import threading
 from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
@@ -21,7 +25,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Session, relationship
 
-from database import Base, engine, get_db, User, gen_id, DATA_DIR
+from database import Base, engine, get_db, User, gen_id, DATA_DIR, SessionLocal
 from middleware import get_current_user
 
 logger = logging.getLogger("conniku.tutors")
@@ -89,6 +93,92 @@ def _validate_rut(rut: str) -> bool:
     remainder = 11 - (total % 11)
     expected = "0" if remainder == 11 else "K" if remainder == 10 else str(remainder)
     return dv == expected
+
+
+# ─── CEO Email Alert ─────────────────────────────────────────────
+
+SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "")
+SMTP_PASS = os.environ.get("SMTP_PASS", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", "")
+
+
+def _build_ceo_email_html(subject: str, body: str) -> str:
+    """Build branded HTML email for CEO alerts."""
+    return f"""\
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f4f7;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;padding:24px 0;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+        <!-- Header -->
+        <tr>
+          <td style="background:#2563EB;padding:18px 24px;">
+            <span style="color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">CONNIKU</span>
+            <span style="color:#93c5fd;font-size:13px;margin-left:10px;">Alerta CEO</span>
+          </td>
+        </tr>
+        <!-- Body -->
+        <tr>
+          <td style="padding:28px 24px;">
+            <h2 style="margin:0 0 16px;color:#1e293b;font-size:18px;">{subject}</h2>
+            <div style="color:#334155;font-size:14px;line-height:1.6;">{body}</div>
+          </td>
+        </tr>
+        <!-- Footer -->
+        <tr>
+          <td style="background:#f8fafc;padding:14px 24px;border-top:1px solid #e2e8f0;">
+            <span style="color:#94a3b8;font-size:11px;">Este es un mensaje automatico del sistema Conniku. No responder.</span>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>"""
+
+
+def send_ceo_alert(subject: str, body: str):
+    """Send an HTML email alert to the CEO (owner) in a background thread.
+    Silently skips if SMTP is not configured or no owner found."""
+
+    if not SMTP_PASS or not SMTP_FROM:
+        logger.debug("CEO alert skipped: SMTP not configured")
+        return
+
+    def _send():
+        try:
+            db = SessionLocal()
+            try:
+                owner = db.query(User).filter(User.role == "owner").first()
+                if not owner or not owner.email:
+                    logger.debug("CEO alert skipped: no owner user found")
+                    return
+                ceo_email = owner.email
+            finally:
+                db.close()
+
+            html = _build_ceo_email_html(subject, body)
+
+            msg = MIMEMultipart("alternative")
+            msg["From"] = f"Conniku <{SMTP_FROM}>"
+            msg["To"] = ceo_email
+            msg["Subject"] = f"[Conniku CEO] {subject}"
+            msg.attach(MIMEText(html, "html", "utf-8"))
+
+            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                server.starttls()
+                server.login(SMTP_USER, SMTP_PASS)
+                server.sendmail(SMTP_FROM, ceo_email, msg.as_string())
+
+            logger.info(f"CEO alert sent: {subject}")
+        except Exception:
+            logger.warning(f"CEO alert failed: {subject}", exc_info=True)
+
+    threading.Thread(target=_send, daemon=True).start()
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -262,6 +352,10 @@ class TutorPayment(Base):
     payment_reference = Column(String(255), default="")
     payment_method = Column(String(50), default="")  # transferencia/otro
 
+    # Discount fields (MAX user 50% discount)
+    discount_type = Column(String(30), default="")  # "" / "max_subscriber"
+    discount_amount = Column(Float, default=0)  # discount in CLP
+
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships
@@ -302,6 +396,78 @@ class TutorPayslip(Base):
     __table_args__ = (
         Index("ix_tutor_payslip_period", "period_start", "period_end"),
     )
+
+
+class TutorExam(Base):
+    __tablename__ = "tutor_exams"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    class_id = Column(String(16), ForeignKey("tutor_classes.id", ondelete="CASCADE"), nullable=False, index=True)
+    tutor_id = Column(String(16), ForeignKey("tutor_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    title = Column(String(255), nullable=False)
+    description = Column(Text, default="")
+    questions = Column(Text, default="[]")  # JSON list of question objects
+
+    time_limit_minutes = Column(Integer, default=60)
+    passing_score = Column(Float, default=60)  # percentage
+    is_enabled = Column(Boolean, default=False)
+    enabled_at = Column(DateTime, nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("class_id", name="uq_exam_per_class"),
+    )
+
+
+class TutorExamSubmission(Base):
+    __tablename__ = "tutor_exam_submissions"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    exam_id = Column(String(16), ForeignKey("tutor_exams.id", ondelete="CASCADE"), nullable=False, index=True)
+    student_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+
+    answers = Column(Text, default="{}")  # JSON dict of question_id -> answer
+    score = Column(Float, default=0)  # percentage
+    passed = Column(Boolean, default=False)
+
+    started_at = Column(DateTime, nullable=True)
+    submitted_at = Column(DateTime, nullable=True)
+    time_spent_seconds = Column(Integer, default=0)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("exam_id", "student_id", name="uq_exam_submission_student"),
+    )
+
+
+class TutorAvailability(Base):
+    __tablename__ = "tutor_availability"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    tutor_id = Column(String(16), ForeignKey("tutor_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    day_of_week = Column(Integer, nullable=False)  # 0-6, Monday=0
+    start_time = Column(String(5), nullable=False)  # "HH:MM"
+    end_time = Column(String(5), nullable=False)  # "HH:MM"
+    is_recurring = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class TutorBlockedDate(Base):
+    __tablename__ = "tutor_blocked_dates"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    tutor_id = Column(String(16), ForeignKey("tutor_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    start_date = Column(DateTime, nullable=False)
+    end_date = Column(DateTime, nullable=False)
+    reason = Column(String(255), nullable=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 # Create tables
@@ -377,6 +543,48 @@ class BoletaUploadRequest(BaseModel):
 class PaymentProcessRequest(BaseModel):
     payment_reference: str = ""
     payment_method: str = "transferencia"
+
+
+class EnrollRequest(BaseModel):
+    apply_max_discount: bool = False
+
+
+class ExamCreateRequest(BaseModel):
+    title: str
+    description: str = ""
+    questions: list  # list of question dicts
+    time_limit_minutes: int = 60
+    passing_score: float = 60
+
+
+class ExamSubmitRequest(BaseModel):
+    answers: dict  # {question_id: answer}
+    started_at: Optional[str] = None  # ISO datetime
+    time_spent_seconds: int = 0
+
+
+class AvailabilitySlot(BaseModel):
+    day_of_week: int = Field(ge=0, le=6)
+    start_time: str  # "HH:MM"
+    end_time: str  # "HH:MM"
+    is_recurring: bool = True
+
+
+class SetAvailabilityRequest(BaseModel):
+    slots: List[AvailabilitySlot]
+
+
+class BlockedDateRequest(BaseModel):
+    start_date: str  # ISO datetime
+    end_date: str  # ISO datetime
+    reason: Optional[str] = None
+
+
+class OwnerTutorApplyRequest(BaseModel):
+    professional_title: str = "Fundador Conniku"
+    institution: str = ""
+    bio: str = ""
+    specialties: List[str] = []
 
 
 VALID_TUTOR_STATUS = {"pending_review", "approved", "rejected", "suspended", "appealing"}
@@ -521,6 +729,8 @@ def _payment_to_dict(p: TutorPayment) -> dict:
         "gross_amount": p.gross_amount,
         "conniku_commission": p.conniku_commission,
         "tutor_amount": p.tutor_amount,
+        "discount_type": p.discount_type or "",
+        "discount_amount": p.discount_amount or 0,
         "boleta_uploaded": p.boleta_uploaded,
         "boleta_document_id": p.boleta_document_id,
         "boleta_number": p.boleta_number,
@@ -630,6 +840,16 @@ def apply_as_tutor(
     db.add(profile)
     db.commit()
     db.refresh(profile)
+
+    send_ceo_alert(
+        f"Nuevo tutor postulante: {user.first_name} {user.last_name} ({user.email})",
+        f"<p><strong>Nombre:</strong> {user.first_name} {user.last_name}</p>"
+        f"<p><strong>Email:</strong> {user.email}</p>"
+        f"<p><strong>Titulo:</strong> {data.professional_title}</p>"
+        f"<p><strong>Institucion:</strong> {data.institution}</p>"
+        f"<p><strong>Tarifa individual:</strong> ${int(data.individual_rate):,} CLP/hora</p>"
+        f"<p><strong>Numero tutor:</strong> {tutor_role_number}</p>",
+    )
 
     return {"ok": True, "message": "Solicitud enviada. Te notificaremos cuando sea revisada.", "tutor": _tutor_to_dict(profile, include_bank=True)}
 
@@ -1109,10 +1329,12 @@ def get_class_detail(
 @router.post("/classes/{class_id}/enroll")
 def enroll_in_class(
     class_id: str,
+    data: EnrollRequest = EnrollRequest(),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Student enrolls in a class. Creates enrollment and payment records."""
+    """Student enrolls in a class. Creates enrollment and payment records.
+    MAX subscribers can apply 50% discount by passing apply_max_discount=true."""
     cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
     if not cls:
         raise HTTPException(status_code=404, detail="Clase no encontrada")
@@ -1143,8 +1365,19 @@ def enroll_in_class(
     if existing:
         raise HTTPException(status_code=400, detail="Ya estas inscrito en esta clase")
 
-    # Calculate commission
-    gross = cls.price_per_student
+    # Calculate commission with possible MAX discount
+    original_gross = cls.price_per_student
+    discount_type = ""
+    discount_amount = 0.0
+
+    if data.apply_max_discount:
+        user_tier = getattr(user, "subscription_tier", "free") or "free"
+        if user_tier != "max":
+            raise HTTPException(status_code=400, detail="Solo usuarios MAX pueden aplicar el descuento del 50%")
+        discount_amount = round(original_gross * 0.5)
+        discount_type = "max_subscriber"
+
+    gross = original_gross - discount_amount
     commission = round(gross * CONNIKU_COMMISSION_RATE)
     tutor_amount = gross - commission
 
@@ -1152,9 +1385,11 @@ def enroll_in_class(
     payment = TutorPayment(
         tutor_id=tutor.id,
         enrollment_id=None,  # will be set after enrollment created
-        gross_amount=gross,
+        gross_amount=original_gross,
         conniku_commission=commission,
         tutor_amount=tutor_amount,
+        discount_type=discount_type,
+        discount_amount=discount_amount,
         payment_status="pending_boleta",
     )
     db.add(payment)
@@ -1180,6 +1415,18 @@ def enroll_in_class(
 
     db.commit()
     db.refresh(enrollment)
+
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first()
+    tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else "Desconocido"
+    send_ceo_alert(
+        f"Clase agendada: {user.first_name} {user.last_name} con {tutor_name} - {cls.title} el {cls.scheduled_at.strftime('%d/%m/%Y %H:%M')}",
+        f"<p><strong>Estudiante:</strong> {user.first_name} {user.last_name} ({user.email})</p>"
+        f"<p><strong>Tutor:</strong> {tutor_name}</p>"
+        f"<p><strong>Clase:</strong> {cls.title}</p>"
+        f"<p><strong>Fecha:</strong> {cls.scheduled_at.strftime('%d/%m/%Y %H:%M')}</p>"
+        f"<p><strong>Precio:</strong> ${int(cls.price_per_student):,} CLP</p>"
+        f"<p><strong>Alumnos inscritos:</strong> {cls.current_students}/{cls.max_students}</p>",
+    )
 
     return {
         "ok": True,
@@ -1222,6 +1469,21 @@ def confirm_class_completed(
 
     db.commit()
     db.refresh(cls)
+
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first()
+    tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else "Desconocido"
+    student_names = []
+    for e in enrollments:
+        s = db.query(User).filter(User.id == e.student_id).first()
+        if s:
+            student_names.append(f"{s.first_name} {s.last_name}")
+    send_ceo_alert(
+        f"Clase completada: {tutor_name} - {cls.title}",
+        f"<p><strong>Tutor:</strong> {tutor_name}</p>"
+        f"<p><strong>Clase:</strong> {cls.title}</p>"
+        f"<p><strong>Estudiantes ({student_count}):</strong> {', '.join(student_names) or 'N/A'}</p>"
+        f"<p><strong>Fecha programada:</strong> {cls.scheduled_at.strftime('%d/%m/%Y %H:%M')}</p>",
+    )
 
     return {"ok": True, "message": f"Clase confirmada como completada. {student_count} estudiante(s) registrados.", "class": _class_to_dict(cls)}
 
@@ -1288,6 +1550,17 @@ def rate_class(
 
     db.commit()
 
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+    tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else "Desconocido"
+    send_ceo_alert(
+        f"Nueva evaluacion: {tutor_name} recibio {data.rating}/5 de {user.first_name} {user.last_name}",
+        f"<p><strong>Tutor:</strong> {tutor_name}</p>"
+        f"<p><strong>Estudiante:</strong> {user.first_name} {user.last_name}</p>"
+        f"<p><strong>Clase:</strong> {cls.title}</p>"
+        f"<p><strong>Calificacion:</strong> {data.rating}/5</p>"
+        f"<p><strong>Comentario:</strong> {data.comment or 'Sin comentario'}</p>",
+    )
+
     return {"ok": True, "message": "Calificacion registrada"}
 
 
@@ -1339,6 +1612,18 @@ def report_tutor_noshow(
     cls.current_students = max(0, cls.current_students - 1)
 
     db.commit()
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+    tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else "Desconocido"
+    send_ceo_alert(
+        f"Reporte de no-show: {tutor_name} - {cls.title}",
+        f"<p><strong>Tutor reportado:</strong> {tutor_name}</p>"
+        f"<p><strong>Clase:</strong> {cls.title}</p>"
+        f"<p><strong>Estudiante que reporta:</strong> {user.first_name} {user.last_name} ({user.email})</p>"
+        f"<p><strong>Fecha clase:</strong> {cls.scheduled_at.strftime('%d/%m/%Y %H:%M')}</p>"
+        f"<p><strong>Estado:</strong> Reembolso 100% en proceso</p>",
+    )
 
     return {
         "ok": True,
@@ -1564,6 +1849,18 @@ def admin_process_payment(
     payment.payment_status = "processing"
     db.commit()
     db.refresh(payment)
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == payment.tutor_id).first()
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+    tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else "Desconocido"
+    send_ceo_alert(
+        f"Pago procesado: ${int(payment.tutor_amount):,} CLP para {tutor_name}",
+        f"<p><strong>Tutor:</strong> {tutor_name}</p>"
+        f"<p><strong>Monto bruto:</strong> ${int(payment.gross_amount):,} CLP</p>"
+        f"<p><strong>Comision Conniku:</strong> ${int(payment.conniku_commission):,} CLP</p>"
+        f"<p><strong>Monto tutor:</strong> ${int(payment.tutor_amount):,} CLP</p>"
+        f"<p><strong>Estado:</strong> En proceso</p>",
+    )
 
     return {"ok": True, "message": "Pago marcado como en proceso", "payment": _payment_to_dict(payment)}
 
@@ -1948,4 +2245,762 @@ def sign_my_contract(
         "message": "Contrato firmado exitosamente conforme a Ley 19.799",
         "contract_signed": True,
         "contract_signed_at": profile.contract_signed_at.isoformat(),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  EXAM SYSTEM
+# ═══════════════════════════════════════════════════════════════════
+
+@router.post("/classes/{class_id}/exam")
+def create_exam(
+    class_id: str,
+    data: ExamCreateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor creates an exam for a class. Only the tutor who owns the class can create it."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Solo el tutor de la clase puede crear un examen")
+
+    # Check if exam already exists for this class
+    existing = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ya existe un examen para esta clase")
+
+    if not data.questions or len(data.questions) == 0:
+        raise HTTPException(status_code=400, detail="El examen debe tener al menos una pregunta")
+
+    # Validate question format
+    for i, q in enumerate(data.questions):
+        if not isinstance(q, dict):
+            raise HTTPException(status_code=400, detail=f"Pregunta {i+1} tiene formato invalido")
+        if "id" not in q or "type" not in q or "question" not in q:
+            raise HTTPException(status_code=400, detail=f"Pregunta {i+1} debe tener 'id', 'type' y 'question'")
+        if q["type"] not in ("multiple_choice", "short_answer"):
+            raise HTTPException(status_code=400, detail=f"Pregunta {i+1}: tipo invalido. Opciones: multiple_choice, short_answer")
+        if q["type"] == "multiple_choice" and ("options" not in q or "correct" not in q):
+            raise HTTPException(status_code=400, detail=f"Pregunta {i+1} de opcion multiple debe tener 'options' y 'correct'")
+        if q["type"] == "short_answer" and "correct_keywords" not in q:
+            raise HTTPException(status_code=400, detail=f"Pregunta {i+1} de respuesta corta debe tener 'correct_keywords'")
+
+    if data.time_limit_minutes < 1 or data.time_limit_minutes > 480:
+        raise HTTPException(status_code=400, detail="Limite de tiempo debe ser entre 1 y 480 minutos")
+
+    if data.passing_score < 0 or data.passing_score > 100:
+        raise HTTPException(status_code=400, detail="Puntaje de aprobacion debe ser entre 0 y 100")
+
+    exam = TutorExam(
+        class_id=class_id,
+        tutor_id=tutor.id,
+        title=data.title,
+        description=data.description,
+        questions=json.dumps(data.questions),
+        time_limit_minutes=data.time_limit_minutes,
+        passing_score=data.passing_score,
+        is_enabled=False,
+    )
+    db.add(exam)
+    db.commit()
+    db.refresh(exam)
+
+    return {
+        "ok": True,
+        "message": "Examen creado exitosamente",
+        "exam": {
+            "id": exam.id,
+            "class_id": exam.class_id,
+            "title": exam.title,
+            "description": exam.description,
+            "questions": json.loads(exam.questions),
+            "time_limit_minutes": exam.time_limit_minutes,
+            "passing_score": exam.passing_score,
+            "is_enabled": exam.is_enabled,
+            "enabled_at": None,
+            "created_at": exam.created_at.isoformat() if exam.created_at else None,
+        },
+    }
+
+
+@router.put("/classes/{class_id}/exam/enable")
+def enable_exam(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor enables the exam for a class."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Solo el tutor de la clase puede habilitar el examen")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="No existe un examen para esta clase")
+
+    if exam.is_enabled:
+        return {"ok": True, "message": "El examen ya esta habilitado"}
+
+    exam.is_enabled = True
+    exam.enabled_at = datetime.utcnow()
+    db.commit()
+
+    return {"ok": True, "message": "Examen habilitado exitosamente"}
+
+
+@router.get("/classes/{class_id}/exam")
+def get_exam(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get exam for a class. Tutor sees full exam with answers; student sees questions without answers."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="No existe un examen para esta clase")
+
+    # Check if user is the tutor
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = tutor and tutor.user_id == user.id
+
+    questions = json.loads(exam.questions) if exam.questions else []
+
+    if not is_tutor:
+        # Student view: remove answers
+        if not exam.is_enabled:
+            raise HTTPException(status_code=403, detail="El examen aun no esta habilitado")
+        # Check student is enrolled
+        enrollment = db.query(TutorClassEnrollment).filter(
+            TutorClassEnrollment.class_id == class_id,
+            TutorClassEnrollment.student_id == user.id,
+        ).first()
+        if not enrollment:
+            raise HTTPException(status_code=403, detail="Debes estar inscrito en la clase para ver el examen")
+
+        sanitized_questions = []
+        for q in questions:
+            sq = {
+                "id": q.get("id"),
+                "type": q.get("type"),
+                "question": q.get("question"),
+                "points": q.get("points", 10),
+            }
+            if q.get("type") == "multiple_choice":
+                sq["options"] = q.get("options", [])
+            sanitized_questions.append(sq)
+        questions = sanitized_questions
+
+    return {
+        "id": exam.id,
+        "class_id": exam.class_id,
+        "title": exam.title,
+        "description": exam.description,
+        "questions": questions,
+        "time_limit_minutes": exam.time_limit_minutes,
+        "passing_score": exam.passing_score,
+        "is_enabled": exam.is_enabled,
+        "enabled_at": exam.enabled_at.isoformat() if exam.enabled_at else None,
+        "created_at": exam.created_at.isoformat() if exam.created_at else None,
+    }
+
+
+def _auto_grade_exam(questions: list, answers: dict) -> tuple:
+    """Auto-grade exam. Returns (score_percentage, details)."""
+    total_points = 0
+    earned_points = 0
+    details = []
+
+    for q in questions:
+        q_id = q.get("id")
+        q_type = q.get("type")
+        points = q.get("points", 10)
+        total_points += points
+        student_answer = answers.get(q_id, "")
+
+        correct = False
+        if q_type == "multiple_choice":
+            correct_answer = q.get("correct", "")
+            correct = str(student_answer).strip().upper() == str(correct_answer).strip().upper()
+        elif q_type == "short_answer":
+            keywords = q.get("correct_keywords", [])
+            answer_lower = str(student_answer).strip().lower()
+            if keywords:
+                matched = sum(1 for kw in keywords if kw.lower() in answer_lower)
+                # Partial credit: proportional to matched keywords
+                ratio = matched / len(keywords)
+                earned_points += round(points * ratio)
+                details.append({"question_id": q_id, "correct": ratio >= 0.5, "earned": round(points * ratio), "max": points})
+                continue
+
+        if correct:
+            earned_points += points
+        details.append({"question_id": q_id, "correct": correct, "earned": points if correct else 0, "max": points})
+
+    score = round((earned_points / total_points) * 100, 2) if total_points > 0 else 0
+    return score, details
+
+
+@router.post("/classes/{class_id}/exam/submit")
+def submit_exam(
+    class_id: str,
+    data: ExamSubmitRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Student submits exam answers. Auto-grades and returns score."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="No existe un examen para esta clase")
+
+    if not exam.is_enabled:
+        raise HTTPException(status_code=403, detail="El examen aun no esta habilitado")
+
+    # Check student is enrolled
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=403, detail="Debes estar inscrito en la clase para rendir el examen")
+
+    # Check if already submitted
+    existing = db.query(TutorExamSubmission).filter(
+        TutorExamSubmission.exam_id == exam.id,
+        TutorExamSubmission.student_id == user.id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ya rendiste este examen")
+
+    # Auto-grade
+    questions = json.loads(exam.questions) if exam.questions else []
+    score, grading_details = _auto_grade_exam(questions, data.answers)
+    passed = score >= exam.passing_score
+
+    # Parse started_at
+    started_at = None
+    if data.started_at:
+        try:
+            started_at = datetime.fromisoformat(data.started_at.replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            pass
+
+    submission = TutorExamSubmission(
+        exam_id=exam.id,
+        student_id=user.id,
+        answers=json.dumps(data.answers),
+        score=score,
+        passed=passed,
+        started_at=started_at,
+        submitted_at=datetime.utcnow(),
+        time_spent_seconds=data.time_spent_seconds,
+    )
+    db.add(submission)
+    db.commit()
+    db.refresh(submission)
+
+    return {
+        "ok": True,
+        "message": "Examen enviado exitosamente",
+        "result": {
+            "id": submission.id,
+            "score": submission.score,
+            "passed": submission.passed,
+            "passing_score": exam.passing_score,
+            "time_spent_seconds": submission.time_spent_seconds,
+            "submitted_at": submission.submitted_at.isoformat() if submission.submitted_at else None,
+            "grading_details": grading_details,
+        },
+    }
+
+
+@router.get("/classes/{class_id}/exam/results")
+def get_exam_results(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get exam results. Tutor sees all students; student sees own result."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="No existe un examen para esta clase")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = tutor and tutor.user_id == user.id
+
+    if is_tutor:
+        # Tutor sees all submissions
+        submissions = db.query(TutorExamSubmission).filter(
+            TutorExamSubmission.exam_id == exam.id,
+        ).all()
+
+        results = []
+        for s in submissions:
+            student = db.query(User).filter(User.id == s.student_id).first()
+            results.append({
+                "id": s.id,
+                "student_id": s.student_id,
+                "student_name": f"{student.first_name} {student.last_name}" if student else "Desconocido",
+                "score": s.score,
+                "passed": s.passed,
+                "time_spent_seconds": s.time_spent_seconds,
+                "submitted_at": s.submitted_at.isoformat() if s.submitted_at else None,
+                "answers": json.loads(s.answers) if s.answers else {},
+            })
+
+        # Summary stats
+        scores = [s.score for s in submissions]
+        return {
+            "exam_title": exam.title,
+            "total_submissions": len(submissions),
+            "average_score": round(sum(scores) / len(scores), 2) if scores else 0,
+            "pass_rate": round(sum(1 for s in submissions if s.passed) / len(submissions) * 100, 2) if submissions else 0,
+            "results": results,
+        }
+    else:
+        # Student sees own result
+        submission = db.query(TutorExamSubmission).filter(
+            TutorExamSubmission.exam_id == exam.id,
+            TutorExamSubmission.student_id == user.id,
+        ).first()
+        if not submission:
+            raise HTTPException(status_code=404, detail="Aun no has rendido este examen")
+
+        return {
+            "exam_title": exam.title,
+            "result": {
+                "id": submission.id,
+                "score": submission.score,
+                "passed": submission.passed,
+                "passing_score": exam.passing_score,
+                "time_spent_seconds": submission.time_spent_seconds,
+                "submitted_at": submission.submitted_at.isoformat() if submission.submitted_at else None,
+            },
+        }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  TUTOR AVAILABILITY / CALENDAR
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/my-availability")
+def get_my_availability(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get tutor's availability schedule and blocked dates."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    slots = db.query(TutorAvailability).filter(
+        TutorAvailability.tutor_id == profile.id,
+    ).order_by(TutorAvailability.day_of_week, TutorAvailability.start_time).all()
+
+    blocked = db.query(TutorBlockedDate).filter(
+        TutorBlockedDate.tutor_id == profile.id,
+    ).order_by(TutorBlockedDate.start_date).all()
+
+    day_names = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
+
+    return {
+        "availability": [
+            {
+                "id": s.id,
+                "day_of_week": s.day_of_week,
+                "day_name": day_names[s.day_of_week] if 0 <= s.day_of_week <= 6 else "",
+                "start_time": s.start_time,
+                "end_time": s.end_time,
+                "is_recurring": s.is_recurring,
+            }
+            for s in slots
+        ],
+        "blocked_dates": [
+            {
+                "id": b.id,
+                "start_date": b.start_date.isoformat() if b.start_date else None,
+                "end_date": b.end_date.isoformat() if b.end_date else None,
+                "reason": b.reason,
+            }
+            for b in blocked
+        ],
+    }
+
+
+@router.put("/my-availability")
+def set_my_availability(
+    data: SetAvailabilityRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Set recurring availability (replaces all existing slots)."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    # Validate time format
+    import re
+    time_pattern = re.compile(r"^\d{2}:\d{2}$")
+    for slot in data.slots:
+        if not time_pattern.match(slot.start_time) or not time_pattern.match(slot.end_time):
+            raise HTTPException(status_code=400, detail="Formato de hora invalido. Usa HH:MM (ej: 09:00)")
+        if slot.start_time >= slot.end_time:
+            raise HTTPException(status_code=400, detail=f"La hora de inicio debe ser anterior a la hora de fin ({slot.start_time} >= {slot.end_time})")
+
+    # Delete existing availability
+    db.query(TutorAvailability).filter(TutorAvailability.tutor_id == profile.id).delete()
+
+    # Create new slots
+    new_slots = []
+    for slot in data.slots:
+        avail = TutorAvailability(
+            tutor_id=profile.id,
+            day_of_week=slot.day_of_week,
+            start_time=slot.start_time,
+            end_time=slot.end_time,
+            is_recurring=slot.is_recurring,
+        )
+        db.add(avail)
+        new_slots.append(avail)
+
+    db.commit()
+
+    return {"ok": True, "message": f"Disponibilidad actualizada con {len(new_slots)} bloques horarios"}
+
+
+@router.post("/my-blocked-dates")
+def add_blocked_date(
+    data: BlockedDateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Add a blocked date range (tutor not available)."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    try:
+        start_date = datetime.fromisoformat(data.start_date.replace("Z", "+00:00"))
+        end_date = datetime.fromisoformat(data.end_date.replace("Z", "+00:00"))
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail="Formato de fecha invalido. Usa ISO 8601")
+
+    if end_date <= start_date:
+        raise HTTPException(status_code=400, detail="La fecha de fin debe ser posterior a la fecha de inicio")
+
+    blocked = TutorBlockedDate(
+        tutor_id=profile.id,
+        start_date=start_date,
+        end_date=end_date,
+        reason=data.reason,
+    )
+    db.add(blocked)
+    db.commit()
+    db.refresh(blocked)
+
+    return {
+        "ok": True,
+        "message": "Fecha bloqueada agregada",
+        "blocked_date": {
+            "id": blocked.id,
+            "start_date": blocked.start_date.isoformat(),
+            "end_date": blocked.end_date.isoformat(),
+            "reason": blocked.reason,
+        },
+    }
+
+
+@router.delete("/my-blocked-dates/{blocked_id}")
+def remove_blocked_date(
+    blocked_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Remove a blocked date."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    blocked = db.query(TutorBlockedDate).filter(
+        TutorBlockedDate.id == blocked_id,
+        TutorBlockedDate.tutor_id == profile.id,
+    ).first()
+    if not blocked:
+        raise HTTPException(status_code=404, detail="Fecha bloqueada no encontrada")
+
+    db.delete(blocked)
+    db.commit()
+
+    return {"ok": True, "message": "Fecha bloqueada eliminada"}
+
+
+@router.get("/{tutor_id}/availability")
+def get_tutor_availability_public(
+    tutor_id: str,
+    db: Session = Depends(get_db),
+):
+    """Public: get a tutor's availability for booking."""
+    profile = db.query(TutorProfile).filter(
+        TutorProfile.id == tutor_id,
+        TutorProfile.status == "approved",
+    ).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+
+    slots = db.query(TutorAvailability).filter(
+        TutorAvailability.tutor_id == profile.id,
+    ).order_by(TutorAvailability.day_of_week, TutorAvailability.start_time).all()
+
+    blocked = db.query(TutorBlockedDate).filter(
+        TutorBlockedDate.tutor_id == profile.id,
+        TutorBlockedDate.end_date >= datetime.utcnow(),
+    ).order_by(TutorBlockedDate.start_date).all()
+
+    day_names = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes", "Sabado", "Domingo"]
+
+    return {
+        "tutor_id": tutor_id,
+        "availability": [
+            {
+                "day_of_week": s.day_of_week,
+                "day_name": day_names[s.day_of_week] if 0 <= s.day_of_week <= 6 else "",
+                "start_time": s.start_time,
+                "end_time": s.end_time,
+                "is_recurring": s.is_recurring,
+            }
+            for s in slots
+        ],
+        "blocked_dates": [
+            {
+                "start_date": b.start_date.isoformat() if b.start_date else None,
+                "end_date": b.end_date.isoformat() if b.end_date else None,
+                "reason": b.reason or "No disponible",
+            }
+            for b in blocked
+        ],
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  STUDENT: MY ENROLLED CLASSES
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/my-enrolled-classes")
+def get_my_enrolled_classes(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Returns all classes the current user is enrolled in as a student."""
+    enrollments = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.student_id == user.id,
+    ).order_by(desc(TutorClassEnrollment.created_at)).all()
+
+    results = []
+    for e in enrollments:
+        cls = db.query(TutorClass).filter(TutorClass.id == e.class_id).first()
+        if not cls:
+            continue
+
+        tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+        tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+
+        # Check exam availability
+        exam = db.query(TutorExam).filter(TutorExam.class_id == cls.id, TutorExam.is_enabled == True).first()
+        exam_submitted = False
+        if exam:
+            sub = db.query(TutorExamSubmission).filter(
+                TutorExamSubmission.exam_id == exam.id,
+                TutorExamSubmission.student_id == user.id,
+            ).first()
+            exam_submitted = sub is not None
+
+        # Payment info
+        payment = db.query(TutorPayment).filter(TutorPayment.id == e.payment_id).first() if e.payment_id else None
+
+        results.append({
+            "enrollment_id": e.id,
+            "class": _class_to_dict(cls),
+            "tutor": {
+                "id": tutor.id if tutor else None,
+                "name": f"{tutor_user.first_name} {tutor_user.last_name[0]}." if tutor_user and tutor_user.last_name else "Tutor",
+                "tutor_role_number": tutor.tutor_role_number if tutor else "",
+                "rating_average": tutor.rating_average if tutor else 0,
+            },
+            "enrollment_status": e.payment_status,
+            "confirmed_by_student": e.confirmed_by_student,
+            "confirmed_by_tutor": e.confirmed_by_tutor,
+            "rating": e.rating,
+            "exam_available": exam is not None,
+            "exam_submitted": exam_submitted,
+            "payment": {
+                "gross_amount": payment.gross_amount if payment else 0,
+                "discount_type": payment.discount_type if payment else "",
+                "discount_amount": payment.discount_amount if payment else 0,
+                "payment_status": payment.payment_status if payment else "",
+            } if payment else None,
+            "created_at": e.created_at.isoformat() if e.created_at else None,
+        })
+
+    return {"enrolled_classes": results, "total": len(results)}
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  TUTOR RATING ENFORCEMENT (6-MONTH RULE)
+# ═══════════════════════════════════════════════════════════════════
+
+def check_tutor_rating_enforcement(db: Session) -> dict:
+    """
+    Queries all approved tutors. For those with 6+ months since verified_at
+    and rating_average <= 2.0 (out of 5, equiv. to 4.0 out of 10),
+    auto-suspends them with reason.
+    Returns summary of actions taken.
+    """
+    cutoff = datetime.utcnow() - timedelta(days=180)  # ~6 months
+
+    tutors = db.query(TutorProfile).filter(
+        TutorProfile.status == "approved",
+        TutorProfile.verified_at.isnot(None),
+        TutorProfile.verified_at <= cutoff,
+        TutorProfile.rating_average <= 2.0,  # 2.0 out of 5 = 4.0 out of 10
+        TutorProfile.rating_average > 0,  # only tutors with ratings
+    ).all()
+
+    suspended = []
+    for tutor in tutors:
+        tutor.status = "suspended"
+        tutor.rejection_reason = "Calificacion insuficiente en periodo de 6 meses"
+        tutor.updated_at = datetime.utcnow()
+
+        # Cancel future published classes
+        future_classes = db.query(TutorClass).filter(
+            TutorClass.tutor_id == tutor.id,
+            TutorClass.status == "published",
+            TutorClass.scheduled_at > datetime.utcnow(),
+        ).all()
+        for cls in future_classes:
+            cls.status = "cancelled"
+
+        suspended.append({
+            "tutor_id": tutor.id,
+            "tutor_role_number": tutor.tutor_role_number,
+            "rating_average": tutor.rating_average,
+            "verified_at": tutor.verified_at.isoformat() if tutor.verified_at else None,
+            "cancelled_classes": len(future_classes),
+        })
+
+    if suspended:
+        db.commit()
+        logger.info(f"Rating enforcement: suspended {len(suspended)} tutors")
+
+    return {
+        "total_checked": db.query(TutorProfile).filter(TutorProfile.status == "approved").count(),
+        "suspended_count": len(suspended),
+        "suspended": suspended,
+    }
+
+
+@router.post("/admin/enforce-ratings")
+def admin_enforce_ratings(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Admin triggers rating enforcement check (6-month rule)."""
+    _require_admin_access(user)
+
+    result = check_tutor_rating_enforcement(db)
+
+    return {
+        "ok": True,
+        "message": f"Revision completada. {result['suspended_count']} tutor(es) suspendido(s) por calificacion insuficiente.",
+        **result,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  OWNER AS FREE TUTOR
+# ═══════════════════════════════════════════════════════════════════
+
+@router.post("/apply-as-owner")
+def apply_as_owner_tutor(
+    data: OwnerTutorApplyRequest = OwnerTutorApplyRequest(),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Owner registers as a free tutor (rate=0). Auto-approved."""
+    role = getattr(user, "role", "user") or "user"
+    if role != "owner":
+        raise HTTPException(status_code=403, detail="Solo el owner puede registrarse como tutor gratuito")
+
+    # Check if already has a tutor profile
+    existing = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if existing:
+        if existing.status == "approved":
+            return {"ok": True, "message": "Ya tienes un perfil de tutor aprobado", "tutor": _tutor_to_dict(existing, include_bank=True)}
+        # Reactivate if rejected/suspended
+        existing.status = "approved"
+        existing.individual_rate = 0
+        existing.group_2_rate = 0
+        existing.group_3_rate = 0
+        existing.group_4_rate = 0
+        existing.group_5_rate = 0
+        existing.verified_at = datetime.utcnow()
+        existing.verified_by = user.id
+        existing.rejection_reason = None
+        existing.updated_at = datetime.utcnow()
+        if data.professional_title:
+            existing.professional_title = data.professional_title
+        if data.bio:
+            existing.bio = data.bio
+        if data.specialties:
+            existing.specialties = json.dumps(data.specialties)
+        db.commit()
+        db.refresh(existing)
+        return {"ok": True, "message": "Perfil de tutor reactivado como gratuito", "tutor": _tutor_to_dict(existing, include_bank=True)}
+
+    tutor_role_number = _generate_tutor_role_number(db)
+
+    profile = TutorProfile(
+        user_id=user.id,
+        tutor_role_number=tutor_role_number,
+        status="approved",  # auto-approved for owner
+        professional_title=data.professional_title,
+        institution=data.institution,
+        bio=data.bio,
+        specialties=json.dumps(data.specialties),
+        individual_rate=0,
+        group_2_rate=0,
+        group_3_rate=0,
+        group_4_rate=0,
+        group_5_rate=0,
+        payment_frequency="per_class",
+        verified_at=datetime.utcnow(),
+        verified_by=user.id,
+    )
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
+
+    return {
+        "ok": True,
+        "message": "Perfil de tutor gratuito creado y aprobado automaticamente",
+        "tutor": _tutor_to_dict(profile, include_bank=True),
     }
