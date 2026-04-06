@@ -229,7 +229,10 @@ export default function CeoDashboard({ onNavigate }: Props) {
       <div className="page-header">
         <h2>{Briefcase({ size: 22 })} Panel CEO — Conniku</h2>
         <p>Vista exclusiva del estado completo de la plataforma</p>
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+          <button className="tab" style={{ background: '#0078d4', color: '#fff', border: '1px solid #0078d4', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
+            {Inbox({ size: 14 })} Correo
+          </button>
           {(['overview', 'email', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
             <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview(); if (t === 'email' && emailInbox.length === 0) loadEmailData() }}>
               {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'email' ? <>{Inbox({ size: 14 })} Email</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
