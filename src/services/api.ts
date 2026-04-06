@@ -742,7 +742,7 @@ export const api = {
   sharePost: (postId: string, comment?: string) =>
     request(`/social/posts/${postId}/share`, { method: 'POST', body: JSON.stringify({ comment }) }),
 
-  // ─── Payments / Stripe ────────────────────────────────────
+  // ─── Payments ─────────────────────────────────────────────
   createCheckoutSession: (plan: 'monthly' | 'yearly') =>
     request('/payments/create-checkout-session', { method: 'POST', body: JSON.stringify({ plan }) }),
   createPortalSession: () =>

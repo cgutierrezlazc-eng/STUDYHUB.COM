@@ -270,7 +270,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 <div className="card" style={{ padding: 20 }}>
                   <h4 style={{ marginTop: 0 }}>{Gem({ size: 16 })} Ganancia Neta</h4>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>${fmt(weeklyReport.revenue?.gananciaNetaClp)} CLP</div>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Después de Stripe + IVA 19%</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Despues de comisiones + IVA 19%</p>
                 </div>
                 <div className="card" style={{ padding: 20 }}>
                   <h4 style={{ marginTop: 0 }}>{BarChart3({ size: 16 })} Engagement</h4>

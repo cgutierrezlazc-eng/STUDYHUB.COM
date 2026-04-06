@@ -502,7 +502,7 @@ export default function Admin() {
                   <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--accent-green)' }}>${financials.totalRevenue} USD</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Comisiones Stripe/PayPal (est.)</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Comisiones plataforma (est.)</div>
                   <div style={{ fontSize: 20, fontWeight: 700, color: '#ef4444' }}>-${financials.estimatedFees} USD</div>
                 </div>
                 <div>
@@ -564,7 +564,7 @@ export default function Admin() {
                       <tr key={p.id}>
                         <td>{new Date(p.createdAt).toLocaleString()}</td>
                         <td>@{p.user?.username || '?'}</td>
-                        <td><span className={`admin-badge ${p.provider === 'stripe' ? 'info' : 'success'}`}>{p.provider}</span></td>
+                        <td><span className={`admin-badge ${p.provider === 'paypal' ? 'info' : 'success'}`}>{p.provider}</span></td>
                         <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{p.transactionId || '—'}</td>
                         <td style={{ fontWeight: 600 }}>${p.amount} {p.currency}</td>
                         <td><span className={`admin-badge ${p.status === 'completed' ? 'success' : 'warning'}`}>{p.status}</span></td>
