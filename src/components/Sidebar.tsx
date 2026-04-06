@@ -13,34 +13,245 @@ interface Props {
   className?: string
 }
 
-/* Compact SVG icon helper — Lucide-style stroke icons */
-const Icon = ({ d, size = 18 }: { d: string; size?: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d={d} />
-  </svg>
+/* ─── Duotone Icon Component ───
+   Each icon has a colored stroke + a semi-transparent fill on the main shape.
+   strokeWidth 1.75 for a more modern/refined look. */
+interface DuotoneIconProps {
+  color: string
+  children: React.ReactNode
+}
+
+const DuotoneIcon = ({ color, children }: DuotoneIconProps) => (
+  <span className="nav-item-icon" style={{ color, '--icon-fill': `${color}20` } as React.CSSProperties}>
+    {children}
+  </span>
 )
 
-/* Multi-path SVG icons for more complex shapes */
+/* ─── Icon definitions — Duotone style ─── */
+const sw = 1.75  // stroke-width
 const Icons = {
-  user: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  home: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
-  users: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  globe: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
-  calendar: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-  compass: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>,
-  messageCircle: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  barChart: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>,
-  bookOpen: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
-  search: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  fileText: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-  briefcase: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>,
-  sprout: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.5.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1-1 1.6-2.3 1.7-4.6-2.7.1-4 1-4.9 2z"/></svg>,
-  diamond: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/><path d="M11 3l1 6"/><path d="M2 9h20"/></svg>,
-  lightbulb: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>,
-  building: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><line x1="8" y1="6" x2="8" y2="6"/><line x1="12" y1="6" x2="12" y2="6"/><line x1="16" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12" y2="10"/><line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/><line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="14"/></svg>,
-  video: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>,
-  settings: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
-  plus: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+  user: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="7" r="4" fill={`${c}20`} />
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  feed: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1" fill={`${c}20`} />
+        <rect x="14" y="3" width="7" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" fill={`${c}20`} />
+      </svg>
+    </DuotoneIcon>
+  ),
+  community: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="7" r="4" fill={`${c}20`} />
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  globe: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" fill={`${c}20`} />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  calendar: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill={`${c}20`} />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  compass: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" fill={`${c}20`} />
+        <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" fill={`${c}30`} />
+      </svg>
+    </DuotoneIcon>
+  ),
+  messageCircle: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill={`${c}20`} />
+      </svg>
+    </DuotoneIcon>
+  ),
+  barChart: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+        <path d="M22 12A10 10 0 0 0 12 2v10z" fill={`${c}20`} />
+      </svg>
+    </DuotoneIcon>
+  ),
+  bookOpen: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" fill={`${c}20`} />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  video: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="5" width="15" height="14" rx="2" ry="2" fill={`${c}20`} />
+        <polygon points="23 7 16 12 23 17 23 7" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  search: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" fill={`${c}20`} />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  fileText: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill={`${c}20`} />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  briefcase: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" fill={`${c}20`} />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  diploma: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4z" fill={`${c}20`} />
+        <path d="M4 4h16" />
+        <path d="M4 8h16" />
+        <line x1="8" y1="12" x2="16" y2="12" />
+        <line x1="10" y1="15" x2="14" y2="15" />
+        <circle cx="12" cy="20" r="2" fill={`${c}30`} />
+        <path d="M10 22l-1 2" />
+        <path d="M14 22l1 2" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  tutors: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 10l10-5 10 5-10 5z" fill={`${c}20`} />
+        <path d="M22 10v6" />
+        <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  settings: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" fill={`${c}20`} />
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  diamond: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M6 3h12l4 6-10 13L2 9z" fill={`${c}20`} />
+        <path d="M2 9h20" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  lightbulb: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14" fill={`${c}20`} />
+        <path d="M9 18h6" />
+        <path d="M10 22h4" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  building: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="4" y="2" width="16" height="20" rx="2" ry="2" fill={`${c}20`} />
+        <path d="M9 22v-4h6v4" />
+        <line x1="8" y1="6" x2="8" y2="6" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="12" y1="6" x2="12" y2="6" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="16" y1="6" x2="16" y2="6" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="8" y1="10" x2="8" y2="10" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="12" y1="10" x2="12" y2="10" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="16" y1="10" x2="16" y2="10" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="8" y1="14" x2="8" y2="14" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="12" y1="14" x2="12" y2="14" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="16" y1="14" x2="16" y2="14" strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  users2: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="9" cy="7" r="4" fill={`${c}20`} />
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    </DuotoneIcon>
+  ),
+  plus: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+    </DuotoneIcon>
+  ),
+}
+
+/* ─── Icon color palette ─── */
+const IC = {
+  profile:    '#3B82F6', // blue
+  feed:       '#F97316', // orange
+  community:  '#8B5CF6', // violet
+  globe:      '#06B6D4', // cyan
+  calendar:   '#F59E0B', // amber
+  compass:    '#06B6D4', // cyan
+  messages:   '#10B981', // emerald
+  dashboard:  '#6366F1', // indigo
+  rooms:      '#EC4899', // pink
+  video:      '#0EA5E9', // sky
+  search:     '#F59E0B', // amber
+  notes:      '#8B5CF6', // violet
+  jobs:       '#14B8A6', // teal
+  courses:    '#6366F1', // indigo
+  tutors:     '#3B82F6', // blue
+  events:     '#EF4444', // red
+  settings:   '#64748B', // slate
+  diamond:    '#F43F5E', // rose
+  lightbulb:  '#F59E0B', // amber
+  building:   '#6366F1', // indigo
+  hr:         '#8B5CF6', // violet
+  admin:      '#64748B', // slate
+  plus:       '#94A3B8', // neutral
 }
 
 export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, className }: Props) {
@@ -69,25 +280,25 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       <div className="sidebar-section">
         <div className="sidebar-section-title">Social</div>
         <button className={`nav-item ${isActive('/') || currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
-          <span className="nav-item-icon">{Icons.user}</span> Mi Perfil
+          {Icons.user(IC.profile)} Mi Perfil
         </button>
         <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
-          <span className="nav-item-icon">{Icons.home}</span> Feed
+          {Icons.feed(IC.feed)} Feed
         </button>
         <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
-          <span className="nav-item-icon">{Icons.users}</span> Comunidad
+          {Icons.community(IC.community)} Comunidad
         </button>
         <button className={`nav-item ${isActive('/communities') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
-          <span className="nav-item-icon">{Icons.globe}</span> Comunidades
+          {Icons.globe(IC.globe)} Comunidades
         </button>
         <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
-          <span className="nav-item-icon">{Icons.calendar}</span> Eventos
+          {Icons.calendar(IC.events)} Eventos
         </button>
         <button className={`nav-item ${isActive('/mentorship') ? 'active' : ''}`} onClick={() => onNavigate('/mentorship')}>
-          <span className="nav-item-icon">{Icons.compass}</span> Mentoría
+          {Icons.compass(IC.compass)} Mentoría
         </button>
         <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
-          <span className="nav-item-icon">{Icons.messageCircle}</span> Mensajes
+          {Icons.messageCircle(IC.messages)} Mensajes
           {unreadMessages > 0 && (
             <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
           )}
@@ -97,31 +308,31 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       <div className="sidebar-section">
         <div className="sidebar-section-title">Académico</div>
         <button className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`} onClick={() => onNavigate('/dashboard')}>
-          <span className="nav-item-icon">{Icons.barChart}</span> Dashboard
+          {Icons.barChart(IC.dashboard)} Dashboard
         </button>
         <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
-          <span className="nav-item-icon">{Icons.bookOpen}</span> Salas de Estudio
+          {Icons.bookOpen(IC.rooms)} Salas de Estudio
         </button>
         <button className={`nav-item ${isActive('/conferences') ? 'active' : ''}`} onClick={() => onNavigate('/conferences')}>
-          <span className="nav-item-icon">{Icons.video}</span> Conferencias
+          {Icons.video(IC.video)} Conferencias
         </button>
         <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
-          <span className="nav-item-icon">{Icons.search}</span> Buscador
+          {Icons.search(IC.search)} Buscador
         </button>
         <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
-          <span className="nav-item-icon">{Icons.calendar}</span> Calendario
+          {Icons.calendar(IC.calendar)} Calendario
         </button>
         <button className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`} onClick={() => onNavigate('/marketplace')}>
-          <span className="nav-item-icon">{Icons.fileText}</span> Apuntes
+          {Icons.fileText(IC.notes)} Apuntes
         </button>
         <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
-          <span className="nav-item-icon">{Icons.briefcase}</span> Bolsa de Trabajo
+          {Icons.briefcase(IC.jobs)} Bolsa de Trabajo
         </button>
         <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
-          <span className="nav-item-icon">{Icons.sprout}</span> Cursos
+          {Icons.diploma(IC.courses)} Cursos
         </button>
         <button className={`nav-item ${isActive('/tutores') ? 'active' : ''}`} onClick={() => onNavigate('/tutores')}>
-          <span className="nav-item-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5"/></svg></span> Tutores
+          {Icons.tutors(IC.tutors)} Tutores
         </button>
       </div>
 
@@ -134,34 +345,34 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
           </button>
         ))}
         <button className="nav-item nav-item-add" onClick={onNewProject}>
-          <span className="nav-item-icon">{Icons.plus}</span> {t('nav.newSubject')}
+          {Icons.plus(IC.plus)} {t('nav.newSubject')}
         </button>
       </div>
 
       <div className="sidebar-section">
         <div className="sidebar-section-title">Soporte</div>
         <button className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`} onClick={() => onNavigate('/profile')}>
-          <span className="nav-item-icon">{Icons.settings}</span> Configuración
+          {Icons.settings(IC.settings)} Configuración
         </button>
         <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
-          <span className="nav-item-icon">{Icons.diamond}</span> Suscripción
+          {Icons.diamond(IC.diamond)} Suscripción
         </button>
         <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
-          <span className="nav-item-icon">{Icons.lightbulb}</span> Sugerencias
+          {Icons.lightbulb(IC.lightbulb)} Sugerencias
         </button>
         {user?.role === 'owner' && (
           <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
-            <span className="nav-item-icon">{Icons.building}</span> CEO Panel
+            {Icons.building(IC.building)} CEO Panel
           </button>
         )}
         {user?.role === 'owner' && (
           <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
-            <span className="nav-item-icon">{Icons.users}</span> RRHH
+            {Icons.users2(IC.hr)} RRHH
           </button>
         )}
         {user?.isAdmin && (
           <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
-            <span className="nav-item-icon">{Icons.settings}</span> Admin
+            {Icons.settings(IC.admin)} Admin
           </button>
         )}
       </div>

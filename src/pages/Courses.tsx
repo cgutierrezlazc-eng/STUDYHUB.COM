@@ -1002,16 +1002,66 @@ export default function Courses({ onNavigate }: Props) {
               <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setTab('catalog')}>Ver Cursos</button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
               {certificates.map((cert: any) => (
-                <div key={cert.certificateId} className="card" style={{ padding: 20, textAlign: 'center' }}>
-                  <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><CourseIcon category={cert.category} size={32} /></div>
-                  <h4 style={{ margin: '0 0 4px' }}>{cert.courseTitle}</h4>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
-                    Puntuación: {cert.score}% · {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es') : ''}
+                <div key={cert.certificateId || cert.courseId} className="card" style={{ padding: 24, textAlign: 'center' }}>
+                  <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><CourseIcon category={cert.courseCategory} size={36} /></div>
+                  <h4 style={{ margin: '0 0 6px', fontSize: 15 }}>{cert.courseTitle}</h4>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                    Puntuación: {cert.score ?? cert.grade ?? 0}% · {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es-CL') : ''}
                   </div>
-                  <div style={{ padding: 8, background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: 'var(--accent-green)' }}>
-                    {Medal({ size: 12 })} Certificado verificado · ID: {cert.certificateId?.slice(0, 8)}
+                  {cert.certCode && (
+                    <div style={{ padding: '6px 12px', background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: '#059669', marginBottom: 10, fontWeight: 600 }}>
+                      {Medal({ size: 12 })} Certificado: {cert.certCode}
+                    </div>
+                  )}
+                  {!cert.certCode && cert.certificateId && (
+                    <div style={{ padding: '6px 12px', background: 'rgba(5,150,105,0.06)', borderRadius: 8, fontSize: 12, color: '#059669', marginBottom: 10 }}>
+                      {Medal({ size: 12 })} ID: {cert.certificateId.slice(0, 8)}
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
+                    {(cert.certId || cert.certificateId) && (
+                      <button
+                        className="btn btn-primary"
+                        style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
+                        onClick={async () => {
+                          try {
+                            const id = cert.certId || cert.certificateId
+                            const token = localStorage.getItem('token')
+                            const base = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'
+                            const res = await fetch(`${base}/certificates/download/${id}`, {
+                              headers: { 'Authorization': `Bearer ${token}` },
+                            })
+                            if (!res.ok) throw new Error('PDF no disponible')
+                            const blob = await res.blob()
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = `Certificado_${cert.courseTitle}.pdf`
+                            document.body.appendChild(a)
+                            a.click()
+                            a.remove()
+                            URL.revokeObjectURL(url)
+                          } catch (e: any) {
+                            alert(e.message || 'Error al descargar certificado')
+                          }
+                        }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4 }}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Descargar PDF
+                      </button>
+                    )}
+                    {cert.verifyUrl && (
+                      <button
+                        className="btn btn-secondary"
+                        style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
+                        onClick={() => window.open(cert.verifyUrl, '_blank')}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4 }}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                        Verificar
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

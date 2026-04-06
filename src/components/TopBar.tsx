@@ -73,12 +73,6 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
       <div className="topbar-right">
         <NotificationBell onNavigate={onNavigate} />
 
-        <button className="topbar-icon-btn" onClick={() => onNavigate('/messages')} title="Mensajes">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-        </button>
-
         <div ref={menuRef} style={{ position: 'relative' }}>
           <button className="topbar-avatar-btn" onClick={() => setShowUserMenu(!showUserMenu)}>
             {user?.avatar ? (

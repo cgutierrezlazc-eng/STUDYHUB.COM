@@ -1006,18 +1006,40 @@ def my_certificates(user: User = Depends(get_current_user), db: Session = Depend
         UserCourseProgress.completed == True
     ).all()
 
-    return [{
-        "certificateId": p.certificate_id,
-        "courseId": c.id,
-        "courseTitle": c.title, "courseEmoji": c.emoji,
-        "courseCategory": c.category,
-        "courseDifficulty": c.difficulty,
-        "estimatedMinutes": c.estimated_minutes,
-        "lessonCount": c.lesson_count,
-        "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
-        "startedAt": p.started_at.isoformat() if p.started_at else "",
-        "userName": f"{user.first_name} {user.last_name}",
-    } for p, c in completed]
+    # Enrich with Certificate table data (verification code, PDF)
+    from database import Certificate
+    cert_map = {}
+    cert_ids = [p.certificate_id for p, c in completed if p.certificate_id]
+    if cert_ids:
+        certs = db.query(Certificate).filter(Certificate.user_id == user.id).all()
+        for cert in certs:
+            cert_map[cert.id] = cert
+            cert_map[cert.course_id] = cert  # also index by course_id
+
+    result = []
+    for p, c in completed:
+        # Try to find matching Certificate record
+        cert_record = cert_map.get(p.certificate_id) or cert_map.get(c.id)
+        result.append({
+            "certificateId": p.certificate_id,
+            "courseId": c.id,
+            "courseTitle": c.title, "courseEmoji": c.emoji,
+            "courseCategory": c.category,
+            "courseDifficulty": c.difficulty,
+            "estimatedMinutes": c.estimated_minutes,
+            "lessonCount": c.lesson_count,
+            "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
+            "startedAt": p.started_at.isoformat() if p.started_at else "",
+            "userName": f"{user.first_name} {user.last_name}",
+            # Verified certificate data
+            "certCode": cert_record.certificate_code if cert_record else None,
+            "certId": cert_record.id if cert_record else None,
+            "hasPdf": bool(cert_record and cert_record.pdf_path) if cert_record else False,
+            "verifyUrl": f"https://conniku.com/cert/{cert_record.certificate_code}" if cert_record else None,
+            "hours": cert_record.hours_completed if cert_record else c.estimated_minutes // 60 if c.estimated_minutes else 0,
+            "grade": cert_record.final_grade if cert_record else p.quiz_score,
+        })
+    return result
 
 
 @router.get("/certificates/{user_id}")
