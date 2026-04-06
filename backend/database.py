@@ -1294,11 +1294,138 @@ def init_db():
             owner.subscription_status = "owner"
             db.commit()
             print("Owner account password updated: ceo@conniku.com")
+
+        # ── Seed owner CV if not exists ──
+        _seed_owner_cv(db, owner)
+
     except Exception as e:
         db.rollback()
         print(f"Owner creation: {e}")
     finally:
         db.close()
+
+
+def _seed_owner_cv(db, owner):
+    """Populate owner CV with full professional data on startup using raw SQL."""
+    import json as _json
+    from sqlalchemy import text as _text
+    try:
+        # Check if cv_profiles table exists and if owner already has a CV
+        try:
+            row = db.execute(_text("SELECT id, headline FROM cv_profiles WHERE user_id = :uid"), {"uid": owner.id}).first()
+        except Exception:
+            print("Owner CV seed: cv_profiles table not yet created, will seed on next restart.")
+            return
+
+        if row and row[1]:
+            print("Owner CV already exists, skipping seed.")
+            return
+
+        headline = "Entertainment Technical Director | Senior Production Manager | Broadcast & Show Systems Engineer"
+        summary = "Twenty-plus years leading entertainment technology operations across 8 cruise lines and international live production venues. Built, repaired, and managed show systems at every level — from wiring racks to calling shows for thousands. Track record of solving critical system failures under pressure, designing fleet-wide audio and video infrastructure, and leading technical teams in high-stakes maritime environments."
+
+        experience = _json.dumps([
+            {"company": "Disney Cruise Line — Disney Wish", "title": "Senior Technician, Walt Disney Theatre", "start_date": "2025-10", "end_date": "", "location": "At Sea", "description": "Lead the daily operation, setup, and maintenance of the Walt Disney Theatre. Primary technical liaison with Stage Management. 100% show delivery rate. Restored main LED wall, rebuilt Clear-Com IP system, repaired Orchestra Lift automation. Writing 9-chapter WDT Handover Manual."},
+            {"company": "Seabourn Cruise Line", "title": "Senior Production Manager (Fleet-Level)", "start_date": "2022-03", "end_date": "2025-10", "location": "Fleet", "description": "Ran entertainment operations across the fleet. Led fleet-wide deployment of 30+ Symetrix Radius NX DSP units with Dante networking. Managed TVRO broadcast operations. Programmed QLab with OSC/timecode. Rebuilt GrandMA2 consoles. Installed LED walls (9mx3m) in 6 ships."},
+            {"company": "Cunard Cruise Line", "title": "Production Manager", "start_date": "2022-01", "end_date": "2022-09", "location": "At Sea", "description": "Managed production operations across multiple venues. Built HESS risk assessments. 100% compliance rate."},
+            {"company": "RWS — TED — Cirque du Soleil at Sea", "title": "Show Operations Director", "start_date": "2021-02", "end_date": "2022-12", "location": "At Sea", "description": "Directed technical and artistic operations for Cirque du Soleil at Sea. Called every show using QLab. Quality control and safety protocols for complex rigging and aerial productions."},
+            {"company": "RWS — TED — Cirque du Soleil at Sea", "title": "Technical Director", "start_date": "2019-06", "end_date": "2020-03", "location": "At Sea", "description": "Managed full cross-functional technical operation: audio, lighting, rigging, and stage automation. Contract interrupted by COVID-19 pandemic."},
+            {"company": "Carnival Cruise Line", "title": "Entertainment Technical Manager", "start_date": "2016-06", "end_date": "2019-03", "location": "Fleet", "description": "Managed technical teams across 10+ entertainment venues. FOH/MON audio, lighting, video playback, stage automation. System upgrades and technician training programs."},
+            {"company": "MSC Cruises", "title": "Entertainment Technical Manager — Senior Level 4", "start_date": "2012-02", "end_date": "2016-03", "location": "Fleet", "description": "Led technical teams during new-build commissioning for 5 vessels: MSC Meraviglia, Seaside, Seashore, Bellissima, Grandiosa. Dry dock installations and system updates across Fantasy and Lirica Class fleets."},
+            {"company": "Costa Cruises", "title": "AV Theatre Sound Technician", "start_date": "2010-05", "end_date": "2013-12", "location": "At Sea", "description": "Operated FOH/MON audio systems for theatre productions and live entertainment."},
+            {"company": "Ibero Cruises", "title": "Stage Manager / AV Technician", "start_date": "2005-01", "end_date": "2010-12", "location": "At Sea", "description": "Progressed from AV Technician to Stage Manager over 5 years. Full stage operations oversight and technical team coordination."},
+            {"company": "Pullmantur Cruises", "title": "Assistant Stage Manager / Sound & Light Technician", "start_date": "2000-01", "end_date": "2005-12", "location": "At Sea", "description": "First shipboard assignment. Sound, lighting, and DJ services. Advanced to Assistant Stage Manager."},
+            {"company": "Freelance", "title": "FOH/MON Engineer & Post-Production Specialist", "start_date": "1998-01", "end_date": "", "location": "Worldwide", "description": "FOH/MON Engineer at major festivals: Festival de Vina del Mar, Lollapalooza Chile, Montreux Jazz Festival. 5,000+ hours live mixing on SSL, Euphonix, DiGiCo. Post-production in DaVinci Resolve Studio and Adobe Premiere Pro."},
+        ], ensure_ascii=False)
+
+        education = _json.dumps([
+            {"institution": "Zurich University of the Arts, Switzerland", "degree": "PhD in Telecommunications Engineering", "field": "Thesis approved, pending defense", "start_year": "", "end_year": ""},
+            {"institution": "Arturo Prat University, Chile", "degree": "MBA in Management & Human Resources", "field": "", "start_year": "", "end_year": ""},
+            {"institution": "INACAP, Chile", "degree": "Civil Engineering in Sound & Acoustics", "field": "", "start_year": "", "end_year": ""},
+            {"institution": "IACC, Chile", "degree": "Industrial Electronic Engineering", "field": "", "start_year": "", "end_year": ""},
+            {"institution": "DUOC University, Chile", "degree": "Theatre Sound Technician & Live Show", "field": "", "start_year": "", "end_year": ""},
+            {"institution": "Universidad del Alba, Chile", "degree": "Commercial Engineering / Economics", "field": "In Progress", "start_year": "", "end_year": ""},
+        ], ensure_ascii=False)
+
+        certifications = _json.dumps([
+            {"name": "Fusion Effects, Fairlight Audio, DaVinci Resolve Color", "issuer": "Blackmagic Design", "date": ""},
+            {"name": "Netlinx Programmer Level 1 / Video & Control Designer Level 1", "issuer": "AMX Harman", "date": ""},
+            {"name": "Polar Live Satellite Tracking", "issuer": "NetSat (On-Site)", "date": ""},
+            {"name": "Dante Certification Levels 1-3", "issuer": "Audinate", "date": ""},
+            {"name": "Q-SYS Levels 1 & 2", "issuer": "QSC", "date": ""},
+            {"name": "Biamp Tesira Forte", "issuer": "Biamp", "date": ""},
+            {"name": "Waves SoundGrid 301", "issuer": "Waves", "date": ""},
+            {"name": "DiGiCo SD/S Series", "issuer": "DiGiCo", "date": ""},
+            {"name": "Yamaha RIVAGE PM", "issuer": "Yamaha", "date": ""},
+            {"name": "STCW, Conflict Resolution, Team Leadership", "issuer": "Maritime & Safety", "date": ""},
+        ], ensure_ascii=False)
+
+        skills = _json.dumps([
+            {"category": "Audio Engineering", "items": [{"name": "FOH/MON Live Mixing", "proficiency": 95}, {"name": "DiGiCo SD/S Series", "proficiency": 90}, {"name": "Dante Networking", "proficiency": 90}, {"name": "Symetrix DSP", "proficiency": 85}, {"name": "Q-SYS", "proficiency": 80}]},
+            {"category": "Video & LED", "items": [{"name": "NovaStar LED Systems", "proficiency": 90}, {"name": "DaVinci Resolve Studio", "proficiency": 85}, {"name": "VFX Compositing (Fusion)", "proficiency": 80}]},
+            {"category": "Show Control", "items": [{"name": "QLab (OSC/Timecode)", "proficiency": 90}, {"name": "GrandMA2 Lighting", "proficiency": 85}, {"name": "Stage Automation", "proficiency": 85}, {"name": "Clear-Com IP Comms", "proficiency": 80}]},
+            {"category": "Management", "items": [{"name": "Fleet Operations", "proficiency": 90}, {"name": "Team Leadership", "proficiency": 90}, {"name": "Safety & Compliance", "proficiency": 85}, {"name": "Technical Documentation", "proficiency": 85}]},
+        ], ensure_ascii=False)
+
+        languages = _json.dumps([
+            {"name": "Espanol", "level": "Nativo"},
+            {"name": "English", "level": "Avanzado"},
+            {"name": "Italiano", "level": "Intermedio"},
+            {"name": "Portugues", "level": "Basico"},
+        ], ensure_ascii=False)
+
+        differentiators = _json.dumps([
+            "8 cruise lines across 25 years: Disney, Seabourn, Cunard, Carnival, MSC, Costa, Ibero, and Pullmantur",
+            "New-build commissioning: 5+ MSC vessels from shipyard to operational status",
+            "Fleet-wide systems architecture: 30+ DSP units with Dante networking across entire fleet",
+            "5,000+ hours live mixing at festival level: Vina del Mar, Lollapalooza, Montreux Jazz",
+            "100% show delivery rate at Disney Wish",
+            "Technical documentation as leadership: 9-chapter WDT Handover Manual",
+        ], ensure_ascii=False)
+
+        now_str = datetime.utcnow().isoformat()
+
+        if row:
+            # Update existing empty CV
+            db.execute(_text("""
+                UPDATE cv_profiles SET
+                    headline = :headline, summary = :summary, location = :location,
+                    available_worldwide = true, open_to_work = true, is_public = true, visibility = 'public',
+                    experience = :experience, education = :education, certifications = :certifications,
+                    skills = :skills, languages = :languages, differentiators = :differentiators,
+                    updated_at = :now
+                WHERE user_id = :uid
+            """), {
+                "headline": headline, "summary": summary, "location": "Antofagasta, Chile",
+                "experience": experience, "education": education, "certifications": certifications,
+                "skills": skills, "languages": languages, "differentiators": differentiators,
+                "now": now_str, "uid": owner.id,
+            })
+        else:
+            # Insert new CV
+            cv_id = gen_id()
+            db.execute(_text("""
+                INSERT INTO cv_profiles (
+                    id, user_id, is_public, visibility, headline, summary, location,
+                    available_worldwide, open_to_work, experience, education, certifications,
+                    skills, languages, differentiators, raw_text, created_at, updated_at
+                ) VALUES (
+                    :id, :uid, true, 'public', :headline, :summary, :location,
+                    true, true, :experience, :education, :certifications,
+                    :skills, :languages, :differentiators, '', :now, :now
+                )
+            """), {
+                "id": cv_id, "uid": owner.id,
+                "headline": headline, "summary": summary, "location": "Antofagasta, Chile",
+                "experience": experience, "education": education, "certifications": certifications,
+                "skills": skills, "languages": languages, "differentiators": differentiators,
+                "now": now_str,
+            })
+
+        db.commit()
+        print("Owner CV seeded successfully!")
+    except Exception as e:
+        print(f"Owner CV seed skipped: {e}")
 
 
 def get_db():
