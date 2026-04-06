@@ -314,7 +314,8 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 </div>
               </div>
 
-              {financials && <div className="stats-grid" style={{ marginBottom: 24 }}>
+              {financials && (<>
+              <div className="stats-grid" style={{ marginBottom: 24 }}>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
                   <div className="stat-value">{fmtUsd(financials.grossRevenueUsd)}</div>
                   <div className="stat-label">Ingresos Totales USD</div>
@@ -338,9 +339,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 <table style={{ width: '100%', fontSize: 14 }}>
                   <tbody>
                     <tr><td>Bruto total</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.grossRevenueClp)}</td></tr>
-                    <tr style={{ color: 'var(--accent-red)' }}><td>− Comisión Stripe</td><td style={{ textAlign: 'right' }}>−${fmt(financials.grossRevenueClp - financials.netAfterStripeClp)}</td></tr>
-                    <tr><td>Neto después Stripe</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.netAfterStripeClp)}</td></tr>
-                    <tr style={{ color: 'var(--accent-red)' }}><td>− IVA 19%</td><td style={{ textAlign: 'right' }}>−${fmt(financials.totalIvaClp)}</td></tr>
+                    <tr style={{ color: 'var(--accent-red)' }}><td>- Comisión plataforma</td><td style={{ textAlign: 'right' }}>-${fmt(financials.grossRevenueClp - financials.netAfterStripeClp)}</td></tr>
+                    <tr><td>Neto despues comisiones</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.netAfterStripeClp)}</td></tr>
+                    <tr style={{ color: 'var(--accent-red)' }}><td>- IVA 19%</td><td style={{ textAlign: 'right' }}>-${fmt(financials.totalIvaClp)}</td></tr>
                     <tr style={{ borderTop: '2px solid var(--border)', fontWeight: 700, fontSize: 16 }}><td>GANANCIA NETA</td><td style={{ textAlign: 'right', color: 'var(--accent-green)' }}>${fmt(financials.gananciaNetaTotalClp)}</td></tr>
                   </tbody>
                 </table>
@@ -353,7 +354,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
                       <thead><tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
-                        <th style={{ padding: 8 }}>Usuario</th><th>País</th><th>USD</th><th>CLP</th><th>IVA</th><th>Fecha</th>
+                        <th style={{ padding: 8 }}>Usuario</th><th>Pais</th><th>USD</th><th>CLP</th><th>IVA</th><th>Fecha</th>
                       </tr></thead>
                       <tbody>
                         {financials.recentPayments.slice(0, 10).map((p: any) => (
@@ -371,7 +372,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   </div>
                 </div>
               )}
-              </div>}
+              </>)}
             </div>
           )}
 

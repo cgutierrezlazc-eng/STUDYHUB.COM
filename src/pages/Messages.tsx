@@ -70,20 +70,24 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       if (data.conversation_id === activeConv) {
         setMessages(prev => {
           if (prev.some(m => m.id === data.message.id)) return prev
-          return [...prev, {
+          const msg: ConversationMessage = {
             id: data.message.id,
             conversationId: data.message.conversationId,
-            senderId: data.message.senderId,
-            senderUsername: data.message.senderUsername,
-            senderFirstName: data.message.senderFirstName,
-            senderLastName: data.message.senderLastName,
-            senderAvatar: data.message.senderAvatar,
+            sender: {
+              id: data.message.senderId,
+              username: data.message.senderUsername || '',
+              firstName: data.message.senderFirstName || '',
+              lastName: data.message.senderLastName || '',
+              avatar: data.message.senderAvatar || '',
+              userNumber: 0,
+            },
             content: data.message.content,
-            messageType: data.message.messageType,
-            isFlagged: data.message.isFlagged,
+            messageType: data.message.messageType || 'text',
+            isFlagged: data.message.isFlagged || false,
+            isDeleted: false,
             createdAt: data.message.createdAt,
-            isEdited: data.message.isEdited,
-          }]
+          }
+          return [...prev, msg]
         })
       }
       // Refresh conversation list for last message preview
@@ -95,20 +99,24 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       if (data.conversation_id === activeConv) {
         setMessages(prev => {
           if (prev.some(m => m.id === data.message.id)) return prev
-          return [...prev, {
+          const msg: ConversationMessage = {
             id: data.message.id,
             conversationId: data.message.conversationId,
-            senderId: data.message.senderId,
-            senderUsername: data.message.senderUsername,
-            senderFirstName: data.message.senderFirstName,
-            senderLastName: data.message.senderLastName,
-            senderAvatar: data.message.senderAvatar,
+            sender: {
+              id: data.message.senderId,
+              username: data.message.senderUsername || '',
+              firstName: data.message.senderFirstName || '',
+              lastName: data.message.senderLastName || '',
+              avatar: data.message.senderAvatar || '',
+              userNumber: 0,
+            },
             content: data.message.content,
-            messageType: data.message.messageType,
-            isFlagged: data.message.isFlagged,
+            messageType: data.message.messageType || 'text',
+            isFlagged: data.message.isFlagged || false,
+            isDeleted: false,
             createdAt: data.message.createdAt,
-            isEdited: data.message.isEdited,
-          }]
+          }
+          return [...prev, msg]
         })
       }
     })
