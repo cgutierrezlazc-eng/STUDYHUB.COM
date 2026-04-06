@@ -642,12 +642,16 @@ export const api = {
     return res.json();
   },
 
-  // ─── Student CV ───────────────────────────────────────────
-  getMyCV: () => request('/courses/cv'),
+  // ─── CV / Perfil Profesional ──────────────────────────────
+  getMyCV: () => request('/cv/me'),
   updateCV: (data: any) =>
-    request('/courses/cv', { method: 'PUT', body: JSON.stringify(data) }),
-  getUserCV: (userId: string) => request(`/courses/cv/${userId}`),
+    request('/cv/me', { method: 'PUT', body: JSON.stringify(data) }),
+  getUserCV: (username: string) => request(`/cv/${username}`),
   getPublicCVs: (search?: string) => request(`/courses/cv-public/all${search ? `?search=${encodeURIComponent(search)}` : ''}`),
+  parseCV: () => request('/cv/parse', { method: 'POST' }),
+  downloadCV: () => request('/cv/download'),
+  downloadPublicCV: (username: string) => request(`/cv/${username}/download`),
+  retryClassPayment: (classId: string) => request(`/tutors/classes/${classId}/payment-retry`, { method: 'PUT' }),
 
   // ─── Recruiter ────────────────────────────────────────────
   registerRecruiter: (data: any) =>

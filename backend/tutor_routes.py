@@ -305,6 +305,11 @@ class TutorClassEnrollment(Base):
     payment_id = Column(String(16), ForeignKey("tutor_payments.id"), nullable=True)
     payment_status = Column(String(20), default="pending")  # pending/paid/refunded
 
+    # Payment rejection tracking (max 3 attempts)
+    payment_attempts = Column(Integer, default=0)
+    payment_rejected_at = Column(DateTime, nullable=True)
+    payment_auto_cancelled = Column(Boolean, default=False)
+
     confirmed_by_student = Column(Boolean, default=False)
     confirmed_by_tutor = Column(Boolean, default=False)
     auto_confirmed_at = Column(DateTime, nullable=True)  # 48h auto-confirm
@@ -709,6 +714,8 @@ def _enrollment_to_dict(e: TutorClassEnrollment) -> dict:
         "student_id": e.student_id,
         "payment_id": e.payment_id,
         "payment_status": e.payment_status,
+        "payment_attempts": e.payment_attempts or 0,
+        "payment_auto_cancelled": e.payment_auto_cancelled or False,
         "confirmed_by_student": e.confirmed_by_student,
         "confirmed_by_tutor": e.confirmed_by_tutor,
         "auto_confirmed_at": e.auto_confirmed_at.isoformat() if e.auto_confirmed_at else None,
@@ -1433,6 +1440,99 @@ def enroll_in_class(
         "message": "Inscripcion exitosa",
         "enrollment": _enrollment_to_dict(enrollment),
         "payment": _payment_to_dict(payment),
+    }
+
+
+MAX_PAYMENT_ATTEMPTS = 3
+
+
+@router.put("/classes/{class_id}/payment-retry")
+def retry_enrollment_payment(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Reintentar pago de una inscripcion. Maximo 3 intentos antes de cancelacion automatica."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="No estas inscrito en esta clase")
+
+    if enrollment.payment_auto_cancelled:
+        raise HTTPException(
+            status_code=400,
+            detail="Esta inscripcion fue cancelada automaticamente por exceder el limite de intentos de pago (3). Debes inscribirte nuevamente.",
+        )
+
+    if enrollment.payment_status == "paid":
+        raise HTTPException(status_code=400, detail="El pago de esta inscripcion ya fue confirmado")
+
+    if enrollment.payment_status == "refunded":
+        raise HTTPException(status_code=400, detail="Esta inscripcion fue reembolsada y no se puede reintentar")
+
+    # Increment payment attempt counter
+    current_attempts = (enrollment.payment_attempts or 0) + 1
+    enrollment.payment_attempts = current_attempts
+
+    if current_attempts >= MAX_PAYMENT_ATTEMPTS:
+        # Auto-cancel the enrollment
+        enrollment.payment_auto_cancelled = True
+        enrollment.payment_status = "cancelled"
+        enrollment.payment_rejected_at = datetime.utcnow()
+
+        # Decrease student count
+        if cls.current_students > 0:
+            cls.current_students -= 1
+
+        # Mark associated payment as rejected
+        if enrollment.payment_id:
+            payment = db.query(TutorPayment).filter(TutorPayment.id == enrollment.payment_id).first()
+            if payment:
+                payment.payment_status = "rejected"
+
+        db.commit()
+
+        # Notify CEO
+        try:
+            send_ceo_alert(
+                f"Inscripcion cancelada por rechazos de pago: {user.first_name} {user.last_name} — {cls.title}",
+                f"<p><strong>Estudiante:</strong> {user.first_name} {user.last_name} ({user.email})</p>"
+                f"<p><strong>Clase:</strong> {cls.title}</p>"
+                f"<p><strong>Intentos de pago:</strong> {current_attempts}/{MAX_PAYMENT_ATTEMPTS}</p>"
+                f"<p><strong>Motivo:</strong> Limite de intentos de pago alcanzado. Inscripcion cancelada automaticamente.</p>",
+            )
+        except Exception:
+            pass
+
+        return {
+            "ok": False,
+            "message": f"Se alcanzo el limite de {MAX_PAYMENT_ATTEMPTS} intentos de pago. La inscripcion fue cancelada automaticamente.",
+            "enrollment": _enrollment_to_dict(enrollment),
+            "auto_cancelled": True,
+            "attempts": current_attempts,
+        }
+
+    # Payment retry: mark as pending again for re-processing
+    enrollment.payment_status = "pending"
+    enrollment.payment_rejected_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(enrollment)
+
+    remaining = MAX_PAYMENT_ATTEMPTS - current_attempts
+    return {
+        "ok": True,
+        "message": f"Reintento de pago registrado. Te quedan {remaining} intento(s) antes de la cancelacion automatica.",
+        "enrollment": _enrollment_to_dict(enrollment),
+        "auto_cancelled": False,
+        "attempts": current_attempts,
+        "remaining_attempts": remaining,
     }
 
 
