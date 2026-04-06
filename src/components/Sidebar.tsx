@@ -148,6 +148,11 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             <span className="nav-item-icon">{Icons.building}</span> CEO Panel
           </button>
         )}
+        {user?.role === 'owner' && (
+          <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
+            <span className="nav-item-icon">{Icons.users}</span> RRHH
+          </button>
+        )}
         {user?.isAdmin && (
           <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
             <span className="nav-item-icon">{Icons.settings}</span> Admin

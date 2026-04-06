@@ -964,6 +964,26 @@ export const api = {
   deleteConference: (id: string) =>
     request(`/conferences/${id}`, { method: 'DELETE' }),
 
+  // ─── HR / RRHH ────────────────────────────────────────────
+  getEmployees: (filters?: string) => request(`/hr/employees${filters ? `?${filters}` : ''}`),
+  getEmployee: (id: string) => request(`/hr/employees/${id}`),
+  createEmployee: (data: any) => request('/hr/employees', { method: 'POST', body: JSON.stringify(data) }),
+  updateEmployee: (id: string, data: any) => request(`/hr/employees/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteEmployee: (id: string) => request(`/hr/employees/${id}`, { method: 'DELETE' }),
+  getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
+  uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
+  signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
+  calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
+  getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
+  approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),
+  markPayrollPaid: (id: string) => request(`/hr/payroll/${id}/mark-paid`, { method: 'PUT' }),
+  getPrevired: (year: number, month: number) => request(`/hr/payroll/previred/${year}/${month}`),
+  getExpenses: (params?: string) => request(`/hr/expenses${params ? `?${params}` : ''}`),
+  createExpense: (data: any) => request('/hr/expenses', { method: 'POST', body: JSON.stringify(data) }),
+  updateExpense: (id: string, data: any) => request(`/hr/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteExpense: (id: string) => request(`/hr/expenses/${id}`, { method: 'DELETE' }),
+  getExpenseSummary: (year: number) => request(`/hr/expenses/summary/${year}`),
+
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
 };

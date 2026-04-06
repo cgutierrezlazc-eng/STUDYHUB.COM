@@ -44,6 +44,7 @@ const Events = React.lazy(() => import('./pages/Events'))
 const Mentorship = React.lazy(() => import('./pages/Mentorship'))
 const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
+const HRDashboard = React.lazy(() => import('./pages/HRDashboard'))
 const Search = React.lazy(() => import('./pages/Search'))
 const Conferences = React.lazy(() => import('./pages/Conferences'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
@@ -290,6 +291,7 @@ export default function App() {
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />
