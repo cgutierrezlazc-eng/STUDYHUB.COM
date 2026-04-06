@@ -20,7 +20,7 @@ export default function Subscription({ onNavigate }: Props) {
     api.getSubscriptionStatus().then(setSubStatus).catch(() => {})
     api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
     api.getMpPlans().then(setMpPlans).catch(() => {})
-    // Check URL params for success/cancel (Stripe + Mercado Pago + PayPal)
+    // Check URL params for success/cancel (Mercado Pago + PayPal)
     const params = new URLSearchParams(window.location.search)
     if (params.get('success') === 'true' || params.get('mp_status') === 'approved' || params.get('paypal_status') === 'approved') {
       alert('¡Suscripcion activada! Bienvenido a Conniku PRO')
@@ -39,26 +39,18 @@ export default function Subscription({ onNavigate }: Props) {
     setLoading(true)
     const planKey = `${selectedTier}_${selectedPlan}`
     try {
-      // 1. Try Mercado Pago first (best for Chile/LATAM)
+      // 1. Mercado Pago (Chile/LATAM — pesos chilenos)
       const result = await api.createMpCheckout(planKey)
       if (result.url || result.initPoint) {
         window.location.href = result.url || result.initPoint
         return
       }
-    } catch { /* MP not available, try next */ }
+    } catch { /* MP not available, try PayPal */ }
     try {
-      // 2. Try PayPal (international)
+      // 2. PayPal (internacional — USD)
       const ppResult = await api.createPaypalOrder(planKey)
       if (ppResult.approve_url) {
         window.location.href = ppResult.approve_url
-        return
-      }
-    } catch { /* PayPal not available, try next */ }
-    try {
-      // 3. Fallback to Stripe
-      const stripeResult = await api.createCheckoutSession(selectedPlan)
-      if (stripeResult.url) {
-        window.location.href = stripeResult.url
         return
       }
     } catch (err: any) {
@@ -85,11 +77,6 @@ export default function Subscription({ onNavigate }: Props) {
           window.location.reload()
         }
         return
-      }
-      // Stripe portal
-      const result = await api.createPortalSession()
-      if (result.url) {
-        window.location.href = result.url
       }
     } catch (err: any) {
       alert(err.message || 'Error al gestionar suscripcion')

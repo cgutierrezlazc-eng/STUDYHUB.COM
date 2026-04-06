@@ -46,7 +46,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [broadcastSending, setBroadcastSending] = useState(false)
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
   const [deletingEmail, setDeletingEmail] = useState(false)
-  const [stripeHealth, setStripeHealth] = useState<any>(null)
+  // Payment providers managed via Mercado Pago + PayPal (no Stripe)
 
   useEffect(() => {
     if (user?.role !== 'owner') return
@@ -55,7 +55,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
       api.getAdminFinanceDashboard().then(setFinancials).catch(() => {}),
       api.getReferralFraudReport().then(setFraudReport).catch(() => {}),
       api.getComplianceStatus().then(setComplianceStatus).catch(() => {}),
-      api.getStripeHealth().then(setStripeHealth).catch(() => {}),
+      // Payment health checks handled per-provider
     ]).finally(() => setLoading(false))
   }, [])
 
@@ -286,39 +286,33 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {/* FINANCIAL */}
           {tab === 'financial' && (
             <div>
-              {/* Stripe Configuration Status */}
-              {stripeHealth && (
+              {/* Payment Providers Status */}
+              <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                 <div className="card" style={{
-                  padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12,
-                  borderLeft: `4px solid ${stripeHealth.status === 'ready' ? '#22c55e' : '#f59e0b'}`,
+                  padding: 16, flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 12,
+                  borderLeft: '4px solid #009ee3',
                 }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: stripeHealth.status === 'ready' ? '#f0fdf4' : '#fffbeb',
-                    fontSize: 18,
-                  }}>
-                    {stripeHealth.status === 'ready' ? '✅' : '⚙️'}
+                  <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e6f7ff', fontSize: 18 }}>
+                    {'💙'}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
-                      Stripe: {stripeHealth.status === 'ready' ? 'Configurado y listo' : 'Pendiente de configuracion'}
-                    </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                      <span>{stripeHealth.hasSecretKey ? '✓' : '✗'} API Key</span>
-                      <span>{stripeHealth.hasWebhookSecret ? '✓' : '✗'} Webhook Secret</span>
-                      <span>{stripeHealth.hasPriceMonthly ? '✓' : '✗'} Precio Mensual</span>
-                      <span>{stripeHealth.hasPriceYearly ? '✓' : '✗'} Precio Anual</span>
-                    </div>
-                    {stripeHealth.status !== 'ready' && (
-                      <div style={{ fontSize: 11, color: '#b45309', marginTop: 4 }}>
-                        Webhook URL: <code style={{ fontSize: 10, background: 'var(--bg-secondary)', padding: '1px 6px', borderRadius: 4 }}>
-                          https://studyhub-api-bpco.onrender.com/payments/webhook
-                        </code>
-                      </div>
-                    )}
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Mercado Pago</div>
+                    <div style={{ fontSize: 11, color: '#009ee3' }}>Activo — Chile (CLP)</div>
                   </div>
                 </div>
-              )}
+                <div className="card" style={{
+                  padding: 16, flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 12,
+                  borderLeft: '4px solid #003087',
+                }}>
+                  <div style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e8f0fe', fontSize: 18 }}>
+                    {'🅿️'}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>PayPal</div>
+                    <div style={{ fontSize: 11, color: '#003087' }}>Internacional (USD)</div>
+                  </div>
+                </div>
+              </div>
 
               {financials && <div className="stats-grid" style={{ marginBottom: 24 }}>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
