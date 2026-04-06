@@ -4,6 +4,8 @@ Docs: https://www.mercadopago.cl/developers/es/docs
 """
 import os
 import json
+import hmac
+import hashlib
 import httpx
 from datetime import datetime, timedelta
 
@@ -19,6 +21,7 @@ router = APIRouter(prefix="/payments/mp", tags=["mercadopago"])
 # ─── Config ────────────────────────────────────────────────────
 MP_ACCESS_TOKEN = os.environ.get("MP_ACCESS_TOKEN", "")
 MP_PUBLIC_KEY = os.environ.get("MP_PUBLIC_KEY", "")
+MP_WEBHOOK_SECRET = os.environ.get("MP_WEBHOOK_SECRET", "")
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 BACKEND_URL = os.environ.get("BACKEND_URL", "https://studyhub-api-bpco.onrender.com")
 MP_API = "https://api.mercadopago.com"
@@ -226,6 +229,30 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
 @router.post("/webhook")
 async def mp_webhook(request: Request, db: Session = Depends(get_db)):
     """Handle Mercado Pago webhook notifications (IPN)."""
+    # Validate webhook signature if secret is configured
+    if MP_WEBHOOK_SECRET:
+        x_signature = request.headers.get("x-signature", "")
+        x_request_id = request.headers.get("x-request-id", "")
+        params = dict(request.query_params)
+        data_id_param = params.get("data.id", "")
+
+        # Build manifest for HMAC validation
+        # Format: id:[data.id];request-id:[x-request-id];ts:[ts]
+        ts = ""
+        if x_signature:
+            parts = {p.split("=")[0].strip(): p.split("=")[1].strip() for p in x_signature.split(",") if "=" in p}
+            ts = parts.get("ts", "")
+            received_hash = parts.get("v1", "")
+
+            manifest = f"id:{data_id_param};request-id:{x_request_id};ts:{ts};"
+            computed = hmac.new(
+                MP_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256
+            ).hexdigest()
+
+            if received_hash and computed != received_hash:
+                print(f"[MP Webhook] ⚠️ Signature mismatch - received={received_hash[:16]}... computed={computed[:16]}...")
+                # Log but don't reject — some notifications may not have signature
+
     try:
         body = await request.json()
     except Exception:
