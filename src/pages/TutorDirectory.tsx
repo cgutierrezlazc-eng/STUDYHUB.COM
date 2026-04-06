@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../services/api'
 
 interface Props {
@@ -23,6 +23,34 @@ interface Tutor {
   groupPrice?: number
   availability?: { day: string; slots: string[] }[]
   reviews?: { id: string; authorName: string; rating: number; comment: string; date: string }[]
+}
+
+interface TutorClass {
+  id: string
+  title: string
+  description?: string
+  tutor_name: string
+  tutor_user_id: string
+  tutor_avatar?: string
+  price: number
+  date: string
+  time?: string
+  duration_minutes?: number
+  spots_available?: number
+  spots_total?: number
+  category?: string
+  is_program?: boolean
+  program_sessions?: number
+  is_enrolled?: boolean
+}
+
+interface ChatMessage {
+  id: string
+  sender_name: string
+  sender_id: string
+  is_tutor: boolean
+  message: string
+  created_at: string
 }
 
 const SUBJECT_AREAS = [
@@ -99,6 +127,24 @@ export default function TutorDirectory({ onNavigate }: Props) {
   const [bookingTutor, setBookingTutor] = useState<Tutor | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'tutores' | 'clases'>('tutores')
+
+  // Classes tab state
+  const [classes, setClasses] = useState<TutorClass[]>([])
+  const [classesLoading, setClassesLoading] = useState(false)
+  const [activeCategories, setActiveCategories] = useState<string[]>([])
+  const [selectedCategory, setSelectedCategory] = useState('Todas')
+  const [classSearchQuery, setClassSearchQuery] = useState('')
+
+  // Chat modal state
+  const [chatClassId, setChatClassId] = useState<string | null>(null)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
+  const [chatLoading, setChatLoading] = useState(false)
+  const [chatInput, setChatInput] = useState('')
+  const [chatSending, setChatSending] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+
   // Booking form state
   const [bookingType, setBookingType] = useState<'individual' | 'group'>('individual')
   const [bookingDate, setBookingDate] = useState('')
@@ -127,6 +173,91 @@ export default function TutorDirectory({ onNavigate }: Props) {
   useEffect(() => {
     fetchTutors()
   }, [fetchTutors])
+
+  // Fetch classes when switching to classes tab
+  const fetchClasses = useCallback(async () => {
+    setClassesLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (selectedCategory !== 'Todas') params.set('category', selectedCategory)
+      if (classSearchQuery) params.set('search', classSearchQuery)
+      const paramStr = params.toString()
+      const data = await api.getTutorClasses(paramStr || undefined)
+      setClasses(Array.isArray(data) ? data : data.classes || [])
+      if (data.active_categories) {
+        setActiveCategories(data.active_categories)
+      }
+    } catch (err) {
+      console.error('Error loading classes:', err)
+    } finally {
+      setClassesLoading(false)
+    }
+  }, [selectedCategory, classSearchQuery])
+
+  useEffect(() => {
+    if (activeTab === 'clases') {
+      fetchClasses()
+    }
+  }, [activeTab, fetchClasses])
+
+  // Chat functions
+  const openChat = async (classId: string) => {
+    setChatClassId(classId)
+    setChatLoading(true)
+    setChatMessages([])
+    setChatInput('')
+    try {
+      const data = await api.getClassMessages(classId)
+      setChatMessages(data.messages || [])
+    } catch (err) {
+      console.error('Error loading messages:', err)
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  const sendChatMessage = async () => {
+    if (!chatClassId || !chatInput.trim() || chatSending) return
+    setChatSending(true)
+    try {
+      const data = await api.sendClassMessage(chatClassId, chatInput.trim())
+      if (data.ok && data.message) {
+        setChatMessages(prev => [...prev, data.message])
+      }
+      setChatInput('')
+    } catch (err) {
+      console.error('Error sending message:', err)
+    } finally {
+      setChatSending(false)
+    }
+  }
+
+  // Auto-scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+
+  // Format date in Spanish
+  const formatClassDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr)
+      return d.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    } catch {
+      return dateStr
+    }
+  }
+
+  // Filter classes by search
+  const filteredClasses = classes.filter(c => {
+    if (!classSearchQuery) return true
+    const q = classSearchQuery.toLowerCase()
+    return (
+      c.title.toLowerCase().includes(q) ||
+      (c.description || '').toLowerCase().includes(q) ||
+      c.tutor_name.toLowerCase().includes(q) ||
+      (c.category || '').toLowerCase().includes(q)
+    )
+  })
 
   const handleViewProfile = async (tutor: Tutor) => {
     setShowProfileModal(true)
@@ -208,6 +339,31 @@ export default function TutorDirectory({ onNavigate }: Props) {
           Aprende con profesionales verificados por Conniku
         </p>
       </div>
+
+      {/* Tab Bar */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderBottom: '2px solid var(--border-color)' }}>
+        {([
+          { key: 'tutores' as const, label: 'Tutores' },
+          { key: 'clases' as const, label: 'Clases Disponibles' },
+        ]).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            style={{
+              padding: '12px 24px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
+              border: 'none', background: 'transparent',
+              color: activeTab === tab.key ? '#d97706' : 'var(--text-tertiary)',
+              borderBottom: activeTab === tab.key ? '2.5px solid #f59e0b' : '2.5px solid transparent',
+              marginBottom: -2, transition: 'color 0.15s, border-color 0.15s',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── Tutores Tab ─── */}
+      {activeTab === 'tutores' && <>
 
       {/* Search & Filters */}
       <div style={{
@@ -456,6 +612,315 @@ export default function TutorDirectory({ onNavigate }: Props) {
               </div>
             )
           })}
+        </div>
+      )}
+
+      </>}
+
+      {/* ─── Clases Disponibles Tab ─── */}
+      {activeTab === 'clases' && (
+        <>
+          {/* Search bar for classes */}
+          <div style={{
+            background: 'var(--bg-secondary)', borderRadius: 14, padding: '18px 20px',
+            marginBottom: 20, border: '1px solid var(--border-color)',
+          }}>
+            <div style={{ position: 'relative' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}>
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Buscar clases por nombre, tutor o categoria..."
+                value={classSearchQuery}
+                onChange={(e) => setClassSearchQuery(e.target.value)}
+                style={{
+                  width: '100%', padding: '10px 14px 10px 40px', borderRadius: 10,
+                  border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                  color: 'var(--text-primary)', fontSize: 14, outline: 'none',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Category pills */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            {['Todas', ...activeCategories].map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                style={{
+                  padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                  border: selectedCategory === cat ? '1.5px solid #f59e0b' : '1px solid var(--border-color)',
+                  background: selectedCategory === cat ? '#fef3c7' : 'var(--bg-secondary)',
+                  color: selectedCategory === cat ? '#92400e' : 'var(--text-secondary)',
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Loading */}
+          {classesLoading && (
+            <div style={{ textAlign: 'center', padding: 60 }}>
+              <div className="loading-dots"><span /><span /><span /></div>
+              <p style={{ color: 'var(--text-tertiary)', marginTop: 12, fontSize: 14 }}>Cargando clases...</p>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {!classesLoading && filteredClasses.length === 0 && (
+            <div style={{
+              textAlign: 'center', padding: '60px 20px', background: 'var(--bg-secondary)',
+              borderRadius: 14, border: '1px solid var(--border-color)',
+            }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+                No hay clases disponibles
+              </p>
+              <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: 0 }}>
+                Intenta ajustar los filtros o vuelve mas tarde
+              </p>
+            </div>
+          )}
+
+          {/* Class Cards Grid */}
+          {!classesLoading && filteredClasses.length > 0 && (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+              gap: 18,
+            }}>
+              {filteredClasses.map(cls => (
+                <div key={cls.id} style={{
+                  background: 'var(--bg-secondary)', borderRadius: 14,
+                  border: '1px solid var(--border-color)', overflow: 'hidden',
+                  transition: 'box-shadow 0.2s, transform 0.2s',
+                  cursor: 'pointer',
+                }}
+                  onClick={() => onNavigate('/user/' + cls.tutor_user_id)}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 4px 20px rgba(245,158,11,0.12)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)' }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; (e.currentTarget as HTMLElement).style.transform = 'none' }}
+                >
+                  {/* Card top accent */}
+                  <div style={{ height: 4, background: 'linear-gradient(90deg, #f59e0b, #d97706)' }} />
+
+                  <div style={{ padding: '18px 20px' }}>
+                    {/* Category badge + program badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                      {cls.category && (
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+                          background: 'rgba(245,158,11,0.1)', color: '#92400e',
+                        }}>
+                          {cls.category}
+                        </span>
+                      )}
+                      {cls.is_program && (
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+                          background: '#dbeafe', color: '#1e40af',
+                        }}>
+                          Programa ({cls.program_sessions} sesiones)
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Title */}
+                    <h3 style={{
+                      fontSize: 16, fontWeight: 700, color: 'var(--text-primary)',
+                      margin: '0 0 8px', lineHeight: 1.3,
+                    }}>
+                      {cls.title}
+                    </h3>
+
+                    {/* Description */}
+                    {cls.description && (
+                      <p style={{
+                        fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 14px',
+                        lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                      }}>
+                        {cls.description}
+                      </p>
+                    )}
+
+                    {/* Tutor info */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                      {cls.tutor_avatar ? (
+                        <img src={cls.tutor_avatar} alt={cls.tutor_name}
+                          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      ) : (
+                        <InitialsAvatar name={cls.tutor_name} size={32} />
+                      )}
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                        {cls.tutor_name}
+                      </span>
+                    </div>
+
+                    {/* Date, duration, spots */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 14, fontSize: 12, color: 'var(--text-tertiary)' }}>
+                      {cls.date && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                          {formatClassDate(cls.date)}{cls.time ? ` - ${cls.time}` : ''}
+                        </span>
+                      )}
+                      {cls.duration_minutes && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          {cls.duration_minutes} min
+                        </span>
+                      )}
+                      {cls.spots_available != null && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                          </svg>
+                          {cls.spots_available}{cls.spots_total ? `/${cls.spots_total}` : ''} cupos
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Price + Chat button */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: 22, fontWeight: 700, color: '#d97706' }}>
+                        {formatPrice(cls.price)}
+                      </span>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); openChat(cls.id) }}
+                        title="Chat de la clase"
+                        style={{
+                          width: 36, height: 36, borderRadius: 10, border: '1.5px solid #f59e0b',
+                          background: 'transparent', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.06)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ─── Class Chat Modal ─── */}
+      {chatClassId && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(0,0,0,0.5)', padding: 20,
+        }} onClick={() => setChatClassId(null)}>
+          <div style={{
+            background: 'var(--bg-primary)', borderRadius: 16, width: '100%', maxWidth: 520,
+            height: '70vh', display: 'flex', flexDirection: 'column', position: 'relative',
+          }} onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div style={{
+              padding: '16px 20px', borderBottom: '1px solid var(--border-color)',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
+            }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>Chat de la Clase</h3>
+              <button onClick={() => setChatClassId(null)} style={{
+                width: 32, height: 32, borderRadius: 8,
+                background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--text-secondary)', fontSize: 18,
+              }}>x</button>
+            </div>
+
+            {/* Messages area */}
+            <div style={{
+              flex: 1, overflowY: 'auto', padding: '16px 20px',
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}>
+              {chatLoading ? (
+                <div style={{ textAlign: 'center', padding: 40 }}>
+                  <div className="loading-dots"><span /><span /><span /></div>
+                  <p style={{ color: 'var(--text-tertiary)', marginTop: 12, fontSize: 13 }}>Cargando mensajes...</p>
+                </div>
+              ) : chatMessages.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 40 }}>
+                  <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>No hay mensajes aun. Envia el primero.</p>
+                </div>
+              ) : (
+                chatMessages.map(msg => (
+                  <div key={msg.id} style={{
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: msg.is_tutor ? 'flex-start' : 'flex-end',
+                  }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 3, paddingLeft: 4, paddingRight: 4 }}>
+                      {msg.sender_name}
+                    </span>
+                    <div style={{
+                      maxWidth: '75%', padding: '10px 14px', borderRadius: 14,
+                      background: msg.is_tutor ? 'var(--bg-secondary)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      color: msg.is_tutor ? 'var(--text-primary)' : '#fff',
+                      border: msg.is_tutor ? '1px solid var(--border-color)' : 'none',
+                      fontSize: 14, lineHeight: 1.5,
+                    }}>
+                      {msg.message}
+                    </div>
+                    <span style={{ fontSize: 10, color: 'var(--text-tertiary)', marginTop: 3, paddingLeft: 4, paddingRight: 4 }}>
+                      {new Date(msg.created_at).toLocaleString('es-CL', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                ))
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input area */}
+            <div style={{
+              padding: '12px 20px', borderTop: '1px solid var(--border-color)',
+              display: 'flex', gap: 10, flexShrink: 0,
+            }}>
+              <input
+                type="text"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage() } }}
+                placeholder="Escribe un mensaje..."
+                style={{
+                  flex: 1, padding: '10px 14px', borderRadius: 10,
+                  border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)', fontSize: 14, outline: 'none',
+                }}
+              />
+              <button
+                onClick={sendChatMessage}
+                disabled={chatSending || !chatInput.trim()}
+                style={{
+                  padding: '10px 18px', borderRadius: 10, fontSize: 14, fontWeight: 600,
+                  border: 'none', cursor: chatSending || !chatInput.trim() ? 'not-allowed' : 'pointer',
+                  background: chatSending || !chatInput.trim() ? 'var(--border-color)' : 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  color: chatSending || !chatInput.trim() ? 'var(--text-tertiary)' : '#fff',
+                  transition: 'opacity 0.15s',
+                }}
+              >
+                {chatSending ? '...' : 'Enviar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

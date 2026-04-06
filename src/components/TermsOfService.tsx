@@ -257,6 +257,9 @@ export default function TermsOfService({ onClose }: Props) {
           <p>30.5. El tutor deberá mantener un estándar de calidad mínimo. Tutores con calificación promedio inferior a 2.5 sobre 5.0 podrán ser suspendidos.</p>
           <p>30.6. El tutor deberá preparar un examen de evaluación para cada sesión o ciclo de sesiones, el cual será habilitado por el tutor al finalizar la clase. El estudiante dispondrá de 60 minutos para completar el examen. La nota mínima de aprobación es 60%. Los resultados serán visibles en el perfil del estudiante y del tutor.</p>
           <p>30.7. El tutor deberá subir el material de apoyo de cada clase a la Plataforma antes o durante la sesión, el cual quedará disponible para el estudiante en su historial de clases.</p>
+          <p>30.8. El tutor es única y exclusivamente responsable de la información publicada en cada clase o programa que cree en la Plataforma, incluyendo título, descripción, contenidos, tiempo de estudio, duración, modalidad (individual o programa), materiales requeridos, requisitos previos y objetivos de aprendizaje. Cualquier malentendido derivado de información incompleta, ambigua o incorrecta será de entera responsabilidad del tutor. Conniku no será responsable por errores u omisiones en las descripciones de clases.</p>
+          <p>30.9. El tutor podrá crear clases individuales (sesión única) o programas (múltiples sesiones secuenciales). En ambos casos, deberá especificar claramente la categoría, contenidos de cada sesión, duración total y precio por sesión.</p>
+          <p>30.10. Cada clase dispone de un chat de coordinación exclusivo donde el tutor y los estudiantes inscritos podrán comunicarse para resolver dudas, coordinar horarios y discutir contenidos. El uso del chat está restringido estrictamente a fines académicos y de coordinación.</p>
 
           <h3>Artículo 31. Derechos y Obligaciones del Estudiante en Servicios de Tutoría</h3>
           <p>31.1. El estudiante deberá confirmar la realización de cada clase dentro de las 48 horas siguientes a su finalización. Transcurrido dicho plazo sin confirmación ni disputa, la clase se considerará realizada satisfactoriamente.</p>
@@ -264,6 +267,7 @@ export default function TermsOfService({ onClose }: Props) {
           <p>31.3. En caso de disputa, el estudiante deberá reportar el problema dentro de las 48 horas posteriores a la clase programada. Conniku actuará como mediador y su decisión será definitiva.</p>
           <p>31.4. El pago del servicio de tutoría se realiza por adelantado a través de la Plataforma. Ningún pago deberá realizarse fuera de la Plataforma.</p>
           <p>31.5. La contratación de servicios fuera de la Plataforma para evadir la comisión de Conniku constituye incumplimiento de estos términos y podrá resultar en la suspensión de ambas cuentas.</p>
+          <p>31.6. En caso de rechazo del pago por parte de la pasarela de pagos, el estudiante dispondrá de un máximo de tres (3) intentos para completar el pago. Transcurridos los tres intentos sin éxito, la inscripción a la clase será cancelada automáticamente y tanto el estudiante como el tutor serán notificados. El estudiante podrá volver a inscribirse creando una nueva solicitud.</p>
 
           <h3>Artículo 32. Garantía al Estudiante</h3>
           <p>32.1. Conniku garantiza el reembolso del 100% del monto pagado si el tutor no se presenta a la clase confirmada, dentro de 5 a 7 días hábiles.</p>

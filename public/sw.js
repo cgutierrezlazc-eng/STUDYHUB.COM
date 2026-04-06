@@ -1,11 +1,11 @@
-// Conniku Service Worker v3.0
+// Conniku Service Worker v4.0
 // Full offline support + push notifications + background sync
-// v3: Updated icons with official logo (diagonal C opening)
+// v4: Corrected logo - C opening at upper-right diagonal (no rotation)
 
-const CACHE_NAME = 'conniku-v3';
-const STATIC_CACHE = 'conniku-static-v3';
-const API_CACHE = 'conniku-api-v2';
-const IMAGE_CACHE = 'conniku-images-v2';
+const CACHE_NAME = 'conniku-v4';
+const STATIC_CACHE = 'conniku-static-v4';
+const API_CACHE = 'conniku-api-v3';
+const IMAGE_CACHE = 'conniku-images-v3';
 
 // App shell files to precache
 const APP_SHELL = [

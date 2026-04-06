@@ -140,6 +140,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
       <div className="sidebar-section">
         <div className="sidebar-section-title">Soporte</div>
+        <button className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`} onClick={() => onNavigate('/profile')}>
+          <span className="nav-item-icon">{Icons.settings}</span> Configuración
+        </button>
         <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
           <span className="nav-item-icon">{Icons.diamond}</span> Suscripción
         </button>

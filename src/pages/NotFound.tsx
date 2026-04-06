@@ -26,7 +26,7 @@ export default function NotFound({ onNavigate }: Props) {
             animation: 'notfound-float 3s ease-in-out infinite',
           }}>
             <svg viewBox="0 0 40 40" width={40} height={40}>
-              <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" transform="rotate(-45, 20, 20)" />
+              <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
             </svg>
           </div>
         </div>

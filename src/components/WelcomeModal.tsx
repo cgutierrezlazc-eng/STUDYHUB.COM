@@ -20,7 +20,7 @@ export default function WelcomeModal({ onAccept }: Props) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
             <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg viewBox="0 0 40 40" width={16} height={16}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" transform="rotate(-45, 20, 20)" /></svg>
+              <svg viewBox="0 0 40 40" width={16} height={16}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
             </div>
             <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 20, fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>
               conni<span style={{ opacity: 0.85 }}>ku</span>

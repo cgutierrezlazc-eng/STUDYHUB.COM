@@ -8,9 +8,41 @@ interface Props {
   onNavigate: (path: string) => void
 }
 
-const CATEGORY_EMOJIS: Record<string, string> = {
-  communication: '🗣️', leadership: '👑', emotional: '🧠',
-  thinking: '🔍', productivity: '🚀', ethics: '⚖️', career: '⭐',
+// Professional SVG category icons
+const CategoryIcon = ({ category, size = 16, color }: { category: string; size?: number; color?: string }) => {
+  const c = color || CATEGORY_COLORS[category] || '#64748B'
+  const s = { width: size, height: size, flexShrink: 0, display: 'inline-block', verticalAlign: 'middle' } as React.CSSProperties
+  switch (category) {
+    case 'communication':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    case 'leadership':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    case 'emotional':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/></svg>
+    case 'thinking':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    case 'productivity':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    case 'ethics':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    case 'career':
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    default:
+      return <svg style={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+  }
+}
+
+// Professional course icon (replaces emoji on cards)
+const CourseIcon = ({ category, size = 28 }: { category?: string; size?: number }) => {
+  const color = CATEGORY_COLORS[category || ''] || '#64748B'
+  return (
+    <div style={{
+      width: size + 8, height: size + 8, borderRadius: 8,
+      background: `${color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      <CategoryIcon category={category || ''} size={size * 0.65} color={color} />
+    </div>
+  )
 }
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -142,21 +174,21 @@ export default function Courses({ onNavigate }: Props) {
             description: progressInfo?.message
               ? `${reward.description}\n\n${progressInfo.message}`
               : `${reward.description} — ¡Disfruta tu suscripción ${reward.tier.toUpperCase()}!`,
-            icon: reward.tier === 'max' ? '👑' : '⭐',
+            icon: reward.tier === 'max' ? '◆' : '★',
           })
         } else if (progressInfo?.message) {
           setMilestonePopup({
             type: 'course_completed',
             title: '¡Curso completado!',
             description: `${courseDetail.title} — ${result.score}%\n\n${progressInfo.message}`,
-            icon: '🎓',
+            icon: '✦',
           })
         } else {
           setMilestonePopup({
             type: 'course_completed',
             title: '¡Curso completado!',
             description: `Has completado ${courseDetail.title} con ${result.score}%`,
-            icon: '🎓',
+            icon: '✦',
           })
         }
       }
@@ -279,7 +311,7 @@ export default function Courses({ onNavigate }: Props) {
               {/* Course header in sidebar */}
               <div style={{ padding: '0 16px 16px', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 28 }}>{courseDetail.emoji}</span>
+                  <CourseIcon category={courseDetail.category} size={28} />
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>{courseDetail.title}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
@@ -953,7 +985,7 @@ export default function Courses({ onNavigate }: Props) {
             {Object.entries(categories).map(([key, label]) => (
               <button key={key} className={`tab ${selectedCategory === key ? 'active' : ''}`}
                 onClick={() => { setSelectedCategory(key); setTimeout(loadCourses, 50) }}>
-                {CATEGORY_EMOJIS[key] || '📚'} {label}
+                <CategoryIcon category={key} size={14} /> {label}
               </button>
             ))}
           </div>
@@ -973,7 +1005,7 @@ export default function Courses({ onNavigate }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
               {certificates.map((cert: any) => (
                 <div key={cert.certificateId} className="card" style={{ padding: 20, textAlign: 'center' }}>
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{cert.courseEmoji}</div>
+                  <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}><CourseIcon category={cert.category} size={32} /></div>
                   <h4 style={{ margin: '0 0 4px' }}>{cert.courseTitle}</h4>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
                     Puntuación: {cert.score}% · {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es') : ''}
@@ -1027,7 +1059,7 @@ export default function Courses({ onNavigate }: Props) {
                         onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)' }}
                         onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                          <span style={{ fontSize: 28 }}>{course.emoji}</span>
+                          <CourseIcon category={course.category} size={28} />
                           <div style={{ flex: 1 }}>
                             <h4 style={{ margin: 0, fontSize: 15, lineHeight: 1.3 }}>{course.title}</h4>
                             <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
@@ -1059,7 +1091,7 @@ export default function Courses({ onNavigate }: Props) {
                     onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <span style={{ fontSize: 24 }}>{course.emoji}</span>
+                      <CourseIcon category={course.category} size={24} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.3 }}>{course.title}</h4>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>

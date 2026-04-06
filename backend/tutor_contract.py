@@ -191,11 +191,30 @@ CLAUSULAS = {
             "las partes."
         ),
     },
+    "DECIMOTERCERO": {
+        "titulo": "DECIMOTERCERO: Responsabilidad sobre Descripcion de Clases",
+        "texto": (
+            "El/La PRESTADOR/A es unica y exclusivamente responsable de la informacion publicada "
+            "en cada clase o programa que cree en la Plataforma, incluyendo pero no limitado a: "
+            "titulo, descripcion, contenidos, tiempo de estudio, duracion, modalidad (individual "
+            "o programa), materiales requeridos, requisitos previos, objetivos de aprendizaje y "
+            "cualquier otra informacion relevante. El/La PRESTADOR/A se compromete a proporcionar "
+            "informacion veraz, completa y suficiente que permita al estudiante tomar una decision "
+            "informada antes de inscribirse. Cualquier malentendido, confusión o discrepancia "
+            "derivada de informacion incompleta, ambigua o incorrecta publicada por el/la "
+            "PRESTADOR/A sera de su entera responsabilidad. Conniku SpA no sera responsable por "
+            "errores u omisiones en las descripciones de clases creadas por el/la PRESTADOR/A. "
+            "En caso de reclamo fundado por parte de un estudiante derivado de informacion "
+            "insuficiente o enganosa, Conniku SpA podra aplicar las sanciones previstas en este "
+            "contrato, incluyendo la suspension o terminacion inmediata del mismo."
+        ),
+    },
 }
 
 ORDEN_CLAUSULAS = [
     "PRIMERO", "SEGUNDO", "TERCERO", "CUARTO", "QUINTO", "SEXTO",
     "SEPTIMO", "OCTAVO", "NOVENO", "DECIMO", "UNDECIMO", "DUODECIMO",
+    "DECIMOTERCERO",
 ]
 
 

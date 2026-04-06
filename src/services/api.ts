@@ -1040,6 +1040,14 @@ export const api = {
   removeBlockedDate: (id: string) => request(`/tutors/my-blocked-dates/${id}`, { method: 'DELETE' }),
   getTutorAvailability: (tutorId: string) => request(`/tutors/${tutorId}/availability`),
 
+  // ─── Tutor Programs ────────────────────────────────────────
+  createTutorProgram: (data: any) => request('/tutors/programs', { method: 'POST', body: JSON.stringify(data) }),
+  getTutorCategories: () => request('/tutors/categories'),
+
+  // ─── Class Chat ───────────────────────────────────────────
+  getClassMessages: (classId: string, page?: number) => request(`/tutors/classes/${classId}/messages?page=${page || 1}`),
+  sendClassMessage: (classId: string, message: string) => request(`/tutors/classes/${classId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }),
+
   // ─── Admin Tutor Management ───────────────────────────────
   enforceRatings: () => request('/tutors/admin/enforce-ratings', { method: 'POST' }),
   applyAsOwnerTutor: () => request('/tutors/apply-as-owner', { method: 'POST' }),

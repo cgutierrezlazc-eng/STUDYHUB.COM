@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session, relationship
 
 from database import Base, engine, get_db, User, gen_id, DATA_DIR, SessionLocal
 from middleware import get_current_user
+from push_routes import send_push_to_user
 
 logger = logging.getLogger("conniku.tutors")
 
@@ -275,6 +276,14 @@ class TutorClass(Base):
     category = Column(String(100), default="")
     materials_description = Column(Text, default="")
 
+    # Class type: "individual" (single session) or "program" (multi-session sequential)
+    class_mode = Column(String(20), default="individual")  # individual / program
+    program_total_sessions = Column(Integer, default=1)  # number of sessions in a program
+    program_session_number = Column(Integer, default=1)  # which session this is (1-based)
+    program_id = Column(String(16), nullable=True, index=True)  # groups sessions of same program
+    program_title = Column(String(255), nullable=True)  # overarching program name
+    program_description = Column(Text, nullable=True)  # program overview
+
     zoom_link = Column(String(500), default="")
     scheduled_at = Column(DateTime, nullable=False)
     duration_minutes = Column(Integer, default=60)
@@ -475,6 +484,33 @@ class TutorBlockedDate(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class TutorClassMessage(Base):
+    """Text-only chat messages for a specific class (coordination between tutor and students)."""
+    __tablename__ = "tutor_class_messages"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    class_id = Column(String(16), ForeignKey("tutor_classes.id", ondelete="CASCADE"), nullable=False, index=True)
+    sender_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# Predefined tutor class categories
+TUTOR_CATEGORIES = [
+    "Matematicas", "Fisica", "Quimica", "Biologia", "Ciencias",
+    "Lenguaje", "Ingles", "Frances", "Aleman", "Portugues", "Idiomas",
+    "Historia", "Filosofia", "Ciencias Sociales",
+    "Programacion", "Diseno", "Marketing Digital", "Tecnologia",
+    "Musica", "Arte", "Fotografia",
+    "Contabilidad", "Economia", "Finanzas", "Administracion",
+    "Derecho", "Psicologia", "Medicina", "Enfermeria", "Salud",
+    "PSU / PAES", "Preparacion de Examenes",
+    "Tesis y Trabajos", "Metodologia de Investigacion",
+    "Deportes y Fitness", "Cocina y Gastronomia",
+    "Otro",
+]
+
+
 # Create tables
 Base.metadata.create_all(engine)
 
@@ -533,6 +569,24 @@ class ClassCreateRequest(BaseModel):
     duration_minutes: int = 60
     max_students: int = Field(default=1, ge=1, le=5)
     price_per_student: Optional[float] = None  # if None, auto-calculate from rates
+    # Program fields (optional — set class_mode="program" for multi-session)
+    class_mode: str = "individual"  # "individual" or "program"
+    program_title: Optional[str] = None
+    program_description: Optional[str] = None
+    program_total_sessions: int = 1
+    program_session_number: int = 1
+    program_id: Optional[str] = None  # auto-generated for first session, reused for others
+
+
+class ProgramCreateRequest(BaseModel):
+    """Create a full program (multiple sequential sessions at once)."""
+    program_title: str
+    program_description: str = ""
+    category: str = ""
+    materials_description: str = ""
+    max_students: int = Field(default=1, ge=1, le=5)
+    price_per_student: Optional[float] = None
+    sessions: List[dict]  # [{"title": "Sesion 1: Intro", "description": "...", "scheduled_at": "...", "duration_minutes": 60, "zoom_link": ""}]
 
 
 class ClassRateRequest(BaseModel):
@@ -583,6 +637,10 @@ class BlockedDateRequest(BaseModel):
     start_date: str  # ISO datetime
     end_date: str  # ISO datetime
     reason: Optional[str] = None
+
+
+class ClassMessageRequest(BaseModel):
+    message: str
 
 
 class OwnerTutorApplyRequest(BaseModel):
@@ -700,6 +758,12 @@ def _class_to_dict(c: TutorClass, include_zoom: bool = False) -> dict:
         "group_size_applied": c.group_size_applied,
         "status": c.status,
         "spots_available": max(0, c.max_students - c.current_students),
+        "class_mode": c.class_mode or "individual",
+        "program_total_sessions": c.program_total_sessions or 1,
+        "program_session_number": c.program_session_number or 1,
+        "program_id": c.program_id,
+        "program_title": c.program_title,
+        "program_description": c.program_description,
         "created_at": c.created_at.isoformat() if c.created_at else None,
     }
     if include_zoom:
@@ -1236,6 +1300,11 @@ def create_class(
     else:
         price_per_student = _get_rate_for_group_size(profile, data.max_students) * (data.duration_minutes / 60)
 
+    # Handle program fields
+    program_id = data.program_id
+    if data.class_mode == "program" and not program_id:
+        program_id = gen_id()
+
     cls = TutorClass(
         tutor_id=profile.id,
         title=data.title,
@@ -1250,12 +1319,247 @@ def create_class(
         price_per_student=round(price_per_student),
         group_size_applied=data.max_students,
         status="published",
+        class_mode=data.class_mode,
+        program_id=program_id,
+        program_title=data.program_title,
+        program_description=data.program_description,
+        program_total_sessions=data.program_total_sessions,
+        program_session_number=data.program_session_number,
     )
     db.add(cls)
     db.commit()
     db.refresh(cls)
 
+    # Send CEO alert for new class
+    try:
+        tutor_user = db.query(User).filter(User.id == profile.user_id).first()
+        send_ceo_alert(
+            f"Nueva clase creada: {cls.title}",
+            f"Tutor: {tutor_user.first_name} {tutor_user.last_name if tutor_user else 'N/A'}\n"
+            f"Categoria: {cls.category or 'Sin categoria'}\n"
+            f"Modo: {cls.class_mode}\n"
+            f"Precio: ${cls.price_per_student:,.0f} CLP\n"
+            f"Fecha: {cls.scheduled_at.strftime('%d/%m/%Y %H:%M')}",
+        )
+    except Exception:
+        pass
+
     return {"ok": True, "class": _class_to_dict(cls, include_zoom=True)}
+
+
+@router.post("/programs")
+def create_program(
+    data: ProgramCreateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Create a full program (multi-session) in one request. Each session becomes a TutorClass."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+    if profile.status != "approved":
+        raise HTTPException(status_code=403, detail="Tu perfil de tutor debe estar aprobado")
+
+    if not data.sessions or len(data.sessions) < 2:
+        raise HTTPException(status_code=400, detail="Un programa debe tener al menos 2 sesiones")
+    if len(data.sessions) > 30:
+        raise HTTPException(status_code=400, detail="Maximo 30 sesiones por programa")
+
+    program_id = gen_id()
+    total_sessions = len(data.sessions)
+    created_classes = []
+
+    for idx, session in enumerate(data.sessions, 1):
+        try:
+            sched = datetime.fromisoformat(session.get("scheduled_at", "").replace("Z", "+00:00"))
+        except (ValueError, AttributeError):
+            raise HTTPException(status_code=400, detail=f"Sesion {idx}: formato de fecha invalido")
+
+        if sched <= datetime.utcnow():
+            raise HTTPException(status_code=400, detail=f"Sesion {idx}: debe ser en el futuro")
+
+        dur = session.get("duration_minutes", 60)
+        if dur < 15 or dur > 480:
+            raise HTTPException(status_code=400, detail=f"Sesion {idx}: duracion entre 15-480 minutos")
+
+        if data.price_per_student is not None and data.price_per_student > 0:
+            price = data.price_per_student
+        else:
+            price = _get_rate_for_group_size(profile, data.max_students) * (dur / 60)
+
+        cls = TutorClass(
+            tutor_id=profile.id,
+            title=session.get("title", f"Sesion {idx}: {data.program_title}"),
+            description=session.get("description", ""),
+            category=data.category,
+            materials_description=data.materials_description,
+            zoom_link=session.get("zoom_link", ""),
+            scheduled_at=sched,
+            duration_minutes=dur,
+            max_students=data.max_students,
+            current_students=0,
+            price_per_student=round(price),
+            group_size_applied=data.max_students,
+            status="published",
+            class_mode="program",
+            program_id=program_id,
+            program_title=data.program_title,
+            program_description=data.program_description,
+            program_total_sessions=total_sessions,
+            program_session_number=idx,
+        )
+        db.add(cls)
+        created_classes.append(cls)
+
+    db.commit()
+    for c in created_classes:
+        db.refresh(c)
+
+    # CEO alert
+    try:
+        tutor_user = db.query(User).filter(User.id == profile.user_id).first()
+        send_ceo_alert(
+            f"Nuevo programa creado: {data.program_title} ({total_sessions} sesiones)",
+            f"Tutor: {tutor_user.first_name} {tutor_user.last_name if tutor_user else 'N/A'}\n"
+            f"Categoria: {data.category or 'Sin categoria'}\n"
+            f"Sesiones: {total_sessions}\n"
+            f"Precio por sesion: ${created_classes[0].price_per_student:,.0f} CLP",
+        )
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "program_id": program_id,
+        "total_sessions": total_sessions,
+        "classes": [_class_to_dict(c, include_zoom=True) for c in created_classes],
+    }
+
+
+@router.get("/categories")
+def list_categories():
+    """Return predefined tutor class categories."""
+    return {"categories": TUTOR_CATEGORIES}
+
+
+# ─── Class Chat (text-only coordination) ────────────────────────────
+
+@router.get("/classes/{class_id}/messages")
+def get_class_messages(
+    class_id: str,
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=50, ge=1, le=100),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get chat messages for a class. Only tutor and enrolled students can see messages."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    # Check access: must be tutor or enrolled student
+    profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = profile and profile.user_id == user.id
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    is_admin = getattr(user, "role", "user") in ("owner", "admin")
+
+    if not is_tutor and not enrollment and not is_admin:
+        raise HTTPException(status_code=403, detail="Solo el tutor y estudiantes inscritos pueden ver el chat")
+
+    total = db.query(TutorClassMessage).filter(TutorClassMessage.class_id == class_id).count()
+    messages = db.query(TutorClassMessage).filter(
+        TutorClassMessage.class_id == class_id
+    ).order_by(desc(TutorClassMessage.created_at)).offset((page - 1) * per_page).limit(per_page).all()
+
+    result = []
+    for m in reversed(messages):
+        sender = db.query(User).filter(User.id == m.sender_id).first()
+        result.append({
+            "id": m.id,
+            "class_id": m.class_id,
+            "sender_id": m.sender_id,
+            "sender_name": f"{sender.first_name} {(sender.last_name or '')[0]}." if sender and sender.last_name else (sender.first_name if sender else "Usuario"),
+            "sender_avatar": sender.avatar if sender else None,
+            "is_tutor": bool(is_tutor) if m.sender_id == user.id else bool(profile and profile.user_id == m.sender_id),
+            "message": m.message,
+            "created_at": m.created_at.isoformat() if m.created_at else None,
+        })
+
+    return {"messages": result, "total": total, "page": page}
+
+
+@router.post("/classes/{class_id}/messages")
+def send_class_message(
+    class_id: str,
+    data: ClassMessageRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Send a text message in the class chat. Only tutor and enrolled students."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    if not data.message or not data.message.strip():
+        raise HTTPException(status_code=400, detail="El mensaje no puede estar vacio")
+    if len(data.message) > 2000:
+        raise HTTPException(status_code=400, detail="Mensaje demasiado largo (max 2000 caracteres)")
+
+    # Check access
+    profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = profile and profile.user_id == user.id
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+
+    if not is_tutor and not enrollment:
+        raise HTTPException(status_code=403, detail="Solo el tutor y estudiantes inscritos pueden enviar mensajes")
+
+    msg = TutorClassMessage(
+        class_id=class_id,
+        sender_id=user.id,
+        message=data.message.strip(),
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    # Notify other participants via push
+    try:
+        if is_tutor:
+            # Tutor sent message → notify all enrolled students
+            enrollments = db.query(TutorClassEnrollment).filter(
+                TutorClassEnrollment.class_id == class_id,
+                TutorClassEnrollment.payment_auto_cancelled == False,
+            ).all()
+            for e in enrollments:
+                send_push_to_user(e.student_id, f"Mensaje del tutor - {cls.title}",
+                                  data.message[:100], f"/tutores?class={class_id}", db)
+        else:
+            # Student sent message → notify tutor
+            if profile:
+                send_push_to_user(profile.user_id, f"Mensaje en {cls.title}",
+                                  f"{user.first_name}: {data.message[:80]}", f"/tutores?class={class_id}", db)
+    except Exception:
+        pass
+
+    return {
+        "ok": True,
+        "message": {
+            "id": msg.id,
+            "class_id": msg.class_id,
+            "sender_id": msg.sender_id,
+            "sender_name": f"{user.first_name} {(user.last_name or '')[0]}." if user.last_name else user.first_name,
+            "sender_avatar": user.avatar if user else None,
+            "is_tutor": bool(is_tutor),
+            "message": msg.message,
+            "created_at": msg.created_at.isoformat() if msg.created_at else None,
+        },
+    }
 
 
 @router.get("/classes")
@@ -1300,11 +1604,28 @@ def list_available_classes(
         if tutor:
             tutor_user = db.query(User).filter(User.id == tutor.user_id).first()
             d["tutor_name"] = f"{tutor_user.first_name} {tutor_user.last_name[0]}." if tutor_user and tutor_user.last_name else "Tutor"
+            d["tutor_user_id"] = tutor.user_id
             d["tutor_role_number"] = tutor.tutor_role_number
             d["tutor_rating"] = tutor.rating_average
+            d["tutor_avatar"] = tutor_user.avatar if tutor_user else None
         results.append(d)
 
-    return {"classes": results, "total": total, "page": page, "per_page": per_page}
+    # Get active categories (categories that have at least one published class)
+    active_cats = db.query(TutorClass.category).filter(
+        TutorClass.status == "published",
+        TutorClass.scheduled_at > datetime.utcnow(),
+        TutorClass.category != "",
+        TutorClass.category.isnot(None),
+    ).distinct().all()
+    active_categories = sorted(set(c[0] for c in active_cats if c[0]))
+
+    return {
+        "classes": results,
+        "total": total,
+        "page": page,
+        "per_page": per_page,
+        "active_categories": active_categories,
+    }
 
 
 @router.get("/classes/{class_id}")
@@ -1510,6 +1831,20 @@ def retry_enrollment_payment(
         except Exception:
             pass
 
+        # Notify tutor about auto-cancellation
+        try:
+            tutor_profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+            if tutor_profile:
+                send_push_to_user(
+                    tutor_profile.user_id,
+                    "Clase cancelada por rechazos de pago",
+                    f"Clase cancelada por 3 rechazos de pago — {cls.title}",
+                    url=f"/tutor/classes/{cls.id}",
+                    db=db,
+                )
+        except Exception:
+            pass
+
         return {
             "ok": False,
             "message": f"Se alcanzo el limite de {MAX_PAYMENT_ATTEMPTS} intentos de pago. La inscripcion fue cancelada automaticamente.",
@@ -1524,6 +1859,20 @@ def retry_enrollment_payment(
 
     db.commit()
     db.refresh(enrollment)
+
+    # Notify tutor about payment rejection (non-final)
+    try:
+        tutor_profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+        if tutor_profile:
+            send_push_to_user(
+                tutor_profile.user_id,
+                "Pago rechazado",
+                f"Pago rechazado para clase {cls.title} — Intento {current_attempts}/{MAX_PAYMENT_ATTEMPTS}",
+                url=f"/tutor/classes/{cls.id}",
+                db=db,
+            )
+    except Exception:
+        pass
 
     remaining = MAX_PAYMENT_ATTEMPTS - current_attempts
     return {

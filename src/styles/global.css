@@ -2444,7 +2444,7 @@ h1, h2, h3,
 }
 
 /* ─── LinkedIn-style Profile Page ────────────────────────── */
-.fb-profile-page { max-width: 100%; margin: 0 auto; }
+.fb-profile-page { max-width: 100%; margin: 0 auto; padding-bottom: 80px; }
 
 .fb-cover-section { position: relative; margin-bottom: 16px; }
 .fb-cover-photo {
@@ -2591,7 +2591,7 @@ h1, h2, h3,
 .fb-tab:hover { color: var(--text-primary); }
 .fb-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }
 
-.fb-profile-content { padding: 0; }
+.fb-profile-content { padding: 0; min-height: 0; }
 
 .fb-wall-layout { display: grid; grid-template-columns: 1fr 300px; gap: 16px; }
 .fb-wall-layout > .fb-wall-sidebar { order: 2; }

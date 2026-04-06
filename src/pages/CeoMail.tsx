@@ -25,11 +25,11 @@ interface EmailItem {
 }
 
 interface Signature {
-  name: string
-  title: string
-  company: string
-  phone: string
-  email: string
+  department: string
+  tagline: string
+  location: string
+  website: string
+  motto: string
   showLogo: boolean
 }
 
@@ -37,11 +37,11 @@ type Folder = 'inbox' | 'sent' | 'drafts' | 'starred' | 'trash'
 type FilterMode = 'all' | 'unread' | 'starred'
 
 const DEFAULT_SIGNATURE: Signature = {
-  name: 'Cristian G.',
-  title: 'CEO & Fundador',
-  company: 'Conniku',
-  phone: '',
-  email: '',
+  department: 'Dirección Ejecutiva',
+  tagline: 'Conniku SpA — Plataforma de Aprendizaje',
+  location: 'Santiago, Chile',
+  website: 'conniku.com',
+  motto: '"Donde los estudiantes se conectan, aprenden y crecen"',
   showLogo: true,
 }
 
@@ -265,15 +265,17 @@ export default function CeoMail({ onNavigate }: Props) {
   }
 
   const getSignatureHtml = (): string => {
-    if (!signature.name) return ''
+    if (!signature.department) return ''
     return `
 <br/><br/>
 <div style="border-top:1px solid #d0d0d0;padding-top:12px;margin-top:16px;font-family:Arial,sans-serif;font-size:13px;color:#555;">
-  <strong style="color:#333;font-size:14px;">${signature.name}</strong><br/>
-  <span style="color:#0078d4;">${signature.title}</span> | ${signature.company}<br/>
-  ${signature.phone ? `<span>${signature.phone}</span><br/>` : ''}
-  ${signature.email ? `<span>${signature.email}</span><br/>` : ''}
-  ${signature.showLogo ? '<img src="/logo.png" alt="Conniku" style="height:28px;margin-top:8px;" />' : ''}
+  —<br/>
+  <strong style="color:#333;font-size:14px;">${signature.department}</strong><br/>
+  <span style="color:#0078d4;">${signature.tagline}</span><br/>
+  <span>${signature.location}</span><br/>
+  <span>${signature.website}</span><br/>
+  ${signature.showLogo ? '<img src="/logo.png" alt="Conniku" style="height:28px;margin-top:8px;" /><br/>' : ''}
+  <em style="color:#888;">${signature.motto}</em>
 </div>`
   }
 
@@ -1344,24 +1346,24 @@ export default function CeoMail({ onNavigate }: Props) {
             </div>
             <div className="sig-body">
               <div className="sig-field">
-                <label>Nombre</label>
-                <input value={signature.name} onChange={e => setSignature(s => ({ ...s, name: e.target.value }))} />
+                <label>Cargo o departamento</label>
+                <input value={signature.department} onChange={e => setSignature(s => ({ ...s, department: e.target.value }))} placeholder="Cargo o departamento" />
               </div>
               <div className="sig-field">
-                <label>Titulo / Cargo</label>
-                <input value={signature.title} onChange={e => setSignature(s => ({ ...s, title: e.target.value }))} />
+                <label>Linea descriptiva</label>
+                <input value={signature.tagline} onChange={e => setSignature(s => ({ ...s, tagline: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Empresa</label>
-                <input value={signature.company} onChange={e => setSignature(s => ({ ...s, company: e.target.value }))} />
+                <label>Ubicacion</label>
+                <input value={signature.location} onChange={e => setSignature(s => ({ ...s, location: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Telefono</label>
-                <input value={signature.phone} onChange={e => setSignature(s => ({ ...s, phone: e.target.value }))} placeholder="+56 9 1234 5678" />
+                <label>Sitio web</label>
+                <input value={signature.website} onChange={e => setSignature(s => ({ ...s, website: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Email</label>
-                <input value={signature.email} onChange={e => setSignature(s => ({ ...s, email: e.target.value }))} placeholder="ceo@conniku.com" />
+                <label>Lema</label>
+                <input value={signature.motto} onChange={e => setSignature(s => ({ ...s, motto: e.target.value }))} />
               </div>
               <div className="sig-field">
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
@@ -1373,11 +1375,13 @@ export default function CeoMail({ onNavigate }: Props) {
               <div className="sig-preview">
                 <div className="sig-preview-title">Vista previa</div>
                 <div style={{ borderTop: '1px solid #d0d0d0', paddingTop: 12, fontFamily: 'Arial, sans-serif', fontSize: 13, color: '#555' }}>
-                  <strong style={{ color: '#333', fontSize: 14 }}>{signature.name}</strong><br />
-                  <span style={{ color: '#0078d4' }}>{signature.title}</span> | {signature.company}<br />
-                  {signature.phone && <><span>{signature.phone}</span><br /></>}
-                  {signature.email && <><span>{signature.email}</span><br /></>}
-                  {signature.showLogo && <img src="/logo.png" alt="Conniku" style={{ height: 28, marginTop: 8 }} />}
+                  —<br />
+                  <strong style={{ color: '#333', fontSize: 14 }}>{signature.department}</strong><br />
+                  <span style={{ color: '#0078d4' }}>{signature.tagline}</span><br />
+                  <span>{signature.location}</span><br />
+                  <span>{signature.website}</span><br />
+                  {signature.showLogo && <><img src="/logo.png" alt="Conniku" style={{ height: 28, marginTop: 8 }} /><br /></>}
+                  <em style={{ color: '#888' }}>{signature.motto}</em>
                 </div>
               </div>
             </div>

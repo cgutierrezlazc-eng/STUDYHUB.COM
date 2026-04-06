@@ -99,6 +99,27 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [tutorClasses, setTutorClasses] = useState<any[]>([])
   const [tutorPayments, setTutorPayments] = useState<any>(null)
   const [tutorLoading, setTutorLoading] = useState(false)
+  // Create class form state
+  const [showCreateClass, setShowCreateClass] = useState(false)
+  const [ccTitle, setCcTitle] = useState('')
+  const [ccDescription, setCcDescription] = useState('')
+  const [ccCategory, setCcCategory] = useState('')
+  const [ccMaterials, setCcMaterials] = useState('')
+  const [ccZoom, setCcZoom] = useState('')
+  const [ccDate, setCcDate] = useState('')
+  const [ccTime, setCcTime] = useState('')
+  const [ccDuration, setCcDuration] = useState(60)
+  const [ccMaxStudents, setCcMaxStudents] = useState(1)
+  const [ccPrice, setCcPrice] = useState('')
+  const [ccMode, setCcMode] = useState<'individual' | 'program'>('individual')
+  const [ccProgramTitle, setCcProgramTitle] = useState('')
+  const [ccProgramDesc, setCcProgramDesc] = useState('')
+  const [ccProgramSessions, setCcProgramSessions] = useState(1)
+  const [ccSessionNumber, setCcSessionNumber] = useState(1)
+  const [ccProgramId, setCcProgramId] = useState('')
+  const [ccSubmitting, setCcSubmitting] = useState(false)
+  const [ccSuccess, setCcSuccess] = useState(false)
+  const [tutorCategories, setTutorCategories] = useState<string[]>([])
   // Student tutorias tab state
   const [studentClasses, setStudentClasses] = useState<any[]>([])
   const [studentClassesLoading, setStudentClassesLoading] = useState(false)
@@ -112,6 +133,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [bookingNotes, setBookingNotes] = useState('')
   const [bookingSaving, setBookingSaving] = useState(false)
   const [tutorDirectoryList, setTutorDirectoryList] = useState<any[]>([])
+  const [availableTutorClasses, setAvailableTutorClasses] = useState<any[]>([])
+  const [tutorClassCategories, setTutorClassCategories] = useState<string[]>([])
   const [showExamModal, setShowExamModal] = useState(false)
   const [examClassId, setExamClassId] = useState<string | null>(null)
   const [examData, setExamData] = useState<any>(null)
@@ -193,14 +216,16 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const loadTutorData = async () => {
     setTutorLoading(true)
     try {
-      const [tp, classes, payments] = await Promise.all([
+      const [tp, classes, payments, cats] = await Promise.all([
         api.getMyTutorProfile(),
         api.getTutorClasses('role=tutor&status=upcoming'),
-        api.getMyTutorPayments()
+        api.getMyTutorPayments(),
+        api.getTutorCategories().catch(() => ({ categories: [] })),
       ])
       setTutorProfile(tp)
-      setTutorClasses(classes?.items || classes || [])
+      setTutorClasses(classes?.classes || classes?.items || classes || [])
       setTutorPayments(payments)
+      setTutorCategories(cats?.categories || [])
     } catch (err) { console.error('Failed to load tutor data:', err) }
     setTutorLoading(false)
   }
@@ -209,14 +234,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     setStudentClassesLoading(true)
     setStudentPaymentsLoading(true)
     try {
-      const [classes, payments, directory] = await Promise.all([
+      const [classes, payments, directory, availClasses] = await Promise.all([
         api.getMyTutoringClasses().catch(() => []),
         api.getMyTutoringPayments().catch(() => []),
         api.getTutorDirectory().catch(() => ({ items: [] })),
+        api.getTutorClasses().catch(() => ({ classes: [], active_categories: [] })),
       ])
       setStudentClasses(classes?.items || classes || [])
       setStudentPayments(payments?.items || payments || [])
       setTutorDirectoryList(directory?.items || directory || [])
+      setAvailableTutorClasses(availClasses?.classes || [])
+      setTutorClassCategories(availClasses?.active_categories || [])
     } catch (err) { console.error('Failed to load student tutoring data:', err) }
     setStudentClassesLoading(false)
     setStudentPaymentsLoading(false)
@@ -331,6 +359,47 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       })
     }
   }, [studentClasses])
+
+  const handleCreateClass = async () => {
+    if (!ccTitle.trim() || !ccDate || !ccTime) return
+    setCcSubmitting(true)
+    try {
+      const scheduled_at = `${ccDate}T${ccTime}:00`
+      const data: any = {
+        title: ccTitle, description: ccDescription, category: ccCategory,
+        materials_description: ccMaterials, zoom_link: ccZoom,
+        scheduled_at, duration_minutes: ccDuration, max_students: ccMaxStudents,
+        class_mode: ccMode,
+      }
+      if (ccPrice) data.price_per_student = parseFloat(ccPrice)
+      if (ccMode === 'program') {
+        data.program_title = ccProgramTitle || ccTitle
+        data.program_description = ccProgramDesc
+        data.program_total_sessions = ccProgramSessions
+        data.program_session_number = ccSessionNumber
+        if (ccProgramId) data.program_id = ccProgramId
+      }
+      const result = await api.createTutorClass(data)
+      setCcSuccess(true)
+      // Store program_id for subsequent sessions
+      if (ccMode === 'program' && result?.class?.program_id) {
+        setCcProgramId(result.class.program_id)
+        setCcSessionNumber(prev => prev + 1)
+      }
+      // Reset if individual, keep program context if program
+      if (ccMode === 'individual') {
+        setTimeout(() => { setShowCreateClass(false); setCcSuccess(false) }, 1500)
+        setCcTitle(''); setCcDescription(''); setCcCategory(''); setCcMaterials('')
+        setCcZoom(''); setCcDate(''); setCcTime(''); setCcDuration(60)
+        setCcMaxStudents(1); setCcPrice('')
+      } else {
+        setCcTitle(''); setCcDescription(''); setCcZoom(''); setCcDate(''); setCcTime('')
+        setTimeout(() => setCcSuccess(false), 2000)
+      }
+      loadTutorData()
+    } catch (err: any) { alert(err.message || 'Error al crear clase') }
+    setCcSubmitting(false)
+  }
 
   const handleSendTutoringRequest = async () => {
     if (!tutoringSubject.trim()) return
@@ -1653,6 +1722,126 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               </p>
             </div>
 
+            {/* Crear Clase / Programa */}
+            <div className="card" style={{ padding: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showCreateClass ? 16 : 0 }}>
+                <h4 style={{ margin: 0, color: '#92400e' }}>Crear Clase o Programa</h4>
+                <button onClick={() => { setShowCreateClass(!showCreateClass); setCcSuccess(false) }}
+                  style={{ padding: '6px 16px', background: showCreateClass ? 'var(--bg-secondary)' : '#d97706', color: showCreateClass ? 'var(--text-primary)' : '#fff', border: '1px solid ' + (showCreateClass ? 'var(--border)' : '#d97706'), borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
+                  {showCreateClass ? 'Cerrar' : '+ Nueva Clase'}
+                </button>
+              </div>
+              {showCreateClass && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {ccSuccess && <div style={{ padding: 12, background: '#dcfce7', borderRadius: 8, color: '#166534', fontWeight: 600, fontSize: 13 }}>✓ Clase creada exitosamente{ccMode === 'program' ? ` (Sesion ${ccSessionNumber - 1} de ${ccProgramSessions})` : ''}</div>}
+                  {/* Mode selector */}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => { setCcMode('individual'); setCcProgramId(''); setCcSessionNumber(1) }}
+                      style={{ flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid', borderColor: ccMode === 'individual' ? '#d97706' : 'var(--border)', background: ccMode === 'individual' ? '#fffbeb' : 'var(--bg-card)', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: ccMode === 'individual' ? '#92400e' : 'var(--text-secondary)' }}>
+                      Clase Individual
+                    </button>
+                    <button onClick={() => setCcMode('program')}
+                      style={{ flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid', borderColor: ccMode === 'program' ? '#d97706' : 'var(--border)', background: ccMode === 'program' ? '#fffbeb' : 'var(--bg-card)', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: ccMode === 'program' ? '#92400e' : 'var(--text-secondary)' }}>
+                      Programa (Multi-sesion)
+                    </button>
+                  </div>
+                  {ccMode === 'program' && (
+                    <div style={{ padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+                        <div>
+                          <label style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>Nombre del Programa *</label>
+                          <input value={ccProgramTitle} onChange={e => setCcProgramTitle(e.target.value)} placeholder="Ej: Curso de Calculo I"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>Total de Sesiones *</label>
+                          <input type="number" min={2} max={30} value={ccProgramSessions} onChange={e => setCcProgramSessions(parseInt(e.target.value) || 2)}
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: 12, fontWeight: 600, color: '#92400e' }}>Descripcion del Programa</label>
+                        <textarea value={ccProgramDesc} onChange={e => setCcProgramDesc(e.target.value)} placeholder="Describe el programa completo..."
+                          rows={2} style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, resize: 'vertical', background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                      </div>
+                      {ccProgramId && <p style={{ margin: '8px 0 0', fontSize: 12, color: '#d97706', fontWeight: 600 }}>Creando sesion {ccSessionNumber} de {ccProgramSessions} — Programa ID: {ccProgramId.slice(0, 8)}...</p>}
+                    </div>
+                  )}
+                  {/* Category */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Categoria *</label>
+                    <select value={ccCategory} onChange={e => setCcCategory(e.target.value)}
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                      <option value="">Seleccionar categoria...</option>
+                      {tutorCategories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                  </div>
+                  {/* Title & Description */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>{ccMode === 'program' ? `Titulo Sesion ${ccSessionNumber}` : 'Titulo de la Clase'} *</label>
+                    <input value={ccTitle} onChange={e => setCcTitle(e.target.value)} placeholder={ccMode === 'program' ? `Sesion ${ccSessionNumber}: Tema` : 'Ej: Introduccion a Derivadas'}
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Descripcion detallada *</label>
+                    <textarea value={ccDescription} onChange={e => setCcDescription(e.target.value)}
+                      placeholder="Describe en detalle: contenidos, objetivos, requisitos previos, que aprendera el estudiante..."
+                      rows={4} style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, resize: 'vertical', background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                    <p style={{ fontSize: 11, color: '#d97706', margin: '4px 0 0' }}>⚠️ Eres responsable de proporcionar informacion completa. Cualquier malentendido por informacion insuficiente sera tu responsabilidad.</p>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Materiales requeridos</label>
+                    <input value={ccMaterials} onChange={e => setCcMaterials(e.target.value)} placeholder="Ej: Calculadora, cuaderno, libro de texto..."
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                  </div>
+                  {/* Schedule */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Fecha *</label>
+                      <input type="date" value={ccDate} onChange={e => setCcDate(e.target.value)}
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Hora *</label>
+                      <input type="time" value={ccTime} onChange={e => setCcTime(e.target.value)}
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Duracion (min)</label>
+                      <select value={ccDuration} onChange={e => setCcDuration(parseInt(e.target.value))}
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                        {[30, 45, 60, 90, 120, 180, 240].map(m => <option key={m} value={m}>{m} min ({(m/60).toFixed(1)}h)</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Max Estudiantes</label>
+                      <select value={ccMaxStudents} onChange={e => setCcMaxStudents(parseInt(e.target.value))}
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+                        {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} {n === 1 ? '(Individual)' : `(Grupal)`}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Precio por estudiante (CLP)</label>
+                      <input type="number" value={ccPrice} onChange={e => setCcPrice(e.target.value)} placeholder="Auto (segun tarifas)"
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)' }}>Link Zoom</label>
+                      <input value={ccZoom} onChange={e => setCcZoom(e.target.value)} placeholder="https://zoom.us/j/..."
+                        style={{ width: '100%', padding: '8px 12px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 13, background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
+                    </div>
+                  </div>
+                  <button onClick={handleCreateClass}
+                    disabled={ccSubmitting || !ccTitle.trim() || !ccDate || !ccTime || !ccCategory}
+                    style={{ padding: '10px 24px', background: '#d97706', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 700, fontSize: 14, opacity: (ccSubmitting || !ccTitle.trim() || !ccDate || !ccTime || !ccCategory) ? 0.5 : 1 }}>
+                    {ccSubmitting ? 'Creando...' : ccMode === 'program' ? `Crear Sesion ${ccSessionNumber}` : 'Publicar Clase'}
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Próximas clases */}
             <div className="card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Calendar({ size: 16 })} Próximas Clases</h4>
@@ -1899,6 +2088,68 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   </div>
                 )
               })()}
+            </div>
+
+            {/* Available Classes from Tutors */}
+            <div className="card" style={{ padding: 20 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                <h4 style={{ margin: 0, color: '#5b21b6' }}>Clases Disponibles</h4>
+                <button onClick={() => onNavigate('/tutores')} style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+                  Ver todas →
+                </button>
+              </div>
+              {tutorClassCategories.length > 0 && (
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 }}>
+                  {tutorClassCategories.slice(0, 8).map(cat => (
+                    <span key={cat} style={{ padding: '4px 12px', borderRadius: 16, fontSize: 11, fontWeight: 600, background: '#ede9fe', color: '#5b21b6', border: '1px solid #c4b5fd' }}>
+                      {cat}
+                    </span>
+                  ))}
+                  {tutorClassCategories.length > 8 && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', alignSelf: 'center' }}>+{tutorClassCategories.length - 8} mas</span>
+                  )}
+                </div>
+              )}
+              {availableTutorClasses.length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {availableTutorClasses.slice(0, 6).map((cls: any) => (
+                    <div key={cls.id} onClick={() => cls.tutor_user_id ? onNavigate(`/user/${cls.tutor_user_id}`) : null}
+                      style={{ padding: 12, borderRadius: 8, border: '1px solid var(--border)', cursor: 'pointer', transition: 'all 0.15s', background: 'var(--bg-card)' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#7c3aed'; (e.currentTarget as HTMLElement).style.background = '#f5f3ff' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-card)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{cls.title}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {cls.tutor_name || 'Tutor'} • {cls.category || 'General'}
+                            {cls.class_mode === 'program' && <span style={{ color: '#7c3aed', fontWeight: 600 }}> • Programa ({cls.program_total_sessions} sesiones)</span>}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {cls.scheduled_at ? new Date(cls.scheduled_at).toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''} • {cls.duration_minutes} min • {cls.spots_available} cupos
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: '#5b21b6' }}>
+                            {cls.price_per_student === 0 ? 'Gratis' : `$${(cls.price_per_student || 0).toLocaleString()}`}
+                          </div>
+                          {cls.tutor_rating > 0 && (
+                            <div style={{ fontSize: 11, color: '#f59e0b' }}>★ {Number(cls.tutor_rating).toFixed(1)}</div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {availableTutorClasses.length > 6 && (
+                    <button onClick={() => onNavigate('/tutores')} style={{ padding: '8px 16px', background: '#ede9fe', color: '#5b21b6', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13, textAlign: 'center' }}>
+                      Ver {availableTutorClasses.length - 6} clases mas
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, textAlign: 'center', padding: 20 }}>
+                  No hay clases disponibles en este momento
+                </p>
+              )}
             </div>
 
             {/* Payment History */}

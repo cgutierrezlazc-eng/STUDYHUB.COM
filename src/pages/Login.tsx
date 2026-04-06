@@ -47,7 +47,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
       {/* Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32 }}>
         <div style={{ width: 40, height: 40, borderRadius: 11, background: '#2D62C8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <svg viewBox="0 0 40 40" width={24} height={24}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" transform="rotate(-45, 20, 20)" /></svg>
+          <svg viewBox="0 0 40 40" width={24} height={24}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
         </div>
         <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 36, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.04em', lineHeight: 1 }}>
           conni<span style={{ color: '#2D62C8' }}>ku</span>
