@@ -52,10 +52,12 @@ export default function TermsOfService({ onClose }: Props) {
             <li><strong>"Cuenta":</strong> El perfil personal e intransferible del Usuario en la Plataforma.</li>
             <li><strong>"Plan":</strong> El nivel de suscripción del Usuario (Básico, Pro o Max).</li>
             <li><strong>"Datos Personales":</strong> Toda información que identifique o permita identificar directa o indirectamente a una persona natural.</li>
+            <li><strong>"Tutor":</strong> Prestador de servicios independiente, debidamente registrado y aprobado por Conniku, que ofrece servicios de tutoría académica a través de la Plataforma.</li>
+            <li><strong>"Sesión de Tutoría":</strong> Clase individual o grupal impartida por un Tutor a través de la Plataforma mediante videollamada.</li>
           </ul>
 
           <h3>Artículo 3. Descripción del Servicio</h3>
-          <p>3.1. Conniku es una plataforma digital colaborativa de estudio universitario que ofrece, entre otras funcionalidades: (a) herramientas de estudio asistidas por inteligencia artificial, incluyendo chat contextual, guías de estudio, quizzes adaptativos y flashcards; (b) red social académica con perfiles, feed de actividad, mensajería y comunidades; (c) cursos de formación en habilidades personales, profesionales y tecnológicas; (d) bolsa de empleo y herramientas de empleabilidad; (e) mentoría entre pares; (f) conferencias en línea con profesionales del mercado laboral; (g) sistema de gamificación con logros, niveles y recompensas.</p>
+          <p>3.1. Conniku es una plataforma digital colaborativa de estudio universitario que ofrece, entre otras funcionalidades: (a) herramientas de estudio asistidas por inteligencia artificial, incluyendo chat contextual, guías de estudio, quizzes adaptativos y flashcards; (b) red social académica con perfiles, feed de actividad, mensajería y comunidades; (c) cursos de formación en habilidades personales, profesionales y tecnológicas; (d) bolsa de empleo y herramientas de empleabilidad; (e) mentoría entre pares; (f) conferencias en línea con profesionales del mercado laboral; (g) sistema de gamificación con logros, niveles y recompensas; (h) servicios de tutoría académica impartidos por prestadores independientes verificados, facilitados a través de la Plataforma.</p>
           <p>3.2. Conniku se reserva el derecho de modificar, suspender, ampliar o descontinuar cualquier funcionalidad del Servicio sin previo aviso, siempre que no afecte funcionalidades esenciales contratadas en planes de pago durante el período vigente de suscripción.</p>
           <p>3.3. El Servicio se proporciona "tal cual" (as is) y "según disponibilidad" (as available). Conniku no garantiza la disponibilidad ininterrumpida, la ausencia de errores ni la exactitud de los contenidos generados por inteligencia artificial.</p>
 
@@ -90,7 +92,7 @@ export default function TermsOfService({ onClose }: Props) {
           <p>7.2. Los precios, características y límites de cada plan podrán ser modificados con previo aviso de treinta (30) días calendario. Los cambios no afectarán el período de facturación ya pagado por el Usuario.</p>
 
           <h3>Artículo 8. Cobros, Facturación y Método de Pago</h3>
-          <p>8.1. Los pagos se procesan de forma segura a traves de proveedores certificados (Mercado Pago y PayPal). Conniku no almacena, accede ni procesa directamente datos de tarjetas de credito o debito. Todo procesamiento de pagos cumple con el estandar PCI DSS (Payment Card Industry Data Security Standard).</p>
+          <p>8.1. Los pagos se procesan de forma segura a traves de proveedores certificados (Mercado Pago y PayPal). Conniku no almacena, accede ni procesa directamente datos de tarjetas de credito o debito. Todo procesamiento de pagos cumple con el estandar PCI DSS (Payment Card Industry Data Security Standard). Estos metodos de pago aplican tanto para suscripciones de planes como para la contratacion de servicios de tutoria a traves de la Plataforma.</p>
           <p>8.2. Los precios se expresan en dólares estadounidenses (USD). La conversión a moneda local es aproximada y depende del tipo de cambio aplicado por la entidad emisora de la tarjeta o el procesador de pago del Usuario.</p>
           <p>8.3. <strong>El cobro es automático y recurrente</strong> en ciclos mensuales o anuales según el plan seleccionado. Al suscribirse, el Usuario autoriza de forma expresa cargos automáticos y periódicos a su método de pago registrado.</p>
           <p>8.4. En caso de fallo en el cobro automático, el Usuario dispondrá de un período de gracia de tres (3) días hábiles para actualizar su método de pago. Vencido dicho plazo sin pago exitoso, la cuenta será degradada automáticamente al Plan Básico, sin derecho a reembolso por el período parcial transcurrido.</p>
@@ -222,81 +224,129 @@ export default function TermsOfService({ onClose }: Props) {
           <p>26.1. La Plataforma puede contener enlaces a sitios web, aplicaciones o servicios operados por terceros (incluyendo Mercado Pago, PayPal, Zoom, Google y otros). Conniku no controla, respalda ni asume responsabilidad por el contenido, políticas de privacidad ni prácticas de dichos terceros.</p>
           <p>26.2. El uso de servicios de terceros está sujeto a los términos y condiciones propios de cada proveedor. El Usuario asume la responsabilidad de revisar dichos términos.</p>
 
-          {/* ===== TÍTULO X: ELIMINACIÓN DE CUENTA ===== */}
-          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO X — ELIMINACIÓN DE CUENTA Y PORTABILIDAD DE DATOS</h3>
+          {/* ===== TÍTULO X: SERVICIOS DE TUTORÍA Y PRESTADORES EXTERNOS ===== */}
+          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO X — SERVICIOS DE TUTORÍA Y PRESTADORES EXTERNOS</h3>
 
-          <h3>Artículo 27. Eliminación de Cuenta por el Usuario</h3>
-          <p>27.1. El Usuario podrá solicitar la eliminación permanente de su cuenta en cualquier momento desde la sección de Configuración de la Plataforma o mediante solicitud a soporte@conniku.com.</p>
-          <p>27.2. La eliminación de la cuenta es <strong>irreversible</strong> y comprende la supresión definitiva de: datos personales, documentos subidos, mensajes, publicaciones, historial de actividad, progreso en cursos, certificados, configuraciones y cualquier otro dato asociado a la cuenta.</p>
-          <p>27.3. Las suscripciones activas serán canceladas automáticamente al momento de la eliminación. No se realizarán reembolsos por el período no consumido.</p>
-          <p>27.4. La eliminación de datos se ejecutará dentro de un plazo máximo de treinta (30) días calendario. Conniku podrá retener datos anonimizados y no identificables con fines estadísticos y de mejora del servicio.</p>
+          <h3>Artículo 27. Naturaleza de la Relación con Tutores</h3>
+          <p>27.1. Los tutores registrados en la Plataforma actúan como prestadores de servicios independientes bajo contrato de prestación de servicios. NO existe relación laboral entre Conniku y los tutores.</p>
+          <p>27.2. Conniku actúa únicamente como intermediario tecnológico que facilita la conexión entre estudiantes y tutores.</p>
+          <p>27.3. Cada tutor es responsable de cumplir con sus obligaciones tributarias ante el SII, incluyendo la emisión de boletas de honorarios y el pago de la retención correspondiente.</p>
 
-          <h3>Artículo 28. Portabilidad de Datos</h3>
-          <p>28.1. El Usuario tiene derecho a solicitar una copia de todos sus datos personales en un formato estructurado, de uso común y lectura mecánica (derecho a la portabilidad), conforme a la legislación aplicable.</p>
-          <p>28.2. La solicitud se realiza desde la sección "Descargar mis datos" en Configuración, o mediante solicitud a privacidad@conniku.com. Los datos serán entregados en un plazo máximo de quince (15) días hábiles.</p>
+          <h3>Artículo 28. Registro y Aprobación de Tutores</h3>
+          <p>28.1. Para ofrecer servicios de tutoría pagados, el postulante debe ser profesional titulado, egresado o alumno de último año de carrera, debidamente acreditado.</p>
+          <p>28.2. Documentos requeridos: cédula de identidad, título profesional o certificado de alumno regular, certificado de antecedentes vigente (menos de 30 días), currículum vitae.</p>
+          <p>28.3. Conniku verificará la información con las instituciones correspondientes. El proceso de aprobación puede tomar hasta 10 días hábiles.</p>
+          <p>28.4. En caso de rechazo, el postulante recibirá el motivo por escrito y tendrá derecho a apelar dentro de 10 días hábiles, presentando documentación adicional.</p>
+          <p>28.5. Conniku se reserva el derecho de suspender o revocar la condición de tutor verificado en caso de incumplimiento de estas condiciones.</p>
 
-          {/* ===== TÍTULO XI: RESPONSABILIDAD ===== */}
-          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XI — LIMITACIÓN DE RESPONSABILIDAD, GARANTÍAS E INDEMNIZACIÓN</h3>
+          <h3>Artículo 29. Comisión y Pagos</h3>
+          <p>29.1. Conniku retiene una comisión del 10% sobre el monto total pagado por el estudiante por concepto de intermediación y uso de plataforma.</p>
+          <p>29.2. El tutor recibe el 90% restante del monto bruto pagado por el estudiante.</p>
+          <p>29.3. El tutor deberá emitir boleta de honorarios a nombre de Conniku SpA por el monto correspondiente al 90% recibido y presentarla a través de la Plataforma.</p>
+          <p>29.4. El tutor es íntegramente responsable del pago de la retención de impuestos al SII sobre su boleta de honorarios (actualmente 13.75%).</p>
+          <p>29.5. Una vez recibida y validada la boleta de honorarios, Conniku procederá al pago dentro de un plazo máximo de 7 días hábiles.</p>
+          <p>29.6. El tutor podrá elegir frecuencia de pago: por clase realizada, quincenal o mensual.</p>
 
-          <h3>Artículo 29. Limitación de Responsabilidad</h3>
-          <p>29.1. La Plataforma se proporciona "TAL CUAL" (AS IS) y "SEGÚN DISPONIBILIDAD" (AS AVAILABLE), sin garantías de ningún tipo, expresas o implícitas, incluyendo pero no limitándose a garantías de comercialización, idoneidad para un fin particular, no infracción de derechos de terceros, disponibilidad ininterrumpida o ausencia de errores.</p>
-          <p>29.2. Conniku no será responsable por daños directos, indirectos, incidentales, especiales, consecuentes, punitivos ni ejemplares que surjan del uso o la imposibilidad de uso de la Plataforma, incluyendo pero no limitándose a: pérdida de datos, pérdida de beneficios, interrupción del negocio, daño a dispositivos o pérdida de oportunidades, aun cuando Conniku haya sido advertido de la posibilidad de tales daños.</p>
-          <p>29.3. En ningún caso la responsabilidad total acumulada de Conniku frente al Usuario excederá el monto total efectivamente pagado por el Usuario a Conniku durante los doce (12) meses inmediatamente anteriores al hecho generador de la reclamación, o cien dólares estadounidenses (USD $100), el que sea mayor.</p>
-          <p>29.4. Las respuestas generadas por inteligencia artificial son orientativas y pueden contener imprecisiones. Conniku no garantiza la exactitud, completitud ni idoneidad de dichas respuestas. El Usuario asume la responsabilidad de verificar la información proporcionada por el sistema de IA antes de tomar decisiones basadas en ella.</p>
+          <h3>Artículo 30. Clases y Obligaciones del Tutor</h3>
+          <p>30.1. El tutor deberá crear las sesiones de clase en la Plataforma con descripción detallada del contenido, materiales, duración, precio y disponibilidad horaria.</p>
+          <p>30.2. Las clases se realizarán exclusivamente a través de videollamada (Zoom). El tutor es responsable de crear y compartir el enlace.</p>
+          <p>30.3. El número máximo de estudiantes por clase grupal es 5. El tutor deberá establecer tarifas diferenciadas para clases individuales y grupales.</p>
+          <p>30.4. Si el tutor no se presenta a una clase confirmada y pagada, el estudiante recibirá un reembolso del 100% del monto pagado dentro de 5 a 7 días hábiles.</p>
+          <p>30.5. El tutor deberá mantener un estándar de calidad mínimo. Tutores con calificación promedio inferior a 2.5 sobre 5.0 podrán ser suspendidos.</p>
 
-          <h3>Artículo 30. Indemnización</h3>
-          <p>30.1. El Usuario se compromete a indemnizar, defender y mantener indemne a Conniku SpA, sus directores, empleados, contratistas, agentes, socios y afiliados frente a cualquier reclamación, demanda, daño, pérdida, costo o gasto (incluyendo honorarios razonables de abogados) que surja de: (a) el uso de la Plataforma por parte del Usuario; (b) el incumplimiento de estos Términos; (c) la violación de derechos de terceros; (d) contenido publicado por el Usuario; (e) el uso indebido de constancias de finalización.</p>
+          <h3>Artículo 31. Derechos y Obligaciones del Estudiante en Servicios de Tutoría</h3>
+          <p>31.1. El estudiante deberá confirmar la realización de cada clase dentro de las 48 horas siguientes a su finalización. Transcurrido dicho plazo sin confirmación ni disputa, la clase se considerará realizada satisfactoriamente.</p>
+          <p>31.2. El estudiante podrá calificar al tutor al finalizar cada sesión. Las calificaciones serán públicas y visibles en el perfil del tutor.</p>
+          <p>31.3. En caso de disputa, el estudiante deberá reportar el problema dentro de las 48 horas posteriores a la clase programada. Conniku actuará como mediador y su decisión será definitiva.</p>
+          <p>31.4. El pago del servicio de tutoría se realiza por adelantado a través de la Plataforma. Ningún pago deberá realizarse fuera de la Plataforma.</p>
+          <p>31.5. La contratación de servicios fuera de la Plataforma para evadir la comisión de Conniku constituye incumplimiento de estos términos y podrá resultar en la suspensión de ambas cuentas.</p>
 
-          <h3>Artículo 31. Fuerza Mayor</h3>
-          <p>31.1. Conniku no será responsable por el incumplimiento de sus obligaciones cuando dicho incumplimiento sea consecuencia de eventos de fuerza mayor o caso fortuito, incluyendo pero no limitándose a: desastres naturales, pandemias, guerras, actos de terrorismo, fallas en infraestructura de internet, ataques cibernéticos, acciones gubernamentales, huelgas o cualquier otro evento fuera del control razonable de Conniku.</p>
+          <h3>Artículo 32. Garantía al Estudiante</h3>
+          <p>32.1. Conniku garantiza el reembolso del 100% del monto pagado si el tutor no se presenta a la clase confirmada, dentro de 5 a 7 días hábiles.</p>
+          <p>32.2. Conniku administrará los fondos pagados por el estudiante hasta que la clase sea confirmada como realizada. Ningún pago será liberado al tutor sin confirmación de la clase.</p>
+          <p>32.3. Esta garantía no cubre insatisfacción con la calidad de la clase una vez realizada. Para ello, el sistema de calificaciones permite al estudiante expresar su experiencia.</p>
 
-          {/* ===== TÍTULO XII: RESOLUCIÓN DE CONTROVERSIAS ===== */}
-          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XII — LEY APLICABLE Y RESOLUCIÓN DE CONTROVERSIAS</h3>
+          <h3>Artículo 33. Contrato de Prestación de Servicios</h3>
+          <p>33.1. Todo tutor aprobado deberá firmar digitalmente un Contrato de Prestación de Servicios antes de poder publicar clases.</p>
+          <p>33.2. El contrato establecerá: naturaleza independiente de la relación, comisión del 10%, obligaciones tributarias del tutor, código de conducta, cláusula de confidencialidad sobre datos de estudiantes, y política de cancelación.</p>
+          <p>33.3. La firma digital tendrá validez legal conforme a la Ley 19.799 sobre Documentos Electrónicos, Firma Electrónica y Servicios de Certificación de Chile.</p>
 
-          <h3>Artículo 32. Ley Aplicable</h3>
-          <p>32.1. Estos Términos se rigen e interpretan conforme a las leyes de la República de Chile, sin consideración a sus normas sobre conflicto de leyes.</p>
-          <p>32.2. Para los Usuarios ubicados en jurisdicciones que establezcan normativa imperativa de protección al consumidor, se aplicarán adicionalmente las disposiciones obligatorias de dicha legislación local que no puedan ser excluidas por acuerdo entre las partes.</p>
+          {/* ===== TÍTULO XI: ELIMINACIÓN DE CUENTA ===== */}
+          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XI — ELIMINACIÓN DE CUENTA Y PORTABILIDAD DE DATOS</h3>
 
-          <h3>Artículo 33. Resolución de Controversias</h3>
-          <p>33.1. Las partes se comprometen a intentar resolver cualquier controversia derivada de estos Términos mediante negociación directa y de buena fe durante un plazo de treinta (30) días calendario contados desde la notificación escrita de la disputa.</p>
-          <p>33.2. Si la negociación directa no prospera, las partes podrán someter la controversia a mediación ante el Centro de Arbitraje y Mediación de la Cámara de Comercio de Santiago (CAM Santiago), conforme a su Reglamento de Mediación vigente.</p>
-          <p>33.3. En caso de que la mediación no resulte en un acuerdo dentro de los sesenta (60) días siguientes a su inicio, cualquier controversia será sometida a la jurisdicción exclusiva de los Tribunales Ordinarios de Justicia de Santiago de Chile, renunciando las partes expresamente a cualquier otro fuero que pudiera corresponderles.</p>
-          <p>33.4. No obstante lo anterior, Conniku podrá solicitar medidas cautelares o provisionales ante cualquier tribunal competente para proteger sus derechos de propiedad intelectual o prevenir daño irreparable, sin necesidad de agotar previamente los procedimientos de negociación o mediación.</p>
+          <h3>Artículo 34. Eliminación de Cuenta por el Usuario</h3>
+          <p>34.1. El Usuario podrá solicitar la eliminación permanente de su cuenta en cualquier momento desde la sección de Configuración de la Plataforma o mediante solicitud a soporte@conniku.com.</p>
+          <p>34.2. La eliminación de la cuenta es <strong>irreversible</strong> y comprende la supresión definitiva de: datos personales, documentos subidos, mensajes, publicaciones, historial de actividad, progreso en cursos, certificados, configuraciones y cualquier otro dato asociado a la cuenta.</p>
+          <p>34.3. Las suscripciones activas serán canceladas automáticamente al momento de la eliminación. No se realizarán reembolsos por el período no consumido.</p>
+          <p>34.4. La eliminación de datos se ejecutará dentro de un plazo máximo de treinta (30) días calendario. Conniku podrá retener datos anonimizados y no identificables con fines estadísticos y de mejora del servicio.</p>
 
-          <h3>Artículo 34. Renuncia a Acciones Colectivas</h3>
-          <p>34.1. En la máxima medida permitida por la ley aplicable, el Usuario renuncia al derecho de participar en acciones de clase, demandas colectivas o representativas contra Conniku. Toda reclamación deberá ser presentada de forma individual.</p>
+          <h3>Artículo 35. Portabilidad de Datos</h3>
+          <p>35.1. El Usuario tiene derecho a solicitar una copia de todos sus datos personales en un formato estructurado, de uso común y lectura mecánica (derecho a la portabilidad), conforme a la legislación aplicable.</p>
+          <p>35.2. La solicitud se realiza desde la sección "Descargar mis datos" en Configuración, o mediante solicitud a privacidad@conniku.com. Los datos serán entregados en un plazo máximo de quince (15) días hábiles.</p>
 
-          {/* ===== TÍTULO XIII: DISPOSICIONES FINALES ===== */}
-          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XIII — DISPOSICIONES FINALES</h3>
+          {/* ===== TÍTULO XII: RESPONSABILIDAD ===== */}
+          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XII — LIMITACIÓN DE RESPONSABILIDAD, GARANTÍAS E INDEMNIZACIÓN</h3>
 
-          <h3>Artículo 35. Divisibilidad</h3>
-          <p>35.1. Si alguna disposición de estos Términos fuese declarada nula, inválida o inaplicable por un tribunal competente, las disposiciones restantes mantendrán plena vigencia y efecto. La disposición afectada será modificada en la medida mínima necesaria para hacerla válida y aplicable, preservando la intención original de las partes.</p>
+          <h3>Artículo 36. Limitación de Responsabilidad</h3>
+          <p>36.1. La Plataforma se proporciona "TAL CUAL" (AS IS) y "SEGÚN DISPONIBILIDAD" (AS AVAILABLE), sin garantías de ningún tipo, expresas o implícitas, incluyendo pero no limitándose a garantías de comercialización, idoneidad para un fin particular, no infracción de derechos de terceros, disponibilidad ininterrumpida o ausencia de errores.</p>
+          <p>36.2. Conniku no será responsable por daños directos, indirectos, incidentales, especiales, consecuentes, punitivos ni ejemplares que surjan del uso o la imposibilidad de uso de la Plataforma, incluyendo pero no limitándose a: pérdida de datos, pérdida de beneficios, interrupción del negocio, daño a dispositivos o pérdida de oportunidades, aun cuando Conniku haya sido advertido de la posibilidad de tales daños.</p>
+          <p>36.3. En ningún caso la responsabilidad total acumulada de Conniku frente al Usuario excederá el monto total efectivamente pagado por el Usuario a Conniku durante los doce (12) meses inmediatamente anteriores al hecho generador de la reclamación, o cien dólares estadounidenses (USD $100), el que sea mayor.</p>
+          <p>36.4. Las respuestas generadas por inteligencia artificial son orientativas y pueden contener imprecisiones. Conniku no garantiza la exactitud, completitud ni idoneidad de dichas respuestas. El Usuario asume la responsabilidad de verificar la información proporcionada por el sistema de IA antes de tomar decisiones basadas en ella.</p>
 
-          <h3>Artículo 36. Cesión</h3>
-          <p>36.1. El Usuario no podrá ceder, transferir ni sublicenciar sus derechos u obligaciones bajo estos Términos sin el consentimiento previo y por escrito de Conniku.</p>
-          <p>36.2. Conniku podrá ceder libremente estos Términos en su totalidad en caso de fusión, adquisición, reorganización societaria o venta de la totalidad o parte sustancial de sus activos, notificando al Usuario con quince (15) días de anticipación.</p>
+          <h3>Artículo 37. Indemnización</h3>
+          <p>37.1. El Usuario se compromete a indemnizar, defender y mantener indemne a Conniku SpA, sus directores, empleados, contratistas, agentes, socios y afiliados frente a cualquier reclamación, demanda, daño, pérdida, costo o gasto (incluyendo honorarios razonables de abogados) que surja de: (a) el uso de la Plataforma por parte del Usuario; (b) el incumplimiento de estos Términos; (c) la violación de derechos de terceros; (d) contenido publicado por el Usuario; (e) el uso indebido de constancias de finalización.</p>
 
-          <h3>Artículo 37. Renuncia</h3>
-          <p>37.1. La omisión o demora de Conniku en ejercer cualquier derecho o acción bajo estos Términos no constituirá renuncia a dicho derecho ni limitará su ejercicio futuro.</p>
+          <h3>Artículo 38. Fuerza Mayor</h3>
+          <p>38.1. Conniku no será responsable por el incumplimiento de sus obligaciones cuando dicho incumplimiento sea consecuencia de eventos de fuerza mayor o caso fortuito, incluyendo pero no limitándose a: desastres naturales, pandemias, guerras, actos de terrorismo, fallas en infraestructura de internet, ataques cibernéticos, acciones gubernamentales, huelgas o cualquier otro evento fuera del control razonable de Conniku.</p>
 
-          <h3>Artículo 38. Integridad del Acuerdo</h3>
-          <p>38.1. Estos Términos, junto con la Política de Privacidad y las políticas complementarias publicadas en la Plataforma, constituyen el acuerdo íntegro entre el Usuario y Conniku SpA respecto al uso de la Plataforma, y reemplazan cualquier acuerdo, comunicación o entendimiento previo, oral o escrito, sobre el mismo objeto.</p>
+          {/* ===== TÍTULO XIII: RESOLUCIÓN DE CONTROVERSIAS ===== */}
+          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XIII — LEY APLICABLE Y RESOLUCIÓN DE CONTROVERSIAS</h3>
 
-          <h3>Artículo 39. Idioma</h3>
-          <p>39.1. La versión en español de estos Términos es la versión oficial y prevalecerá en caso de discrepancia con cualquier traducción proporcionada con fines informativos.</p>
+          <h3>Artículo 39. Ley Aplicable</h3>
+          <p>39.1. Estos Términos se rigen e interpretan conforme a las leyes de la República de Chile, sin consideración a sus normas sobre conflicto de leyes.</p>
+          <p>39.2. Para los Usuarios ubicados en jurisdicciones que establezcan normativa imperativa de protección al consumidor, se aplicarán adicionalmente las disposiciones obligatorias de dicha legislación local que no puedan ser excluidas por acuerdo entre las partes.</p>
 
-          <h3>Artículo 40. Supervivencia</h3>
-          <p>40.1. Las disposiciones relativas a propiedad intelectual (Artículos 17-19), limitación de responsabilidad (Artículos 29-31), indemnización (Artículo 30), ley aplicable y resolución de controversias (Artículos 32-34) sobrevivirán a la terminación de la relación entre el Usuario y Conniku, cualquiera sea la causa de dicha terminación.</p>
+          <h3>Artículo 40. Resolución de Controversias</h3>
+          <p>40.1. Las partes se comprometen a intentar resolver cualquier controversia derivada de estos Términos mediante negociación directa y de buena fe durante un plazo de treinta (30) días calendario contados desde la notificación escrita de la disputa.</p>
+          <p>40.2. Si la negociación directa no prospera, las partes podrán someter la controversia a mediación ante el Centro de Arbitraje y Mediación de la Cámara de Comercio de Santiago (CAM Santiago), conforme a su Reglamento de Mediación vigente.</p>
+          <p>40.3. En caso de que la mediación no resulte en un acuerdo dentro de los sesenta (60) días siguientes a su inicio, cualquier controversia será sometida a la jurisdicción exclusiva de los Tribunales Ordinarios de Justicia de Santiago de Chile, renunciando las partes expresamente a cualquier otro fuero que pudiera corresponderles.</p>
+          <p>40.4. No obstante lo anterior, Conniku podrá solicitar medidas cautelares o provisionales ante cualquier tribunal competente para proteger sus derechos de propiedad intelectual o prevenir daño irreparable, sin necesidad de agotar previamente los procedimientos de negociación o mediación.</p>
 
-          <h3>Artículo 41. Notificaciones</h3>
-          <p>41.1. Las notificaciones de Conniku al Usuario se realizarán mediante: (a) correo electrónico a la dirección registrada en la cuenta; (b) notificación dentro de la Plataforma; (c) publicación en conniku.com. Se considerará que la notificación fue recibida al momento del envío del correo electrónico o de la publicación en la Plataforma.</p>
-          <p>41.2. Las notificaciones del Usuario a Conniku deberán dirigirse a los canales oficiales indicados en el Artículo 42.</p>
+          <h3>Artículo 41. Renuncia a Acciones Colectivas</h3>
+          <p>41.1. En la máxima medida permitida por la ley aplicable, el Usuario renuncia al derecho de participar en acciones de clase, demandas colectivas o representativas contra Conniku. Toda reclamación deberá ser presentada de forma individual.</p>
 
-          <h3>Artículo 42. Contacto</h3>
+          {/* ===== TÍTULO XIV: DISPOSICIONES FINALES ===== */}
+          <h3 style={{ color: 'var(--accent)', borderBottom: '2px solid var(--accent)', paddingBottom: 6, marginTop: 28 }}>TÍTULO XIV — DISPOSICIONES FINALES</h3>
+
+          <h3>Artículo 42. Divisibilidad</h3>
+          <p>42.1. Si alguna disposición de estos Términos fuese declarada nula, inválida o inaplicable por un tribunal competente, las disposiciones restantes mantendrán plena vigencia y efecto. La disposición afectada será modificada en la medida mínima necesaria para hacerla válida y aplicable, preservando la intención original de las partes.</p>
+
+          <h3>Artículo 43. Cesión</h3>
+          <p>43.1. El Usuario no podrá ceder, transferir ni sublicenciar sus derechos u obligaciones bajo estos Términos sin el consentimiento previo y por escrito de Conniku.</p>
+          <p>43.2. Conniku podrá ceder libremente estos Términos en su totalidad en caso de fusión, adquisición, reorganización societaria o venta de la totalidad o parte sustancial de sus activos, notificando al Usuario con quince (15) días de anticipación.</p>
+
+          <h3>Artículo 44. Renuncia</h3>
+          <p>44.1. La omisión o demora de Conniku en ejercer cualquier derecho o acción bajo estos Términos no constituirá renuncia a dicho derecho ni limitará su ejercicio futuro.</p>
+
+          <h3>Artículo 45. Integridad del Acuerdo</h3>
+          <p>45.1. Estos Términos, junto con la Política de Privacidad y las políticas complementarias publicadas en la Plataforma, constituyen el acuerdo íntegro entre el Usuario y Conniku SpA respecto al uso de la Plataforma, y reemplazan cualquier acuerdo, comunicación o entendimiento previo, oral o escrito, sobre el mismo objeto.</p>
+
+          <h3>Artículo 46. Idioma</h3>
+          <p>46.1. La versión en español de estos Términos es la versión oficial y prevalecerá en caso de discrepancia con cualquier traducción proporcionada con fines informativos.</p>
+
+          <h3>Artículo 47. Supervivencia</h3>
+          <p>47.1. Las disposiciones relativas a propiedad intelectual (Artículos 17-19), limitación de responsabilidad (Artículos 36-38), indemnización (Artículo 37), ley aplicable y resolución de controversias (Artículos 39-41) sobrevivirán a la terminación de la relación entre el Usuario y Conniku, cualquiera sea la causa de dicha terminación.</p>
+
+          <h3>Artículo 48. Notificaciones</h3>
+          <p>48.1. Las notificaciones de Conniku al Usuario se realizarán mediante: (a) correo electrónico a la dirección registrada en la cuenta; (b) notificación dentro de la Plataforma; (c) publicación en conniku.com. Se considerará que la notificación fue recibida al momento del envío del correo electrónico o de la publicación en la Plataforma.</p>
+          <p>48.2. Las notificaciones del Usuario a Conniku deberán dirigirse a los canales oficiales indicados en el Artículo 49.</p>
+
+          <h3>Artículo 49. Contacto</h3>
           <p>Para consultas sobre estos Términos: <strong>legal@conniku.com</strong></p>
           <p>Para soporte técnico: <strong>soporte@conniku.com</strong></p>
           <p>Para temas de privacidad y datos: <strong>privacidad@conniku.com</strong></p>
           <p>Para apelaciones de moderación: <strong>moderacion@conniku.com</strong></p>
+          <p>Para consultas sobre tutoría: <strong>tutores@conniku.com</strong></p>
           <p style={{ marginTop: 16 }}>
             <strong>Conniku SpA</strong><br />
             Cristian — Fundador, alma de Conniku y estudiante como tú<br />

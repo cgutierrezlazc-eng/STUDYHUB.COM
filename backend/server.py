@@ -56,6 +56,7 @@ from certificate_routes import router as certificate_router
 from conference_routes import router as conference_router
 from ws_routes import router as ws_router
 from hr_routes import router as hr_router
+from tutor_routes import router as tutor_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -137,6 +138,7 @@ app.include_router(certificate_router)
 app.include_router(conference_router)
 app.include_router(ws_router)
 app.include_router(hr_router)
+app.include_router(tutor_router)
 
 
 @app.post("/admin/seed-ceo-profile")

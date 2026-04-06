@@ -174,12 +174,19 @@ const EXPENSE_CATEGORIES = [
 const TABS = [
   { id: 'personal', label: 'Personal', icon: Users },
   { id: 'contratos', label: 'Contratos', icon: FileText },
-  { id: 'remuneraciones', label: 'Remuneraciones', icon: DollarSign },
-  { id: 'previred', label: 'Previred', icon: Building },
+  { id: 'payroll', label: 'PayRoll', icon: DollarSign },
+  { id: 'tutores', label: 'Tutores Externos', icon: BookOpen, highlight: true },
   { id: 'gastos', label: 'Gastos Operacionales', icon: Receipt },
   { id: 'impuestos', label: 'Impuestos / F129', icon: Calculator },
   { id: 'legal', label: 'Legal y Compliance', icon: Shield },
   { id: 'owner', label: 'Guia del Owner', icon: Star },
+]
+
+const PAYROLL_SUBTABS = [
+  { id: 'liquidaciones', label: 'Liquidaciones' },
+  { id: 'previred', label: 'Previred' },
+  { id: 'finiquitos', label: 'Finiquitos' },
+  { id: 'historial', label: 'Historial de Pagos' },
 ]
 
 const fmt = (n: number | undefined | null) => {
@@ -191,6 +198,7 @@ const fmt = (n: number | undefined | null) => {
 export default function HRDashboard({ onNavigate }: Props) {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('personal')
+  const [payrollSubTab, setPayrollSubTab] = useState('liquidaciones')
   const [employees, setEmployees] = useState<Employee[]>([])
   const [payroll, setPayroll] = useState<PayrollRecord[]>([])
   const [expenses, setExpenses] = useState<OperationalExpense[]>([])
@@ -247,8 +255,7 @@ export default function HRDashboard({ onNavigate }: Props) {
   }, [])
 
   useEffect(() => {
-    if (activeTab === 'remuneraciones') loadPayroll()
-    if (activeTab === 'previred') loadPrevired()
+    if (activeTab === 'payroll') { loadPayroll(); loadPrevired() }
     if (activeTab === 'gastos' || activeTab === 'impuestos') loadExpenses()
   }, [activeTab, selectedMonth, selectedYear])
 
@@ -266,16 +273,18 @@ export default function HRDashboard({ onNavigate }: Props) {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 24, overflowX: 'auto', paddingBottom: 4 }}>
-        {TABS.map(tab => (
+        {TABS.map((tab: any) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             style={{
               padding: '10px 16px',
               borderRadius: 10,
-              border: 'none',
-              background: activeTab === tab.id ? 'var(--accent)' : 'var(--bg-secondary)',
-              color: activeTab === tab.id ? '#fff' : 'var(--text-secondary)',
+              border: tab.highlight && activeTab !== tab.id ? '1px solid #f59e0b' : 'none',
+              background: activeTab === tab.id
+                ? (tab.highlight ? '#f59e0b' : 'var(--accent)')
+                : (tab.highlight ? 'rgba(245,158,11,0.1)' : 'var(--bg-secondary)'),
+              color: activeTab === tab.id ? '#fff' : (tab.highlight ? '#f59e0b' : 'var(--text-secondary)'),
               fontWeight: 600,
               fontSize: 13,
               cursor: 'pointer',
@@ -292,7 +301,7 @@ export default function HRDashboard({ onNavigate }: Props) {
       </div>
 
       {/* Period Selector (shared across tabs) */}
-      {['remuneraciones', 'previred', 'gastos', 'impuestos'].includes(activeTab) && (
+      {['payroll', 'gastos', 'impuestos', 'tutores'].includes(activeTab) && (
         <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
           <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>Periodo:</label>
           <select
@@ -340,23 +349,44 @@ export default function HRDashboard({ onNavigate }: Props) {
       )}
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* TAB: Remuneraciones */}
+      {/* TAB: PayRoll (sub-tabs inside) */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      {activeTab === 'remuneraciones' && (
-        <RemuneracionesTab
-          payroll={payroll}
-          employees={employees}
-          month={selectedMonth}
-          year={selectedYear}
-          onRefresh={loadPayroll}
-        />
+      {activeTab === 'payroll' && (
+        <div>
+          {/* Sub-tabs */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 8 }}>
+            {PAYROLL_SUBTABS.map(st => (
+              <button key={st.id} onClick={() => setPayrollSubTab(st.id)} style={{
+                padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none',
+                background: payrollSubTab === st.id ? 'var(--accent)' : 'transparent',
+                color: payrollSubTab === st.id ? '#fff' : 'var(--text-muted)',
+                fontWeight: 600, fontSize: 13, cursor: 'pointer',
+              }}>
+                {st.label}
+              </button>
+            ))}
+          </div>
+
+          {payrollSubTab === 'liquidaciones' && (
+            <RemuneracionesTab payroll={payroll} employees={employees} month={selectedMonth} year={selectedYear} onRefresh={loadPayroll} />
+          )}
+          {payrollSubTab === 'previred' && (
+            <PreviredTab data={previredData} month={selectedMonth} year={selectedYear} onRefresh={loadPrevired} />
+          )}
+          {payrollSubTab === 'finiquitos' && (
+            <FiniquitosTab employees={employees} />
+          )}
+          {payrollSubTab === 'historial' && (
+            <HistorialPagosTab payroll={payroll} month={selectedMonth} year={selectedYear} />
+          )}
+        </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════════ */}
-      {/* TAB: Previred */}
+      {/* TAB: Tutores Externos */}
       {/* ═══════════════════════════════════════════════════════════ */}
-      {activeTab === 'previred' && (
-        <PreviredTab data={previredData} month={selectedMonth} year={selectedYear} onRefresh={loadPrevired} />
+      {activeTab === 'tutores' && (
+        <TutoresExternosTab month={selectedMonth} year={selectedYear} />
       )}
 
       {/* ═══════════════════════════════════════════════════════════ */}
@@ -1697,6 +1727,438 @@ function OwnerGuideTab() {
           <p><strong>8. Registro de marca:</strong> Hazlo lo antes posible. Si alguien registra "Conniku" antes, perderas el nombre. Cuesta ~$200,000 CLP y toma 4-8 meses.</p>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// SHARED COMPONENTS
+// ═════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════
+// FINIQUITOS TAB
+// ═════════════════════════════════════════════════════════════════
+function FiniquitosTab({ employees }: { employees: Employee[] }) {
+  const [selectedEmp, setSelectedEmp] = useState<string>('')
+  const [causal, setCausal] = useState('161_necesidades')
+  const [lastSalary, setLastSalary] = useState(0)
+  const [yearsWorked, setYearsWorked] = useState(0)
+  const [monthsExtra, setMonthsExtra] = useState(0)
+  const [pendingVacationDays, setPendingVacationDays] = useState(0)
+  const [avisoPrevio, setAvisoPrevio] = useState(true)
+  const [result, setResult] = useState<any>(null)
+
+  const CAUSALES = [
+    { value: '159_1_mutuo', label: 'Art. 159 N°1 — Mutuo acuerdo', indemnizacion: false, aviso: false, recargo: 0 },
+    { value: '159_2_renuncia', label: 'Art. 159 N°2 — Renuncia voluntaria', indemnizacion: false, aviso: false, recargo: 0 },
+    { value: '159_4_vencimiento', label: 'Art. 159 N°4 — Vencimiento de plazo', indemnizacion: false, aviso: false, recargo: 0.5 },
+    { value: '159_5_obra', label: 'Art. 159 N°5 — Conclusion de obra', indemnizacion: false, aviso: false, recargo: 0.5 },
+    { value: '160_conducta', label: 'Art. 160 — Despido por falta grave (sin indemnizacion)', indemnizacion: false, aviso: false, recargo: 0 },
+    { value: '161_necesidades', label: 'Art. 161 — Necesidades de la empresa', indemnizacion: true, aviso: true, recargo: 0 },
+    { value: '161_desahucio', label: 'Art. 161 inc. 2 — Desahucio', indemnizacion: true, aviso: true, recargo: 0 },
+    { value: '168_injustificado', label: 'Art. 168 — Despido injustificado', indemnizacion: true, aviso: true, recargo: 0.3 },
+    { value: '168_improcedente_159', label: 'Art. 168 — Improcedente (causal 159 N°4-6)', indemnizacion: true, aviso: true, recargo: 0.5 },
+    { value: '168_improcedente_160', label: 'Art. 168 — Improcedente (causal 160)', indemnizacion: true, aviso: true, recargo: 0.8 },
+  ]
+
+  const UF_VALUE = 38000
+
+  const handleCalculate = () => {
+    const c = CAUSALES.find(x => x.value === causal)
+    if (!c) return
+
+    const yearsTotal = Math.min(yearsWorked, 11)
+    const topeMensual = 90 * UF_VALUE // 90 UF tope mensual para indemnizacion
+    const salaryForCalc = Math.min(lastSalary, topeMensual)
+
+    // Indemnizacion por anos de servicio
+    const indemnizacionAnos = c.indemnizacion ? salaryForCalc * yearsTotal : 0
+
+    // Indemnizacion sustitutiva del aviso previo (1 mes)
+    const indemnizacionAviso = (c.aviso && avisoPrevio) ? salaryForCalc : 0
+
+    // Recargo legal
+    const recargo = (indemnizacionAnos + indemnizacionAviso) * c.recargo
+
+    // Vacaciones proporcionales (sueldo diario * dias pendientes)
+    const dailySalary = lastSalary / 30
+    const vacaciones = dailySalary * pendingVacationDays
+
+    // Gratificacion proporcional
+    const gratificacionMensual = Math.min(lastSalary * 0.25, (500000 * 4.75) / 12)
+    const gratificacionProp = gratificacionMensual * (monthsExtra / 12)
+
+    // Dias trabajados del mes (estimado 15 dias)
+    const diasTrabajados = dailySalary * 15
+
+    const totalBruto = indemnizacionAnos + indemnizacionAviso + recargo + vacaciones + gratificacionProp + diasTrabajados
+
+    setResult({
+      causalLabel: c.label,
+      indemnizacionAnos,
+      indemnizacionAviso,
+      recargo,
+      recargoPercent: c.recargo * 100,
+      vacaciones,
+      gratificacionProp,
+      diasTrabajados,
+      totalBruto,
+      yearsApplied: yearsTotal,
+      topeMensualApplied: salaryForCalc < lastSalary,
+    })
+  }
+
+  useEffect(() => {
+    if (selectedEmp) {
+      const emp = employees.find(e => e.id === selectedEmp)
+      if (emp) {
+        setLastSalary(emp.grossSalary)
+        const hire = new Date(emp.hireDate)
+        const now = new Date()
+        const diffMs = now.getTime() - hire.getTime()
+        const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000))
+        const months = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
+        setYearsWorked(years)
+        setMonthsExtra(months)
+      }
+    }
+  }, [selectedEmp])
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 20, marginBottom: 20, background: 'linear-gradient(135deg, #1a2332, #991b1b)', color: '#fff', borderRadius: 16 }}>
+        <h3 style={{ margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <AlertTriangle size={20} /> Calculadora de Finiquitos
+        </h3>
+        <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>
+          Calculo completo segun el Codigo del Trabajo de Chile. Art. 159-163, 168. Tope indemnizacion: 11 anos, tope mensual: 90 UF.
+        </p>
+      </div>
+
+      <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>Empleado</label>
+            <select value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}>
+              <option value="">Seleccionar empleado...</option>
+              {employees.filter(e => e.status === 'active').map(e => (
+                <option key={e.id} value={e.id}>{e.firstName} {e.lastName} — {e.position}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>Causal de Termino</label>
+            <select value={causal} onChange={e => setCausal(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}>
+              {CAUSALES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+            </select>
+          </div>
+          <FormField label="Ultima Remuneracion Mensual (CLP)" value={lastSalary} onChange={(v: string) => setLastSalary(Number(v))} type="number" />
+          <FormField label="Anos Trabajados" value={yearsWorked} onChange={(v: string) => setYearsWorked(Number(v))} type="number" />
+          <FormField label="Meses Adicionales" value={monthsExtra} onChange={(v: string) => setMonthsExtra(Number(v))} type="number" />
+          <FormField label="Dias de Vacaciones Pendientes" value={pendingVacationDays} onChange={(v: string) => setPendingVacationDays(Number(v))} type="number" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={avisoPrevio} onChange={e => setAvisoPrevio(e.target.checked)} id="aviso" />
+            <label htmlFor="aviso" style={{ fontSize: 13 }}>Incluir indemnizacion sustitutiva del aviso previo (no se dio aviso de 30 dias)</label>
+          </div>
+        </div>
+
+        <button onClick={handleCalculate} style={{ ...btnPrimary, marginTop: 20 }}>
+          <Calculator size={16} /> Calcular Finiquito
+        </button>
+      </div>
+
+      {result && (
+        <div className="card" style={{ padding: 20, border: '2px solid #ef4444' }}>
+          <h3 style={{ margin: '0 0 16px', fontSize: 18, color: '#ef4444' }}>Resultado del Finiquito</h3>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Causal: {result.causalLabel}</p>
+          {result.topeMensualApplied && (
+            <div style={{ padding: 8, background: 'rgba(245,158,11,0.1)', borderRadius: 8, marginBottom: 12, fontSize: 12, color: '#f59e0b' }}>
+              Se aplico tope mensual de 90 UF (${fmt(90 * UF_VALUE)}) para el calculo de indemnizacion.
+            </div>
+          )}
+          <table style={{ width: '100%', fontSize: 14 }}>
+            <tbody>
+              {result.indemnizacionAnos > 0 && (
+                <tr><td>Indemnizacion por anos de servicio ({result.yearsApplied} anos, tope 11)</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(result.indemnizacionAnos)}</td></tr>
+              )}
+              {result.indemnizacionAviso > 0 && (
+                <tr><td>Indemnizacion sustitutiva aviso previo (1 mes)</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(result.indemnizacionAviso)}</td></tr>
+              )}
+              {result.recargo > 0 && (
+                <tr style={{ color: '#ef4444' }}><td>Recargo legal ({result.recargoPercent}%)</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(result.recargo)}</td></tr>
+              )}
+              <tr><td>Vacaciones proporcionales ({pendingVacationDays} dias)</td><td style={{ textAlign: 'right' }}>${fmt(result.vacaciones)}</td></tr>
+              <tr><td>Gratificacion proporcional</td><td style={{ textAlign: 'right' }}>${fmt(result.gratificacionProp)}</td></tr>
+              <tr><td>Dias trabajados del mes (est. 15 dias)</td><td style={{ textAlign: 'right' }}>${fmt(result.diasTrabajados)}</td></tr>
+              <tr style={{ borderTop: '3px solid var(--border)', fontSize: 18 }}>
+                <td style={{ fontWeight: 800, paddingTop: 12 }}>TOTAL FINIQUITO BRUTO</td>
+                <td style={{ textAlign: 'right', fontWeight: 800, color: '#ef4444', paddingTop: 12 }}>${fmt(result.totalBruto)}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style={{ marginTop: 16, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.8 }}>
+            <strong>Requisitos legales para el finiquito:</strong><br />
+            • Debe ser firmado ante un ministro de fe (notario, inspector del trabajo, o presidente del sindicato)<br />
+            • Cotizaciones previsionales deben estar al dia (Ley Bustos, Art. 162)<br />
+            • Se debe entregar copia del finiquito al trabajador<br />
+            • El pago debe realizarse al momento de la firma<br />
+            • Plazo para pagar: 10 dias habiles desde la terminacion del contrato
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+            <button style={btnPrimary}><Download size={16} /> Generar PDF Finiquito</button>
+            <button style={btnSecondary}><FileText size={16} /> Generar Carta de Despido</button>
+          </div>
+        </div>
+      )}
+
+      {/* Legal reference */}
+      <div className="card" style={{ padding: 16, marginTop: 20, borderLeft: '4px solid #ef4444' }}>
+        <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Causales de Termino — Referencia Rapida</h4>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 2 }}>
+          <p><strong>Art. 159:</strong> Causales objetivas — Mutuo acuerdo, renuncia, muerte, vencimiento plazo, conclusion obra. No generan indemnizacion salvo pacto en contrario.</p>
+          <p><strong>Art. 160:</strong> Conductas del trabajador — Falta de probidad, acoso, abandono, actos ilicitos. Despido sin indemnizacion. Si el tribunal declara injustificado, aplica recargo 80%.</p>
+          <p><strong>Art. 161:</strong> Necesidades de la empresa / desahucio — Genera indemnizacion por anos de servicio (1 mes x ano, tope 11). Si no se da aviso de 30 dias, se paga mes adicional.</p>
+          <p><strong>Art. 168:</strong> Despido injustificado — Recargo 30% (Art. 161), 50% (Art. 159 N°4-6), 80% (Art. 160) sobre indemnizacion total.</p>
+          <p><strong>Art. 162 (Ley Bustos):</strong> Si las cotizaciones no estan al dia, el despido es NULO. Empleador debe seguir pagando hasta regularizar.</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// HISTORIAL DE PAGOS TAB
+// ═════════════════════════════════════════════════════════════════
+function HistorialPagosTab({ payroll, month, year }: { payroll: PayrollRecord[]; month: number; year: number }) {
+  const months = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+
+  return (
+    <div>
+      <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Clock size={18} /> Historial de Pagos — {months[month]} {year}
+        </h3>
+        {payroll.length === 0 ? (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>Sin registros de pago para este periodo.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border)' }}>
+                  <th style={thStyle}>Empleado</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Bruto</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Descuentos</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Liquido</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Costo Emp.</th>
+                  <th style={thStyle}>Estado</th>
+                  <th style={thStyle}>Fecha Pago</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payroll.map((r: PayrollRecord) => (
+                  <tr key={r.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={tdStyle}>{r.employeeName}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>${fmt(r.grossSalary)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', color: '#ef4444' }}>-${fmt(r.totalDeductions)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700 }}>${fmt(r.netSalary)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right' }}>${fmt(r.totalEmployerCost)}</td>
+                    <td style={tdStyle}>
+                      <span style={{
+                        padding: '3px 8px', borderRadius: 12, fontSize: 10, fontWeight: 600,
+                        background: r.status === 'paid' ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)',
+                        color: r.status === 'paid' ? '#22c55e' : '#f59e0b',
+                      }}>{r.status === 'paid' ? 'Pagado' : r.status === 'approved' ? 'Aprobado' : 'Borrador'}</span>
+                    </td>
+                    <td style={tdStyle}>—</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// TUTORES EXTERNOS TAB
+// ═════════════════════════════════════════════════════════════════
+function TutoresExternosTab({ month, year }: { month: number; year: number }) {
+  const [tutorSubTab, setTutorSubTab] = useState<'overview' | 'applications' | 'payments' | 'directory'>('overview')
+  const [tutors, setTutors] = useState<any[]>([])
+  const [applications, setApplications] = useState<any[]>([])
+  const [payments, setPayments] = useState<any[]>([])
+
+  useEffect(() => {
+    api.getEmployees().catch(() => {}) // placeholder - will use tutor endpoints
+  }, [])
+
+  return (
+    <div>
+      {/* Header with distinct color */}
+      <div className="card" style={{ padding: 20, marginBottom: 20, background: 'linear-gradient(135deg, #92400e, #f59e0b)', color: '#fff', borderRadius: 16 }}>
+        <h3 style={{ margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BookOpen size={20} /> Tutores Externos — Prestadores de Servicios
+        </h3>
+        <p style={{ fontSize: 13, opacity: 0.9, margin: 0 }}>
+          Gestion de tutores con boleta de honorarios. Comision Conniku: 10%. El tutor recibe 90% bruto y es responsable de pagar su retencion al SII (13.75%).
+        </p>
+      </div>
+
+      {/* Sub-tabs */}
+      <div style={{ display: 'flex', gap: 4, marginBottom: 20 }}>
+        {[
+          { id: 'overview', label: 'Resumen' },
+          { id: 'applications', label: 'Postulaciones' },
+          { id: 'payments', label: 'Pagos a Tutores' },
+          { id: 'directory', label: 'Directorio' },
+        ].map(st => (
+          <button key={st.id} onClick={() => setTutorSubTab(st.id as any)} style={{
+            padding: '8px 14px', borderRadius: 8, border: tutorSubTab === st.id ? 'none' : '1px solid #f59e0b33',
+            background: tutorSubTab === st.id ? '#f59e0b' : 'rgba(245,158,11,0.05)',
+            color: tutorSubTab === st.id ? '#fff' : '#f59e0b',
+            fontWeight: 600, fontSize: 12, cursor: 'pointer',
+          }}>
+            {st.label}
+          </button>
+        ))}
+      </div>
+
+      {tutorSubTab === 'overview' && (
+        <div>
+          {/* Stats */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #f59e0b' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Tutores Activos</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#f59e0b' }}>0</div>
+            </div>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #3b82f6' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Postulaciones Pendientes</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#3b82f6' }}>0</div>
+            </div>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #22c55e' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Clases Este Mes</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#22c55e' }}>0</div>
+            </div>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #8b5cf6' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Comisiones Conniku</div>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#8b5cf6' }}>$0</div>
+            </div>
+          </div>
+
+          {/* How it works */}
+          <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Como Funciona el Sistema de Tutores</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+              {[
+                { step: 1, title: 'Estudiante Paga', desc: 'El estudiante selecciona un tutor, elige la clase y paga a traves de Conniku. Conniku retiene el 100% hasta confirmar la clase.' },
+                { step: 2, title: 'Clase via Zoom', desc: 'El tutor crea el link de Zoom, levanta la clase en la plataforma. El estudiante recibe la invitacion una vez confirmado el pago.' },
+                { step: 3, title: 'Pago al Tutor', desc: 'Confirmada la clase, el tutor sube su boleta de honorarios. Conniku paga el 90% en max 7 dias habiles. Conniku retiene 10% comision.' },
+              ].map(s => (
+                <div key={s.step} style={{ padding: 16, background: 'var(--bg-tertiary)', borderRadius: 12, textAlign: 'center' }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#f59e0b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, margin: '0 auto 12px' }}>{s.step}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6 }}>{s.title}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>{s.desc}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tutor levels */}
+          <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+            <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Niveles de Tutor</h4>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <div style={{ padding: 12, background: 'rgba(245,158,11,0.05)', borderRadius: 8, border: '1px solid #f59e0b33' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#f59e0b' }}>Tutor Nuevo</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>0-10 clases • Tarifa limitada • Badge amarillo</div>
+              </div>
+              <div style={{ padding: 12, background: 'rgba(59,130,246,0.05)', borderRadius: 8, border: '1px solid #3b82f633' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#3b82f6' }}>Tutor Regular</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>11-50 clases • Tarifa libre • Badge azul</div>
+              </div>
+              <div style={{ padding: 12, background: 'rgba(168,85,247,0.05)', borderRadius: 8, border: '1px solid #a855f733' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, color: '#a855f7' }}>Tutor Premium</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>51+ clases • Rating 4.5+ • Prioridad busqueda</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing model */}
+          <div className="card" style={{ padding: 20, borderLeft: '4px solid #f59e0b' }}>
+            <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Modelo de Precios y Comisiones</h4>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 2 }}>
+              <p><strong>Tarifa individual:</strong> El tutor define su precio/hora libremente.</p>
+              <p><strong>Tarifas grupales:</strong> El tutor fija precio para 2, 3, 4 y 5 estudiantes (maximo 5 por clase).</p>
+              <p><strong>Comision Conniku:</strong> 10% fijo sobre el monto pagado por el estudiante.</p>
+              <p><strong>Ejemplo:</strong> Estudiante paga $20,000 → Conniku retiene $2,000 (10%) → Tutor recibe $18,000 bruto.</p>
+              <p><strong>Boleta:</strong> El tutor emite boleta de honorarios por $18,000 a nombre de Conniku SpA.</p>
+              <p><strong>Retencion SII:</strong> El tutor paga 13.75% al SII ($2,475). Neto tutor: $15,525.</p>
+              <p><strong>Frecuencia de pago:</strong> Por clase, quincenal o mensual (a eleccion del tutor).</p>
+              <p><strong>Plazo de pago:</strong> Maximo 7 dias habiles desde recepcion de boleta validada.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tutorSubTab === 'applications' && (
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <UserPlus size={48} style={{ color: '#f59e0b', marginBottom: 12 }} />
+          <h3>Sin postulaciones pendientes</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+            Cuando un profesional solicite ser tutor, aparecera aqui para revision y aprobacion.
+          </p>
+          <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-tertiary)', borderRadius: 12, textAlign: 'left', maxWidth: 500, margin: '16px auto 0' }}>
+            <h4 style={{ margin: '0 0 8px', fontSize: 13 }}>Documentos requeridos para aprobacion:</h4>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 2 }}>
+              <p>• Cedula de identidad (ambos lados)</p>
+              <p>• Titulo profesional o certificado alumno regular ultimo ano</p>
+              <p>• Certificado de antecedentes (vigente, menos de 30 dias)</p>
+              <p>• Curriculum vitae</p>
+              <p>• Contrato de prestacion de servicios firmado digitalmente</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tutorSubTab === 'payments' && (
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 20 }}>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #f59e0b' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Boletas Pendientes</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>0</div>
+            </div>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #3b82f6' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>En Proceso</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>0</div>
+            </div>
+            <div className="card" style={{ padding: 16, borderLeft: '4px solid #22c55e' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Pagados Este Mes</div>
+              <div style={{ fontSize: 22, fontWeight: 800 }}>$0</div>
+            </div>
+          </div>
+
+          <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+            <CreditCard size={48} style={{ color: 'var(--text-muted)', marginBottom: 12 }} />
+            <h3>Sin pagos a tutores este periodo</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+              Los pagos aparecen cuando un tutor sube su boleta de honorarios despues de una clase confirmada.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {tutorSubTab === 'directory' && (
+        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+          <Users size={48} style={{ color: '#f59e0b', marginBottom: 12 }} />
+          <h3>Directorio de Tutores</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 500, margin: '8px auto' }}>
+            Aqui veras todos los tutores aprobados con su perfil, rating, clases dadas y estado.
+            En poco estara lista la plataforma para que los tutores se inscriban.
+          </p>
+        </div>
+      )}
     </div>
   )
 }
