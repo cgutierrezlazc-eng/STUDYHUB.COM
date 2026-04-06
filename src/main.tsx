@@ -49,17 +49,27 @@ if ('serviceWorker' in navigator) {
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
       console.log('[SW] Registered with scope:', registration.scope)
 
-      // Listen for updates
+      // Listen for updates — force immediate activation
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing
         if (!newWorker) return
 
         newWorker.addEventListener('statechange', () => {
           if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New SW waiting - auto-activate for seamless updates
             newWorker.postMessage('skipWaiting')
           }
         })
+      })
+
+      // Force check for SW updates on every page load
+      registration.update()
+
+      // Listen for SW_UPDATED message — auto-refresh to load new icons
+      navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data?.type === 'SW_UPDATED') {
+          console.log('[SW] Updated to', event.data.version, '— reloading for new icons')
+          window.location.reload()
+        }
       })
 
       // Periodic cache cleanup (every 24h)

@@ -1,51 +1,60 @@
-// Conniku Service Worker v5.0
+// Conniku Service Worker v6.0
 // Full offline support + push notifications + background sync
-// v5: Regenerated all app icons with official Conniku C logo
+// v6: Force icon refresh for all users — official Conniku C logo
 
-const CACHE_NAME = 'conniku-v5';
-const STATIC_CACHE = 'conniku-static-v5';
-const API_CACHE = 'conniku-api-v4';
-const IMAGE_CACHE = 'conniku-images-v4';
+const SW_VERSION = 'v6';
+const CACHE_NAME = 'conniku-v6';
+const STATIC_CACHE = 'conniku-static-v6';
+const API_CACHE = 'conniku-api-v6';
+const IMAGE_CACHE = 'conniku-images-v6';
 
-// App shell files to precache
+// App shell files to precache (with cache-busting)
 const APP_SHELL = [
   '/',
   '/offline.html',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
-  '/apple-touch-icon.png',
-  '/favicon.ico',
+  '/manifest.json?v=5',
+  '/icon-192.png?v=5',
+  '/icon-512.png?v=5',
+  '/apple-touch-icon.png?v=5',
+  '/favicon.ico?v=5',
 ];
 
 // API base URL
 const API_BASE = 'studyhub-api-bpco.onrender.com';
 
-// ─── Install: precache app shell ────────────────────────────────
+// ─── Install: precache app shell + force immediate activation ───
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing v2...');
+  console.log('[SW] Installing ' + SW_VERSION + ' — new Conniku logo');
   event.waitUntil(
     caches.open(STATIC_CACHE)
       .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting())  // Force immediate activation
   );
 });
 
-// ─── Activate: clean old caches ─────────────────────────────────
+// ─── Activate: DELETE ALL old caches, notify clients ────────────
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v3 — clearing old icon caches...');
-  const currentCaches = [STATIC_CACHE, API_CACHE, IMAGE_CACHE];
+  console.log('[SW] Activating ' + SW_VERSION + ' — purging ALL old caches');
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames
-          .filter((name) => !currentCaches.includes(name))
+          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
           })
       )
-    ).then(() => self.clients.claim())
+    )
+    .then(() => self.clients.claim())
+    .then(() => {
+      // Notify all open tabs to refresh
+      self.clients.matchAll({ type: 'window' }).then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
+        });
+      });
+    })
   );
 });
 
