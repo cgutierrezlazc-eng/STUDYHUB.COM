@@ -966,6 +966,42 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 </div>
               )}
 
+              {/* Push Notification Broadcast */}
+              {emailView === 'broadcast' && (
+                <div className="card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 Notificación Push a Todos los Usuarios</h4>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).</p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button className="btn btn-primary btn-sm" onClick={async () => {
+                      if (!confirm('¿Enviar notificación push a TODOS los usuarios para actualizar la app?')) return;
+                      try {
+                        await api.broadcastPush(
+                          '🔄 Actualiza tu App Conniku',
+                          'Hemos actualizado el logo oficial y mejorado la plataforma. Actualiza para ver los cambios.',
+                          '/'
+                        );
+                        alert('Notificación push enviada a todos los usuarios');
+                      } catch (e: any) { alert('Error: ' + (e.message || e)); }
+                    }} style={{ background: '#2563EB' }}>
+                      Enviar: Actualizar App (Logo)
+                    </button>
+                    <button className="btn btn-primary btn-sm" onClick={async () => {
+                      const titulo = prompt('Título de la notificación:');
+                      if (!titulo) return;
+                      const mensaje = prompt('Mensaje:');
+                      if (!mensaje) return;
+                      const url = prompt('URL (dejar vacío para /)', '/');
+                      try {
+                        await api.broadcastPush(titulo, mensaje, url || '/');
+                        alert('Push enviado');
+                      } catch (e: any) { alert('Error: ' + (e.message || e)); }
+                    }} style={{ background: '#059669' }}>
+                      Push Personalizado
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Email type breakdown */}
               {emailView === 'inbox' && emailStats?.byType && Object.keys(emailStats.byType).length > 0 && (
                 <div className="card" style={{ padding: 16, marginTop: 16 }}>

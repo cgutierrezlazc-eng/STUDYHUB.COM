@@ -1,10 +1,11 @@
-// Conniku Service Worker v2.0
+// Conniku Service Worker v3.0
 // Full offline support + push notifications + background sync
+// v3: Updated icons with official logo (diagonal C opening)
 
-const CACHE_NAME = 'conniku-v2';
-const STATIC_CACHE = 'conniku-static-v2';
-const API_CACHE = 'conniku-api-v1';
-const IMAGE_CACHE = 'conniku-images-v1';
+const CACHE_NAME = 'conniku-v3';
+const STATIC_CACHE = 'conniku-static-v3';
+const API_CACHE = 'conniku-api-v2';
+const IMAGE_CACHE = 'conniku-images-v2';
 
 // App shell files to precache
 const APP_SHELL = [
@@ -13,6 +14,8 @@ const APP_SHELL = [
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
+  '/apple-touch-icon.png',
+  '/favicon.ico',
 ];
 
 // API base URL
@@ -30,7 +33,7 @@ self.addEventListener('install', (event) => {
 
 // ─── Activate: clean old caches ─────────────────────────────────
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating v2...');
+  console.log('[SW] Activating v3 — clearing old icon caches...');
   const currentCaches = [STATIC_CACHE, API_CACHE, IMAGE_CACHE];
   event.waitUntil(
     caches.keys().then((cacheNames) =>

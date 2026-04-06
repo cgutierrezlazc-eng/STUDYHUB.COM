@@ -1040,6 +1040,10 @@ export const api = {
   enforceRatings: () => request('/tutors/admin/enforce-ratings', { method: 'POST' }),
   applyAsOwnerTutor: () => request('/tutors/apply-as-owner', { method: 'POST' }),
 
+  // ─── Push Broadcast ────────────────────────────────────────
+  broadcastPush: (title: string, body: string, url?: string) =>
+    request('/push/broadcast', { method: 'POST', body: JSON.stringify({ title, body, url: url || '/' }) }),
+
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
 };

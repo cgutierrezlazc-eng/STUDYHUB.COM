@@ -81,6 +81,80 @@ def unsubscribe(
     return {"status": "unsubscribed"}
 
 
+class BroadcastData(BaseModel):
+    title: str
+    body: str
+    url: Optional[str] = "/"
+
+
+@router.post("/broadcast")
+def broadcast_push(
+    data: BroadcastData,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Send a push notification to ALL users (owner/admin only)."""
+    if user.role not in ("owner", "admin"):
+        raise HTTPException(403, "Solo el owner o admin puede enviar notificaciones masivas")
+
+    send_push_broadcast(data.title, data.body, data.url, db)
+    return {"status": "broadcast_sent"}
+
+
+def send_push_broadcast(title: str, body: str, url: str = "/", db: Session = None):
+    """Send push notification to ALL subscribed users."""
+    if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
+        return
+
+    try:
+        from pywebpush import webpush, WebPushException
+    except ImportError:
+        print("[Push] pywebpush not installed")
+        return
+
+    from database import SessionLocal
+    close_db = False
+    if db is None:
+        db = SessionLocal()
+        close_db = True
+
+    try:
+        all_subs = db.query(PushSubscription).all()
+
+        payload = json.dumps({
+            "title": title,
+            "body": body,
+            "url": url,
+            "icon": "/icon-192.png",
+            "badge": "/icon-72.png",
+            "timestamp": datetime.utcnow().isoformat(),
+        })
+
+        sent = 0
+        for sub in all_subs:
+            try:
+                webpush(
+                    subscription_info={
+                        "endpoint": sub.endpoint,
+                        "keys": {"p256dh": sub.p256dh, "auth": sub.auth},
+                    },
+                    data=payload,
+                    vapid_private_key=VAPID_PRIVATE_KEY,
+                    vapid_claims={"sub": VAPID_EMAIL},
+                )
+                sent += 1
+            except Exception as e:
+                if "410" in str(e) or "404" in str(e):
+                    db.delete(sub)
+                    db.commit()
+                print(f"[Push] Error broadcasting to {sub.device_name}: {e}")
+
+        print(f"[Push] Broadcast sent to {sent}/{len(all_subs)} subscriptions")
+    finally:
+        if close_db:
+            db.close()
+
+
 def send_push_to_user(user_id: str, title: str, body: str, url: str = "/", db: Session = None):
     """Send push notification to all subscriptions of a user."""
     if not VAPID_PRIVATE_KEY or not VAPID_PUBLIC_KEY:
