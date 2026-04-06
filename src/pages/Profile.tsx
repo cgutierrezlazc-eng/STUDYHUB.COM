@@ -414,148 +414,29 @@ export default function Profile() {
               </div>
             )}
 
-            {/* ─── Curriculum Vitae ─── */}
+            {/* ─── Curriculum Vitae (redirect to Jobs) ─── */}
             {activeSection === 'cv' && (
-              <div className="pf-section">
-                <h3 style={{ marginTop: 0, marginBottom: 4 }}>Curriculum Vitae</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>
-                  Construye tu CV profesional. Los reclutadores podrán verlo según tu configuración de privacidad.
+              <div className="pf-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>Perfil Profesional</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
+                  Tu CV profesional completo se gestiona desde la Bolsa de Trabajo, donde puedes editar competencias, experiencia, habilidades, subir documentos y compartir con reclutadores.
                 </p>
-
-                {/* CV File Upload */}
-                <div
-                  onClick={() => !cvUploading && cvFileRef.current?.click()}
-                  onDragOver={e => { e.preventDefault(); e.stopPropagation() }}
-                  onDrop={e => {
-                    e.preventDefault(); e.stopPropagation()
-                    const f = e.dataTransfer.files?.[0]
-                    if (f) handleCvUpload(f)
-                  }}
+                <button
+                  onClick={() => window.location.href = '/jobs'}
                   style={{
-                    border: '2px dashed var(--border)',
-                    borderRadius: 12,
-                    padding: '28px 20px',
-                    textAlign: 'center',
-                    cursor: cvUploading ? 'wait' : 'pointer',
-                    marginBottom: 20,
-                    background: 'var(--bg-secondary)',
-                    transition: 'border-color 0.2s',
+                    padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none',
+                    borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 15,
+                    display: 'inline-flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
                   }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                 >
-                  <input
-                    ref={cvFileRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    style={{ display: 'none' }}
-                    onChange={e => {
-                      const f = e.target.files?.[0]
-                      if (f) handleCvUpload(f)
-                      e.target.value = ''
-                    }}
-                  />
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                  </div>
-                  <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
-                    {cvUploading ? 'Procesando CV...' : 'Sube tu CV (PDF o Word)'}
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                    Arrastra tu archivo aqui o haz clic para seleccionar. Maximo 10 MB.
-                  </div>
-                </div>
-
-                {cvUploadMsg && (
-                  <div style={{
-                    padding: '10px 14px',
-                    borderRadius: 8,
-                    marginBottom: 16,
-                    fontSize: 13,
-                    background: cvUploadMsg.includes('Error') ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
-                    color: cvUploadMsg.includes('Error') ? '#ef4444' : '#22c55e',
-                    border: `1px solid ${cvUploadMsg.includes('Error') ? 'rgba(239,68,68,0.2)' : 'rgba(34,197,94,0.2)'}`,
-                  }}>
-                    {cvUploadMsg}
-                  </div>
-                )}
-
-                {/* Visibility Selector */}
-                <div style={{ marginBottom: 24 }}>
-                  <label className="pf-label">Visibilidad del CV</label>
-                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-                    {[
-                      { value: 'public' as const, label: 'Público', desc: 'Visible para todos' },
-                      { value: 'recruiters' as const, label: 'Solo Reclutadores', desc: 'Solo reclutadores verificados' },
-                      { value: 'private' as const, label: 'Privado', desc: 'Solo tú puedes verlo' },
-                    ].map(opt => (
-                      <button key={opt.value} onClick={() => setCvVisibility(opt.value)} style={{
-                        flex: 1, padding: '12px 16px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
-                        background: cvVisibility === opt.value ? 'var(--accent)' : 'var(--bg-secondary)',
-                        color: cvVisibility === opt.value ? '#fff' : 'var(--text-primary)',
-                        border: `1px solid ${cvVisibility === opt.value ? 'var(--accent)' : 'var(--border)'}`,
-                        transition: 'all 0.2s',
-                      }}>
-                        <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
-                        <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>{opt.desc}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CV Fields */}
-                <div className="pf-form-group">
-                  <label className="pf-label">Titular profesional</label>
-                  <input className="pf-input" placeholder="Ej: Estudiante de Ingeniería Civil, 8vo semestre"
-                    value={cvData.headline} onChange={e => setCvData({...cvData, headline: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Resumen profesional</label>
-                  <textarea className="pf-input" rows={4} placeholder="Describe brevemente tu perfil, objetivos y lo que te distingue..."
-                    value={cvData.summary} onChange={e => setCvData({...cvData, summary: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Experiencia</label>
-                  <textarea className="pf-input" rows={4} placeholder="Prácticas profesionales, trabajos anteriores, proyectos relevantes..."
-                    value={cvData.experience} onChange={e => setCvData({...cvData, experience: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Habilidades</label>
-                  <textarea className="pf-input" rows={3} placeholder="Excel avanzado, Python, Photoshop, Liderazgo, Trabajo en equipo..."
-                    value={cvData.skills} onChange={e => setCvData({...cvData, skills: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Certificaciones</label>
-                  <textarea className="pf-input" rows={3} placeholder="Certificaciones obtenidas, cursos completados..."
-                    value={cvData.certifications} onChange={e => setCvData({...cvData, certifications: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Idiomas</label>
-                  <input className="pf-input" placeholder="Español (nativo), Inglés (avanzado), Portugués (intermedio)..."
-                    value={cvData.languages} onChange={e => setCvData({...cvData, languages: e.target.value})} />
-                </div>
-
-                <div className="pf-form-group">
-                  <label className="pf-label">Portafolio / Links</label>
-                  <input className="pf-input" placeholder="GitHub, LinkedIn, portafolio web..."
-                    value={cvData.portfolio} onChange={e => setCvData({...cvData, portfolio: e.target.value})} />
-                </div>
-
-                <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
-                  <button className="btn btn-primary" onClick={async () => {
-                    await updateProfile({ cvVisibility, cvHeadline: cvData.headline, cvSummary: cvData.summary, cvExperience: cvData.experience, cvSkills: cvData.skills, cvCertifications: cvData.certifications, cvLanguages: cvData.languages, cvPortfolio: cvData.portfolio } as any)
-                    setSaved(true); setTimeout(() => setSaved(false), 2000)
-                  }}>Guardar CV</button>
-                </div>
+                  Ir a Mi Perfil Profesional →
+                </button>
               </div>
             )}
 
