@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Alternativas v2: Minimalista, Elegante, Calma</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=General+Sans:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Sora:wght@300;400;500;600;700;800&family=Geist:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  @font-face {
+    font-family: 'Geist';
+    src: local('Geist');
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0e0e0e; color: #fff; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .divider {
+    text-align: center;
+    padding: 56px 24px 20px;
+    border-top: 1px solid #1a1a1a;
+  }
+  .divider:first-child { border-top: none; padding-top: 32px; }
+  .divider .tag {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #555;
+  }
+  .divider h2 {
+    font-size: 26px;
+    font-weight: 700;
+    margin-top: 6px;
+    letter-spacing: -0.02em;
+  }
+  .divider p {
+    font-size: 13px;
+    color: #666;
+    margin-top: 6px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+  .grid-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+  .grid-1 {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+  }
+
+  .frame {
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid #1e1e1e;
+    position: relative;
+  }
+  .frame-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(12px);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .frame-tag.now { color: #f87171; }
+  .frame-tag.new { color: #6ee7b7; }
+
+  /* ================================================================ */
+  /*  TYPOGRAPHY SPECIMENS                                             */
+  /* ================================================================ */
+  .typo-specimen {
+    background: #141414;
+    padding: 32px;
+    min-height: 200px;
+  }
+  .typo-specimen .ff-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  .typo-specimen .headline {
+    font-size: 34px;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+    margin-bottom: 14px;
+  }
+  .typo-specimen .subtitle {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #777;
+    max-width: 380px;
+  }
+  .typo-specimen .meta {
+    margin-top: 20px;
+    font-size: 11px;
+    color: #444;
+    border-top: 1px solid #1e1e1e;
+    padding-top: 12px;
+  }
+
+  /* ================================================================ */
+  /*  PALETTE STRIPS                                                   */
+  /* ================================================================ */
+  .palette-row {
+    background: #141414;
+    border-radius: 14px;
+    border: 1px solid #1e1e1e;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .palette-colors {
+    display: flex;
+    height: 72px;
+  }
+  .palette-colors div { flex: 1; }
+  .palette-meta {
+    padding: 18px 20px;
+  }
+  .palette-meta h4 { font-size: 14px; font-weight: 600; }
+  .palette-meta p { font-size: 12px; color: #666; margin-top: 4px; line-height: 1.5; }
+  .palette-meta .chips {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .palette-meta .chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #888;
+    background: #1a1a1a;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+  .palette-meta .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+  }
+
+  /* ================================================================ */
+  /*  HERO PREVIEWS                                                    */
+  /* ================================================================ */
+
+  /* ---- CURRENT ---- */
+  .hero-now {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 30%, #C7D2FE 60%, #DDD6FE 100%);
+    padding: 52px 44px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .hero-now .left { flex: 1; }
+  .hero-now h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 34px;
+    font-weight: 800;
+    color: #1D2939;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-now p { font-size: 14px; color: #475467; line-height: 1.7; margin-top: 14px; max-width: 380px; }
+  .hero-now .btns { display: flex; gap: 10px; margin-top: 20px; }
+  .hero-now .btns button {
+    padding: 11px 24px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+  }
+  .hero-now .btns .pri { background: #2563EB; color: #fff; }
+  .hero-now .btns .sec { background: #fff; color: #1D2939; border: 1px solid #E5E7EB; }
+  .hero-now .vid {
+    flex: 1; max-width: 380px; background: #1E293B; border-radius: 14px;
+    aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.6); font-size: 13px;
+  }
+
+  /* ---- ALT 1: Sage Serenity ---- */
+  .hero-sage {
+    background: #F7F6F3;
+    padding: 52px 44px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+  }
+  .hero-sage .left { flex: 1; }
+  .hero-sage .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #EDF2EE;
+    color: #4A7C59;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 20px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .hero-sage .pill .dot-live {
+    width: 6px; height: 6px; border-radius: 50%; background: #4A7C59;
+    animation: pulse-dot 2s infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  .hero-sage h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: #1a1f16;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .hero-sage h1 .accent { color: #4A7C59; }
+  .hero-sage p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px; color: #7a7a6e; line-height: 1.75; margin-top: 16px; max-width: 420px;
+  }
+  .hero-sage .btns { display: flex; gap: 10px; margin-top: 24px; align-items: center; }
+  .hero-sage .btns .pri {
+    background: #1a1f16; color: #F7F6F3; padding: 13px 28px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+  }
+  .hero-sage .btns .sec {
+    color: #7a7a6e; font-size: 13px; background: none; border: none; cursor: pointer;
+    text-decoration: underline; text-underline-offset: 3px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .hero-sage .trust {
+    display: flex; align-items: center; gap: 10px; margin-top: 24px;
+    font-size: 12px; color: #aaa;
+    font-family: 'Outfit', sans-serif;
+  }
+  .hero-sage .trust .unis {
+    letter-spacing: 0.04em; color: #999;
+  }
+  .hero-sage .right { flex: 1; max-width: 420px; }
+  .hero-sage .card-stack {
+    position: relative;
+    height: 300px;
+  }
+  .hero-sage .float-card {
+    position: absolute;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e8e6e1;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.04);
+  }
+  .hero-sage .float-card.c1 { top: 0; left: 0; right: 40px; z-index: 3; }
+  .hero-sage .float-card.c2 { top: 80px; left: 30px; right: 10px; z-index: 2; opacity: 0.7; }
+  .hero-sage .float-card.c3 { top: 150px; left: 50px; right: 0; z-index: 1; opacity: 0.4; }
+  .hero-sage .fc-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .hero-sage .fc-icon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 16px;
+  }
+  .hero-sage .fc-text h4 { font-size: 13px; font-weight: 600; color: #1a1f16; font-family: 'Outfit', sans-serif; }
+  .hero-sage .fc-text span { font-size: 11px; color: #aaa; font-family: 'Outfit', sans-serif; }
+  .hero-sage .fc-bar {
+    height: 6px; background: #f0eeea; border-radius: 3px; overflow: hidden;
+  }
+  .hero-sage .fc-bar div { height: 100%; border-radius: 3px; }
+
+  /* ---- ALT 2: Soft Focus ---- */
+  .hero-soft {
+    background: #FAFAF8;
+    padding: 72px 44px;
+    min-height: 400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .hero-soft::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(203,213,225,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-soft h1 {
+    font-family: 'Lexend', sans-serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: #1D2939;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+    max-width: 580px;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-soft p {
+    font-family: 'Lexend', sans-serif;
+    font-size: 16px;
+    color: #98A2B3;
+    line-height: 1.7;
+    margin-top: 18px;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    font-weight: 300;
+  }
+  .hero-soft .btns {
+    display: flex; gap: 12px; margin-top: 28px; position: relative; z-index: 1;
+  }
+  .hero-soft .btns .pri {
+    background: #1D2939; color: #fff; padding: 14px 32px; border-radius: 50px;
+    font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+    font-family: 'Lexend', sans-serif;
+  }
+  .hero-soft .btns .sec {
+    background: transparent; color: #475467; padding: 14px 24px; border-radius: 50px;
+    font-size: 14px; font-weight: 500; border: 1.5px solid #E5E7EB; cursor: pointer;
+    font-family: 'Lexend', sans-serif;
+  }
+  .hero-soft .micro {
+    font-size: 12px; color: #CBD5E1; margin-top: 16px; position: relative; z-index: 1;
+    font-family: 'Lexend', sans-serif; font-weight: 300;
+  }
+
+  /* ---- ALT 3: Warm Paper ---- */
+  .hero-paper {
+    background: #F5F3EF;
+    padding: 52px 44px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    gap: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-paper::before {
+    content: '';
+    position: absolute;
+    top: -200px;
+    right: -100px;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-paper .left { flex: 1; position: relative; z-index: 1; }
+  .hero-paper h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 44px;
+    font-weight: 800;
+    color: #1D2939;
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+  .hero-paper p {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px; color: #7a7a72; line-height: 1.75; margin-top: 16px; max-width: 440px;
+  }
+  .hero-paper .btns { display: flex; gap: 10px; margin-top: 24px; }
+  .hero-paper .btns .pri {
+    background: #2563EB; color: #fff; padding: 13px 28px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    box-shadow: 0 2px 12px rgba(37,99,235,0.2);
+  }
+  .hero-paper .btns .sec {
+    background: #FFFFFF; color: #475467; padding: 13px 24px; border-radius: 10px;
+    font-size: 14px; font-weight: 500; border: 1px solid #E5E7EB; cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .trust {
+    display: flex; align-items: center; gap: 6px; margin-top: 20px;
+    font-size: 12px; color: #b0b0a8;
+    font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .right { flex: 1; max-width: 440px; position: relative; z-index: 1; }
+  .hero-paper .browser-frame {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e5e2dc;
+    overflow: hidden;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.06);
+  }
+  .hero-paper .browser-bar {
+    background: #fafaf8;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid #eee;
+  }
+  .hero-paper .browser-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .hero-paper .browser-url {
+    flex: 1;
+    background: #f0eeea;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: #999;
+    margin-left: 8px;
+    font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .browser-body {
+    padding: 20px;
+  }
+  .hero-paper .mock-dash-row {
+    display: flex; gap: 10px; margin-bottom: 10px;
+  }
+  .hero-paper .mock-card {
+    flex: 1;
+    background: #fafaf8;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #f0eeea;
+  }
+  .hero-paper .mock-card .mc-label {
+    font-size: 10px; color: #aaa; margin-bottom: 6px; font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .mock-card .mc-value {
+    font-size: 22px; font-weight: 700; color: #1D2939; font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .mock-card .mc-bar {
+    margin-top: 8px; height: 4px; background: #f0eeea; border-radius: 2px; overflow: hidden;
+  }
+  .hero-paper .mock-card .mc-bar div { height: 100%; border-radius: 2px; }
+  .hero-paper .mock-list-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid #f5f3ef;
+    font-family: 'Manrope', sans-serif;
+  }
+  .hero-paper .mock-list-item:last-child { border-bottom: none; }
+  .hero-paper .mli-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 14px;
+  }
+  .hero-paper .mli-text { font-size: 12px; color: #475467; }
+  .hero-paper .mli-text strong { color: #1D2939; font-weight: 600; }
+  .hero-paper .mli-time { margin-left: auto; font-size: 10px; color: #ccc; }
+
+  /* ---- ALT 4: Cloud Quiet ---- */
+  .hero-cloud {
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FC 100%);
+    padding: 60px 44px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative;
+  }
+  .hero-cloud .left { flex: 1; position: relative; z-index: 1; }
+  .hero-cloud .kicker {
+    font-family: 'Sora', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #2563EB;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .hero-cloud h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    color: #0F172A;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+  }
+  .hero-cloud p {
+    font-family: 'Sora', sans-serif;
+    font-size: 15px; color: #94A3B8; line-height: 1.75; margin-top: 16px; max-width: 420px;
+    font-weight: 400;
+  }
+  .hero-cloud .btns { display: flex; gap: 10px; margin-top: 24px; }
+  .hero-cloud .btns .pri {
+    background: #2563EB; color: #fff; padding: 13px 28px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; border: none; cursor: pointer;
+    font-family: 'Sora', sans-serif;
+  }
+  .hero-cloud .btns .ter {
+    display: flex; align-items: center; gap: 6px;
+    color: #64748B; font-size: 13px; background: none; border: none; cursor: pointer;
+    font-family: 'Sora', sans-serif; font-weight: 500;
+  }
+  .hero-cloud .right { flex: 1; max-width: 440px; position: relative; }
+  .hero-cloud .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .hero-cloud .fg-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px;
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .hero-cloud .fg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+  .hero-cloud .fg-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 12px;
+  }
+  .hero-cloud .fg-card h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 13px; font-weight: 600; color: #1E293B; margin-bottom: 4px;
+  }
+  .hero-cloud .fg-card p {
+    font-family: 'Sora', sans-serif;
+    font-size: 11px; color: #94A3B8; line-height: 1.5; margin: 0;
+  }
+
+  /* ================================================================ */
+  /*  FEATURES ALT                                                     */
+  /* ================================================================ */
+  .feat-minimal {
+    background: #FAFAF8;
+    padding: 48px 44px;
+  }
+  .feat-minimal .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 36px;
+  }
+  .feat-minimal .header h2 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1D2939;
+    letter-spacing: -0.02em;
+  }
+  .feat-minimal .header p {
+    font-size: 13px;
+    color: #98A2B3;
+    font-family: 'Outfit', sans-serif;
+  }
+  .feat-minimal .row {
+    display: flex;
+    gap: 1px;
+    background: #e8e6e1;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .feat-minimal .col {
+    flex: 1;
+    background: #fff;
+    padding: 32px 28px;
+    transition: background 0.2s;
+  }
+  .feat-minimal .col:hover { background: #fdfcfa; }
+  .feat-minimal .col .num {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    color: #ccc;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+  .feat-minimal .col .icon-box {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+  .feat-minimal .col h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 16px; font-weight: 600; color: #1D2939; margin-bottom: 8px;
+  }
+  .feat-minimal .col p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px; color: #98A2B3; line-height: 1.6;
+  }
+
+  /* ================================================================ */
+  /*  PRICING ALT                                                      */
+  /* ================================================================ */
+  .price-clean {
+    background: #FAFAF8;
+    padding: 48px 44px;
+  }
+  .price-clean h2 {
+    text-align: center;
+    font-family: 'Outfit', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1D2939;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .price-clean .sub {
+    text-align: center;
+    font-size: 13px;
+    color: #98A2B3;
+    margin-bottom: 32px;
+    font-family: 'Outfit', sans-serif;
+  }
+  .price-clean .plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: #e8e6e1;
+    border-radius: 14px;
+    overflow: hidden;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  .price-clean .plan {
+    background: #fff;
+    padding: 32px 28px;
+    text-align: left;
+    position: relative;
+  }
+  .price-clean .plan.hl {
+    background: #1D2939;
+    color: #fff;
+  }
+  .price-clean .plan .pname {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .price-clean .plan:not(.hl) .pname { color: #98A2B3; }
+  .price-clean .plan.hl .pname { color: rgba(255,255,255,0.5); }
+  .price-clean .plan.hl .rec {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: #2563EB;
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .price-clean .plan .pprice {
+    font-family: 'Outfit', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    margin: 4px 0;
+    letter-spacing: -0.03em;
+  }
+  .price-clean .plan:not(.hl) .pprice { color: #1D2939; }
+  .price-clean .plan.hl .pprice { color: #fff; }
+  .price-clean .plan .pper {
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+  .price-clean .plan:not(.hl) .pper { color: #CBD5E1; }
+  .price-clean .plan.hl .pper { color: rgba(255,255,255,0.4); }
+  .price-clean .plan ul {
+    list-style: none;
+    font-size: 13px;
+    line-height: 2;
+    font-family: 'Outfit', sans-serif;
+  }
+  .price-clean .plan:not(.hl) ul { color: #64748B; }
+  .price-clean .plan.hl ul { color: rgba(255,255,255,0.7); }
+  .price-clean .plan button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+  }
+  .price-clean .plan:not(.hl) button {
+    background: transparent;
+    border: 1.5px solid #E5E7EB;
+    color: #475467;
+  }
+  .price-clean .plan.hl button {
+    background: #2563EB;
+    border: none;
+    color: #fff;
+  }
+
+  .end-spacer { height: 80px; }
+</style>
+</head>
+<body>
+
+<!-- ================================================================ -->
+<!-- TYPOGRAPHY                                                        -->
+<!-- ================================================================ -->
+<div class="divider">
+  <div class="tag">Tipografia</div>
+  <h2>Alternativas que mantienen la calma</h2>
+  <p>Sans-serif modernas con mas caracter que Inter, pero igual de limpias y no estresantes</p>
+</div>
+
+<div class="grid-3">
+  <div class="frame">
+    <div class="frame-tag now">ACTUAL</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Inter 800 + Inter 400</div>
+      <div class="headline" style="font-family: 'Inter'; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Inter';">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Limpia pero generica. Usada por el 80% de las landing pages tech.</div>
+    </div>
+  </div>
+  <div class="frame">
+    <div class="frame-tag new">A — Outfit</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Outfit 700 + Outfit 400</div>
+      <div class="headline" style="font-family: 'Outfit'; font-weight: 700; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Outfit'; font-weight: 400;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Geometrica suave. Friendly sin ser infantil. Muy legible.</div>
+    </div>
+  </div>
+  <div class="frame">
+    <div class="frame-tag new">B — Lexend</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Lexend 700 + Lexend 300</div>
+      <div class="headline" style="font-family: 'Lexend'; font-weight: 700; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Lexend'; font-weight: 300;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Disenada para reducir estres visual. Redondeada, abierta, calma.</div>
+    </div>
+  </div>
+</div>
+<div class="grid-3">
+  <div class="frame">
+    <div class="frame-tag new">C — Sora</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Sora 800 + Sora 400</div>
+      <div class="headline" style="font-family: 'Sora'; font-weight: 800; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Sora'; font-weight: 400;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Moderna, tecnica pero calida. Buen balance entre personalidad y neutralidad.</div>
+    </div>
+  </div>
+  <div class="frame">
+    <div class="frame-tag new">D — Manrope</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Manrope 700 + Manrope 400</div>
+      <div class="headline" style="font-family: 'Manrope'; font-weight: 700; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Manrope'; font-weight: 400;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Semi-geometrica con terminaciones suaves. Elegante y seria sin ser fria.</div>
+    </div>
+  </div>
+  <div class="frame">
+    <div class="frame-tag new">E — Bricolage Grotesque</div>
+    <div class="typo-specimen">
+      <div class="ff-label">Bricolage 800 + Manrope 400</div>
+      <div class="headline" style="font-family: 'Bricolage Grotesque'; font-weight: 800; color: #ddd;">Donde los estudiantes se conectan</div>
+      <div class="subtitle" style="font-family: 'Manrope'; font-weight: 400;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+      <div class="meta">Display con caracter unico. Titulos memorables, cuerpo neutro. La mas distintiva.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PALETTES                                                          -->
+<!-- ================================================================ -->
+<div class="divider">
+  <div class="tag">Paleta de colores</div>
+  <h2>Variaciones calmas de tu paleta actual</h2>
+  <p>Misma base beige/crema, colores no estresantes, mejoras sutiles en contraste y acento</p>
+</div>
+
+<div class="grid-3">
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #FAFAF8"></div>
+      <div style="background: #F5F3EF"></div>
+      <div style="background: #2563EB"></div>
+      <div style="background: #1D2939"></div>
+      <div style="background: #E5E7EB"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #f87171;">Actual</h4>
+      <p>Beige + azul Tailwind. Base buena, acento sin personalidad.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #FAFAF8; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #2563EB"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #1D2939"></div>Texto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #F7F6F3"></div>
+      <div style="background: #EDF2EE"></div>
+      <div style="background: #4A7C59"></div>
+      <div style="background: #1a1f16"></div>
+      <div style="background: #e8e6e1"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #6ee7b7;">A — Sage Serenity</h4>
+      <p>Verde salvia suave. Asociado a calma, naturaleza, concentracion. No grita, guia.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #F7F6F3; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #4A7C59"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #1a1f16"></div>Texto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #FAFAF8"></div>
+      <div style="background: #F5F3EF"></div>
+      <div style="background: #3B6FC0"></div>
+      <div style="background: #0F172A"></div>
+      <div style="background: #E8E6E1"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #6ee7b7;">B — Deep Calm Blue</h4>
+      <p>Tu azul actual pero mas profundo y serio. Menos saturado = menos estresante, mas elegante.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #FAFAF8; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #3B6FC0"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #0F172A"></div>Texto</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="grid-3">
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #FAF9F7"></div>
+      <div style="background: #F0EEEA"></div>
+      <div style="background: #6366F1"></div>
+      <div style="background: #1E1B4B"></div>
+      <div style="background: #E2E0DC"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #6ee7b7;">C — Soft Indigo</h4>
+      <p>Indigo suave sobre beige calido. Sofisticado, premium. Connota creatividad y profundidad.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #FAF9F7; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #6366F1"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #1E1B4B"></div>Texto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #FAFAF8"></div>
+      <div style="background: #F5F3EF"></div>
+      <div style="background: #1D2939"></div>
+      <div style="background: #2563EB"></div>
+      <div style="background: #E5E7EB"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #6ee7b7;">D — Inverted Neutral</h4>
+      <p>Tu misma paleta, pero con el oscuro (#1D2939) como acento principal y azul solo para links/hovers.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #FAFAF8; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #1D2939"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #2563EB"></div>Links</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-row">
+    <div class="palette-colors">
+      <div style="background: #F8F9FC"></div>
+      <div style="background: #F1F5F9"></div>
+      <div style="background: #2563EB"></div>
+      <div style="background: #0F172A"></div>
+      <div style="background: #CBD5E1"></div>
+    </div>
+    <div class="palette-meta">
+      <h4 style="color: #6ee7b7;">E — Cloud Quiet</h4>
+      <p>Fondo gris-azulado muy sutil en vez de beige. Mas tech, mas limpio. Azul como acento frio.</p>
+      <div class="chips">
+        <div class="chip"><div class="dot" style="background: #F8F9FC; border: 1px solid #ddd;"></div>Fondo</div>
+        <div class="chip"><div class="dot" style="background: #2563EB"></div>Acento</div>
+        <div class="chip"><div class="dot" style="background: #0F172A"></div>Texto</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- HERO SECTIONS                                                     -->
+<!-- ================================================================ -->
+<div class="divider">
+  <div class="tag">Hero Section</div>
+  <h2>4 direcciones calmas y modernas</h2>
+  <p>Cada una usa una tipografia + paleta de las opciones anteriores</p>
+</div>
+
+<div class="grid-2">
+  <div class="frame">
+    <div class="frame-tag now">ACTUAL</div>
+    <div class="hero-now">
+      <div class="left">
+        <h1>Donde los estudiantes<br>se conectan, aprenden<br>y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria.</p>
+        <div class="btns">
+          <button class="pri">Comenzar gratis</button>
+          <button class="sec">Continuar con Google</button>
+        </div>
+      </div>
+      <div class="vid">&#9654; Ver tour</div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <div class="frame-tag new">A — Sage Serenity + Outfit</div>
+    <div class="hero-sage">
+      <div class="left">
+        <div class="pill"><div class="dot-live"></div> 127 estudiantes conectados ahora</div>
+        <h1>Donde los estudiantes se <span class="accent">conectan</span>, aprenden y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+        <div class="btns">
+          <button class="pri">Comenzar gratis</button>
+          <button class="sec">Ver planes y precios</button>
+        </div>
+        <div class="trust">
+          <span class="unis">UNAB &middot; PUC &middot; USACH &middot; USS &middot; U. de Chile</span>
+        </div>
+      </div>
+      <div class="right">
+        <div class="card-stack">
+          <div class="float-card c1">
+            <div class="fc-row">
+              <div class="fc-icon" style="background: #EDF2EE;">&#128218;</div>
+              <div class="fc-text"><h4>Calculo II</h4><span>85% completado</span></div>
+            </div>
+            <div class="fc-bar"><div style="width: 85%; background: #4A7C59;"></div></div>
+          </div>
+          <div class="float-card c2">
+            <div class="fc-row">
+              <div class="fc-icon" style="background: #FEF3C7;">&#128293;</div>
+              <div class="fc-text"><h4>Racha de 12 dias</h4><span>Sigue asi!</span></div>
+            </div>
+          </div>
+          <div class="float-card c3">
+            <div class="fc-row">
+              <div class="fc-icon" style="background: #E0E7FF;">&#128172;</div>
+              <div class="fc-text"><h4>3 mensajes nuevos</h4></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="frame">
+    <div class="frame-tag new">B — Soft Focus + Lexend</div>
+    <div class="hero-soft">
+      <h1>Donde los estudiantes se conectan, aprenden y crecen</h1>
+      <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+      <div class="btns">
+        <button class="pri">Comenzar gratis</button>
+        <button class="sec">Ver tour de 2 min</button>
+      </div>
+      <div class="micro">Gratis por 7 dias &middot; Sin tarjeta de credito &middot; 2,000+ estudiantes activos</div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <div class="frame-tag new">C — Warm Paper + Bricolage</div>
+    <div class="hero-paper">
+      <div class="left">
+        <h1>Donde los estudiantes se conectan, aprenden y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+        <div class="btns">
+          <button class="pri">Comenzar gratis</button>
+          <button class="sec">Continuar con Google</button>
+        </div>
+        <div class="trust">UNAB &middot; PUC &middot; USACH &middot; USS &middot; U. de Chile</div>
+      </div>
+      <div class="right">
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="browser-dot" style="background: #f87171;"></div>
+            <div class="browser-dot" style="background: #fbbf24;"></div>
+            <div class="browser-dot" style="background: #34d399;"></div>
+            <div class="browser-url">conniku.com/dashboard</div>
+          </div>
+          <div class="browser-body">
+            <div class="mock-dash-row">
+              <div class="mock-card">
+                <div class="mc-label">Asignaturas</div>
+                <div class="mc-value">4</div>
+                <div class="mc-bar"><div style="width: 60%; background: #2563EB;"></div></div>
+              </div>
+              <div class="mock-card">
+                <div class="mc-label">Racha</div>
+                <div class="mc-value">12d</div>
+                <div class="mc-bar"><div style="width: 85%; background: #f59e0b;"></div></div>
+              </div>
+            </div>
+            <div class="mock-list-item">
+              <div class="mli-icon" style="background: #EDF2EE;">&#128218;</div>
+              <div class="mli-text"><strong>Guia subida</strong><br>Calculo II - Cap. 7</div>
+              <div class="mli-time">2m</div>
+            </div>
+            <div class="mock-list-item">
+              <div class="mli-icon" style="background: #E0E7FF;">&#128172;</div>
+              <div class="mli-text"><strong>Maria comento</strong><br>"Alguien para repasar?"</div>
+              <div class="mli-time">15m</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-1">
+  <div class="frame">
+    <div class="frame-tag new">D — Cloud Quiet + Sora</div>
+    <div class="hero-cloud">
+      <div class="left">
+        <div class="kicker">Plataforma educativa</div>
+        <h1>Donde los estudiantes se conectan, aprenden y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+        <div class="btns">
+          <button class="pri">Comenzar gratis</button>
+          <button class="ter">Ver tour &#8594;</button>
+        </div>
+      </div>
+      <div class="right">
+        <div class="feature-grid">
+          <div class="fg-card">
+            <div class="fg-icon" style="background: #EEF2FF;">&#128218;</div>
+            <h4>Estudio inteligente</h4>
+            <p>Flashcards, quizzes y guias generadas desde tus documentos</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-icon" style="background: #ECFDF5;">&#128101;</div>
+            <h4>Comunidad</h4>
+            <p>Conecta con estudiantes de tu carrera y universidad</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-icon" style="background: #FEF3C7;">&#127891;</div>
+            <h4>30+ Cursos</h4>
+            <p>Desarrollo integral gratuito para tu futuro profesional</p>
+          </div>
+          <div class="fg-card">
+            <div class="fg-icon" style="background: #FDF2F8;">&#128188;</div>
+            <h4>Empleo</h4>
+            <p>Bolsa de trabajo y CV profesional para estudiantes</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- FEATURES                                                          -->
+<!-- ================================================================ -->
+<div class="divider">
+  <div class="tag">Features</div>
+  <h2>Seccion de funcionalidades</h2>
+  <p>Layout minimal con separadores sutiles en vez de cards flotantes</p>
+</div>
+
+<div class="grid-1">
+  <div class="frame">
+    <div class="frame-tag new">Columnas con divisor</div>
+    <div class="feat-minimal">
+      <div class="header">
+        <div>
+          <h2>Todo lo que necesitas</h2>
+          <p>Mas de 55 herramientas para tu exito academico</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div class="num">01</div>
+          <div class="icon-box" style="background: #EDF2EE;">&#128218;</div>
+          <h3>Estudia mejor</h3>
+          <p>Guias de estudio, quizzes adaptativos, flashcards con repeticion espaciada y herramientas interactivas.</p>
+        </div>
+        <div class="col">
+          <div class="num">02</div>
+          <div class="icon-box" style="background: #E0E7FF;">&#128101;</div>
+          <h3>Conecta</h3>
+          <p>Comunidades por materia, mensajeria, mentorias, eventos de estudio y red social para estudiantes.</p>
+        </div>
+        <div class="col">
+          <div class="num">03</div>
+          <div class="icon-box" style="background: #FEF3C7;">&#128188;</div>
+          <h3>Crece</h3>
+          <p>Bolsa de empleo, CV profesional, tutorias, cursos de desarrollo integral y preparacion para tu futuro.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ -->
+<!-- PRICING                                                           -->
+<!-- ================================================================ -->
+<div class="divider">
+  <div class="tag">Pricing</div>
+  <h2>Pricing limpio con jerarquia clara</h2>
+  <p>Plan destacado con fondo oscuro para guiar la decision sin ser agresivo</p>
+</div>
+
+<div class="grid-1">
+  <div class="frame">
+    <div class="frame-tag new">Columnas con plan oscuro</div>
+    <div class="price-clean">
+      <h2>Planes para cada estudiante</h2>
+      <div class="sub">Sin compromiso. Cancela cuando quieras.</div>
+      <div class="plans">
+        <div class="plan">
+          <div class="pname">Basico</div>
+          <div class="pprice">$0</div>
+          <div class="pper">Siempre gratis</div>
+          <ul><li>&#10003; 2 asignaturas</li><li>&#10003; Red social</li><li>&#10003; Cursos de desarrollo</li><li>&#10003; 300 MB</li></ul>
+          <button>Comenzar gratis</button>
+        </div>
+        <div class="plan hl">
+          <div class="pname">Pro</div>
+          <div class="rec">RECOMENDADO</div>
+          <div class="pprice">$5</div>
+          <div class="pper">USD / mes</div>
+          <ul><li>&#10003; 8 asignaturas</li><li>&#10003; Herramientas avanzadas</li><li>&#10003; Predictor de examen</li><li>&#10003; 1 GB</li></ul>
+          <button>Elegir Pro</button>
+        </div>
+        <div class="plan">
+          <div class="pname">Max</div>
+          <div class="pprice">$13</div>
+          <div class="pper">USD / mes</div>
+          <ul><li>&#10003; Todo ilimitado</li><li>&#10003; Grabar clases</li><li>&#10003; Publicar empleos</li><li>&#10003; 3 GB</li></ul>
+          <button>Elegir Max</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="end-spacer"></div>
+</body>
+</html>

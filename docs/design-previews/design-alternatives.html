@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Alternativas de Diseno</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,800;1,9..144,400&family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800;900&family=Satoshi:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #111; color: #fff; font-family: 'DM Sans', sans-serif; }
+
+  .section-label {
+    text-align: center;
+    padding: 48px 24px 16px;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #666;
+    border-top: 1px solid #222;
+  }
+  .section-label span {
+    display: block;
+    font-size: 28px;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: #fff;
+    margin-top: 8px;
+    font-weight: 700;
+  }
+  .section-label p {
+    font-size: 14px;
+    color: #888;
+    margin-top: 8px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 24px auto;
+    padding: 0 24px;
+  }
+  .comparison.triple {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .card {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+    position: relative;
+  }
+  .card-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(8px);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    z-index: 10;
+  }
+  .card-label.current { color: #f87171; }
+  .card-label.alt { color: #34d399; }
+
+  /* ===================== HERO PREVIEWS ===================== */
+
+  /* Current hero */
+  .hero-current {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 30%, #C7D2FE 60%, #DDD6FE 100%);
+    padding: 56px 40px;
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+  }
+  .hero-current h1 {
+    font-family: 'Inter', sans-serif;
+    font-size: 36px;
+    font-weight: 800;
+    color: #1D2939;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-current p {
+    font-size: 15px;
+    color: #475467;
+    line-height: 1.7;
+    margin-top: 16px;
+    max-width: 400px;
+  }
+  .hero-current .cta {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  .hero-current .cta button {
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .hero-current .cta .primary { background: #2563EB; color: #fff; }
+  .hero-current .cta .secondary { background: #fff; color: #1D2939; border: 1px solid #E5E7EB; }
+  .hero-current .video-box {
+    flex: 1;
+    background: #1E293B;
+    border-radius: 16px;
+    aspect-ratio: 16/10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    opacity: 0.9;
+    max-width: 420px;
+  }
+
+  /* Alt A — Editorial dark */
+  .hero-alt-a {
+    background: #0F0F0F;
+    padding: 64px 48px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-alt-a::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(232,185,49,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-alt-a h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 52px;
+    font-weight: 800;
+    color: #FAFAF8;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    max-width: 700px;
+  }
+  .hero-alt-a h1 em {
+    font-style: italic;
+    color: #E8B931;
+  }
+  .hero-alt-a p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    color: #8a8a8a;
+    line-height: 1.7;
+    margin-top: 20px;
+    max-width: 480px;
+  }
+  .hero-alt-a .cta {
+    margin-top: 28px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .hero-alt-a .cta .primary {
+    background: #E8B931;
+    color: #0F0F0F;
+    padding: 14px 32px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .hero-alt-a .cta .secondary {
+    color: #888;
+    font-size: 14px;
+    background: none;
+    border: 1px solid #333;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .hero-alt-a .badge {
+    display: inline-block;
+    background: rgba(232,185,49,0.12);
+    color: #E8B931;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    letter-spacing: 0.03em;
+  }
+
+  /* Alt B — Warm minimal */
+  .hero-alt-b {
+    background: #FAFAF5;
+    padding: 64px 48px;
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+    gap: 48px;
+    position: relative;
+  }
+  .hero-alt-b::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #2D5A3D, #5B9A6F, #E8B931);
+  }
+  .hero-alt-b h1 {
+    font-family: 'Instrument Serif', serif;
+    font-size: 48px;
+    font-weight: 400;
+    color: #1a1a1a;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .hero-alt-b h1 strong {
+    color: #2D5A3D;
+    font-weight: 400;
+  }
+  .hero-alt-b p {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 15px;
+    color: #666;
+    line-height: 1.8;
+    margin-top: 16px;
+    max-width: 420px;
+  }
+  .hero-alt-b .cta {
+    margin-top: 24px;
+    display: flex;
+    gap: 12px;
+  }
+  .hero-alt-b .cta .primary {
+    background: #2D5A3D;
+    color: #fff;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .hero-alt-b .cta .secondary {
+    color: #2D5A3D;
+    font-size: 14px;
+    background: none;
+    border: 1.5px solid #2D5A3D;
+    padding: 12px 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .hero-alt-b .social-proof {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #888;
+  }
+  .hero-alt-b .avatars {
+    display: flex;
+  }
+  .hero-alt-b .avatars span {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #FAFAF5;
+    margin-right: -8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background: #eee;
+  }
+  .hero-alt-b .right-panel {
+    flex: 1;
+    max-width: 400px;
+  }
+  .hero-alt-b .app-preview {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.06);
+  }
+  .hero-alt-b .preview-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #999;
+  }
+  .hero-alt-b .preview-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ddd;
+  }
+  .hero-alt-b .preview-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 13px;
+    color: #444;
+  }
+  .hero-alt-b .preview-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  /* Alt C — Coral bold */
+  .hero-alt-c {
+    background: #FFFBF7;
+    padding: 64px 48px;
+    min-height: 380px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-alt-c::before {
+    content: '';
+    position: absolute;
+    top: -100px;
+    right: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,107,107,0.1) 0%, transparent 70%);
+  }
+  .hero-alt-c::after {
+    content: '';
+    position: absolute;
+    bottom: -100px;
+    left: -100px;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(107,143,255,0.07) 0%, transparent 70%);
+  }
+  .hero-alt-c h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 54px;
+    font-weight: 900;
+    color: #1a1a1a;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    max-width: 650px;
+    position: relative;
+  }
+  .hero-alt-c h1 .highlight {
+    position: relative;
+    display: inline-block;
+  }
+  .hero-alt-c h1 .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: rgba(255,107,107,0.3);
+    z-index: -1;
+    border-radius: 2px;
+  }
+  .hero-alt-c p {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    color: #777;
+    line-height: 1.7;
+    margin-top: 20px;
+    max-width: 500px;
+    position: relative;
+  }
+  .hero-alt-c .cta {
+    margin-top: 28px;
+    display: flex;
+    gap: 16px;
+    position: relative;
+  }
+  .hero-alt-c .cta .primary {
+    background: #FF6B6B;
+    color: #fff;
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    box-shadow: 0 8px 24px rgba(255,107,107,0.3);
+  }
+  .hero-alt-c .cta .secondary {
+    color: #555;
+    font-size: 15px;
+    background: none;
+    border: 1.5px solid #ddd;
+    padding: 14px 28px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ===================== FEATURES PREVIEWS ===================== */
+
+  .features-current {
+    background: #fff;
+    padding: 48px 40px;
+  }
+  .features-current h2 {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1D2939;
+  }
+  .features-current .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 36px;
+  }
+  .features-current .item {
+    text-align: center;
+    padding: 20px;
+  }
+  .features-current .emoji { font-size: 36px; margin-bottom: 12px; }
+  .features-current .item h3 {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1D2939;
+    margin-bottom: 8px;
+  }
+  .features-current .item p { font-size: 13px; color: #475467; line-height: 1.6; }
+
+  /* Alt features — bento grid */
+  .features-alt {
+    background: #FAFAF5;
+    padding: 48px 40px;
+  }
+  .features-alt h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    letter-spacing: -0.02em;
+  }
+  .features-alt .bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 16px;
+    margin-top: 32px;
+  }
+  .features-alt .bento-item {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    border: 1px solid #e8e5df;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .features-alt .bento-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.06);
+  }
+  .features-alt .bento-item.large {
+    grid-column: span 2;
+  }
+  .features-alt .bento-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+  .features-alt .bento-item h3 {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+  .features-alt .bento-item p {
+    font-size: 13px;
+    color: #777;
+    line-height: 1.6;
+  }
+  .features-alt .bento-item .mock-ui {
+    margin-top: 16px;
+    background: #f7f7f5;
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .features-alt .bento-item .mock-tag {
+    background: #e8e5df;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #555;
+  }
+
+  /* ===================== PRICING PREVIEWS ===================== */
+
+  .pricing-current {
+    background: #fff;
+    padding: 48px 40px;
+  }
+  .pricing-current h2 {
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1D2939;
+    margin-bottom: 32px;
+  }
+  .pricing-current .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  .pricing-current .plan {
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid #E5E7EB;
+    background: #fff;
+    position: relative;
+  }
+  .pricing-current .plan.popular {
+    border: 2px solid #2563EB;
+  }
+  .pricing-current .plan .badge-pop {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2563EB;
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .pricing-current .plan .name {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .pricing-current .plan .price {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1D2939;
+  }
+  .pricing-current .plan .period {
+    font-size: 12px;
+    color: #98A2B3;
+    margin-bottom: 16px;
+  }
+  .pricing-current .plan ul {
+    list-style: none;
+    font-size: 13px;
+    color: #475467;
+    line-height: 2.2;
+  }
+  .pricing-current .plan button {
+    margin-top: 16px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Alt pricing */
+  .pricing-alt {
+    background: #0F0F0F;
+    padding: 48px 40px;
+  }
+  .pricing-alt h2 {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+  .pricing-alt .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+  .pricing-alt .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 760px;
+    margin: 0 auto;
+    align-items: start;
+  }
+  .pricing-alt .plan {
+    padding: 28px;
+    border-radius: 16px;
+    text-align: left;
+    border: 1px solid #222;
+    background: #161616;
+    position: relative;
+  }
+  .pricing-alt .plan.featured {
+    background: #E8B931;
+    border: none;
+    color: #0F0F0F;
+    transform: scale(1.04);
+  }
+  .pricing-alt .plan .name {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+  .pricing-alt .plan:not(.featured) .name { color: #888; }
+  .pricing-alt .plan.featured .name { color: #0F0F0F; opacity: 0.7; }
+  .pricing-alt .plan .price {
+    font-family: 'Fraunces', serif;
+    font-size: 40px;
+    font-weight: 800;
+  }
+  .pricing-alt .plan:not(.featured) .price { color: #fff; }
+  .pricing-alt .plan.featured .price { color: #0F0F0F; }
+  .pricing-alt .plan .period {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  .pricing-alt .plan:not(.featured) .period { color: #555; }
+  .pricing-alt .plan.featured .period { color: rgba(0,0,0,0.5); }
+  .pricing-alt .plan ul {
+    list-style: none;
+    font-size: 13px;
+    line-height: 2.2;
+  }
+  .pricing-alt .plan:not(.featured) ul { color: #888; }
+  .pricing-alt .plan.featured ul { color: rgba(0,0,0,0.7); }
+  .pricing-alt .plan button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .pricing-alt .plan:not(.featured) button {
+    background: transparent;
+    border: 1px solid #333;
+    color: #fff;
+  }
+  .pricing-alt .plan.featured button {
+    background: #0F0F0F;
+    border: none;
+    color: #E8B931;
+  }
+
+  /* ===================== COLOR PALETTES ===================== */
+  .palettes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1000px;
+    margin: 24px auto;
+    padding: 0 24px;
+  }
+  .palette-card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #2a2a2a;
+  }
+  .palette-strip {
+    height: 64px;
+    display: flex;
+  }
+  .palette-strip div { flex: 1; }
+  .palette-info {
+    padding: 20px;
+  }
+  .palette-info h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .palette-info p {
+    font-size: 12px;
+    color: #777;
+    line-height: 1.5;
+  }
+  .palette-info .colors {
+    display: flex;
+    gap: 6px;
+    margin-top: 12px;
+  }
+  .palette-info .color-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    color: #999;
+  }
+  .palette-info .color-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* ===================== TYPO COMPARISON ===================== */
+  .typo-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 1000px;
+    margin: 24px auto;
+    padding: 0 24px;
+  }
+  .typo-card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid #2a2a2a;
+  }
+  .typo-card .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+  .typo-card .label.bad { color: #f87171; }
+  .typo-card .label.good { color: #34d399; }
+  .typo-card .display {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  .typo-card .body-text {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #888;
+  }
+  .typo-card .font-name {
+    margin-top: 16px;
+    font-size: 11px;
+    color: #555;
+    border-top: 1px solid #2a2a2a;
+    padding-top: 12px;
+  }
+
+  .spacer { height: 60px; }
+</style>
+</head>
+<body>
+
+<!-- ======================================================= -->
+<!-- TYPOGRAPHY -->
+<!-- ======================================================= -->
+<div class="section-label" style="border-top: none; padding-top: 32px;">
+  CAMBIO 1
+  <span>Tipografia</span>
+  <p>Reemplazar Inter por combinaciones con mas personalidad</p>
+</div>
+
+<div class="typo-compare">
+  <div class="typo-card">
+    <div class="label bad">ACTUAL</div>
+    <div class="display" style="font-family: 'Inter', sans-serif; color: #ccc;">Donde los estudiantes se conectan</div>
+    <div class="body-text" style="font-family: 'Inter', sans-serif;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+    <div class="font-name">Inter 800 / Inter 400 — generico, sin caracter</div>
+  </div>
+  <div class="typo-card">
+    <div class="label good">OPCION A — Fraunces + DM Sans</div>
+    <div class="display" style="font-family: 'Fraunces', serif; color: #E8B931;">Donde los estudiantes se conectan</div>
+    <div class="body-text" style="font-family: 'DM Sans', sans-serif;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+    <div class="font-name">Fraunces 800 (organica, academica) / DM Sans 400 (limpia, moderna)</div>
+  </div>
+</div>
+<div class="typo-compare">
+  <div class="typo-card">
+    <div class="label good">OPCION B — Instrument Serif + Plus Jakarta</div>
+    <div class="display" style="font-family: 'Instrument Serif', serif; font-weight: 400; color: #2D5A3D;">Donde los estudiantes se conectan</div>
+    <div class="body-text" style="font-family: 'Plus Jakarta Sans', sans-serif;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+    <div class="font-name">Instrument Serif 400 (elegante, editorial) / Plus Jakarta Sans 400</div>
+  </div>
+  <div class="typo-card">
+    <div class="label good">OPCION C — Playfair Display + DM Sans</div>
+    <div class="display" style="font-family: 'Playfair Display', serif; font-weight: 900; color: #FF6B6B;">Donde los estudiantes se conectan</div>
+    <div class="body-text" style="font-family: 'DM Sans', sans-serif;">La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva.</div>
+    <div class="font-name">Playfair Display 900 (dramatica, bold) / DM Sans 400</div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- COLOR PALETTES -->
+<!-- ======================================================= -->
+<div class="section-label">
+  CAMBIO 2
+  <span>Paleta de colores</span>
+  <p>Reemplazar el azul generico (#2563EB) por colores con identidad</p>
+</div>
+
+<div class="palettes">
+  <div class="palette-card">
+    <div class="palette-strip">
+      <div style="background: #FAFAF8"></div>
+      <div style="background: #2563EB"></div>
+      <div style="background: #7C3AED"></div>
+      <div style="background: #1D2939"></div>
+      <div style="background: #E5E7EB"></div>
+    </div>
+    <div class="palette-info">
+      <h3 style="color: #f87171;">Actual (generica)</h3>
+      <p>Tailwind blue-600 + purple. Usado por miles de SaaS. No tiene identidad propia.</p>
+      <div class="colors">
+        <div class="color-chip"><div class="color-dot" style="background: #2563EB"></div>#2563EB</div>
+        <div class="color-chip"><div class="color-dot" style="background: #7C3AED"></div>#7C3AED</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-card">
+    <div class="palette-strip">
+      <div style="background: #0F0F0F"></div>
+      <div style="background: #E8B931"></div>
+      <div style="background: #2D5A3D"></div>
+      <div style="background: #FAFAF5"></div>
+      <div style="background: #333"></div>
+    </div>
+    <div class="palette-info">
+      <h3 style="color: #34d399;">Opcion A — Mostaza + Bosque</h3>
+      <p>Calida, academica, sofisticada. Mostaza como acento principal, verde bosque como secundario.</p>
+      <div class="colors">
+        <div class="color-chip"><div class="color-dot" style="background: #E8B931"></div>#E8B931</div>
+        <div class="color-chip"><div class="color-dot" style="background: #2D5A3D"></div>#2D5A3D</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="palette-card">
+    <div class="palette-strip">
+      <div style="background: #FFFBF7"></div>
+      <div style="background: #FF6B6B"></div>
+      <div style="background: #1a1a1a"></div>
+      <div style="background: #6B8FFF"></div>
+      <div style="background: #F0EDE8"></div>
+    </div>
+    <div class="palette-info">
+      <h3 style="color: #34d399;">Opcion B — Coral + Indigo suave</h3>
+      <p>Energetica, juvenil, memorable. Coral como acento dramatico, indigo como complemento.</p>
+      <div class="colors">
+        <div class="color-chip"><div class="color-dot" style="background: #FF6B6B"></div>#FF6B6B</div>
+        <div class="color-chip"><div class="color-dot" style="background: #6B8FFF"></div>#6B8FFF</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- HERO SECTIONS -->
+<!-- ======================================================= -->
+<div class="section-label">
+  CAMBIO 3
+  <span>Hero Section</span>
+  <p>Tres direcciones de diseno comparadas con la actual</p>
+</div>
+
+<div class="comparison">
+  <!-- Current -->
+  <div class="card">
+    <div class="card-label current">ACTUAL</div>
+    <div class="hero-current">
+      <div style="flex:1">
+        <h1>Donde los estudiantes<br>se conectan, aprenden<br>y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria.</p>
+        <div class="cta">
+          <button class="primary">Comenzar gratis</button>
+          <button class="secondary">Continuar con Google</button>
+        </div>
+      </div>
+      <div class="video-box">&#9654; Ver tour</div>
+    </div>
+  </div>
+
+  <!-- Alt A — Editorial dark -->
+  <div class="card">
+    <div class="card-label alt">OPCION A — Editorial oscuro</div>
+    <div class="hero-alt-a">
+      <div class="badge">Plataforma educativa chilena</div>
+      <h1>Donde los estudiantes se conectan, <em>aprenden</em> y crecen</h1>
+      <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+      <div class="cta">
+        <button class="primary">Comenzar gratis</button>
+        <button class="secondary">Ver tour de 2 min</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="comparison">
+  <!-- Alt B — Warm minimal -->
+  <div class="card">
+    <div class="card-label alt">OPCION B — Calido minimal</div>
+    <div class="hero-alt-b">
+      <div style="flex:1">
+        <h1>Donde los estudiantes se <strong>conectan</strong>, aprenden y crecen</h1>
+        <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+        <div class="cta">
+          <button class="primary">Comenzar gratis</button>
+          <button class="secondary">Ver planes</button>
+        </div>
+        <div class="social-proof">
+          <div class="avatars">
+            <span>C</span><span>M</span><span>A</span><span>J</span>
+          </div>
+          <span>+2,000 estudiantes activos</span>
+        </div>
+      </div>
+      <div class="right-panel">
+        <div class="app-preview">
+          <div class="preview-header">
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+            <div class="preview-dot"></div>
+            <span style="margin-left: 8px;">Dashboard</span>
+          </div>
+          <div class="preview-item">
+            <div class="preview-icon" style="background: #e8f5e9;">&#128218;</div>
+            <div><strong>Calculo II</strong><br><span style="color: #999; font-size: 11px;">3 documentos nuevos</span></div>
+          </div>
+          <div class="preview-item">
+            <div class="preview-icon" style="background: #fff3e0;">&#128172;</div>
+            <div><strong>Grupo de Estudio</strong><br><span style="color: #999; font-size: 11px;">Maria: "Alguien para repasar?"</span></div>
+          </div>
+          <div class="preview-item" style="border: none;">
+            <div class="preview-icon" style="background: #fce4ec;">&#127942;</div>
+            <div><strong>Racha de 7 dias</strong><br><span style="color: #999; font-size: 11px;">Sigue asi!</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alt C — Coral centered -->
+  <div class="card">
+    <div class="card-label alt">OPCION C — Coral centrado</div>
+    <div class="hero-alt-c">
+      <h1>Donde los estudiantes se <span class="highlight">conectan</span>, aprenden y crecen</h1>
+      <p>La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad.</p>
+      <div class="cta">
+        <button class="primary">Comenzar gratis</button>
+        <button class="secondary">Ver tour</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- FEATURES -->
+<!-- ======================================================= -->
+<div class="section-label">
+  CAMBIO 4
+  <span>Seccion Features</span>
+  <p>De emojis centrados a bento grid con personalidad</p>
+</div>
+
+<div class="comparison">
+  <div class="card">
+    <div class="card-label current">ACTUAL</div>
+    <div class="features-current">
+      <h2>Todo lo que necesitas en un solo lugar</h2>
+      <div class="grid">
+        <div class="item">
+          <div class="emoji">&#128218;</div>
+          <h3>Estudia Mejor</h3>
+          <p>Guias de estudio, quizzes adaptativos, flashcards con repeticion espaciada.</p>
+        </div>
+        <div class="item">
+          <div class="emoji">&#128101;</div>
+          <h3>Conecta</h3>
+          <p>Comunidades por materia, mensajeria, mentorias, eventos de estudio.</p>
+        </div>
+        <div class="item">
+          <div class="emoji">&#128188;</div>
+          <h3>Crece</h3>
+          <p>Bolsa de empleo, CV profesional, tutorias, cursos de desarrollo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label alt">ALTERNATIVA — Bento Grid</div>
+    <div class="features-alt">
+      <h2>Todo lo que necesitas en un solo lugar</h2>
+      <div class="bento">
+        <div class="bento-item large">
+          <div class="bento-icon" style="background: #e8f5e9;">&#128218;</div>
+          <h3>Estudia Mejor</h3>
+          <p>Guias de estudio, quizzes adaptativos, flashcards con repeticion espaciada y herramientas interactivas.</p>
+          <div class="mock-ui">
+            <div class="mock-tag">Flashcards</div>
+            <div class="mock-tag">Quiz adaptativo</div>
+            <div class="mock-tag">Resumen IA</div>
+            <div class="mock-tag">Predictor</div>
+          </div>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon" style="background: #fff3e0;">&#128101;</div>
+          <h3>Conecta</h3>
+          <p>Comunidades, mensajeria, mentorias y eventos.</p>
+        </div>
+        <div class="bento-item">
+          <div class="bento-icon" style="background: #fce4ec;">&#128188;</div>
+          <h3>Crece</h3>
+          <p>Bolsa de empleo, CV y desarrollo profesional.</p>
+        </div>
+        <div class="bento-item large" style="grid-column: 2 / 4;">
+          <div class="bento-icon" style="background: #e3f2fd;">&#127891;</div>
+          <h3>30+ Cursos gratuitos de desarrollo integral</h3>
+          <p>Liderazgo, comunicacion, finanzas personales, productividad y mas. Preparate para la vida real.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================================================= -->
+<!-- PRICING -->
+<!-- ======================================================= -->
+<div class="section-label">
+  CAMBIO 5
+  <span>Pricing</span>
+  <p>Jerarquia visual clara que guie la decision</p>
+</div>
+
+<div class="comparison">
+  <div class="card">
+    <div class="card-label current">ACTUAL</div>
+    <div class="pricing-current">
+      <h2>Planes para cada estudiante</h2>
+      <div class="grid">
+        <div class="plan">
+          <div class="name" style="color: #98A2B3;">BASICO</div>
+          <div class="price">$0</div>
+          <div class="period">Siempre gratis</div>
+          <ul><li>&#10003; 2 asignaturas</li><li>&#10003; Red social</li><li>&#10003; 300 MB</li></ul>
+          <button style="border: 1px solid #98A2B3; background: transparent; color: #98A2B3;">Comenzar gratis</button>
+        </div>
+        <div class="plan popular">
+          <div class="badge-pop">MAS POPULAR</div>
+          <div class="name" style="color: #2563EB;">PRO</div>
+          <div class="price">$5</div>
+          <div class="period">USD/mes</div>
+          <ul><li>&#10003; 8 asignaturas</li><li>&#10003; Herramientas avanzadas</li><li>&#10003; 1 GB</li></ul>
+          <button style="border: none; background: #2563EB; color: #fff;">Elegir Pro</button>
+        </div>
+        <div class="plan">
+          <div class="name" style="color: #7C3AED;">MAX</div>
+          <div class="price">$13</div>
+          <div class="period">USD/mes</div>
+          <ul><li>&#10003; Todo ilimitado</li><li>&#10003; Grabar clases</li><li>&#10003; 3 GB</li></ul>
+          <button style="border: 1px solid #7C3AED; background: transparent; color: #7C3AED;">Elegir Max</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label alt">ALTERNATIVA — Contraste dramatico</div>
+    <div class="pricing-alt">
+      <h2>Planes para cada estudiante</h2>
+      <div class="subtitle">Cancela cuando quieras. Sin compromisos.</div>
+      <div class="grid">
+        <div class="plan">
+          <div class="name">BASICO</div>
+          <div class="price">$0</div>
+          <div class="period">Siempre gratis</div>
+          <ul><li>&#10003; 2 asignaturas</li><li>&#10003; Red social</li><li>&#10003; 300 MB</li></ul>
+          <button>Comenzar gratis</button>
+        </div>
+        <div class="plan featured">
+          <div class="name">PRO</div>
+          <div class="price">$5</div>
+          <div class="period">USD/mes</div>
+          <ul><li>&#10003; 8 asignaturas</li><li>&#10003; Herramientas avanzadas</li><li>&#10003; Predictor de examen</li><li>&#10003; 1 GB</li></ul>
+          <button>Elegir Pro</button>
+        </div>
+        <div class="plan">
+          <div class="name">MAX</div>
+          <div class="price">$13</div>
+          <div class="period">USD/mes</div>
+          <ul><li>&#10003; Todo ilimitado</li><li>&#10003; Grabar clases</li><li>&#10003; 3 GB</li></ul>
+          <button>Elegir Max</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="spacer"></div>
+
+</body>
+</html>

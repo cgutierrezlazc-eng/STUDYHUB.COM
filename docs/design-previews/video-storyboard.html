@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku - Video Storyboard (2 min tour)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sereno-bg: #F8FAFC;
+  --sereno-dark: #1E293B;
+  --sereno-blue: #3B82F6;
+  --sereno-indigo: #6366F1;
+  --sereno-purple: #8B5CF6;
+  --sereno-cyan: #06B6D4;
+  --sereno-teal: #14B8A6;
+  --sereno-green: #22C55E;
+  --sereno-orange: #F97316;
+  --sereno-pink: #EC4899;
+  --sereno-red: #EF4444;
+  --sereno-yellow: #EAB308;
+  --sereno-gray: #64748B;
+  --sereno-light: #E2E8F0;
+  --sereno-card: #FFFFFF;
+  --sereno-border: #E2E8F0;
+  --gradient-brand: linear-gradient(135deg, #3B82F6, #6366F1, #8B5CF6);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #0F172A; color: #fff; }
+
+/* Instructions Panel */
+.instructions {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 24px 32px;
+  background: #1E293B;
+  border-bottom: 1px solid #334155;
+}
+.instructions h2 { font-size: 16px; font-weight: 700; color: #F97316; margin-bottom: 12px; letter-spacing: 0.05em; }
+.instructions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.instructions ol, .instructions ul { padding-left: 20px; font-size: 13px; line-height: 1.8; color: #94A3B8; }
+.instructions li { margin-bottom: 2px; }
+.instructions strong { color: #CBD5E1; }
+
+/* Navigation */
+.nav-bar {
+  position: sticky; top: 0; z-index: 1000;
+  background: #0F172A;
+  border-bottom: 1px solid #1E293B;
+  padding: 12px 32px;
+  display: flex; align-items: center; gap: 12px;
+  max-width: 1920px; margin: 0 auto;
+}
+.nav-bar .brand { font-weight: 800; font-size: 18px; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-right: 16px; }
+.slide-btn {
+  width: 36px; height: 36px; border-radius: 8px; border: 1px solid #334155;
+  background: transparent; color: #94A3B8; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.slide-btn:hover { background: #1E293B; color: #fff; }
+.slide-btn.active { background: var(--sereno-blue); color: #fff; border-color: var(--sereno-blue); }
+.nav-controls { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.play-btn {
+  padding: 8px 20px; border-radius: 8px; border: none;
+  background: var(--sereno-green); color: #fff; font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;
+}
+.play-btn:hover { opacity: 0.9; }
+.play-btn.playing { background: var(--sereno-orange); }
+.timer-display { font-size: 13px; color: #64748B; font-variant-numeric: tabular-nums; min-width: 40px; }
+.fullscreen-btn {
+  padding: 8px 16px; border-radius: 8px; border: 1px solid #334155;
+  background: transparent; color: #94A3B8; font-size: 13px; cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+.fullscreen-btn:hover { background: #1E293B; color: #fff; }
+
+/* Slide Container */
+.slides-container {
+  max-width: 1920px; margin: 24px auto; position: relative;
+}
+.slide {
+  display: none; width: 1920px; height: 1080px; position: relative;
+  overflow: hidden; margin: 0 auto; border-radius: 12px;
+  box-shadow: 0 0 60px rgba(0,0,0,0.5);
+}
+.slide.active { display: block; }
+
+/* Slide Overlay Title */
+.slide-overlay {
+  position: absolute; bottom: 32px; left: 32px; z-index: 50;
+  background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(12px);
+  padding: 12px 24px; border-radius: 50px;
+  font-size: 16px; font-weight: 600; color: #fff;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Slide Number */
+.slide-number {
+  position: absolute; bottom: 32px; right: 32px; z-index: 50;
+  background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px);
+  padding: 8px 16px; border-radius: 50px;
+  font-size: 13px; font-weight: 600; color: #94A3B8;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ============ SLIDE SPECIFIC STYLES ============ */
+
+/* Slide 1: Intro */
+.s1 { background: #1E293B; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.s1 .logo-text {
+  font-size: 120px; font-weight: 900; letter-spacing: -3px;
+  background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 70%, #EC4899 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: fadeUp 1.5s ease-out;
+}
+.s1 .subtitle {
+  font-size: 28px; color: #94A3B8; font-weight: 400; margin-top: 16px;
+  letter-spacing: 4px; text-transform: uppercase;
+  animation: fadeUp 1.5s ease-out 0.3s both;
+}
+.s1 .glow {
+  position: absolute; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide 2: Landing */
+.s2 { background: #F8FAFC; }
+.s2-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 48px; background: #fff; border-bottom: 1px solid #E2E8F0;
+}
+.s2-nav .logo { font-size: 24px; font-weight: 800; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.s2-nav-links { display: flex; gap: 32px; }
+.s2-nav-links span { font-size: 14px; color: #64748B; font-weight: 500; }
+.s2-nav-cta { padding: 10px 24px; background: var(--sereno-blue); color: #fff; border-radius: 10px; font-size: 14px; font-weight: 600; }
+.s2-hero {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 48px 40px;
+  background: linear-gradient(180deg, #F8FAFC 0%, #EEF2FF 100%);
+  height: calc(1080px - 60px);
+}
+.s2-hero h1 {
+  font-size: 56px; font-weight: 800; line-height: 1.15; max-width: 900px;
+  color: #1E293B; letter-spacing: -1px;
+}
+.s2-hero h1 em { font-style: normal; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.s2-hero p { font-size: 20px; color: #64748B; margin-top: 20px; max-width: 600px; line-height: 1.6; }
+.s2-hero-buttons { display: flex; gap: 16px; margin-top: 36px; }
+.btn-primary { padding: 16px 36px; background: var(--sereno-blue); color: #fff; border-radius: 12px; font-size: 16px; font-weight: 600; }
+.btn-google { padding: 16px 36px; background: #fff; color: #1E293B; border-radius: 12px; font-size: 16px; font-weight: 600; border: 1px solid #E2E8F0; display: flex; align-items: center; gap: 10px; }
+.s2-video {
+  width: 800px; height: 440px; border-radius: 16px; margin-top: 48px;
+  background: linear-gradient(135deg, #1E293B, #334155);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.12);
+}
+.s2-play-icon { width: 72px; height: 72px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+.s2-stats { display: flex; gap: 64px; margin-top: 48px; }
+.s2-stat { text-align: center; }
+.s2-stat strong { font-size: 32px; font-weight: 800; color: var(--sereno-blue); display: block; }
+.s2-stat span { font-size: 13px; color: #64748B; }
+
+/* Slide 3: Registro */
+.s3 { background: linear-gradient(135deg, #EEF2FF, #F8FAFC); display: flex; align-items: center; justify-content: center; }
+.s3-card {
+  width: 520px; background: #fff; border-radius: 24px; padding: 48px;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.08);
+}
+.s3-steps { display: flex; gap: 8px; margin-bottom: 32px; }
+.s3-step {
+  flex: 1; height: 4px; border-radius: 2px; background: #E2E8F0;
+}
+.s3-step.done { background: var(--sereno-blue); }
+.s3-step.current { background: var(--sereno-indigo); }
+.s3-card h2 { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 8px; }
+.s3-card p { font-size: 14px; color: #64748B; margin-bottom: 28px; }
+.s3-field { margin-bottom: 20px; }
+.s3-field label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+.s3-input {
+  width: 100%; padding: 14px 16px; border-radius: 10px; border: 1px solid #E2E8F0;
+  font-size: 15px; color: #1E293B; background: #F8FAFC;
+  font-family: 'Inter', sans-serif;
+}
+.s3-input.filled { background: #fff; border-color: #CBD5E1; }
+.s3-select { display: flex; align-items: center; gap: 8px; }
+.s3-flag { font-size: 24px; }
+.s3-btn {
+  width: 100%; padding: 16px; border-radius: 12px; background: var(--sereno-blue);
+  color: #fff; font-size: 16px; font-weight: 600; text-align: center; margin-top: 8px;
+}
+.s3-or { text-align: center; color: #94A3B8; font-size: 13px; margin: 16px 0; }
+.s3-google {
+  width: 100%; padding: 14px; border-radius: 12px; background: #fff;
+  border: 1px solid #E2E8F0; font-size: 15px; font-weight: 500; color: #1E293B; text-align: center;
+}
+
+/* Slide 4: Feed */
+.s4 { background: #F1F5F9; display: flex; }
+.s4-sidebar {
+  width: 260px; background: #fff; border-right: 1px solid #E2E8F0; padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.s4-sidebar-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px;
+  font-size: 14px; color: #475569; font-weight: 500;
+}
+.s4-sidebar-item.active { background: #EEF2FF; color: var(--sereno-indigo); font-weight: 600; }
+.s4-sidebar-icon { width: 20px; text-align: center; }
+.s4-topbar {
+  position: absolute; top: 0; left: 260px; right: 0; height: 64px;
+  background: #fff; border-bottom: 1px solid #E2E8F0;
+  display: flex; align-items: center; padding: 0 24px; justify-content: space-between;
+}
+.s4-topbar .logo { font-size: 20px; font-weight: 800; background: var(--gradient-brand); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.s4-search {
+  width: 400px; padding: 10px 16px; border-radius: 10px; background: #F1F5F9;
+  font-size: 14px; color: #94A3B8; border: 1px solid #E2E8F0;
+}
+.s4-icons { display: flex; gap: 20px; color: #64748B; font-size: 18px; }
+.s4-main {
+  flex: 1; margin-left: 0; padding: 84px 24px 24px;
+  display: flex; gap: 24px; overflow: hidden;
+}
+.s4-feed { flex: 1; max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.s4-post {
+  background: #fff; border-radius: 16px; padding: 20px;
+  border: 1px solid #E2E8F0;
+}
+.s4-post-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.s4-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sereno-blue), var(--sereno-purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 14px;
+}
+.s4-post-meta { flex: 1; }
+.s4-post-name { font-size: 14px; font-weight: 600; color: #1E293B; }
+.s4-post-info { font-size: 12px; color: #94A3B8; }
+.s4-post-text { font-size: 14px; color: #334155; line-height: 1.6; margin-bottom: 12px; }
+.s4-post-reactions { display: flex; gap: 16px; }
+.s4-reaction { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #64748B; }
+.s4-right {
+  width: 300px; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0;
+}
+.s4-widget {
+  background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+}
+.s4-widget h3 { font-size: 14px; font-weight: 700; color: #1E293B; margin-bottom: 12px; }
+.s4-streak { display: flex; align-items: center; gap: 12px; }
+.s4-streak-num { font-size: 40px; font-weight: 800; color: var(--sereno-orange); }
+.s4-streak-text { font-size: 13px; color: #64748B; }
+
+/* Slide 5: Asignatura */
+.s5 { background: #F8FAFC; display: flex; flex-direction: column; }
+.s5-header {
+  height: 64px; background: #fff; border-bottom: 1px solid #E2E8F0;
+  display: flex; align-items: center; padding: 0 24px; gap: 16px;
+}
+.s5-back { font-size: 18px; color: #64748B; }
+.s5-title { font-size: 18px; font-weight: 700; color: #1E293B; }
+.s5-avg {
+  margin-left: auto; padding: 8px 20px; border-radius: 50px;
+  background: linear-gradient(135deg, var(--sereno-green), var(--sereno-teal));
+  color: #fff; font-size: 14px; font-weight: 700;
+}
+.s5-tabs {
+  display: flex; background: #fff; border-bottom: 1px solid #E2E8F0; padding: 0 24px;
+}
+.s5-tab {
+  padding: 14px 20px; font-size: 14px; font-weight: 500; color: #64748B;
+  border-bottom: 2px solid transparent;
+}
+.s5-tab.active { color: var(--sereno-blue); border-bottom-color: var(--sereno-blue); font-weight: 600; }
+.s5-body { flex: 1; display: flex; overflow: hidden; }
+.s5-chat {
+  flex: 1; display: flex; flex-direction: column; padding: 20px 24px;
+}
+.s5-messages { flex: 1; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+.s5-msg {
+  max-width: 70%; padding: 14px 18px; border-radius: 16px; font-size: 14px; line-height: 1.6;
+}
+.s5-msg.user {
+  align-self: flex-end; background: var(--sereno-blue); color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.s5-msg.ai {
+  align-self: flex-start; background: #fff; color: #334155;
+  border: 1px solid #E2E8F0; border-bottom-left-radius: 4px;
+}
+.s5-msg.ai .badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px;
+  font-weight: 600; background: #EEF2FF; color: var(--sereno-indigo); margin-bottom: 6px;
+}
+.s5-input-bar {
+  display: flex; gap: 12px; align-items: center; padding: 16px 0 0;
+  border-top: 1px solid #E2E8F0; margin-top: 16px;
+}
+.s5-input {
+  flex: 1; padding: 14px 16px; border-radius: 12px; border: 1px solid #E2E8F0;
+  font-size: 14px; background: #F8FAFC; color: #94A3B8;
+}
+.s5-socratic {
+  padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600;
+  background: #FEF3C7; color: #D97706; display: flex; align-items: center; gap: 6px;
+}
+.s5-scan-btn {
+  padding: 10px 16px; border-radius: 10px; background: var(--sereno-blue); color: #fff;
+  font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+}
+.s5-sidebar {
+  width: 320px; background: #fff; border-left: 1px solid #E2E8F0; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px; overflow: hidden;
+}
+.s5-doc {
+  padding: 12px; border-radius: 10px; border: 1px solid #E2E8F0;
+  display: flex; align-items: center; gap: 10px; font-size: 13px; color: #334155;
+}
+.s5-doc-icon { font-size: 20px; }
+
+/* Slide 6: Quiz + Flashcards */
+.s6 { background: #F1F5F9; display: flex; }
+.s6-left, .s6-right { flex: 1; padding: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.s6-left { background: #fff; }
+.s6-right { background: #F8FAFC; }
+.s6-quiz-card {
+  width: 100%; max-width: 700px; background: #fff; border-radius: 20px;
+  padding: 40px; border: 1px solid #E2E8F0;
+}
+.s6-quiz-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+.s6-quiz-progress { font-size: 13px; color: #64748B; font-weight: 600; }
+.s6-quiz-timer { font-size: 13px; color: var(--sereno-orange); font-weight: 600; }
+.s6-quiz-q { font-size: 20px; font-weight: 600; color: #1E293B; margin-bottom: 28px; line-height: 1.5; }
+.s6-option {
+  padding: 16px 20px; border-radius: 12px; border: 2px solid #E2E8F0;
+  margin-bottom: 12px; font-size: 15px; color: #334155; display: flex; align-items: center; gap: 12px;
+}
+.s6-option.selected { border-color: var(--sereno-blue); background: #EFF6FF; }
+.s6-option.correct { border-color: var(--sereno-green); background: #F0FDF4; }
+.s6-option-letter {
+  width: 28px; height: 28px; border-radius: 8px; background: #F1F5F9;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #64748B;
+}
+.s6-option.selected .s6-option-letter { background: var(--sereno-blue); color: #fff; }
+.s6-flash-card {
+  width: 100%; max-width: 500px; height: 320px; border-radius: 20px;
+  background: #fff; padding: 40px; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  border: 1px solid #E2E8F0; box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.s6-flash-label { font-size: 12px; font-weight: 700; color: var(--sereno-purple); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 16px; }
+.s6-flash-term { font-size: 28px; font-weight: 700; color: #1E293B; margin-bottom: 16px; }
+.s6-flash-def { font-size: 16px; color: #64748B; line-height: 1.6; }
+.s6-fsrs { display: flex; gap: 10px; margin-top: 24px; }
+.s6-fsrs-btn {
+  padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #fff;
+}
+
+/* Slide 7: Comunidades */
+.s7 { background: #F8FAFC; padding: 48px; display: flex; flex-direction: column; }
+.s7-header { margin-bottom: 32px; }
+.s7-header h1 { font-size: 32px; font-weight: 800; color: #1E293B; }
+.s7-header p { font-size: 16px; color: #64748B; margin-top: 8px; }
+.s7-filters { display: flex; gap: 10px; margin-bottom: 28px; }
+.s7-filter {
+  padding: 8px 18px; border-radius: 50px; font-size: 13px; font-weight: 500;
+  background: #fff; color: #64748B; border: 1px solid #E2E8F0;
+}
+.s7-filter.active { background: var(--sereno-blue); color: #fff; border-color: var(--sereno-blue); }
+.s7-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; flex: 1; overflow: hidden; }
+.s7-card {
+  background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #E2E8F0;
+  display: flex; flex-direction: column;
+}
+.s7-card-emoji { font-size: 36px; margin-bottom: 12px; }
+.s7-card h3 { font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 6px; }
+.s7-card p { font-size: 13px; color: #64748B; margin-bottom: 12px; flex: 1; }
+.s7-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.s7-members { font-size: 12px; color: #94A3B8; }
+.s7-join { padding: 6px 16px; border-radius: 8px; background: #EEF2FF; color: var(--sereno-indigo); font-size: 12px; font-weight: 600; }
+
+/* Slide 8: Mensajes */
+.s8 { background: #F1F5F9; display: flex; }
+.s8-list {
+  width: 380px; background: #fff; border-right: 1px solid #E2E8F0;
+  display: flex; flex-direction: column;
+}
+.s8-list-header { padding: 20px; border-bottom: 1px solid #E2E8F0; }
+.s8-list-header h2 { font-size: 20px; font-weight: 700; color: #1E293B; }
+.s8-list-search {
+  margin: 12px 20px; padding: 10px 14px; border-radius: 10px;
+  background: #F1F5F9; border: 1px solid #E2E8F0; font-size: 14px; color: #94A3B8;
+}
+.s8-convo {
+  display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+  border-bottom: 1px solid #F1F5F9;
+}
+.s8-convo.active { background: #EEF2FF; }
+.s8-convo-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 15px; color: #fff; flex-shrink: 0;
+}
+.s8-convo-text { flex: 1; overflow: hidden; }
+.s8-convo-name { font-size: 14px; font-weight: 600; color: #1E293B; }
+.s8-convo-last { font-size: 13px; color: #94A3B8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.s8-convo-time { font-size: 11px; color: #94A3B8; }
+.s8-chat {
+  flex: 1; display: flex; flex-direction: column;
+}
+.s8-chat-header {
+  padding: 16px 24px; background: #fff; border-bottom: 1px solid #E2E8F0;
+  display: flex; align-items: center; gap: 12px;
+}
+.s8-chat-name { font-size: 16px; font-weight: 600; color: #1E293B; }
+.s8-chat-status { font-size: 12px; color: var(--sereno-green); }
+.s8-translate-btn {
+  margin-left: auto; padding: 6px 14px; border-radius: 8px;
+  background: #F0FDF4; color: var(--sereno-green); font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.s8-chat-body { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+.s8-bubble {
+  max-width: 60%; padding: 14px 18px; border-radius: 16px; font-size: 14px; line-height: 1.6;
+}
+.s8-bubble.sent { align-self: flex-end; background: var(--sereno-blue); color: #fff; border-bottom-right-radius: 4px; }
+.s8-bubble.received { align-self: flex-start; background: #fff; color: #334155; border: 1px solid #E2E8F0; border-bottom-left-radius: 4px; }
+.s8-bubble .translated { font-size: 12px; color: #94A3B8; margin-top: 6px; font-style: italic; border-top: 1px solid #E2E8F0; padding-top: 6px; }
+.s8-bubble.sent .translated { color: rgba(255,255,255,0.7); border-top-color: rgba(255,255,255,0.2); }
+.s8-audio {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; background: rgba(255,255,255,0.15); border-radius: 10px;
+  margin-top: 4px;
+}
+.s8-audio-wave { display: flex; gap: 2px; align-items: center; }
+.s8-audio-bar { width: 3px; border-radius: 2px; background: rgba(255,255,255,0.6); }
+
+/* Slide 9: Oportunidades */
+.s9 { background: #F8FAFC; display: flex; flex-direction: column; }
+.s9-header { padding: 32px 48px 0; }
+.s9-header h1 { font-size: 32px; font-weight: 800; color: #1E293B; }
+.s9-tabs { display: flex; gap: 8px; margin-top: 16px; }
+.s9-tab {
+  padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 500;
+  background: #fff; color: #64748B; border: 1px solid #E2E8F0;
+}
+.s9-tab.active { background: var(--sereno-blue); color: #fff; border-color: var(--sereno-blue); }
+.s9-body { flex: 1; padding: 24px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; overflow: hidden; }
+.s9-jobs { display: flex; flex-direction: column; gap: 16px; }
+.s9-jobs h2 { font-size: 18px; font-weight: 700; color: #1E293B; margin-bottom: 4px; }
+.s9-job {
+  background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+}
+.s9-job-top { display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; }
+.s9-job h3 { font-size: 16px; font-weight: 600; color: #1E293B; }
+.s9-job-company { font-size: 13px; color: #64748B; }
+.s9-badge {
+  padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+}
+.s9-badge.remote { background: #F0FDF4; color: var(--sereno-green); }
+.s9-badge.hybrid { background: #FEF3C7; color: #D97706; }
+.s9-job-salary { font-size: 14px; font-weight: 700; color: var(--sereno-blue); margin-top: 8px; }
+.s9-job-tags { display: flex; gap: 6px; margin-top: 10px; }
+.s9-tag { padding: 4px 10px; border-radius: 6px; background: #F1F5F9; font-size: 11px; color: #64748B; }
+.s9-tutors { display: flex; flex-direction: column; gap: 16px; }
+.s9-tutors h2 { font-size: 18px; font-weight: 700; color: #1E293B; margin-bottom: 4px; }
+.s9-tutor {
+  background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+  display: flex; gap: 16px;
+}
+.s9-tutor-avatar {
+  width: 56px; height: 56px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.s9-tutor-info { flex: 1; }
+.s9-tutor-name { font-size: 15px; font-weight: 600; color: #1E293B; }
+.s9-tutor-subject { font-size: 13px; color: #64748B; }
+.s9-tutor-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; color: #EAB308; margin-top: 6px; }
+.s9-tutor-price { font-size: 14px; font-weight: 700; color: var(--sereno-blue); margin-top: 4px; }
+
+/* Slide 10: Cursos */
+.s10 { background: #F8FAFC; padding: 48px; display: flex; flex-direction: column; }
+.s10-header { margin-bottom: 28px; }
+.s10-header h1 { font-size: 32px; font-weight: 800; color: #1E293B; }
+.s10-header p { font-size: 16px; color: #64748B; margin-top: 8px; }
+.s10-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; flex: 1; overflow: hidden; }
+.s10-course {
+  background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #E2E8F0;
+  display: flex; flex-direction: column;
+}
+.s10-course-emoji { font-size: 32px; margin-bottom: 10px; }
+.s10-course h3 { font-size: 15px; font-weight: 700; color: #1E293B; margin-bottom: 4px; }
+.s10-course p { font-size: 12px; color: #64748B; margin-bottom: 12px; }
+.s10-progress-bar { height: 6px; border-radius: 3px; background: #E2E8F0; margin-bottom: 8px; }
+.s10-progress-fill { height: 100%; border-radius: 3px; background: var(--sereno-green); }
+.s10-progress-text { font-size: 11px; color: #94A3B8; }
+.s10-cert { display: flex; align-items: center; gap: 6px; margin-top: auto; padding-top: 10px; font-size: 11px; color: var(--sereno-indigo); font-weight: 600; }
+
+/* Slide 11: Dashboard */
+.s11 { background: #F8FAFC; padding: 32px 48px; display: flex; flex-direction: column; gap: 24px; }
+.s11-header h1 { font-size: 28px; font-weight: 800; color: #1E293B; }
+.s11-header p { font-size: 15px; color: #64748B; }
+.s11-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.s11-stat {
+  background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #E2E8F0;
+}
+.s11-stat-icon { font-size: 28px; margin-bottom: 10px; }
+.s11-stat-value { font-size: 32px; font-weight: 800; color: #1E293B; }
+.s11-stat-label { font-size: 13px; color: #64748B; margin-top: 4px; }
+.s11-body { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; flex: 1; overflow: hidden; }
+.s11-chart {
+  background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #E2E8F0;
+}
+.s11-chart h3 { font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 16px; }
+.s11-bars { display: flex; align-items: flex-end; gap: 12px; height: 200px; }
+.s11-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.s11-bar { width: 100%; border-radius: 6px 6px 0 0; }
+.s11-bar-label { font-size: 11px; color: #94A3B8; }
+.s11-right-col { display: flex; flex-direction: column; gap: 16px; }
+.s11-league {
+  background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+}
+.s11-league h3 { font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 12px; }
+.s11-league-row {
+  display: flex; align-items: center; gap: 10px; padding: 8px 0;
+  border-bottom: 1px solid #F1F5F9; font-size: 14px;
+}
+.s11-league-rank { font-weight: 700; color: #64748B; width: 24px; }
+.s11-league-name { flex: 1; font-weight: 500; color: #1E293B; }
+.s11-league-xp { font-weight: 700; color: var(--sereno-blue); }
+.s11-badges {
+  background: #fff; border-radius: 16px; padding: 20px; border: 1px solid #E2E8F0;
+}
+.s11-badges h3 { font-size: 16px; font-weight: 700; color: #1E293B; margin-bottom: 12px; }
+.s11-badges-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.s11-badge-item {
+  width: 100%; aspect-ratio: 1; border-radius: 12px; background: #F8FAFC;
+  display: flex; align-items: center; justify-content: center; font-size: 28px;
+}
+
+/* Slide 12: Cierre */
+.s12 { background: #1E293B; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.s12 .logo-text {
+  font-size: 100px; font-weight: 900; letter-spacing: -2px;
+  background: linear-gradient(135deg, #3B82F6 0%, #6366F1 40%, #8B5CF6 70%, #EC4899 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.s12 .cta { font-size: 28px; color: #CBD5E1; margin-top: 16px; font-weight: 500; }
+.s12 .url { font-size: 20px; color: var(--sereno-blue); margin-top: 12px; font-weight: 600; }
+.s12 .unis {
+  display: flex; gap: 24px; margin-top: 48px; flex-wrap: wrap; justify-content: center;
+}
+.s12 .uni-chip {
+  padding: 8px 20px; border-radius: 50px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1); font-size: 13px; color: #94A3B8; font-weight: 500;
+}
+.s12 .footer { margin-top: 40px; font-size: 18px; color: #64748B; }
+.s12 .glow {
+  position: absolute; width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(99,102,241,0.12), transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+}
+</style>
+</head>
+<body>
+
+<!-- Instructions -->
+<div class="instructions">
+  <h2>INSTRUCCIONES PARA CREAR EL VIDEO</h2>
+  <div class="instructions-grid">
+    <div>
+      <ol>
+        <li>Usa <strong>OBS Studio</strong> (gratis) o <strong>QuickTime Player</strong> para grabar pantalla</li>
+        <li>Pon el navegador en <strong>pantalla completa (F11)</strong></li>
+        <li>Presiona <strong>'Auto Play'</strong> &mdash; las diapositivas cambian cada 5 segundos</li>
+        <li>Graba la pantalla completa</li>
+        <li>Opcional: agrega <strong>musica de fondo</strong> en CapCut o iMovie</li>
+        <li>Exporta a <strong>1080p MP4</strong></li>
+      </ol>
+    </div>
+    <div>
+      <strong style="color:#CBD5E1; font-size:14px;">ALTERNATIVAS:</strong>
+      <ul style="margin-top:8px;">
+        <li><strong>Canva:</strong> Importa cada slide como imagen, agrega transiciones y musica</li>
+        <li><strong>CapCut:</strong> Editor de video gratuito, perfecto para este tipo de tours</li>
+        <li><strong>Loom:</strong> Graba tu pantalla con narracion en vivo</li>
+        <li><strong>iMovie:</strong> Ya instalado en tu Mac</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav-bar" id="navbar">
+  <span class="brand">Conniku</span>
+  <button class="slide-btn active" data-slide="1">1</button>
+  <button class="slide-btn" data-slide="2">2</button>
+  <button class="slide-btn" data-slide="3">3</button>
+  <button class="slide-btn" data-slide="4">4</button>
+  <button class="slide-btn" data-slide="5">5</button>
+  <button class="slide-btn" data-slide="6">6</button>
+  <button class="slide-btn" data-slide="7">7</button>
+  <button class="slide-btn" data-slide="8">8</button>
+  <button class="slide-btn" data-slide="9">9</button>
+  <button class="slide-btn" data-slide="10">10</button>
+  <button class="slide-btn" data-slide="11">11</button>
+  <button class="slide-btn" data-slide="12">12</button>
+  <div class="nav-controls">
+    <span class="timer-display" id="timer">5s</span>
+    <button class="play-btn" id="playBtn" onclick="toggleAutoPlay()">&#9654; Auto Play</button>
+    <button class="fullscreen-btn" onclick="goFullscreen()">Pantalla completa</button>
+  </div>
+</div>
+
+<!-- Slides -->
+<div class="slides-container" id="slidesContainer">
+
+  <!-- SLIDE 1: INTRO -->
+  <div class="slide s1 active" id="slide-1">
+    <div class="glow"></div>
+    <div class="logo-text">Conniku</div>
+    <div class="subtitle">Student Community Platform</div>
+    <div class="slide-number">1/12</div>
+  </div>
+
+  <!-- SLIDE 2: LANDING PAGE -->
+  <div class="slide s2" id="slide-2">
+    <div class="s2-nav">
+      <span class="logo">Conniku</span>
+      <div class="s2-nav-links">
+        <span>Comunidades</span>
+        <span>Cursos</span>
+        <span>Oportunidades</span>
+        <span>Precios</span>
+      </div>
+      <span class="s2-nav-cta">Comenzar gratis</span>
+    </div>
+    <div class="s2-hero">
+      <h1>Donde los estudiantes se <em>conectan, aprenden y crecen</em></h1>
+      <p>La plataforma social academica que une a estudiantes universitarios de toda Latinoamerica. Estudia con IA, conecta con companeros y crece profesionalmente.</p>
+      <div class="s2-hero-buttons">
+        <span class="btn-primary">Comenzar gratis</span>
+        <span class="btn-google">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Continuar con Google
+        </span>
+      </div>
+      <div class="s2-video">
+        <div class="s2-play-icon">&#9654;</div>
+      </div>
+      <div class="s2-stats">
+        <div class="s2-stat"><strong>12,500+</strong><span>Estudiantes activos</span></div>
+        <div class="s2-stat"><strong>85+</strong><span>Universidades</span></div>
+        <div class="s2-stat"><strong>30</strong><span>Cursos gratuitos</span></div>
+        <div class="s2-stat"><strong>40</strong><span>Idiomas soportados</span></div>
+      </div>
+    </div>
+    <div class="slide-overlay">Landing Page - Primera impresion</div>
+    <div class="slide-number">2/12</div>
+  </div>
+
+  <!-- SLIDE 3: REGISTRO -->
+  <div class="slide s3" id="slide-3">
+    <div class="s3-card">
+      <div class="s3-steps">
+        <div class="s3-step done"></div>
+        <div class="s3-step current"></div>
+        <div class="s3-step"></div>
+        <div class="s3-step"></div>
+      </div>
+      <h2>Crea tu cuenta</h2>
+      <p>Paso 2 de 4 &mdash; Informacion personal</p>
+      <div class="s3-field">
+        <label>Nombre completo</label>
+        <input class="s3-input filled" type="text" value="Catalina Rojas Mendez" readonly>
+      </div>
+      <div class="s3-field">
+        <label>Correo electronico</label>
+        <input class="s3-input filled" type="email" value="catalina.rojas@uchile.cl" readonly>
+      </div>
+      <div class="s3-field">
+        <label>Pais</label>
+        <div class="s3-select">
+          <span class="s3-flag">&#127464;&#127473;</span>
+          <input class="s3-input filled" type="text" value="Chile" readonly style="flex:1">
+        </div>
+      </div>
+      <div class="s3-field">
+        <label>Universidad</label>
+        <input class="s3-input filled" type="text" value="Universidad de Chile" readonly>
+      </div>
+      <div class="s3-btn">Siguiente &rarr;</div>
+      <div class="s3-or">o</div>
+      <div class="s3-google">Continuar con Google</div>
+    </div>
+    <div class="slide-overlay">Registro en 4 simples pasos</div>
+    <div class="slide-number">3/12</div>
+  </div>
+
+  <!-- SLIDE 4: FEED SOCIAL -->
+  <div class="slide s4" id="slide-4">
+    <div class="s4-sidebar">
+      <div style="font-size:20px; font-weight:800; padding:8px 12px; margin-bottom:12px; background:var(--gradient-brand); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Conniku</div>
+      <div class="s4-sidebar-item active"><span class="s4-sidebar-icon">&#127968;</span> Feed</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#128218;</span> Mis Asignaturas</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#128101;</span> Comunidades</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#128172;</span> Mensajes</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#128188;</span> Oportunidades</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#127891;</span> Cursos</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#128202;</span> Dashboard</div>
+      <div class="s4-sidebar-item"><span class="s4-sidebar-icon">&#9881;&#65039;</span> Configuracion</div>
+    </div>
+    <div class="s4-topbar">
+      <span class="logo">Conniku</span>
+      <span class="s4-search">&#128269; Buscar estudiantes, comunidades, cursos...</span>
+      <div class="s4-icons">
+        <span>&#128276;</span>
+        <span style="width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #6366F1, #8B5CF6); display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:13px; font-weight:700;">CR</span>
+      </div>
+    </div>
+    <div style="display:flex; flex:1; margin-left:260px;">
+      <div class="s4-main">
+        <div class="s4-feed">
+          <!-- Post 1 -->
+          <div class="s4-post">
+            <div class="s4-post-header">
+              <div class="s4-avatar" style="background:linear-gradient(135deg, #F97316, #EF4444);">MV</div>
+              <div class="s4-post-meta">
+                <div class="s4-post-name">Martin Vargas</div>
+                <div class="s4-post-info">Ingenieria Civil &middot; PUC &middot; hace 2 horas</div>
+              </div>
+            </div>
+            <div class="s4-post-text">Acabo de terminar el quiz de Calculo III y subi mi promedio a 6.2! Las flashcards FSRS realmente funcionan. Alguien mas esta preparando el certamen de la proxima semana? &#128170;</div>
+            <div class="s4-post-reactions">
+              <span class="s4-reaction">&#128293; 24</span>
+              <span class="s4-reaction">&#128172; 8</span>
+              <span class="s4-reaction">&#128279; 3</span>
+            </div>
+          </div>
+          <!-- Post 2 -->
+          <div class="s4-post">
+            <div class="s4-post-header">
+              <div class="s4-avatar" style="background:linear-gradient(135deg, #22C55E, #14B8A6);">LP</div>
+              <div class="s4-post-meta">
+                <div class="s4-post-name">Lucia Perez</div>
+                <div class="s4-post-info">Psicologia &middot; UDP &middot; hace 5 horas</div>
+              </div>
+            </div>
+            <div class="s4-post-text">Comparti mis apuntes de Neurociencia Cognitiva en la comunidad. 47 paginas con esquemas y resumen. Espero que les sirva para el final! &#128214;&#10024;</div>
+            <div class="s4-post-reactions">
+              <span class="s4-reaction">&#10084;&#65039; 67</span>
+              <span class="s4-reaction">&#128172; 15</span>
+              <span class="s4-reaction">&#128278; 42</span>
+            </div>
+          </div>
+          <!-- Post 3 -->
+          <div class="s4-post">
+            <div class="s4-post-header">
+              <div class="s4-avatar" style="background:linear-gradient(135deg, #3B82F6, #6366F1);">AF</div>
+              <div class="s4-post-meta">
+                <div class="s4-post-name">Andres Figueroa</div>
+                <div class="s4-post-info">Informatica &middot; USACH &middot; hace 8 horas</div>
+              </div>
+            </div>
+            <div class="s4-post-text">Nuevo tutorial en la comunidad de Desarrollo Web: "Construye tu primer API con Node.js y PostgreSQL". Incluye video + codigo fuente. &#127775;</div>
+            <div class="s4-post-reactions">
+              <span class="s4-reaction">&#128640; 38</span>
+              <span class="s4-reaction">&#128172; 12</span>
+              <span class="s4-reaction">&#128278; 28</span>
+            </div>
+          </div>
+        </div>
+        <div class="s4-right">
+          <div class="s4-widget">
+            <h3>&#128293; Tu Racha</h3>
+            <div class="s4-streak">
+              <span class="s4-streak-num">14</span>
+              <div>
+                <div style="font-size:14px; font-weight:600; color:#1E293B;">dias seguidos</div>
+                <div class="s4-streak-text">Mejor racha: 21 dias</div>
+              </div>
+            </div>
+          </div>
+          <div class="s4-widget">
+            <h3>Sugerencias para ti</h3>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #EC4899, #8B5CF6); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700;">SP</div>
+                <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1E293B;">Sofia Prado</div><div style="font-size:11px; color:#94A3B8;">Medicina &middot; UCH</div></div>
+                <span style="font-size:12px; color:var(--sereno-blue); font-weight:600;">Seguir</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #06B6D4, #22C55E); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700;">DM</div>
+                <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1E293B;">Diego Munoz</div><div style="font-size:11px; color:#94A3B8;">Derecho &middot; PUC</div></div>
+                <span style="font-size:12px; color:var(--sereno-blue); font-weight:600;">Seguir</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #F97316, #EAB308); display:flex; align-items:center; justify-content:center; color:#fff; font-size:12px; font-weight:700;">VA</div>
+                <div style="flex:1;"><div style="font-size:13px; font-weight:600; color:#1E293B;">Valentina Araya</div><div style="font-size:11px; color:#94A3B8;">Diseno &middot; UAI</div></div>
+                <span style="font-size:12px; color:var(--sereno-blue); font-weight:600;">Seguir</span>
+              </div>
+            </div>
+          </div>
+          <div class="s4-widget">
+            <h3>&#127942; Liga Semanal</h3>
+            <div style="font-size:13px; color:#64748B;">Posicion: <strong style="color:#EAB308;">#3</strong> de 50</div>
+            <div style="font-size:12px; color:#94A3B8; margin-top:4px;">1,240 XP esta semana</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-overlay">Tu feed social academico</div>
+    <div class="slide-number">4/12</div>
+  </div>
+
+  <!-- SLIDE 5: ASIGNATURA -->
+  <div class="slide s5" id="slide-5">
+    <div class="s5-header">
+      <span class="s5-back">&larr;</span>
+      <span class="s5-title">Calculo III &mdash; MAT203</span>
+      <span style="font-size:13px; color:#64748B; margin-left:8px;">Prof. Dr. Roberto Sanchez</span>
+      <span class="s5-avg">Promedio: 7.8/10</span>
+    </div>
+    <div class="s5-tabs">
+      <span class="s5-tab">&#128196; Docs</span>
+      <span class="s5-tab active">&#128172; Chat IA</span>
+      <span class="s5-tab">&#128218; Guia</span>
+      <span class="s5-tab">&#10067; Quiz</span>
+      <span class="s5-tab">&#127183; Flashcards</span>
+      <span class="s5-tab">&#128308; Live</span>
+    </div>
+    <div class="s5-body">
+      <div class="s5-chat">
+        <div class="s5-messages">
+          <div class="s5-msg user">Necesito entender el teorema de Green. Puedes explicarmelo con un ejemplo practico?</div>
+          <div class="s5-msg ai">
+            <div class="badge">&#129302; Tutor IA &middot; Modo Socratico</div>
+            <div>Excelente pregunta! Antes de darte la respuesta directa, quiero que pienses en algo: &#127793;<br><br><strong>El Teorema de Green</strong> relaciona una integral de linea alrededor de una curva cerrada con una integral doble sobre la region que encierra.<br><br>Imagina que tienes un campo vectorial que representa el flujo de agua en un rio. Si caminas alrededor de una isla (curva cerrada), el Teorema de Green te dice que:<br><br><code style="background:#F1F5F9; padding:2px 6px; border-radius:4px;">&#8750;C (P dx + Q dy) = &#8748;D (&part;Q/&part;x - &part;P/&part;y) dA</code><br><br>&#129300; <strong>Pregunta para ti:</strong> Si el campo vectorial es F = (y, -x), que crees que representa geometricamente la integral sobre la region D?</div>
+          </div>
+          <div class="s5-msg user">Hmm... seria algo como la rotacion del campo?</div>
+          <div class="s5-msg ai">
+            <div>&#127775; <strong>Exacto!</strong> Estas en el camino correcto. Lo que calculas es el <em>rotacional</em> del campo, que mide cuanta rotacion hay en cada punto.<br><br>En este caso, &part;Q/&part;x - &part;P/&part;y = -1 - 1 = <strong>-2</strong><br><br>Esto significa que el campo rota en sentido horario en toda la region. La integral doble seria -2 veces el area de D. &#128161;</div>
+          </div>
+        </div>
+        <div class="s5-input-bar">
+          <span class="s5-input">Escribe tu pregunta sobre Calculo III...</span>
+          <span class="s5-socratic">&#129300; Socratico ON</span>
+          <span class="s5-scan-btn">&#128247; Escanear</span>
+        </div>
+      </div>
+      <div class="s5-sidebar">
+        <div style="font-size:15px; font-weight:700; color:#1E293B; margin-bottom:4px;">Documentos del curso</div>
+        <div class="s5-doc"><span class="s5-doc-icon">&#128196;</span> <div><div style="font-weight:600; color:#1E293B;">Guia_Certamen_2.pdf</div><div style="font-size:11px; color:#94A3B8;">Subido hace 3 dias</div></div></div>
+        <div class="s5-doc"><span class="s5-doc-icon">&#128202;</span> <div><div style="font-weight:600; color:#1E293B;">Resumen_Integrales.pdf</div><div style="font-size:11px; color:#94A3B8;">Subido hace 1 semana</div></div></div>
+        <div class="s5-doc"><span class="s5-doc-icon">&#127909;</span> <div><div style="font-weight:600; color:#1E293B;">Clase_15_Green.mp4</div><div style="font-size:11px; color:#94A3B8;">Subido hace 5 dias</div></div></div>
+        <div class="s5-doc"><span class="s5-doc-icon">&#128221;</span> <div><div style="font-weight:600; color:#1E293B;">Apuntes_Catalina.pdf</div><div style="font-size:11px; color:#94A3B8;">Compartido por companera</div></div></div>
+        <div style="border-top:1px solid #E2E8F0; padding-top:16px; margin-top:8px;">
+          <div style="font-size:15px; font-weight:700; color:#1E293B; margin-bottom:10px;">Progreso</div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px;"><span style="color:#475569;">Quizzes completados</span><span style="font-weight:700; color:#1E293B;">8/12</span></div>
+          <div style="height:6px; border-radius:3px; background:#E2E8F0;"><div style="width:67%; height:100%; border-radius:3px; background:var(--sereno-blue);"></div></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; margin-top:12px;"><span style="color:#475569;">Flashcards pendientes</span><span style="font-weight:700; color:#F97316;">23</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:6px; margin-top:12px;"><span style="color:#475569;">Horas de estudio</span><span style="font-weight:700; color:#1E293B;">14.5h</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-overlay">Estudia de forma interactiva</div>
+    <div class="slide-number">5/12</div>
+  </div>
+
+  <!-- SLIDE 6: QUIZ + FLASHCARDS -->
+  <div class="slide s6" id="slide-6">
+    <div class="s6-left">
+      <div style="font-size:13px; font-weight:700; color:var(--sereno-blue); text-transform:uppercase; letter-spacing:2px; margin-bottom:20px;">Quiz Adaptativo</div>
+      <div class="s6-quiz-card">
+        <div class="s6-quiz-header">
+          <span class="s6-quiz-progress">Pregunta 5 de 15</span>
+          <span class="s6-quiz-timer">&#9201; 02:34</span>
+        </div>
+        <div style="height:4px; border-radius:2px; background:#E2E8F0; margin-bottom:24px;"><div style="width:33%; height:100%; border-radius:2px; background:var(--sereno-blue);"></div></div>
+        <div class="s6-quiz-q">Segun la teoria del condicionamiento operante de Skinner, cual de los siguientes es un ejemplo de refuerzo negativo?</div>
+        <div class="s6-option">
+          <span class="s6-option-letter">A</span>
+          <span>Dar un dulce a un nino por portarse bien</span>
+        </div>
+        <div class="s6-option selected">
+          <span class="s6-option-letter">B</span>
+          <span>Quitar un ruido molesto cuando el sujeto realiza la conducta deseada</span>
+        </div>
+        <div class="s6-option">
+          <span class="s6-option-letter">C</span>
+          <span>Aplicar una descarga electrica tras una conducta no deseada</span>
+        </div>
+        <div class="s6-option">
+          <span class="s6-option-letter">D</span>
+          <span>Ignorar completamente la conducta del sujeto</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+          <span style="font-size:13px; color:#94A3B8;">Dificultad: Media</span>
+          <span style="padding:12px 28px; border-radius:10px; background:var(--sereno-blue); color:#fff; font-size:14px; font-weight:600;">Confirmar respuesta</span>
+        </div>
+      </div>
+    </div>
+    <div class="s6-right">
+      <div style="font-size:13px; font-weight:700; color:var(--sereno-purple); text-transform:uppercase; letter-spacing:2px; margin-bottom:20px;">Flashcards FSRS</div>
+      <div class="s6-flash-card">
+        <div class="s6-flash-label">Respuesta</div>
+        <div class="s6-flash-term">Sinapsis</div>
+        <div class="s6-flash-def">Es la union funcional entre dos neuronas donde se transmite el impulso nervioso. Puede ser electrica (gap junctions) o quimica (neurotransmisores).</div>
+      </div>
+      <div class="s6-fsrs">
+        <span class="s6-fsrs-btn" style="background:var(--sereno-red);">Olvide (&lt;1 min)</span>
+        <span class="s6-fsrs-btn" style="background:var(--sereno-orange);">Dificil (10 min)</span>
+        <span class="s6-fsrs-btn" style="background:var(--sereno-green);">Bien (1 dia)</span>
+        <span class="s6-fsrs-btn" style="background:var(--sereno-blue);">Facil (4 dias)</span>
+      </div>
+      <div style="margin-top:24px; text-align:center;">
+        <div style="font-size:13px; color:#64748B;">Tarjetas hoy: <strong style="color:#1E293B;">12 pendientes</strong> &middot; <strong style="color:var(--sereno-green);">28 completadas</strong></div>
+        <div style="font-size:12px; color:#94A3B8; margin-top:4px;">Retencion estimada: 92%</div>
+      </div>
+    </div>
+    <div class="slide-overlay">Quizzes adaptativos y Flashcards inteligentes</div>
+    <div class="slide-number">6/12</div>
+  </div>
+
+  <!-- SLIDE 7: COMUNIDADES -->
+  <div class="slide s7" id="slide-7">
+    <div class="s7-header">
+      <h1>Comunidades</h1>
+      <p>Encuentra tu grupo de estudio perfecto</p>
+    </div>
+    <div class="s7-filters">
+      <span class="s7-filter active">Todas</span>
+      <span class="s7-filter">Ingenieria</span>
+      <span class="s7-filter">Medicina</span>
+      <span class="s7-filter">Derecho</span>
+      <span class="s7-filter">Informatica</span>
+      <span class="s7-filter">Diseno</span>
+      <span class="s7-filter">Ciencias</span>
+      <span class="s7-filter">Negocios</span>
+    </div>
+    <div class="s7-grid">
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#128187;</span>
+        <h3>Desarrollo Web Full-Stack</h3>
+        <p>React, Node.js, bases de datos y mas. Proyectos reales y code reviews semanales.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 1,245 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#129504;</span>
+        <h3>Neurociencia Cognitiva</h3>
+        <p>Discusion de papers, preparacion de examenes y sesiones de estudio grupales.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 834 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#9878;&#65039;</span>
+        <h3>Derecho Civil Chileno</h3>
+        <p>Casos practicos, jurisprudencia actualizada y tips para el grado.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 672 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#128200;</span>
+        <h3>Data Science & ML</h3>
+        <p>Python, TensorFlow, analisis de datos. Competencias Kaggle grupales.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 1,102 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#129657;</span>
+        <h3>Medicina Interna</h3>
+        <p>Casos clinicos, flashcards anatomia y preparacion EUNACOM.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 956 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#127912;</span>
+        <h3>Diseno UX/UI</h3>
+        <p>Portfolio reviews, Figma tips, diseno centrado en usuario.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 589 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#128176;</span>
+        <h3>Finanzas & Inversion</h3>
+        <p>Mercados financieros, contabilidad, preparacion para certificaciones.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 723 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#127757;</span>
+        <h3>Relaciones Internacionales</h3>
+        <p>Geopolitica, MUNs, intercambios y becas internacionales.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 445 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#9889;</span>
+        <h3>Ingenieria Electrica</h3>
+        <p>Circuitos, electronica, laboratorios virtuales y problemas resueltos.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 567 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#128218;</span>
+        <h3>Preparacion PSU/PAES</h3>
+        <p>Ensayos, estrategias de estudio y material gratuito para rendir mejor.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 2,310 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#128640;</span>
+        <h3>Startups Universitarias</h3>
+        <p>Emprendimiento, pitch decks, fondos CORFO y networking.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 890 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+      <div class="s7-card">
+        <span class="s7-card-emoji">&#129302;</span>
+        <h3>Inteligencia Artificial</h3>
+        <p>LLMs, computer vision, papers semanales y proyectos open source.</p>
+        <div class="s7-card-footer"><span class="s7-members">&#128101; 1,567 miembros</span><span class="s7-join">Unirse</span></div>
+      </div>
+    </div>
+    <div class="slide-overlay">Comunidades por materia y carrera</div>
+    <div class="slide-number">7/12</div>
+  </div>
+
+  <!-- SLIDE 8: MENSAJES -->
+  <div class="slide s8" id="slide-8">
+    <div class="s8-list">
+      <div class="s8-list-header"><h2>Mensajes</h2></div>
+      <div class="s8-list-search">&#128269; Buscar conversaciones...</div>
+      <div class="s8-convo active">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #3B82F6, #6366F1);">AS</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Ana Silva &#127463;&#127479;</div><div class="s8-convo-last">Obrigada! Vou estudar isso agora</div></div>
+        <span class="s8-convo-time">10:32</span>
+      </div>
+      <div class="s8-convo">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #22C55E, #14B8A6);">TC</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Tomas Chen &#127464;&#127475;</div><div class="s8-convo-last">El proyecto esta listo para revisar</div></div>
+        <span class="s8-convo-time">09:15</span>
+      </div>
+      <div class="s8-convo">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #F97316, #EF4444);">MK</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Marie Kowalski &#127477;&#127473;</div><div class="s8-convo-last">Dziekuje! See you in class</div></div>
+        <span class="s8-convo-time">Ayer</span>
+      </div>
+      <div class="s8-convo">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #8B5CF6, #EC4899);">YT</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Yuki Tanaka &#127471;&#127477;</div><div class="s8-convo-last">&#127925; Mensaje de audio (0:42)</div></div>
+        <span class="s8-convo-time">Ayer</span>
+      </div>
+      <div class="s8-convo">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #06B6D4, #3B82F6);">KA</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Khalid Ahmed &#127462;&#127466;</div><div class="s8-convo-last">Shukran! The notes are helpful</div></div>
+        <span class="s8-convo-time">Lun</span>
+      </div>
+      <div class="s8-convo">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #EAB308, #F97316);">PR</div>
+        <div class="s8-convo-text"><div class="s8-convo-name">Priya Rao &#127470;&#127475;</div><div class="s8-convo-last">Let's meet at the library tomorrow</div></div>
+        <span class="s8-convo-time">Dom</span>
+      </div>
+    </div>
+    <div class="s8-chat">
+      <div class="s8-chat-header">
+        <div class="s8-convo-avatar" style="background:linear-gradient(135deg, #3B82F6, #6366F1); width:40px; height:40px; font-size:14px;">AS</div>
+        <div>
+          <div class="s8-chat-name">Ana Silva &#127463;&#127479;</div>
+          <div class="s8-chat-status">&#9679; En linea</div>
+        </div>
+        <div class="s8-translate-btn">&#127760; Traduccion automatica: PT &#8596; ES</div>
+      </div>
+      <div class="s8-chat-body">
+        <div class="s8-bubble received">
+          Oi! Voce pode me ajudar com o trabalho de estatistica? Nao entendo a parte de regressao linear.
+          <div class="translated">&#127760; Hola! Me puedes ayudar con el trabajo de estadistica? No entiendo la parte de regresion lineal.</div>
+        </div>
+        <div class="s8-bubble sent">
+          Claro que si! La regresion lineal basicamente busca la mejor recta que se ajusta a tus datos. Te mando mis apuntes.
+          <div class="translated">&#127760; Claro que sim! A regressao linear basicamente procura a melhor reta que se ajusta aos seus dados. Te mando minhas anotacoes.</div>
+        </div>
+        <div class="s8-bubble received">
+          Muito obrigada! Voce e muito gentil. Quando posso te devolver o favor?
+          <div class="translated">&#127760; Muchas gracias! Eres muy amable. Cuando puedo devolverte el favor?</div>
+        </div>
+        <div class="s8-bubble sent">
+          No te preocupes! Somos comunidad. Aca te mando un audio explicando el concepto:
+          <div class="s8-audio">
+            <span>&#9654;</span>
+            <div class="s8-audio-wave">
+              <div class="s8-audio-bar" style="height:8px;"></div>
+              <div class="s8-audio-bar" style="height:16px;"></div>
+              <div class="s8-audio-bar" style="height:12px;"></div>
+              <div class="s8-audio-bar" style="height:20px;"></div>
+              <div class="s8-audio-bar" style="height:14px;"></div>
+              <div class="s8-audio-bar" style="height:24px;"></div>
+              <div class="s8-audio-bar" style="height:18px;"></div>
+              <div class="s8-audio-bar" style="height:10px;"></div>
+              <div class="s8-audio-bar" style="height:22px;"></div>
+              <div class="s8-audio-bar" style="height:16px;"></div>
+              <div class="s8-audio-bar" style="height:12px;"></div>
+              <div class="s8-audio-bar" style="height:20px;"></div>
+              <div class="s8-audio-bar" style="height:8px;"></div>
+              <div class="s8-audio-bar" style="height:14px;"></div>
+              <div class="s8-audio-bar" style="height:18px;"></div>
+            </div>
+            <span style="font-size:12px; opacity:0.8;">1:23</span>
+          </div>
+        </div>
+        <div class="s8-bubble received">
+          Obrigada! Vou estudar isso agora &#128522;
+          <div class="translated">&#127760; Gracias! Voy a estudiar esto ahora</div>
+        </div>
+      </div>
+      <div style="padding:16px 24px; background:#fff; border-top:1px solid #E2E8F0; display:flex; gap:12px; align-items:center;">
+        <span style="font-size:20px; color:#64748B;">&#128206;</span>
+        <span style="flex:1; padding:12px 16px; border-radius:12px; background:#F8FAFC; border:1px solid #E2E8F0; font-size:14px; color:#94A3B8;">Escribe un mensaje...</span>
+        <span style="font-size:20px; color:#64748B;">&#127908;</span>
+        <span style="padding:10px 20px; border-radius:10px; background:var(--sereno-blue); color:#fff; font-size:14px; font-weight:600;">Enviar</span>
+      </div>
+    </div>
+    <div class="slide-overlay">Mensajeria con traduccion en 40 idiomas</div>
+    <div class="slide-number">8/12</div>
+  </div>
+
+  <!-- SLIDE 9: OPORTUNIDADES -->
+  <div class="slide s9" id="slide-9">
+    <div class="s9-header">
+      <h1>Oportunidades</h1>
+      <div class="s9-tabs">
+        <span class="s9-tab active">&#128188; Empleos</span>
+        <span class="s9-tab">&#128218; Tutorias</span>
+        <span class="s9-tab">&#128640; Practicas</span>
+        <span class="s9-tab">&#127891; Becas</span>
+      </div>
+    </div>
+    <div class="s9-body">
+      <div class="s9-jobs">
+        <h2>Empleos destacados</h2>
+        <div class="s9-job">
+          <div class="s9-job-top">
+            <div><h3>Desarrollador Frontend Jr.</h3><div class="s9-job-company">Cornershop by Uber &middot; Santiago</div></div>
+            <span class="s9-badge remote">Remoto</span>
+          </div>
+          <div class="s9-job-salary">$800.000 - $1.200.000 CLP/mes</div>
+          <div class="s9-job-tags"><span class="s9-tag">React</span><span class="s9-tag">TypeScript</span><span class="s9-tag">Part-time</span></div>
+        </div>
+        <div class="s9-job">
+          <div class="s9-job-top">
+            <div><h3>Analista de Datos</h3><div class="s9-job-company">Falabella Tech &middot; Santiago</div></div>
+            <span class="s9-badge hybrid">Hibrido</span>
+          </div>
+          <div class="s9-job-salary">$900.000 - $1.400.000 CLP/mes</div>
+          <div class="s9-job-tags"><span class="s9-tag">Python</span><span class="s9-tag">SQL</span><span class="s9-tag">Power BI</span></div>
+        </div>
+        <div class="s9-job">
+          <div class="s9-job-top">
+            <div><h3>Disenador UX Junior</h3><div class="s9-job-company">NotCo &middot; Santiago</div></div>
+            <span class="s9-badge remote">Remoto</span>
+          </div>
+          <div class="s9-job-salary">$700.000 - $1.100.000 CLP/mes</div>
+          <div class="s9-job-tags"><span class="s9-tag">Figma</span><span class="s9-tag">User Research</span><span class="s9-tag">Full-time</span></div>
+        </div>
+        <div class="s9-job">
+          <div class="s9-job-top">
+            <div><h3>Community Manager</h3><div class="s9-job-company">Betterfly &middot; Remoto</div></div>
+            <span class="s9-badge remote">Remoto</span>
+          </div>
+          <div class="s9-job-salary">$600.000 - $900.000 CLP/mes</div>
+          <div class="s9-job-tags"><span class="s9-tag">Redes Sociales</span><span class="s9-tag">Copywriting</span></div>
+        </div>
+      </div>
+      <div class="s9-tutors">
+        <h2>Tutores destacados</h2>
+        <div class="s9-tutor">
+          <div class="s9-tutor-avatar" style="background:linear-gradient(135deg, #3B82F6, #6366F1);">DR</div>
+          <div class="s9-tutor-info">
+            <div class="s9-tutor-name">Dr. Roberto Sanchez</div>
+            <div class="s9-tutor-subject">Calculo &middot; Algebra Lineal</div>
+            <div class="s9-tutor-rating">&#11088;&#11088;&#11088;&#11088;&#11088; 4.9 (127 resenas)</div>
+            <div class="s9-tutor-price">$15.000 CLP/hora</div>
+          </div>
+        </div>
+        <div class="s9-tutor">
+          <div class="s9-tutor-avatar" style="background:linear-gradient(135deg, #22C55E, #14B8A6);">MC</div>
+          <div class="s9-tutor-info">
+            <div class="s9-tutor-name">Maria Contreras</div>
+            <div class="s9-tutor-subject">Fisica &middot; Mecanica Cuantica</div>
+            <div class="s9-tutor-rating">&#11088;&#11088;&#11088;&#11088;&#11088; 4.8 (89 resenas)</div>
+            <div class="s9-tutor-price">$12.000 CLP/hora</div>
+          </div>
+        </div>
+        <div class="s9-tutor">
+          <div class="s9-tutor-avatar" style="background:linear-gradient(135deg, #F97316, #EF4444);">JL</div>
+          <div class="s9-tutor-info">
+            <div class="s9-tutor-name">Juan Lopez M.</div>
+            <div class="s9-tutor-subject">Programacion &middot; Algoritmos</div>
+            <div class="s9-tutor-rating">&#11088;&#11088;&#11088;&#11088;&#11088; 4.9 (203 resenas)</div>
+            <div class="s9-tutor-price">$10.000 CLP/hora</div>
+          </div>
+        </div>
+        <div class="s9-tutor">
+          <div class="s9-tutor-avatar" style="background:linear-gradient(135deg, #8B5CF6, #EC4899);">CF</div>
+          <div class="s9-tutor-info">
+            <div class="s9-tutor-name">Camila Fuentes</div>
+            <div class="s9-tutor-subject">Quimica Organica &middot; Bioquimica</div>
+            <div class="s9-tutor-rating">&#11088;&#11088;&#11088;&#11088; 4.7 (64 resenas)</div>
+            <div class="s9-tutor-price">$13.000 CLP/hora</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-overlay">Bolsa de empleo y tutorias</div>
+    <div class="slide-number">9/12</div>
+  </div>
+
+  <!-- SLIDE 10: CURSOS -->
+  <div class="slide s10" id="slide-10">
+    <div class="s10-header">
+      <h1>Cursos Gratuitos</h1>
+      <p>30 cursos de desarrollo integral para potenciar tu carrera</p>
+    </div>
+    <div class="s10-grid">
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128187;</span>
+        <h3>Introduccion a Python</h3>
+        <p>Aprende programacion desde cero con ejercicios practicos</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:75%;"></div></div>
+        <div class="s10-progress-text">75% completado &middot; 12 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128202;</span>
+        <h3>Excel Avanzado</h3>
+        <p>Tablas dinamicas, macros y formulas para el mundo laboral</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:100%;"></div></div>
+        <div class="s10-progress-text">Completado &middot; 8 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado obtenido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128640;</span>
+        <h3>Marca Personal</h3>
+        <p>Construye tu presencia profesional en LinkedIn y redes</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:40%;"></div></div>
+        <div class="s10-progress-text">40% completado &middot; 10 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#129504;</span>
+        <h3>Inteligencia Emocional</h3>
+        <p>Gestiona tus emociones y mejora tus relaciones interpersonales</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:20%;"></div></div>
+        <div class="s10-progress-text">20% completado &middot; 6 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128176;</span>
+        <h3>Finanzas Personales</h3>
+        <p>Ahorro, inversion y presupuesto para universitarios</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:0%;"></div></div>
+        <div class="s10-progress-text">Sin empezar &middot; 8 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#127908;</span>
+        <h3>Hablar en Publico</h3>
+        <p>Tecnicas de oratoria y presentaciones efectivas</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:60%;"></div></div>
+        <div class="s10-progress-text">60% completado &middot; 7 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#127912;</span>
+        <h3>Diseno con Figma</h3>
+        <p>Prototipado y diseno de interfaces desde cero</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:90%;"></div></div>
+        <div class="s10-progress-text">90% completado &middot; 14 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#129302;</span>
+        <h3>Prompt Engineering</h3>
+        <p>Domina ChatGPT y Claude para tu vida academica</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:55%;"></div></div>
+        <div class="s10-progress-text">55% completado &middot; 9 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128221;</span>
+        <h3>Escritura Academica</h3>
+        <p>Redaccion de ensayos, tesis y papers cientificos</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:30%;"></div></div>
+        <div class="s10-progress-text">30% completado &middot; 11 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#127757;</span>
+        <h3>Ingles Academico</h3>
+        <p>Vocabulario, lectura de papers y writing skills</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:85%;"></div></div>
+        <div class="s10-progress-text">85% completado &middot; 16 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128736;&#65039;</span>
+        <h3>Git & GitHub</h3>
+        <p>Control de versiones y colaboracion en proyectos de codigo</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:100%;"></div></div>
+        <div class="s10-progress-text">Completado &middot; 10 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado obtenido</div>
+      </div>
+      <div class="s10-course">
+        <span class="s10-course-emoji">&#128161;</span>
+        <h3>Design Thinking</h3>
+        <p>Resolucion creativa de problemas y metodologias agiles</p>
+        <div class="s10-progress-bar"><div class="s10-progress-fill" style="width:10%;"></div></div>
+        <div class="s10-progress-text">10% completado &middot; 8 lecciones</div>
+        <div class="s10-cert">&#127941; Certificado incluido</div>
+      </div>
+    </div>
+    <div class="slide-overlay">30 cursos gratuitos de desarrollo integral</div>
+    <div class="slide-number">10/12</div>
+  </div>
+
+  <!-- SLIDE 11: DASHBOARD -->
+  <div class="slide s11" id="slide-11">
+    <div class="s11-header">
+      <h1>Tu Dashboard</h1>
+      <p>Hola Catalina! Llevas una semana increible &#128293;</p>
+    </div>
+    <div class="s11-stats">
+      <div class="s11-stat">
+        <div class="s11-stat-icon">&#128293;</div>
+        <div class="s11-stat-value">14</div>
+        <div class="s11-stat-label">Dias de racha</div>
+      </div>
+      <div class="s11-stat">
+        <div class="s11-stat-icon">&#9889;</div>
+        <div class="s11-stat-value">2,450</div>
+        <div class="s11-stat-label">XP esta semana</div>
+      </div>
+      <div class="s11-stat">
+        <div class="s11-stat-icon">&#128214;</div>
+        <div class="s11-stat-value">23.5h</div>
+        <div class="s11-stat-label">Tiempo de estudio</div>
+      </div>
+      <div class="s11-stat">
+        <div class="s11-stat-icon">&#127942;</div>
+        <div class="s11-stat-value">#3</div>
+        <div class="s11-stat-label">Liga Diamante</div>
+      </div>
+    </div>
+    <div class="s11-body">
+      <div class="s11-chart">
+        <h3>Tiempo de estudio por dia (horas)</h3>
+        <div class="s11-bars">
+          <div class="s11-bar-col"><div class="s11-bar" style="height:60px; background:var(--sereno-blue);"></div><span class="s11-bar-label">Lun</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:90px; background:var(--sereno-blue);"></div><span class="s11-bar-label">Mar</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:45px; background:var(--sereno-blue);"></div><span class="s11-bar-label">Mie</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:120px; background:var(--sereno-blue);"></div><span class="s11-bar-label">Jue</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:75px; background:var(--sereno-blue);"></div><span class="s11-bar-label">Vie</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:150px; background:var(--sereno-indigo);"></div><span class="s11-bar-label">Sab</span></div>
+          <div class="s11-bar-col"><div class="s11-bar" style="height:100px; background:linear-gradient(180deg, var(--sereno-blue), var(--sereno-indigo));"></div><span class="s11-bar-label">Hoy</span></div>
+        </div>
+        <div style="display:flex; gap:24px; margin-top:24px;">
+          <div style="flex:1; padding:16px; border-radius:12px; background:#F8FAFC; border:1px solid #E2E8F0;">
+            <div style="font-size:12px; color:#64748B;">Promedio general</div>
+            <div style="font-size:24px; font-weight:800; color:#1E293B; margin-top:4px;">6.8<span style="font-size:14px; color:#64748B;">/10</span></div>
+            <div style="font-size:12px; color:var(--sereno-green); margin-top:2px;">&#9650; +0.3 este mes</div>
+          </div>
+          <div style="flex:1; padding:16px; border-radius:12px; background:#F8FAFC; border:1px solid #E2E8F0;">
+            <div style="font-size:12px; color:#64748B;">Quizzes completados</div>
+            <div style="font-size:24px; font-weight:800; color:#1E293B; margin-top:4px;">47</div>
+            <div style="font-size:12px; color:var(--sereno-green); margin-top:2px;">&#9650; 12 esta semana</div>
+          </div>
+          <div style="flex:1; padding:16px; border-radius:12px; background:#F8FAFC; border:1px solid #E2E8F0;">
+            <div style="font-size:12px; color:#64748B;">Flashcards revisadas</div>
+            <div style="font-size:24px; font-weight:800; color:#1E293B; margin-top:4px;">312</div>
+            <div style="font-size:12px; color:var(--sereno-blue); margin-top:2px;">92% retencion</div>
+          </div>
+        </div>
+      </div>
+      <div class="s11-right-col">
+        <div class="s11-league">
+          <h3>&#127942; Liga Diamante</h3>
+          <div class="s11-league-row"><span class="s11-league-rank">1</span><span style="font-size:16px;">&#129351;</span><span class="s11-league-name">Martin V.</span><span class="s11-league-xp">3,120 XP</span></div>
+          <div class="s11-league-row"><span class="s11-league-rank">2</span><span style="font-size:16px;">&#129352;</span><span class="s11-league-name">Lucia P.</span><span class="s11-league-xp">2,890 XP</span></div>
+          <div class="s11-league-row" style="background:#EEF2FF; border-radius:8px; padding:8px; border:none;"><span class="s11-league-rank" style="color:var(--sereno-blue);">3</span><span style="font-size:16px;">&#129353;</span><span class="s11-league-name" style="font-weight:700; color:var(--sereno-blue);">Tu (Catalina)</span><span class="s11-league-xp">2,450 XP</span></div>
+          <div class="s11-league-row"><span class="s11-league-rank">4</span><span style="font-size:16px;"></span><span class="s11-league-name">Andres F.</span><span class="s11-league-xp">2,200 XP</span></div>
+          <div class="s11-league-row"><span class="s11-league-rank">5</span><span style="font-size:16px;"></span><span class="s11-league-name">Sofia P.</span><span class="s11-league-xp">1,980 XP</span></div>
+        </div>
+        <div class="s11-badges">
+          <h3>Insignias recientes</h3>
+          <div class="s11-badges-grid">
+            <div class="s11-badge-item">&#128293;</div>
+            <div class="s11-badge-item">&#127942;</div>
+            <div class="s11-badge-item">&#129504;</div>
+            <div class="s11-badge-item">&#128640;</div>
+            <div class="s11-badge-item">&#127775;</div>
+            <div class="s11-badge-item">&#128170;</div>
+            <div class="s11-badge-item">&#128161;</div>
+            <div class="s11-badge-item" style="opacity:0.3;">&#127891;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-overlay">Tu progreso en tiempo real</div>
+    <div class="slide-number">11/12</div>
+  </div>
+
+  <!-- SLIDE 12: CIERRE -->
+  <div class="slide s12" id="slide-12">
+    <div class="glow"></div>
+    <div class="logo-text">Conniku</div>
+    <div class="cta">Unete a la comunidad</div>
+    <div class="url">conniku.com</div>
+    <div class="unis">
+      <span class="uni-chip">U. de Chile</span>
+      <span class="uni-chip">PUC</span>
+      <span class="uni-chip">USACH</span>
+      <span class="uni-chip">UDP</span>
+      <span class="uni-chip">UAI</span>
+      <span class="uni-chip">UTFSM</span>
+      <span class="uni-chip">U. de Concepcion</span>
+      <span class="uni-chip">U. Austral</span>
+      <span class="uni-chip">UDD</span>
+      <span class="uni-chip">UNAB</span>
+    </div>
+    <div class="footer">Hecho en Chile &#127464;&#127473;</div>
+    <div class="slide-number">12/12</div>
+  </div>
+
+</div>
+
+<script>
+let currentSlide = 1;
+let totalSlides = 12;
+let isPlaying = false;
+let autoPlayInterval = null;
+let countdown = 5;
+let countdownInterval = null;
+
+function goToSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.slide-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('slide-' + n).classList.add('active');
+  document.querySelector('[data-slide="' + n + '"]').classList.add('active');
+  currentSlide = n;
+  resetCountdown();
+}
+
+function resetCountdown() {
+  countdown = 5;
+  document.getElementById('timer').textContent = '5s';
+}
+
+function nextSlide() {
+  if (currentSlide < totalSlides) {
+    goToSlide(currentSlide + 1);
+  } else {
+    stopAutoPlay();
+  }
+}
+
+function toggleAutoPlay() {
+  if (isPlaying) {
+    stopAutoPlay();
+  } else {
+    startAutoPlay();
+  }
+}
+
+function startAutoPlay() {
+  isPlaying = true;
+  let btn = document.getElementById('playBtn');
+  btn.textContent = '⏸ Pausar';
+  btn.classList.add('playing');
+  countdown = 5;
+
+  countdownInterval = setInterval(function() {
+    countdown--;
+    document.getElementById('timer').textContent = countdown + 's';
+    if (countdown <= 0) {
+      nextSlide();
+      if (!isPlaying) {
+        clearInterval(countdownInterval);
+      }
+    }
+  }, 1000);
+}
+
+function stopAutoPlay() {
+  isPlaying = false;
+  let btn = document.getElementById('playBtn');
+  btn.innerHTML = '&#9654; Auto Play';
+  btn.classList.remove('playing');
+  clearInterval(countdownInterval);
+  document.getElementById('timer').textContent = '5s';
+}
+
+function goFullscreen() {
+  let el = document.getElementById('slidesContainer');
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+
+// Slide button clicks
+document.querySelectorAll('.slide-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    goToSlide(parseInt(this.dataset.slide));
+  });
+});
+
+// Keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    if (currentSlide < totalSlides) goToSlide(currentSlide + 1);
+  } else if (e.key === 'ArrowLeft') {
+    e.preventDefault();
+    if (currentSlide > 1) goToSlide(currentSlide - 1);
+  } else if (e.key === 'p' || e.key === 'P') {
+    toggleAutoPlay();
+  } else if (e.key === 'f' || e.key === 'F') {
+    goFullscreen();
+  }
+});
+</script>
+
+</body>
+</html>

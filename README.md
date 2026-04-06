@@ -1,138 +1,76 @@
-## GitHub Writer - Running tests
+# Conniku
 
-The GitHub Writer source code contains three sets of tests that fulfill different goals:
+Conniku is an AI-powered study assistant platform designed to help university students optimize their learning through intelligent multi-modal interactions.
 
- * [Unit tests](#unit-tests): guarantees that the source code works as expected.
- * [Functional tests](#functional-tests): test GitHub Writer directly inside the GitHub.com website.
- * [Compatibility tests](#compatibility-tests): monitors the GitHub.com website for changes that could break GitHub Writer.
+## Architecture
 
----
+Conniku employs a modern, highly scalable architecture:
+- **Frontend**: React + Vite (TypeScript). Includes features for offline access and PWA support.
+- **Desktop & Mobile**: Pre-configured with Electron (Mac/Windows) and Capacitor (iOS/Android).
+- **Backend**: FastAPI (Python) serving REST APIs. Employs async capabilities with heavy integration to Anthropic's Claude to process audio, study notes, generate flashcards, and solve math.
+- **Data storage**: SQLite via SQLAlchemy (migration tools included).
 
-### Unit tests
+## Project Structure
 
-GitHub Writer comes with an extensive suite of unit tests. It's our goal to keep 100% code coverage with quality and "real" tests.
-
-We use [CKEditor 5 Tests](https://www.npmjs.com/package/@ckeditor/ckeditor5-dev-tests) as our test framework. It brings several goodies with it, like Karma, Mocha, Chai, Sinon, Istanbul, Webpack, among other tools.
-
-#### Preparing the runner
-
-Unfortunately, CKEditor 5 Tests cannot be used as-is for GitHub Writer. There is a [pull request pending acceptation](https://github.com/ckeditor/ckeditor5-dev/pull/594) that is necessary.
-
-Fortunately, a git branch is available with the patched code. So, to run unit tests, the first step is cloning to patched runner locally:
-
-```sh
-# Clone the git repo.
-git clone https://github.com/ckeditor/ckeditor5-dev.git
-
-# Move to GitHub Writer branch.
-cd ckeditor5-dev
-git checkout github-writer
-
-# Install dependencies.
-yarn
-
-# Mark CKEditor 5 Tests for linking.
-cd packages/ckeditor5-dev-tests
-yarn link
+```
+├── backend/            # FastAPI backend logic and Python dependencies
+├── src/                # React source code (Pages, Components, Contexts)
+├── docs/               # Visual design templates and previews
+├── electron/           # configuration for Electron app
+├── android/            # Capacitor configuration for Android 
+├── ios-assets/         # iOS app assets
+└── public/             # Public static assets
 ```
 
-Now we can update our local copy of GitHub Writer, so it'll link to the above code:
+## Running Locally
 
-```sh
-cd [some-path]/github-writer
-yarn link "@ckeditor/ckeditor5-dev-tests"
+### 1. Backend Setup
+
+The backend depends on Python 3.
+
+```bash
+# Navigate to project 
+cd CONNIKU
+
+# It is recommended to use a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip3 install -r backend/requirements.txt
+
+# Start the server (runs on port 8899 or 8000 depending on config)
+npm run backend:start
 ```
 
-#### Running unit test
+### 2. Frontend Setup
 
-To run the tests using your local Chrome browser:
+Make sure you have Node > 18.x installed.
 
-```sh
-yarn test
+```bash
+# Install NPM dependencies
+npm install
+
+# Run the local frontend dev server
+npm run dev:renderer
 ```
 
-To run with Firefox:
-
-```sh
-yarn test --browsers=Firefox
+Or just run both concurrently via:
+```bash
+npm run dev
 ```
 
-If you're experiencing the test fails or slowdown on FF, rerun them and keep the window with Karma focused.
+## Mobile Development
 
----
+We use Capacitor to sync web bundles with mobile native projects:
 
-### Functional tests
+```bash
+# Sync new changes
+npm run mobile:sync
 
-The source code contains a suite of automated **functional tests** that can be run to verify a local GitHub Writer build.
+# Run on Android
+npm run mobile:run:android
 
-#### First step, build the extension
-
-The first step is building the browser extension to be tested from the source. Check the [Developer Documentation](../dev/README.md) for details.
-
-#### Test runner configuration
-
-The tests run in the browser and real-life GitHub.com pages are navigated and their features used, with the extension enabled, just like an end-user would do. All this is automated by our test runner.
-
-There are two things that the runner needs to have to be able to use github.com properly:
-
-*   A real GitHub user name and password. The runner will impersonate this account, logging into github.com with these credentials.
-*   A real GitHub repository name. The runner will use the features available in this repository to perform tests (create issues, PRs, wiki pages, etc.)
-
-**Attention:** It is evident that the above account and repository should be created on purpose and stay dedicated to testing. There is no warranty that data may not be lost in the account or the repository due to the test runner and, mainly, **credentials will be available as plain text in a local configuration file**. Currently there is no common account used for testing - everyone has to create their own one.
-
-##### The configuration file
-
-The configuration file for the test runner, a JSON file, must be located at `tests/config.json`. This file must be created manually as it's not available in the code repository (it's ignored by git). A template is available at `tests/config.template.json`.
-
-These are the expected contents of `tests/config.json`:
-
-```json
-{
-  "github" : {
-    "repo": "username/reponame",
-    "credentials": {
-      "name": "username",
-      "password": "password"
-    }
-  }
-}
+# Run on iOS
+npm run mobile:run:ios
 ```
-
-#### Running functional tests
-
-Having the build and the configuration in place, it's enough to execute the following at the root of your local clone of the project:
-
-```plaintext
-yarn run test-functional
-```
-
-Now lay back and enjoy watching the test runner doing its job.
-
-##### About the browser/user profile
-
-Note that tests are run under a dedicated browser profile, not using the operating system one. So it's safe to assume that your everyday use browser is not at risk, neither is your personal information.
-
-Additionally, because of the above, the browser session used for testing has no extensions installed. The only extension loaded, as expected, is your local build of GitHub Writer, which is reloaded from scratch for every test run.
-
----
-
-### Compatibility tests
-
-GitHub may bring changes to their website which could potentially break GitHub Writer. For example, the DOM in their pages could be modified or XHR request may return data in a new, different format.
-
-In such situations, there is nothing more we can do about that other than react fast, publishing a new release of GitHub Writer that fixes the incompatibility.
-
-To help to monitor the GitHub Writer compatibility with GitHub.com, a series of tests have been designed. To execute them, simply run the following:
-
-```sh
-yarn run test-compat
-```
-
-The above fires a Chromium browser (without GitHub Writer) that navigates through GitHub pages, making the necessary checks.
-
----
-
-### Additional developer information
-
-*   [Development](../dev/README.md) (setup, build, run).
-*   [Architecture](../src/README.md) (source code, API).

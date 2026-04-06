@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Mobile Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============ RESET & BASE ============ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #1a1a2e;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 24px 16px;
+}
+h1.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  letter-spacing: -0.3px;
+}
+p.page-sub {
+  font-size: 13px;
+  color: #9ca3af;
+  margin-bottom: 20px;
+}
+
+/* ============ THUMBNAIL NAV ============ */
+.thumb-nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  max-width: 100%;
+  padding: 4px 0 12px;
+  scrollbar-width: none;
+}
+.thumb-nav::-webkit-scrollbar { display: none; }
+.thumb-btn {
+  flex-shrink: 0;
+  width: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.thumb-btn .thumb-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #2a2a4a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 2px solid transparent;
+  transition: all 0.2s;
+}
+.thumb-btn.active .thumb-icon {
+  border-color: #2563EB;
+  background: #1e3a5f;
+  box-shadow: 0 0 12px rgba(37,99,235,0.4);
+}
+.thumb-btn .thumb-label {
+  font-size: 9px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.thumb-btn.active .thumb-label { color: #2563EB; }
+.thumb-btn:hover .thumb-icon { border-color: #4b5563; }
+
+/* ============ PHONE FRAME ============ */
+.phone-wrapper {
+  position: relative;
+  width: 405px;
+  height: 862px;
+}
+.phone-frame {
+  position: relative;
+  width: 405px;
+  height: 862px;
+  background: #000;
+  border-radius: 54px;
+  padding: 15px;
+  box-shadow:
+    0 0 0 2px #333,
+    0 20px 60px rgba(0,0,0,0.5),
+    inset 0 0 0 2px #1a1a1a;
+}
+.phone-screen {
+  width: 375px;
+  height: 812px;  /* iPhone safe height */
+  border-radius: 44px;
+  overflow: hidden;
+  position: relative;
+  background: #F5F3EF;
+}
+
+/* ============ STATUS BAR ============ */
+.status-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 44px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #F5F3EF;
+}
+.status-bar .time { font-size: 14px; font-weight: 700; }
+.status-icons { display: flex; gap: 4px; align-items: center; font-size: 11px; }
+.notch {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 30px;
+  background: #000;
+  border-radius: 0 0 20px 20px;
+  z-index: 101;
+}
+
+/* ============ HOME INDICATOR ============ */
+.home-indicator {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 134px;
+  height: 5px;
+  background: #1a1a1a;
+  border-radius: 100px;
+  z-index: 100;
+}
+
+/* ============ SCREEN CONTAINER ============ */
+.screen {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 375px;
+  height: 812px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #F5F3EF;
+  scrollbar-width: none;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active { display: block; }
+
+/* ============ SHARED MOBILE UI ============ */
+.m-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: 92px; /* 44 status + 48 bar */
+  background: #fff;
+  border-bottom: 1px solid #e5e2dc;
+  padding: 48px 12px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.m-topbar-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+.m-topbar-actions { display: flex; gap: 12px; align-items: center; }
+.m-topbar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  background: #F5F3EF;
+  cursor: pointer;
+}
+.m-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563EB, #7c3aed);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.m-avatar.lg { width: 40px; height: 40px; font-size: 14px; }
+
+.m-bottomnav {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  height: 80px; /* 60 + 20 home indicator space */
+  background: #fff;
+  border-top: 1px solid #e5e2dc;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 6px;
+}
+.m-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: #9ca3af;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.m-nav-item .nav-icon { font-size: 20px; }
+.m-nav-item.active { color: #2563EB; }
+.m-nav-item.active .nav-icon { transform: scale(1.1); }
+
+.m-content {
+  padding: 8px 12px 12px;
+  min-height: calc(812px - 92px - 80px);
+}
+.m-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #e5e2dc;
+}
+.m-card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.accent { color: #2563EB; }
+.muted { color: #6b7280; }
+.small { font-size: 11px; }
+.xs { font-size: 10px; }
+.bold { font-weight: 600; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-4 { gap: 4px; }
+.gap-6 { gap: 6px; }
+.gap-8 { gap: 8px; }
+.gap-10 { gap: 10px; }
+.gap-12 { gap: 12px; }
+.flex-1 { flex: 1; }
+.text-right { text-align: right; }
+.mb-4 { margin-bottom: 4px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mt-4 { margin-top: 4px; }
+.mt-8 { margin-top: 8px; }
+
+.pill {
+  display: inline-flex;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pill-accent { background: #2563EB; color: #fff; }
+.pill-outline { background: transparent; border: 1px solid #d1d5db; color: #6b7280; }
+.pill-ghost { background: #F5F3EF; color: #6b7280; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 100px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
+.h-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+}
+.h-scroll::-webkit-scrollbar { display: none; }
+
+.divider {
+  height: 1px;
+  background: #e5e2dc;
+  margin: 8px 0;
+}
+
+.btn-primary {
+  background: #2563EB;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 11px;
+  min-height: 32px;
+  border-radius: 6px;
+}
+
+.search-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e5e2dc;
+  background: #fff;
+  padding: 0 12px 0 36px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  color: #1a1a1a;
+}
+.search-wrap {
+  position: relative;
+  margin-bottom: 12px;
+}
+.search-wrap::before {
+  content: "🔍";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+}
+
+/* reaction row */
+.reactions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.reaction {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: #F5F3EF;
+  font-size: 11px;
+  cursor: pointer;
+}
+.reaction.active { background: #dbeafe; }
+
+/* chat bubbles */
+.bubble {
+  max-width: 78%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 13px;
+  line-height: 1.4;
+  margin-bottom: 6px;
+  position: relative;
+  word-wrap: break-word;
+}
+.bubble-out {
+  background: #2563EB;
+  color: #fff;
+  margin-left: auto;
+  border-bottom-right-radius: 6px;
+}
+.bubble-in {
+  background: #fff;
+  color: #1a1a1a;
+  border: 1px solid #e5e2dc;
+  border-bottom-left-radius: 6px;
+}
+.bubble-time {
+  font-size: 9px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+.bubble-out .bubble-time { color: rgba(255,255,255,0.7); text-align: right; }
+
+/* input bar */
+.input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fff;
+  border-top: 1px solid #e5e2dc;
+}
+.input-bar input {
+  flex: 1;
+  height: 36px;
+  border-radius: 18px;
+  border: 1px solid #e5e2dc;
+  padding: 0 14px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  background: #F5F3EF;
+}
+.input-bar-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.send-btn {
+  background: #2563EB;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* toggle switch */
+.toggle-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: #d1d5db;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.toggle-track.on { background: #2563EB; }
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s;
+}
+.toggle-track.on::after { transform: translateX(18px); }
+
+/* contact row */
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0ede8;
+  cursor: pointer;
+}
+.contact-row:last-child { border-bottom: none; }
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.contact-msg { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.contact-time { font-size: 10px; color: #9ca3af; }
+
+/* notification row */
+.notif-row {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+}
+.notif-row.unread { background: #eff6ff; }
+.notif-icon { font-size: 20px; flex-shrink: 0; width: 32px; text-align: center; }
+.notif-text { font-size: 12px; color: #1a1a1a; line-height: 1.4; flex: 1; }
+.notif-text strong { font-weight: 600; }
+.notif-time { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+
+/* plan cards */
+.plan-card {
+  background: #fff;
+  border: 2px solid #e5e2dc;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.plan-card.popular {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 1px #2563EB;
+}
+.plan-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  background: #2563EB;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 100px;
+}
+.plan-name { font-size: 16px; font-weight: 800; color: #1a1a1a; }
+.plan-price { font-size: 28px; font-weight: 800; color: #2563EB; margin: 4px 0; }
+.plan-price span { font-size: 13px; font-weight: 500; color: #6b7280; }
+.plan-features { list-style: none; margin: 8px 0; }
+.plan-features li { font-size: 12px; color: #374151; padding: 3px 0; }
+.plan-features li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+
+/* tab bar */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid #e5e2dc;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-item {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+}
+.tab-item.active { color: #2563EB; border-bottom-color: #2563EB; }
+
+/* stat card grid */
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.stat-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid #e5e2dc;
+}
+.stat-value { font-size: 22px; font-weight: 800; color: #1a1a1a; }
+.stat-label { font-size: 10px; color: #6b7280; font-weight: 500; }
+
+/* progress bar */
+.progress-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: #e5e2dc;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #2563EB;
+}
+
+/* color bar */
+.color-bar {
+  height: 4px;
+  border-radius: 2px;
+  margin-bottom: 8px;
+}
+
+/* league avatar row */
+.league-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+.league-rank {
+  width: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  text-align: center;
+}
+.league-rank.gold { color: #f59e0b; }
+.league-rank.silver { color: #9ca3af; }
+.league-rank.bronze { color: #d97706; }
+.league-name { font-size: 12px; font-weight: 600; color: #1a1a1a; flex: 1; }
+.league-xp { font-size: 11px; color: #6b7280; font-weight: 500; }
+
+/* chip/skill */
+.skill-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background: #eff6ff;
+  color: #2563EB;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* community card */
+.community-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e2dc;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.community-banner {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+.community-body { padding: 10px 12px; }
+.community-title { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+.community-desc { font-size: 11px; color: #6b7280; margin: 2px 0 8px; }
+.community-footer { display: flex; align-items: center; justify-content: space-between; }
+.community-members { font-size: 10px; color: #9ca3af; }
+
+/* socrático toggle */
+.socratic-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #fffbeb;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.socratic-label { font-size: 11px; font-weight: 600; color: #92400e; flex: 1; }
+
+/* average bar */
+.avg-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #eff6ff;
+  border-radius: 8px;
+}
+.avg-label { font-size: 12px; font-weight: 600; color: #1e40af; }
+.avg-value { font-size: 18px; font-weight: 800; color: #2563EB; }
+
+/* profile */
+.profile-cover {
+  height: 120px;
+  background: linear-gradient(135deg, #2563EB, #7c3aed);
+  position: relative;
+}
+.profile-avatar-wrap {
+  position: absolute;
+  bottom: -30px;
+  left: 12px;
+}
+.profile-avatar-big {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+}
+.profile-info {
+  padding: 36px 12px 8px;
+}
+.profile-name { font-size: 18px; font-weight: 800; color: #1a1a1a; }
+.profile-uni { font-size: 12px; color: #6b7280; }
+
+/* search result card */
+.result-card {
+  background: #fff;
+  border: 1px solid #e5e2dc;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.result-title { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+.result-meta { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.result-snippet { font-size: 12px; color: #374151; margin-top: 4px; line-height: 1.4; }
+
+/* toggle group (monthly/yearly) */
+.toggle-group {
+  display: flex;
+  background: #F5F3EF;
+  border-radius: 10px;
+  padding: 3px;
+  margin-bottom: 12px;
+}
+.toggle-opt {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+}
+.toggle-opt.active { background: #fff; color: #1a1a1a; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+/* transition */
+.screen { animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">Conniku — Vista Previa Móvil</h1>
+<p class="page-sub">Simulación de la app móvil en iPhone (375 x 812px) con tema Sereno</p>
+
+<!-- THUMBNAIL NAV -->
+<nav class="thumb-nav" id="thumbNav">
+  <button class="thumb-btn active" onclick="showScreen(0)">
+    <div class="thumb-icon">🏠</div>
+    <span class="thumb-label">Feed</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(1)">
+    <div class="thumb-icon">📊</div>
+    <span class="thumb-label">Dashboard</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(2)">
+    <div class="thumb-icon">📘</div>
+    <span class="thumb-label">Materia</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(3)">
+    <div class="thumb-icon">💬</div>
+    <span class="thumb-label">Mensajes</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(4)">
+    <div class="thumb-icon">🗨️</div>
+    <span class="thumb-label">Chat</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(5)">
+    <div class="thumb-icon">👥</div>
+    <span class="thumb-label">Comunidades</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(6)">
+    <div class="thumb-icon">🔍</div>
+    <span class="thumb-label">Buscar</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(7)">
+    <div class="thumb-icon">👤</div>
+    <span class="thumb-label">Perfil</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(8)">
+    <div class="thumb-icon">⭐</div>
+    <span class="thumb-label">Planes</span>
+  </button>
+  <button class="thumb-btn" onclick="showScreen(9)">
+    <div class="thumb-icon">🔔</div>
+    <span class="thumb-label">Notificaciones</span>
+  </button>
+</nav>
+
+<!-- PHONE FRAME -->
+<div class="phone-wrapper">
+  <div class="phone-frame">
+    <div class="phone-screen">
+      <div class="notch"></div>
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="status-icons">
+          <span>📶</span>
+          <span>WiFi</span>
+          <span>🔋</span>
+        </div>
+      </div>
+      <div class="home-indicator"></div>
+
+      <!-- ==================== SCREEN 0: FEED ==================== -->
+      <div class="screen active" id="screen-0">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Conniku</span>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon" style="position:relative;">🔔<span style="position:absolute;top:2px;right:2px;width:8px;height:8px;background:#ef4444;border-radius:50%;border:2px solid #fff;"></span></div>
+            <div class="m-avatar">CG</div>
+          </div>
+        </div>
+        <div class="m-content">
+          <!-- Composer -->
+          <div class="m-card flex items-center gap-8">
+            <div class="m-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">CG</div>
+            <div style="flex:1;height:36px;border-radius:18px;background:#F5F3EF;border:1px solid #e5e2dc;display:flex;align-items:center;padding:0 14px;font-size:13px;color:#9ca3af;">¿Qué estás estudiando?</div>
+            <span style="font-size:18px;cursor:pointer;">📷</span>
+          </div>
+
+          <!-- Post 1 -->
+          <div class="m-card">
+            <div class="flex items-center gap-8 mb-8">
+              <div class="m-avatar" style="background:linear-gradient(135deg,#22c55e,#14b8a6);">ML</div>
+              <div class="flex-1">
+                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">María López</div>
+                <div class="xs muted">Ing. Biomédica · hace 2h</div>
+              </div>
+              <span style="font-size:16px;color:#9ca3af;cursor:pointer;">···</span>
+            </div>
+            <p style="font-size:13px;color:#374151;line-height:1.5;margin-bottom:8px;">Acabo de terminar mi resumen de Fisiología Cardiovascular. ¿Alguien quiere repasar juntos antes del parcial del viernes? 🫀📚</p>
+            <div style="display:flex;gap:6px;margin-bottom:8px;">
+              <span class="pill pill-ghost" style="font-size:10px;">#Fisiología</span>
+              <span class="pill pill-ghost" style="font-size:10px;">#Parcial</span>
+            </div>
+            <div style="height:120px;border-radius:8px;background:linear-gradient(135deg,#dbeafe,#ede9fe);display:flex;align-items:center;justify-content:center;margin-bottom:8px;">
+              <span style="font-size:36px;">🫀</span>
+            </div>
+            <div class="reactions">
+              <div class="reaction active">❤️ <span class="xs bold">12</span></div>
+              <div class="reaction">🧠 <span class="xs bold">5</span></div>
+              <div class="reaction">💬 <span class="xs bold">3</span></div>
+              <div class="reaction">🔖</div>
+            </div>
+          </div>
+
+          <!-- Post 2 -->
+          <div class="m-card">
+            <div class="flex items-center gap-8 mb-8">
+              <div class="m-avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">JP</div>
+              <div class="flex-1">
+                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Juan Pérez</div>
+                <div class="xs muted">Derecho · hace 4h</div>
+              </div>
+              <span style="font-size:16px;color:#9ca3af;cursor:pointer;">···</span>
+            </div>
+            <p style="font-size:13px;color:#374151;line-height:1.5;margin-bottom:8px;">Conseguí el libro digital de Derecho Constitucional de Bidart Campos. Lo subo al grupo de la materia. Si alguien tiene los apuntes de la clase de ayer me avisan 🙏</p>
+            <div class="reactions">
+              <div class="reaction active">👏 <span class="xs bold">24</span></div>
+              <div class="reaction">💬 <span class="xs bold">8</span></div>
+              <div class="reaction">🔖</div>
+            </div>
+          </div>
+
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item active"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 1: DASHBOARD ==================== -->
+      <div class="screen" id="screen-1">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Mi Estudio</span>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon">⚙️</div>
+          </div>
+        </div>
+        <div class="m-content">
+          <!-- Streak -->
+          <div class="m-card" style="background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#fcd34d;">
+            <div class="flex items-center gap-10">
+              <span style="font-size:36px;">🔥</span>
+              <div>
+                <div style="font-size:24px;font-weight:800;color:#92400e;">12 días</div>
+                <div style="font-size:12px;color:#a16207;">Racha de estudio consecutivo</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat Grid -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-value accent">156</div>
+              <div class="stat-label">XP esta semana</div>
+              <div class="progress-bar mt-4"><div class="progress-fill" style="width:72%;"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:#22c55e;">8.2</div>
+              <div class="stat-label">Promedio general</div>
+              <div class="progress-bar mt-4"><div class="progress-fill" style="width:82%;background:#22c55e;"></div></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:#8b5cf6;">47</div>
+              <div class="stat-label">Flashcards hoy</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color:#f59e0b;">3</div>
+              <div class="stat-label">Quizzes completados</div>
+            </div>
+          </div>
+
+          <!-- Liga -->
+          <div class="m-card">
+            <div class="flex items-center gap-8 mb-8">
+              <span style="font-size:20px;">🏆</span>
+              <div class="m-card-title" style="margin:0;">Liga Diamante</div>
+            </div>
+            <div class="league-row">
+              <div class="league-rank gold">1</div>
+              <div class="m-avatar" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);">SV</div>
+              <div class="league-name">Sofía Vargas</div>
+              <div class="league-xp">1,240 XP</div>
+            </div>
+            <div class="league-row">
+              <div class="league-rank silver">2</div>
+              <div class="m-avatar" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#2563EB,#7c3aed);">CG</div>
+              <div class="league-name">Cristian G. <span style="font-size:10px;color:#2563EB;">(Tú)</span></div>
+              <div class="league-xp">1,180 XP</div>
+            </div>
+            <div class="league-row">
+              <div class="league-rank bronze">3</div>
+              <div class="m-avatar" style="width:28px;height:28px;font-size:10px;background:linear-gradient(135deg,#22c55e,#14b8a6);">AM</div>
+              <div class="league-name">Ana Martínez</div>
+              <div class="league-xp">980 XP</div>
+            </div>
+          </div>
+
+          <!-- Study Time -->
+          <div class="m-card">
+            <div class="m-card-title">⏱ Tiempo de Estudio</div>
+            <div class="flex items-center gap-12 mt-4">
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#2563EB;">2h</div>
+                <div class="xs muted">Hoy</div>
+              </div>
+              <div style="width:1px;height:32px;background:#e5e2dc;"></div>
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#8b5cf6;">8.5h</div>
+                <div class="xs muted">Semana</div>
+              </div>
+              <div style="width:1px;height:32px;background:#e5e2dc;"></div>
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:22px;font-weight:800;color:#22c55e;">32h</div>
+                <div class="xs muted">Mes</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="m-card-title" style="padding:4px 0;">⚡ Acciones Rápidas</div>
+          <div class="h-scroll" style="margin-bottom:12px;">
+            <div style="flex-shrink:0;background:#fff;border:1px solid #e5e2dc;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;cursor:pointer;">
+              <span style="font-size:22px;">📝</span>
+              <span class="xs bold" style="color:#1a1a1a;">Quiz</span>
+            </div>
+            <div style="flex-shrink:0;background:#fff;border:1px solid #e5e2dc;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;cursor:pointer;">
+              <span style="font-size:22px;">🃏</span>
+              <span class="xs bold" style="color:#1a1a1a;">Flash</span>
+            </div>
+            <div style="flex-shrink:0;background:#fff;border:1px solid #e5e2dc;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;cursor:pointer;">
+              <span style="font-size:22px;">🤖</span>
+              <span class="xs bold" style="color:#1a1a1a;">AI Chat</span>
+            </div>
+            <div style="flex-shrink:0;background:#fff;border:1px solid #e5e2dc;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;cursor:pointer;">
+              <span style="font-size:22px;">📷</span>
+              <span class="xs bold" style="color:#1a1a1a;">Escanear</span>
+            </div>
+            <div style="flex-shrink:0;background:#fff;border:1px solid #e5e2dc;border-radius:10px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:80px;cursor:pointer;">
+              <span style="font-size:22px;">📅</span>
+              <span class="xs bold" style="color:#1a1a1a;">Agenda</span>
+            </div>
+          </div>
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item active"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 2: SUBJECT ==================== -->
+      <div class="screen" id="screen-2">
+        <div class="m-topbar" style="flex-direction:column;align-items:stretch;height:auto;padding-bottom:0;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:48px;padding-bottom:8px;">
+            <div class="flex items-center gap-8">
+              <span style="font-size:18px;cursor:pointer;">←</span>
+              <span class="m-topbar-title">Fisiología II</span>
+            </div>
+            <div class="m-topbar-icon">···</div>
+          </div>
+          <div class="color-bar" style="background:linear-gradient(90deg,#2563EB,#7c3aed);margin:0 -12px;"></div>
+          <div class="tab-bar" style="margin:0 -12px;">
+            <div class="tab-item">Docs</div>
+            <div class="tab-item active">Chat</div>
+            <div class="tab-item">Guía</div>
+            <div class="tab-item">Quiz</div>
+            <div class="tab-item">Flash</div>
+            <div class="tab-item">Live</div>
+          </div>
+        </div>
+
+        <div style="padding:12px;flex:1;min-height:0;">
+          <!-- Average -->
+          <div class="avg-bar mb-12">
+            <div class="avg-label">📈 Promedio</div>
+            <div class="avg-value">7.8/10</div>
+          </div>
+
+          <!-- Socrático toggle -->
+          <div class="socratic-bar">
+            <span style="font-size:16px;">🧠</span>
+            <div class="socratic-label">Modo Socrático</div>
+            <div class="toggle-track on"></div>
+          </div>
+
+          <!-- AI Chat messages -->
+          <div style="padding:8px 0;">
+            <div class="bubble bubble-in">
+              <div style="font-size:10px;font-weight:600;color:#2563EB;margin-bottom:4px;">🤖 Conniku AI</div>
+              ¡Hola! Estoy aquí para ayudarte con Fisiología II. Tengo el modo Socrático activado, así que te haré preguntas para guiarte. ¿Qué tema quieres repasar?
+              <div class="bubble-time">10:30</div>
+            </div>
+            <div class="bubble bubble-out">
+              Necesito entender el sistema renina-angiotensina-aldosterona
+              <div class="bubble-time">10:31</div>
+            </div>
+            <div class="bubble bubble-in">
+              <div style="font-size:10px;font-weight:600;color:#2563EB;margin-bottom:4px;">🤖 Conniku AI</div>
+              Excelente tema. Empecemos: ¿Sabes qué tipo de células producen la renina y dónde se encuentran?
+              <div class="bubble-time">10:31</div>
+            </div>
+            <div class="bubble bubble-out">
+              Creo que son las células yuxtaglomerulares en el riñón
+              <div class="bubble-time">10:32</div>
+            </div>
+            <div class="bubble bubble-in">
+              <div style="font-size:10px;font-weight:600;color:#2563EB;margin-bottom:4px;">🤖 Conniku AI</div>
+              ¡Correcto! 🎯 Ahora, ¿qué estímulos provocan la liberación de renina? Te doy una pista: hay tres principales...
+              <div class="bubble-time">10:32</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="input-bar" style="position:sticky;bottom:80px;z-index:40;">
+          <div class="input-bar-icon">📷</div>
+          <input placeholder="Pregunta sobre Fisiología II..." />
+          <div class="send-btn">➤</div>
+        </div>
+        <!-- Scan button -->
+        <div style="position:sticky;bottom:80px;z-index:39;display:flex;justify-content:center;padding:6px 12px;background:#F5F3EF;">
+          <button class="btn-primary btn-sm" style="width:100%;">📷 Escanear ejercicio</button>
+        </div>
+
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item active"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 3: MESSAGES ==================== -->
+      <div class="screen" id="screen-3">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Mensajes</span>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon">✏️</div>
+          </div>
+        </div>
+        <div class="m-content" style="padding-top:0;">
+          <div class="search-wrap" style="margin-top:8px;">
+            <input class="search-input" placeholder="Buscar conversación..." />
+          </div>
+
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#22c55e,#14b8a6);">ML</div>
+            <div class="contact-info">
+              <div class="contact-name">María López</div>
+              <div class="contact-msg">Dale, nos vemos en la biblio a las 3 📚</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">10:42</div>
+              <div class="badge">2</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">JP</div>
+            <div class="contact-info">
+              <div class="contact-name">Juan Pérez</div>
+              <div class="contact-msg">Gracias por los apuntes! Me salvaste</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">9:15</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">GR</div>
+            <div class="contact-info">
+              <div class="contact-name">Grupo Fisiología II</div>
+              <div class="contact-msg">Ana: Alguien tiene el TP de mañana?</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">8:30</div>
+              <div class="badge">5</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#2563EB,#06b6d4);">LD</div>
+            <div class="contact-info">
+              <div class="contact-name">Lucía Domínguez</div>
+              <div class="contact-msg">El parcial se pasó al lunes</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">Ayer</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#10b981,#3b82f6);">RT</div>
+            <div class="contact-info">
+              <div class="contact-name">Rodrigo Torres</div>
+              <div class="contact-msg">Foto enviada</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">Ayer</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#e11d48,#f97316);">CS</div>
+            <div class="contact-info">
+              <div class="contact-name">Carla Suárez</div>
+              <div class="contact-msg">Audio 0:23</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">Lun</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#7c3aed,#2563EB);">DM</div>
+            <div class="contact-info">
+              <div class="contact-name">Diego Morales</div>
+              <div class="contact-msg">Nos juntamos a estudiar el finde?</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">Lun</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="m-avatar lg" style="background:linear-gradient(135deg,#0ea5e9,#6366f1);">GD</div>
+            <div class="contact-info">
+              <div class="contact-name">Grupo Derecho Const.</div>
+              <div class="contact-msg">Prof: Lean el cap. 8 para el jueves</div>
+            </div>
+            <div class="contact-meta">
+              <div class="contact-time">Dom</div>
+              <div class="badge">12</div>
+            </div>
+          </div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item active"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 4: CHAT ==================== -->
+      <div class="screen" id="screen-4">
+        <div class="m-topbar">
+          <div class="flex items-center gap-8">
+            <span style="font-size:18px;cursor:pointer;">←</span>
+            <div class="m-avatar" style="background:linear-gradient(135deg,#22c55e,#14b8a6);width:32px;height:32px;font-size:11px;">ML</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#1a1a1a;">María López</div>
+              <div class="xs" style="color:#22c55e;">En línea</div>
+            </div>
+          </div>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon">📞</div>
+            <div class="m-topbar-icon">···</div>
+          </div>
+        </div>
+
+        <div style="padding:12px;flex:1;overflow-y:auto;min-height:calc(812px - 92px - 80px - 56px);">
+          <div style="text-align:center;margin-bottom:12px;">
+            <span class="xs muted" style="background:#F5F3EF;padding:3px 10px;border-radius:100px;">Hoy</span>
+          </div>
+
+          <div class="bubble bubble-in">
+            Hola! Tenés los resúmenes de la clase de ayer?
+            <div class="bubble-time">9:10</div>
+            <div style="position:absolute;top:6px;right:-28px;font-size:12px;cursor:pointer;opacity:0.5;" title="Traducir">🌐</div>
+          </div>
+          <div class="bubble bubble-out">
+            Sí! Te los paso ahora. Están bastante completos
+            <div class="bubble-time">9:12</div>
+          </div>
+          <div class="bubble bubble-out">
+            <div style="background:rgba(255,255,255,0.15);border-radius:8px;padding:8px;margin-bottom:4px;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:24px;">📄</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Resumen_Fisio_Clase8.pdf</div>
+                <div style="font-size:10px;opacity:0.7;">2.3 MB</div>
+              </div>
+            </div>
+            <div class="bubble-time">9:12</div>
+          </div>
+          <div class="bubble bubble-in">
+            Sos genia! 🙌 Ahora sí puedo estudiar
+            <div class="bubble-time">9:14</div>
+            <div style="position:absolute;top:6px;right:-28px;font-size:12px;cursor:pointer;opacity:0.5;" title="Traducir">🌐</div>
+          </div>
+          <div class="bubble bubble-in">
+            Querés juntarte en la biblio a las 3? Podemos repasar juntas
+            <div class="bubble-time">9:15</div>
+            <div style="position:absolute;top:6px;right:-28px;font-size:12px;cursor:pointer;opacity:0.5;" title="Traducir">🌐</div>
+          </div>
+          <div class="bubble bubble-out">
+            Dale perfecto! Te veo ahí
+            <div class="bubble-time">9:16</div>
+          </div>
+          <div class="bubble bubble-in">
+            Dale, nos vemos en la biblio a las 3 📚
+            <div class="bubble-time">10:42</div>
+            <div style="position:absolute;top:6px;right:-28px;font-size:12px;cursor:pointer;opacity:0.5;" title="Traducir">🌐</div>
+          </div>
+        </div>
+
+        <div class="input-bar">
+          <div class="input-bar-icon">📷</div>
+          <div class="input-bar-icon">🎤</div>
+          <input placeholder="Escribe un mensaje..." />
+          <div class="send-btn">➤</div>
+        </div>
+
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item active"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 5: COMMUNITIES ==================== -->
+      <div class="screen" id="screen-5">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Comunidades</span>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon">➕</div>
+          </div>
+        </div>
+        <div class="m-content">
+          <!-- Category pills -->
+          <div class="h-scroll mb-12">
+            <span class="pill pill-accent">Todas</span>
+            <span class="pill pill-outline">Medicina</span>
+            <span class="pill pill-outline">Ingeniería</span>
+            <span class="pill pill-outline">Derecho</span>
+            <span class="pill pill-outline">Diseño</span>
+            <span class="pill pill-outline">Economía</span>
+            <span class="pill pill-outline">Psicología</span>
+          </div>
+
+          <!-- Community 1 -->
+          <div class="community-card">
+            <div class="community-banner" style="background:linear-gradient(135deg,#2563EB,#7c3aed);">🧬</div>
+            <div class="community-body">
+              <div class="community-title">Medicina UBA</div>
+              <div class="community-desc">Comunidad de estudiantes de Medicina de la UBA. Compartimos apuntes, resúmenes y experiencias.</div>
+              <div class="community-footer">
+                <div class="community-members">👥 2,340 miembros</div>
+                <button class="btn-primary btn-sm">Unirse</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Community 2 -->
+          <div class="community-card">
+            <div class="community-banner" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">⚖️</div>
+            <div class="community-body">
+              <div class="community-title">Derecho Constitucional</div>
+              <div class="community-desc">Debate y estudio de Derecho Constitucional. Jurisprudencia, doctrina y parciales anteriores.</div>
+              <div class="community-footer">
+                <div class="community-members">👥 890 miembros</div>
+                <button class="btn-primary btn-sm" style="background:#22c55e;">✓ Miembro</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Community 3 -->
+          <div class="community-card">
+            <div class="community-banner" style="background:linear-gradient(135deg,#22c55e,#06b6d4);">🔬</div>
+            <div class="community-body">
+              <div class="community-title">Bioquímica Avanzada</div>
+              <div class="community-desc">Para los que cursamos Bioquímica y necesitamos apoyo mutuo. Enzimas, metabolismo y más.</div>
+              <div class="community-footer">
+                <div class="community-members">👥 1,120 miembros</div>
+                <button class="btn-primary btn-sm">Unirse</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Community 4 -->
+          <div class="community-card">
+            <div class="community-banner" style="background:linear-gradient(135deg,#ec4899,#8b5cf6);">💻</div>
+            <div class="community-body">
+              <div class="community-title">Programación FIUBA</div>
+              <div class="community-desc">Algoritmos, estructuras de datos y proyectos. De Algo I hasta Tesis.</div>
+              <div class="community-footer">
+                <div class="community-members">👥 3,450 miembros</div>
+                <button class="btn-primary btn-sm">Unirse</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item active"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 6: SEARCH ==================== -->
+      <div class="screen" id="screen-6">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Buscar</span>
+        </div>
+        <div class="m-content">
+          <div class="search-wrap">
+            <input class="search-input" placeholder="Buscar materias, temas, personas..." value="sistema renina angiotensina" style="padding-left:36px;" />
+          </div>
+
+          <!-- Suggestion chips -->
+          <div class="h-scroll mb-12">
+            <span class="pill pill-ghost">📘 Fisiología</span>
+            <span class="pill pill-ghost">🧬 Bioquímica</span>
+            <span class="pill pill-ghost">⚖️ Derecho</span>
+            <span class="pill pill-ghost">📐 Cálculo</span>
+            <span class="pill pill-ghost">🧠 Psicología</span>
+          </div>
+
+          <div class="xs bold muted mb-8" style="text-transform:uppercase;letter-spacing:0.5px;">3 resultados encontrados</div>
+
+          <div class="result-card">
+            <div class="flex items-center gap-6 mb-4">
+              <span style="font-size:16px;">📄</span>
+              <div class="result-title">Sistema Renina-Angiotensina-Aldosterona</div>
+            </div>
+            <div class="result-meta">Fisiología II · Unidad 4 · Prof. García</div>
+            <div class="result-snippet">El sistema renina-angiotensina-aldosterona (SRAA) es un sistema hormonal que regula la presión arterial, el volumen extracelular y...</div>
+            <div class="flex gap-6 mt-8">
+              <span class="pill pill-ghost" style="font-size:10px;">Resumen</span>
+              <span class="pill pill-ghost" style="font-size:10px;">⭐ 4.8</span>
+              <span class="pill pill-ghost" style="font-size:10px;">📥 234</span>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <div class="flex items-center gap-6 mb-4">
+              <span style="font-size:16px;">🎬</span>
+              <div class="result-title">Video: SRAA explicado en 10 min</div>
+            </div>
+            <div class="result-meta">Subido por María López · 1,200 vistas</div>
+            <div class="result-snippet">Explicación paso a paso del mecanismo de regulación de la presión arterial mediante el SRAA con diagramas animados.</div>
+            <div class="flex gap-6 mt-8">
+              <span class="pill pill-ghost" style="font-size:10px;">Video</span>
+              <span class="pill pill-ghost" style="font-size:10px;">⭐ 4.9</span>
+              <span class="pill pill-ghost" style="font-size:10px;">👁 1.2k</span>
+            </div>
+          </div>
+
+          <div class="result-card">
+            <div class="flex items-center gap-6 mb-4">
+              <span style="font-size:16px;">🃏</span>
+              <div class="result-title">Flashcards: Fisiología Renal</div>
+            </div>
+            <div class="result-meta">42 tarjetas · Creado por Ana Martínez</div>
+            <div class="result-snippet">Set de flashcards que cubre todo el sistema renal incluyendo SRAA, filtración glomerular y mecanismos de contracorriente.</div>
+            <div class="flex gap-6 mt-8">
+              <span class="pill pill-ghost" style="font-size:10px;">Flashcards</span>
+              <span class="pill pill-ghost" style="font-size:10px;">⭐ 4.7</span>
+              <span class="pill pill-ghost" style="font-size:10px;">📥 189</span>
+            </div>
+          </div>
+
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 7: PROFILE ==================== -->
+      <div class="screen" id="screen-7">
+        <div style="position:sticky;top:0;z-index:50;height:44px;display:flex;align-items:center;justify-content:space-between;padding:12px 16px 0;background:transparent;">
+        </div>
+        <div class="profile-cover">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar-big">CG</div>
+          </div>
+        </div>
+        <div class="profile-info">
+          <div class="profile-name">Cristian García</div>
+          <div class="profile-uni">🎓 Universidad de Buenos Aires · Ing. Biomédica</div>
+          <div class="flex gap-12 mt-8">
+            <div><span class="bold" style="color:#1a1a1a;">342</span> <span class="xs muted">amigos</span></div>
+            <div><span class="bold" style="color:#1a1a1a;">89</span> <span class="xs muted">posts</span></div>
+            <div><span class="bold" style="color:#1a1a1a;">1,180</span> <span class="xs muted">XP</span></div>
+          </div>
+          <div class="flex gap-8 mt-8">
+            <button class="btn-primary" style="flex:1;font-size:12px;padding:8px;">✏️ Editar perfil</button>
+            <button class="btn-primary" style="background:#F5F3EF;color:#1a1a1a;border:1px solid #e5e2dc;padding:8px 12px;font-size:12px;">📤</button>
+          </div>
+        </div>
+
+        <div class="tab-bar" style="margin:0;">
+          <div class="tab-item active">Posts</div>
+          <div class="tab-item">Amigos</div>
+          <div class="tab-item">Info</div>
+          <div class="tab-item">CV</div>
+        </div>
+
+        <div style="padding:12px;">
+          <!-- Skills -->
+          <div class="mb-12">
+            <div class="xs bold muted mb-8" style="text-transform:uppercase;letter-spacing:0.5px;">Habilidades</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              <span class="skill-chip">🧬 Biología Molecular</span>
+              <span class="skill-chip">🫀 Fisiología</span>
+              <span class="skill-chip">📊 Bioestadística</span>
+              <span class="skill-chip">💻 MATLAB</span>
+              <span class="skill-chip">🔬 Lab Clínico</span>
+              <span class="skill-chip">🧠 Neurociencia</span>
+            </div>
+          </div>
+
+          <!-- Recent post -->
+          <div class="m-card">
+            <div class="flex items-center gap-8 mb-8">
+              <div class="m-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">CG</div>
+              <div class="flex-1">
+                <div style="font-size:13px;font-weight:600;color:#1a1a1a;">Cristian García</div>
+                <div class="xs muted">hace 1d</div>
+              </div>
+            </div>
+            <p style="font-size:13px;color:#374151;line-height:1.5;">Terminé el proyecto de procesamiento de señales biomédicas. El filtro Butterworth funcionó perfecto para el ECG. 📈⚡</p>
+            <div class="reactions">
+              <div class="reaction active">🔥 <span class="xs bold">18</span></div>
+              <div class="reaction">🧠 <span class="xs bold">7</span></div>
+              <div class="reaction">💬 <span class="xs bold">4</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 8: SUBSCRIPTION ==================== -->
+      <div class="screen" id="screen-8">
+        <div class="m-topbar">
+          <div class="flex items-center gap-8">
+            <span style="font-size:18px;cursor:pointer;">←</span>
+            <span class="m-topbar-title">Planes</span>
+          </div>
+        </div>
+        <div class="m-content">
+          <div style="text-align:center;margin-bottom:12px;">
+            <span style="font-size:32px;">⭐</span>
+            <div style="font-size:16px;font-weight:800;color:#1a1a1a;margin-top:4px;">Mejora tu experiencia</div>
+            <div class="xs muted">Desbloquea todo el potencial de Conniku</div>
+          </div>
+
+          <!-- Toggle -->
+          <div class="toggle-group">
+            <div class="toggle-opt active">Mensual</div>
+            <div class="toggle-opt">Anual <span style="color:#22c55e;font-size:10px;font-weight:700;">-20%</span></div>
+          </div>
+
+          <!-- Free -->
+          <div class="plan-card">
+            <div class="plan-name">Gratis</div>
+            <div class="plan-price">$0 <span>/mes</span></div>
+            <ul class="plan-features">
+              <li>5 preguntas AI por día</li>
+              <li>Flashcards básicas</li>
+              <li>1 comunidad</li>
+              <li>Chat con compañeros</li>
+            </ul>
+            <button class="btn-primary" style="width:100%;background:#F5F3EF;color:#6b7280;border:1px solid #e5e2dc;">Plan actual</button>
+          </div>
+
+          <!-- Pro -->
+          <div class="plan-card popular">
+            <div class="plan-badge">Más popular</div>
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">$4.99 <span>/mes</span></div>
+            <div style="font-size:11px;color:#6b7280;margin-top:-2px;margin-bottom:6px;">≈ ARS $4,990 · ≈ COP $20,950 · ≈ MXN $89</div>
+            <ul class="plan-features">
+              <li>AI ilimitada + modo Socrático</li>
+              <li>Flashcards + Quizzes ilimitados</li>
+              <li>Comunidades ilimitadas</li>
+              <li>Escaneo de ejercicios</li>
+              <li>Guías de estudio personalizadas</li>
+              <li>Sin publicidad</li>
+            </ul>
+            <button class="btn-primary" style="width:100%;">Comenzar prueba gratis</button>
+          </div>
+
+          <!-- Campus -->
+          <div class="plan-card">
+            <div class="plan-name">Campus</div>
+            <div class="plan-price">$2.99 <span>/mes por usuario</span></div>
+            <div style="font-size:11px;color:#6b7280;margin-top:-2px;margin-bottom:6px;">≈ ARS $2,990 · ≈ COP $12,560 · ≈ MXN $53</div>
+            <ul class="plan-features">
+              <li>Todo lo de Pro</li>
+              <li>Panel admin para universidad</li>
+              <li>Analíticas institucionales</li>
+              <li>SSO & integración LMS</li>
+              <li>Soporte prioritario</li>
+            </ul>
+            <button class="btn-primary" style="width:100%;background:#8b5cf6;">Contactar ventas</button>
+          </div>
+
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+      <!-- ==================== SCREEN 9: NOTIFICATIONS ==================== -->
+      <div class="screen" id="screen-9">
+        <div class="m-topbar">
+          <span class="m-topbar-title">Notificaciones</span>
+          <div class="m-topbar-actions">
+            <div class="m-topbar-icon" style="font-size:12px;">✓✓</div>
+          </div>
+        </div>
+        <div class="m-content" style="padding-top:4px;">
+          <div class="xs bold muted mb-8" style="text-transform:uppercase;letter-spacing:0.5px;">Nuevas</div>
+
+          <div class="notif-row unread">
+            <div class="notif-icon">❤️</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#22c55e,#14b8a6);flex-shrink:0;">ML</div>
+            <div class="flex-1">
+              <div class="notif-text"><strong>María López</strong> le dio ❤️ a tu publicación sobre el proyecto de señales biomédicas.</div>
+              <div class="notif-time">hace 5 min</div>
+            </div>
+          </div>
+
+          <div class="notif-row unread">
+            <div class="notif-icon">💬</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#8b5cf6,#ec4899);flex-shrink:0;">JP</div>
+            <div class="flex-1">
+              <div class="notif-text"><strong>Juan Pérez</strong> comentó: "Excelente trabajo! ¿Qué orden usaste para el filtro?"</div>
+              <div class="notif-time">hace 12 min</div>
+            </div>
+          </div>
+
+          <div class="notif-row unread">
+            <div class="notif-icon">🔥</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);flex-shrink:0;">🏆</div>
+            <div class="flex-1">
+              <div class="notif-text">¡Subiste al <strong>puesto #2</strong> en la Liga Diamante! Solo te faltan 60 XP para el #1.</div>
+              <div class="notif-time">hace 30 min</div>
+            </div>
+          </div>
+
+          <div class="notif-row unread">
+            <div class="notif-icon">👥</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#2563EB,#06b6d4);flex-shrink:0;">LD</div>
+            <div class="flex-1">
+              <div class="notif-text"><strong>Lucía Domínguez</strong> quiere ser tu amiga.</div>
+              <div class="notif-time">hace 1h</div>
+            </div>
+          </div>
+
+          <div class="divider" style="margin:12px 0;"></div>
+          <div class="xs bold muted mb-8" style="text-transform:uppercase;letter-spacing:0.5px;">Anteriores</div>
+
+          <div class="notif-row">
+            <div class="notif-icon">📝</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#2563EB,#7c3aed);flex-shrink:0;">🤖</div>
+            <div class="flex-1">
+              <div class="notif-text"><strong>Conniku AI</strong> generó tu guía de estudio para Fisiología II — Unidad 5.</div>
+              <div class="notif-time">hace 3h</div>
+            </div>
+          </div>
+
+          <div class="notif-row">
+            <div class="notif-icon">🎯</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#22c55e,#14b8a6);flex-shrink:0;">✅</div>
+            <div class="flex-1">
+              <div class="notif-text">Completaste el quiz de <strong>Bioquímica</strong> con 9/10. ¡Excelente!</div>
+              <div class="notif-time">hace 5h</div>
+            </div>
+          </div>
+
+          <div class="notif-row">
+            <div class="notif-icon">📅</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#ef4444,#f97316);flex-shrink:0;">⏰</div>
+            <div class="flex-1">
+              <div class="notif-text">Recordatorio: Parcial de <strong>Fisiología II</strong> en 3 días (viernes 4 de abril).</div>
+              <div class="notif-time">hace 8h</div>
+            </div>
+          </div>
+
+          <div class="notif-row">
+            <div class="notif-icon">🧠</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#8b5cf6,#ec4899);flex-shrink:0;">🃏</div>
+            <div class="flex-1">
+              <div class="notif-text">Tenés <strong>15 flashcards</strong> pendientes de repaso. ¡No pierdas tu racha!</div>
+              <div class="notif-time">Ayer</div>
+            </div>
+          </div>
+
+          <div class="notif-row">
+            <div class="notif-icon">👥</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#0ea5e9,#6366f1);flex-shrink:0;">GR</div>
+            <div class="flex-1">
+              <div class="notif-text">Nuevo post en <strong>Medicina UBA</strong>: "Horarios de consulta actualizados".</div>
+              <div class="notif-time">Ayer</div>
+            </div>
+          </div>
+
+          <div class="notif-row">
+            <div class="notif-icon">🔥</div>
+            <div class="m-avatar" style="width:32px;height:32px;font-size:10px;background:linear-gradient(135deg,#f59e0b,#ef4444);flex-shrink:0;">🔥</div>
+            <div class="flex-1">
+              <div class="notif-text">¡Racha de <strong>11 días</strong>! Seguí así para desbloquear la insignia Dorada.</div>
+              <div class="notif-time">Ayer</div>
+            </div>
+          </div>
+
+          <div style="height:20px;"></div>
+        </div>
+        <div class="m-bottomnav">
+          <div class="m-nav-item"><span class="nav-icon">🏠</span><span>Inicio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">👥</span><span>Social</span></div>
+          <div class="m-nav-item"><span class="nav-icon">📊</span><span>Estudio</span></div>
+          <div class="m-nav-item"><span class="nav-icon">💬</span><span>Chat</span></div>
+          <div class="m-nav-item"><span class="nav-icon">☰</span><span>Más</span></div>
+        </div>
+      </div>
+
+    </div><!-- /phone-screen -->
+  </div><!-- /phone-frame -->
+</div><!-- /phone-wrapper -->
+
+<p class="page-sub" style="margin-top:16px;">Haz clic en las miniaturas para navegar entre pantallas</p>
+
+<script>
+function showScreen(index) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  // Show target
+  const target = document.getElementById('screen-' + index);
+  if (target) {
+    target.classList.add('active');
+    target.style.display = 'block';
+    target.scrollTop = 0;
+  }
+  // Update thumbnails
+  document.querySelectorAll('.thumb-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', i === index);
+  });
+  // Update status bar color based on screen
+  const statusBar = document.querySelector('.status-bar');
+  if (index === 7) {
+    statusBar.style.background = 'transparent';
+    statusBar.style.color = '#fff';
+  } else {
+    statusBar.style.background = '#F5F3EF';
+    statusBar.style.color = '#1a1a1a';
+  }
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  const current = [...document.querySelectorAll('.thumb-btn')].findIndex(b => b.classList.contains('active'));
+  if (e.key === 'ArrowRight' && current < 9) showScreen(current + 1);
+  if (e.key === 'ArrowLeft' && current > 0) showScreen(current - 1);
+});
+
+// Initialize
+showScreen(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,3406 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="nocturno">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku - Catálogo de Páginas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ─── Sereno (default light) ─────────────────────────────── */
+:root,
+[data-theme="nocturno"] {
+  --bg-primary: #F5F3EF;
+  --bg-secondary: #FAFAF8;
+  --bg-card: #FFFFFF;
+  --bg-hover: #EDEAE5;
+  --bg-tertiary: #F9F7F3;
+  --text-primary: #1D2939;
+  --text-secondary: #475467;
+  --text-muted: #98A2B3;
+  --accent: #2563EB;
+  --accent-blue: #2563EB;
+  --accent-green: #059669;
+  --accent-orange: #D97706;
+  --accent-red: #DC2626;
+  --accent-purple: #7C3AED;
+  --accent-cyan: #0891B2;
+  --border: #E5E7EB;
+  --border-subtle: #F3F4F6;
+  --shadow: 0 1px 3px rgba(16,24,40,0.1), 0 1px 2px rgba(16,24,40,0.06);
+  --shadow-sm: 0 1px 2px rgba(16,24,40,0.05);
+  --radius: 8px;
+  --radius-sm: 6px;
+  --radius-lg: 12px;
+  --font-display: 'Inter', -apple-system, sans-serif;
+  --font-sans: 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --transition-fast: 150ms ease;
+  --transition-med: 200ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ─── Noche Calma ────────────────────────────────────────── */
+[data-theme="calido"] {
+  --bg-primary: #111318;
+  --bg-secondary: #1A1D24;
+  --bg-card: #1F2229;
+  --bg-hover: #2A2D36;
+  --bg-tertiary: #22252E;
+  --text-primary: #ECECEF;
+  --text-secondary: #A0A4AD;
+  --text-muted: #6B7080;
+  --accent: #60A5FA;
+  --accent-blue: #60A5FA;
+  --accent-green: #34D399;
+  --accent-orange: #FBBF24;
+  --accent-red: #F87171;
+  --accent-purple: #A78BFA;
+  --accent-cyan: #22D3EE;
+  --border: #2D3039;
+  --border-subtle: #262930;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* ─── Bosque ─────────────────────────────────────────────── */
+[data-theme="profesional"] {
+  --bg-primary: #F2F5F0;
+  --bg-secondary: #F7FAF5;
+  --bg-card: #FFFFFF;
+  --bg-hover: #E8ECE4;
+  --bg-tertiary: #EDF0EA;
+  --text-primary: #1A2E1A;
+  --text-secondary: #3D5A3D;
+  --text-muted: #7A9A7A;
+  --accent: #16A34A;
+  --accent-blue: #2563EB;
+  --accent-green: #16A34A;
+  --accent-orange: #CA8A04;
+  --accent-red: #DC2626;
+  --accent-purple: #7C3AED;
+  --accent-cyan: #0891B2;
+  --border: #D5DDD0;
+  --border-subtle: #E8ECE4;
+  --shadow: 0 1px 3px rgba(16,40,16,0.08);
+  --shadow-sm: 0 1px 2px rgba(16,40,16,0.05);
+}
+
+/* ─── Oceano ─────────────────────────────────────────────── */
+[data-theme="vibrante"] {
+  --bg-primary: #0F172A;
+  --bg-secondary: #1E293B;
+  --bg-card: #1E293B;
+  --bg-hover: #334155;
+  --bg-tertiary: #253347;
+  --text-primary: #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --accent: #38BDF8;
+  --accent-blue: #38BDF8;
+  --accent-green: #34D399;
+  --accent-orange: #FBBF24;
+  --accent-red: #FB7185;
+  --accent-purple: #A78BFA;
+  --accent-cyan: #22D3EE;
+  --border: #334155;
+  --border-subtle: #293548;
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* ─── Reset ──────────────────────────────────────────────── */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+h1, h2, h3, .sidebar-brand, .stat-value, .page-header h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
+
+/* ─── Catalog Layout ─────────────────────────────────────── */
+.catalog-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.catalog-nav {
+  width: 240px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow-y: auto;
+  padding: 20px 0;
+  z-index: 100;
+}
+
+.catalog-nav-title {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 0 16px 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 8px;
+}
+
+.catalog-nav a {
+  display: block;
+  padding: 7px 16px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 150ms ease;
+  font-weight: 450;
+}
+
+.catalog-nav a:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.catalog-main {
+  margin-left: 240px;
+  flex: 1;
+  padding: 32px 40px;
+  max-width: 1200px;
+}
+
+/* ─── Section Dividers ───────────────────────────────────── */
+.page-section {
+  margin-bottom: 48px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  letter-spacing: -0.03em;
+}
+
+.section-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+/* ─── Mockup Container ───────────────────────────────────── */
+.mockup {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+/* ─── TopBar ──────────────────────────────────────────────── */
+.topbar {
+  height: 56px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+}
+
+.topbar-left { display: flex; align-items: center; }
+.topbar-logo { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+.topbar-center { flex: 1; max-width: 400px; margin: 0 24px; }
+
+.topbar-search {
+  display: flex;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0 12px;
+}
+
+.topbar-search-icon { font-size: 14px; margin-right: 8px; color: var(--text-muted); }
+
+.topbar-search input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--text-primary);
+  outline: none;
+  font-family: var(--font-sans);
+}
+
+.topbar-search input::placeholder { color: var(--text-muted); }
+.topbar-right { display: flex; align-items: center; gap: 4px; }
+
+.topbar-icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.topbar-avatar-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+}
+
+/* ─── Sidebar ────────────────────────────────────────────── */
+.sidebar {
+  width: 260px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding-top: 16px;
+  flex-shrink: 0;
+}
+
+.sidebar-brand {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  padding: 0 20px 12px;
+}
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 8px 12px; }
+
+.sidebar-section-title,
+.nav-section-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 16px 8px 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 450;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+
+.nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.nav-item.active {
+  background: rgba(37,99,235,0.08);
+  color: var(--accent-blue);
+  font-weight: 600;
+  position: relative;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--accent-blue);
+  border-radius: 0 3px 3px 0;
+}
+
+.project-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.user-profile {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-primary);
+}
+
+/* ─── Right Panel ────────────────────────────────────────── */
+.right-panel {
+  width: 320px;
+  flex-shrink: 0;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.rp-widget {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.rp-widget-title { font-size: 14px; font-weight: 600; margin: 0 0 12px; color: var(--text-primary); }
+.rp-xp-bar { height: 6px; background: var(--bg-hover); border-radius: 3px; overflow: hidden; }
+.rp-xp-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+.rp-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.rp-person:last-child { border-bottom: none; }
+
+.rp-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.rp-person-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+.rp-see-more {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--accent);
+  text-align: center;
+  font-family: var(--font-sans);
+}
+
+/* ─── Main Content ───────────────────────────────────────── */
+.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.page-header {
+  padding: 20px 32px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.page-header h2 { font-size: 24px; font-weight: 700; letter-spacing: -0.03em; }
+.page-header p { color: var(--text-muted); font-size: 13px; margin-top: 4px; }
+
+.page-body { flex: 1; overflow-y: auto; padding: 24px 32px; }
+
+/* ─── Cards ──────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ─── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.btn-primary { background: var(--accent-blue); color: white; }
+.btn-secondary { background: var(--bg-tertiary); color: var(--text-secondary); border: 1px solid var(--border); }
+.btn-danger { background: rgba(220,38,38,0.08); color: var(--accent-red); border: 1px solid rgba(220,38,38,0.15); }
+.btn-sm { padding: 6px 12px; font-size: 12.5px; }
+.btn-xs { padding: 4px 8px; font-size: 12px; border-radius: 4px; }
+
+/* ─── Stats ──────────────────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
+
+/* ─── Tabs ───────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+}
+
+.tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.tab.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+/* ─── Chat ───────────────────────────────────────────────── */
+.chat-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+}
+
+.chat-message {
+  max-width: 78%;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  font-size: 13.5px;
+  line-height: 1.65;
+}
+
+.chat-message.user {
+  align-self: flex-end;
+  background: var(--accent-blue);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.chat-message.assistant {
+  align-self: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-bottom-left-radius: 4px;
+}
+
+.chat-input-area {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+}
+
+.chat-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+/* ─── Documents ──────────────────────────────────────────── */
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+.doc-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.doc-icon.pdf { background: rgba(220,38,38,0.1); color: var(--accent-red); }
+.doc-icon.docx { background: rgba(37,99,235,0.1); color: var(--accent-blue); }
+.doc-icon.xlsx { background: rgba(5,150,105,0.1); color: var(--accent-green); }
+.doc-icon.pptx { background: rgba(217,119,6,0.1); color: var(--accent-orange); }
+
+.doc-info { flex: 1; }
+.doc-name { font-size: 14px; font-weight: 500; }
+.doc-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+.doc-status { font-size: 12px; padding: 4px 8px; border-radius: 24px; }
+.doc-status.processed { background: rgba(5,150,105,0.1); color: var(--accent-green); }
+
+/* ─── Form ───────────────────────────────────────────────── */
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-family: var(--font-sans);
+  outline: none;
+}
+
+.form-input::placeholder { color: var(--text-muted); }
+
+/* ─── Badge ──────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-blue { background: rgba(37,99,235,0.1); color: var(--accent-blue); }
+.badge-green { background: rgba(5,150,105,0.1); color: var(--accent-green); }
+.badge-orange { background: rgba(217,119,6,0.1); color: var(--accent-orange); }
+.badge-red { background: rgba(220,38,38,0.1); color: var(--accent-red); }
+.badge-purple { background: rgba(124,58,237,0.1); color: var(--accent-purple); }
+.badge-cyan { background: rgba(8,145,178,0.1); color: var(--accent-cyan); }
+
+/* ─── Avatar ─────────────────────────────────────────────── */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.avatar-sm { width: 32px; height: 32px; font-size: 13px; }
+.avatar-lg { width: 56px; height: 56px; font-size: 22px; }
+.avatar-xl { width: 80px; height: 80px; font-size: 32px; }
+
+/* ─── Theme Switcher ─────────────────────────────────────── */
+.theme-switcher {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 200;
+  display: flex;
+  gap: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+}
+
+.theme-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+}
+
+.theme-btn.active { border-color: var(--text-primary); }
+
+.theme-btn[data-theme="nocturno"] { background: #F5F3EF; }
+.theme-btn[data-theme="calido"] { background: #111318; }
+.theme-btn[data-theme="profesional"] { background: #F2F5F0; }
+.theme-btn[data-theme="vibrante"] { background: #0F172A; }
+
+.theme-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  align-self: center;
+  margin-right: 4px;
+  font-weight: 500;
+}
+
+/* ─── 3-col mockup ───────────────────────────────────────── */
+.three-col {
+  display: flex;
+  height: 600px;
+  overflow: hidden;
+}
+
+.three-col .sidebar { height: 100%; }
+.three-col .main-content { height: 100%; }
+.three-col .right-panel { height: 100%; }
+
+/* ─── Flex utilities ─────────────────────────────────────── */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-4 { gap: 4px; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+.gap-16 { gap: 16px; }
+.gap-24 { gap: 24px; }
+.mt-8 { margin-top: 8px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mb-8 { margin-bottom: 8px; }
+.mb-12 { margin-bottom: 12px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.p-16 { padding: 16px; }
+.p-20 { padding: 20px; }
+.p-24 { padding: 24px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 12px; }
+.text-muted { color: var(--text-muted); }
+.text-secondary { color: var(--text-secondary); }
+.fw-600 { font-weight: 600; }
+.fw-700 { font-weight: 700; }
+
+/* ─── Post ───────────────────────────────────────────────── */
+.post-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.post-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.post-author { font-size: 14px; font-weight: 600; }
+.post-time { font-size: 12px; color: var(--text-muted); }
+.post-body { font-size: 14px; line-height: 1.6; margin-bottom: 16px; color: var(--text-secondary); }
+
+.post-reactions {
+  display: flex;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.post-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.post-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  border-radius: var(--radius-sm);
+}
+
+.post-action-btn:hover { background: var(--bg-hover); color: var(--text-secondary); }
+
+/* ─── FB Profile ─────────────────────────────────────────── */
+.fb-cover {
+  height: 200px;
+  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  position: relative;
+}
+
+.fb-profile-header {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 0 32px;
+  margin-top: -40px;
+  position: relative;
+}
+
+.fb-avatar-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: 700;
+  border: 4px solid var(--bg-card);
+  flex-shrink: 0;
+}
+
+/* ─── Certificate ────────────────────────────────────────── */
+.certificate {
+  background: var(--bg-card);
+  border: 2px solid var(--accent-blue);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  text-align: center;
+  position: relative;
+}
+
+.certificate::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  pointer-events: none;
+}
+
+/* ─── Flashcard ──────────────────────────────────────────── */
+.flashcard {
+  width: 100%;
+  max-width: 400px;
+  height: 240px;
+  perspective: 1000px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  font-size: 18px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+  background: var(--bg-secondary);
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* ─── FSRS Buttons ───────────────────────────────────────── */
+.fsrs-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.fsrs-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.fsrs-btn.again { background: var(--accent-red); }
+.fsrs-btn.hard { background: var(--accent-orange); }
+.fsrs-btn.good { background: var(--accent-blue); }
+.fsrs-btn.easy { background: var(--accent-green); }
+
+/* ─── Progress Bar ───────────────────────────────────────── */
+.progress-bar {
+  height: 8px;
+  background: var(--bg-hover);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--accent-blue);
+}
+
+/* ─── Message Bubbles ────────────────────────────────────── */
+.msg-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+}
+
+.msg-bubble.sent {
+  align-self: flex-end;
+  background: var(--accent-blue);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.msg-bubble.received {
+  align-self: flex-start;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-bottom-left-radius: 4px;
+}
+
+.msg-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  border-bottom-left-radius: 4px;
+  align-self: flex-start;
+  width: fit-content;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typing-bounce 1.2s infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+}
+
+/* ─── Mood Emoji ─────────────────────────────────────────── */
+.mood-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  font-size: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mood-btn.selected {
+  border-color: var(--accent);
+  background: rgba(37,99,235,0.08);
+}
+
+/* ─── Slider ─────────────────────────────────────────────── */
+.range-slider {
+  width: 100%;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-hover);
+  outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+
+/* ─── Pricing ────────────────────────────────────────────── */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.pricing-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  position: relative;
+  text-align: center;
+}
+
+.pricing-card.featured { border: 2px solid var(--accent); }
+.pricing-card.premium { border: 2px solid var(--accent-purple); }
+
+.pricing-badge {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pricing-price {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin: 12px 0 4px;
+}
+
+.pricing-period {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.pricing-features {
+  list-style: none;
+  margin: 20px 0;
+  text-align: left;
+}
+
+.pricing-features li {
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pricing-features li::before {
+  content: '✓';
+  color: var(--accent-green);
+  font-weight: 700;
+}
+
+/* ─── Timer ──────────────────────────────────────────────── */
+.giant-timer {
+  font-size: 72px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+/* ─── Notification ───────────────────────────────────────── */
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.notif-text { font-size: 13px; line-height: 1.5; }
+.notif-time { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+/* ─── Stars ──────────────────────────────────────────────── */
+.stars { color: var(--accent-orange); letter-spacing: 2px; }
+
+/* ─── Skill Tag ──────────────────────────────────────────── */
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* ─── Toggle ─────────────────────────────────────────────── */
+.toggle-group {
+  display: inline-flex;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius);
+  padding: 3px;
+  border: 1px solid var(--border-subtle);
+}
+
+.toggle-opt {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+}
+
+.toggle-opt.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+/* ─── Language Pill ──────────────────────────────────────── */
+.lang-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.lang-pill.active {
+  background: rgba(37,99,235,0.08);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* ─── Radar / Score chart placeholder ────────────────────── */
+.radar-placeholder {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  position: relative;
+  background: var(--bg-tertiary);
+}
+
+.radar-placeholder::after {
+  content: '';
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 1px dashed var(--border);
+}
+
+/* ─── Calendar badge ─────────────────────────────────────── */
+.cal-badge {
+  width: 48px;
+  height: 52px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  text-align: center;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-badge-day { font-size: 20px; font-weight: 700; line-height: 1; }
+.cal-badge-month { font-size: 10px; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; }
+
+/* ─── Responsive cards ───────────────────────────────────── */
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: 1fr; }
+  .card-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CATALOG NAVIGATION
+     ═══════════════════════════════════════════════════════════ -->
+<div class="catalog-layout">
+  <nav class="catalog-nav">
+    <div class="catalog-nav-title">Conniku - Catalogo</div>
+    <a href="#layout">1. Layout Completo</a>
+    <a href="#feed">2. Feed / Home</a>
+    <a href="#dashboard">3. Dashboard</a>
+    <a href="#project">4. ProjectView</a>
+    <a href="#quiz">5. Quiz System</a>
+    <a href="#flashcards">6. Flashcards</a>
+    <a href="#messages">7. Mensajes</a>
+    <a href="#friends">8. Amigos</a>
+    <a href="#communities">9. Comunidades</a>
+    <a href="#community-detail">10. Detalle Comunidad</a>
+    <a href="#calendar">11. Calendario</a>
+    <a href="#marketplace">12. Marketplace</a>
+    <a href="#jobs">13. Oportunidades</a>
+    <a href="#tutoring">14. Tutorias</a>
+    <a href="#courses">15. Cursos</a>
+    <a href="#certificate">16. Certificado</a>
+    <a href="#events">17. Eventos</a>
+    <a href="#studyrooms">18. Salas de Estudio</a>
+    <a href="#mentorship">19. Mentorias</a>
+    <a href="#settings">20. Perfil / Ajustes</a>
+    <a href="#subscription">21. Suscripcion</a>
+    <a href="#userprofile">22. Perfil de Usuario</a>
+    <a href="#notifications">23. Notificaciones</a>
+    <a href="#mood">24. Mood Check-in</a>
+  </nav>
+
+  <main class="catalog-main">
+
+    <!-- ═══════════════════════════════════════════════════════
+         1. LAYOUT COMPLETO
+         ═══════════════════════════════════════════════════════ -->
+    <section id="layout" class="page-section">
+      <h2 class="section-title">1. TopBar + Sidebar + Layout</h2>
+      <p class="section-desc">Layout principal de 3 columnas: TopBar (56px), Sidebar (260px), Contenido, Panel Derecho (320px)</p>
+
+      <div class="mockup">
+        <!-- TopBar -->
+        <div class="topbar">
+          <div class="topbar-left">
+            <span class="topbar-logo">Conniku</span>
+          </div>
+          <div class="topbar-center">
+            <div class="topbar-search">
+              <span class="topbar-search-icon">🔍</span>
+              <input type="text" placeholder="Buscar personas, asignaturas, comunidades...">
+            </div>
+          </div>
+          <div class="topbar-right">
+            <button class="topbar-icon-btn">💬</button>
+            <button class="topbar-icon-btn">🔔</button>
+            <button class="topbar-icon-btn">⚙️</button>
+            <div class="topbar-avatar-btn">CG</div>
+          </div>
+        </div>
+
+        <!-- 3-column body -->
+        <div class="three-col">
+          <!-- Sidebar -->
+          <div class="sidebar">
+            <div class="sidebar-nav">
+              <div class="sidebar-section-title">Social</div>
+              <button class="nav-item active">📰 Feed</button>
+              <button class="nav-item">💬 Mensajes</button>
+              <button class="nav-item">👥 Amigos</button>
+              <button class="nav-item">🏘️ Comunidades</button>
+              <button class="nav-item">📅 Eventos</button>
+
+              <div class="sidebar-section-title">Academico</div>
+              <button class="nav-item">📊 Dashboard</button>
+              <button class="nav-item">📚 Cursos</button>
+              <button class="nav-item">🏪 Marketplace</button>
+              <button class="nav-item">💼 Oportunidades</button>
+              <button class="nav-item">🎓 Mentorias</button>
+              <button class="nav-item">🔬 Salas de Estudio</button>
+
+              <div class="sidebar-section-title">Asignaturas</div>
+              <button class="nav-item"><span class="project-dot" style="background:#2563EB"></span> Calculo II</button>
+              <button class="nav-item"><span class="project-dot" style="background:#059669"></span> Fisica III</button>
+              <button class="nav-item"><span class="project-dot" style="background:#D97706"></span> Programacion</button>
+              <button class="nav-item"><span class="project-dot" style="background:#7C3AED"></span> Quimica Org.</button>
+
+              <div class="sidebar-section-title">Soporte</div>
+              <button class="nav-item">⚙️ Ajustes</button>
+              <button class="nav-item">❓ Ayuda</button>
+            </div>
+            <div class="user-profile">
+              <div class="avatar-sm avatar" style="width:32px;height:32px;font-size:13px;">CG</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;">Cristian Garcia</div>
+                <div style="font-size:11px;color:var(--text-muted)">Ing. Sistemas - 6to</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Content -->
+          <div class="main-content" style="background:var(--bg-primary)">
+            <div class="page-header">
+              <h2>Feed</h2>
+              <p>Novedades de tu red academica</p>
+            </div>
+            <div class="page-body" style="padding:24px 32px;">
+              <div style="color:var(--text-muted);font-size:14px;text-align:center;padding:60px 0;">
+                Contenido principal aqui
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Panel -->
+          <div class="right-panel" style="border-left:1px solid var(--border)">
+            <div class="rp-widget">
+              <div class="rp-widget-title">🔥 Racha de Estudio</div>
+              <div style="font-size:28px;font-weight:700;margin-bottom:4px;">12 dias</div>
+              <div style="font-size:12px;color:var(--text-muted)">Tu mejor racha: 21 dias</div>
+            </div>
+            <div class="rp-widget">
+              <div class="rp-widget-title">🏆 XP Semanal</div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;">
+                <span style="color:var(--text-muted)">Nivel 14</span>
+                <span style="color:var(--accent)">2,340 / 3,000 XP</span>
+              </div>
+              <div class="rp-xp-bar"><div class="rp-xp-fill" style="width:78%"></div></div>
+            </div>
+            <div class="rp-widget">
+              <div class="rp-widget-title">Sugerencias</div>
+              <div class="rp-person">
+                <div class="rp-avatar">ML</div>
+                <div>
+                  <div class="rp-person-name">Maria Lopez</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Ing. Industrial</div>
+                </div>
+              </div>
+              <div class="rp-person">
+                <div class="rp-avatar" style="background:var(--accent-green)">JR</div>
+                <div>
+                  <div class="rp-person-name">Juan Reyes</div>
+                  <div style="font-size:11px;color:var(--text-muted)">Medicina</div>
+                </div>
+              </div>
+              <button class="rp-see-more">Ver mas sugerencias</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         2. FEED / HOME
+         ═══════════════════════════════════════════════════════ -->
+    <section id="feed" class="page-section">
+      <h2 class="section-title">2. Feed / Home</h2>
+      <p class="section-desc">Compositor de publicaciones, posts con reacciones, comentarios y acciones sociales</p>
+
+      <div class="mockup p-24">
+        <!-- Post Composer -->
+        <div class="card mb-16">
+          <div class="flex items-center gap-12 mb-12">
+            <div class="avatar">CG</div>
+            <input class="form-input" placeholder="¿Que estas estudiando hoy, Cristian?" style="border-radius:20px;">
+          </div>
+          <div class="flex gap-8" style="padding-left:52px;">
+            <button class="btn btn-secondary btn-sm">📷 Foto</button>
+            <button class="btn btn-secondary btn-sm">📄 Documento</button>
+            <button class="btn btn-secondary btn-sm">📊 Encuesta</button>
+            <button class="btn btn-primary btn-sm" style="margin-left:auto;">Publicar</button>
+          </div>
+        </div>
+
+        <!-- Post 1 -->
+        <div class="post-card">
+          <div class="post-header">
+            <div class="avatar" style="background:var(--accent-purple)">AL</div>
+            <div>
+              <div class="post-author">Ana Lucia Mendez</div>
+              <div class="post-time">hace 2 horas - Universidad de los Andes</div>
+            </div>
+          </div>
+          <div class="post-body">
+            Acabo de terminar mi resumen de Calculo Diferencial, capitulo 4: Derivadas parciales. Si alguien necesita ayuda con la regla de la cadena multivariable, me pueden escribir 📐✨
+          </div>
+          <div class="post-reactions">
+            <span class="reaction-btn">👍 12</span>
+            <span class="reaction-btn">❤️ 3</span>
+            <span class="reaction-btn">🎓 5</span>
+          </div>
+          <div class="post-actions">
+            <button class="post-action-btn">💬 Comentar (4)</button>
+            <button class="post-action-btn">🔄 Compartir</button>
+            <button class="post-action-btn">🔖 Guardar</button>
+          </div>
+          <!-- Comment -->
+          <div style="margin-top:12px;padding:12px 16px;background:var(--bg-tertiary);border-radius:var(--radius);display:flex;gap:10px;align-items:flex-start;">
+            <div class="avatar-sm avatar" style="width:28px;height:28px;font-size:11px;background:var(--accent-green)">DR</div>
+            <div>
+              <span style="font-size:13px;font-weight:600;">Diego Ramirez</span>
+              <span style="font-size:11px;color:var(--text-muted);margin-left:8px;">hace 45 min</span>
+              <div style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Excelente! Me serviria mucho para el parcial del jueves. Te escribo por DM 🙌</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Post 2 -->
+        <div class="post-card">
+          <div class="post-header">
+            <div class="avatar" style="background:var(--accent-orange)">CP</div>
+            <div>
+              <div class="post-author">Carlos Perez</div>
+              <div class="post-time">hace 5 horas - UNAM</div>
+            </div>
+          </div>
+          <div class="post-body">
+            🧬 Logre el primer lugar en el quiz de Biologia Molecular! 9.2/10 en el tema de replicacion del ADN. Las flashcards de Conniku realmente funcionan para memorizar las enzimas.
+          </div>
+          <div style="background:var(--bg-tertiary);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
+            <div class="flex items-center gap-8">
+              <span style="font-size:24px;">🏆</span>
+              <div>
+                <div style="font-size:14px;font-weight:600;">Quiz: Biologia Molecular</div>
+                <div style="font-size:12px;color:var(--accent-green);">Puntuacion: 9.2/10 - Primer lugar</div>
+              </div>
+            </div>
+          </div>
+          <div class="post-reactions">
+            <span class="reaction-btn">👍 24</span>
+            <span class="reaction-btn">🎓 8</span>
+            <span class="reaction-btn">🔥 11</span>
+          </div>
+          <div class="post-actions">
+            <button class="post-action-btn">💬 Comentar (7)</button>
+            <button class="post-action-btn">🔄 Compartir</button>
+            <button class="post-action-btn">🔖 Guardar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         3. DASHBOARD
+         ═══════════════════════════════════════════════════════ -->
+    <section id="dashboard" class="page-section">
+      <h2 class="section-title">3. Dashboard</h2>
+      <p class="section-desc">Racha, estadisticas, liga, tiempo de estudio, XP, insignias y acciones rapidas</p>
+
+      <div class="mockup p-24">
+        <!-- Streak + League row -->
+        <div class="flex gap-16 mb-24">
+          <div class="card flex-1" style="border-left:4px solid var(--accent-orange);">
+            <div class="flex items-center gap-12">
+              <span style="font-size:36px;">🔥</span>
+              <div>
+                <div style="font-size:28px;font-weight:700;">12 dias</div>
+                <div style="font-size:13px;color:var(--text-muted);">Racha de estudio actual</div>
+              </div>
+            </div>
+          </div>
+          <div class="card flex-1" style="border-left:4px solid var(--accent-blue);">
+            <div class="flex items-center gap-12">
+              <span style="font-size:36px;">🥈</span>
+              <div>
+                <div style="font-size:28px;font-weight:700;">Liga Plata</div>
+                <div style="font-size:13px;color:var(--text-muted);">Posicion #3 de 25</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div style="font-size:24px;margin-bottom:8px;">📁</div>
+            <div class="stat-value">6</div>
+            <div class="stat-label">Asignaturas</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:24px;margin-bottom:8px;">📄</div>
+            <div class="stat-value">34</div>
+            <div class="stat-label">Documentos</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:24px;margin-bottom:8px;">⏱️</div>
+            <div class="stat-value">127h</div>
+            <div class="stat-label">Tiempo Total</div>
+          </div>
+          <div class="stat-card">
+            <div style="font-size:24px;margin-bottom:8px;">⭐</div>
+            <div class="stat-value">14</div>
+            <div class="stat-label">Nivel</div>
+          </div>
+        </div>
+
+        <!-- Study time breakdown -->
+        <div class="card mb-24">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Tiempo de Estudio</h3>
+          <div class="flex gap-24">
+            <div style="text-align:center;flex:1;">
+              <div style="font-size:24px;font-weight:700;">2h 15m</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Hoy</div>
+              <div class="progress-bar mt-8"><div class="progress-fill" style="width:56%;background:var(--accent-green)"></div></div>
+            </div>
+            <div style="text-align:center;flex:1;">
+              <div style="font-size:24px;font-weight:700;">14h 30m</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Semana</div>
+              <div class="progress-bar mt-8"><div class="progress-fill" style="width:72%;background:var(--accent-blue)"></div></div>
+            </div>
+            <div style="text-align:center;flex:1;">
+              <div style="font-size:24px;font-weight:700;">58h 12m</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Mes</div>
+              <div class="progress-bar mt-8"><div class="progress-fill" style="width:82%;background:var(--accent-purple)"></div></div>
+            </div>
+            <div style="text-align:center;flex:1;">
+              <div style="font-size:24px;font-weight:700;">127h</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Total</div>
+              <div class="progress-bar mt-8"><div class="progress-fill" style="width:100%;background:var(--accent-orange)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- XP Progress -->
+        <div class="card mb-24">
+          <div class="flex items-center justify-between mb-8">
+            <h3 style="font-size:16px;font-weight:600;">Progreso XP</h3>
+            <span style="font-size:13px;color:var(--accent);">2,340 / 3,000 XP</span>
+          </div>
+          <div class="rp-xp-bar" style="height:10px;border-radius:5px;">
+            <div class="rp-xp-fill" style="width:78%;border-radius:5px;"></div>
+          </div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">660 XP para el Nivel 15</div>
+        </div>
+
+        <!-- Badges -->
+        <div class="card mb-24">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Insignias Recientes</h3>
+          <div class="flex gap-16" style="flex-wrap:wrap;">
+            <div style="text-align:center;width:80px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;">🎯</div>
+              <div style="font-size:11px;font-weight:500;">Punteria</div>
+            </div>
+            <div style="text-align:center;width:80px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;">📖</div>
+              <div style="font-size:11px;font-weight:500;">Lector</div>
+            </div>
+            <div style="text-align:center;width:80px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(217,119,6,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;">🔥</div>
+              <div style="font-size:11px;font-weight:500;">En Llamas</div>
+            </div>
+            <div style="text-align:center;width:80px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(124,58,237,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;">🧠</div>
+              <div style="font-size:11px;font-weight:500;">Cerebrito</div>
+            </div>
+            <div style="text-align:center;width:80px;">
+              <div style="width:56px;height:56px;border-radius:50%;background:rgba(220,38,38,0.1);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 6px;">❤️</div>
+              <div style="font-size:11px;font-weight:500;">Solidario</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="card">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Acciones Rapidas</h3>
+          <div class="flex gap-12" style="flex-wrap:wrap;">
+            <button class="btn btn-primary">📝 Nuevo Quiz</button>
+            <button class="btn btn-secondary">📄 Subir Documento</button>
+            <button class="btn btn-secondary">🔬 Crear Sala de Estudio</button>
+            <button class="btn btn-secondary">📅 Nuevo Evento</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         4. PROJECT VIEW (Subject)
+         ═══════════════════════════════════════════════════════ -->
+    <section id="project" class="page-section">
+      <h2 class="section-title">4. ProjectView (Asignatura)</h2>
+      <p class="section-desc">Tabs de contenido, chat socratico, documentos, promedio academico</p>
+
+      <div class="mockup">
+        <div class="page-header">
+          <div class="flex items-center gap-12">
+            <span class="project-dot" style="width:12px;height:12px;background:#2563EB"></span>
+            <h2>Calculo II</h2>
+          </div>
+          <p>Prof. Martinez - Universidad Autonoma</p>
+        </div>
+
+        <!-- Average score bar -->
+        <div style="padding:12px 32px;background:var(--bg-secondary);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:16px;">
+          <span style="font-size:13px;font-weight:600;">Promedio: 7.8/10</span>
+          <div class="progress-bar" style="flex:1;max-width:300px;"><div class="progress-fill" style="width:78%;background:var(--accent-green)"></div></div>
+          <span class="badge badge-green">Aprobando</span>
+        </div>
+
+        <!-- Tabs -->
+        <div style="padding:16px 32px 0;">
+          <div class="tabs">
+            <button class="tab">📄 Documentos</button>
+            <button class="tab active">💬 Chat</button>
+            <button class="tab">📖 Guia</button>
+            <button class="tab">📝 Quiz</button>
+            <button class="tab">🃏 Flashcards</button>
+            <button class="tab">📹 Clases en Vivo</button>
+          </div>
+        </div>
+
+        <!-- Chat tab content -->
+        <div style="padding:0 32px 24px;">
+          <div class="flex items-center justify-between mb-16">
+            <div class="flex items-center gap-12">
+              <label style="font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <span>🧠 Modo Socratico</span>
+                <div style="width:36px;height:20px;border-radius:10px;background:var(--accent);position:relative;">
+                  <div style="width:16px;height:16px;border-radius:50%;background:#fff;position:absolute;top:2px;right:2px;"></div>
+                </div>
+              </label>
+            </div>
+            <button class="btn btn-secondary btn-sm">📷 Escanear</button>
+          </div>
+
+          <div class="chat-messages" style="background:var(--bg-secondary);border-radius:var(--radius);min-height:300px;padding:20px;">
+            <div class="chat-message user">
+              Explica la integral de linea de un campo vectorial F sobre una curva C.
+            </div>
+            <div class="chat-message assistant">
+              <div style="margin-bottom:8px;">Excelente pregunta. En lugar de darte la respuesta directa, pensemos juntos:</div>
+              <div>¿Que representa fisicamente sumar los productos del campo vectorial con pequenos desplazamientos a lo largo de la curva? Piensa en el concepto de <strong>trabajo</strong> en fisica. 🤔</div>
+            </div>
+            <div class="chat-message user">
+              Es como calcular el trabajo realizado por una fuerza a lo largo de un camino?
+            </div>
+            <div class="chat-message assistant">
+              Exacto! La integral de linea ∫<sub>C</sub> <strong>F</strong> · d<strong>r</strong> mide precisamente eso: el trabajo total que realiza el campo F al mover una particula a lo largo de C. Cada pedacito dr se multiplica por el campo en ese punto. ¿Puedes pensar en cuando esta integral daria cero? 💡
+            </div>
+          </div>
+
+          <div class="chat-input-area" style="padding:16px 0 0;">
+            <input class="chat-input" placeholder="Escribe tu pregunta sobre Calculo II...">
+            <button class="btn btn-primary">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         5. QUIZ SYSTEM
+         ═══════════════════════════════════════════════════════ -->
+    <section id="quiz" class="page-section">
+      <h2 class="section-title">5. Quiz System</h2>
+      <p class="section-desc">Preguntas con opciones multiples, progreso y vista de resultados con desglose</p>
+
+      <div class="mockup p-24">
+        <!-- Quiz in progress -->
+        <div class="card mb-24">
+          <div class="flex items-center justify-between mb-16">
+            <span class="badge badge-blue">📝 Quiz: Calculo II</span>
+            <span style="font-size:13px;color:var(--text-muted);">Pregunta 3 de 10</span>
+          </div>
+          <div class="progress-bar mb-16"><div class="progress-fill" style="width:30%"></div></div>
+
+          <h3 style="font-size:18px;font-weight:600;margin-bottom:20px;line-height:1.5;">
+            ¿Cual es el resultado de aplicar el Teorema de Green al campo vectorial F = (x²y, xy²) sobre la region D delimitada por el circulo unitario?
+          </h3>
+
+          <div class="flex flex-col gap-8">
+            <label class="card" style="padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;"></div>
+              <span style="font-size:14px;">∮ F · dr = ∫∫<sub>D</sub> (y² - x²) dA</span>
+            </label>
+            <label class="card" style="padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;border-color:var(--accent-blue);background:rgba(37,99,235,0.04);">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--accent-blue);flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--accent-blue);"></div>
+              </div>
+              <span style="font-size:14px;font-weight:500;">∮ F · dr = ∫∫<sub>D</sub> (y² - x²) dA = 0</span>
+            </label>
+            <label class="card" style="padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;"></div>
+              <span style="font-size:14px;">∮ F · dr = π/2</span>
+            </label>
+            <label class="card" style="padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;">
+              <div style="width:24px;height:24px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;"></div>
+              <span style="font-size:14px;">∮ F · dr = 2π</span>
+            </label>
+          </div>
+
+          <div class="flex justify-between mt-24">
+            <button class="btn btn-secondary">← Anterior</button>
+            <button class="btn btn-primary">Siguiente →</button>
+          </div>
+        </div>
+
+        <!-- Results view -->
+        <div class="card" style="border-left:4px solid var(--accent-green);">
+          <div class="flex items-center gap-16 mb-24">
+            <div style="text-align:center;">
+              <div style="font-size:48px;font-weight:800;color:var(--accent-green);">8.5</div>
+              <div style="font-size:14px;color:var(--text-muted);">/10</div>
+            </div>
+            <div>
+              <h3 style="font-size:18px;font-weight:700;">Resultado del Quiz</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Calculo II - Integrales de Linea y Superficie</p>
+              <div class="flex gap-8 mt-8">
+                <span class="badge badge-green">✓ 17 correctas</span>
+                <span class="badge badge-red">✗ 3 incorrectas</span>
+              </div>
+            </div>
+          </div>
+
+          <h4 style="font-size:14px;font-weight:600;margin-bottom:12px;">Desglose por Tema</h4>
+          <div class="flex flex-col gap-8">
+            <div class="flex items-center gap-12">
+              <span style="font-size:13px;width:160px;">Integrales de linea</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:90%;background:var(--accent-green)"></div></div>
+              <span style="font-size:13px;font-weight:600;width:40px;text-align:right;">90%</span>
+            </div>
+            <div class="flex items-center gap-12">
+              <span style="font-size:13px;width:160px;">Teorema de Green</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:85%;background:var(--accent-green)"></div></div>
+              <span style="font-size:13px;font-weight:600;width:40px;text-align:right;">85%</span>
+            </div>
+            <div class="flex items-center gap-12">
+              <span style="font-size:13px;width:160px;">Integrales de superficie</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:75%;background:var(--accent-blue)"></div></div>
+              <span style="font-size:13px;font-weight:600;width:40px;text-align:right;">75%</span>
+            </div>
+            <div class="flex items-center gap-12">
+              <span style="font-size:13px;width:160px;">Teorema de Stokes</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:60%;background:var(--accent-orange)"></div></div>
+              <span style="font-size:13px;font-weight:600;width:40px;text-align:right;">60%</span>
+            </div>
+          </div>
+          <div class="flex gap-12 mt-16">
+            <div class="radar-placeholder">
+              <span style="font-size:13px;color:var(--text-muted);">Radar</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         6. FLASHCARDS
+         ═══════════════════════════════════════════════════════ -->
+    <section id="flashcards" class="page-section">
+      <h2 class="section-title">6. Flashcards</h2>
+      <p class="section-desc">Tarjeta con volteo frontal/posterior y botones FSRS de calificacion</p>
+
+      <div class="mockup p-24" style="text-align:center;">
+        <div class="flex items-center justify-between mb-16">
+          <span class="badge badge-blue">🃏 Flashcards: Quimica Organica</span>
+          <span style="font-size:13px;color:var(--text-muted);">Tarjeta 7 de 25 | Pendientes: 18</span>
+        </div>
+        <div class="progress-bar mb-24"><div class="progress-fill" style="width:28%"></div></div>
+
+        <!-- Flashcard front -->
+        <div class="flashcard" onclick="this.classList.toggle('flipped')">
+          <div class="flashcard-inner">
+            <div class="flashcard-front">
+              <div>
+                <div style="font-size:13px;color:var(--text-muted);margin-bottom:12px;">Toca para voltear</div>
+                <div style="font-size:20px;font-weight:600;">¿Que es una reaccion de sustitucion nucleofilica SN2?</div>
+              </div>
+            </div>
+            <div class="flashcard-back">
+              <div>
+                <div style="font-size:13px;color:var(--accent);margin-bottom:12px;font-weight:600;">Respuesta</div>
+                Es un mecanismo de reaccion en un solo paso donde el nucleofilo ataca el carbono electrofilico al mismo tiempo que el grupo saliente se va. Ocurre con <strong>inversion de configuracion</strong> (mecanismo de Walden). Favorecida en sustratos primarios y metilicos, con nucleofilos fuertes y solventes aproticos.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fsrs-buttons">
+          <button class="fsrs-btn again">No lo sabia</button>
+          <button class="fsrs-btn hard">Dificil</button>
+          <button class="fsrs-btn good">Bien</button>
+          <button class="fsrs-btn easy">Facil</button>
+        </div>
+        <div class="flex gap-16 justify-between mt-12" style="max-width:400px;margin-left:auto;margin-right:auto;">
+          <span style="font-size:11px;color:var(--text-muted);">1 min</span>
+          <span style="font-size:11px;color:var(--text-muted);">10 min</span>
+          <span style="font-size:11px;color:var(--text-muted);">1 dia</span>
+          <span style="font-size:11px;color:var(--text-muted);">4 dias</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         7. MESSAGES
+         ═══════════════════════════════════════════════════════ -->
+    <section id="messages" class="page-section">
+      <h2 class="section-title">7. Mensajes</h2>
+      <p class="section-desc">Chat estilo WhatsApp con burbujas, traduccion, audio, foto e indicador de escritura</p>
+
+      <div class="mockup">
+        <div class="flex" style="height:500px;">
+          <!-- Contact list -->
+          <div style="width:280px;border-right:1px solid var(--border);overflow-y:auto;">
+            <div style="padding:16px;border-bottom:1px solid var(--border-subtle);">
+              <input class="form-input" placeholder="Buscar conversaciones..." style="font-size:13px;">
+            </div>
+            <div style="padding:12px 16px;background:rgba(37,99,235,0.06);border-left:3px solid var(--accent-blue);display:flex;gap:10px;align-items:center;">
+              <div class="avatar" style="background:var(--accent-purple);width:40px;height:40px;font-size:16px;">AL</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;">Ana Lucia Mendez</div>
+                <div style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Dale, nos vemos en la biblio...</div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);">14:32</div>
+            </div>
+            <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border-subtle);">
+              <div class="avatar" style="background:var(--accent-green);width:40px;height:40px;font-size:16px;">GP</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;">Grupo Proyecto Final</div>
+                <div style="font-size:12px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Carlos: Subi los archivos al drive</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:11px;color:var(--text-muted);">12:15</div>
+                <div style="width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;margin-left:auto;margin-top:2px;">3</div>
+              </div>
+            </div>
+            <div style="padding:12px 16px;display:flex;gap:10px;align-items:center;border-bottom:1px solid var(--border-subtle);">
+              <div class="avatar" style="background:var(--accent-orange);width:40px;height:40px;font-size:16px;">DR</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:600;">Diego Ramirez</div>
+                <div style="font-size:12px;color:var(--text-muted);">🎵 Mensaje de voz (0:42)</div>
+              </div>
+              <div style="font-size:11px;color:var(--text-muted);">Ayer</div>
+            </div>
+          </div>
+
+          <!-- Chat area -->
+          <div style="flex:1;display:flex;flex-direction:column;">
+            <!-- Chat header -->
+            <div style="padding:12px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;">
+              <div class="avatar" style="background:var(--accent-purple);width:36px;height:36px;font-size:14px;">AL</div>
+              <div>
+                <div style="font-size:14px;font-weight:600;">Ana Lucia Mendez</div>
+                <div style="font-size:11px;color:var(--accent-green);">En linea</div>
+              </div>
+              <div style="margin-left:auto;display:flex;gap:8px;">
+                <button class="btn btn-xs btn-secondary">🌐 Traducir</button>
+                <button class="topbar-icon-btn" style="font-size:16px;">📞</button>
+                <button class="topbar-icon-btn" style="font-size:16px;">📹</button>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:8px;">
+              <div class="msg-bubble received">Oye, ¿ya terminaste el ejercicio 4 de la tarea de Calculo?</div>
+              <div class="msg-time">14:20</div>
+
+              <div class="msg-bubble sent">Si! Me costo un poco la parametrizacion pero al final salio bien 💪</div>
+              <div class="msg-time" style="align-self:flex-end;">14:22</div>
+
+              <div class="msg-bubble received">Que bueno, yo estoy trabada con la integral de superficie 😅</div>
+              <div class="msg-time">14:25</div>
+
+              <!-- Photo message -->
+              <div class="msg-bubble sent" style="padding:6px;">
+                <div style="width:200px;height:150px;background:var(--bg-hover);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:13px;">
+                  📷 Foto del ejercicio
+                </div>
+              </div>
+              <div class="msg-time" style="align-self:flex-end;">14:28</div>
+
+              <div class="msg-bubble sent">Mira, asi lo resolvi. El truco esta en usar coordenadas cilindricas.</div>
+              <div class="msg-time" style="align-self:flex-end;">14:28</div>
+
+              <!-- Audio message -->
+              <div class="msg-bubble received" style="display:flex;align-items:center;gap:8px;">
+                <span>▶️</span>
+                <div style="flex:1;height:4px;background:var(--bg-hover);border-radius:2px;"><div style="width:60%;height:100%;background:var(--text-muted);border-radius:2px;"></div></div>
+                <span style="font-size:11px;color:var(--text-muted);">0:42</span>
+              </div>
+              <div class="msg-time">14:30</div>
+
+              <div class="msg-bubble received">Dale, nos vemos en la biblio a las 4? Te explico lo que no entiendas</div>
+              <div class="msg-time">14:32</div>
+
+              <!-- Typing indicator -->
+              <div class="typing-indicator">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+              </div>
+            </div>
+
+            <!-- Input -->
+            <div class="chat-input-area">
+              <button class="topbar-icon-btn" style="font-size:18px;">📎</button>
+              <input class="chat-input" placeholder="Escribe un mensaje...">
+              <button class="topbar-icon-btn" style="font-size:18px;">🎤</button>
+              <button class="btn btn-primary">Enviar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         8. FRIENDS / COMMUNITY
+         ═══════════════════════════════════════════════════════ -->
+    <section id="friends" class="page-section">
+      <h2 class="section-title">8. Amigos / Comunidad</h2>
+      <p class="section-desc">Grid de tarjetas de amigos con avatar, universidad, carrera y boton de agregar</p>
+
+      <div class="mockup p-24">
+        <div class="flex items-center justify-between mb-24">
+          <div>
+            <h3 style="font-size:18px;font-weight:700;">Mis Amigos</h3>
+            <p style="font-size:13px;color:var(--text-muted);">142 amigos</p>
+          </div>
+          <input class="form-input" placeholder="Buscar amigos..." style="width:240px;">
+        </div>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">SUGERENCIAS PARA TI</h4>
+        <div class="card-grid mb-24">
+          <div class="card" style="text-align:center;">
+            <div class="avatar-lg avatar" style="margin:0 auto 12px;background:var(--accent-purple);">ML</div>
+            <div style="font-size:15px;font-weight:600;">Maria Lopez</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Universidad de los Andes</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Ingenieria Industrial - 8vo</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">5 amigos en comun</div>
+            <button class="btn btn-primary btn-sm mt-12" style="width:100%;">Agregar</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="avatar-lg avatar" style="margin:0 auto 12px;background:var(--accent-green);">JR</div>
+            <div style="font-size:15px;font-weight:600;">Juan Reyes</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">UNAM</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Medicina - 4to</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">3 amigos en comun</div>
+            <button class="btn btn-primary btn-sm mt-12" style="width:100%;">Agregar</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="avatar-lg avatar" style="margin:0 auto 12px;background:var(--accent-orange);">SP</div>
+            <div style="font-size:15px;font-weight:600;">Sofia Paredes</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Universidad Javeriana</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Derecho - 6to</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">8 amigos en comun</div>
+            <button class="btn btn-primary btn-sm mt-12" style="width:100%;">Agregar</button>
+          </div>
+          <div class="card" style="text-align:center;">
+            <div class="avatar-lg avatar" style="margin:0 auto 12px;background:var(--accent-cyan);">VH</div>
+            <div style="font-size:15px;font-weight:600;">Valentina Herrera</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">TEC de Monterrey</div>
+            <div style="font-size:12px;color:var(--text-secondary);">Arquitectura - 5to</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:8px;">2 amigos en comun</div>
+            <button class="btn btn-primary btn-sm mt-12" style="width:100%;">Agregar</button>
+          </div>
+        </div>
+
+        <h4 style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">SOLICITUDES PENDIENTES (3)</h4>
+        <div class="card mb-16">
+          <div class="flex items-center gap-12">
+            <div class="avatar" style="background:var(--accent-red);">RM</div>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:600;">Roberto Mejia</div>
+              <div style="font-size:12px;color:var(--text-muted);">Universidad del Norte - Economia</div>
+            </div>
+            <button class="btn btn-primary btn-sm">Aceptar</button>
+            <button class="btn btn-secondary btn-sm">Rechazar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         9. COMMUNITIES
+         ═══════════════════════════════════════════════════════ -->
+    <section id="communities" class="page-section">
+      <h2 class="section-title">9. Comunidades</h2>
+      <p class="section-desc">Grid de comunidades con conteo de miembros, categorias y boton de unirse</p>
+
+      <div class="mockup p-24">
+        <div class="flex items-center gap-12 mb-24">
+          <input class="form-input" placeholder="Buscar comunidades..." style="flex:1;">
+          <div class="flex gap-8">
+            <button class="btn btn-secondary btn-sm">📚 Academico</button>
+            <button class="btn btn-primary btn-sm">🔬 Ciencias</button>
+            <button class="btn btn-secondary btn-sm">💻 Tecnologia</button>
+            <button class="btn btn-secondary btn-sm">🎨 Arte</button>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div style="height:80px;background:linear-gradient(135deg,rgba(37,99,235,0.15),rgba(124,58,237,0.15));border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+              <span style="font-size:36px;">🧪</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Quimica en Accion</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Experimentos, dudas y recursos de quimica</div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-purple">Ciencias</span>
+              <span style="font-size:12px;color:var(--text-muted);">👥 1,245 miembros</span>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:100%;">Unirse</button>
+          </div>
+
+          <div class="card">
+            <div style="height:80px;background:linear-gradient(135deg,rgba(5,150,105,0.15),rgba(8,145,178,0.15));border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+              <span style="font-size:36px;">💻</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Devs Latinoamerica</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Programacion, open source y proyectos</div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-cyan">Tecnologia</span>
+              <span style="font-size:12px;color:var(--text-muted);">👥 3,891 miembros</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" style="width:100%;">Ya eres miembro</button>
+          </div>
+
+          <div class="card">
+            <div style="height:80px;background:linear-gradient(135deg,rgba(217,119,6,0.15),rgba(220,38,38,0.15));border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+              <span style="font-size:36px;">📐</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Matematicas Avanzadas</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Calculo, algebra lineal, ecuaciones diferenciales</div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-orange">Academico</span>
+              <span style="font-size:12px;color:var(--text-muted);">👥 2,567 miembros</span>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:100%;">Unirse</button>
+          </div>
+
+          <div class="card">
+            <div style="height:80px;background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(220,38,38,0.15));border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+              <span style="font-size:36px;">⚕️</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Medicina y Salud</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Estudiantes de medicina compartiendo recursos</div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-red">Salud</span>
+              <span style="font-size:12px;color:var(--text-muted);">👥 4,102 miembros</span>
+            </div>
+            <button class="btn btn-primary btn-sm" style="width:100%;">Unirse</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         10. COMMUNITY DETAIL
+         ═══════════════════════════════════════════════════════ -->
+    <section id="community-detail" class="page-section">
+      <h2 class="section-title">10. Detalle de Comunidad</h2>
+      <p class="section-desc">Cabecera con avatar, miembros, tabs de publicaciones/miembros/info</p>
+
+      <div class="mockup">
+        <!-- Header -->
+        <div style="height:120px;background:linear-gradient(135deg,rgba(5,150,105,0.2),rgba(8,145,178,0.2));display:flex;align-items:flex-end;padding:20px 32px;">
+          <div class="flex items-center gap-16">
+            <div style="width:72px;height:72px;border-radius:16px;background:var(--bg-card);display:flex;align-items:center;justify-content:center;font-size:36px;border:3px solid var(--bg-card);">💻</div>
+            <div>
+              <h2 style="font-size:22px;font-weight:700;color:var(--text-primary);">Devs Latinoamerica</h2>
+              <div class="flex items-center gap-12" style="margin-top:4px;">
+                <span style="font-size:13px;color:var(--text-secondary);">👥 3,891 miembros</span>
+                <span class="badge badge-cyan">Tecnologia</span>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="margin-left:auto;">Unirse</button>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="padding:16px 32px 0;">
+          <div class="tabs">
+            <button class="tab active">📰 Publicaciones</button>
+            <button class="tab">👥 Miembros</button>
+            <button class="tab">ℹ️ Info</button>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding:20px 32px;">
+          <div class="post-card">
+            <div class="post-header">
+              <div class="avatar" style="background:var(--accent-cyan)">EM</div>
+              <div>
+                <div class="post-author">Elena Martinez</div>
+                <div class="post-time">hace 3 horas</div>
+              </div>
+            </div>
+            <div class="post-body">
+              Acabo de publicar mi primer paquete en npm! Es una libreria para validacion de formularios en React. Agradezco feedback 🚀<br>
+              <span style="color:var(--accent);">#opensource #react #npm</span>
+            </div>
+            <div class="post-reactions">
+              <span class="reaction-btn">🚀 18</span>
+              <span class="reaction-btn">👍 7</span>
+            </div>
+          </div>
+
+          <div class="post-card">
+            <div class="post-header">
+              <div class="avatar" style="background:var(--accent-orange)">FG</div>
+              <div>
+                <div class="post-author">Fernando Gomez</div>
+                <div class="post-time">hace 8 horas</div>
+              </div>
+            </div>
+            <div class="post-body">
+              ¿Alguien ha trabajado con Rust para backend? Estoy evaluando si migrar mi API de Node.js a Actix-web. Pros/contras?
+            </div>
+            <div class="post-reactions">
+              <span class="reaction-btn">💬 23</span>
+              <span class="reaction-btn">👍 9</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         11. CALENDAR
+         ═══════════════════════════════════════════════════════ -->
+    <section id="calendar" class="page-section">
+      <h2 class="section-title">11. Calendario</h2>
+      <p class="section-desc">Lista de eventos con badges de fecha, tipos con colores y boton nuevo evento</p>
+
+      <div class="mockup p-24">
+        <div class="flex items-center justify-between mb-24">
+          <h3 style="font-size:18px;font-weight:700;">Proximos Eventos</h3>
+          <button class="btn btn-primary">+ Nuevo Evento</button>
+        </div>
+
+        <!-- Overdue warning -->
+        <div class="card mb-16" style="border-left:4px solid var(--accent-red);background:rgba(220,38,38,0.03);">
+          <div class="flex items-center gap-16">
+            <div class="cal-badge" style="border-color:var(--accent-red);">
+              <div class="cal-badge-day" style="color:var(--accent-red);">28</div>
+              <div class="cal-badge-month">Mar</div>
+            </div>
+            <div style="flex:1;">
+              <div class="flex items-center gap-8">
+                <span style="font-size:14px;font-weight:600;">Entrega: Proyecto Final de Fisica</span>
+                <span class="badge badge-red">Vencido</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Fisica III - Prof. Rodriguez</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="flex items-center gap-16">
+            <div class="cal-badge">
+              <div class="cal-badge-day">02</div>
+              <div class="cal-badge-month">Abr</div>
+            </div>
+            <div style="flex:1;">
+              <div class="flex items-center gap-8">
+                <span style="font-size:14px;font-weight:600;">Parcial 2: Calculo II</span>
+                <span class="badge badge-orange">📝 Examen</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Aula 301 - 10:00 AM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="flex items-center gap-16">
+            <div class="cal-badge">
+              <div class="cal-badge-day">05</div>
+              <div class="cal-badge-month">Abr</div>
+            </div>
+            <div style="flex:1;">
+              <div class="flex items-center gap-8">
+                <span style="font-size:14px;font-weight:600;">Sesion de Estudio: Quimica</span>
+                <span class="badge badge-blue">📖 Estudio</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Biblioteca Central - 3:00 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-16">
+          <div class="flex items-center gap-16">
+            <div class="cal-badge">
+              <div class="cal-badge-day">08</div>
+              <div class="cal-badge-month">Abr</div>
+            </div>
+            <div style="flex:1;">
+              <div class="flex items-center gap-8">
+                <span style="font-size:14px;font-weight:600;">Tutoria de Programacion</span>
+                <span class="badge badge-green">🎓 Tutoria</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Virtual - Zoom - 5:00 PM</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-center gap-16">
+            <div class="cal-badge">
+              <div class="cal-badge-day">12</div>
+              <div class="cal-badge-month">Abr</div>
+            </div>
+            <div style="flex:1;">
+              <div class="flex items-center gap-8">
+                <span style="font-size:14px;font-weight:600;">Hackathon Universidad</span>
+                <span class="badge badge-purple">🎉 Social</span>
+              </div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Auditorio Principal - 9:00 AM</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         12. MARKETPLACE
+         ═══════════════════════════════════════════════════════ -->
+    <section id="marketplace" class="page-section">
+      <h2 class="section-title">12. Marketplace</h2>
+      <p class="section-desc">Grid de documentos con ratings, universidad, carrera, descargas y autor</p>
+
+      <div class="mockup p-24">
+        <div class="flex items-center justify-between mb-24">
+          <h3 style="font-size:18px;font-weight:700;">Marketplace de Documentos</h3>
+          <div class="flex gap-8">
+            <input class="form-input" placeholder="Buscar documentos..." style="width:240px;">
+            <button class="btn btn-primary">Subir Documento</button>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="flex items-center gap-8 mb-12">
+              <div class="doc-icon pdf">PDF</div>
+              <div>
+                <div class="doc-name">Resumen Calculo Diferencial</div>
+                <div class="doc-meta">42 paginas - Subido hace 3 dias</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-8 mb-8">
+              <div class="stars">★★★★★</div>
+              <span style="font-size:12px;color:var(--text-muted);">4.8 (124 resenas)</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Universidad de los Andes - Ingenieria</div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-6">
+                <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:10px;">AL</div>
+                <span style="font-size:12px;">Ana Lucia M.</span>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">⬇ 1,234</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-8 mb-12">
+              <div class="doc-icon pptx">PPT</div>
+              <div>
+                <div class="doc-name">Presentacion Biologia Molecular</div>
+                <div class="doc-meta">85 slides - Subido hace 1 semana</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-8 mb-8">
+              <div class="stars">★★★★☆</div>
+              <span style="font-size:12px;color:var(--text-muted);">4.2 (67 resenas)</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">UNAM - Ciencias Biologicas</div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-6">
+                <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:10px;background:var(--accent-green);">CP</div>
+                <span style="font-size:12px;">Carlos P.</span>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">⬇ 892</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-8 mb-12">
+              <div class="doc-icon xlsx">XLS</div>
+              <div>
+                <div class="doc-name">Formulas Estadistica II</div>
+                <div class="doc-meta">5 hojas - Subido hace 2 dias</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-8 mb-8">
+              <div class="stars">★★★★★</div>
+              <span style="font-size:12px;color:var(--text-muted);">4.9 (203 resenas)</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">TEC de Monterrey - Economia</div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-6">
+                <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:10px;background:var(--accent-purple);">VH</div>
+                <span style="font-size:12px;">Valentina H.</span>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">⬇ 2,015</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         13. JOBS / OPPORTUNITIES
+         ═══════════════════════════════════════════════════════ -->
+    <section id="jobs" class="page-section">
+      <h2 class="section-title">13. Oportunidades Laborales</h2>
+      <p class="section-desc">Listados de empleo con logo, titulo, salario, ubicacion, badge remoto y tabs</p>
+
+      <div class="mockup p-24">
+        <div class="tabs mb-24">
+          <button class="tab active">💼 Ofertas</button>
+          <button class="tab">🎓 Tutorias</button>
+          <button class="tab">🌟 Talentos</button>
+          <button class="tab">🏢 Soy Reclutador</button>
+        </div>
+
+        <div class="flex flex-col gap-12">
+          <div class="card">
+            <div class="flex items-center gap-16">
+              <div style="width:48px;height:48px;border-radius:12px;background:rgba(37,99,235,0.1);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🏢</div>
+              <div style="flex:1;">
+                <div class="flex items-center gap-8">
+                  <span style="font-size:16px;font-weight:600;">Desarrollador Frontend Jr.</span>
+                  <span class="badge badge-green">🏠 Remoto</span>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">TechCorp LATAM</div>
+                <div class="flex items-center gap-16 mt-8">
+                  <span style="font-size:13px;color:var(--text-muted);">📍 Ciudad de Mexico</span>
+                  <span style="font-size:13px;color:var(--accent-green);font-weight:600;">$15,000 - $22,000 MXN</span>
+                  <span style="font-size:12px;color:var(--text-muted);">Publicado hace 2 dias</span>
+                </div>
+              </div>
+              <button class="btn btn-primary">Aplicar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-16">
+              <div style="width:48px;height:48px;border-radius:12px;background:rgba(124,58,237,0.1);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">🎨</div>
+              <div style="flex:1;">
+                <div class="flex items-center gap-8">
+                  <span style="font-size:16px;font-weight:600;">Disenadora UX/UI - Practicas</span>
+                  <span class="badge badge-purple">🏗️ Hibrido</span>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">Rappi</div>
+                <div class="flex items-center gap-16 mt-8">
+                  <span style="font-size:13px;color:var(--text-muted);">📍 Bogota, Colombia</span>
+                  <span style="font-size:13px;color:var(--accent-green);font-weight:600;">$3,500,000 COP</span>
+                  <span style="font-size:12px;color:var(--text-muted);">Publicado hace 5 dias</span>
+                </div>
+              </div>
+              <button class="btn btn-primary">Aplicar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-16">
+              <div style="width:48px;height:48px;border-radius:12px;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">📊</div>
+              <div style="flex:1;">
+                <div class="flex items-center gap-8">
+                  <span style="font-size:16px;font-weight:600;">Data Analyst Intern</span>
+                  <span class="badge badge-green">🏠 Remoto</span>
+                </div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:2px;">MercadoLibre</div>
+                <div class="flex items-center gap-16 mt-8">
+                  <span style="font-size:13px;color:var(--text-muted);">📍 Buenos Aires, Argentina</span>
+                  <span style="font-size:13px;color:var(--accent-green);font-weight:600;">$350,000 ARS</span>
+                  <span style="font-size:12px;color:var(--text-muted);">Publicado hoy</span>
+                </div>
+              </div>
+              <button class="btn btn-primary">Aplicar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         14. TUTORING
+         ═══════════════════════════════════════════════════════ -->
+    <section id="tutoring" class="page-section">
+      <h2 class="section-title">14. Tutorias</h2>
+      <p class="section-desc">Tarjetas de tutor con avatar, materia, modalidad, precio, rating y solicitar</p>
+
+      <div class="mockup p-24">
+        <div class="card-grid">
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-blue);">RM</div>
+              <div>
+                <div class="flex items-center gap-6">
+                  <span style="font-size:16px;font-weight:600;">Dr. Roberto Martinez</span>
+                  <span>🎓</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">PhD Matematicas - UNAM</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★★</div>
+                  <span style="font-size:12px;color:var(--text-muted);">4.9 (87 sesiones)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="badge badge-blue">Calculo</span>
+              <span class="badge badge-blue">Algebra Lineal</span>
+              <span class="badge badge-blue">Ecuaciones Diferenciales</span>
+            </div>
+            <div class="flex items-center justify-between mb-12">
+              <span style="font-size:13px;color:var(--text-secondary);">📹 Virtual / 🏫 Presencial</span>
+              <span style="font-size:16px;font-weight:700;color:var(--accent);">$250 MXN/h</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar</button>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-green);">LP</div>
+              <div>
+                <div class="flex items-center gap-6">
+                  <span style="font-size:16px;font-weight:600;">Laura Perez</span>
+                  <span>🎓</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">MSc Quimica - U. de los Andes</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★☆</div>
+                  <span style="font-size:12px;color:var(--text-muted);">4.6 (52 sesiones)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="badge badge-green">Quimica Organica</span>
+              <span class="badge badge-green">Bioquimica</span>
+            </div>
+            <div class="flex items-center justify-between mb-12">
+              <span style="font-size:13px;color:var(--text-secondary);">📹 Virtual</span>
+              <span style="font-size:16px;font-weight:700;color:var(--accent);">$180 MXN/h</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar</button>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-purple);">JS</div>
+              <div>
+                <div class="flex items-center gap-6">
+                  <span style="font-size:16px;font-weight:600;">Jorge Sanchez</span>
+                  <span>🎓</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-muted);">Ing. Sistemas - TEC Monterrey</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★★</div>
+                  <span style="font-size:12px;color:var(--text-muted);">5.0 (34 sesiones)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="badge badge-purple">Python</span>
+              <span class="badge badge-purple">Machine Learning</span>
+              <span class="badge badge-purple">SQL</span>
+            </div>
+            <div class="flex items-center justify-between mb-12">
+              <span style="font-size:13px;color:var(--text-secondary);">📹 Virtual</span>
+              <span style="font-size:16px;font-weight:700;color:var(--accent);">$300 MXN/h</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         15. COURSES / DEVELOPMENT
+         ═══════════════════════════════════════════════════════ -->
+    <section id="courses" class="page-section">
+      <h2 class="section-title">15. Cursos / Desarrollo</h2>
+      <p class="section-desc">Catalogo de cursos con progreso y detalle de leccion con sidebar</p>
+
+      <div class="mockup p-24">
+        <!-- Category filters -->
+        <div class="flex gap-8 mb-24">
+          <button class="btn btn-primary btn-sm">Todos</button>
+          <button class="btn btn-secondary btn-sm">💻 Programacion</button>
+          <button class="btn btn-secondary btn-sm">📊 Datos</button>
+          <button class="btn btn-secondary btn-sm">🎨 Diseno</button>
+          <button class="btn btn-secondary btn-sm">📈 Negocios</button>
+          <button class="btn btn-secondary btn-sm">🗣️ Idiomas</button>
+        </div>
+
+        <!-- Course grid -->
+        <div class="card-grid mb-24">
+          <div class="card">
+            <div style="font-size:36px;margin-bottom:12px;">🐍</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Python desde Cero</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">24 lecciones - 12 horas</div>
+            <div class="progress-bar mb-8"><div class="progress-fill" style="width:65%"></div></div>
+            <div style="font-size:12px;color:var(--accent);">65% completado</div>
+          </div>
+          <div class="card">
+            <div style="font-size:36px;margin-bottom:12px;">⚛️</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">React Avanzado</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">18 lecciones - 9 horas</div>
+            <div class="progress-bar mb-8"><div class="progress-fill" style="width:30%"></div></div>
+            <div style="font-size:12px;color:var(--accent);">30% completado</div>
+          </div>
+          <div class="card">
+            <div style="font-size:36px;margin-bottom:12px;">📊</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">SQL para Data Science</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">15 lecciones - 8 horas</div>
+            <div class="progress-bar mb-8"><div class="progress-fill" style="width:0%"></div></div>
+            <div style="font-size:12px;color:var(--text-muted);">No iniciado</div>
+          </div>
+          <div class="card">
+            <div style="font-size:36px;margin-bottom:12px;">🎨</div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Figma para Estudiantes</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">20 lecciones - 10 horas</div>
+            <div class="progress-bar mb-8"><div class="progress-fill" style="width:100%;background:var(--accent-green)"></div></div>
+            <div style="font-size:12px;color:var(--accent-green);">Completado ✓</div>
+          </div>
+        </div>
+
+        <!-- Course detail view -->
+        <h4 style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">DETALLE DE CURSO</h4>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div class="flex" style="min-height:350px;">
+            <!-- Lesson sidebar -->
+            <div style="width:260px;border-right:1px solid var(--border-subtle);padding:16px;">
+              <div style="font-size:14px;font-weight:600;margin-bottom:12px;">🐍 Python desde Cero</div>
+              <div class="flex flex-col gap-4">
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;color:var(--accent-green);display:flex;align-items:center;gap:8px;">
+                  ✅ 1. Introduccion
+                </div>
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;color:var(--accent-green);display:flex;align-items:center;gap:8px;">
+                  ✅ 2. Variables y tipos
+                </div>
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;background:rgba(37,99,235,0.08);color:var(--accent-blue);font-weight:600;display:flex;align-items:center;gap:8px;">
+                  ▶️ 3. Condicionales
+                </div>
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+                  ○ 4. Bucles
+                </div>
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+                  ○ 5. Funciones
+                </div>
+                <div style="padding:8px 12px;border-radius:6px;font-size:13px;color:var(--text-muted);display:flex;align-items:center;gap:8px;">
+                  🔒 6. Clases y Objetos
+                </div>
+              </div>
+            </div>
+            <!-- Content area -->
+            <div style="flex:1;padding:24px;">
+              <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">Leccion 3: Condicionales en Python</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin-bottom:20px;">Aprende a tomar decisiones en tu codigo con if, elif y else.</p>
+              <div style="background:var(--bg-tertiary);border-radius:8px;padding:20px;font-size:14px;line-height:1.8;color:var(--text-secondary);">
+                Los condicionales son estructuras de control que permiten ejecutar bloques de codigo dependiendo de si una condicion es verdadera o falsa.<br><br>
+                <code style="background:var(--bg-hover);padding:2px 6px;border-radius:4px;font-size:13px;">if edad >= 18:</code><br>
+                <code style="background:var(--bg-hover);padding:2px 6px;border-radius:4px;font-size:13px;">    print("Eres mayor de edad")</code>
+              </div>
+              <div class="flex gap-12 mt-16">
+                <button class="btn btn-secondary">← Anterior</button>
+                <button class="btn btn-primary">Siguiente →</button>
+                <button class="btn btn-secondary" style="margin-left:auto;">✅ Marcar como completada</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         16. CERTIFICATE
+         ═══════════════════════════════════════════════════════ -->
+    <section id="certificate" class="page-section">
+      <h2 class="section-title">16. Certificado</h2>
+      <p class="section-desc">Certificado con badge, nombre del curso, puntuacion, fecha e ID de verificacion</p>
+
+      <div class="mockup p-24">
+        <div class="certificate">
+          <div style="font-size:48px;margin-bottom:16px;">🏅</div>
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.15em;color:var(--text-muted);font-weight:600;margin-bottom:8px;">Certificado de Completacion</div>
+          <h2 style="font-size:28px;font-weight:800;margin-bottom:4px;">Figma para Estudiantes</h2>
+          <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;">Conniku Learning Platform</p>
+
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px;">Se certifica que</div>
+          <div style="font-size:22px;font-weight:700;color:var(--accent);margin-bottom:24px;">Cristian Garcia</div>
+
+          <div style="font-size:14px;color:var(--text-secondary);margin-bottom:4px;">ha completado exitosamente el curso con una calificacion de</div>
+          <div style="font-size:36px;font-weight:800;color:var(--accent-green);margin-bottom:24px;">9.4 / 10</div>
+
+          <div class="flex items-center justify-between" style="max-width:400px;margin:0 auto;border-top:1px solid var(--border-subtle);padding-top:16px;">
+            <div style="text-align:left;">
+              <div style="font-size:12px;color:var(--text-muted);">Fecha</div>
+              <div style="font-size:14px;font-weight:600;">15 de marzo, 2026</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:12px;color:var(--text-muted);">ID de Verificacion</div>
+              <div style="font-size:14px;font-weight:600;font-family:monospace;">CNNK-2026-A7F3-X91B</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         17. EVENTS
+         ═══════════════════════════════════════════════════════ -->
+    <section id="events" class="page-section">
+      <h2 class="section-title">17. Eventos</h2>
+      <p class="section-desc">Tarjetas de evento con fecha grande, tipo con color, asistentes y RSVP</p>
+
+      <div class="mockup p-24">
+        <div class="card-grid">
+          <div class="card">
+            <div class="flex gap-16">
+              <div style="text-align:center;flex-shrink:0;">
+                <div style="font-size:36px;font-weight:800;color:var(--accent-blue);line-height:1;">12</div>
+                <div style="font-size:12px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Abr</div>
+              </div>
+              <div style="flex:1;">
+                <span class="badge badge-purple mb-8">🎉 Social</span>
+                <div style="font-size:16px;font-weight:600;margin-top:6px;">Hackathon Universidad 2026</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Auditorio Principal - 9:00 AM</div>
+                <div class="flex items-center gap-8 mt-12">
+                  <div class="flex" style="margin-right:-4px;">
+                    <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:9px;border:2px solid var(--bg-card);">A</div>
+                    <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:9px;border:2px solid var(--bg-card);margin-left:-8px;background:var(--accent-green);">B</div>
+                    <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:9px;border:2px solid var(--bg-card);margin-left:-8px;background:var(--accent-orange);">C</div>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-muted);">+45 asistentes</span>
+                </div>
+                <button class="btn btn-primary btn-sm mt-12">Confirmar Asistencia</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex gap-16">
+              <div style="text-align:center;flex-shrink:0;">
+                <div style="font-size:36px;font-weight:800;color:var(--accent-green);line-height:1;">15</div>
+                <div style="font-size:12px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Abr</div>
+              </div>
+              <div style="flex:1;">
+                <span class="badge badge-green mb-8">🎓 Tutoria</span>
+                <div style="font-size:16px;font-weight:600;margin-top:6px;">Workshop: Git & GitHub</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Virtual - Zoom - 4:00 PM</div>
+                <div class="flex items-center gap-8 mt-12">
+                  <div class="flex" style="margin-right:-4px;">
+                    <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:9px;border:2px solid var(--bg-card);background:var(--accent-purple);">D</div>
+                    <div class="avatar-sm avatar" style="width:24px;height:24px;font-size:9px;border:2px solid var(--bg-card);margin-left:-8px;background:var(--accent-cyan);">E</div>
+                  </div>
+                  <span style="font-size:12px;color:var(--text-muted);">+18 asistentes</span>
+                </div>
+                <button class="btn btn-secondary btn-sm mt-12">✓ Ya confirmado</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex gap-16">
+              <div style="text-align:center;flex-shrink:0;">
+                <div style="font-size:36px;font-weight:800;color:var(--accent-orange);line-height:1;">20</div>
+                <div style="font-size:12px;text-transform:uppercase;color:var(--text-muted);font-weight:600;">Abr</div>
+              </div>
+              <div style="flex:1;">
+                <span class="badge badge-orange mb-8">📝 Examen</span>
+                <div style="font-size:16px;font-weight:600;margin-top:6px;">Sesion de Preparacion: Parcial 3</div>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Biblioteca - Sala 204 - 2:00 PM</div>
+                <div class="flex items-center gap-8 mt-12">
+                  <span style="font-size:12px;color:var(--text-muted);">+8 asistentes</span>
+                </div>
+                <button class="btn btn-primary btn-sm mt-12">Confirmar Asistencia</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         18. STUDY ROOMS
+         ═══════════════════════════════════════════════════════ -->
+    <section id="studyrooms" class="page-section">
+      <h2 class="section-title">18. Salas de Estudio</h2>
+      <p class="section-desc">Tarjetas de sala con Pomodoro, participantes, asignatura y timer gigante</p>
+
+      <div class="mockup p-24">
+        <div class="flex items-center justify-between mb-24">
+          <h3 style="font-size:18px;font-weight:700;">Salas de Estudio Activas</h3>
+          <button class="btn btn-primary">+ Crear Sala</button>
+        </div>
+
+        <div class="card-grid mb-24">
+          <div class="card">
+            <div class="flex items-center justify-between mb-12">
+              <span class="badge badge-red">🍅 Pomodoro 25/5</span>
+              <span style="font-size:12px;color:var(--accent-green);">● En vivo</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Sala de Calculo</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Calculo II - Integrales</div>
+            <div class="flex items-center gap-8">
+              <div class="flex" style="margin-right:-4px;">
+                <div class="avatar-sm avatar" style="width:28px;height:28px;font-size:11px;border:2px solid var(--bg-card);">CG</div>
+                <div class="avatar-sm avatar" style="width:28px;height:28px;font-size:11px;border:2px solid var(--bg-card);margin-left:-8px;background:var(--accent-purple);">AL</div>
+                <div class="avatar-sm avatar" style="width:28px;height:28px;font-size:11px;border:2px solid var(--bg-card);margin-left:-8px;background:var(--accent-green);">DR</div>
+              </div>
+              <span style="font-size:12px;color:var(--text-muted);">3 participantes</span>
+            </div>
+            <button class="btn btn-primary btn-sm mt-16" style="width:100%;">Unirse</button>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center justify-between mb-12">
+              <span class="badge badge-orange">⏰ Libre</span>
+              <span style="font-size:12px;color:var(--accent-green);">● En vivo</span>
+            </div>
+            <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Laboratorio Virtual</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;">Quimica Organica</div>
+            <div class="flex items-center gap-8">
+              <span style="font-size:12px;color:var(--text-muted);">5 participantes</span>
+            </div>
+            <button class="btn btn-primary btn-sm mt-16" style="width:100%;">Unirse</button>
+          </div>
+        </div>
+
+        <!-- Active room view -->
+        <h4 style="font-size:14px;font-weight:600;color:var(--text-muted);margin-bottom:12px;">SALA ACTIVA</h4>
+        <div class="card" style="text-align:center;padding:40px;">
+          <div class="badge badge-red mb-16" style="font-size:13px;padding:6px 14px;">🍅 Pomodoro - Sesion de Enfoque</div>
+          <div class="giant-timer">23:45</div>
+          <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">Sesion 3 de 4 - Descanso en 23:45</div>
+          <div class="progress-bar mt-16 mb-16" style="max-width:400px;margin-left:auto;margin-right:auto;">
+            <div class="progress-fill" style="width:5%;background:var(--accent-red)"></div>
+          </div>
+          <div class="flex gap-12" style="justify-content:center;">
+            <button class="btn btn-secondary">⏸ Pausar</button>
+            <button class="btn btn-danger">⏹ Detener</button>
+          </div>
+          <div class="flex gap-8 mt-24" style="justify-content:center;">
+            <div class="avatar" style="background:var(--accent);">CG</div>
+            <div class="avatar" style="background:var(--accent-purple);">AL</div>
+            <div class="avatar" style="background:var(--accent-green);">DR</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         19. MENTORSHIP
+         ═══════════════════════════════════════════════════════ -->
+    <section id="mentorship" class="page-section">
+      <h2 class="section-title">19. Mentorias</h2>
+      <p class="section-desc">Tarjetas de mentor con tags de materias, rating, disponibilidad y solicitar</p>
+
+      <div class="mockup p-24">
+        <div class="card-grid">
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-cyan);">MA</div>
+              <div>
+                <div style="font-size:16px;font-weight:600;">Dra. Mariana Alvarez</div>
+                <div style="font-size:12px;color:var(--text-muted);">Senior Software Engineer - Google</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★★</div>
+                  <span style="font-size:12px;color:var(--text-muted);">5.0 (23 mentorados)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="skill-tag">Arquitectura de Software</span>
+              <span class="skill-tag">System Design</span>
+              <span class="skill-tag">Carrera en Tech</span>
+            </div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-green">🟢 Disponible</span>
+              <span style="font-size:12px;color:var(--text-muted);">Responde en ~2 horas</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar Mentoria</button>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-orange);">PG</div>
+              <div>
+                <div style="font-size:16px;font-weight:600;">Prof. Pablo Gutierrez</div>
+                <div style="font-size:12px;color:var(--text-muted);">Investigador - MIT</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★★</div>
+                  <span style="font-size:12px;color:var(--text-muted);">4.8 (41 mentorados)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="skill-tag">Machine Learning</span>
+              <span class="skill-tag">Publicaciones</span>
+              <span class="skill-tag">Becas</span>
+            </div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-orange">🟡 Limitada</span>
+              <span style="font-size:12px;color:var(--text-muted);">2 espacios disponibles</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar Mentoria</button>
+          </div>
+
+          <div class="card">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar-lg avatar" style="background:var(--accent-red);">RC</div>
+              <div>
+                <div style="font-size:16px;font-weight:600;">Lic. Rosa Castro</div>
+                <div style="font-size:12px;color:var(--text-muted);">Directora de RRHH - Rappi</div>
+                <div class="flex items-center gap-4 mt-4">
+                  <div class="stars" style="font-size:12px;">★★★★☆</div>
+                  <span style="font-size:12px;color:var(--text-muted);">4.7 (15 mentorados)</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-6 mb-12" style="flex-wrap:wrap;">
+              <span class="skill-tag">CV y Portafolio</span>
+              <span class="skill-tag">Entrevistas</span>
+              <span class="skill-tag">Networking</span>
+            </div>
+            <div class="flex items-center gap-8 mb-12">
+              <span class="badge badge-green">🟢 Disponible</span>
+              <span style="font-size:12px;color:var(--text-muted);">Responde en ~4 horas</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%;">Solicitar Mentoria</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         20. PROFILE / SETTINGS
+         ═══════════════════════════════════════════════════════ -->
+    <section id="settings" class="page-section">
+      <h2 class="section-title">20. Perfil / Ajustes</h2>
+      <p class="section-desc">Info personal, selector de tema (4 temas), idioma (40 idiomas) con pills</p>
+
+      <div class="mockup p-24">
+        <!-- Personal Info -->
+        <div class="card mb-24">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:20px;">Informacion Personal</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Nombre completo</label>
+              <input class="form-input" value="Cristian Garcia">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Email</label>
+              <input class="form-input" value="cristian@universidad.edu">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Universidad</label>
+              <input class="form-input" value="Universidad Autonoma">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Carrera</label>
+              <input class="form-input" value="Ingenieria de Sistemas">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Semestre</label>
+              <input class="form-input" value="6to semestre">
+            </div>
+            <div>
+              <label style="font-size:13px;font-weight:500;color:var(--text-secondary);display:block;margin-bottom:6px;">Pais</label>
+              <input class="form-input" value="Colombia">
+            </div>
+          </div>
+          <button class="btn btn-primary mt-16">Guardar Cambios</button>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="card mb-24">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:20px;">Tema Visual</h3>
+          <div class="flex gap-16">
+            <div style="text-align:center;cursor:pointer;" onclick="setTheme('nocturno')">
+              <div style="width:64px;height:64px;border-radius:12px;background:#F5F3EF;border:2px solid var(--border);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:24px;height:24px;border-radius:4px;background:#2563EB;"></div>
+              </div>
+              <div style="font-size:12px;font-weight:600;">Sereno</div>
+              <div style="font-size:11px;color:var(--text-muted);">Claro</div>
+            </div>
+            <div style="text-align:center;cursor:pointer;" onclick="setTheme('calido')">
+              <div style="width:64px;height:64px;border-radius:12px;background:#111318;border:2px solid var(--border);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:24px;height:24px;border-radius:4px;background:#60A5FA;"></div>
+              </div>
+              <div style="font-size:12px;font-weight:600;">Noche Calma</div>
+              <div style="font-size:11px;color:var(--text-muted);">Oscuro</div>
+            </div>
+            <div style="text-align:center;cursor:pointer;" onclick="setTheme('profesional')">
+              <div style="width:64px;height:64px;border-radius:12px;background:#F2F5F0;border:2px solid var(--border);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:24px;height:24px;border-radius:4px;background:#16A34A;"></div>
+              </div>
+              <div style="font-size:12px;font-weight:600;">Bosque</div>
+              <div style="font-size:11px;color:var(--text-muted);">Natural</div>
+            </div>
+            <div style="text-align:center;cursor:pointer;" onclick="setTheme('vibrante')">
+              <div style="width:64px;height:64px;border-radius:12px;background:#0F172A;border:2px solid var(--border);margin:0 auto 8px;display:flex;align-items:center;justify-content:center;">
+                <div style="width:24px;height:24px;border-radius:4px;background:#38BDF8;"></div>
+              </div>
+              <div style="font-size:12px;font-weight:600;">Oceano</div>
+              <div style="font-size:11px;color:var(--text-muted);">Profundo</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="card">
+          <h3 style="font-size:16px;font-weight:600;margin-bottom:20px;">Idiomas (40 disponibles)</h3>
+          <div class="flex gap-8 mb-16" style="flex-wrap:wrap;">
+            <span class="lang-pill active">🇪🇸 Espanol</span>
+            <span class="lang-pill">🇬🇧 English</span>
+            <span class="lang-pill">🇧🇷 Portugues</span>
+            <span class="lang-pill">🇫🇷 Francais</span>
+            <span class="lang-pill">🇩🇪 Deutsch</span>
+            <span class="lang-pill">🇮🇹 Italiano</span>
+            <span class="lang-pill">🇯🇵 日本語</span>
+            <span class="lang-pill">🇰🇷 한국어</span>
+            <span class="lang-pill">🇨🇳 中文</span>
+            <span class="lang-pill">🇷🇺 Русский</span>
+            <span class="lang-pill">🇸🇦 العربية</span>
+            <span class="lang-pill">🇮🇳 हिन्दी</span>
+            <span class="lang-pill">🇳🇱 Nederlands</span>
+            <span class="lang-pill">🇵🇱 Polski</span>
+            <span class="lang-pill">🇸🇪 Svenska</span>
+            <span class="lang-pill">🇹🇷 Turkce</span>
+            <span class="lang-pill">🇹🇭 ไทย</span>
+            <span class="lang-pill">🇻🇳 Tieng Viet</span>
+            <span class="lang-pill">🇮🇩 Bahasa</span>
+            <span class="lang-pill">🇬🇷 Ελληνικά</span>
+            <span class="lang-pill">🇨🇿 Cestina</span>
+            <span class="lang-pill">🇷🇴 Romana</span>
+            <span class="lang-pill">🇭🇺 Magyar</span>
+            <span class="lang-pill">🇫🇮 Suomi</span>
+            <span class="lang-pill">🇩🇰 Dansk</span>
+            <span class="lang-pill">🇳🇴 Norsk</span>
+            <span class="lang-pill">🇺🇦 Yкраїнська</span>
+            <span class="lang-pill">🇧🇬 Български</span>
+            <span class="lang-pill">🇭🇷 Hrvatski</span>
+            <span class="lang-pill">🇷🇸 Srpski</span>
+            <span class="lang-pill">🇸🇰 Slovencina</span>
+            <span class="lang-pill">🇸🇮 Slovenscina</span>
+            <span class="lang-pill">🇪🇪 Eesti</span>
+            <span class="lang-pill">🇱🇻 Latviesu</span>
+            <span class="lang-pill">🇱🇹 Lietuviu</span>
+            <span class="lang-pill">🇵🇭 Filipino</span>
+            <span class="lang-pill">🇲🇾 Malay</span>
+            <span class="lang-pill">🇮🇱 עברית</span>
+            <span class="lang-pill">🇮🇷 فارسی</span>
+            <span class="lang-pill">🇧🇩 বাংলা</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         21. SUBSCRIPTION
+         ═══════════════════════════════════════════════════════ -->
+    <section id="subscription" class="page-section">
+      <h2 class="section-title">21. Suscripcion</h2>
+      <p class="section-desc">3 planes de precios: Basico, Pro y Max con toggle mensual/anual</p>
+
+      <div class="mockup p-24">
+        <div style="text-align:center;margin-bottom:24px;">
+          <div class="toggle-group">
+            <button class="toggle-opt active">Mensual</button>
+            <button class="toggle-opt">Anual <span style="font-size:11px;color:var(--accent-green);margin-left:4px;">Ahorra 33%</span></button>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <!-- Basico -->
+          <div class="pricing-card">
+            <div style="font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Basico</div>
+            <div class="pricing-price">$0</div>
+            <div class="pricing-period">Gratis para siempre</div>
+            <ul class="pricing-features">
+              <li>3 asignaturas</li>
+              <li>5 documentos por asignatura</li>
+              <li>Quiz basico (10 preguntas)</li>
+              <li>Chat limitado (20 msgs/dia)</li>
+              <li>Flashcards basicas</li>
+            </ul>
+            <button class="btn btn-secondary" style="width:100%;">Plan Actual</button>
+          </div>
+
+          <!-- Pro -->
+          <div class="pricing-card featured">
+            <div class="pricing-badge" style="background:var(--accent);">MAS POPULAR</div>
+            <div style="font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">⭐ Pro</div>
+            <div class="pricing-price">$5</div>
+            <div class="pricing-period">/mes</div>
+            <div style="font-size:13px;color:var(--accent-green);margin-top:4px;">= $3.33/mes anual - Ahorras $20/ano</div>
+            <ul class="pricing-features">
+              <li>Asignaturas ilimitadas</li>
+              <li>50 documentos por asignatura</li>
+              <li>Chat IA ilimitado</li>
+              <li>Quizzes avanzados</li>
+              <li>Flashcards FSRS</li>
+              <li>Estadisticas detalladas</li>
+              <li>Marketplace sin anuncios</li>
+              <li>Soporte prioritario</li>
+            </ul>
+            <button class="btn btn-primary" style="width:100%;">Actualizar a Pro</button>
+          </div>
+
+          <!-- Max -->
+          <div class="pricing-card premium">
+            <div class="pricing-badge" style="background:var(--accent-purple);">PREMIUM</div>
+            <div style="font-size:12px;font-weight:600;color:var(--accent-purple);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">👑 Max</div>
+            <div class="pricing-price">$13</div>
+            <div class="pricing-period">/mes</div>
+            <div style="font-size:13px;color:var(--accent-green);margin-top:4px;">= $8.67/mes anual - Ahorras $52/ano</div>
+            <ul class="pricing-features">
+              <li>Todo de Pro +</li>
+              <li>Documentos ilimitados</li>
+              <li>IA avanzada (GPT-4, Claude)</li>
+              <li>Tutoria IA personalizada</li>
+              <li>Certificados verificados</li>
+              <li>API para integraciones</li>
+              <li>Analisis predictivo</li>
+              <li>Acceso anticipado a funciones</li>
+              <li>Soporte 24/7 dedicado</li>
+            </ul>
+            <button class="btn btn-primary" style="width:100%;background:var(--accent-purple);">Actualizar a Max</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         22. USER PROFILE
+         ═══════════════════════════════════════════════════════ -->
+    <section id="userprofile" class="page-section">
+      <h2 class="section-title">22. Perfil de Usuario</h2>
+      <p class="section-desc">Estilo Facebook: cover, avatar, tabs, skills con endorsements, milestones</p>
+
+      <div class="mockup">
+        <!-- Cover photo -->
+        <div class="fb-cover"></div>
+
+        <!-- Profile header -->
+        <div style="background:var(--bg-card);padding-bottom:0;">
+          <div class="fb-profile-header">
+            <div class="fb-avatar-large">CG</div>
+            <div style="padding-bottom:16px;">
+              <h2 style="font-size:24px;font-weight:700;">Cristian Garcia</h2>
+              <p style="font-size:14px;color:var(--text-secondary);margin-top:2px;">Ingenieria de Sistemas - 6to Semestre</p>
+              <p style="font-size:13px;color:var(--text-muted);">Universidad Autonoma - Bogota, Colombia</p>
+              <div class="flex gap-8 mt-8">
+                <span class="badge badge-blue">🔥 12 dias de racha</span>
+                <span class="badge badge-purple">⭐ Nivel 14</span>
+                <span class="badge badge-green">🥈 Liga Plata</span>
+              </div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:8px;padding-bottom:16px;">
+              <button class="btn btn-primary">Editar Perfil</button>
+              <button class="btn btn-secondary">Compartir</button>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div style="padding:0 32px;">
+            <div class="tabs" style="background:transparent;margin-bottom:0;border-bottom:1px solid var(--border-subtle);border-radius:0;padding:0;">
+              <button class="tab active" style="border-radius:0;border-bottom:2px solid var(--accent-blue);padding-bottom:12px;">📰 Publicaciones</button>
+              <button class="tab" style="border-radius:0;padding-bottom:12px;">📷 Fotos</button>
+              <button class="tab" style="border-radius:0;padding-bottom:12px;">👥 Amigos (142)</button>
+              <button class="tab" style="border-radius:0;padding-bottom:12px;">ℹ️ Info</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content -->
+        <div style="padding:24px 32px;display:flex;gap:24px;">
+          <!-- Left: Info -->
+          <div style="width:320px;flex-shrink:0;">
+            <!-- Skills -->
+            <div class="card mb-16">
+              <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Habilidades</h3>
+              <div class="flex flex-col gap-8">
+                <div class="flex items-center justify-between">
+                  <span style="font-size:14px;">Python</span>
+                  <span style="font-size:12px;color:var(--accent);">+24 endorsements</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span style="font-size:14px;">React</span>
+                  <span style="font-size:12px;color:var(--accent);">+18 endorsements</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span style="font-size:14px;">Machine Learning</span>
+                  <span style="font-size:12px;color:var(--accent);">+12 endorsements</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span style="font-size:14px;">SQL</span>
+                  <span style="font-size:12px;color:var(--accent);">+9 endorsements</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span style="font-size:14px;">Calculo</span>
+                  <span style="font-size:12px;color:var(--accent);">+15 endorsements</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Milestones -->
+            <div class="card">
+              <h3 style="font-size:16px;font-weight:600;margin-bottom:16px;">Milestones</h3>
+              <div class="flex flex-col gap-12">
+                <div class="flex items-center gap-12">
+                  <span style="font-size:24px;">🎒</span>
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Senior Year</div>
+                    <div style="font-size:12px;color:var(--text-muted);">6to semestre completado</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-12">
+                  <span style="font-size:24px;">🏆</span>
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Top 5% Liga</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Posicion #3 en Liga Plata</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-12">
+                  <span style="font-size:24px;">📚</span>
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">100+ Horas de Estudio</div>
+                    <div style="font-size:12px;color:var(--text-muted);">127 horas totales en Conniku</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-12" style="opacity:0.5;">
+                  <span style="font-size:24px;">🎓</span>
+                  <div>
+                    <div style="font-size:14px;font-weight:600;">Graduado</div>
+                    <div style="font-size:12px;color:var(--text-muted);">Proximo milestone</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Posts -->
+          <div style="flex:1;">
+            <div class="post-card">
+              <div class="post-header">
+                <div class="avatar">CG</div>
+                <div>
+                  <div class="post-author">Cristian Garcia</div>
+                  <div class="post-time">hace 1 dia</div>
+                </div>
+              </div>
+              <div class="post-body">
+                Feliz de compartir que complete el curso de Figma para Estudiantes con 9.4/10! Ahora a aplicar lo aprendido en mi proyecto de Interfaces de Usuario 🎨🏅
+              </div>
+              <div class="post-reactions">
+                <span class="reaction-btn">👍 32</span>
+                <span class="reaction-btn">🎓 14</span>
+                <span class="reaction-btn">🔥 8</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         23. NOTIFICATIONS
+         ═══════════════════════════════════════════════════════ -->
+    <section id="notifications" class="page-section">
+      <h2 class="section-title">23. Panel de Notificaciones</h2>
+      <p class="section-desc">Dropdown con items: likes, comentarios, solicitudes de amistad, recordatorios</p>
+
+      <div class="mockup" style="max-width:380px;">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:16px;font-weight:700;">Notificaciones</span>
+          <span style="font-size:12px;color:var(--accent);cursor:pointer;font-weight:600;">Marcar todas como leidas</span>
+        </div>
+
+        <!-- Unread notifications -->
+        <div class="notif-item" style="background:rgba(37,99,235,0.04);">
+          <div class="notif-dot"></div>
+          <div class="avatar-sm avatar" style="width:36px;height:36px;font-size:14px;background:var(--accent-purple);">AL</div>
+          <div style="flex:1;">
+            <div class="notif-text"><strong>Ana Lucia</strong> reacciono 👍 a tu publicacion sobre Calculo</div>
+            <div class="notif-time">hace 5 min</div>
+          </div>
+        </div>
+
+        <div class="notif-item" style="background:rgba(37,99,235,0.04);">
+          <div class="notif-dot"></div>
+          <div class="avatar-sm avatar" style="width:36px;height:36px;font-size:14px;background:var(--accent-green);">DR</div>
+          <div style="flex:1;">
+            <div class="notif-text"><strong>Diego Ramirez</strong> comento en tu publicacion: "Excelente resumen!"</div>
+            <div class="notif-time">hace 20 min</div>
+          </div>
+        </div>
+
+        <div class="notif-item" style="background:rgba(37,99,235,0.04);">
+          <div class="notif-dot"></div>
+          <div class="avatar-sm avatar" style="width:36px;height:36px;font-size:14px;background:var(--accent-orange);">SP</div>
+          <div style="flex:1;">
+            <div class="notif-text"><strong>Sofia Paredes</strong> te envio una solicitud de amistad</div>
+            <div class="notif-time">hace 1 hora</div>
+            <div class="flex gap-8 mt-8">
+              <button class="btn btn-primary btn-xs">Aceptar</button>
+              <button class="btn btn-secondary btn-xs">Rechazar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="notif-item" style="background:rgba(37,99,235,0.04);">
+          <div class="notif-dot" style="background:var(--accent-orange);"></div>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(217,119,6,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">📝</div>
+          <div style="flex:1;">
+            <div class="notif-text">Recordatorio: <strong>Quiz de Quimica Organica</strong> vence manana a las 11:59 PM</div>
+            <div class="notif-time">hace 2 horas</div>
+          </div>
+        </div>
+
+        <!-- Read notifications -->
+        <div class="notif-item">
+          <div style="width:8px;flex-shrink:0;"></div>
+          <div class="avatar-sm avatar" style="width:36px;height:36px;font-size:14px;background:var(--accent-cyan);">VH</div>
+          <div style="flex:1;">
+            <div class="notif-text" style="color:var(--text-muted);"><strong>Valentina Herrera</strong> compartio un documento en Marketplace</div>
+            <div class="notif-time">hace 1 dia</div>
+          </div>
+        </div>
+
+        <div class="notif-item">
+          <div style="width:8px;flex-shrink:0;"></div>
+          <div style="width:36px;height:36px;border-radius:50%;background:rgba(5,150,105,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔥</div>
+          <div style="flex:1;">
+            <div class="notif-text" style="color:var(--text-muted);">Tu racha de estudio llego a <strong>12 dias</strong>! Sigue asi</div>
+            <div class="notif-time">hace 1 dia</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         24. MOOD CHECK-IN
+         ═══════════════════════════════════════════════════════ -->
+    <section id="mood" class="page-section" style="border-bottom:none;">
+      <h2 class="section-title">24. Mood Check-in</h2>
+      <p class="section-desc">5 botones de emoji, slider de energia y nota opcional</p>
+
+      <div class="mockup p-24" style="max-width:480px;">
+        <div style="text-align:center;">
+          <h3 style="font-size:20px;font-weight:700;margin-bottom:8px;">¿Como te sientes hoy?</h3>
+          <p style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">Tu bienestar importa. Registra tu estado de animo.</p>
+
+          <div class="flex gap-12" style="justify-content:center;margin-bottom:32px;">
+            <button class="mood-btn">😫</button>
+            <button class="mood-btn">😟</button>
+            <button class="mood-btn selected">😐</button>
+            <button class="mood-btn">😊</button>
+            <button class="mood-btn">🤩</button>
+          </div>
+
+          <div style="text-align:left;margin-bottom:24px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px;">
+              Nivel de Energia
+              <span style="float:right;color:var(--accent);">7/10</span>
+            </label>
+            <input type="range" class="range-slider" min="1" max="10" value="7">
+            <div class="flex justify-between mt-4">
+              <span style="font-size:11px;color:var(--text-muted);">🔋 Baja</span>
+              <span style="font-size:11px;color:var(--text-muted);">⚡ Alta</span>
+            </div>
+          </div>
+
+          <div style="text-align:left;margin-bottom:24px;">
+            <label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px;">Nota (opcional)</label>
+            <textarea class="form-input" rows="3" placeholder="¿Que esta pasando? ¿Algo que quieras recordar?" style="resize:vertical;font-family:var(--font-sans);"></textarea>
+          </div>
+
+          <button class="btn btn-primary" style="width:100%;padding:12px;">Guardar Check-in</button>
+
+          <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border-subtle);text-align:left;">
+            <div style="font-size:13px;font-weight:600;margin-bottom:12px;">Historial reciente</div>
+            <div class="flex gap-8 items-center mb-8">
+              <span>😊</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:80%;background:var(--accent-green)"></div></div>
+              <span style="font-size:11px;color:var(--text-muted);">Ayer</span>
+            </div>
+            <div class="flex gap-8 items-center mb-8">
+              <span>🤩</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:95%;background:var(--accent-green)"></div></div>
+              <span style="font-size:11px;color:var(--text-muted);">Hace 2 dias</span>
+            </div>
+            <div class="flex gap-8 items-center">
+              <span>😟</span>
+              <div class="progress-bar flex-1"><div class="progress-fill" style="width:35%;background:var(--accent-orange)"></div></div>
+              <span style="font-size:11px;color:var(--text-muted);">Hace 3 dias</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     THEME SWITCHER (Fixed)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="theme-switcher">
+  <span class="theme-label">Tema:</span>
+  <button class="theme-btn active" data-theme="nocturno" onclick="setTheme('nocturno')" title="Sereno (Claro)"></button>
+  <button class="theme-btn" data-theme="calido" onclick="setTheme('calido')" title="Noche Calma (Oscuro)"></button>
+  <button class="theme-btn" data-theme="profesional" onclick="setTheme('profesional')" title="Bosque (Natural)"></button>
+  <button class="theme-btn" data-theme="vibrante" onclick="setTheme('vibrante')" title="Oceano (Profundo)"></button>
+</div>
+
+<script>
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-theme') === theme);
+  });
+}
+
+// Smooth scroll for navigation
+document.querySelectorAll('.catalog-nav a').forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// Flashcard flip
+document.querySelectorAll('.flashcard').forEach(card => {
+  card.addEventListener('click', () => card.classList.toggle('flipped'));
+});
+
+// Highlight active nav on scroll
+const sections = document.querySelectorAll('.page-section');
+const navLinks = document.querySelectorAll('.catalog-nav a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(section => {
+    const sectionTop = section.offsetTop - 100;
+    if (window.scrollY >= sectionTop) {
+      current = section.getAttribute('id');
+    }
+  });
+  navLinks.forEach(link => {
+    link.style.background = '';
+    link.style.color = '';
+    link.style.fontWeight = '';
+    if (link.getAttribute('href') === '#' + current) {
+      link.style.background = 'var(--bg-hover)';
+      link.style.color = 'var(--accent)';
+      link.style.fontWeight = '600';
+    }
+  });
+});
+</script>
+</body>
+</html>

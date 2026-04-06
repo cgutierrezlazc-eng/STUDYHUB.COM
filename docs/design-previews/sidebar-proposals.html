@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Estilos de Iconos Sidebar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', sans-serif; background: #e2e8f0; padding: 24px; }
+h1 { text-align: center; color: #0f172a; margin-bottom: 4px; font-size: 24px; }
+p.sub { text-align: center; color: #64748b; margin-bottom: 28px; font-size: 13px; }
+h2.prop-title { text-align: center; color: #0f172a; font-size: 18px; margin: 36px 0 6px; padding-top: 28px; border-top: 2px solid #cbd5e1; }
+h2.prop-title:first-of-type { border-top: none; margin-top: 8px; }
+p.prop-desc { text-align: center; color: #64748b; font-size: 12px; margin-bottom: 16px; }
+.row { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+.col { display: flex; flex-direction: column; align-items: center; }
+.theme-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 6px; }
+
+/* ─── SIDEBAR SHELL ─── */
+.sb {
+  width: 230px; height: 540px; display: flex; flex-direction: column;
+  overflow-y: auto; padding: 12px 0 0; font-size: 12.5px; border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+.sb::-webkit-scrollbar { width: 3px; }
+.sb::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 4px; }
+
+.sb-hdr { padding: 4px 16px 10px; display: flex; align-items: center; gap: 8px; }
+.sb-logo { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sb-logo svg { width: 15px; height: 15px; }
+.sb-brand { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
+.sb-brand b { font-weight: 400; }
+
+.sb-sec { padding: 0 10px; }
+.sb-st { font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; padding: 10px 8px 4px; }
+
+.sb-i {
+  display: flex; align-items: center; gap: 9px; padding: 6px 10px;
+  border-radius: 8px; cursor: pointer; font-weight: 450; transition: all 0.15s;
+  border: none; background: none; width: 100%; text-align: left; font-size: 12.5px;
+  font-family: inherit; position: relative;
+}
+.sb-i .ic { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.sb-i .ic svg { width: 18px; height: 18px; }
+.sb-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 8px; min-width: 16px; text-align: center; line-height: 14px; background: #ef4444; color: #fff; }
+
+/* ═══════════════════════════════════════════════
+   THEME BASE COLORS
+   ═══════════════════════════════════════════════ */
+
+/* Default (claro crema) */
+.t-default { background: #FAFAF8; color: #475569; border: 1px solid #e5e2db; }
+.t-default .sb-brand { color: #0F172A; }
+.t-default .sb-brand b { color: #2563EB; }
+.t-default .sb-st { color: #94a3b8; }
+.t-default .sb-i { color: #64748b; }
+.t-default .sb-i:hover { background: rgba(0,0,0,0.04); color: #1D2939; }
+.t-default .sb-logo { background: #2563EB; }
+
+/* Nocturno (oscuro) */
+.t-noc { background: #161B22; color: #8b949e; border: 1px solid #30363d; }
+.t-noc .sb-brand { color: #E6EDF3; }
+.t-noc .sb-brand b { color: #2563EB; }
+.t-noc .sb-st { color: #484f58; }
+.t-noc .sb-i { color: #8b949e; }
+.t-noc .sb-i:hover { background: rgba(255,255,255,0.04); color: #c9d1d9; }
+.t-noc .sb-logo { background: #2563EB; }
+
+/* Calido (oscuro calido) */
+.t-cal { background: #1A1D24; color: #9ca3af; border: 1px solid #2d3139; }
+.t-cal .sb-brand { color: #ECECEF; }
+.t-cal .sb-brand b { color: #2563EB; }
+.t-cal .sb-st { color: #4b5563; }
+.t-cal .sb-i { color: #9ca3af; }
+.t-cal .sb-i:hover { background: rgba(255,255,255,0.04); color: #d1d5db; }
+.t-cal .sb-logo { background: #2563EB; }
+
+/* ═══════════════════════════════════════════════
+   ICON COLORS (per-icon unique colors)
+   ═══════════════════════════════════════════════ */
+
+/* ── Style 1: Duotone ── */
+.s1 .ic-profile svg { --ic: #3B82F6; }
+.s1 .ic-feed svg { --ic: #F97316; }
+.s1 .ic-community svg { --ic: #8B5CF6; }
+.s1 .ic-mentoring svg { --ic: #06B6D4; }
+.s1 .ic-messages svg { --ic: #10B981; }
+.s1 .ic-dashboard svg { --ic: #6366F1; }
+.s1 .ic-rooms svg { --ic: #EC4899; }
+.s1 .ic-search svg { --ic: #F59E0B; }
+.s1 .ic-jobs svg { --ic: #14B8A6; }
+.s1 .ic-courses svg { --ic: #8B5CF6; }
+.s1 .ic-config svg { --ic: #64748B; }
+.s1 .ic-subs svg { --ic: #F43F5E; }
+
+/* ── Style 2: Filled Soft ── */
+.s2 .ic { border-radius: 6px; width: 28px; height: 28px; }
+.s2 .ic svg { width: 15px; height: 15px; }
+.s2 .ic-profile { background: rgba(59,130,246,0.12); }
+.s2 .ic-profile svg { stroke: #3B82F6; }
+.s2 .ic-feed { background: rgba(249,115,22,0.12); }
+.s2 .ic-feed svg { stroke: #F97316; }
+.s2 .ic-community { background: rgba(139,92,246,0.12); }
+.s2 .ic-community svg { stroke: #8B5CF6; }
+.s2 .ic-mentoring { background: rgba(6,182,212,0.12); }
+.s2 .ic-mentoring svg { stroke: #06B6D4; }
+.s2 .ic-messages { background: rgba(16,185,129,0.12); }
+.s2 .ic-messages svg { stroke: #10B981; }
+.s2 .ic-dashboard { background: rgba(99,102,241,0.12); }
+.s2 .ic-dashboard svg { stroke: #6366F1; }
+.s2 .ic-rooms { background: rgba(236,72,153,0.12); }
+.s2 .ic-rooms svg { stroke: #EC4899; }
+.s2 .ic-search { background: rgba(245,158,11,0.12); }
+.s2 .ic-search svg { stroke: #F59E0B; }
+.s2 .ic-jobs { background: rgba(20,184,166,0.12); }
+.s2 .ic-jobs svg { stroke: #14B8A6; }
+.s2 .ic-courses { background: rgba(139,92,246,0.12); }
+.s2 .ic-courses svg { stroke: #8B5CF6; }
+.s2 .ic-config { background: rgba(100,116,139,0.12); }
+.s2 .ic-config svg { stroke: #64748B; }
+.s2 .ic-subs { background: rgba(244,63,94,0.12); }
+.s2 .ic-subs svg { stroke: #F43F5E; }
+
+/* Dark theme adjustments for Style 2 */
+.s2.t-noc .ic-profile { background: rgba(59,130,246,0.15); }
+.s2.t-noc .ic-feed { background: rgba(249,115,22,0.15); }
+.s2.t-noc .ic-community { background: rgba(139,92,246,0.15); }
+.s2.t-noc .ic-mentoring { background: rgba(6,182,212,0.15); }
+.s2.t-noc .ic-messages { background: rgba(16,185,129,0.15); }
+.s2.t-noc .ic-dashboard { background: rgba(99,102,241,0.15); }
+.s2.t-noc .ic-rooms { background: rgba(236,72,153,0.15); }
+.s2.t-noc .ic-search { background: rgba(245,158,11,0.15); }
+.s2.t-noc .ic-jobs { background: rgba(20,184,166,0.15); }
+.s2.t-noc .ic-courses { background: rgba(139,92,246,0.15); }
+.s2.t-noc .ic-config { background: rgba(100,116,139,0.15); }
+.s2.t-noc .ic-subs { background: rgba(244,63,94,0.15); }
+
+.s2.t-cal .ic-profile { background: rgba(59,130,246,0.15); }
+.s2.t-cal .ic-feed { background: rgba(249,115,22,0.15); }
+.s2.t-cal .ic-community { background: rgba(139,92,246,0.15); }
+.s2.t-cal .ic-mentoring { background: rgba(6,182,212,0.15); }
+.s2.t-cal .ic-messages { background: rgba(16,185,129,0.15); }
+.s2.t-cal .ic-dashboard { background: rgba(99,102,241,0.15); }
+.s2.t-cal .ic-rooms { background: rgba(236,72,153,0.15); }
+.s2.t-cal .ic-search { background: rgba(245,158,11,0.15); }
+.s2.t-cal .ic-jobs { background: rgba(20,184,166,0.15); }
+.s2.t-cal .ic-courses { background: rgba(139,92,246,0.15); }
+.s2.t-cal .ic-config { background: rgba(100,116,139,0.15); }
+.s2.t-cal .ic-subs { background: rgba(244,63,94,0.15); }
+
+/* ── Style 3: Colored Stroke (clean, no bg) ── */
+.s3 .ic-profile svg { stroke: #3B82F6; }
+.s3 .ic-feed svg { stroke: #F97316; }
+.s3 .ic-community svg { stroke: #8B5CF6; }
+.s3 .ic-mentoring svg { stroke: #06B6D4; }
+.s3 .ic-messages svg { stroke: #10B981; }
+.s3 .ic-dashboard svg { stroke: #6366F1; }
+.s3 .ic-rooms svg { stroke: #EC4899; }
+.s3 .ic-search svg { stroke: #F59E0B; }
+.s3 .ic-jobs svg { stroke: #14B8A6; }
+.s3 .ic-courses svg { stroke: #8B5CF6; }
+.s3 .ic-config svg { stroke: #64748B; }
+.s3 .ic-subs svg { stroke: #F43F5E; }
+
+/* ── Style 4: Duotone with partial fill ── */
+.s4 .ic-profile svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-profile svg { --ic: #3B82F6; stroke: #3B82F6; }
+.s4 .ic-feed svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-feed svg { --ic: #F97316; stroke: #F97316; }
+.s4 .ic-community svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-community svg { --ic: #8B5CF6; stroke: #8B5CF6; }
+.s4 .ic-mentoring svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-mentoring svg { --ic: #06B6D4; stroke: #06B6D4; }
+.s4 .ic-messages svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-messages svg { --ic: #10B981; stroke: #10B981; }
+.s4 .ic-dashboard svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-dashboard svg { --ic: #6366F1; stroke: #6366F1; }
+.s4 .ic-rooms svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-rooms svg { --ic: #EC4899; stroke: #EC4899; }
+.s4 .ic-search svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-search svg { --ic: #F59E0B; stroke: #F59E0B; }
+.s4 .ic-jobs svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-jobs svg { --ic: #14B8A6; stroke: #14B8A6; }
+.s4 .ic-courses svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-courses svg { --ic: #8B5CF6; stroke: #8B5CF6; }
+.s4 .ic-config svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-config svg { --ic: #64748B; stroke: #64748B; }
+.s4 .ic-subs svg .fill-part { fill: var(--ic); opacity: 0.15; }
+.s4 .ic-subs svg { --ic: #F43F5E; stroke: #F43F5E; }
+
+/* ═══════════════════════════════════════════════
+   ACTIVE ITEM STYLES (shared)
+   ═══════════════════════════════════════════════ */
+.sb-i.on { font-weight: 600; }
+
+/* Default theme active */
+.t-default .sb-i.on { background: rgba(37,99,235,0.07); color: #1e40af; }
+.t-default .sb-i.on::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:3px; border-radius:0 3px 3px 0; background:#2563EB; }
+
+/* Nocturno active */
+.t-noc .sb-i.on { background: rgba(88,166,255,0.1); color: #58A6FF; }
+.t-noc .sb-i.on::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:3px; border-radius:0 3px 3px 0; background:#58A6FF; }
+
+/* Calido active */
+.t-cal .sb-i.on { background: rgba(96,165,250,0.1); color: #60A5FA; }
+.t-cal .sb-i.on::before { content:''; position:absolute; left:0; top:4px; bottom:4px; width:3px; border-radius:0 3px 3px 0; background:#60A5FA; }
+
+</style>
+</head>
+<body>
+
+<h1>Estilos de Iconos — Sidebar Conniku</h1>
+<p class="sub">Cada icono tiene su propio color. Elige el estilo que prefieras.</p>
+
+<script>
+// Icon SVGs — more modern, slightly rounded, 1.75 stroke
+const icons = {
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  feed: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+  community: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  mentoring: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  messages: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+  dashboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`,
+  rooms: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  jobs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  courses: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  config: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"/></svg>`,
+  subs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 13L2 9z"/></svg>`,
+};
+
+// Duotone icons — same but with a fill-part class on the main shape
+const iconsDuotone = {
+  profile: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle class="fill-part" cx="12" cy="7" r="4"/><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+  feed: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect class="fill-part" x="3" y="3" width="7" height="7" rx="1"/><rect class="fill-part" x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+  community: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle class="fill-part" cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  mentoring: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path class="fill-part" d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  messages: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path class="fill-part" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`,
+  dashboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path class="fill-part" d="M22 12A10 10 0 0 0 12 2v10z"/><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>`,
+  rooms: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path class="fill-part" d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>`,
+  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle class="fill-part" cx="11" cy="11" r="8"/><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  jobs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect class="fill-part" x="2" y="7" width="20" height="14" rx="2" ry="2"/><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  courses: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon class="fill-part" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+  config: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle class="fill-part" cx="12" cy="12" r="3"/><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09"/></svg>`,
+  subs: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path class="fill-part" d="M6 3h12l4 6-10 13L2 9z"/><path d="M6 3h12l4 6-10 13L2 9z"/></svg>`,
+};
+
+function sidebarHTML(style, theme) {
+  // Logo SIEMPRE igual: fondo azul #2563EB + C blanca
+  const logoStroke = '#fff';
+  const ic = style === 's4' ? iconsDuotone : icons;
+  return `
+  <div class="sb-hdr">
+    <div class="sb-logo"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="${logoStroke}" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+    <div class="sb-brand">conn<b>iku</b></div>
+  </div>
+  <div class="sb-sec s-soc">
+    <div class="sb-st">Social</div>
+    <button class="sb-i"><span class="ic ic-profile">${ic.profile}</span> Mi Perfil</button>
+    <button class="sb-i"><span class="ic ic-feed">${ic.feed}</span> Feed</button>
+    <button class="sb-i on"><span class="ic ic-community">${ic.community}</span> Comunidad</button>
+    <button class="sb-i"><span class="ic ic-mentoring">${ic.mentoring}</span> Mentoria</button>
+    <button class="sb-i"><span class="ic ic-messages">${ic.messages}</span> Mensajes <span class="sb-badge">3</span></button>
+  </div>
+  <div class="sb-sec s-aca">
+    <div class="sb-st">Academico</div>
+    <button class="sb-i"><span class="ic ic-dashboard">${ic.dashboard}</span> Dashboard</button>
+    <button class="sb-i on"><span class="ic ic-rooms">${ic.rooms}</span> Salas de Estudio</button>
+    <button class="sb-i"><span class="ic ic-search">${ic.search}</span> Buscador</button>
+    <button class="sb-i"><span class="ic ic-jobs">${ic.jobs}</span> Bolsa de Trabajo</button>
+    <button class="sb-i"><span class="ic ic-courses">${ic.courses}</span> Cursos</button>
+  </div>
+  <div class="sb-sec s-sup">
+    <div class="sb-st">Soporte</div>
+    <button class="sb-i"><span class="ic ic-config">${ic.config}</span> Configuracion</button>
+    <button class="sb-i"><span class="ic ic-subs">${ic.subs}</span> Suscripcion</button>
+  </div>`;
+}
+
+const themes = [
+  { cls: 't-default', label: 'Default' },
+  { cls: 't-noc', label: 'Nocturno' },
+  { cls: 't-cal', label: 'Calido' },
+];
+
+const styles = [
+  { cls: 's3', title: '1 — Colored Stroke', desc: 'Iconos con trazo de color unico por item. Limpio, moderno, sin fondo.' },
+  { cls: 's2', title: '2 — Soft Color Box', desc: 'Cada icono dentro de una caja redondeada con fondo suave de su color. Estilo app moderna.' },
+  { cls: 's4', title: '3 — Duotone', desc: 'Iconos con relleno semitransparente + trazo de color. Estilo duotono premium.' },
+  { cls: 's1', title: '4 — Colored Icons (sin fondo)', desc: 'Iconos con color propio via CSS variable. Similar al 1 pero con stroke via variable.' },
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+  const body = document.body;
+  styles.forEach((s, si) => {
+    const h = document.createElement('h2');
+    h.className = 'prop-title';
+    h.textContent = s.title;
+    body.appendChild(h);
+    const d = document.createElement('p');
+    d.className = 'prop-desc';
+    d.textContent = s.desc;
+    body.appendChild(d);
+    const row = document.createElement('div');
+    row.className = 'row';
+    themes.forEach(t => {
+      const col = document.createElement('div');
+      col.className = 'col';
+      const lbl = document.createElement('div');
+      lbl.className = 'theme-label';
+      lbl.textContent = t.label;
+      col.appendChild(lbl);
+      const sb = document.createElement('div');
+      sb.className = `sb ${s.cls} ${t.cls}`;
+      sb.innerHTML = sidebarHTML(s.cls, t.cls);
+      col.appendChild(sb);
+      row.appendChild(col);
+    });
+    body.appendChild(row);
+  });
+});
+</script>
+
+</body>
+</html>

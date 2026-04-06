@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Opciones de Certificado</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Georgia', 'Times New Roman', serif; background: #f0f0f0; padding: 40px; }
+  h1 { font-family: system-ui, -apple-system, sans-serif; text-align: center; font-size: 28px; color: #1a1a1a; margin-bottom: 10px; }
+  .subtitle { text-align: center; color: #666; font-family: system-ui; font-size: 14px; margin-bottom: 50px; }
+  .option-label { font-family: system-ui; font-size: 20px; font-weight: 700; color: #1a1a1a; text-align: center; margin: 40px 0 20px; letter-spacing: 0.05em; }
+  .option-desc { font-family: system-ui; font-size: 13px; color: #666; text-align: center; margin-bottom: 20px; max-width: 600px; margin-left: auto; margin-right: auto; }
+
+  /* Certificate wrapper */
+  .cert-wrap { display: flex; justify-content: center; margin-bottom: 60px; }
+
+  /* ================================ */
+  /* OPTION A: Classic Academic       */
+  /* ================================ */
+  .cert-a {
+    width: 800px; height: 566px;
+    background: #FFFDF7;
+    border: 3px solid #1A3A7A;
+    position: relative;
+    padding: 50px 60px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+  }
+  .cert-a::before {
+    content: '';
+    position: absolute; inset: 8px;
+    border: 1px solid #C5A55A;
+  }
+  .cert-a::after {
+    content: '';
+    position: absolute; inset: 14px;
+    border: 1px solid rgba(197,165,90,0.3);
+  }
+  .cert-a .cert-logo {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+  }
+  .cert-a .cert-logomark {
+    width: 36px; height: 36px; border-radius: 10px; background: #1A3A7A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cert-a .cert-logotype {
+    font-family: system-ui; font-size: 28px; font-weight: 700; color: #1A3A7A; letter-spacing: -0.05em;
+  }
+  .cert-a .cert-logotype span { color: #C4882A; }
+  .cert-a .cert-institution { font-family: system-ui; font-size: 10px; letter-spacing: 0.35em; text-transform: uppercase; color: #999; margin-bottom: 24px; }
+  .cert-a .cert-title { font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; color: #1A3A7A; margin-bottom: 6px; }
+  .cert-a .cert-of { font-size: 36px; color: #1A3A7A; font-style: italic; margin-bottom: 16px; }
+  .cert-a .cert-name { font-size: 32px; color: #1a1a1a; border-bottom: 2px solid #C5A55A; padding-bottom: 6px; margin-bottom: 12px; letter-spacing: 0.02em; }
+  .cert-a .cert-course-label { font-family: system-ui; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 4px; }
+  .cert-a .cert-course { font-size: 20px; color: #1A3A7A; font-weight: 600; margin-bottom: 6px; }
+  .cert-a .cert-desc { font-family: system-ui; font-size: 12px; color: #777; max-width: 500px; text-align: center; line-height: 1.6; margin-bottom: 24px; }
+  .cert-a .cert-footer { display: flex; justify-content: space-between; width: 100%; padding: 0 30px; }
+  .cert-a .cert-footer-item { text-align: center; }
+  .cert-a .cert-footer-item .sig-line { width: 140px; border-top: 1px solid #ccc; margin-bottom: 4px; }
+  .cert-a .cert-footer-item .sig-name { font-family: system-ui; font-size: 11px; font-weight: 600; color: #333; }
+  .cert-a .cert-footer-item .sig-title { font-family: system-ui; font-size: 9px; color: #999; }
+  .cert-a .cert-date { position: absolute; bottom: 28px; right: 70px; font-family: system-ui; font-size: 10px; color: #aaa; }
+  .cert-a .cert-id { position: absolute; bottom: 28px; left: 70px; font-family: system-ui; font-size: 10px; color: #aaa; }
+  .cert-a .seal {
+    position: absolute; bottom: 60px; right: 70px;
+    width: 70px; height: 70px; border-radius: 50%;
+    border: 2px solid #C5A55A; display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .cert-a .seal .seal-inner {
+    width: 56px; height: 56px; border-radius: 50%;
+    border: 1px solid #C5A55A; display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .cert-a .seal svg { width: 20px; height: 20px; stroke: #C5A55A; fill: none; stroke-width: 1.5; }
+  .cert-a .seal .seal-text { font-family: system-ui; font-size: 6px; letter-spacing: 0.15em; text-transform: uppercase; color: #C5A55A; margin-top: 2px; }
+
+  /* Category color band */
+  .cert-a .cat-band {
+    position: absolute; top: 0; left: 0; right: 0; height: 5px;
+  }
+
+  /* ================================ */
+  /* OPTION B: Modern Minimal         */
+  /* ================================ */
+  .cert-b {
+    width: 800px; height: 566px;
+    background: #fff;
+    position: relative;
+    padding: 50px 60px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+  .cert-b .side-accent {
+    position: absolute; top: 0; left: 0; width: 6px; height: 100%;
+  }
+  .cert-b .corner-pattern {
+    position: absolute; top: 0; right: 0; width: 200px; height: 200px;
+    opacity: 0.04;
+  }
+  .cert-b .cert-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+  .cert-b .cert-logo { display: flex; align-items: center; gap: 10px; }
+  .cert-b .cert-logomark {
+    width: 32px; height: 32px; border-radius: 9px; background: #1A3A7A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cert-b .cert-logotype { font-family: system-ui; font-size: 24px; font-weight: 700; color: #1A3A7A; letter-spacing: -0.05em; }
+  .cert-b .cert-logotype span { color: #C4882A; }
+  .cert-b .cert-id-box { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; color: #bbb; text-align: right; }
+  .cert-b .cert-label { font-family: system-ui; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #aaa; margin-bottom: 4px; }
+  .cert-b .cert-of { font-size: 28px; color: #1a1a1a; font-weight: 300; margin-bottom: 30px; }
+  .cert-b .cert-name {
+    font-size: 42px; color: #1a1a1a; font-weight: 700; font-family: system-ui;
+    margin-bottom: 10px; line-height: 1.1;
+  }
+  .cert-b .cert-divider { width: 60px; height: 3px; margin-bottom: 20px; }
+  .cert-b .cert-course { font-family: system-ui; font-size: 18px; color: #333; font-weight: 600; margin-bottom: 8px; }
+  .cert-b .cert-desc { font-family: system-ui; font-size: 13px; color: #888; line-height: 1.6; max-width: 450px; margin-bottom: auto; }
+  .cert-b .cert-footer { display: flex; justify-content: space-between; align-items: flex-end; }
+  .cert-b .cert-footer-left { }
+  .cert-b .cert-footer-item .sig-line { width: 160px; border-top: 1.5px solid #ddd; margin-bottom: 6px; }
+  .cert-b .cert-footer-item .sig-name { font-family: system-ui; font-size: 12px; font-weight: 600; color: #333; }
+  .cert-b .cert-footer-item .sig-title { font-family: system-ui; font-size: 10px; color: #999; }
+  .cert-b .cert-badge {
+    width: 80px; height: 80px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; border: 2px solid;
+  }
+  .cert-b .cert-badge svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+  .cert-b .cert-badge .badge-text { font-family: system-ui; font-size: 7px; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 3px; }
+  .cert-b .cert-meta { position: absolute; bottom: 20px; left: 66px; right: 60px; display: flex; justify-content: space-between; font-family: system-ui; font-size: 9px; color: #ccc; }
+
+  /* ================================ */
+  /* OPTION C: Elegant Serif          */
+  /* ================================ */
+  .cert-c {
+    width: 800px; height: 566px;
+    background: linear-gradient(170deg, #FAFAF8 0%, #F5F3EE 100%);
+    position: relative;
+    padding: 50px 70px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    overflow: hidden;
+  }
+  .cert-c .border-frame {
+    position: absolute; inset: 16px;
+    border: 1px solid rgba(26,58,122,0.15);
+    border-radius: 2px;
+  }
+  .cert-c .corner { position: absolute; width: 30px; height: 30px; }
+  .cert-c .corner svg { width: 30px; height: 30px; stroke: #C5A55A; fill: none; stroke-width: 1; }
+  .cert-c .corner.tl { top: 12px; left: 12px; }
+  .cert-c .corner.tr { top: 12px; right: 12px; transform: scaleX(-1); }
+  .cert-c .corner.bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+  .cert-c .corner.br { bottom: 12px; right: 12px; transform: scale(-1); }
+  .cert-c .watermark {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 250px; height: 250px; opacity: 0.03;
+  }
+  .cert-c .cert-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .cert-c .cert-logomark {
+    width: 30px; height: 30px; border-radius: 9px; background: #1A3A7A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cert-c .cert-logotype { font-family: system-ui; font-size: 22px; font-weight: 700; color: #1A3A7A; letter-spacing: -0.05em; }
+  .cert-c .cert-logotype span { color: #C4882A; }
+  .cert-c .cert-subtitle { font-family: system-ui; font-size: 9px; letter-spacing: 0.4em; text-transform: uppercase; color: #aaa; margin-bottom: 20px; }
+  .cert-c .cert-crest { margin-bottom: 16px; }
+  .cert-c .cert-crest svg { width: 50px; height: 50px; stroke: #C5A55A; fill: none; stroke-width: 1; }
+  .cert-c .cert-title { font-size: 13px; letter-spacing: 0.35em; text-transform: uppercase; color: #1A3A7A; margin-bottom: 4px; }
+  .cert-c .cert-of { font-size: 30px; color: #1a1a1a; font-style: italic; margin-bottom: 14px; }
+  .cert-c .cert-name {
+    font-size: 36px; color: #1a1a1a; font-weight: 400;
+    letter-spacing: 0.06em; margin-bottom: 14px;
+    padding: 0 20px;
+    background: linear-gradient(to right, transparent, rgba(197,165,90,0.15), transparent);
+  }
+  .cert-c .cert-line { width: 80px; height: 1px; background: linear-gradient(to right, transparent, #C5A55A, transparent); margin-bottom: 14px; }
+  .cert-c .cert-course-wrap { text-align: center; margin-bottom: 8px; }
+  .cert-c .cert-course-label { font-family: system-ui; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 3px; }
+  .cert-c .cert-course { font-size: 18px; color: #1A3A7A; font-weight: 600; }
+  .cert-c .cat-pill {
+    display: inline-block; font-family: system-ui; font-size: 10px; letter-spacing: 0.1em;
+    padding: 3px 14px; border-radius: 20px; margin-bottom: 14px; font-weight: 600;
+  }
+  .cert-c .cert-desc { font-family: system-ui; font-size: 12px; color: #888; text-align: center; max-width: 440px; line-height: 1.6; margin-bottom: 20px; }
+  .cert-c .cert-footer { display: flex; gap: 120px; align-items: flex-end; }
+  .cert-c .cert-footer-item { text-align: center; }
+  .cert-c .cert-footer-item .sig-line { width: 140px; border-top: 1px solid #d4d0c8; margin-bottom: 4px; }
+  .cert-c .cert-footer-item .sig-name { font-family: system-ui; font-size: 11px; font-weight: 600; color: #444; }
+  .cert-c .cert-footer-item .sig-title { font-family: system-ui; font-size: 9px; color: #aaa; }
+  .cert-c .cert-seal {
+    position: absolute; bottom: 40px; right: 80px;
+    text-align: center;
+  }
+  .cert-c .cert-seal svg { width: 55px; height: 55px; }
+  .cert-c .cert-meta {
+    position: absolute; bottom: 24px; left: 76px; right: 80px;
+    display: flex; justify-content: space-between;
+    font-family: system-ui; font-size: 9px; color: #ccc;
+  }
+
+  /* Category colors */
+  .cat-comunicacion { background: #5B5FC7; color: #fff; }
+  .cat-liderazgo { background: #2D8A56; color: #fff; }
+  .cat-emocional { background: #C4882A; color: #fff; }
+  .cat-productividad { background: #1A3A7A; color: #fff; }
+  .cat-carrera { background: #9B2C5E; color: #fff; }
+
+  .band-comunicacion { background: #5B5FC7; }
+  .band-liderazgo { background: #2D8A56; }
+  .band-emocional { background: #C4882A; }
+
+  .color-comunicacion { color: #5B5FC7; }
+  .color-liderazgo { color: #2D8A56; }
+  .color-emocional { color: #C4882A; }
+
+  .border-comunicacion { border-color: #5B5FC7; }
+  .border-liderazgo { border-color: #2D8A56; }
+  .border-emocional { border-color: #C4882A; }
+
+  .divider-comunicacion { background: #5B5FC7; }
+  .divider-liderazgo { background: #2D8A56; }
+  .divider-emocional { background: #C4882A; }
+
+  hr.section-hr { border: none; border-top: 2px dashed #ddd; margin: 60px auto; width: 200px; }
+
+  .legend { font-family: system-ui; text-align: center; margin-bottom: 40px; }
+  .legend h3 { font-size: 16px; margin-bottom: 12px; color: #333; }
+  .legend-items { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-family: system-ui; font-size: 12px; color: #555; }
+  .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<h1>Certificados Conniku — 3 Opciones</h1>
+<p class="subtitle">Selecciona el estilo que prefieras. Cada categoria de curso tiene su color distintivo.</p>
+
+<div class="legend">
+  <h3>Colores por categoria</h3>
+  <div class="legend-items">
+    <div class="legend-item"><div class="legend-dot" style="background: #5B5FC7;"></div> Comunicacion</div>
+    <div class="legend-item"><div class="legend-dot" style="background: #2D8A56;"></div> Liderazgo</div>
+    <div class="legend-item"><div class="legend-dot" style="background: #C4882A;"></div> Inteligencia Emocional</div>
+    <div class="legend-item"><div class="legend-dot" style="background: #1A3A7A;"></div> Productividad</div>
+    <div class="legend-item"><div class="legend-dot" style="background: #9B2C5E;"></div> Carrera</div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- OPTION A: CLASSIC ACADEMIC     -->
+<!-- ============================== -->
+<div class="option-label">OPCION A — Classic Academic</div>
+<p class="option-desc">Inspirado en diplomas universitarios tradicionales. Borde doble, sello dorado, tipografia serif. Transmite seriedad institucional y tradicion academica.</p>
+
+<div class="cert-wrap">
+  <div class="cert-a">
+    <div class="cat-band band-comunicacion"></div>
+    <div class="cert-logo">
+      <div class="cert-logomark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+      <div class="cert-logotype">conni<span>ku</span></div>
+    </div>
+    <div class="cert-institution">Plataforma educativa universitaria</div>
+    <div class="cert-title">Certificado</div>
+    <div class="cert-of">de Aprobacion</div>
+    <div class="cert-name">Maria Gonzalez Herrera</div>
+    <div class="cert-course-label">Ha completado satisfactoriamente el curso</div>
+    <div class="cert-course">Hablar en publico con confianza</div>
+    <div class="cert-desc">Por haber completado las 8 lecciones del programa, demostrando dominio de las competencias evaluadas en el area de Comunicacion.</div>
+    <div class="cert-footer">
+      <div class="cert-footer-item">
+        <div class="sig-line"></div>
+        <div class="sig-name">Director Academico</div>
+        <div class="sig-title">Conniku Education</div>
+      </div>
+      <div class="cert-footer-item">
+        <div class="sig-line"></div>
+        <div class="sig-name">Instructor del Curso</div>
+        <div class="sig-title">Departamento de Comunicacion</div>
+      </div>
+    </div>
+    <div class="seal">
+      <div class="seal-inner">
+        <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7L12 16.4 5.7 21l2.3-7L2 9.4h7.6z"/></svg>
+        <div class="seal-text">Verificado</div>
+      </div>
+    </div>
+    <div class="cert-id">ID: CNK-2026-00847</div>
+    <div class="cert-date">3 de abril, 2026</div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- OPTION B: MODERN MINIMAL       -->
+<!-- ============================== -->
+<hr class="section-hr">
+<div class="option-label">OPCION B — Modern Minimal</div>
+<p class="option-desc">Diseno contemporaneo con lineas limpias. Acento lateral de color por categoria, tipografia bold sans-serif. Transmite innovacion y modernidad.</p>
+
+<div class="cert-wrap">
+  <div class="cert-b">
+    <div class="side-accent band-liderazgo"></div>
+    <div class="corner-pattern">
+      <svg viewBox="0 0 200 200"><circle cx="200" cy="0" r="200" fill="#2D8A56"/></svg>
+    </div>
+    <div class="cert-top">
+      <div class="cert-logo">
+        <div class="cert-logomark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+        <div class="cert-logotype">conni<span>ku</span></div>
+      </div>
+      <div class="cert-id-box">
+        Certificate No.<br>
+        <strong>CNK-2026-00847</strong>
+      </div>
+    </div>
+    <div class="cert-label">Certificate of completion</div>
+    <div class="cert-of">Certificado de Aprobacion</div>
+    <div class="cert-name">Maria Gonzalez Herrera</div>
+    <div class="cert-divider divider-liderazgo"></div>
+    <div class="cert-course">Liderazgo estudiantil</div>
+    <div class="cert-desc">Ha completado satisfactoriamente las 6 lecciones del programa, demostrando competencias de liderazgo, gestion de equipos y pensamiento estrategico.</div>
+    <div class="cert-footer">
+      <div class="cert-footer-left">
+        <div class="cert-footer-item">
+          <div class="sig-line"></div>
+          <div class="sig-name">Conniku Education</div>
+          <div class="sig-title">Director Academico</div>
+        </div>
+      </div>
+      <div class="cert-badge border-liderazgo color-liderazgo">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div class="badge-text">Aprobado</div>
+      </div>
+    </div>
+    <div class="cert-meta">
+      <span>Emitido: 3 de abril, 2026</span>
+      <span>Categoria: Liderazgo</span>
+      <span>conniku.com/verify/CNK-2026-00847</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== -->
+<!-- OPTION C: ELEGANT SERIF        -->
+<!-- ============================== -->
+<hr class="section-hr">
+<div class="option-label">OPCION C — Elegant Serif</div>
+<p class="option-desc">Fusiona lo clasico con lo moderno. Esquinas ornamentales, fondo texturizado, nombre con fondo dorado sutil. Pill de color por categoria. Balance entre tradicion y contemporaneidad.</p>
+
+<div class="cert-wrap">
+  <div class="cert-c">
+    <div class="border-frame"></div>
+    <div class="corner tl"><svg viewBox="0 0 30 30"><path d="M0 30 V6 Q0 0 6 0 H30"/></svg></div>
+    <div class="corner tr"><svg viewBox="0 0 30 30"><path d="M0 30 V6 Q0 0 6 0 H30"/></svg></div>
+    <div class="corner bl"><svg viewBox="0 0 30 30"><path d="M0 30 V6 Q0 0 6 0 H30"/></svg></div>
+    <div class="corner br"><svg viewBox="0 0 30 30"><path d="M0 30 V6 Q0 0 6 0 H30"/></svg></div>
+
+    <div class="watermark">
+      <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#1A3A7A" stroke-width="3" stroke-linecap="round" stroke-dasharray="56 19"/></svg>
+    </div>
+
+    <div class="cert-logo">
+      <div class="cert-logomark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+      <div class="cert-logotype">conni<span>ku</span></div>
+    </div>
+    <div class="cert-subtitle">Plataforma educativa universitaria</div>
+
+    <div class="cert-crest">
+      <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+        <path d="M2 17l10 5 10-5"/>
+        <path d="M2 12l10 5 10-5"/>
+      </svg>
+    </div>
+
+    <div class="cert-title">Certificado de Aprobacion</div>
+    <div class="cert-of">otorgado a</div>
+    <div class="cert-name">Maria Gonzalez Herrera</div>
+    <div class="cert-line"></div>
+    <div class="cert-course-wrap">
+      <div class="cert-course-label">Por completar exitosamente</div>
+      <div class="cert-course">Gestion del estres academico</div>
+    </div>
+    <div class="cat-pill cat-emocional">Inteligencia Emocional</div>
+    <div class="cert-desc">5 lecciones completadas. Competencias desarrolladas en manejo del estres, tecnicas de relajacion, organizacion del tiempo y bienestar emocional academico.</div>
+    <div class="cert-footer">
+      <div class="cert-footer-item">
+        <div class="sig-line"></div>
+        <div class="sig-name">Director Academico</div>
+        <div class="sig-title">Conniku Education</div>
+      </div>
+      <div class="cert-footer-item">
+        <div class="sig-line"></div>
+        <div class="sig-name">Instructor del Curso</div>
+        <div class="sig-title">Dpto. Bienestar Estudiantil</div>
+      </div>
+    </div>
+    <div class="cert-seal">
+      <svg viewBox="0 0 60 60" fill="none" stroke="#C5A55A" stroke-width="1">
+        <circle cx="30" cy="30" r="28"/>
+        <circle cx="30" cy="30" r="24"/>
+        <path d="M30 10l3 9h9l-7 5 3 9-8-6-8 6 3-9-7-5h9z"/>
+        <text x="30" y="50" text-anchor="middle" fill="#C5A55A" stroke="none" font-family="system-ui" font-size="5" letter-spacing="0.1em">VERIFICADO</text>
+      </svg>
+    </div>
+    <div class="cert-meta">
+      <span>ID: CNK-2026-00847</span>
+      <span>3 de abril, 2026</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Conniku — Panel de Administracion CEO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ── Sereno Theme Tokens ── */
+    :root {
+      --bg-primary: #F5F3EF;
+      --bg-card: #FFFFFF;
+      --text-primary: #1D2939;
+      --text-secondary: #667085;
+      --accent: #2563EB;
+      --border: #E5E7EB;
+      --green: #059669;
+      --red: #DC2626;
+      --orange: #D97706;
+      --purple: #7C3AED;
+      --cyan: #0891B2;
+      --yellow: #CA8A04;
+      --gray: #6B7280;
+      --sidebar-w: 240px;
+      --topbar-h: 56px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    /* ── TopBar ── */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--topbar-h);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      z-index: 100;
+    }
+    .topbar-logo {
+      font-size: 20px; font-weight: 700; color: var(--accent);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .topbar-logo span { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: #EFF6FF; padding: 2px 8px; border-radius: 4px; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .topbar-badge {
+      background: var(--red); color: #fff; font-size: 11px; font-weight: 600;
+      padding: 2px 8px; border-radius: 10px;
+    }
+    .topbar-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--accent); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px; cursor: pointer;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      position: fixed; top: var(--topbar-h); left: 0; bottom: 0;
+      width: var(--sidebar-w);
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      padding: 16px 0;
+      overflow-y: auto;
+      z-index: 90;
+    }
+    .sidebar-section { padding: 0 16px; margin-bottom: 8px; }
+    .sidebar-section-title {
+      font-size: 11px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      padding: 8px 0;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px; cursor: pointer;
+      border-radius: 6px; margin: 0 8px 2px;
+      font-size: 14px; color: var(--text-secondary);
+      transition: background 0.15s;
+    }
+    .sidebar-item:hover { background: var(--bg-primary); color: var(--text-primary); }
+    .sidebar-item.active {
+      background: #EFF6FF; color: var(--accent); font-weight: 600;
+    }
+    .sidebar-item .icon { width: 20px; text-align: center; }
+    .sidebar-item .badge-sm {
+      margin-left: auto; background: var(--red); color: #fff;
+      font-size: 11px; padding: 1px 6px; border-radius: 8px; font-weight: 600;
+    }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      margin-top: var(--topbar-h);
+      padding: 24px;
+      min-height: calc(100vh - var(--topbar-h));
+    }
+    .page-header {
+      margin-bottom: 8px;
+    }
+    .page-header h1 { font-size: 22px; font-weight: 700; }
+    .page-header .sub {
+      font-size: 13px; color: var(--text-secondary); margin-top: 4px;
+    }
+    .page-header .sub strong { color: var(--text-primary); font-weight: 600; }
+
+    /* ── Tabs ── */
+    .tabs-bar {
+      display: flex; gap: 4px; border-bottom: 2px solid var(--border);
+      margin-bottom: 24px; overflow-x: auto; padding-bottom: 0;
+    }
+    .tab-btn {
+      padding: 10px 16px; font-size: 13px; font-weight: 500;
+      color: var(--text-secondary); cursor: pointer;
+      border: none; background: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px; white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: var(--text-primary); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+    .tab-btn .tb-badge {
+      background: var(--red); color: #fff; font-size: 10px;
+      padding: 1px 5px; border-radius: 6px; margin-left: 4px; font-weight: 600;
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── Cards Grid ── */
+    .cards-row {
+      display: grid; gap: 16px; margin-bottom: 24px;
+    }
+    .cards-row.c4 { grid-template-columns: repeat(4, 1fr); }
+    .cards-row.c3 { grid-template-columns: repeat(3, 1fr); }
+    .cards-row.c2 { grid-template-columns: repeat(2, 1fr); }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+      border-left: 4px solid var(--border);
+      transition: box-shadow 0.15s;
+    }
+    .stat-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .stat-card.blue   { border-left-color: var(--accent); }
+    .stat-card.green  { border-left-color: var(--green); }
+    .stat-card.red    { border-left-color: var(--red); }
+    .stat-card.orange { border-left-color: var(--orange); }
+    .stat-card.purple { border-left-color: var(--purple); }
+    .stat-card.cyan   { border-left-color: var(--cyan); }
+    .stat-card.yellow { border-left-color: var(--yellow); }
+    .stat-card.gray   { border-left-color: var(--gray); }
+    .stat-card .sc-value {
+      font-size: 28px; font-weight: 700; line-height: 1.2;
+    }
+    .stat-card .sc-label {
+      font-size: 13px; color: var(--text-secondary); margin-top: 4px;
+    }
+    .stat-card.clickable { cursor: pointer; }
+    .stat-card.clickable:hover { border-left-width: 6px; }
+
+    /* ── Section Title ── */
+    .section-title {
+      font-size: 15px; font-weight: 600; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .section-title .st-icon { font-size: 16px; }
+
+    /* ── Progress Bars ── */
+    .bar-group { margin-bottom: 24px; }
+    .bar-item { margin-bottom: 12px; }
+    .bar-label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; margin-bottom: 4px;
+    }
+    .bar-label .bl-val { font-weight: 600; }
+    .bar-track {
+      height: 10px; background: #F3F4F6; border-radius: 5px; overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%; border-radius: 5px; transition: width 0.6s ease;
+    }
+    .bar-fill.green  { background: var(--green); }
+    .bar-fill.red    { background: var(--red); }
+    .bar-fill.orange { background: var(--orange); }
+    .bar-fill.blue   { background: var(--accent); }
+    .bar-fill.purple { background: var(--purple); }
+    .bar-fill.cyan   { background: var(--cyan); }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden; margin-bottom: 24px;
+    }
+    .table-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 8px;
+    }
+    .table-toolbar-left { display: flex; align-items: center; gap: 8px; }
+    table {
+      width: 100%; border-collapse: collapse;
+    }
+    th {
+      text-align: left; padding: 10px 16px;
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      text-transform: uppercase; letter-spacing: 0.3px;
+      background: #FAFAFA; border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 16px; font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    tr:nth-child(even) td { background: #FAFBFC; }
+    tr:hover td { background: #F5F7FA; }
+    tr:last-child td { border-bottom: none; }
+
+    /* ── Inputs / Buttons ── */
+    .input {
+      padding: 8px 12px; border: 1px solid var(--border);
+      border-radius: 6px; font-size: 13px; font-family: inherit;
+      background: var(--bg-card); color: var(--text-primary);
+      outline: none; transition: border-color 0.15s;
+    }
+    .input:focus { border-color: var(--accent); }
+    .input.search { min-width: 240px; }
+    select.input { cursor: pointer; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 6px; font-size: 13px;
+      font-weight: 500; font-family: inherit;
+      border: 1px solid var(--border); background: var(--bg-card);
+      color: var(--text-primary); cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn:hover { background: #F9FAFB; border-color: #D1D5DB; }
+    .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn-primary:hover { background: #1D4ED8; }
+    .btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-success { background: var(--green); color: #fff; border-color: var(--green); }
+    .btn-success:hover { background: #047857; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+    .btn-icon { padding: 4px 8px; font-size: 14px; }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500;
+    }
+    .badge-green { background: #ECFDF5; color: #065F46; }
+    .badge-red { background: #FEF2F2; color: #991B1B; }
+    .badge-orange { background: #FFFBEB; color: #92400E; }
+    .badge-blue { background: #EFF6FF; color: #1E40AF; }
+    .badge-purple { background: #F5F3FF; color: #5B21B6; }
+    .badge-gray { background: #F3F4F6; color: #374151; }
+    .badge-yellow { background: #FEFCE8; color: #854D0E; }
+
+    /* ── Avatar ── */
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-weight: 600; font-size: 14px; color: #fff; flex-shrink: 0;
+    }
+    .avatar-sm { width: 28px; height: 28px; font-size: 12px; }
+    .user-cell { display: flex; align-items: center; gap: 10px; }
+    .user-cell .uc-name { font-weight: 500; }
+    .user-cell .uc-email { font-size: 12px; color: var(--text-secondary); }
+
+    /* ── Pagination ── */
+    .pagination {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-top: 1px solid var(--border);
+      font-size: 13px; color: var(--text-secondary);
+    }
+    .pagination .pg-btns { display: flex; gap: 4px; }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      z-index: 200; display: flex; align-items: center; justify-content: center;
+    }
+    .modal-backdrop.hidden { display: none; }
+    .modal {
+      background: var(--bg-card); border-radius: 12px;
+      width: 560px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 24px; border-bottom: 1px solid var(--border);
+    }
+    .modal-header h3 { font-size: 17px; font-weight: 600; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 6px; border: none;
+      background: none; cursor: pointer; font-size: 18px; color: var(--text-secondary);
+    }
+    .modal-close:hover { background: #F3F4F6; }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+      padding: 16px 24px; border-top: 1px solid var(--border);
+      display: flex; gap: 8px; justify-content: flex-end;
+    }
+    .detail-row {
+      display: flex; justify-content: space-between; padding: 8px 0;
+      border-bottom: 1px solid #F3F4F6; font-size: 13px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--text-secondary); }
+    .detail-value { font-weight: 500; text-align: right; }
+
+    /* ── Report Card ── */
+    .report-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px; margin-bottom: 12px;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    }
+    .report-card .rc-content { flex: 1; }
+    .report-card .rc-title { font-weight: 500; margin-bottom: 4px; }
+    .report-card .rc-meta { font-size: 12px; color: var(--text-secondary); }
+    .report-card .rc-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* ── Flagged Message ── */
+    .flag-card {
+      background: var(--bg-card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px 20px; margin-bottom: 12px;
+      border-left: 4px solid var(--yellow);
+    }
+    .flag-card .fc-header {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+    }
+    .flag-card .fc-user { display: flex; align-items: center; gap: 8px; font-weight: 500; font-size: 13px; }
+    .flag-card .fc-date { font-size: 12px; color: var(--text-secondary); }
+    .flag-card .fc-msg {
+      background: #FFFBEB; padding: 10px 14px; border-radius: 6px;
+      font-size: 13px; margin-bottom: 8px; line-height: 1.6;
+    }
+    .flag-card .fc-reason { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; }
+    .flag-card .fc-actions { display: flex; gap: 6px; }
+
+    /* ── Log Timeline ── */
+    .log-item {
+      display: flex; gap: 16px; padding: 14px 0;
+      border-bottom: 1px solid #F3F4F6;
+    }
+    .log-item:last-child { border-bottom: none; }
+    .log-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      margin-top: 5px; flex-shrink: 0;
+    }
+    .log-dot.ban { background: var(--red); }
+    .log-dot.delete { background: var(--orange); }
+    .log-dot.unban { background: var(--green); }
+    .log-dot.system { background: var(--yellow); }
+    .log-dot.admin { background: var(--purple); }
+    .log-body { flex: 1; }
+    .log-body .lb-text { font-size: 13px; }
+    .log-body .lb-text strong { font-weight: 600; }
+    .log-body .lb-time { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* ── Finance Revenue Row ── */
+    .revenue-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #F3F4F6;
+      font-size: 13px;
+    }
+    .revenue-row:last-child { border-bottom: none; }
+    .revenue-row .rr-plan { font-weight: 500; }
+    .revenue-row .rr-calc { color: var(--text-secondary); }
+    .revenue-row .rr-total { font-weight: 600; color: var(--green); }
+
+    /* ── Filter Bar ── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-chip {
+      padding: 6px 14px; border-radius: 20px; font-size: 13px;
+      border: 1px solid var(--border); background: var(--bg-card);
+      cursor: pointer; font-family: inherit; color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+    .filter-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ── Responsive ── */
+    @media (max-width: 1100px) {
+      .cards-row.c4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .cards-row.c4, .cards-row.c3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════ TOPBAR ════════ -->
+<header class="topbar">
+  <div class="topbar-logo">
+    Conniku
+    <span>Admin Panel</span>
+  </div>
+  <div class="topbar-right">
+    <span style="font-size:13px;color:var(--text-secondary)">CEO/Owner</span>
+    <span class="topbar-badge">5 reportes</span>
+    <div class="topbar-avatar" title="Cristian G.">CG</div>
+  </div>
+</header>
+
+<!-- ════════ SIDEBAR ════════ -->
+<nav class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Principal</div>
+    <div class="sidebar-item"><span class="icon">🏠</span> Inicio</div>
+    <div class="sidebar-item"><span class="icon">💬</span> Mensajes</div>
+    <div class="sidebar-item"><span class="icon">👥</span> Comunidades</div>
+    <div class="sidebar-item"><span class="icon">📰</span> Feed</div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Administracion</div>
+    <div class="sidebar-item active">
+      <span class="icon">⚙️</span> Panel Admin
+      <span class="badge-sm">5</span>
+    </div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Cuenta</div>
+    <div class="sidebar-item"><span class="icon">👤</span> Mi Perfil</div>
+    <div class="sidebar-item"><span class="icon">🔧</span> Configuracion</div>
+  </div>
+</nav>
+
+<!-- ════════ MAIN CONTENT ════════ -->
+<main class="main">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Panel de Administracion — CEO/Owner</h1>
+    <p class="sub">Total usuarios: <strong>2,847</strong> | Reportes pendientes: <strong>5</strong> | Mensajes flagged: <strong>12</strong></p>
+  </div>
+
+  <!-- ════════ TABS BAR ════════ -->
+  <div class="tabs-bar" id="tabsBar">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="usuarios">👥 Usuarios</button>
+    <button class="tab-btn" data-tab="suscriptores">💳 Suscriptores</button>
+    <button class="tab-btn" data-tab="finanzas">💰 Pagos/Finanzas</button>
+    <button class="tab-btn" data-tab="reportes">🚨 Reportes <span class="tb-badge">5</span></button>
+    <button class="tab-btn" data-tab="flagged">⚠️ Flaggeados <span class="tb-badge">12</span></button>
+    <button class="tab-btn" data-tab="bloqueos">🚫 Bloqueos</button>
+    <button class="tab-btn" data-tab="logs">📋 Registro</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 1: DASHBOARD                          -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-dashboard">
+
+    <!-- Resumen General -->
+    <div class="section-title"><span class="st-icon">👤</span> Resumen General</div>
+    <div class="cards-row c4">
+      <div class="stat-card blue">
+        <div class="sc-value">2,847</div>
+        <div class="sc-label">Usuarios Totales</div>
+      </div>
+      <div class="stat-card green">
+        <div class="sc-value">2,412</div>
+        <div class="sc-label">Activos</div>
+      </div>
+      <div class="stat-card red">
+        <div class="sc-value">23</div>
+        <div class="sc-label">Baneados</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="sc-value">412</div>
+        <div class="sc-label">Sin Verificar</div>
+      </div>
+    </div>
+
+    <!-- Actividad -->
+    <div class="section-title"><span class="st-icon">📈</span> Actividad</div>
+    <div class="cards-row c4">
+      <div class="stat-card purple">
+        <div class="sc-value">45,892</div>
+        <div class="sc-label">Mensajes</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="sc-value">3,241</div>
+        <div class="sc-label">Conversaciones</div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="sc-value">8,567</div>
+        <div class="sc-label">Amistades</div>
+      </div>
+      <div class="stat-card green">
+        <div class="sc-value">12,345</div>
+        <div class="sc-label">Publicaciones</div>
+      </div>
+    </div>
+
+    <!-- Moderacion -->
+    <div class="section-title"><span class="st-icon">🛡️</span> Moderacion</div>
+    <div class="cards-row c4">
+      <div class="stat-card yellow clickable">
+        <div class="sc-value">12</div>
+        <div class="sc-label">Mensajes Flagged</div>
+      </div>
+      <div class="stat-card red clickable">
+        <div class="sc-value">5</div>
+        <div class="sc-label">Reportes Pendientes</div>
+      </div>
+      <div class="stat-card orange clickable">
+        <div class="sc-value">34</div>
+        <div class="sc-label">Reportes Totales</div>
+      </div>
+      <div class="stat-card gray clickable">
+        <div class="sc-value">156</div>
+        <div class="sc-label">Bloqueos Activos</div>
+      </div>
+    </div>
+
+    <!-- Distribution Bars -->
+    <div class="section-title"><span class="st-icon">📊</span> Distribucion de Usuarios</div>
+    <div class="bar-group" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;">
+      <div class="bar-item">
+        <div class="bar-label"><span>Activos</span><span class="bl-val">2,412 (85%)</span></div>
+        <div class="bar-track"><div class="bar-fill green" style="width:85%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>Baneados</span><span class="bl-val">23 (1%)</span></div>
+        <div class="bar-track"><div class="bar-fill red" style="width:1%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>Sin Verificar</span><span class="bl-val">412 (14%)</span></div>
+        <div class="bar-track"><div class="bar-fill orange" style="width:14%"></div></div>
+      </div>
+    </div>
+
+    <!-- Content Bars -->
+    <div class="section-title" style="margin-top:24px"><span class="st-icon">📝</span> Contenido Generado</div>
+    <div class="bar-group" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;">
+      <div class="bar-item">
+        <div class="bar-label"><span>Mensajes</span><span class="bl-val">45,892</span></div>
+        <div class="bar-track"><div class="bar-fill purple" style="width:100%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>Publicaciones</span><span class="bl-val">12,345</span></div>
+        <div class="bar-track"><div class="bar-fill green" style="width:27%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>Amistades</span><span class="bl-val">8,567</span></div>
+        <div class="bar-track"><div class="bar-fill cyan" style="width:19%"></div></div>
+      </div>
+      <div class="bar-item">
+        <div class="bar-label"><span>Conversaciones</span><span class="bl-val">3,241</span></div>
+        <div class="bar-track"><div class="bar-fill blue" style="width:7%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 2: USUARIOS                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-usuarios">
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <input type="text" class="input search" placeholder="Buscar usuario por nombre o email...">
+          <select class="input">
+            <option>Todos</option>
+            <option>Baneados</option>
+            <option>Sin Verificar</option>
+            <option>Admins</option>
+          </select>
+        </div>
+        <button class="btn">📥 Exportar CSV</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Universidad</th>
+            <th>Carrera</th>
+            <th>Estado</th>
+            <th>Suscripcion</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#E879A0">MG</div>
+                <div><div class="uc-name">Maria Garcia</div><div class="uc-email">maria.garcia@unam.mx</div></div>
+              </div>
+            </td>
+            <td>UNAM</td>
+            <td>Ing. Sistemas</td>
+            <td><span class="badge badge-green">✅ Activo</span></td>
+            <td><span class="badge badge-blue">Pro ⭐</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver" onclick="openModal()">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#6366F1">CL</div>
+                <div><div class="uc-name">Carlos Lopez</div><div class="uc-email">carlos.lopez@uchile.cl</div></div>
+              </div>
+            </td>
+            <td>UC Chile</td>
+            <td>Medicina</td>
+            <td><span class="badge badge-green">✅ Activo</span></td>
+            <td><span class="badge badge-purple">Max 👑</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#F59E0B">AM</div>
+                <div><div class="uc-name">Ana Martinez</div><div class="uc-email">ana.mtz@tec.mx</div></div>
+              </div>
+            </td>
+            <td>TEC Monterrey</td>
+            <td>Administracion</td>
+            <td><span class="badge badge-orange">⚠️ Sin verificar</span></td>
+            <td><span class="badge badge-gray">Free</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#EF4444">DF</div>
+                <div><div class="uc-name">Diego Fernandez</div><div class="uc-email">dfernandez@uba.ar</div></div>
+              </div>
+            </td>
+            <td>UBA</td>
+            <td>Derecho</td>
+            <td><span class="badge badge-red">🚫 Baneado</span></td>
+            <td><span class="badge badge-gray">Free</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Desbanear">✅</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#10B981">LR</div>
+                <div><div class="uc-name">Laura Ramirez</div><div class="uc-email">laura.ramirez@uniandes.co</div></div>
+              </div>
+            </td>
+            <td>Uniandes</td>
+            <td>Psicologia</td>
+            <td><span class="badge badge-green">✅ Activo</span></td>
+            <td><span class="badge badge-blue">Pro ⭐</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#8B5CF6">JT</div>
+                <div><div class="uc-name">Juan Torres</div><div class="uc-email">jtorres@usb.ve</div></div>
+              </div>
+            </td>
+            <td>USB Venezuela</td>
+            <td>Ing. Electronica</td>
+            <td><span class="badge badge-green">✅ Activo</span></td>
+            <td><span class="badge badge-gray">Free</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#EC4899">SV</div>
+                <div><div class="uc-name">Sofia Vargas</div><div class="uc-email">sofia.vargas@pucp.pe</div></div>
+              </div>
+            </td>
+            <td>PUCP Peru</td>
+            <td>Arquitectura</td>
+            <td><span class="badge badge-green">✅ Activo</span></td>
+            <td><span class="badge badge-purple">Max 👑</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#F97316">PH</div>
+                <div><div class="uc-name">Pedro Hernandez</div><div class="uc-email">pedro.h@ucr.ac.cr</div></div>
+              </div>
+            </td>
+            <td>UCR Costa Rica</td>
+            <td>Biologia</td>
+            <td><span class="badge badge-orange">⚠️ Sin verificar</span></td>
+            <td><span class="badge badge-gray">Free</span></td>
+            <td>
+              <button class="btn btn-sm btn-icon" title="Ver">👁️</button>
+              <button class="btn btn-sm btn-icon" title="Admin">⭐</button>
+              <button class="btn btn-sm btn-icon" title="Banear">🚫</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Mostrando 1-8 de 2,847 usuarios</span>
+        <div class="pg-btns">
+          <button class="btn btn-sm" disabled>← Anterior</button>
+          <button class="btn btn-sm btn-primary">1</button>
+          <button class="btn btn-sm">2</button>
+          <button class="btn btn-sm">3</button>
+          <button class="btn btn-sm">...</button>
+          <button class="btn btn-sm">57</button>
+          <button class="btn btn-sm">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+
+    <p style="font-size:13px;color:var(--text-secondary)">Pagina 1 de 57</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 3: SUSCRIPTORES                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-suscriptores">
+
+    <div class="section-title"><span class="st-icon">💳</span> Suscriptores Activos (156)</div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <input type="text" class="input search" placeholder="Buscar suscriptor...">
+          <select class="input">
+            <option>Todos los planes</option>
+            <option>Pro Mensual</option>
+            <option>Pro Anual</option>
+            <option>Max Mensual</option>
+            <option>Max Anual</option>
+          </select>
+        </div>
+        <button class="btn">📥 Exportar CSV</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Plan</th>
+            <th>Desde</th>
+            <th>Expira</th>
+            <th>Pagado</th>
+            <th>Stripe ID</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#E879A0">MG</div>
+                <div><div class="uc-name">Maria Garcia</div><div class="uc-email">maria.garcia@unam.mx</div></div>
+              </div>
+            </td>
+            <td><span class="badge badge-blue">Pro Mensual ⭐</span></td>
+            <td>15 Ene 2026</td>
+            <td>15 Abr 2026</td>
+            <td style="font-weight:600;color:var(--green)">$15.00</td>
+            <td style="font-family:monospace;font-size:12px;color:var(--text-secondary)">sub_1NxC2kLJ...</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#6366F1">CL</div>
+                <div><div class="uc-name">Carlos Lopez</div><div class="uc-email">carlos.lopez@uchile.cl</div></div>
+              </div>
+            </td>
+            <td><span class="badge badge-purple">Max Anual 👑</span></td>
+            <td>03 Sep 2025</td>
+            <td>03 Sep 2026</td>
+            <td style="font-weight:600;color:var(--green)">$99.99</td>
+            <td style="font-family:monospace;font-size:12px;color:var(--text-secondary)">sub_1NxD5mQP...</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#10B981">LR</div>
+                <div><div class="uc-name">Laura Ramirez</div><div class="uc-email">laura.ramirez@uniandes.co</div></div>
+              </div>
+            </td>
+            <td><span class="badge badge-blue">Pro Anual ⭐</span></td>
+            <td>22 Nov 2025</td>
+            <td>22 Nov 2026</td>
+            <td style="font-weight:600;color:var(--green)">$39.99</td>
+            <td style="font-family:monospace;font-size:12px;color:var(--text-secondary)">sub_1NxE8rAB...</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#EC4899">SV</div>
+                <div><div class="uc-name">Sofia Vargas</div><div class="uc-email">sofia.vargas@pucp.pe</div></div>
+              </div>
+            </td>
+            <td><span class="badge badge-purple">Max Mensual 👑</span></td>
+            <td>01 Mar 2026</td>
+            <td>01 Abr 2026</td>
+            <td style="font-weight:600;color:var(--green)">$13.00</td>
+            <td style="font-family:monospace;font-size:12px;color:var(--text-secondary)">sub_1NxF3kZW...</td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar" style="background:#3B82F6">RD</div>
+                <div><div class="uc-name">Roberto Diaz</div><div class="uc-email">roberto.diaz@espol.ec</div></div>
+              </div>
+            </td>
+            <td><span class="badge badge-blue">Pro Mensual ⭐</span></td>
+            <td>10 Feb 2026</td>
+            <td>10 May 2026</td>
+            <td style="font-weight:600;color:var(--green)">$10.00</td>
+            <td style="font-family:monospace;font-size:12px;color:var(--text-secondary)">sub_1NxG7jYT...</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Mostrando 1-5 de 156 suscriptores</span>
+        <div class="pg-btns">
+          <button class="btn btn-sm" disabled>← Anterior</button>
+          <button class="btn btn-sm btn-primary">1</button>
+          <button class="btn btn-sm">2</button>
+          <button class="btn btn-sm">...</button>
+          <button class="btn btn-sm">32</button>
+          <button class="btn btn-sm">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 4: PAGOS / FINANZAS                   -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-finanzas">
+
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:0"><span class="st-icon">💰</span> Resumen Financiero</div>
+      <span class="badge badge-orange">Solo Owner</span>
+    </div>
+
+    <div class="cards-row c4">
+      <div class="stat-card green">
+        <div class="sc-value">$4,235</div>
+        <div class="sc-label">Ingresos Totales</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="sc-value">$1,890</div>
+        <div class="sc-label">Este Mes</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="sc-value">156</div>
+        <div class="sc-label">Suscriptores Activos</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="sc-value">$12.15</div>
+        <div class="sc-label">ARPU</div>
+      </div>
+    </div>
+
+    <!-- Revenue Breakdown -->
+    <div class="section-title"><span class="st-icon">📊</span> Desglose de Ingresos</div>
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:24px;">
+      <div class="revenue-row">
+        <span class="rr-plan">Pro Mensual</span>
+        <span class="rr-calc">89 suscriptores x $5.00</span>
+        <span class="rr-total">$445/mes</span>
+      </div>
+      <div class="revenue-row">
+        <span class="rr-plan">Pro Anual</span>
+        <span class="rr-calc">34 suscriptores x $39.99</span>
+        <span class="rr-total">$1,360/ano</span>
+      </div>
+      <div class="revenue-row">
+        <span class="rr-plan">Max Mensual</span>
+        <span class="rr-calc">21 suscriptores x $13.00</span>
+        <span class="rr-total">$273/mes</span>
+      </div>
+      <div class="revenue-row">
+        <span class="rr-plan">Max Anual</span>
+        <span class="rr-calc">12 suscriptores x $99.99</span>
+        <span class="rr-total">$1,200/ano</span>
+      </div>
+    </div>
+
+    <!-- Recent Payments -->
+    <div class="section-title"><span class="st-icon">🧾</span> Pagos Recientes</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Monto</th>
+            <th>Plan</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>01 Abr 2026</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#EC4899">SV</div>
+                <span>Sofia Vargas</span>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--green)">$13.00</td>
+            <td><span class="badge badge-purple">Max Mensual</span></td>
+            <td><span class="badge badge-green">Completado</span></td>
+          </tr>
+          <tr>
+            <td>31 Mar 2026</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#3B82F6">RD</div>
+                <span>Roberto Diaz</span>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--green)">$5.00</td>
+            <td><span class="badge badge-blue">Pro Mensual</span></td>
+            <td><span class="badge badge-green">Completado</span></td>
+          </tr>
+          <tr>
+            <td>30 Mar 2026</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#E879A0">MG</div>
+                <span>Maria Garcia</span>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--green)">$5.00</td>
+            <td><span class="badge badge-blue">Pro Mensual</span></td>
+            <td><span class="badge badge-green">Completado</span></td>
+          </tr>
+          <tr>
+            <td>28 Mar 2026</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#F59E0B">IG</div>
+                <span>Isabella Gomez</span>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--red)">$39.99</td>
+            <td><span class="badge badge-blue">Pro Anual</span></td>
+            <td><span class="badge badge-red">Fallido</span></td>
+          </tr>
+          <tr>
+            <td>25 Mar 2026</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#6366F1">CL</div>
+                <span>Carlos Lopez</span>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--green)">$99.99</td>
+            <td><span class="badge badge-purple">Max Anual</span></td>
+            <td><span class="badge badge-green">Completado</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 5: REPORTES                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-reportes">
+
+    <div class="filter-bar">
+      <button class="filter-chip active">Todos (34)</button>
+      <button class="filter-chip">Pendientes (5)</button>
+      <button class="filter-chip">Revisados (24)</button>
+      <button class="filter-chip">Descartados (5)</button>
+    </div>
+
+    <div class="report-card">
+      <div class="rc-content">
+        <div class="rc-title">Maria Garcia reporto a Diego Fernandez</div>
+        <div class="rc-meta">
+          <span class="badge badge-red" style="margin-right:6px">Pendiente</span>
+          Razon: Contenido ofensivo en comunidad "Ingenieria UNAM" — Hace 2 horas
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm btn-success">✓ Revisar</button>
+        <button class="btn btn-sm">✗ Descartar</button>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="rc-content">
+        <div class="rc-title">Carlos Lopez reporto a Juan Torres</div>
+        <div class="rc-meta">
+          <span class="badge badge-red" style="margin-right:6px">Pendiente</span>
+          Razon: Spam en mensajes directos — Hace 5 horas
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm btn-success">✓ Revisar</button>
+        <button class="btn btn-sm">✗ Descartar</button>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="rc-content">
+        <div class="rc-title">Laura Ramirez reporto a Pedro Hernandez</div>
+        <div class="rc-meta">
+          <span class="badge badge-red" style="margin-right:6px">Pendiente</span>
+          Razon: Acoso en mensajes privados — Hace 8 horas
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm btn-success">✓ Revisar</button>
+        <button class="btn btn-sm">✗ Descartar</button>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="rc-content">
+        <div class="rc-title">Sofia Vargas reporto a Diego Fernandez</div>
+        <div class="rc-meta">
+          <span class="badge badge-red" style="margin-right:6px">Pendiente</span>
+          Razon: Suplantacion de identidad — Hace 1 dia
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm btn-success">✓ Revisar</button>
+        <button class="btn btn-sm">✗ Descartar</button>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="rc-content">
+        <div class="rc-title">Roberto Diaz reporto publicacion #8234</div>
+        <div class="rc-meta">
+          <span class="badge badge-red" style="margin-right:6px">Pendiente</span>
+          Razon: Informacion falsa en publicacion — Hace 1 dia
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm btn-success">✓ Revisar</button>
+        <button class="btn btn-sm">✗ Descartar</button>
+      </div>
+    </div>
+
+    <div class="report-card" style="opacity:0.7">
+      <div class="rc-content">
+        <div class="rc-title">Ana Martinez reporto a Pedro Hernandez</div>
+        <div class="rc-meta">
+          <span class="badge badge-green" style="margin-right:6px">Revisado ✓</span>
+          Razon: Acoso — Resuelto: Usuario advertido — Hace 3 dias
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm" disabled>Resuelto</button>
+      </div>
+    </div>
+
+    <div class="report-card" style="opacity:0.7">
+      <div class="rc-content">
+        <div class="rc-title">Juan Torres reporto a usuario eliminado</div>
+        <div class="rc-meta">
+          <span class="badge badge-gray" style="margin-right:6px">Descartado</span>
+          Razon: Reporte duplicado — Hace 5 dias
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button class="btn btn-sm" disabled>Descartado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 6: MENSAJES FLAGGEADOS                -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-flagged">
+
+    <div class="section-title"><span class="st-icon">⚠️</span> Mensajes Flaggeados (12)</div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#EF4444">DF</div>
+          Diego Fernandez
+        </div>
+        <span class="fc-date">Hace 1 hora</span>
+      </div>
+      <div class="fc-msg">Eres un completo idi***... no sabes nada de la materia y deberian sac**** de la universidad...</div>
+      <div class="fc-reason">Razon: Lenguaje ofensivo detectado automaticamente</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#8B5CF6">JT</div>
+          Juan Torres
+        </div>
+        <span class="fc-date">Hace 3 horas</span>
+      </div>
+      <div class="fc-msg">GANA DINERO FACIL!! Entra a este link: bit.ly/xxxxx y consigue $500 dolares diarios sin hacer nada!!</div>
+      <div class="fc-reason">Razon: Contenido de spam / enlace sospechoso</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#F97316">PH</div>
+          Pedro Hernandez
+        </div>
+        <span class="fc-date">Hace 5 horas</span>
+      </div>
+      <div class="fc-msg">Jaja si quieres te paso los examenes... tengo acceso al sistema del profesor y puedo sacar todo. Mandame DM</div>
+      <div class="fc-reason">Razon: Palabras clave detectadas (examenes, acceso, sistema)</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#EF4444">DF</div>
+          Diego Fernandez
+        </div>
+        <span class="fc-date">Hace 8 horas</span>
+      </div>
+      <div class="fc-msg">A nadie le importa tu opinion, mejor call*** y deja de molestar en el grupo. Todos te odian de todas formas...</div>
+      <div class="fc-reason">Razon: Acoso / lenguaje ofensivo detectado</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#F59E0B">AM</div>
+          Ana Martinez
+        </div>
+        <span class="fc-date">Hace 12 horas</span>
+      </div>
+      <div class="fc-msg">Vendo apuntes y trabajos hechos para todas las materias. Precios accesibles. Contactenme al +52 55 ****</div>
+      <div class="fc-reason">Razon: Actividad comercial no permitida / numero de telefono</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div class="flag-card">
+      <div class="fc-header">
+        <div class="fc-user">
+          <div class="avatar avatar-sm" style="background:#8B5CF6">JT</div>
+          Juan Torres
+        </div>
+        <span class="fc-date">Hace 1 dia</span>
+      </div>
+      <div class="fc-msg">Unanse a mi grupo de Telegram para material exclusivo: t.me/xxxxx - Tienen que entrar AHORA</div>
+      <div class="fc-reason">Razon: Enlace externo sospechoso / spam</div>
+      <div class="fc-actions">
+        <button class="btn btn-sm btn-danger">🗑 Eliminar</button>
+        <button class="btn btn-sm btn-success">✓ Aprobar</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:16px;font-size:13px;color:var(--text-secondary)">
+      Mostrando 6 de 12 mensajes flaggeados — <a href="#" style="color:var(--accent)">Ver todos</a>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 7: BLOQUEOS                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-bloqueos">
+
+    <div class="section-title"><span class="st-icon">🚫</span> Bloqueos Activos entre Usuarios (156)</div>
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <div class="table-toolbar-left">
+          <input type="text" class="input search" placeholder="Buscar por usuario...">
+        </div>
+        <span style="font-size:13px;color:var(--text-secondary)">156 bloqueos activos</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Bloqueador</th>
+            <th></th>
+            <th>Bloqueado</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#E879A0">MG</div>
+                <span>Maria Garcia</span>
+              </div>
+            </td>
+            <td style="text-align:center;color:var(--red);font-weight:600">→</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#EF4444">DF</div>
+                <span>Diego Fernandez</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--text-secondary)">28 Mar 2026</td>
+            <td><button class="btn btn-sm">Desbloquear</button></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#10B981">LR</div>
+                <span>Laura Ramirez</span>
+              </div>
+            </td>
+            <td style="text-align:center;color:var(--red);font-weight:600">→</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#F97316">PH</div>
+                <span>Pedro Hernandez</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--text-secondary)">25 Mar 2026</td>
+            <td><button class="btn btn-sm">Desbloquear</button></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#EC4899">SV</div>
+                <span>Sofia Vargas</span>
+              </div>
+            </td>
+            <td style="text-align:center;color:var(--red);font-weight:600">→</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#8B5CF6">JT</div>
+                <span>Juan Torres</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--text-secondary)">20 Mar 2026</td>
+            <td><button class="btn btn-sm">Desbloquear</button></td>
+          </tr>
+          <tr>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#6366F1">CL</div>
+                <span>Carlos Lopez</span>
+              </div>
+            </td>
+            <td style="text-align:center;color:var(--red);font-weight:600">→</td>
+            <td>
+              <div class="user-cell">
+                <div class="avatar avatar-sm" style="background:#EF4444">DF</div>
+                <span>Diego Fernandez</span>
+              </div>
+            </td>
+            <td style="font-size:12px;color:var(--text-secondary)">18 Mar 2026</td>
+            <td><button class="btn btn-sm">Desbloquear</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Mostrando 1-4 de 156 bloqueos</span>
+        <div class="pg-btns">
+          <button class="btn btn-sm" disabled>← Anterior</button>
+          <button class="btn btn-sm btn-primary">1</button>
+          <button class="btn btn-sm">2</button>
+          <button class="btn btn-sm">...</button>
+          <button class="btn btn-sm">39</button>
+          <button class="btn btn-sm">Siguiente →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- TAB 8: REGISTRO DE MODERACION             -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-logs">
+
+    <div class="section-title"><span class="st-icon">📋</span> Registro de Moderacion</div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;">
+
+      <div class="log-item">
+        <div class="log-dot ban"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Maria Garcia</strong> baneo a <strong>Diego Fernandez</strong> — Razon: Spam repetitivo y acoso a multiples usuarios</div>
+          <div class="lb-time">Hace 2 horas</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot delete"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Carlos Lopez</strong> elimino mensaje <strong>#4521</strong> — Razon: Contenido inapropiado / lenguaje ofensivo</div>
+          <div class="lb-time">Hace 5 horas</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot delete"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Carlos Lopez</strong> elimino mensaje <strong>#4519</strong> — Razon: Spam / enlaces sospechosos</div>
+          <div class="lb-time">Hace 6 horas</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot unban"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Maria Garcia</strong> desbaneo a <strong>Laura Ramirez</strong> — Sin razon especificada</div>
+          <div class="lb-time">Hace 1 dia</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot system"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Sistema</strong> flaggeo mensaje <strong>#4520</strong> — Razon: Palabras bloqueadas detectadas automaticamente</div>
+          <div class="lb-time">Hace 1 dia</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot admin"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Owner Cristian G.</strong> otorgo rol de Admin a <strong>Maria Garcia</strong></div>
+          <div class="lb-time">Hace 2 dias</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot ban"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Maria Garcia</strong> baneo a <strong>Usuario Eliminado</strong> — Razon: Multiples reportes de acoso</div>
+          <div class="lb-time">Hace 3 dias</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot system"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Sistema</strong> flaggeo mensaje <strong>#4498</strong> — Razon: Enlace externo detectado en comunidad restringida</div>
+          <div class="lb-time">Hace 3 dias</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot delete"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Admin Carlos Lopez</strong> elimino publicacion <strong>#2847</strong> — Razon: Contenido duplicado / spam</div>
+          <div class="lb-time">Hace 4 dias</div>
+        </div>
+      </div>
+
+      <div class="log-item">
+        <div class="log-dot admin"></div>
+        <div class="log-body">
+          <div class="lb-text"><strong>Owner Cristian G.</strong> otorgo suscripcion Pro gratuita a <strong>Roberto Diaz</strong> — Razon: Beta tester</div>
+          <div class="lb-time">Hace 5 dias</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="text-align:center;padding:16px;font-size:13px;color:var(--text-secondary)">
+      Mostrando ultimos 10 registros — <a href="#" style="color:var(--accent)">Cargar mas</a>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════════ USER DETAIL MODAL ════════ -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Detalle de Usuario</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Profile Header -->
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+        <div class="avatar" style="width:56px;height:56px;font-size:22px;background:#E879A0">MG</div>
+        <div>
+          <div style="font-size:17px;font-weight:600">Maria Garcia</div>
+          <div style="font-size:13px;color:var(--text-secondary)">maria.garcia@unam.mx</div>
+          <div style="margin-top:4px">
+            <span class="badge badge-green">✅ Activo</span>
+            <span class="badge badge-blue" style="margin-left:4px">Pro ⭐</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Academica -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px">Informacion Academica</div>
+      <div style="background:#FAFBFC;border-radius:8px;padding:14px;margin-bottom:16px;">
+        <div class="detail-row"><span class="detail-label">Universidad</span><span class="detail-value">UNAM</span></div>
+        <div class="detail-row"><span class="detail-label">Carrera</span><span class="detail-value">Ing. Sistemas</span></div>
+        <div class="detail-row"><span class="detail-label">Semestre</span><span class="detail-value">6to Semestre</span></div>
+      </div>
+
+      <!-- Cuenta -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px">Cuenta</div>
+      <div style="background:#FAFBFC;border-radius:8px;padding:14px;margin-bottom:16px;">
+        <div class="detail-row"><span class="detail-label">Creada</span><span class="detail-value">15 Ago 2025</span></div>
+        <div class="detail-row"><span class="detail-label">Ultimo login</span><span class="detail-value">01 Abr 2026, 10:32</span></div>
+        <div class="detail-row"><span class="detail-label">Proveedor</span><span class="detail-value">Google</span></div>
+        <div class="detail-row"><span class="detail-label">Email verificado</span><span class="detail-value" style="color:var(--green)">Si ✓</span></div>
+      </div>
+
+      <!-- Suscripcion -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px">Suscripcion</div>
+      <div style="background:#EFF6FF;border-radius:8px;padding:14px;margin-bottom:16px;">
+        <div class="detail-row"><span class="detail-label">Plan</span><span class="detail-value" style="color:var(--accent);font-weight:600">Pro ⭐</span></div>
+        <div class="detail-row"><span class="detail-label">Desde</span><span class="detail-value">15 Ene 2026</span></div>
+        <div class="detail-row"><span class="detail-label">Expira</span><span class="detail-value">15 Jun 2026</span></div>
+        <div class="detail-row"><span class="detail-label">Total pagado</span><span class="detail-value" style="color:var(--green)">$25.00</span></div>
+      </div>
+
+      <!-- Actividad -->
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.3px">Actividad</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+        <div style="background:#FAFBFC;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:700">234</div>
+          <div style="font-size:11px;color:var(--text-secondary)">Mensajes</div>
+        </div>
+        <div style="background:#FAFBFC;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:700">45</div>
+          <div style="font-size:11px;color:var(--text-secondary)">Publicaciones</div>
+        </div>
+        <div style="background:#FAFBFC;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:700">12</div>
+          <div style="font-size:11px;color:var(--text-secondary)">Amigos</div>
+        </div>
+        <div style="background:#FAFBFC;border-radius:8px;padding:12px;text-align:center;">
+          <div style="font-size:20px;font-weight:700">8</div>
+          <div style="font-size:11px;color:var(--text-secondary)">Comunidades</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn">⭐ Hacer Admin</button>
+      <button class="btn" style="color:var(--purple);border-color:var(--purple)">👑 Otorgar Premium</button>
+      <button class="btn btn-danger">🚫 Banear Usuario</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ JAVASCRIPT ════════ -->
+<script>
+  // Tab switching
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      tabContents.forEach(tc => tc.classList.remove('active'));
+      document.getElementById('tab-' + target).classList.add('active');
+    });
+  });
+
+  // Filter chips
+  document.querySelectorAll('.filter-bar').forEach(bar => {
+    bar.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        bar.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  });
+
+  // Modal
+  function openModal() {
+    document.getElementById('userModal').classList.remove('hidden');
+  }
+  function closeModal() {
+    document.getElementById('userModal').classList.add('hidden');
+  }
+
+  // Close modal on backdrop click
+  document.getElementById('userModal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('userModal')) closeModal();
+  });
+
+  // Close modal on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Clickable moderation cards navigate to tab
+  document.querySelectorAll('.stat-card.clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const label = card.querySelector('.sc-label').textContent;
+      let target = null;
+      if (label.includes('Flagged')) target = 'flagged';
+      else if (label.includes('Pendientes')) target = 'reportes';
+      else if (label.includes('Reportes')) target = 'reportes';
+      else if (label.includes('Bloqueos')) target = 'bloqueos';
+      if (target) {
+        tabBtns.forEach(b => {
+          b.classList.remove('active');
+          if (b.dataset.tab === target) b.classList.add('active');
+        });
+        tabContents.forEach(tc => tc.classList.remove('active'));
+        document.getElementById('tab-' + target).classList.add('active');
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

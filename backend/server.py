@@ -58,6 +58,13 @@ from ws_routes import router as ws_router
 from hr_routes import router as hr_router
 from tutor_routes import router as tutor_router
 from migrations import migrate
+from prompts import (
+    AUDIO_TO_NOTES_PROMPT,
+    EXAM_NIGHT_PROMPT,
+    MATH_SCAN_PROMPT,
+    STUDY_PLAN_PROMPT,
+    TRANSLATE_PROMPT,
+)
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
 
@@ -519,25 +526,8 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
 
     lang = user.language or "es"
 
-    system = f"""Eres un asistente que convierte grabaciones de clases en material de estudio.
-A partir del audio/transcripción proporcionada, genera:
-1. NOTAS estructuradas con títulos, subtítulos y puntos clave
-2. Un RESUMEN conciso de los temas principales
-3. FLASHCARDS con los conceptos más importantes
-
-Responde SOLO con JSON:
-{{
-  "notes": "<h2>Notas de Clase</h2><p>Contenido HTML estructurado con los puntos clave, conceptos y explicaciones de la clase. Usa <h3>, <ul>, <li>, <strong>, <blockquote> para organizar.</p>",
-  "summary": "Resumen de 2-3 párrafos de los temas principales cubiertos en la clase.",
-  "flashcards": [
-    {{"front": "¿Qué es X?", "back": "X es..."}},
-    {{"front": "¿Cuál es la diferencia entre A y B?", "back": "A es... mientras que B es..."}}
-  ],
-  "topics": ["tema1", "tema2", "tema3"]
-}}
-
-Genera al menos 10 flashcards y notas detalladas.
-Responde en {'español' if lang == 'es' else 'inglés' if lang == 'en' else lang}."""
+    lang_name = 'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
+    system = AUDIO_TO_NOTES_PROMPT.format(lang=lang_name)
 
     try:
         # Process audio - add to document processor for context
@@ -677,21 +667,8 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
     if not all_text:
         raise HTTPException(400, "Sube documentos primero")
 
-    system = f"""Eres un tutor de emergencia. El estudiante tiene un examen MAÑANA y solo le quedan {hours_available} horas.
-Genera un plan de estudio de emergencia ultra-eficiente.
-Responde SOLO con JSON:
-{{
-  "plan": [
-    {{"hour": 1, "topic": "Tema más importante", "action": "Leer resumen + hacer 3 ejercicios", "minutes": 50, "break": 10}},
-    {{"hour": 2, "topic": "Segundo tema", "action": "Flashcards rápidas", "minutes": 50, "break": 10}}
-  ],
-  "criticalTopics": ["tema1", "tema2", "tema3"],
-  "quickTips": ["tip1", "tip2", "tip3"],
-  "motivationalMessage": "Mensaje de ánimo personalizado"
-}}
-Genera exactamente {hours_available} bloques de estudio.
-Prioriza lo más probable que salga en el examen.
-Responde en {'español' if lang == 'es' else 'English'}."""
+    lang_name = 'español' if lang == 'es' else 'English'
+    system = EXAM_NIGHT_PROMPT.format(hours_available=hours_available, lang=lang_name)
 
     prompt = f"Material del curso:\n{all_text[:15000]}\n\nGenera plan de emergencia para {hours_available} horas."
 
@@ -724,13 +701,8 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
 
     import base64
 
-    system = f"""Eres un experto en matemáticas. El estudiante te envía una foto de un problema o ecuación.
-1. Primero IDENTIFICA qué hay en la imagen (ecuación, problema, gráfico, etc.)
-2. Luego RESUELVE paso a paso de forma clara
-3. Explica cada paso como si hablaras con el estudiante
-4. Si hay múltiples problemas en la imagen, resuelve todos
-5. Usa notación matemática clara
-6. Responde en {'español' if req.language == 'es' else 'inglés' if req.language == 'en' else req.language}"""
+    lang_name = 'español' if req.language == 'es' else 'inglés' if req.language == 'en' else req.language
+    system = MATH_SCAN_PROMPT.format(lang=lang_name)
 
     try:
         import anthropic
@@ -938,19 +910,8 @@ def generate_study_plan(project_id: str, user: User = Depends(get_current_user),
 
     # Generate plan with AI
     lang = user.language or "es"
-    system = f"""Eres un tutor experto en planificación de estudio. Analiza el material del estudiante y genera un plan de estudio personalizado.
-Responde SOLO con JSON válido:
-{{
-  "weakTopics": ["tema1", "tema2"],
-  "strongTopics": ["tema3", "tema4"],
-  "overallScore": 65,
-  "recommendations": "Texto con recomendaciones personalizadas...",
-  "dailyPlan": [
-    {{"day": "Día 1", "focus": "Tema principal", "tasks": ["Tarea 1", "Tarea 2", "Tarea 3"], "minutes": 30}},
-    {{"day": "Día 2", "focus": "Tema principal", "tasks": ["Tarea 1", "Tarea 2"], "minutes": 25}}
-  ]
-}}
-Genera un plan de 7 días. En {'español' if lang == 'es' else 'inglés' if lang == 'en' else lang}."""
+    lang_name = 'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
+    system = STUDY_PLAN_PROMPT.format(lang=lang_name)
 
     all_text = ai_engine._get_all_text(project_id)
     user_prompt = f"""Material del curso:\n{all_text[:8000]}\n\nTiempo total estudiado: {total_time // 60} minutos.\nGenera un plan de estudio de 7 días para este material."""
@@ -1025,7 +986,7 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
     }
     target_name = LANG_NAMES.get(req.target_language, req.target_language)
 
-    system = f"You are a translator. Translate the following text{source_hint} to {target_name}. Return ONLY the translated text, nothing else. Maintain the tone and context. If it's already in the target language, return it as-is."
+    system = TRANSLATE_PROMPT.format(source_hint=source_hint, target_name=target_name)
 
     result = ai_engine._call_claude(system, req.text, model="claude-haiku-4-5-20251001")
     return {"translated": result.strip(), "targetLanguage": req.target_language}

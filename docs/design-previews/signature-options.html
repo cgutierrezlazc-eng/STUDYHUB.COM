@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Opciones de Firma Digital</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; padding: 40px; }
+  h1 { text-align: center; font-size: 24px; color: #1a1a1a; margin-bottom: 8px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 50px; }
+  .option-wrap { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; margin-bottom: 50px; }
+  .option-card {
+    background: #fff; border-radius: 16px; padding: 30px; width: 340px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.06); border: 2px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .option-card:hover { border-color: #1A3A7A; }
+  .option-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #aaa; margin-bottom: 6px; }
+  .option-title { font-size: 18px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+  .option-desc { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 20px; }
+  .sig-preview {
+    background: #FAFAF8; border: 1px solid #eee; border-radius: 10px;
+    padding: 24px; display: flex; flex-direction: column; align-items: center;
+    min-height: 160px; justify-content: center;
+  }
+  .sig-preview .sig-line { width: 180px; border-top: 1.5px solid #ddd; margin-top: 8px; margin-bottom: 6px; }
+  .sig-preview .sig-name { font-size: 12px; font-weight: 600; color: #333; }
+  .sig-preview .sig-role { font-size: 10px; color: #999; }
+  .pros { margin-top: 16px; }
+  .pros li { font-size: 11px; color: #666; margin-bottom: 4px; list-style: none; padding-left: 16px; position: relative; }
+  .pros li::before { content: '+'; position: absolute; left: 0; color: #2D8A56; font-weight: 700; }
+
+  /* Option A: Institutional Seal */
+  .seal-sig {
+    width: 80px; height: 80px; border-radius: 50%;
+    border: 2px solid #1A3A7A; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; position: relative;
+  }
+  .seal-sig::before {
+    content: '';
+    position: absolute; inset: 4px; border-radius: 50%;
+    border: 1px solid rgba(26,58,122,0.3);
+  }
+  .seal-sig svg { width: 22px; height: 22px; stroke: #1A3A7A; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .seal-sig .seal-text { font-size: 6px; letter-spacing: 0.15em; text-transform: uppercase; color: #1A3A7A; margin-top: 3px; font-weight: 700; }
+  .seal-sig .seal-top { font-size: 5px; letter-spacing: 0.2em; text-transform: uppercase; color: #1A3A7A; position: absolute; top: 10px; font-weight: 600; }
+
+  /* Option B: Digital Stamp */
+  .stamp-sig {
+    border: 2px solid #1A3A7A; border-radius: 8px; padding: 10px 20px;
+    display: flex; align-items: center; gap: 12px;
+    transform: rotate(-2deg);
+  }
+  .stamp-sig .stamp-icon {
+    width: 36px; height: 36px; background: #1A3A7A; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stamp-sig .stamp-icon svg { width: 18px; height: 18px; stroke: #fff; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .stamp-sig .stamp-text { text-align: left; }
+  .stamp-sig .stamp-org { font-size: 11px; font-weight: 700; color: #1A3A7A; letter-spacing: 0.05em; }
+  .stamp-sig .stamp-label { font-size: 8px; color: #7B8BB2; letter-spacing: 0.1em; text-transform: uppercase; }
+  .stamp-sig .stamp-date { font-size: 8px; color: #aaa; margin-top: 1px; }
+
+  /* Option C: Verified Badge + Hash */
+  .hash-sig {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .hash-sig .verified-icon {
+    width: 44px; height: 44px; background: linear-gradient(135deg, #1A3A7A, #2D5FAA);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  }
+  .hash-sig .verified-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .hash-sig .hash-label { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: #1A3A7A; font-weight: 600; }
+  .hash-sig .hash-code {
+    font-family: 'SF Mono', 'Fira Code', monospace; font-size: 9px;
+    color: #999; background: #f0f0f0; padding: 3px 10px; border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Option D: Minimal Line + Logo */
+  .minimal-sig {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .minimal-sig .mini-logo {
+    width: 40px; height: 40px; border-radius: 10px; background: #1A3A7A;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .minimal-sig .mini-logo svg { width: 20px; height: 20px; }
+  .minimal-sig .mini-info { text-align: left; }
+  .minimal-sig .mini-org { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+  .minimal-sig .mini-role { font-size: 10px; color: #999; }
+  .minimal-sig .mini-date { font-size: 9px; color: #bbb; margin-top: 2px; }
+  .minimal-sig .mini-divider { width: 1px; height: 36px; background: #ddd; }
+  .minimal-sig .mini-verified { font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: #2D8A56; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+  .minimal-sig .mini-verified svg { width: 14px; height: 14px; stroke: #2D8A56; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+</style>
+</head>
+<body>
+
+<h1>Firma Digital del Certificado — 4 Opciones</h1>
+<p class="subtitle">Selecciona el estilo de firma digital que mejor represente la seriedad institucional de Conniku</p>
+
+<div class="option-wrap">
+
+  <!-- OPTION A: Institutional Seal -->
+  <div class="option-card">
+    <div class="option-label">Opcion A</div>
+    <div class="option-title">Sello Institucional</div>
+    <div class="option-desc">Sello circular tipo universidad con el logotipo de Conniku y texto de validacion. Estilo clasico academico.</div>
+    <div class="sig-preview">
+      <div class="seal-sig">
+        <div class="seal-top">Conniku</div>
+        <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <div class="seal-text">Certificado</div>
+      </div>
+      <div class="sig-line"></div>
+      <div class="sig-name">Conniku Education</div>
+      <div class="sig-role">Direccion Academica</div>
+    </div>
+    <ul class="pros">
+      <li>Transmite autoridad institucional</li>
+      <li>Reconocible como sello oficial</li>
+      <li>Estilo universidades tradicionales</li>
+    </ul>
+  </div>
+
+  <!-- OPTION B: Digital Stamp -->
+  <div class="option-card">
+    <div class="option-label">Opcion B</div>
+    <div class="option-title">Timbre Digital</div>
+    <div class="option-desc">Sello rectangular con leve rotacion, icono de verificacion, fecha de emision. Estilo notarial digital moderno.</div>
+    <div class="sig-preview">
+      <div class="stamp-sig">
+        <div class="stamp-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="stamp-text">
+          <div class="stamp-org">CONNIKU EDUCATION</div>
+          <div class="stamp-label">Documento verificado digitalmente</div>
+          <div class="stamp-date">Emitido: 03/04/2026 — ID: CNK-2026-00847</div>
+        </div>
+      </div>
+      <div class="sig-line"></div>
+      <div class="sig-name">Direccion Academica</div>
+      <div class="sig-role">Certificacion digital</div>
+    </div>
+    <ul class="pros">
+      <li>Moderno y profesional</li>
+      <li>Incluye fecha e ID directo</li>
+      <li>Estilo plataformas como Coursera</li>
+    </ul>
+  </div>
+
+</div>
+
+<div class="option-wrap">
+
+  <!-- OPTION C: Verified Badge + Hash -->
+  <div class="option-card">
+    <div class="option-label">Opcion C</div>
+    <div class="option-title">Verificacion con Hash</div>
+    <div class="option-desc">Badge de verificacion con hash criptografico unico. Maximo nivel de autenticidad digital. Estilo blockchain/tech.</div>
+    <div class="sig-preview">
+      <div class="hash-sig">
+        <div class="verified-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg></div>
+        <div class="hash-label">Digitalmente verificado</div>
+        <div class="hash-code">SHA-256: a3f7c...b92e1</div>
+        <div style="font-size: 9px; color: #bbb; margin-top: 2px;">Conniku Education — 03 abril 2026</div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>Maximo nivel de autenticidad</li>
+      <li>Hash unico e irrepetible</li>
+      <li>Estilo tecnologico avanzado</li>
+    </ul>
+  </div>
+
+  <!-- OPTION D: Minimal Logo + Verified -->
+  <div class="option-card">
+    <div class="option-label">Opcion D</div>
+    <div class="option-title">Logo + Verificado</div>
+    <div class="option-desc">Logo de Conniku, nombre de la organizacion, rol, y badge de verificacion. Limpio, moderno, confiable.</div>
+    <div class="sig-preview">
+      <div class="minimal-sig">
+        <div class="mini-logo"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+        <div class="mini-info">
+          <div class="mini-org">Conniku Education</div>
+          <div class="mini-role">Direccion Academica</div>
+          <div class="mini-date">03 de abril, 2026</div>
+        </div>
+        <div class="mini-divider"></div>
+        <div class="mini-verified">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Verificado
+        </div>
+      </div>
+    </div>
+    <ul class="pros">
+      <li>Limpio y profesional</li>
+      <li>Branding Conniku prominente</li>
+      <li>Facil de reconocer y verificar</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>
