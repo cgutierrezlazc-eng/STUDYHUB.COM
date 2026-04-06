@@ -44,10 +44,12 @@ const Events = React.lazy(() => import('./pages/Events'))
 const Mentorship = React.lazy(() => import('./pages/Mentorship'))
 const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
+const CeoMail = React.lazy(() => import('./pages/CeoMail'))
 const HRDashboard = React.lazy(() => import('./pages/HRDashboard'))
 const Search = React.lazy(() => import('./pages/Search'))
 const Conferences = React.lazy(() => import('./pages/Conferences'))
 const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
+const CVProfile = React.lazy(() => import('./pages/CVProfile'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
@@ -295,7 +297,10 @@ export default function App() {
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
+            <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />
