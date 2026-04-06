@@ -334,7 +334,27 @@ export default function Jobs({ onNavigate }: Props) {
     }
   }
 
-  const handleDownloadCVPDF = () => { window.print() }
+  const handleDownloadCVPDF = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const base = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'
+      const res = await fetch(`${base}/cv/download`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error('Error al generar PDF')
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `CV_Conniku.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      alert(err.message || 'Error al descargar CV')
+    }
+  }
 
   const handleShareWithRecruiters = async () => {
     setShowRecruiterModal(true)

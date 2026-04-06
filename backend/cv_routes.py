@@ -381,86 +381,101 @@ Reglas:
 
 def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
     """
-    Generate an elegant professional CV PDF using ReportLab.
-    Matches the owner's CV structure:
-    1. Name  2. Headline  3. Location only (privacy)  4. Summary
-    5. Core Competencies (tags)  6. Experience  7. Education
-    8. Certifications  9. Differentiators  10. Languages
-    11. Completed Conniku Courses
-    Returns PDF bytes.
+    Generate a minimalist, professional CV PDF with Conniku branding.
+    Clean typography, subtle color accents, ready to present.
     """
     try:
-        from reportlab.lib.pagesizes import letter
-        from reportlab.lib.units import inch, mm
-        from reportlab.lib.colors import HexColor, Color
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.units import mm
+        from reportlab.lib.colors import HexColor
         from reportlab.pdfgen import canvas
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
         import io
 
         buffer = io.BytesIO()
-        c = canvas.Canvas(buffer, pagesize=letter)
-        width, height = letter  # 612 x 792 points
+        c = canvas.Canvas(buffer, pagesize=A4)
+        width, height = A4  # 595.27 x 841.89 points
 
-        # ── Color palette ──
-        BLUE_PRIMARY = HexColor("#2D62C8")
-        BLUE_DARK = HexColor("#1A3A7A")
-        BLUE_LIGHT = HexColor("#E8F0FE")
-        TEXT_DARK = HexColor("#1A1A2E")
-        TEXT_MEDIUM = HexColor("#4A5568")
-        TEXT_LIGHT = HexColor("#8E99A4")
-        ACCENT = HexColor("#2D62C8")
-        DIVIDER = HexColor("#E2E8F0")
+        # ── Conniku color palette — minimal & elegant ──
+        NAVY = HexColor("#0F172A")        # primary text
+        SLATE = HexColor("#334155")       # body text
+        MUTED = HexColor("#64748B")       # secondary/dates
+        LIGHT = HexColor("#94A3B8")       # subtle text
+        ACCENT = HexColor("#2563EB")      # Conniku blue
+        ACCENT_SOFT = HexColor("#DBEAFE") # light blue bg
+        DIVIDER = HexColor("#E2E8F0")     # thin lines
         WHITE = HexColor("#FFFFFF")
-        BG_SECTION = HexColor("#F7FAFC")
+        BG_HEADER = HexColor("#F8FAFC")   # subtle header bg
+
+        # ── Margins ──
+        ML = 50   # margin left
+        MR = 50   # margin right
+        CONTENT_W = width - ML - MR  # usable width
 
         # ── Helper functions ──
         page_count = [1]
 
         def draw_footer():
-            c.setFont("Helvetica", 7)
-            c.setFillColor(TEXT_LIGHT)
-            c.drawString(50, 28, f"Perfil profesional generado en conniku.com — {datetime.utcnow().strftime('%d/%m/%Y')}")
-            c.drawRightString(width - 50, 28, f"Pagina {page_count[0]}")
+            # Thin line above footer
+            c.setStrokeColor(DIVIDER)
+            c.setLineWidth(0.3)
+            c.line(ML, 36, width - MR, 36)
+            c.setFont("Helvetica", 6.5)
+            c.setFillColor(LIGHT)
+            c.drawString(ML, 24, f"conniku.com")
+            c.drawRightString(width - MR, 24, f"{page_count[0]}")
 
         def new_page():
             draw_footer()
             c.showPage()
             page_count[0] += 1
-            return height - 60
+            return height - 50
 
-        def draw_section_title(y_pos, title):
-            if y_pos < 100:
-                y_pos = new_page()
-            c.setStrokeColor(DIVIDER)
-            c.setLineWidth(0.5)
-            c.line(50, y_pos + 4, width - 50, y_pos + 4)
+        def check_space(y_pos, needed=80):
+            if y_pos < needed:
+                return new_page()
+            return y_pos
+
+        def section_title(y_pos, title):
+            y_pos = check_space(y_pos, 100)
             y_pos -= 6
-            c.setFillColor(ACCENT)
-            c.rect(50, y_pos - 12, 3, 14, fill=1, stroke=0)
-            c.setFont("Helvetica-Bold", 11)
-            c.setFillColor(BLUE_DARK)
-            c.drawString(58, y_pos - 10, title.upper())
-            return y_pos - 30
+            # Accent line
+            c.setStrokeColor(ACCENT)
+            c.setLineWidth(1.5)
+            c.line(ML, y_pos + 2, ML + 20, y_pos + 2)
+            # Faint continuation line
+            c.setStrokeColor(DIVIDER)
+            c.setLineWidth(0.3)
+            c.line(ML + 22, y_pos + 2, width - MR, y_pos + 2)
+            y_pos -= 14
+            c.setFont("Helvetica-Bold", 9.5)
+            c.setFillColor(NAVY)
+            c.drawString(ML, y_pos, title.upper())
+            return y_pos - 18
 
-        def draw_wrapped_text(y_pos, text, x=50, max_width=500, font="Helvetica", size=9, color=TEXT_MEDIUM, leading=13):
+        def wrap_text(y_pos, text, x=None, max_w=None, font="Helvetica", size=8.5, color=SLATE, leading=12.5):
             if not text:
                 return y_pos
+            if x is None:
+                x = ML
+            if max_w is None:
+                max_w = CONTENT_W
             c.setFont(font, size)
             c.setFillColor(color)
             words = text.split()
             line = ""
             for word in words:
-                test_line = f"{line} {word}".strip() if line else word
-                if c.stringWidth(test_line, font, size) < max_width:
-                    line = test_line
+                test = f"{line} {word}".strip() if line else word
+                if c.stringWidth(test, font, size) < max_w:
+                    line = test
                 else:
-                    if y_pos < 60:
-                        y_pos = new_page()
+                    y_pos = check_space(y_pos, 50)
                     c.drawString(x, y_pos, line)
                     y_pos -= leading
                     line = word
             if line:
-                if y_pos < 60:
-                    y_pos = new_page()
+                y_pos = check_space(y_pos, 50)
                 c.drawString(x, y_pos, line)
                 y_pos -= leading
             return y_pos
@@ -471,7 +486,7 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
         summary = cv_data.get("summary", "")
         location = cv_data.get("location", "")
 
-        def _parse_json_field(val):
+        def _pj(val):
             if isinstance(val, str):
                 try:
                     return json.loads(val)
@@ -479,64 +494,41 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
                     return []
             return val or []
 
-        experience = _parse_json_field(cv_data.get("experience", []))
-        education = _parse_json_field(cv_data.get("education", []))
-        certifications = _parse_json_field(cv_data.get("certifications", []))
-        skills = _parse_json_field(cv_data.get("skills", []))
-        languages = _parse_json_field(cv_data.get("languages", []))
-        differentiators = _parse_json_field(cv_data.get("differentiators", []))
+        experience = _pj(cv_data.get("experience", []))
+        education = _pj(cv_data.get("education", []))
+        certifications = _pj(cv_data.get("certifications", []))
+        skills = _pj(cv_data.get("skills", []))
+        languages = _pj(cv_data.get("languages", []))
+        differentiators = _pj(cv_data.get("differentiators", []))
         completed_courses = cv_data.get("completed_courses", [])
 
         # ════════════════════════════════════════════════════════════
-        #  1. PAGE HEADER — Name (large, bold, centered)
+        #  HEADER — Clean, minimal, left-aligned
         # ════════════════════════════════════════════════════════════
 
-        # Top blue accent bar
-        c.setFillColor(BLUE_PRIMARY)
-        c.rect(0, height - 6, width, 6, fill=1, stroke=0)
+        # Thin accent bar at very top
+        c.setFillColor(ACCENT)
+        c.rect(0, height - 3, width, 3, fill=1, stroke=0)
 
-        # Header background
-        c.setFillColor(HexColor("#F0F4FA"))
-        c.rect(0, height - 130, width, 124, fill=1, stroke=0)
+        # Name — large, bold
+        y = height - 48
+        c.setFont("Helvetica-Bold", 22)
+        c.setFillColor(NAVY)
+        c.drawString(ML, y, full_name)
 
-        # Conniku logo text top-left
-        c.setFont("Helvetica-Bold", 9)
-        c.setFillColor(BLUE_PRIMARY)
-        c.drawString(50, height - 24, "conniku")
-        c.setFont("Helvetica", 6)
-        c.setFillColor(TEXT_LIGHT)
-        c.drawString(50, height - 33, "conniku.com")
-
-        # Full name — large, bold, centered
-        c.setFont("Helvetica-Bold", 24)
-        c.setFillColor(TEXT_DARK)
-        name_width = c.stringWidth(full_name, "Helvetica-Bold", 24)
-        c.drawString((width - name_width) / 2, height - 58, full_name)
-
-        # 2. Headline — subtitle, centered
-        y = height - 78
+        # Headline — elegant subtitle
         if headline:
-            c.setFont("Helvetica", 10)
-            c.setFillColor(BLUE_PRIMARY)
-            display_headline = headline[:110] + ("..." if len(headline) > 110 else "")
-            hl_width = c.stringWidth(display_headline, "Helvetica", 10)
-            if hl_width > (width - 100):
-                # two-line headline
-                mid = len(display_headline) // 2
-                space_idx = display_headline.find(" ", mid)
-                if space_idx == -1:
-                    space_idx = mid
-                line1 = display_headline[:space_idx].strip()
-                line2 = display_headline[space_idx:].strip()
-                c.drawString((width - c.stringWidth(line1, "Helvetica", 10)) / 2, y, line1)
-                y -= 13
-                c.drawString((width - c.stringWidth(line2, "Helvetica", 10)) / 2, y, line2)
-                y -= 13
+            y -= 20
+            c.setFont("Helvetica", 9.5)
+            c.setFillColor(ACCENT)
+            # Handle long headlines with wrapping
+            if c.stringWidth(headline, "Helvetica", 9.5) > CONTENT_W:
+                y = wrap_text(y, headline, font="Helvetica", size=9.5, color=ACCENT, leading=13)
             else:
-                c.drawString((width - hl_width) / 2, y, display_headline)
-                y -= 16
+                c.drawString(ML, y, headline)
+                y -= 14
 
-        # 3. Contact info line — location ONLY (privacy: no email, no phone)
+        # Contact line — location, website, linkedin
         contact_parts = []
         if location:
             contact_parts.append(location)
@@ -548,113 +540,82 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
             contact_parts.append(linkedin)
 
         if contact_parts:
+            y -= 4
             c.setFont("Helvetica", 8)
-            c.setFillColor(TEXT_MEDIUM)
-            contact_line = "  |  ".join(contact_parts)
-            cl_width = c.stringWidth(contact_line, "Helvetica", 8)
-            c.drawString((width - cl_width) / 2, y, contact_line)
-            y -= 12
-
-        # Open to work badge (centered)
-        if cv_data.get("open_to_work"):
-            y -= 2
-            badge_text = "ABIERTO A OPORTUNIDADES"
-            badge_width = c.stringWidth(badge_text, "Helvetica-Bold", 7) + 12
-            badge_x = (width - badge_width) / 2
-            c.setFillColor(HexColor("#DEF7EC"))
-            c.roundRect(badge_x, y - 3, badge_width, 14, 4, fill=1, stroke=0)
-            c.setFont("Helvetica-Bold", 7)
-            c.setFillColor(HexColor("#03543F"))
-            c.drawString(badge_x + 6, y, badge_text)
+            c.setFillColor(MUTED)
+            c.drawString(ML, y, "  ·  ".join(contact_parts))
             y -= 10
 
-        y = height - 145
+        # Divider line under header
+        y -= 8
+        c.setStrokeColor(NAVY)
+        c.setLineWidth(0.8)
+        c.line(ML, y, width - MR, y)
+        y -= 18
 
         # ════════════════════════════════════════════════════════════
-        #  4. PROFESSIONAL SUMMARY
+        #  PROFESSIONAL SUMMARY
         # ════════════════════════════════════════════════════════════
         if summary:
-            y = draw_section_title(y, "Resumen Profesional")
-            y = draw_wrapped_text(y, summary, x=50, max_width=510, font="Helvetica", size=9,
-                                  color=TEXT_MEDIUM, leading=13)
-            y -= 10
+            y = section_title(y, "Resumen Profesional")
+            y = wrap_text(y, summary, font="Helvetica", size=8.5, color=SLATE, leading=13)
+            y -= 8
 
         # ════════════════════════════════════════════════════════════
-        #  5. CORE COMPETENCIES (tags/pills from skills)
+        #  CORE COMPETENCIES — clean pill tags
         # ════════════════════════════════════════════════════════════
-        if skills and isinstance(skills, list) and len(skills) > 0:
-            y = draw_section_title(y, "Competencias Principales")
+        if skills and isinstance(skills, list):
+            y = section_title(y, "Competencias y Habilidades")
 
             for skill_cat in skills:
                 if not isinstance(skill_cat, dict):
                     continue
-                if y < 60:
-                    y = new_page()
+                y = check_space(y, 50)
 
                 category = skill_cat.get("category", "General")
                 items = skill_cat.get("items", [])
 
-                c.setFont("Helvetica-Bold", 9)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(50, y, category)
-                y -= 14
+                # Category name — small caps feel
+                c.setFont("Helvetica-Bold", 8)
+                c.setFillColor(NAVY)
+                c.drawString(ML, y, category)
+                y -= 16
 
                 if isinstance(items, list):
-                    x_pos = 50
+                    x_pos = ML
                     for item in items:
                         if not isinstance(item, dict):
                             continue
                         name = item.get("name", "")
                         if not name:
                             continue
-                        prof = item.get("proficiency", "")
-                        # Numeric proficiency -> color
-                        if isinstance(prof, (int, float)):
-                            if prof >= 90:
-                                bg = HexColor("#DEF7EC")
-                            elif prof >= 80:
-                                bg = HexColor("#E8F0FE")
-                            elif prof >= 60:
-                                bg = HexColor("#F0F4FA")
-                            else:
-                                bg = HexColor("#FEF3C7")
-                        else:
-                            prof_colors = {
-                                "expert": HexColor("#DEF7EC"),
-                                "advanced": HexColor("#E8F0FE"),
-                                "intermediate": HexColor("#F0F4FA"),
-                                "beginner": HexColor("#FEF3C7"),
-                            }
-                            bg = prof_colors.get(str(prof), HexColor("#F0F4FA"))
 
-                        tag_text = name
-                        tag_width = c.stringWidth(tag_text, "Helvetica", 8) + 14
-                        if x_pos + tag_width > width - 50:
-                            x_pos = 50
-                            y -= 18
-                            if y < 60:
-                                y = new_page()
+                        tag_w = c.stringWidth(name, "Helvetica", 7.5) + 14
+                        if x_pos + tag_w > width - MR:
+                            x_pos = ML
+                            y -= 16
+                            y = check_space(y, 50)
 
-                        c.setFillColor(bg)
-                        c.roundRect(x_pos, y - 3, tag_width, 15, 3, fill=1, stroke=0)
-                        c.setFont("Helvetica", 8)
-                        c.setFillColor(TEXT_DARK)
-                        c.drawString(x_pos + 7, y, tag_text)
-                        x_pos += tag_width + 6
+                        # Subtle rounded pill
+                        c.setFillColor(ACCENT_SOFT)
+                        c.roundRect(x_pos, y - 3, tag_w, 14, 3, fill=1, stroke=0)
+                        c.setFont("Helvetica", 7.5)
+                        c.setFillColor(ACCENT)
+                        c.drawString(x_pos + 7, y, name)
+                        x_pos += tag_w + 5
 
-                    y -= 20
+                    y -= 18
 
         # ════════════════════════════════════════════════════════════
-        #  6. PROFESSIONAL EXPERIENCE (reverse chronological)
+        #  PROFESSIONAL EXPERIENCE
         # ════════════════════════════════════════════════════════════
-        if experience and isinstance(experience, list) and len(experience) > 0:
-            y = draw_section_title(y, "Experiencia Profesional")
+        if experience and isinstance(experience, list):
+            y = section_title(y, "Experiencia Profesional")
 
             for exp in experience:
                 if not isinstance(exp, dict):
                     continue
-                if y < 80:
-                    y = new_page()
+                y = check_space(y, 70)
 
                 title = exp.get("title", "")
                 company = exp.get("company", "")
@@ -663,112 +624,102 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
                 loc = exp.get("location", "")
                 description = exp.get("description", "")
 
-                # Title + Company
-                c.setFont("Helvetica-Bold", 10)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(50, y, title)
+                # Job title — bold
+                c.setFont("Helvetica-Bold", 9)
+                c.setFillColor(NAVY)
+                c.drawString(ML, y, title)
 
-                if company:
-                    c.setFont("Helvetica", 9)
-                    c.setFillColor(BLUE_PRIMARY)
-                    c.drawString(50, y - 14, company)
-
-                # Date + Location on the right
+                # Date on right
                 date_str = f"{start} — {end}" if start else end
                 if date_str:
-                    c.setFont("Helvetica", 8)
-                    c.setFillColor(TEXT_LIGHT)
-                    c.drawRightString(width - 50, y, date_str)
-                if loc:
-                    c.setFont("Helvetica", 8)
-                    c.setFillColor(TEXT_LIGHT)
-                    c.drawRightString(width - 50, y - 14, loc)
+                    c.setFont("Helvetica", 7.5)
+                    c.setFillColor(MUTED)
+                    c.drawRightString(width - MR, y, date_str)
 
-                y -= 30
+                y -= 13
 
-                # Description paragraph (preferred) or bullet points
+                # Company + location
+                if company:
+                    c.setFont("Helvetica", 8.5)
+                    c.setFillColor(ACCENT)
+                    company_text = company
+                    if loc:
+                        company_text += f"  ·  {loc}"
+                    c.drawString(ML, y, company_text)
+                    y -= 14
+
+                # Description as bullet points
                 if description and isinstance(description, str):
-                    # Split description by ". " to create bullet points
-                    desc_bullets = [s.strip() for s in description.split(". ") if s.strip()]
-                    for bullet in desc_bullets:
-                        if y < 60:
-                            y = new_page()
-                        c.setFillColor(ACCENT)
-                        c.circle(58, y + 3, 2, fill=1, stroke=0)
+                    bullets = [s.strip() for s in description.split(". ") if s.strip()]
+                    for bullet in bullets:
+                        y = check_space(y, 50)
+                        # Small dash instead of circle
+                        c.setFont("Helvetica", 8)
+                        c.setFillColor(MUTED)
+                        c.drawString(ML + 6, y, "—")
                         bullet_text = bullet if bullet.endswith(".") else bullet + "."
-                        y = draw_wrapped_text(y, bullet_text, x=66, max_width=480, font="Helvetica",
-                                              size=8.5, color=TEXT_MEDIUM, leading=12)
+                        y = wrap_text(y, bullet_text, x=ML + 18, max_w=CONTENT_W - 18,
+                                      font="Helvetica", size=8, color=SLATE, leading=11.5)
                 else:
-                    bullets = exp.get("bullets", [])
-                    if isinstance(bullets, list):
-                        for bullet in bullets:
+                    bullets_list = exp.get("bullets", [])
+                    if isinstance(bullets_list, list):
+                        for bullet in bullets_list:
                             if not bullet or not isinstance(bullet, str):
                                 continue
-                            if y < 60:
-                                y = new_page()
-                            c.setFillColor(ACCENT)
-                            c.circle(58, y + 3, 2, fill=1, stroke=0)
-                            y = draw_wrapped_text(y, bullet, x=66, max_width=480, font="Helvetica",
-                                                  size=8.5, color=TEXT_MEDIUM, leading=12)
+                            y = check_space(y, 50)
+                            c.setFont("Helvetica", 8)
+                            c.setFillColor(MUTED)
+                            c.drawString(ML + 6, y, "—")
+                            y = wrap_text(y, bullet, x=ML + 18, max_w=CONTENT_W - 18,
+                                          font="Helvetica", size=8, color=SLATE, leading=11.5)
 
-                y -= 8
+                y -= 6
 
         # ════════════════════════════════════════════════════════════
-        #  7. EDUCATION
+        #  EDUCATION
         # ════════════════════════════════════════════════════════════
-        if education and isinstance(education, list) and len(education) > 0:
-            y = draw_section_title(y, "Educacion")
+        if education and isinstance(education, list):
+            y = section_title(y, "Educacion")
 
             for edu in education:
                 if not isinstance(edu, dict):
                     continue
-                if y < 80:
-                    y = new_page()
+                y = check_space(y, 60)
 
                 institution = edu.get("institution", "")
                 degree = edu.get("degree", "")
                 field = edu.get("field", "")
                 start = edu.get("start_year", "") or edu.get("start_date", "")
                 end = edu.get("end_year", "") or edu.get("end_date", "")
-                gpa = edu.get("gpa", "")
-                desc = edu.get("description", "")
 
                 degree_line = degree
                 if field:
                     degree_line = f"{degree} — {field}" if degree else field
 
-                c.setFont("Helvetica-Bold", 10)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(50, y, degree_line or institution)
-
-                if institution and degree_line:
-                    c.setFont("Helvetica", 9)
-                    c.setFillColor(BLUE_PRIMARY)
-                    c.drawString(50, y - 14, institution)
+                c.setFont("Helvetica-Bold", 9)
+                c.setFillColor(NAVY)
+                c.drawString(ML, y, degree_line or institution)
 
                 date_str = f"{start} — {end}" if start and end else (start or end)
                 if date_str:
-                    c.setFont("Helvetica", 8)
-                    c.setFillColor(TEXT_LIGHT)
-                    c.drawRightString(width - 50, y, date_str)
+                    c.setFont("Helvetica", 7.5)
+                    c.setFillColor(MUTED)
+                    c.drawRightString(width - MR, y, date_str)
 
-                y -= 30
+                if institution and degree_line:
+                    y -= 13
+                    c.setFont("Helvetica", 8.5)
+                    c.setFillColor(ACCENT)
+                    c.drawString(ML, y, institution)
 
-                if gpa:
-                    y = draw_wrapped_text(y, f"GPA/Nota: {gpa}", x=50, max_width=510,
-                                          font="Helvetica", size=8.5, color=TEXT_MEDIUM)
-                if desc:
-                    y = draw_wrapped_text(y, desc, x=50, max_width=510,
-                                          font="Helvetica", size=8.5, color=TEXT_MEDIUM, leading=12)
-                y -= 6
+                y -= 16
 
         # ════════════════════════════════════════════════════════════
-        #  8. PROFESSIONAL CERTIFICATIONS (grouped list)
+        #  CERTIFICATIONS — compact grouped
         # ════════════════════════════════════════════════════════════
-        if certifications and isinstance(certifications, list) and len(certifications) > 0:
-            y = draw_section_title(y, "Certificaciones Profesionales")
+        if certifications and isinstance(certifications, list):
+            y = section_title(y, "Certificaciones")
 
-            # Group by issuer
             by_issuer = {}
             ungrouped = []
             for cert in certifications:
@@ -781,128 +732,121 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
                     ungrouped.append(cert)
 
             for issuer, certs in by_issuer.items():
-                if y < 60:
-                    y = new_page()
-                c.setFont("Helvetica-Bold", 9)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(50, y, issuer)
-                y -= 14
+                y = check_space(y, 50)
+                c.setFont("Helvetica-Bold", 8)
+                c.setFillColor(NAVY)
+                c.drawString(ML, y, issuer)
+                y -= 13
                 for cert in certs:
-                    if y < 60:
-                        y = new_page()
-                    c.setFillColor(ACCENT)
-                    c.circle(58, y + 3, 2, fill=1, stroke=0)
-                    c.setFont("Helvetica", 8.5)
-                    c.setFillColor(TEXT_MEDIUM)
-                    c.drawString(66, y, cert.get("name", ""))
-                    y -= 14
+                    y = check_space(y, 40)
+                    c.setFont("Helvetica", 8)
+                    c.setFillColor(MUTED)
+                    c.drawString(ML + 6, y, "—")
+                    c.setFillColor(SLATE)
+                    c.drawString(ML + 18, y, cert.get("name", ""))
+                    y -= 12
 
             for cert in ungrouped:
-                if y < 60:
-                    y = new_page()
-                c.setFillColor(ACCENT)
-                c.circle(58, y + 3, 2, fill=1, stroke=0)
-                c.setFont("Helvetica-Bold", 9)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(66, y, cert.get("name", ""))
-                y -= 14
+                y = check_space(y, 40)
+                c.setFont("Helvetica", 8)
+                c.setFillColor(MUTED)
+                c.drawString(ML + 6, y, "—")
+                c.setFont("Helvetica-Bold", 8)
+                c.setFillColor(NAVY)
+                c.drawString(ML + 18, y, cert.get("name", ""))
+                y -= 12
 
             y -= 4
 
         # ════════════════════════════════════════════════════════════
-        #  9. "LO QUE DIFERENCIA ESTE PERFIL" (bullet points)
+        #  DIFFERENTIATORS
         # ════════════════════════════════════════════════════════════
-        if differentiators and isinstance(differentiators, list) and len(differentiators) > 0:
-            y = draw_section_title(y, "Lo Que Diferencia Este Perfil")
+        if differentiators and isinstance(differentiators, list):
+            y = section_title(y, "Diferenciadores")
 
             for diff in differentiators:
-                if y < 60:
-                    y = new_page()
-
-                # Support both string items and dict items
+                y = check_space(y, 50)
                 if isinstance(diff, str):
                     diff_text = diff
                 elif isinstance(diff, dict):
                     diff_text = diff.get("title", "") or diff.get("description", "")
                 else:
                     continue
-
                 if not diff_text:
                     continue
 
-                c.setFillColor(ACCENT)
-                c.circle(58, y + 3, 2, fill=1, stroke=0)
-                y = draw_wrapped_text(y, diff_text, x=66, max_width=480, font="Helvetica",
-                                      size=8.5, color=TEXT_MEDIUM, leading=12)
+                c.setFont("Helvetica", 8)
+                c.setFillColor(MUTED)
+                c.drawString(ML + 6, y, "—")
+                y = wrap_text(y, diff_text, x=ML + 18, max_w=CONTENT_W - 18,
+                              font="Helvetica", size=8, color=SLATE, leading=11.5)
                 y -= 2
 
         # ════════════════════════════════════════════════════════════
-        #  10. LANGUAGES
+        #  LANGUAGES — inline
         # ════════════════════════════════════════════════════════════
-        if languages and isinstance(languages, list) and len(languages) > 0:
-            y = draw_section_title(y, "Idiomas")
+        if languages and isinstance(languages, list):
+            y = section_title(y, "Idiomas")
 
+            lang_parts = []
             for lang in languages:
                 if not isinstance(lang, dict):
                     continue
-                if y < 60:
-                    y = new_page()
+                name = lang.get("language", "") or lang.get("name", "")
+                level = lang.get("proficiency", "") or lang.get("level", "")
+                if name:
+                    lang_parts.append(f"{name} ({level})" if level else name)
 
-                language = lang.get("language", "") or lang.get("name", "")
-                proficiency = lang.get("proficiency", "") or lang.get("level", "")
-
-                c.setFont("Helvetica-Bold", 9)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(66, y, language)
-
-                if proficiency:
-                    c.setFont("Helvetica", 8)
-                    c.setFillColor(TEXT_LIGHT)
-                    prof_x = 66 + c.stringWidth(language, "Helvetica-Bold", 9) + 10
-                    c.drawString(prof_x, y, f"— {proficiency}")
-
-                y -= 16
+            if lang_parts:
+                c.setFont("Helvetica", 8.5)
+                c.setFillColor(SLATE)
+                c.drawString(ML, y, "  ·  ".join(lang_parts))
+                y -= 14
 
         # ════════════════════════════════════════════════════════════
-        #  11. COMPLETED CONNIKU COURSES (auto-populated)
+        #  COMPLETED CONNIKU COURSES
         # ════════════════════════════════════════════════════════════
-        if completed_courses and isinstance(completed_courses, list) and len(completed_courses) > 0:
-            y = draw_section_title(y, "Cursos Completados en Conniku")
+        if completed_courses and isinstance(completed_courses, list):
+            y = section_title(y, "Cursos Completados — Conniku")
 
             for course in completed_courses:
                 if not isinstance(course, dict):
                     continue
-                if y < 60:
-                    y = new_page()
+                y = check_space(y, 50)
 
                 title = course.get("title", "")
                 completed_at = course.get("completed_at", "")
                 area = course.get("area", "")
 
-                c.setFillColor(ACCENT)
-                c.circle(58, y + 3, 2, fill=1, stroke=0)
+                c.setFont("Helvetica", 8)
+                c.setFillColor(MUTED)
+                c.drawString(ML + 6, y, "—")
+                c.setFont("Helvetica-Bold", 8)
+                c.setFillColor(NAVY)
+                c.drawString(ML + 18, y, title)
 
-                c.setFont("Helvetica-Bold", 9)
-                c.setFillColor(TEXT_DARK)
-                c.drawString(66, y, title)
-
-                meta_parts = []
+                meta = []
                 if area:
-                    meta_parts.append(area)
+                    meta.append(area)
                 if completed_at:
-                    meta_parts.append(completed_at)
-                if meta_parts:
-                    c.setFont("Helvetica", 8)
-                    c.setFillColor(TEXT_LIGHT)
-                    c.drawString(66, y - 12, " — ".join(meta_parts))
-                    y -= 26
-                else:
-                    y -= 16
+                    meta.append(completed_at)
+                if meta:
+                    meta_x = ML + 18 + c.stringWidth(title, "Helvetica-Bold", 8) + 10
+                    c.setFont("Helvetica", 7.5)
+                    c.setFillColor(LIGHT)
+                    c.drawString(meta_x, y, " · ".join(meta))
+
+                y -= 14
 
         # ── Final footer ──
         draw_footer()
-        c.save()
 
+        # ── PDF metadata ──
+        c.setTitle(f"CV — {full_name}")
+        c.setAuthor("Conniku")
+        c.setSubject("Curriculum Vitae Profesional")
+
+        c.save()
         return buffer.getvalue()
 
     except ImportError:
