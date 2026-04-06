@@ -31,3 +31,43 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
     </ErrorBoundary>
   </React.StrictMode>,
 )
+
+// ─── Service Worker Registration ────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      // Unregister old push-only SW if it exists
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const reg of registrations) {
+        if (reg.active?.scriptURL?.includes('sw-push.js')) {
+          await reg.unregister()
+          console.log('[SW] Unregistered old sw-push.js')
+        }
+      }
+
+      // Register new full SW
+      const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      console.log('[SW] Registered with scope:', registration.scope)
+
+      // Listen for updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing
+        if (!newWorker) return
+
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New SW waiting - auto-activate for seamless updates
+            newWorker.postMessage('skipWaiting')
+          }
+        })
+      })
+
+      // Periodic cache cleanup (every 24h)
+      setInterval(() => {
+        registration.active?.postMessage('cleanCaches')
+      }, 24 * 60 * 60 * 1000)
+    } catch (err) {
+      console.error('[SW] Registration failed:', err)
+    }
+  })
+}

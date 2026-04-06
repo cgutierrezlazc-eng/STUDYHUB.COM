@@ -993,7 +993,8 @@ export async function initPushNotifications() {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw-push.js')
+    // Use the main SW (already registered in main.tsx) instead of separate push SW
+    const registration = await navigator.serviceWorker.ready
     const vapidKey = await getVapidKey()
     if (!vapidKey) return
 
