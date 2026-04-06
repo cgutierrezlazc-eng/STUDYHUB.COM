@@ -17,7 +17,7 @@ function LogoMark({ size = 34 }: { size?: number }) {
       boxShadow: '0 2px 8px rgba(45,98,200,0.35)', flexShrink: 0,
     }}>
       <svg viewBox="0 0 40 40" width={size * 0.58} height={size * 0.58}>
-        <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
+        <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" transform="rotate(-45, 20, 20)" />
       </svg>
     </div>
   )

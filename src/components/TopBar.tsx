@@ -41,7 +41,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
         <div onClick={() => onNavigate('/')} className="topbar-logo" style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none' }}>
           <div style={{ width: 30, height: 30, borderRadius: 8, background: '#2D62C8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg viewBox="0 0 40 40" width={18} height={18}>
-              <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
+              <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" transform="rotate(-45, 20, 20)" />
             </svg>
           </div>
           <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.04em', lineHeight: 1 }}>
