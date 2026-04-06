@@ -761,6 +761,18 @@ export const api = {
   cancelMpSubscription: () =>
     request('/payments/mp/cancel-subscription', { method: 'POST' }),
 
+  // ─── PayPal ──────────────────────────────────────────────
+  getPaypalHealth: () => request('/payments/paypal/health'),
+  getPaypalPlans: () => request('/payments/paypal/plans'),
+  createPaypalOrder: (plan_id: string) =>
+    request('/payments/paypal/create-order', { method: 'POST', body: JSON.stringify({ plan_id }) }),
+  capturePaypalOrder: (order_id: string) =>
+    request(`/payments/paypal/capture-order/${order_id}`, { method: 'POST' }),
+  createPaypalSubscription: (plan_id: string) =>
+    request('/payments/paypal/create-subscription', { method: 'POST', body: JSON.stringify({ plan_id }) }),
+  cancelPaypalSubscription: (subscription_id: string) =>
+    request('/payments/paypal/cancel-subscription', { method: 'POST', body: JSON.stringify({ subscription_id }) }),
+
   // ─── Study Rooms ──────────────────────────────────────────
   createStudyRoom: (data: { name: string; description?: string; room_type?: string; subject?: string; max_participants?: number; pomodoro_work_min?: number; pomodoro_break_min?: number }) =>
     request('/study-rooms', { method: 'POST', body: JSON.stringify(data) }),

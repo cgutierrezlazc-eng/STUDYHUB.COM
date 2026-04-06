@@ -20,49 +20,68 @@ export default function Subscription({ onNavigate }: Props) {
     api.getSubscriptionStatus().then(setSubStatus).catch(() => {})
     api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
     api.getMpPlans().then(setMpPlans).catch(() => {})
-    // Check URL params for success/cancel (Stripe + Mercado Pago)
+    // Check URL params for success/cancel (Stripe + Mercado Pago + PayPal)
     const params = new URLSearchParams(window.location.search)
-    if (params.get('success') === 'true' || params.get('mp_status') === 'approved') {
+    if (params.get('success') === 'true' || params.get('mp_status') === 'approved' || params.get('paypal_status') === 'approved') {
       alert('¡Suscripcion activada! Bienvenido a Conniku PRO')
-      window.history.replaceState({}, '', '/subscription')
+      window.history.replaceState({}, '', '/suscripcion')
     }
-    if (params.get('cancelled') === 'true' || params.get('mp_status') === 'failed') {
-      window.history.replaceState({}, '', '/subscription')
+    if (params.get('cancelled') === 'true' || params.get('mp_status') === 'failed' || params.get('paypal_status') === 'cancelled') {
+      window.history.replaceState({}, '', '/suscripcion')
     }
     if (params.get('mp_status') === 'pending') {
       alert('Tu pago esta pendiente. Te notificaremos cuando se confirme.')
-      window.history.replaceState({}, '', '/subscription')
+      window.history.replaceState({}, '', '/suscripcion')
     }
   }, [])
 
   const handleSubscribe = async () => {
     setLoading(true)
+    const planKey = `${selectedTier}_${selectedPlan}`
     try {
-      // Try Mercado Pago first (available in Chile)
-      const planKey = `${selectedTier}_${selectedPlan}`
+      // 1. Try Mercado Pago first (best for Chile/LATAM)
       const result = await api.createMpCheckout(planKey)
       if (result.url || result.initPoint) {
         window.location.href = result.url || result.initPoint
         return
       }
-      // Fallback to Stripe
+    } catch { /* MP not available, try next */ }
+    try {
+      // 2. Try PayPal (international)
+      const ppResult = await api.createPaypalOrder(planKey)
+      if (ppResult.approve_url) {
+        window.location.href = ppResult.approve_url
+        return
+      }
+    } catch { /* PayPal not available, try next */ }
+    try {
+      // 3. Fallback to Stripe
       const stripeResult = await api.createCheckoutSession(selectedPlan)
       if (stripeResult.url) {
         window.location.href = stripeResult.url
+        return
       }
     } catch (err: any) {
-      alert(err.message || 'Error al iniciar el pago')
+      alert(err.message || 'Error al iniciar el pago. Intenta con otro metodo.')
     }
     setLoading(false)
   }
 
   const handleManageSubscription = async () => {
     try {
-      // Check if user has MP subscription
+      // Check provider and cancel accordingly
       if (subStatus?.provider === 'mercadopago' || subStatus?.hasMercadoPago) {
         if (confirm('¿Deseas cancelar tu suscripcion?')) {
           await api.cancelMpSubscription()
           alert('Suscripcion cancelada')
+          window.location.reload()
+        }
+        return
+      }
+      if (subStatus?.provider === 'paypal' && subStatus?.paypal_subscription_id) {
+        if (confirm('¿Deseas cancelar tu suscripcion de PayPal?')) {
+          await api.cancelPaypalSubscription(subStatus.paypal_subscription_id)
+          alert('Suscripcion de PayPal cancelada')
           window.location.reload()
         }
         return
