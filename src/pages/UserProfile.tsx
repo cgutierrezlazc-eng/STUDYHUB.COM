@@ -1266,7 +1266,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {activeTab === 'about' && (
           <div className="fb-about-section">
-            <div className="card" style={{ padding: 24, maxWidth: 600 }}>
+            <div className="card" style={{ padding: 24 }}>
               <h3 style={{ marginTop: 0 }}>Información Personal</h3>
               <div className="fb-about-grid">
                 <div className="fb-about-item">
@@ -1373,7 +1373,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         )}
 
         {activeTab === 'courses' && (
-          <div style={{ maxWidth: 800 }}>
+          <div>
             {coursesLoading ? (
               <div className="card" style={{ textAlign: 'center', padding: 40 }}>
                 <div className="loading-dots"><span /><span /><span /></div>
@@ -1446,7 +1446,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         )}
 
         {activeTab === 'cv' && (
-          <div style={{ maxWidth: 700 }}>
+          <div>
             {cvLoading ? (
               <div className="card" style={{ textAlign: 'center', padding: 40 }}>
                 <div className="loading-dots"><span /><span /><span /></div>
@@ -1921,7 +1921,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
         )}
         {activeTab === 'tutorias' && isOwn && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 900 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Header */}
             <div className="card" style={{ padding: 20, borderLeft: '4px solid #7c3aed', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
