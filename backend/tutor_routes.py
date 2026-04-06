@@ -495,6 +495,17 @@ class TutorClassMessage(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class TutorCustomCategory(Base):
+    """Custom tutor categories created by users when they pick a category not in the predefined list."""
+    __tablename__ = "tutor_custom_categories"
+    __table_args__ = (UniqueConstraint("name", name="uq_tutor_custom_category_name"),)
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    name = Column(String(255), nullable=False, unique=True)
+    created_by = Column(String(16), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 # Predefined tutor class categories
 TUTOR_CATEGORIES = [
     "Matematicas", "Fisica", "Quimica", "Biologia", "Ciencias",
@@ -1282,6 +1293,14 @@ def create_class(
     if profile.status != "approved":
         raise HTTPException(status_code=403, detail="Tu perfil de tutor debe estar aprobado para crear clases")
 
+    # Save custom category if not in predefined list
+    if data.category and data.category.strip() and data.category.strip() not in TUTOR_CATEGORIES:
+        cat_name = data.category.strip()
+        existing_cat = db.query(TutorCustomCategory).filter(TutorCustomCategory.name == cat_name).first()
+        if not existing_cat:
+            db.add(TutorCustomCategory(name=cat_name, created_by=user.id))
+            db.commit()
+
     # Parse scheduled_at
     try:
         scheduled_at = datetime.fromisoformat(data.scheduled_at.replace("Z", "+00:00"))
@@ -1360,6 +1379,14 @@ def create_program(
     if profile.status != "approved":
         raise HTTPException(status_code=403, detail="Tu perfil de tutor debe estar aprobado")
 
+    # Save custom category if not in predefined list
+    if data.category and data.category.strip() and data.category.strip() not in TUTOR_CATEGORIES:
+        cat_name = data.category.strip()
+        existing_cat = db.query(TutorCustomCategory).filter(TutorCustomCategory.name == cat_name).first()
+        if not existing_cat:
+            db.add(TutorCustomCategory(name=cat_name, created_by=user.id))
+            db.commit()
+
     if not data.sessions or len(data.sessions) < 2:
         raise HTTPException(status_code=400, detail="Un programa debe tener al menos 2 sesiones")
     if len(data.sessions) > 30:
@@ -1437,9 +1464,11 @@ def create_program(
 
 
 @router.get("/categories")
-def list_categories():
-    """Return predefined tutor class categories."""
-    return {"categories": TUTOR_CATEGORIES}
+def list_categories(db: Session = Depends(get_db)):
+    """Return predefined + custom tutor class categories."""
+    custom = db.query(TutorCustomCategory).order_by(TutorCustomCategory.name).all()
+    custom_names = [c.name for c in custom if c.name not in TUTOR_CATEGORIES]
+    return {"categories": TUTOR_CATEGORIES + custom_names}
 
 
 # ─── Class Chat (text-only coordination) ────────────────────────────
@@ -1452,22 +1481,14 @@ def get_class_messages(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get chat messages for a class. Only tutor and enrolled students can see messages."""
+    """Get chat messages for a class. Any authenticated user can view messages."""
     cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
     if not cls:
         raise HTTPException(status_code=404, detail="Clase no encontrada")
 
-    # Check access: must be tutor or enrolled student
+    # Identify if current user is the tutor (for is_tutor flag in messages)
     profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
     is_tutor = profile and profile.user_id == user.id
-    enrollment = db.query(TutorClassEnrollment).filter(
-        TutorClassEnrollment.class_id == class_id,
-        TutorClassEnrollment.student_id == user.id,
-    ).first()
-    is_admin = getattr(user, "role", "user") in ("owner", "admin")
-
-    if not is_tutor and not enrollment and not is_admin:
-        raise HTTPException(status_code=403, detail="Solo el tutor y estudiantes inscritos pueden ver el chat")
 
     total = db.query(TutorClassMessage).filter(TutorClassMessage.class_id == class_id).count()
     messages = db.query(TutorClassMessage).filter(
@@ -1498,7 +1519,7 @@ def send_class_message(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Send a text message in the class chat. Only tutor and enrolled students."""
+    """Send a text message in the class chat. Any authenticated user can send messages."""
     cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
     if not cls:
         raise HTTPException(status_code=404, detail="Clase no encontrada")
@@ -1508,16 +1529,9 @@ def send_class_message(
     if len(data.message) > 2000:
         raise HTTPException(status_code=400, detail="Mensaje demasiado largo (max 2000 caracteres)")
 
-    # Check access
+    # Identify if current user is the tutor (for is_tutor flag and push notifications)
     profile = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
     is_tutor = profile and profile.user_id == user.id
-    enrollment = db.query(TutorClassEnrollment).filter(
-        TutorClassEnrollment.class_id == class_id,
-        TutorClassEnrollment.student_id == user.id,
-    ).first()
-
-    if not is_tutor and not enrollment:
-        raise HTTPException(status_code=403, detail="Solo el tutor y estudiantes inscritos pueden enviar mensajes")
 
     msg = TutorClassMessage(
         class_id=class_id,

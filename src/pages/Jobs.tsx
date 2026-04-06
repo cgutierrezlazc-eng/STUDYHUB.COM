@@ -140,7 +140,7 @@ const cvStyles: Record<string, React.CSSProperties> = {
 
 export default function Jobs({ onNavigate }: Props) {
   const { user } = useAuth()
-  const [tab, setTab] = useState<TabKey>('listings')
+  const [tab, setTab] = useState<TabKey>('profile')
   const [publicCVs, setPublicCVs] = useState<any[]>([])
   const [cvSearch, setCvSearch] = useState('')
   const [cvLoading, setCvLoading] = useState(false)
@@ -194,6 +194,7 @@ export default function Jobs({ onNavigate }: Props) {
 
   useEffect(() => {
     loadJobs()
+    loadMyCV()
     api.getCareerStatus().then(setCareerStatus).catch(() => {})
   }, [])
 
@@ -318,8 +319,15 @@ export default function Jobs({ onNavigate }: Props) {
           ...prev,
           headline: res.draft.headline || prev.headline,
           summary: res.draft.summary || prev.summary,
+          competencies: parseJsonField(res.draft.competencies, prev.competencies),
+          skillGroups: parseJsonField(res.draft.skill_groups || res.draft.skills, prev.skillGroups),
+          experience: parseJsonField(res.draft.experience, prev.experience),
+          education: parseJsonField(res.draft.education, prev.education),
+          certifications: parseJsonField(res.draft.certifications, prev.certifications),
+          languages: parseJsonField(res.draft.languages, prev.languages),
+          differentiators: parseJsonField(res.draft.differentiators, prev.differentiators),
         }))
-        setCvUploadMsg(res.message || 'Documento procesado. Revisa los campos.')
+        setCvUploadMsg(res.message || 'Documento procesado. Competencias y habilidades importadas. Revisa los campos.')
       }
     } catch (err: any) {
       setCvUploadMsg(err.message || 'Error al procesar el archivo')
@@ -580,6 +588,33 @@ export default function Jobs({ onNavigate }: Props) {
           </div>
         </div>
 
+        {/* ── Core Competencies (FIRST — user's skills & competencies) ── */}
+        <div style={cvStyles.section}>
+          <div style={cvStyles.sectionTitle}>
+            {Zap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Competencias Clave</span>
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>
+            Estas competencias se importan automaticamente al subir tu CV. Puedes agregar, editar o eliminar libremente.
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
+            {cv.competencies.map((c, i) => (
+              <span key={i} style={cvStyles.tag}>
+                {c}
+                <button style={cvStyles.removeBtn} onClick={() => removeCompetency(i)}>{Trash2({ size: 12 })}</button>
+              </span>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input style={{ ...cvStyles.input, flex: 1 }} value={competencyInput}
+              onChange={e => setCompetencyInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { addCompetency(competencyInput); setCompetencyInput('') } }}
+              placeholder="Escribe una competencia y presiona Enter..." />
+            <button style={cvStyles.addBtn} onClick={() => { addCompetency(competencyInput); setCompetencyInput('') }}>
+              {Plus({ size: 14 })} Agregar
+            </button>
+          </div>
+        </div>
+
         {/* ── Headline & Summary ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
@@ -617,30 +652,6 @@ export default function Jobs({ onNavigate }: Props) {
                 <label style={{ fontSize: 14 }}>Disponible mundialmente</label>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* ── Core Competencies ── */}
-        <div style={cvStyles.section}>
-          <div style={cvStyles.sectionTitle}>
-            {Zap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Competencias Clave</span>
-          </div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
-            {cv.competencies.map((c, i) => (
-              <span key={i} style={cvStyles.tag}>
-                {c}
-                <button style={cvStyles.removeBtn} onClick={() => removeCompetency(i)}>{Trash2({ size: 12 })}</button>
-              </span>
-            ))}
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <input style={{ ...cvStyles.input, flex: 1 }} value={competencyInput}
-              onChange={e => setCompetencyInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') { addCompetency(competencyInput); setCompetencyInput('') } }}
-              placeholder="Escribe una competencia y presiona Enter..." />
-            <button style={cvStyles.addBtn} onClick={() => { addCompetency(competencyInput); setCompetencyInput('') }}>
-              {Plus({ size: 14 })} Agregar
-            </button>
           </div>
         </div>
 
