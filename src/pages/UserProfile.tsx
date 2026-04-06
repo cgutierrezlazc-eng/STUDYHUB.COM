@@ -1522,99 +1522,102 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Certificate Modal */}
+      {/* Certificate Modal — matches official PDF layout (landscape A4 style) */}
       {selectedCert && (
         <div className="modal-overlay" onClick={() => setSelectedCert(null)} style={{ zIndex: 1000 }}>
           <div onClick={e => e.stopPropagation()} style={{
-            width: '90%', maxWidth: 680, background: '#fff', borderRadius: 12, overflow: 'hidden',
+            width: '92%', maxWidth: 780, background: '#fff', overflow: 'hidden',
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)', position: 'relative',
+            aspectRatio: '1.414 / 1',
           }}>
             {/* Close button */}
             <button onClick={() => setSelectedCert(null)} style={{
-              position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.15)',
-              border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer',
+              position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.1)',
+              border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2,
-              color: '#fff', fontSize: 18, fontWeight: 700,
+              color: '#666', fontSize: 16, fontWeight: 700,
             }}>×</button>
 
-            {/* Certificate visual */}
+            {/* Certificate — official model */}
             <div style={{
-              background: `linear-gradient(135deg, ${selectedCert.accentColor}22 0%, #fff 50%, ${selectedCert.accentColor}11 100%)`,
-              padding: '40px 32px 32px', textAlign: 'center', position: 'relative',
-              borderBottom: `4px solid ${selectedCert.accentColor}`,
+              width: '100%', height: '100%', background: '#FFFFFF',
+              display: 'flex', flexDirection: 'column', position: 'relative',
             }}>
               {/* Top accent bar */}
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 6, background: selectedCert.accentColor }} />
+              <div style={{ height: 8, background: selectedCert.accentColor, flexShrink: 0 }} />
 
-              {/* Decorative border */}
+              {/* Outer border */}
               <div style={{
-                border: `2px solid ${selectedCert.accentColor}33`, borderRadius: 8, padding: '32px 24px',
-                background: 'rgba(255,255,255,0.8)',
+                flex: 1, margin: '20px 24px 20px', border: '1px solid #E0E4E7',
+                position: 'relative', display: 'flex', flexDirection: 'column',
               }}>
-                {/* Logo / Platform */}
-                <div style={{ fontSize: 12, fontWeight: 600, color: selectedCert.accentColor, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>
-                  Conniku
-                </div>
-
-                <div style={{ fontSize: 22, fontWeight: 700, color: '#151B1E', marginBottom: 4, letterSpacing: 0.5 }}>
-                  CERTIFICADO DE COMPLETACION
-                </div>
-                <div style={{ fontSize: 12, color: '#8E99A4', marginBottom: 24 }}>
-                  Plataforma de Aprendizaje
-                </div>
-
-                <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 8 }}>Se certifica que</div>
-
-                <div style={{ fontSize: 26, fontWeight: 700, color: selectedCert.accentColor, marginBottom: 8 }}>
-                  {selectedCert.userName || profile?.firstName + ' ' + profile?.lastName}
-                </div>
-
-                <div style={{ fontSize: 12, color: '#6B7280', marginBottom: 16 }}>ha completado satisfactoriamente el curso</div>
-
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
-                  <span style={{ fontSize: 36 }}>{selectedCert.courseEmoji || '📚'}</span>
-                  <span style={{ fontSize: 20, fontWeight: 700, color: '#151B1E' }}>{selectedCert.courseTitle}</span>
-                </div>
-
-                {/* Details row */}
+                {/* Inner accent border */}
                 <div style={{
-                  display: 'flex', justifyContent: 'center', gap: 24, fontSize: 12, color: '#8E99A4',
-                  marginBottom: 20, flexWrap: 'wrap',
+                  position: 'absolute', inset: 8, border: `2px solid ${selectedCert.accentColor}`,
+                  pointerEvents: 'none',
+                }} />
+
+                {/* Content */}
+                <div style={{
+                  flex: 1, display: 'flex', flexDirection: 'column',
+                  alignItems: 'center', justifyContent: 'center',
+                  padding: '28px 32px', textAlign: 'center',
                 }}>
-                  <span>Nota: <strong style={{ color: '#151B1E' }}>{selectedCert.score}%</strong></span>
-                  {selectedCert.estimatedMinutes && (
-                    <span>Duracion: <strong style={{ color: '#151B1E' }}>{Math.round(selectedCert.estimatedMinutes / 60)}h {selectedCert.estimatedMinutes % 60}m</strong></span>
-                  )}
-                  {selectedCert.lessonCount && (
-                    <span>Lecciones: <strong style={{ color: '#151B1E' }}>{selectedCert.lessonCount}</strong></span>
-                  )}
-                  <span>Fecha: <strong style={{ color: '#151B1E' }}>{selectedCert.completedAt ? new Date(selectedCert.completedAt).toLocaleDateString('es') : ''}</strong></span>
-                </div>
-
-                {/* Signature */}
-                <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: 16, marginTop: 8 }}>
-                  <div style={{ width: 160, margin: '0 auto', borderBottom: '1px solid #CBD5E1', marginBottom: 6 }} />
-                  <div style={{ fontSize: 11, color: '#6B7280' }}>Cristian — Fundador de Conniku</div>
-                </div>
-
-                {/* Verification */}
-                {selectedCert.certificateId && (
-                  <div style={{ marginTop: 16, fontSize: 10, color: '#A0AEC0' }}>
-                    ID: {selectedCert.certificateId}
+                  {/* Title */}
+                  <div style={{
+                    fontFamily: "'Inter', Helvetica, sans-serif", fontSize: 28, fontWeight: 700,
+                    color: '#151B1E', letterSpacing: 1.5, marginBottom: 6,
+                  }}>
+                    CERTIFICADO DE COMPLETACION
                   </div>
-                )}
-              </div>
-            </div>
+                  <div style={{ fontSize: 13, color: '#4A5568', marginBottom: 28 }}>
+                    Conniku — Plataforma de Aprendizaje
+                  </div>
 
-            {/* Action buttons */}
-            <div style={{
-              padding: '14px 24px', display: 'flex', justifyContent: 'center', gap: 12,
-              background: '#f9fafb', borderTop: '1px solid #f0f0f0',
-            }}>
-              <button onClick={() => setSelectedCert(null)} style={{
-                padding: '8px 20px', background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
-                border: '1px solid var(--border-subtle)', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 500,
-              }}>Cerrar</button>
+                  {/* Certifies */}
+                  <div style={{ fontSize: 13, color: '#4A5568', marginBottom: 8 }}>Se certifica que</div>
+
+                  {/* Student name */}
+                  <div style={{
+                    fontSize: 26, fontWeight: 700, color: selectedCert.accentColor,
+                    marginBottom: 12,
+                  }}>
+                    {selectedCert.userName || ((profile?.firstName || '') + ' ' + (profile?.lastName || '')).trim()}
+                  </div>
+
+                  {/* Course text */}
+                  <div style={{ fontSize: 13, color: '#4A5568', marginBottom: 10 }}>
+                    ha completado satisfactoriamente el curso
+                  </div>
+
+                  {/* Course name */}
+                  <div style={{
+                    fontSize: 20, fontWeight: 700, color: '#151B1E', marginBottom: 16,
+                  }}>
+                    {selectedCert.courseTitle}
+                  </div>
+
+                  {/* Details */}
+                  <div style={{ fontSize: 11, color: '#8E99A4', marginBottom: 24 }}>
+                    {selectedCert.estimatedMinutes ? `Horas: ${Math.round(selectedCert.estimatedMinutes / 60)} · ` : ''}
+                    Nota: {selectedCert.score} · Fecha: {selectedCert.completedAt ? new Date(selectedCert.completedAt).toLocaleDateString('es-CL') : ''}
+                  </div>
+
+                  {/* Signature line */}
+                  <div style={{ marginTop: 'auto' }}>
+                    <div style={{ width: 180, margin: '0 auto', borderBottom: '1px solid #E0E4E7', marginBottom: 6 }} />
+                    <div style={{ fontSize: 10, color: '#4A5568' }}>Cristian — Fundador de Conniku</div>
+                  </div>
+
+                  {/* Verification code */}
+                  {selectedCert.certificateId && (
+                    <div style={{ marginTop: 16, fontSize: 9, color: '#8E99A4' }}>
+                      Codigo de verificacion: {selectedCert.certificateId}<br />
+                      Verificar en: conniku.com/cert/{selectedCert.certificateId}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
