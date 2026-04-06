@@ -1,6 +1,7 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './services/auth'
+import { wsService } from './services/websocket'
 import { isNative } from './services/capacitor'
 import { useDevice } from './hooks/useDevice'
 import Sidebar from './components/Sidebar'
@@ -111,6 +112,17 @@ export default function App() {
       document.body.classList.remove('touch-device')
     }
   }, [device.type, device.isTouchDevice])
+
+  // WebSocket connection management
+  useEffect(() => {
+    if (user) {
+      const token = localStorage.getItem('token')
+      if (token) wsService.connect(token)
+    } else {
+      wsService.disconnect()
+    }
+    return () => { wsService.disconnect() }
+  }, [user?.id])
 
   // Load projects from backend
   useEffect(() => {

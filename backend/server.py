@@ -54,6 +54,7 @@ from cv_routes import router as cv_router
 from push_routes import router as push_router
 from certificate_routes import router as certificate_router
 from conference_routes import router as conference_router
+from ws_routes import router as ws_router
 from migrations import migrate
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -133,6 +134,7 @@ app.include_router(cv_router)
 app.include_router(push_router)
 app.include_router(certificate_router)
 app.include_router(conference_router)
+app.include_router(ws_router)
 
 
 @app.post("/admin/seed-ceo-profile")

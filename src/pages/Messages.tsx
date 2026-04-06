@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
+import { wsService } from '../services/websocket'
 import { Conversation, ConversationMessage, UserBrief, ConversationFolder } from '../types'
 import { MessageSquare, Users, BookOpen, FolderOpen, AlertTriangle, Trash2, Hourglass, Inbox, Mic, Camera, Video, Paperclip, Globe, MoreVertical, Eye, Shield, Search as SearchIcon } from '../components/Icons'
 
@@ -37,13 +38,131 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [friends, setFriends] = useState<any[]>([])
   const [friendsFilter, setFriendsFilter] = useState('')
+  const [wsConnected, setWsConnected] = useState(false)
+  const [typingUsers, setTypingUsers] = useState<Record<string, string>>({})
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const pollRef = useRef<any>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
   const recordTimerRef = useRef<number | null>(null)
   const photoInputRef = useRef<HTMLInputElement>(null)
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prevConvRef = useRef<string | null>(null)
 
+  // ─── WebSocket Setup ──────────────────────────────────────────
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token && !wsService.connected) {
+      wsService.connect(token)
+    }
+
+    const unsubConnection = wsService.onConnection((connected) => {
+      setWsConnected(connected)
+      if (connected) {
+        // Stop polling when WS is connected
+        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
+      }
+    })
+
+    // Handle incoming messages
+    const unsubNewMsg = wsService.on('new_message', (data) => {
+      if (data.conversation_id === activeConv) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.message.id)) return prev
+          return [...prev, {
+            id: data.message.id,
+            conversationId: data.message.conversationId,
+            senderId: data.message.senderId,
+            senderUsername: data.message.senderUsername,
+            senderFirstName: data.message.senderFirstName,
+            senderLastName: data.message.senderLastName,
+            senderAvatar: data.message.senderAvatar,
+            content: data.message.content,
+            messageType: data.message.messageType,
+            isFlagged: data.message.isFlagged,
+            createdAt: data.message.createdAt,
+            isEdited: data.message.isEdited,
+          }]
+        })
+      }
+      // Refresh conversation list for last message preview
+      loadConversations()
+    })
+
+    // Handle sent message confirmation
+    const unsubSent = wsService.on('message_sent', (data) => {
+      if (data.conversation_id === activeConv) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === data.message.id)) return prev
+          return [...prev, {
+            id: data.message.id,
+            conversationId: data.message.conversationId,
+            senderId: data.message.senderId,
+            senderUsername: data.message.senderUsername,
+            senderFirstName: data.message.senderFirstName,
+            senderLastName: data.message.senderLastName,
+            senderAvatar: data.message.senderAvatar,
+            content: data.message.content,
+            messageType: data.message.messageType,
+            isFlagged: data.message.isFlagged,
+            createdAt: data.message.createdAt,
+            isEdited: data.message.isEdited,
+          }]
+        })
+      }
+    })
+
+    // Typing indicators
+    const unsubTyping = wsService.on('typing', (data) => {
+      if (data.conversation_id === activeConv) {
+        setTypingUsers(prev => ({ ...prev, [data.user_id]: data.username }))
+        // Auto-clear after 3s
+        setTimeout(() => {
+          setTypingUsers(prev => {
+            const next = { ...prev }
+            delete next[data.user_id]
+            return next
+          })
+        }, 3000)
+      }
+    })
+
+    const unsubStopTyping = wsService.on('stop_typing', (data) => {
+      setTypingUsers(prev => {
+        const next = { ...prev }
+        delete next[data.user_id]
+        return next
+      })
+    })
+
+    // Online status
+    const unsubOnline = wsService.on('user_online', (data) => {
+      setOnlineUsers(prev => new Set([...prev, data.user_id]))
+    })
+    const unsubOffline = wsService.on('user_offline', (data) => {
+      setOnlineUsers(prev => { const next = new Set(prev); next.delete(data.user_id); return next })
+    })
+
+    // Conversation updates (when not viewing that conversation)
+    const unsubConvUpdate = wsService.on('conversation_update', () => {
+      loadConversations()
+    })
+
+    return () => {
+      unsubConnection()
+      unsubNewMsg()
+      unsubSent()
+      unsubTyping()
+      unsubStopTyping()
+      unsubOnline()
+      unsubOffline()
+      unsubConvUpdate()
+      if (pollRef.current) clearInterval(pollRef.current)
+    }
+  }, [activeConv])
+
+  // ─── Initial Data Load ─────────────────────────────────────────
   useEffect(() => {
     loadConversations()
     loadFolders()
@@ -51,11 +170,23 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [])
 
+  // ─── Active Conversation Change ─────────────────────────────────
   useEffect(() => {
     if (activeConv) {
       loadMessages(activeConv)
-      if (pollRef.current) clearInterval(pollRef.current)
-      pollRef.current = setInterval(() => loadMessages(activeConv), 5000)
+
+      // WebSocket subscription management
+      if (prevConvRef.current && prevConvRef.current !== activeConv) {
+        wsService.unsubscribeConversation(prevConvRef.current)
+      }
+      wsService.subscribeConversation(activeConv)
+      prevConvRef.current = activeConv
+
+      // Fallback polling only if WS is not connected
+      if (!wsService.connected) {
+        if (pollRef.current) clearInterval(pollRef.current)
+        pollRef.current = setInterval(() => loadMessages(activeConv), 5000)
+      }
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [activeConv])
@@ -90,17 +221,39 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
   const handleSend = async () => {
     if (!newMsg.trim() || !activeConv || sending) return
-    setSending(true)
-    try {
-      await api.sendMessage(activeConv, { content: newMsg.trim() })
-      setNewMsg('')
-      await loadMessages(activeConv)
-      await loadConversations()
-    } catch (err: any) {
-      alert(err.message || 'Error al enviar mensaje')
+    const content = newMsg.trim()
+    setNewMsg('')
+
+    // Send typing stop
+    wsService.sendStopTyping(activeConv)
+
+    if (wsService.connected) {
+      // Real-time path: send via WebSocket
+      wsService.sendMessage(activeConv, content)
+    } else {
+      // Fallback: send via REST API
+      setSending(true)
+      try {
+        await api.sendMessage(activeConv, { content })
+        await loadMessages(activeConv)
+        await loadConversations()
+      } catch (err: any) {
+        alert(err.message || 'Error al enviar mensaje')
+        setNewMsg(content) // Restore message on error
+      }
+      setSending(false)
     }
-    setSending(false)
   }
+
+  // Typing indicator handler
+  const handleTyping = useCallback(() => {
+    if (!activeConv || !wsService.connected) return
+    wsService.sendTyping(activeConv)
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = setTimeout(() => {
+      wsService.sendStopTyping(activeConv)
+    }, 2000)
+  }, [activeConv])
 
   const handleSendPhoto = async () => {
     if (!photoPreview || !activeConv) return
@@ -797,6 +950,20 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     )
                   })}
                   <div ref={messagesEndRef} />
+                  {/* Typing indicator */}
+                  {Object.keys(typingUsers).length > 0 && (
+                    <div style={{
+                      padding: '4px 16px 8px', color: 'var(--text-muted)', fontSize: 12,
+                      fontStyle: 'italic', display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                      <span style={{ display: 'inline-flex', gap: 2 }}>
+                        <span className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-muted)', animation: 'typingBounce 1.4s infinite', animationDelay: '0s' }} />
+                        <span className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-muted)', animation: 'typingBounce 1.4s infinite', animationDelay: '0.2s' }} />
+                        <span className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-muted)', animation: 'typingBounce 1.4s infinite', animationDelay: '0.4s' }} />
+                      </span>
+                      {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'escribiendo...' : 'escribiendo...'}
+                    </div>
+                  )}
                 </div>
 
                 {/* Message request banner */}
@@ -869,9 +1036,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                       </div>
                       <input
                         value={newMsg}
-                        onChange={e => setNewMsg(e.target.value)}
+                        onChange={e => { setNewMsg(e.target.value); handleTyping() }}
                         onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        placeholder="Escribe un mensaje..."
+                        placeholder={t('msg.typePlaceholder')}
                         disabled={sending}
                         className="wa-text-input"
                       />

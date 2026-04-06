@@ -3200,3 +3200,31 @@ body.touch-device select {
     border: 1px solid var(--border); background: var(--bg-secondary); width: 100%;
   }
 }
+
+/* ─── WebSocket & Real-time ─────────────────────────────── */
+
+/* Typing indicator animation */
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Online status dot */
+.online-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #22c55e; border: 2px solid var(--bg-primary);
+  position: absolute; bottom: 0; right: 0;
+}
+.offline-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-muted); border: 2px solid var(--bg-primary);
+  position: absolute; bottom: 0; right: 0;
+}
+
+/* WebSocket connection indicator */
+.ws-status {
+  width: 6px; height: 6px; border-radius: 50%;
+  display: inline-block; margin-right: 4px;
+}
+.ws-status.connected { background: #22c55e; }
+.ws-status.disconnected { background: #ef4444; }

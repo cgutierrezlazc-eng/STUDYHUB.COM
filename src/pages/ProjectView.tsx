@@ -1040,9 +1040,20 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 <div className="empty-state-icon">{Brain({ size: 40 })}</div>
                 <h3>Flashcards con Repetición Espaciada</h3>
                 <p>Genera flashcards inteligentes que se adaptan a tu ritmo de aprendizaje</p>
+                <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: '12px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>🧠</span> Algoritmo FSRS
+                  </div>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: '12px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>⌨️</span> Atajos de teclado
+                  </div>
+                  <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: '12px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 20 }}>📊</span> Seguimiento de progreso
+                  </div>
+                </div>
                 <button
                   className="btn btn-primary"
-                  style={{ marginTop: 16 }}
+                  style={{ marginTop: 20 }}
                   onClick={async () => {
                     if (project.documents.length === 0) return
                     setIsGeneratingFlashcards(true)
@@ -1055,6 +1066,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         ease: 2.5,
                         repetitions: 0,
                         nextReview: new Date().toISOString(),
+                        reviewed: false,
                       }))
                       setFlashcards(cards)
                       setFlashcardIndex(0)
@@ -1066,7 +1078,12 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   }}
                   disabled={isGeneratingFlashcards || project.documents.length === 0}
                 >
-                  {isGeneratingFlashcards ? 'Generando...' : 'Generar Flashcards'}
+                  {isGeneratingFlashcards ? (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="spinner" style={{ width: 16, height: 16, border: '2px solid #fff3', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      Generando flashcards...
+                    </span>
+                  ) : 'Generar Flashcards'}
                 </button>
                 {project.documents.length === 0 && (
                   <p style={{ marginTop: 8, color: 'var(--accent-orange)', fontSize: 13 }}>
@@ -1075,116 +1092,209 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 )}
               </div>
             ) : (
-              <div style={{ maxWidth: 600, margin: '0 auto' }}>
-                {/* Progress */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    Tarjeta {flashcardIndex + 1} de {flashcards.length}
-                  </span>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-secondary btn-xs" onClick={() => {
-                      setFlashcards([])
+              <div style={{ maxWidth: 640, margin: '0 auto' }}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setShowFlashcardAnswer(!showFlashcardAnswer) }
+                  else if (e.key === 'ArrowLeft' && !showFlashcardAnswer) { setFlashcardIndex(Math.max(0, flashcardIndex - 1)); setShowFlashcardAnswer(false) }
+                  else if (e.key === 'ArrowRight' && !showFlashcardAnswer) { setFlashcardIndex(Math.min(flashcards.length - 1, flashcardIndex + 1)); setShowFlashcardAnswer(false) }
+                  else if (showFlashcardAnswer && ['1','2','3','4'].includes(e.key)) {
+                    const qualityMap: Record<string, number> = { '1': 0, '2': 2, '3': 3, '4': 5 }
+                    const quality = qualityMap[e.key]
+                    const card = { ...flashcards[flashcardIndex] }
+                    if (quality < 3) { card.repetitions = 0; card.interval = 1 }
+                    else {
+                      if (card.repetitions === 0) card.interval = 1
+                      else if (card.repetitions === 1) card.interval = 3
+                      else card.interval = Math.round(card.interval * card.ease)
+                      card.repetitions = (card.repetitions || 0) + 1
+                    }
+                    card.ease = Math.max(1.3, card.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
+                    const next = new Date(); next.setDate(next.getDate() + card.interval); card.nextReview = next.toISOString()
+                    card.reviewed = true
+                    const updated = [...flashcards]; updated[flashcardIndex] = card
+                    const now = new Date(); const dueCards = updated.filter(c => new Date(c.nextReview) <= now)
+                    setFlashcards(updated); setShowFlashcardAnswer(false)
+                    if (flashcardIndex < flashcards.length - 1) setFlashcardIndex(flashcardIndex + 1)
+                    else if (dueCards.length > 0) setFlashcardIndex(updated.indexOf(dueCards[0]))
+                    else {
+                      api.logStudySession({ duration_seconds: flashcards.length * 15, project_id: project.id, activity_type: 'flashcards' }).catch(() => {})
                       setFlashcardIndex(0)
-                    }}>Nuevas Flashcards</button>
+                    }
+                  }
+                }}
+              >
+                {/* Progress bar + stats */}
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>
+                      Tarjeta {flashcardIndex + 1} / {flashcards.length}
+                    </span>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        {flashcards.filter((c: any) => c.reviewed).length} revisadas
+                      </span>
+                      <button className="btn btn-secondary btn-xs" onClick={() => { setFlashcards([]); setFlashcardIndex(0) }}>
+                        Reiniciar
+                      </button>
+                    </div>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ height: 4, background: 'var(--border-color)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 2, transition: 'width 0.3s ease',
+                      width: `${((flashcardIndex + 1) / flashcards.length) * 100}%`,
+                      background: 'linear-gradient(90deg, var(--accent), #8b5cf6)',
+                    }} />
+                  </div>
+                  {/* Mini card indicators */}
+                  <div style={{ display: 'flex', gap: 3, marginTop: 8, flexWrap: 'wrap' }}>
+                    {flashcards.map((_: any, i: number) => (
+                      <div
+                        key={i}
+                        onClick={() => { setFlashcardIndex(i); setShowFlashcardAnswer(false) }}
+                        style={{
+                          width: 8, height: 8, borderRadius: '50%', cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          background: i === flashcardIndex ? 'var(--accent)' :
+                            flashcards[i].reviewed ? '#22c55e' : 'var(--border-color)',
+                          transform: i === flashcardIndex ? 'scale(1.4)' : 'scale(1)',
+                        }}
+                      />
+                    ))}
                   </div>
                 </div>
 
-                {/* Card */}
-                <div
-                  onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
-                  style={{
-                    background: 'var(--bg-secondary)', border: '2px solid var(--border-color)',
-                    borderRadius: 16, padding: 40, minHeight: 250,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    cursor: 'pointer', textAlign: 'center', transition: 'all 0.3s',
-                    boxShadow: showFlashcardAnswer ? '0 0 20px var(--accent)33' : 'none',
-                  }}
-                >
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
-                    {showFlashcardAnswer ? 'RESPUESTA' : 'PREGUNTA'} — click para voltear
-                  </div>
-                  <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.5 }}>
-                    {showFlashcardAnswer ? flashcards[flashcardIndex]?.back : flashcards[flashcardIndex]?.front}
+                {/* 3D Flip Card */}
+                <div style={{ perspective: 1000, marginBottom: 20 }}>
+                  <div
+                    onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
+                    style={{
+                      position: 'relative', width: '100%', minHeight: 280,
+                      transformStyle: 'preserve-3d',
+                      transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      transform: showFlashcardAnswer ? 'rotateY(180deg)' : 'rotateY(0)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {/* Front */}
+                    <div style={{
+                      position: 'absolute', width: '100%', minHeight: 280,
+                      backfaceVisibility: 'hidden',
+                      background: 'linear-gradient(135deg, var(--bg-secondary), var(--bg-primary))',
+                      border: '2px solid var(--border-color)', borderRadius: 20,
+                      padding: '32px 28px', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: 16, left: 20,
+                        fontSize: 11, color: 'var(--text-muted)', fontWeight: 600,
+                        letterSpacing: 1, textTransform: 'uppercase',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--accent)22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: 'var(--accent)' }}>?</span>
+                        Pregunta
+                      </div>
+                      <div style={{ fontSize: 19, fontWeight: 600, lineHeight: 1.6, maxWidth: '90%' }}>
+                        {flashcards[flashcardIndex]?.front}
+                      </div>
+                      <div style={{
+                        position: 'absolute', bottom: 16, fontSize: 11,
+                        color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4,
+                      }}>
+                        <span style={{ opacity: 0.7 }}>Espacio</span> o click para voltear
+                      </div>
+                    </div>
+                    {/* Back */}
+                    <div style={{
+                      position: 'absolute', width: '100%', minHeight: 280,
+                      backfaceVisibility: 'hidden',
+                      transform: 'rotateY(180deg)',
+                      background: 'linear-gradient(135deg, var(--accent)08, var(--accent)15)',
+                      border: '2px solid var(--accent)33', borderRadius: 20,
+                      padding: '32px 28px', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', textAlign: 'center',
+                      boxShadow: '0 8px 32px var(--accent)11',
+                    }}>
+                      <div style={{
+                        position: 'absolute', top: 16, left: 20,
+                        fontSize: 11, color: 'var(--accent)', fontWeight: 600,
+                        letterSpacing: 1, textTransform: 'uppercase',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <span style={{ width: 18, height: 18, borderRadius: '50%', background: 'var(--accent)22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10 }}>!</span>
+                        Respuesta
+                      </div>
+                      <div style={{ fontSize: 18, fontWeight: 600, lineHeight: 1.6, maxWidth: '90%', color: 'var(--text-primary)' }}>
+                        {flashcards[flashcardIndex]?.back}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* FSRS Rating Buttons */}
-                {showFlashcardAnswer && (
-                  <div style={{ marginTop: 16 }}>
-                    <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
-                      ¿Qué tan bien lo sabías?
-                    </p>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-                      {[
-                        { label: 'No lo sabía', quality: 0, color: '#ef4444' },
-                        { label: 'Difícil', quality: 2, color: '#f97316' },
-                        { label: 'Bien', quality: 3, color: '#3b82f6' },
-                        { label: 'Fácil', quality: 5, color: '#22c55e' },
-                      ].map(btn => (
-                        <button
-                          key={btn.quality}
-                          onClick={() => {
-                            // FSRS-like algorithm
-                            const card = { ...flashcards[flashcardIndex] }
-                            const quality = btn.quality
-
-                            if (quality < 3) {
-                              card.repetitions = 0
-                              card.interval = 1
-                            } else {
-                              if (card.repetitions === 0) {
-                                card.interval = 1
-                              } else if (card.repetitions === 1) {
-                                card.interval = 3
-                              } else {
-                                card.interval = Math.round(card.interval * card.ease)
-                              }
-                              card.repetitions = (card.repetitions || 0) + 1
-                            }
-
-                            card.ease = Math.max(1.3, card.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
-
-                            const next = new Date()
-                            next.setDate(next.getDate() + card.interval)
-                            card.nextReview = next.toISOString()
-
-                            const updated = [...flashcards]
-                            updated[flashcardIndex] = card
-
-                            // Sort by next review date, show cards due first
-                            const now = new Date()
-                            const dueCards = updated.filter(c => new Date(c.nextReview) <= now)
-
-                            setFlashcards(updated)
-                            setShowFlashcardAnswer(false)
-
-                            if (flashcardIndex < flashcards.length - 1) {
-                              setFlashcardIndex(flashcardIndex + 1)
-                            } else if (dueCards.length > 0) {
-                              setFlashcardIndex(updated.indexOf(dueCards[0]))
-                            } else {
-                              // Session complete
-                              api.logStudySession({ duration_seconds: flashcards.length * 15, project_id: project.id, activity_type: 'flashcards' }).catch(() => {})
-                              alert(`¡Sesión completada! Revisaste ${flashcards.length} tarjetas.`)
-                              setFlashcardIndex(0)
-                            }
-                          }}
-                          style={{
-                            padding: '12px 8px', borderRadius: 10, border: `2px solid ${btn.color}33`,
-                            background: `${btn.color}11`, color: btn.color, cursor: 'pointer',
-                            fontWeight: 600, fontSize: 12, transition: 'all 0.2s',
-                          }}
-                        >
-                          {btn.label}
-                        </button>
-                      ))}
-                    </div>
+                <div style={{
+                  opacity: showFlashcardAnswer ? 1 : 0,
+                  transform: showFlashcardAnswer ? 'translateY(0)' : 'translateY(10px)',
+                  transition: 'all 0.3s ease',
+                  pointerEvents: showFlashcardAnswer ? 'auto' : 'none',
+                }}>
+                  <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
+                    ¿Qué tan bien lo sabías? <span style={{ opacity: 0.6 }}>(teclas 1-4)</span>
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                    {[
+                      { label: 'No lo sabía', shortcut: '1', quality: 0, color: '#ef4444', emoji: '😰' },
+                      { label: 'Difícil', shortcut: '2', quality: 2, color: '#f97316', emoji: '😓' },
+                      { label: 'Bien', shortcut: '3', quality: 3, color: '#3b82f6', emoji: '😊' },
+                      { label: 'Fácil', shortcut: '4', quality: 5, color: '#22c55e', emoji: '🎯' },
+                    ].map(btn => (
+                      <button
+                        key={btn.quality}
+                        onClick={() => {
+                          const card = { ...flashcards[flashcardIndex] }
+                          const quality = btn.quality
+                          if (quality < 3) { card.repetitions = 0; card.interval = 1 }
+                          else {
+                            if (card.repetitions === 0) card.interval = 1
+                            else if (card.repetitions === 1) card.interval = 3
+                            else card.interval = Math.round(card.interval * card.ease)
+                            card.repetitions = (card.repetitions || 0) + 1
+                          }
+                          card.ease = Math.max(1.3, card.ease + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)))
+                          const next = new Date(); next.setDate(next.getDate() + card.interval); card.nextReview = next.toISOString()
+                          card.reviewed = true
+                          const updated = [...flashcards]; updated[flashcardIndex] = card
+                          const now = new Date(); const dueCards = updated.filter(c => new Date(c.nextReview) <= now)
+                          setFlashcards(updated); setShowFlashcardAnswer(false)
+                          if (flashcardIndex < flashcards.length - 1) setFlashcardIndex(flashcardIndex + 1)
+                          else if (dueCards.length > 0) setFlashcardIndex(updated.indexOf(dueCards[0]))
+                          else {
+                            api.logStudySession({ duration_seconds: flashcards.length * 15, project_id: project.id, activity_type: 'flashcards' }).catch(() => {})
+                            setFlashcardIndex(0)
+                          }
+                        }}
+                        style={{
+                          padding: '14px 8px', borderRadius: 12, border: `2px solid ${btn.color}33`,
+                          background: `${btn.color}0a`, color: btn.color, cursor: 'pointer',
+                          fontWeight: 600, fontSize: 12, transition: 'all 0.2s',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                        }}
+                        onMouseEnter={e => { (e.target as HTMLElement).style.background = `${btn.color}20`; (e.target as HTMLElement).style.transform = 'scale(1.05)' }}
+                        onMouseLeave={e => { (e.target as HTMLElement).style.background = `${btn.color}0a`; (e.target as HTMLElement).style.transform = 'scale(1)' }}
+                      >
+                        <span style={{ fontSize: 20 }}>{btn.emoji}</span>
+                        {btn.label}
+                        <span style={{ fontSize: 10, opacity: 0.6 }}>[{btn.shortcut}]</span>
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
 
-                {/* Navigation */}
+                {/* Navigation (when answer not shown) */}
                 {!showFlashcardAnswer && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
                     <button className="btn btn-secondary btn-sm" onClick={() => { setFlashcardIndex(Math.max(0, flashcardIndex - 1)); setShowFlashcardAnswer(false) }} disabled={flashcardIndex === 0}>
                       ← Anterior
                     </button>
@@ -1193,6 +1303,38 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     </button>
                   </div>
                 )}
+
+                {/* Session complete banner */}
+                {flashcards.every((c: any) => c.reviewed) && (
+                  <div style={{
+                    marginTop: 20, padding: '20px 24px', borderRadius: 16,
+                    background: 'linear-gradient(135deg, #22c55e11, #22c55e22)',
+                    border: '1px solid #22c55e33', textAlign: 'center',
+                  }}>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
+                    <h4 style={{ margin: 0, color: '#22c55e' }}>¡Sesión completada!</h4>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '8px 0 0' }}>
+                      Revisaste {flashcards.length} tarjetas. Vuelve a practicar para reforzar.
+                    </p>
+                  </div>
+                )}
+
+                {/* Keyboard shortcuts hint */}
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
+                  {[
+                    { key: 'Espacio', action: 'Voltear' },
+                    { key: '←→', action: 'Navegar' },
+                    { key: '1-4', action: 'Calificar' },
+                  ].map(s => (
+                    <span key={s.key} style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <kbd style={{
+                        padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600,
+                        background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                      }}>{s.key}</kbd>
+                      {s.action}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
           </>
