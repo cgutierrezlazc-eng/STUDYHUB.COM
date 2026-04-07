@@ -314,6 +314,7 @@ h1, h2, h3,
 /* ─── Sidebar ────────────────────────────────────────────── */
 .sidebar {
   width: 260px;
+  height: 100%;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -321,6 +322,8 @@ h1, h2, h3,
   -webkit-app-region: drag;
   padding-top: 16px;
   position: relative;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar * {
