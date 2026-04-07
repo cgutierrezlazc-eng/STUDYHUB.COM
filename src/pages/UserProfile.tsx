@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
-import { api } from '../services/api'
+import { api, getApiBase } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
+
+const API_BASE = getApiBase();
 import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
 
 const COVER_TEMPLATES = [
@@ -41,7 +43,8 @@ function getTemplateById(id: string) {
 
 function getCoverStyle(coverPhoto: string, coverType: string): React.CSSProperties {
   if (coverType === 'custom' && coverPhoto) {
-    return { backgroundImage: `url(${coverPhoto})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    const url = coverPhoto.startsWith('/uploads') ? `${API_BASE}${coverPhoto}` : coverPhoto;
+    return { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
   }
   if (coverType === 'template' && coverPhoto) {
     const tpl = getTemplateById(coverPhoto)
@@ -86,8 +89,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [tutoringMessage, setTutoringMessage] = useState('')
   const [tutoringLoading, setTutoringLoading] = useState(false)
   const [tutoringSuccess, setTutoringSuccess] = useState(false)
-  const [universityNews, setUniversityNews] = useState<any[]>([])
-  const [newsLoading, setNewsLoading] = useState(false)
   const [showCoverModal, setShowCoverModal] = useState(false)
   const [coverModalTab, setCoverModalTab] = useState<'templates' | 'upload'>('templates')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
@@ -150,22 +151,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const profilePhotoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { loadProfile(); loadPosts(); loadFriends() }, [userId])
-  useEffect(() => { if (user && userId === user.id) { loadActivityFeed(); loadUniversityNews() } }, [userId, user])
+  useEffect(() => { if (user && userId === user.id) { loadActivityFeed() } }, [userId, user])
   useEffect(() => {
     if (user && userId === user.id) {
       api.getMyTutorProfile().then(tp => setTutorProfile(tp)).catch(() => setTutorProfile(null))
     }
   }, [userId, user])
-
-  const loadUniversityNews = async () => {
-    if (localStorage.getItem('conniku_university_news') === 'false') return
-    try {
-      setNewsLoading(true)
-      const data = await api.getUniversityNews()
-      setUniversityNews(data.items || [])
-    } catch (err) { console.error('Failed to load news:', err) }
-    finally { setNewsLoading(false) }
-  }
 
   const loadCV = async () => {
     try {
@@ -752,9 +743,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
       {/* Tab Content */}
       <div className="fb-profile-content">
-        {activeTab === 'wall' && (
-          <div className="fb-wall-layout">
-            {/* Right sidebar — Academic Info + Friends */}
+        <div className={activeTab === 'wall' ? "fb-wall-layout" : ""}>
+          {/* Right sidebar — Academic Info + Friends */}
+          {activeTab === 'wall' && (
             <div className="fb-wall-sidebar">
               <div className="card fb-info-card">
                 <h4>Información Académica</h4>
@@ -840,11 +831,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               )}
             </div>
+          )}
 
             {/* Main wall — Presentación + Posts */}
-            <div className="fb-wall-main">
-              {/* Presentación card — LinkedIn "About" section */}
-              <div className="card fb-info-card">
+            <div className={activeTab === 'wall' ? "fb-wall-main" : ""}>
+              {activeTab === 'wall' && (
+                <>
+                  {/* Presentación card — LinkedIn "About" section */}
+                  <div className="card fb-info-card">
                 <h4>Presentación</h4>
                 {editingBio ? (
                   <div style={{ marginBottom: 12 }}>
@@ -1082,85 +1076,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               )}
 
-              {/* University News Section - only on own profile */}
-              {isOwn && localStorage.getItem('conniku_university_news') !== 'false' && (
-                <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
-                  {/* Header */}
-                  <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border, #2a3038)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-                      <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)' }}>
-                        Noticias de {profile.university || 'tu universidad'}
-                      </h4>
-                    </div>
-                    {universityNews.length > 0 && (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', background: 'var(--bg-tertiary, #151B1E)', padding: '3px 8px', borderRadius: 10 }}>
-                        {universityNews.length} {universityNews.length === 1 ? 'noticia' : 'noticias'}
-                      </span>
-                    )}
-                  </div>
 
-                  {/* Content */}
-                  <div style={{ padding: '12px 16px' }}>
-                    {newsLoading ? (
-                      <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13 }}>
-                        Cargando noticias...
-                      </div>
-                    ) : universityNews.length === 0 ? (
-                      <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13, lineHeight: 1.5 }}>
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 8 }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                        <div>Las noticias de tu universidad se actualizan cada 3 horas</div>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        {universityNews.map((item: any, idx: number) => (
-                          <a
-                            key={idx}
-                            href={item.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              display: 'flex', gap: 12, padding: 12, borderRadius: 10,
-                              background: 'var(--bg-tertiary, #151B1E)', textDecoration: 'none',
-                              border: '1px solid transparent', transition: 'border-color 0.2s, background 0.2s',
-                              cursor: 'pointer',
-                            }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D62C8'; e.currentTarget.style.background = 'rgba(45,98,200,0.06)' }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)' }}
-                          >
-                            {item.imageUrl && (
-                              <img
-                                src={item.imageUrl}
-                                alt=""
-                                style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                                onError={e => (e.currentTarget.style.display = 'none')}
-                              />
-                            )}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', lineHeight: 1.4, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                {item.title}
-                              </div>
-                              {item.summary && (
-                                <div style={{ fontSize: 12, color: 'var(--text-muted, #8a9bae)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                  {item.summary}
-                                </div>
-                              )}
-                              {item.published && (
-                                <div style={{ fontSize: 11, color: 'var(--text-muted, #6b7a8d)', marginTop: 4 }}>
-                                  {item.published}
-                                </div>
-                              )}
-                            </div>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #6b7a8d)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
-                              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                            </svg>
-                          </a>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Posts */}
               {posts.length === 0 ? (
@@ -1260,9 +1176,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   </div>
                 ))
               )}
-            </div>
-          </div>
-        )}
+                </>
+              )}
 
         {activeTab === 'about' && (
           <div className="fb-about-section">
@@ -2213,6 +2128,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
           </div>
         )}
+        </div>
+      </div>
       </div>
 
       {/* Booking Form Modal */}

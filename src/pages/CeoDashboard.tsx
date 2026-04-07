@@ -231,11 +231,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
         <p>Vista exclusiva del estado completo de la plataforma</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <button className="tab" style={{ background: '#0078d4', color: '#fff', border: '1px solid #0078d4', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
-            {Inbox({ size: 14 })} Correo
+            {Inbox({ size: 14 })} Correo CEO
           </button>
-          {(['overview', 'email', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
-            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview(); if (t === 'email' && emailInbox.length === 0) loadEmailData() }}>
-              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'email' ? <>{Inbox({ size: 14 })} Email</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
+          <button className="tab" style={{ background: '#10B981', color: '#fff', border: '1px solid #10B981', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
+            {Inbox({ size: 14 })} Correo Contacto
+          </button>
+          {(['overview', 'push', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
+            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview(); }}>
+              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'push' ? <>{Megaphone({ size: 14 })} Push</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
             </button>
           ))}
         </div>
@@ -724,304 +727,39 @@ export default function CeoDashboard({ onNavigate }: Props) {
             </div>
           )}
 
-          {/* EMAIL TAB */}
-          {tab === 'email' && (
-            <div>
-              {/* Email Stats */}
-              {emailStats && (
-                <div className="stats-grid" style={{ marginBottom: 20 }}>
-                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
-                    <div className="stat-value">{emailStats.total}</div>
-                    <div className="stat-label">Emails Totales</div>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
-                    <div className="stat-value">{emailStats.sent}</div>
-                    <div className="stat-label">Enviados</div>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: '4px solid #ef4444' }}>
-                    <div className="stat-value">{emailStats.failed}</div>
-                    <div className="stat-label">Fallidos</div>
-                  </div>
-                  <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
-                    <div className="stat-value">{emailStats.thisWeek}</div>
-                    <div className="stat-label">Esta Semana</div>
-                  </div>
-                </div>
-              )}
-
-              {/* Sub-navigation */}
-              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-                <button className={`tab ${emailView === 'inbox' ? 'active' : ''}`} onClick={() => setEmailView('inbox')}>
-                  {Inbox({ size: 14 })} Historial
+                    {/* PUSH NOTIFICATIONS TAB */}
+          {tab === 'push' && (
+            <div className="card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 Notificación Push a Todos los Usuarios</h4>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).</p>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button className="btn btn-primary btn-sm" onClick={async () => {
+                  if (!confirm('¿Enviar notificación push a TODOS los usuarios para actualizar la app?')) return;
+                  try {
+                    await api.broadcastPush(
+                      '🔄 Actualiza tu App Conniku',
+                      'Hemos actualizado el logo oficial y mejorado la plataforma. Actualiza para ver los cambios.',
+                      '/'
+                    );
+                    alert('Notificación push enviada a todos los usuarios');
+                  } catch (e: any) { alert('Error: ' + (e.message || e)); }
+                }} style={{ background: '#2563EB' }}>
+                  Enviar: Actualizar App (Logo)
                 </button>
-                <button className={`tab ${emailView === 'compose' ? 'active' : ''}`} onClick={() => setEmailView('compose')}>
-                  {Pencil({ size: 14 })} Redactar
-                </button>
-                <button className={`tab ${emailView === 'broadcast' ? 'active' : ''}`} onClick={() => setEmailView('broadcast')}>
-                  {Megaphone({ size: 14 })} Masivo
+                <button className="btn btn-primary btn-sm" onClick={async () => {
+                  const titulo = prompt('Título de la notificación:');
+                  if (!titulo) return;
+                  const mensaje = prompt('Mensaje:');
+                  if (!mensaje) return;
+                  const url = prompt('URL (dejar vacío para /)', '/');
+                  try {
+                    await api.broadcastPush(titulo, mensaje, url || '/');
+                    alert('Push enviado');
+                  } catch (e: any) { alert('Error: ' + (e.message || e)); }
+                }} style={{ background: '#059669' }}>
+                  Push Personalizado
                 </button>
               </div>
-
-              {/* EMAIL INBOX/HISTORY */}
-              {emailView === 'inbox' && (
-                <div>
-                  {/* Type filter */}
-                  <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
-                    {['', 'welcome', 'contact', 'manual', 'broadcast', 'friend_request', 'message', 'certificate', 'subscription', 'payment'].map(f => (
-                      <button key={f} onClick={() => { setEmailFilter(f); loadEmailData(1, f) }}
-                        style={{
-                          padding: '4px 10px', fontSize: 11, borderRadius: 12, cursor: 'pointer',
-                          background: emailFilter === f ? 'var(--accent-blue)' : 'var(--bg-secondary)',
-                          color: emailFilter === f ? '#fff' : 'var(--text-muted)',
-                          border: '1px solid ' + (emailFilter === f ? 'var(--accent-blue)' : 'var(--border-subtle)'),
-                        }}>
-                        {f || 'Todos'}
-                      </button>
-                    ))}
-                  </div>
-
-                  {emailLoading ? (
-                    <div className="loading-dots"><span /><span /><span /></div>
-                  ) : emailInbox.length === 0 ? (
-                    <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
-                      <p>No hay emails registrados todavia.</p>
-                    </div>
-                  ) : (
-                    <>
-                      {/* Bulk actions bar */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, padding: '6px 0' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>
-                          <input type="checkbox" checked={selectedEmails.size === emailInbox.length && emailInbox.length > 0} onChange={toggleSelectAllEmails}
-                            style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
-                          Seleccionar todos
-                        </label>
-                        {selectedEmails.size > 0 && (
-                          <button onClick={handleDeleteSelectedEmails} disabled={deletingEmail}
-                            style={{
-                              display: 'flex', alignItems: 'center', gap: 4, padding: '4px 12px', fontSize: 12, fontWeight: 600,
-                              background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', borderRadius: 8, cursor: 'pointer',
-                            }}>
-                            {Trash2({ size: 13 })} Eliminar ({selectedEmails.size})
-                          </button>
-                        )}
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                        {emailInbox.map((e: any) => (
-                          <div key={e.id} className="card"
-                            style={{
-                              padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
-                              transition: 'background 0.1s',
-                              background: selectedEmails.has(e.id) ? 'var(--bg-hover)' : '',
-                            }}
-                            onMouseEnter={ev => { if (!selectedEmails.has(e.id)) ev.currentTarget.style.background = 'var(--bg-hover)' }}
-                            onMouseLeave={ev => { if (!selectedEmails.has(e.id)) ev.currentTarget.style.background = '' }}
-                          >
-                            <input type="checkbox" checked={selectedEmails.has(e.id)} onClick={(ev) => toggleEmailSelection(e.id, ev)} readOnly
-                              style={{ width: 15, height: 15, cursor: 'pointer', accentColor: 'var(--accent-blue)', flexShrink: 0 }} />
-                            <div onClick={() => viewEmailDetail(e.id)} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                              <div style={{
-                                width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                                background: e.status === 'sent' ? '#22c55e' : '#ef4444',
-                              }} />
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                  {e.subject}
-                                </div>
-                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
-                                  Para: {e.to} · {e.sentAt ? new Date(e.sentAt).toLocaleDateString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
-                                </div>
-                              </div>
-                              <span style={{
-                                fontSize: 10, padding: '2px 8px', borderRadius: 8, fontWeight: 600,
-                                background: 'var(--bg-secondary)', color: 'var(--text-muted)', flexShrink: 0,
-                              }}>
-                                {e.type}
-                              </span>
-                            </div>
-                            <button onClick={(ev) => { ev.stopPropagation(); handleDeleteEmail(e.id) }}
-                              title="Eliminar"
-                              style={{
-                                background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 6, color: 'var(--text-muted)',
-                                opacity: 0.4, transition: 'opacity 0.15s, color 0.15s', flexShrink: 0,
-                              }}
-                              onMouseEnter={ev => { ev.currentTarget.style.opacity = '1'; ev.currentTarget.style.color = '#dc2626' }}
-                              onMouseLeave={ev => { ev.currentTarget.style.opacity = '0.4'; ev.currentTarget.style.color = 'var(--text-muted)' }}
-                            >
-                              {Trash2({ size: 14 })}
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* Pagination */}
-                      {emailTotal > 50 && (
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-                          <button className="btn btn-secondary btn-sm" disabled={emailPage <= 1} onClick={() => loadEmailData(emailPage - 1, emailFilter)}>Anterior</button>
-                          <span style={{ fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>Pagina {emailPage} de {Math.ceil(emailTotal / 50)}</span>
-                          <button className="btn btn-secondary btn-sm" disabled={emailPage >= Math.ceil(emailTotal / 50)} onClick={() => loadEmailData(emailPage + 1, emailFilter)}>Siguiente</button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* EMAIL DETAIL */}
-              {emailView === 'detail' && selectedEmail && (
-                <div>
-                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-                    <button className="btn btn-secondary btn-sm" onClick={() => setEmailView('inbox')}>
-                      ← Volver al historial
-                    </button>
-                    <button className="btn btn-sm" onClick={() => handleDeleteEmail(selectedEmail.id)} disabled={deletingEmail}
-                      style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {Trash2({ size: 13 })} {deletingEmail ? 'Eliminando...' : 'Eliminar'}
-                    </button>
-                  </div>
-                  <div className="card" style={{ padding: 20 }}>
-                    <div style={{ marginBottom: 16 }}>
-                      <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>{selectedEmail.subject}</h3>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                        <span><strong>De:</strong> {selectedEmail.from}</span>
-                        <span><strong>Para:</strong> {selectedEmail.to}</span>
-                        <span><strong>Tipo:</strong> {selectedEmail.type}</span>
-                        <span><strong>Estado:</strong> <span style={{ color: selectedEmail.status === 'sent' ? '#22c55e' : '#ef4444' }}>{selectedEmail.status}</span></span>
-                        <span><strong>Fecha:</strong> {selectedEmail.sentAt ? new Date(selectedEmail.sentAt).toLocaleString('es') : ''}</span>
-                      </div>
-                      {selectedEmail.error && (
-                        <div style={{ marginTop: 8, padding: '8px 12px', background: '#fef2f2', borderRadius: 6, fontSize: 12, color: '#dc2626' }}>
-                          {AlertTriangle({ size: 14 })} {selectedEmail.error}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: 16 }}>
-                      <div dangerouslySetInnerHTML={{ __html: selectedEmail.bodyHtml || '<p>Sin contenido</p>' }}
-                        style={{ fontSize: 14, lineHeight: 1.6, maxHeight: 500, overflow: 'auto' }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* COMPOSE EMAIL */}
-              {emailView === 'compose' && (
-                <div className="card" style={{ padding: 24, maxWidth: 640 }}>
-                  <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>{Send({ size: 18 })} Redactar Email</h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <input className="form-input" placeholder="Destinatario (email)" value={composeTo} onChange={e => setComposeTo(e.target.value)} />
-                    <input className="form-input" placeholder="Asunto" value={composeSubject} onChange={e => setComposeSubject(e.target.value)} />
-                    <textarea className="form-input" rows={8} placeholder="Cuerpo del mensaje (texto plano, se aplicara la plantilla de Conniku)" value={composeBody} onChange={e => setComposeBody(e.target.value)} />
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input className="form-input" style={{ flex: 1 }} placeholder="Texto del boton CTA (opcional)" value={composeCta} onChange={e => setComposeCta(e.target.value)} />
-                      <input className="form-input" style={{ flex: 1 }} placeholder="URL del boton (opcional)" value={composeCtaUrl} onChange={e => setComposeCtaUrl(e.target.value)} />
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                      <button className="btn btn-secondary" onClick={() => setEmailView('inbox')}>Cancelar</button>
-                      <button className="btn btn-primary" onClick={handleSendEmail} disabled={composeSending || !composeTo || !composeSubject || !composeBody}>
-                        {composeSending ? 'Enviando...' : 'Enviar Email'}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* BROADCAST EMAIL */}
-              {emailView === 'broadcast' && (
-                <div className="card" style={{ padding: 24, maxWidth: 640 }}>
-                  <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>{Megaphone({ size: 18 })} Email Masivo</h3>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Envia un email a multiples usuarios a la vez. Usa con responsabilidad.</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 600, marginBottom: 4, display: 'block' }}>Audiencia</label>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        {[{ v: 'all', l: 'Todos los usuarios' }, { v: 'active', l: 'Activos (7 dias)' }, { v: 'premium', l: 'Premium' }].map(opt => (
-                          <button key={opt.v} onClick={() => setBroadcastFilter(opt.v)}
-                            style={{
-                              padding: '6px 14px', fontSize: 12, borderRadius: 8, cursor: 'pointer',
-                              background: broadcastFilter === opt.v ? 'var(--accent-blue)' : 'var(--bg-secondary)',
-                              color: broadcastFilter === opt.v ? '#fff' : 'var(--text-secondary)',
-                              border: '1px solid ' + (broadcastFilter === opt.v ? 'var(--accent-blue)' : 'var(--border-subtle)'),
-                            }}>
-                            {opt.l}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <input className="form-input" placeholder="Asunto" value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)} />
-                    <textarea className="form-input" rows={8} placeholder="Cuerpo del mensaje" value={broadcastBody} onChange={e => setBroadcastBody(e.target.value)} />
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input className="form-input" style={{ flex: 1 }} placeholder="Texto del boton CTA (opcional)" value={broadcastCta} onChange={e => setBroadcastCta(e.target.value)} />
-                      <input className="form-input" style={{ flex: 1 }} placeholder="URL del boton (opcional)" value={broadcastCtaUrl} onChange={e => setBroadcastCtaUrl(e.target.value)} />
-                    </div>
-                    <div style={{ background: 'rgba(239,68,68,0.06)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(239,68,68,0.15)' }}>
-                      <p style={{ fontSize: 11, color: '#dc2626', margin: 0 }}>
-                        {AlertTriangle({ size: 12 })} Esto enviara un email a todos los usuarios del grupo seleccionado. No se puede deshacer.
-                      </p>
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                      <button className="btn btn-secondary" onClick={() => setEmailView('inbox')}>Cancelar</button>
-                      <button className="btn btn-primary" onClick={handleBroadcast} disabled={broadcastSending || !broadcastSubject || !broadcastBody}
-                        style={{ background: broadcastSending ? undefined : '#dc2626' }}>
-                        {broadcastSending ? 'Enviando...' : `Enviar a ${broadcastFilter === 'all' ? 'Todos' : broadcastFilter === 'active' ? 'Activos' : 'Premium'}`}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Push Notification Broadcast */}
-              {emailView === 'broadcast' && (
-                <div className="card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 Notificación Push a Todos los Usuarios</h4>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).</p>
-                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                    <button className="btn btn-primary btn-sm" onClick={async () => {
-                      if (!confirm('¿Enviar notificación push a TODOS los usuarios para actualizar la app?')) return;
-                      try {
-                        await api.broadcastPush(
-                          '🔄 Actualiza tu App Conniku',
-                          'Hemos actualizado el logo oficial y mejorado la plataforma. Actualiza para ver los cambios.',
-                          '/'
-                        );
-                        alert('Notificación push enviada a todos los usuarios');
-                      } catch (e: any) { alert('Error: ' + (e.message || e)); }
-                    }} style={{ background: '#2563EB' }}>
-                      Enviar: Actualizar App (Logo)
-                    </button>
-                    <button className="btn btn-primary btn-sm" onClick={async () => {
-                      const titulo = prompt('Título de la notificación:');
-                      if (!titulo) return;
-                      const mensaje = prompt('Mensaje:');
-                      if (!mensaje) return;
-                      const url = prompt('URL (dejar vacío para /)', '/');
-                      try {
-                        await api.broadcastPush(titulo, mensaje, url || '/');
-                        alert('Push enviado');
-                      } catch (e: any) { alert('Error: ' + (e.message || e)); }
-                    }} style={{ background: '#059669' }}>
-                      Push Personalizado
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Email type breakdown */}
-              {emailView === 'inbox' && emailStats?.byType && Object.keys(emailStats.byType).length > 0 && (
-                <div className="card" style={{ padding: 16, marginTop: 16 }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Desglose por tipo</h4>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {Object.entries(emailStats.byType).sort((a: any, b: any) => b[1] - a[1]).map(([type, count]: any) => (
-                      <div key={type} style={{
-                        padding: '6px 12px', borderRadius: 8, background: 'var(--bg-secondary)',
-                        fontSize: 12, display: 'flex', gap: 6, alignItems: 'center',
-                      }}>
-                        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{count}</span>
-                        <span style={{ color: 'var(--text-muted)' }}>{type}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           )}
 

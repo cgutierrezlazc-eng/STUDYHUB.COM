@@ -1,5 +1,5 @@
 // Dynamic API base: production uses env var, dev uses localhost
-function getApiBase(): string {
+export function getApiBase(): string {
   // Allow override via localStorage (for dev/testing)
   const override = localStorage.getItem('conniku_api_base');
   if (override) return override;
@@ -114,6 +114,10 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ path: filePath }),
     }),
+
+  // ─── Support Chat ──────────────────────────────────────────
+  supportChat: (message: string, history: { role: string; content: string }[] = []) =>
+    request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
 
   // ─── Chat ──────────────────────────────────────────────────
   chat: async (projectId: string, message: string, language: string = 'es', gender: string = 'unspecified', languageSkill: string = 'intermediate', socratic: boolean = false) => {
@@ -869,11 +873,11 @@ export const api = {
   getComplianceStatus: () => request('/finance/compliance-status'),
 
   // ─── CEO Email Management ─────────────────────────────────
-  getCeoEmailInbox: (page?: number, emailType?: string) =>
-    request(`/email/ceo/inbox?page=${page || 1}${emailType ? `&email_type=${emailType}` : ''}`),
+  getCeoEmailInbox: (page?: number, emailType?: string, account?: string) =>
+    request(`/email/ceo/inbox?page=${page || 1}${emailType ? `&email_type=${emailType}` : ''}${account ? `&account=${account}` : ''}`),
   getCeoEmailDetail: (emailId: string) => request(`/email/ceo/email/${emailId}`),
-  ceoSendEmail: (to: string, subject: string, body: string, ctaText?: string, ctaUrl?: string) =>
-    request('/email/ceo/send', { method: 'POST', body: JSON.stringify({ to_email: to, subject, body, cta_text: ctaText || '', cta_url: ctaUrl || '' }) }),
+  ceoSendEmail: (to: string, subject: string, body: string, ctaText?: string, ctaUrl?: string, fromAccount?: string) =>
+    request('/email/ceo/send', { method: 'POST', body: JSON.stringify({ to_email: to, subject, body, cta_text: ctaText || '', cta_url: ctaUrl || '', from_account: fromAccount || 'ceo' }) }),
   getCeoEmailStats: () => request('/email/ceo/stats'),
   ceoBroadcastEmail: (subject: string, body: string, filter?: string, ctaText?: string, ctaUrl?: string) =>
     request('/email/ceo/broadcast', { method: 'POST', body: JSON.stringify({ subject, body, filter: filter || 'all', ctaText: ctaText || '', ctaUrl: ctaUrl || '' }) }),
@@ -969,6 +973,7 @@ export const api = {
     request(`/conferences/${id}`, { method: 'DELETE' }),
 
   // ─── HR / RRHH ────────────────────────────────────────────
+  getChileIndicators: () => request('/hr/indicators'),
   getEmployees: (filters?: string) => request(`/hr/employees${filters ? `?${filters}` : ''}`),
   getEmployee: (id: string) => request(`/hr/employees/${id}`),
   createEmployee: (data: any) => request('/hr/employees', { method: 'POST', body: JSON.stringify(data) }),

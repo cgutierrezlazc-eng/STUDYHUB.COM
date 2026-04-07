@@ -227,11 +227,12 @@ class ComposeEmailRequest(BaseModel):
     body: str  # Plain text, will be wrapped in template
     cta_text: str = ""
     cta_url: str = ""
+    from_account: str = "ceo"  # "ceo" or "contacto"
 
 
 @router.get("/ceo/inbox")
 def ceo_email_inbox(
-    page: int = 1, limit: int = 50, email_type: str = "",
+    page: int = 1, limit: int = 50, email_type: str = "", account: str = "",
     user: User = Depends(get_current_user), db: Session = Depends(get_db),
 ):
     """Get email log for CEO — all sent/received emails."""
@@ -243,6 +244,12 @@ def ceo_email_inbox(
 
     if email_type:
         q = q.filter(EmailLog.email_type == email_type)
+
+    # Filter by account (from_email contains the account address)
+    if account == "ceo":
+        q = q.filter(EmailLog.from_email.ilike(f"%ceo@%"))
+    elif account == "contacto":
+        q = q.filter(EmailLog.from_email.ilike(f"%contacto@%"))
 
     total = q.count()
     emails = q.offset((page - 1) * limit).limit(limit).all()
@@ -343,12 +350,15 @@ def ceo_send_email(
     if not data.to_email or not data.subject:
         raise HTTPException(400, "Destinatario y asunto son obligatorios")
 
+    account = data.from_account if data.from_account in ("ceo", "contacto") else "ceo"
+    reply_to = CONTACT_EMAIL if account == "contacto" else CEO_EMAIL
+
     body_html = data.body.replace("\n", "<br>")
     full_body = f"<p>{body_html}</p>"
     html = _email_template(data.subject, full_body, data.cta_text, data.cta_url)
-    _send_email_async(data.to_email, data.subject, html, reply_to=CEO_EMAIL, email_type="manual", from_account="ceo")
+    _send_email_async(data.to_email, data.subject, html, reply_to=reply_to, email_type="manual", from_account=account)
 
-    return {"status": "queued", "message": f"Email enviado a {data.to_email}"}
+    return {"status": "queued", "message": f"Email enviado a {data.to_email} desde {account}@conniku.com"}
 
 
 @router.get("/ceo/stats")

@@ -15,6 +15,7 @@ import WelcomeModal from './components/WelcomeModal'
 import ErrorBoundary from './components/ErrorBoundary'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import AppAvailableBanner from './components/AppAvailableBanner'
+import SupportChat from './components/SupportChat'
 import Landing from './pages/Landing'
 import { Project } from './types'
 import { api, initPushNotifications } from './services/api'
@@ -50,6 +51,7 @@ const Search = React.lazy(() => import('./pages/Search'))
 const Conferences = React.lazy(() => import('./pages/Conferences'))
 const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
 const CVProfile = React.lazy(() => import('./pages/CVProfile'))
+const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
@@ -296,6 +298,7 @@ export default function App() {
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
+            <Route path="/biblioteca" element={<Biblioteca onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
@@ -338,6 +341,7 @@ export default function App() {
 
       <PWAInstallPrompt />
       <AppAvailableBanner />
+      <SupportChat />
     </div>
   )
 }

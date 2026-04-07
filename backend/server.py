@@ -478,6 +478,62 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
     return {"response": response}
 
 
+# ─── Support Chatbot (no project context) ─────────────────────
+class SupportChatRequest(BaseModel):
+    message: str
+    history: list = []
+
+@app.post("/support/chat")
+def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
+    """AI support chatbot for Conniku platform questions."""
+    check_chat_limit(user)
+
+    system = """Eres el asistente de soporte de Conniku, una plataforma educativa universitaria chilena.
+Tu nombre es Konni. Eres amable, conciso y hablas en español chileno informal pero profesional.
+
+Tus funciones:
+- Responder preguntas sobre como usar la plataforma (feed, comunidades, mensajes, salas de estudio, cursos, marketplace, calendario, etc.)
+- Ayudar con problemas tecnicos basicos (login, subir archivos, configuracion de perfil)
+- Explicar los planes de suscripcion (Free, Pro, Max)
+- Guiar en el uso del chat IA para estudiar
+- Responder sobre la empresa Conniku SpA
+
+Reglas:
+- Si no sabes la respuesta, di que derivaras al equipo de soporte (contacto@conniku.com)
+- No inventes funciones que no existen
+- Respuestas cortas (max 3-4 oraciones)
+- Usa emojis con moderacion
+- Si preguntan algo fuera de la plataforma, redirige amablemente
+
+Funciones principales de Conniku:
+- Feed social para compartir contenido academico
+- Chat IA para estudiar con documentos subidos
+- Salas de estudio en grupo
+- Marketplace de apuntes
+- Comunidades por carrera/universidad
+- Calendario academico
+- Sistema de mensajes directos
+- Cursos y tutores
+- Conferencias en vivo
+- Bolsa de trabajo
+- Perfil profesional (CV)
+- Biblioteca digital"""
+
+    # Build conversation for Claude
+    messages = []
+    for msg in req.history[-10:]:  # Last 10 messages for context
+        messages.append({"role": msg.get("role", "user"), "content": msg.get("content", "")})
+    messages.append({"role": "user", "content": req.message})
+
+    try:
+        response = ai_engine._call_claude(system, req.message, model="claude-haiku-4-5-20251001")
+    except Exception:
+        response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
+
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return {"response": response}
+
+
 @app.post("/projects/{project_id}/guide")
 def generate_guide(project_id: str, user: User = Depends(get_current_user)):
     meta = get_project_meta(project_id)

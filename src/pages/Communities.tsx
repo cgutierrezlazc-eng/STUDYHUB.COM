@@ -21,6 +21,7 @@ export default function Communities({ onNavigate }: Props) {
   const { user } = useAuth()
   const [tab, setTab] = useState<'explore' | 'my' | 'create'>('explore')
   const [communities, setCommunities] = useState<any[]>([])
+  const [suggestions, setSuggestions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('')
@@ -32,6 +33,10 @@ export default function Communities({ onNavigate }: Props) {
   const [rules, setRules] = useState('')
 
   useEffect(() => { loadCommunities() }, [tab])
+
+  useEffect(() => {
+    api.getFriendSuggestions().then(data => setSuggestions((data || []).slice(0, 4))).catch(() => {})
+  }, [])
 
   const loadCommunities = async () => {
     setLoading(true)
@@ -85,6 +90,39 @@ export default function Communities({ onNavigate }: Props) {
       </div>
 
       <div className="page-body">
+        {tab === 'explore' && suggestions.length > 0 && (
+          <div className="card" style={{ padding: 16, marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h4 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{Users({ size: 16 })} Personas sugeridas</h4>
+              <button className="btn btn-secondary btn-xs" onClick={() => onNavigate('/friends')}>Ver todas</button>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12 }}>
+              {suggestions.map(s => (
+                <div key={s.id} onClick={() => onNavigate(`/user/${s.id}`)} style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: 12,
+                  background: 'var(--bg-secondary)', borderRadius: 12, cursor: 'pointer',
+                  border: '1px solid var(--border-color)', transition: 'border-color 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                >
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: '#fff', fontSize: 14, fontWeight: 600, overflow: 'hidden', flexShrink: 0
+                  }}>
+                    {s.avatar ? <img src={s.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : s.firstName?.[0]}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--text-primary)' }}>{s.firstName} {s.lastName}</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.career || s.university || `@${s.username}`}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {tab === 'explore' && (
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <input value={search} onChange={e => setSearch(e.target.value)}

@@ -377,6 +377,25 @@ h1, h2, h3,
   padding: 16px 8px 8px;
 }
 
+.sidebar-section-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  user-select: none;
+}
+.sidebar-section-toggle:hover {
+  color: var(--text-primary);
+}
+
+.sidebar-section-items {
+  overflow: hidden;
+}
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -2589,7 +2608,7 @@ h1, h2, h3,
   padding: 12px 20px; border: none; background: none; cursor: pointer;
   color: var(--text-muted); font-weight: 600; font-size: 13.5px;
   border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all var(--transition-fast);
-  font-family: var(--font-sans);
+  font-family: var(--font-sans); flex: 1; text-align: center; white-space: nowrap;
 }
 .fb-tab:hover { color: var(--text-primary); }
 .fb-tab.active { color: var(--accent-blue); border-bottom-color: var(--accent-blue); }

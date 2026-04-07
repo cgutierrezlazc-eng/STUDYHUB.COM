@@ -5,6 +5,8 @@ All monetary values are in CLP unless otherwise noted.
 """
 import hashlib
 import os
+import time
+import httpx
 from datetime import datetime, date
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, List
@@ -630,6 +632,156 @@ def _validate_rut(rut: str) -> bool:
     remainder = 11 - (total % 11)
     expected = "0" if remainder == 11 else "K" if remainder == 10 else str(remainder)
     return dv == expected
+
+
+# ═════════════════════════════════════════════════════════════════
+# INDICADORES ECONOMICOS CHILENOS — Auto-actualización
+# Fuente: mindicador.cl (API oficial gratuita del gobierno de Chile)
+# ═════════════════════════════════════════════════════════════════
+_indicators_cache = {"data": None, "timestamp": 0}
+_CACHE_TTL = 3600  # Cache por 1 hora (3600 segundos)
+
+MINDICADOR_URL = "https://mindicador.cl/api"
+
+# Historial de IMM (Ingreso Mínimo Mensual) — se actualiza por ley
+IMM_HISTORY = [
+    {"from": "2024-07-01", "amount": 500000, "law": "Ley 21.578"},
+    {"from": "2024-01-01", "amount": 460000, "law": "Ley 21.578"},
+    {"from": "2023-09-01", "amount": 440000, "law": "Ley 21.526"},
+    {"from": "2023-05-01", "amount": 410000, "law": "Ley 21.526"},
+    {"from": "2022-08-01", "amount": 400000, "law": "Ley 21.456"},
+]
+
+def _get_current_imm() -> int:
+    """Returns the current IMM based on today's date."""
+    today = date.today().isoformat()
+    for entry in IMM_HISTORY:
+        if today >= entry["from"]:
+            return entry["amount"]
+    return IMM_HISTORY[-1]["amount"]
+
+
+async def _fetch_indicators():
+    """Fetch economic indicators from mindicador.cl with caching."""
+    now = time.time()
+    if _indicators_cache["data"] and (now - _indicators_cache["timestamp"]) < _CACHE_TTL:
+        return _indicators_cache["data"]
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(MINDICADOR_URL)
+            resp.raise_for_status()
+            raw = resp.json()
+
+        # Extract the indicators we need
+        data = {
+            "uf": {
+                "value": raw.get("uf", {}).get("valor", 0),
+                "date": raw.get("uf", {}).get("fecha", ""),
+                "name": "Unidad de Fomento",
+            },
+            "utm": {
+                "value": raw.get("utm", {}).get("valor", 0),
+                "date": raw.get("utm", {}).get("fecha", ""),
+                "name": "Unidad Tributaria Mensual",
+            },
+            "uta": {
+                "value": raw.get("utm", {}).get("valor", 0) * 12,
+                "name": "Unidad Tributaria Anual (UTM x 12)",
+            },
+            "dolar": {
+                "value": raw.get("dolar", {}).get("valor", 0),
+                "date": raw.get("dolar", {}).get("fecha", ""),
+                "name": "Dolar Observado",
+            },
+            "euro": {
+                "value": raw.get("euro", {}).get("valor", 0),
+                "date": raw.get("euro", {}).get("fecha", ""),
+                "name": "Euro",
+            },
+            "ipc": {
+                "value": raw.get("ipc", {}).get("valor", 0),
+                "date": raw.get("ipc", {}).get("fecha", ""),
+                "name": "IPC (Indice de Precios al Consumidor)",
+            },
+            "imm": {
+                "value": _get_current_imm(),
+                "name": "Ingreso Minimo Mensual",
+                "source": "Ley vigente",
+            },
+            # Calculated values for payroll
+            "topes": {
+                "afp_uf": 81.6,
+                "afc_uf": 122.6,
+                "salud_uf": 81.6,
+                "afp_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
+                "afc_clp": round(raw.get("uf", {}).get("valor", 0) * 122.6),
+                "salud_clp": round(raw.get("uf", {}).get("valor", 0) * 81.6),
+            },
+            "gratificacion": {
+                "tope_mensual": round(_get_current_imm() * 4.75 / 12),
+                "tope_anual": round(_get_current_imm() * 4.75),
+                "rate": 0.25,
+            },
+            "afp_rates": {
+                "capital": 11.44, "cuprum": 11.44, "habitat": 11.27,
+                "modelo": 10.58, "planvital": 10.41, "provida": 11.45, "uno": 10.69,
+            },
+            "afc_rates": {
+                "employee_indefinido": 0.6,
+                "employer_indefinido": 2.4,
+                "employer_plazo_fijo": 3.0,
+            },
+            "sis_rate": 1.41,
+            "mutual_base_rate": 0.93,
+            "source": "mindicador.cl",
+            "fetched_at": datetime.utcnow().isoformat(),
+            "cache_ttl_seconds": _CACHE_TTL,
+        }
+
+        _indicators_cache["data"] = data
+        _indicators_cache["timestamp"] = now
+        return data
+
+    except Exception as e:
+        # If fetch fails, return cached data or defaults
+        if _indicators_cache["data"]:
+            return _indicators_cache["data"]
+        # Fallback defaults
+        return {
+            "uf": {"value": 38700, "name": "UF (valor por defecto)", "date": ""},
+            "utm": {"value": 67294, "name": "UTM (valor por defecto)", "date": ""},
+            "dolar": {"value": 950, "name": "Dolar (valor por defecto)", "date": ""},
+            "imm": {"value": _get_current_imm(), "name": "Ingreso Minimo Mensual"},
+            "topes": {"afp_uf": 81.6, "afc_uf": 122.6, "salud_uf": 81.6, "afp_clp": 3158520, "afc_clp": 4749420, "salud_clp": 3158520},
+            "gratificacion": {"tope_mensual": round(_get_current_imm() * 4.75 / 12), "tope_anual": round(_get_current_imm() * 4.75), "rate": 0.25},
+            "error": str(e),
+            "source": "fallback",
+            "fetched_at": datetime.utcnow().isoformat(),
+        }
+
+
+@router.get("/indicators")
+async def get_chile_indicators(user: User = Depends(get_current_user)):
+    """
+    Returns current Chilean economic indicators (UF, UTM, USD, IMM, etc.)
+    Auto-updated from mindicador.cl API. Cached for 1 hour.
+    Used by payroll calculator, contract generator, and HR dashboard.
+    """
+    _require_hr_access(user)
+    return await _fetch_indicators()
+
+
+@router.get("/indicators/public")
+async def get_chile_indicators_public():
+    """Public endpoint for basic indicators (no auth required)."""
+    data = await _fetch_indicators()
+    return {
+        "uf": data.get("uf"),
+        "utm": data.get("utm"),
+        "dolar": data.get("dolar"),
+        "imm": data.get("imm"),
+    }
 
 
 @router.post("/employees")

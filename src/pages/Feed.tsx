@@ -20,7 +20,8 @@ export default function Feed({ onNavigate }: Props) {
   const [newPostContent, setNewPostContent] = useState('')
   const [postImage, setPostImage] = useState<string | null>(null)
   const [posting, setPosting] = useState(false)
-  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [universityNews, setUniversityNews] = useState<any[]>([])
+  const [newsLoading, setNewsLoading] = useState(false)
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
@@ -37,9 +38,19 @@ export default function Feed({ onNavigate }: Props) {
 
   useEffect(() => {
     loadFeed()
-    api.getFriendSuggestions().then(data => setSuggestions((data || []).slice(0, 4))).catch(() => {})
     api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
+    loadUniversityNews()
   }, [])
+
+  const loadUniversityNews = async () => {
+    if (localStorage.getItem('conniku_university_news') === 'false') return
+    try {
+      setNewsLoading(true)
+      const data = await api.getUniversityNews()
+      setUniversityNews(data.items || [])
+    } catch (err) { console.error('Failed to load news:', err) }
+    finally { setNewsLoading(false) }
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -543,31 +554,83 @@ export default function Feed({ onNavigate }: Props) {
 
           {/* Right Sidebar */}
           <div style={{ position: 'sticky', top: 20 }}>
-            {/* Friend Suggestions */}
-            {suggestions.length > 0 && (
-              <div className="card" style={{ padding: 16, marginBottom: 16 }}>
-                <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Personas sugeridas</h4>
-                {suggestions.map(s => (
-                  <div key={s.id} onClick={() => onNavigate(`/user/${s.id}`)} style={{
-                    display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0',
-                    cursor: 'pointer', borderBottom: '1px solid var(--border-color)',
-                  }}>
-                    <div style={{
-                      width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontSize: 13, overflow: 'hidden',
-                    }}>
-                      {s.avatar ? <img src={s.avatar} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} /> : s.firstName?.[0]}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13 }}>{s.firstName} {s.lastName}</div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{s.career || s.university || `@${s.username}`}</div>
-                    </div>
+            {/* University News */}
+            {localStorage.getItem('conniku_university_news') !== 'false' && (
+              <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
+                {/* Header */}
+                <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border, #2a3038)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)' }}>
+                      Noticias de {user?.university || 'tu universidad'}
+                    </h4>
                   </div>
-                ))}
-                <button className="btn btn-secondary btn-xs" style={{ width: '100%', marginTop: 8 }} onClick={() => onNavigate('/friends')}>
-                  Ver m&aacute;s
-                </button>
+                  {universityNews.length > 0 && (
+                    <span style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', background: 'var(--bg-tertiary, #151B1E)', padding: '3px 8px', borderRadius: 10 }}>
+                      {universityNews.length} {universityNews.length === 1 ? 'noticia' : 'noticias'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Content */}
+                <div style={{ padding: '12px 16px' }}>
+                  {newsLoading ? (
+                    <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13 }}>
+                      Cargando noticias...
+                    </div>
+                  ) : universityNews.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13, lineHeight: 1.5 }}>
+                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 8 }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+                      <div>Las noticias de tu universidad se actualizan cada 3 horas</div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {universityNews.map((item: any, idx: number) => (
+                        <a
+                          key={idx}
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: 'flex', gap: 12, padding: 12, borderRadius: 10,
+                            background: 'var(--bg-tertiary, #151B1E)', textDecoration: 'none',
+                            border: '1px solid transparent', transition: 'border-color 0.2s, background 0.2s',
+                            cursor: 'pointer',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D62C8'; e.currentTarget.style.background = 'rgba(45,98,200,0.06)' }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)' }}
+                        >
+                          {item.imageUrl && (
+                            <img
+                              src={item.imageUrl}
+                              alt=""
+                              style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
+                              onError={e => (e.currentTarget.style.display = 'none')}
+                            />
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', lineHeight: 1.4, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              {item.title}
+                            </div>
+                            {item.summary && (
+                              <div style={{ fontSize: 12, color: 'var(--text-muted, #8a9bae)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                                {item.summary}
+                              </div>
+                            )}
+                            {item.published && (
+                              <div style={{ fontSize: 11, color: 'var(--text-muted, #6b7a8d)', marginTop: 4 }}>
+                                {item.published}
+                              </div>
+                            )}
+                          </div>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #6b7a8d)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                          </svg>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 

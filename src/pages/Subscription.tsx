@@ -166,14 +166,14 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>MÁS POPULAR</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Star({ size: 14 })} Pro</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '2.990' : '29.900'}
+                  ${selectedPlan === 'monthly' ? '7.490' : '71.900'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}> CLP/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  ≈ USD ${selectedPlan === 'monthly' ? '3' : '30'}/{ selectedPlan === 'monthly' ? 'mes' : 'año'}
+                  ≈ USD ${selectedPlan === 'monthly' ? '8' : '77'}/{selectedPlan === 'monthly' ? 'mes' : 'año'}
                 </div>
                 {selectedPlan === 'yearly' && (
-                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $2.492/mes · Ahorras $5.980/año</div>
+                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $5.992/mes · Ahorras $17.980/año</div>
                 )}
                 {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Para estudiar en serio</div>
@@ -202,14 +202,14 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent-purple)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>PREMIUM</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Crown({ size: 14 })} Max</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '6.990' : '69.900'}
+                  ${selectedPlan === 'monthly' ? '11.990' : '115.900'}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}> CLP/{selectedPlan === 'monthly' ? 'mes' : 'año'}</span>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  ≈ USD ${selectedPlan === 'monthly' ? '7' : '70'}/{selectedPlan === 'monthly' ? 'mes' : 'año'}
+                  ≈ USD ${selectedPlan === 'monthly' ? '13' : '125'}/{selectedPlan === 'monthly' ? 'mes' : 'año'}
                 </div>
                 {selectedPlan === 'yearly' && (
-                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $5.825/mes · Ahorras $13.980/año</div>
+                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>= $9.658/mes · Ahorras $27.980/año</div>
                 )}
                 {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>Para liderar y dominar</div>

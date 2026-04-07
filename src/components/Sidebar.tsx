@@ -217,6 +217,16 @@ const Icons = {
       </svg>
     </DuotoneIcon>
   ),
+  book: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" fill={`${c}20`} />
+        <line x1="9" y1="7" x2="15" y2="7" />
+        <line x1="9" y1="11" x2="13" y2="11" />
+      </svg>
+    </DuotoneIcon>
+  ),
   plus: (c: string) => (
     <DuotoneIcon color={c}>
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
@@ -249,15 +259,56 @@ const IC = {
   diamond:    '#F43F5E', // rose
   lightbulb:  '#F59E0B', // amber
   building:   '#6366F1', // indigo
+  library:    '#D97706', // amber-dark
   hr:         '#8B5CF6', // violet
   admin:      '#64748B', // slate
   plus:       '#94A3B8', // neutral
 }
 
+/* ─── Chevron for collapsible sections ─── */
+const ChevronIcon = ({ open }: { open: boolean }) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+    style={{ transition: 'transform 0.2s ease', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', opacity: 0.5, flexShrink: 0 }}>
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+
 export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, className }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
+
+  // Collapsible section state — auto-open section containing active route
+  const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/mentorship', '/messages', '/my-profile']
+  const academicPaths = ['/dashboard', '/study-rooms', '/conferences', '/search', '/calendar', '/marketplace', '/jobs', '/courses', '/tutores', '/biblioteca']
+  const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/admin']
+
+  const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
+  const isAcademicActive = academicPaths.some(p => currentPath.startsWith(p))
+  const isSupportActive = supportPaths.some(p => currentPath.startsWith(p))
+  const isSubjectsActive = currentPath.startsWith('/project/')
+
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    social: isSocialActive,
+    academic: isAcademicActive,
+    subjects: true,
+    support: isSupportActive,
+  })
+
+  // Update open sections when route changes
+  useEffect(() => {
+    setOpenSections(prev => ({
+      ...prev,
+      ...(isSocialActive && { social: true }),
+      ...(isAcademicActive && { academic: true }),
+      ...(isSupportActive && { support: true }),
+      ...(isSubjectsActive && { subjects: true }),
+    }))
+  }, [currentPath])
+
+  const toggleSection = (key: string) => {
+    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
+  }
 
   useEffect(() => {
     const fetchUnread = () => {
@@ -277,103 +328,138 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   return (
     <nav className={`sidebar ${className || ''}`}>
+      {/* ─── Social ─── */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">Social</div>
-        <button className={`nav-item ${isActive('/') || currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
-          {Icons.user(IC.profile)} Mi Perfil
+        <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('social')}>
+          <ChevronIcon open={openSections.social} />
+          <span>Social</span>
         </button>
-        <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
-          {Icons.feed(IC.feed)} Feed
-        </button>
-        <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
-          {Icons.community(IC.community)} Comunidad
-        </button>
-        <button className={`nav-item ${isActive('/communities') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
-          {Icons.globe(IC.globe)} Comunidades
-        </button>
-        <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
-          {Icons.calendar(IC.events)} Eventos
-        </button>
-        <button className={`nav-item ${isActive('/mentorship') ? 'active' : ''}`} onClick={() => onNavigate('/mentorship')}>
-          {Icons.compass(IC.compass)} Mentoría
-        </button>
-        <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
-          {Icons.messageCircle(IC.messages)} Mensajes
-          {unreadMessages > 0 && (
-            <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
-          )}
-        </button>
+        {openSections.social && (
+          <div className="sidebar-section-items">
+            <button className={`nav-item ${isActive('/') || currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
+              {Icons.user(IC.profile)} Mi Perfil
+            </button>
+            <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
+              {Icons.feed(IC.feed)} Feed
+            </button>
+            <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
+              {Icons.community(IC.community)} Comunidad
+            </button>
+            <button className={`nav-item ${isActive('/communities') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
+              {Icons.globe(IC.globe)} Comunidades
+            </button>
+            <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
+              {Icons.calendar(IC.events)} Eventos
+            </button>
+            <button className={`nav-item ${isActive('/mentorship') ? 'active' : ''}`} onClick={() => onNavigate('/mentorship')}>
+              {Icons.compass(IC.compass)} Mentoría
+            </button>
+            <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
+              {Icons.messageCircle(IC.messages)} Mensajes
+              {unreadMessages > 0 && (
+                <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* ─── Académico ─── */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">Académico</div>
-        <button className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`} onClick={() => onNavigate('/dashboard')}>
-          {Icons.barChart(IC.dashboard)} Dashboard
+        <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('academic')}>
+          <ChevronIcon open={openSections.academic} />
+          <span>Académico</span>
         </button>
-        <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
-          {Icons.bookOpen(IC.rooms)} Salas de Estudio
-        </button>
-        <button className={`nav-item ${isActive('/conferences') ? 'active' : ''}`} onClick={() => onNavigate('/conferences')}>
-          {Icons.video(IC.video)} Conferencias
-        </button>
-        <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
-          {Icons.search(IC.search)} Buscador
-        </button>
-        <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
-          {Icons.calendar(IC.calendar)} Calendario
-        </button>
-        <button className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`} onClick={() => onNavigate('/marketplace')}>
-          {Icons.fileText(IC.notes)} Apuntes
-        </button>
-        <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
-          {Icons.briefcase(IC.jobs)} Bolsa de Trabajo
-        </button>
-        <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
-          {Icons.diploma(IC.courses)} Cursos
-        </button>
-        <button className={`nav-item ${isActive('/tutores') ? 'active' : ''}`} onClick={() => onNavigate('/tutores')}>
-          {Icons.tutors(IC.tutors)} Tutores
-        </button>
+        {openSections.academic && (
+          <div className="sidebar-section-items">
+            <button className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`} onClick={() => onNavigate('/dashboard')}>
+              {Icons.barChart(IC.dashboard)} Dashboard
+            </button>
+            <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
+              {Icons.bookOpen(IC.rooms)} Salas de Estudio
+            </button>
+            <button className={`nav-item ${isActive('/conferences') ? 'active' : ''}`} onClick={() => onNavigate('/conferences')}>
+              {Icons.video(IC.video)} Conferencias
+            </button>
+            <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
+              {Icons.search(IC.search)} Buscador
+            </button>
+            <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
+              {Icons.calendar(IC.calendar)} Calendario
+            </button>
+            <button className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`} onClick={() => onNavigate('/marketplace')}>
+              {Icons.fileText(IC.notes)} Apuntes
+            </button>
+            <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
+              {Icons.briefcase(IC.jobs)} Bolsa de Trabajo
+            </button>
+            <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
+              {Icons.diploma(IC.courses)} Cursos
+            </button>
+            <button className={`nav-item ${isActive('/tutores') ? 'active' : ''}`} onClick={() => onNavigate('/tutores')}>
+              {Icons.tutors(IC.tutors)} Tutores
+            </button>
+            <button className={`nav-item ${isActive('/biblioteca') ? 'active' : ''}`} onClick={() => onNavigate('/biblioteca')}>
+              {Icons.book(IC.library)} Biblioteca
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* ─── Mis Asignaturas ─── */}
       <div className="sidebar-section sidebar-section-grow">
-        <div className="sidebar-section-title">{t('nav.mySubjects')}</div>
-        {projects.map(project => (
-          <button key={project.id} className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`} onClick={() => onNavigate(`/project/${project.id}`)}>
-            <span className="project-dot" style={{ background: project.color }} />
-            {project.name}
-          </button>
-        ))}
-        <button className="nav-item nav-item-add" onClick={onNewProject}>
-          {Icons.plus(IC.plus)} {t('nav.newSubject')}
+        <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('subjects')}>
+          <ChevronIcon open={openSections.subjects} />
+          <span>{t('nav.mySubjects')}</span>
         </button>
+        {openSections.subjects && (
+          <div className="sidebar-section-items">
+            {projects.map(project => (
+              <button key={project.id} className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`} onClick={() => onNavigate(`/project/${project.id}`)}>
+                <span className="project-dot" style={{ background: project.color }} />
+                {project.name}
+              </button>
+            ))}
+            <button className="nav-item nav-item-add" onClick={onNewProject}>
+              {Icons.plus(IC.plus)} {t('nav.newSubject')}
+            </button>
+          </div>
+        )}
       </div>
 
+      {/* ─── Soporte ─── */}
       <div className="sidebar-section">
-        <div className="sidebar-section-title">Soporte</div>
-        <button className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`} onClick={() => onNavigate('/profile')}>
-          {Icons.settings(IC.settings)} Configuración
+        <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('support')}>
+          <ChevronIcon open={openSections.support} />
+          <span>Soporte</span>
         </button>
-        <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
-          {Icons.diamond(IC.diamond)} Suscripción
-        </button>
-        <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
-          {Icons.lightbulb(IC.lightbulb)} Sugerencias
-        </button>
-        {user?.role === 'owner' && (
-          <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
-            {Icons.building(IC.building)} CEO Panel
-          </button>
-        )}
-        {user?.role === 'owner' && (
-          <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
-            {Icons.users2(IC.hr)} RRHH
-          </button>
-        )}
-        {user?.isAdmin && (
-          <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
-            {Icons.settings(IC.admin)} Admin
-          </button>
+        {openSections.support && (
+          <div className="sidebar-section-items">
+            <button className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`} onClick={() => onNavigate('/profile')}>
+              {Icons.settings(IC.settings)} Configuración
+            </button>
+            <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
+              {Icons.diamond(IC.diamond)} Suscripción
+            </button>
+            <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
+              {Icons.lightbulb(IC.lightbulb)} Sugerencias
+            </button>
+            {user?.role === 'owner' && (
+              <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
+                {Icons.building(IC.building)} CEO Panel
+              </button>
+            )}
+            {user?.role === 'owner' && (
+              <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
+                {Icons.users2(IC.hr)} RRHH
+              </button>
+            )}
+            {user?.isAdmin && (
+              <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
+                {Icons.settings(IC.admin)} Admin
+              </button>
+            )}
+          </div>
         )}
       </div>
     </nav>

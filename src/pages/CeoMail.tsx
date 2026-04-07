@@ -3,7 +3,7 @@ import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import {
   Inbox, Send, Trash2, Star, Search, RefreshCw, Plus, X, ChevronLeft, ChevronRight,
-  Pencil, Eye, EyeOff, Paperclip, Megaphone, CheckCircle, Clock, AlertTriangle
+  Pencil, Eye, EyeOff, Paperclip, Megaphone, CheckCircle, Clock, AlertTriangle, Settings
 } from '../components/Icons'
 
 interface Props {
@@ -74,9 +74,11 @@ export default function CeoMail({ onNavigate }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [activeAccount, setActiveAccount] = useState<'all' | 'ceo' | 'contacto'>('all')
 
   // Compose state
   const [showCompose, setShowCompose] = useState(false)
+  const [composeFrom, setComposeFrom] = useState<'ceo' | 'contacto'>('ceo')
   const [composeTo, setComposeTo] = useState('')
   const [composeCc, setComposeCc] = useState('')
   const [composeBcc, setComposeBcc] = useState('')
@@ -116,8 +118,9 @@ export default function CeoMail({ onNavigate }: Props) {
       const emailTypeMap: Record<Folder, string> = {
         inbox: '', sent: 'sent', drafts: 'draft', starred: 'starred', trash: 'trash',
       }
+      const accountFilter = activeAccount === 'all' ? undefined : activeAccount
       const [inbox, st] = await Promise.all([
-        api.getCeoEmailInbox(p, emailTypeMap[folder] || filter),
+        api.getCeoEmailInbox(p, emailTypeMap[folder] || filter, accountFilter),
         api.getCeoEmailStats(),
       ])
       setEmails(inbox.emails || [])
@@ -132,12 +135,12 @@ export default function CeoMail({ onNavigate }: Props) {
       setStats({ total: 24, sent: 12, unread: 5 })
     }
     setLoading(false)
-  }, [folder])
+  }, [folder, activeAccount])
 
   useEffect(() => {
     if (user?.role !== 'owner') return
     loadEmails(1)
-  }, [folder, loadEmails, user])
+  }, [folder, loadEmails, user, activeAccount])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -178,7 +181,7 @@ export default function CeoMail({ onNavigate }: Props) {
     if (!composeTo || !composeSubject || !composeBody) return
     setComposeSending(true)
     try {
-      await api.ceoSendEmail(composeTo, composeSubject, composeBody + getSignatureHtml(), composeCta, composeCtaUrl)
+      await api.ceoSendEmail(composeTo, composeSubject, composeBody + getSignatureHtml(), composeCta, composeCtaUrl, composeFrom)
       setShowCompose(false)
       resetCompose()
       loadEmails(1)
@@ -1028,8 +1031,8 @@ export default function CeoMail({ onNavigate }: Props) {
           <button className="mail-header-btn" onClick={() => setShowBroadcast(true)}>
             <Megaphone size={14} /> Masivo
           </button>
-          <button className="mail-header-btn" onClick={() => setShowSignatureSettings(true)} title="Firma">
-            <Pencil size={14} />
+          <button className="mail-header-btn" onClick={() => setShowSignatureSettings(true)} title="Configuración">
+            <Settings size={14} /> Configuración
           </button>
         </div>
       </div>
@@ -1039,6 +1042,23 @@ export default function CeoMail({ onNavigate }: Props) {
 
         {/* Left Folder Panel */}
         <div className="mail-folders">
+          <div className="mail-folder-section">Cuenta</div>
+          {([
+            { key: 'all' as const, label: 'Todas', color: '#64748B' },
+            { key: 'ceo' as const, label: 'ceo@conniku.com', color: '#0078d4' },
+            { key: 'contacto' as const, label: 'contacto@conniku.com', color: '#10B981' },
+          ]).map(a => (
+            <div
+              key={a.key}
+              className={`mail-folder-item ${activeAccount === a.key ? 'active' : ''}`}
+              onClick={() => { setActiveAccount(a.key); setSelectedEmail(null) }}
+              style={activeAccount === a.key ? { borderLeftColor: a.color } : {}}
+            >
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: a.color, flexShrink: 0 }} />
+              <span style={{ fontSize: 12 }}>{a.label}</span>
+            </div>
+          ))}
+          <div className="mail-folder-divider" />
           <div className="mail-folder-section">Carpetas</div>
           {([
             { key: 'inbox' as Folder, icon: <Inbox size={15} />, label: 'Bandeja de entrada' },
@@ -1228,6 +1248,14 @@ export default function CeoMail({ onNavigate }: Props) {
               <button onClick={() => setShowCompose(false)}><X size={16} /></button>
             </div>
             <div className="mail-compose-fields">
+              <div className="mail-compose-field">
+                <label>De:</label>
+                <select value={composeFrom} onChange={e => setComposeFrom(e.target.value as 'ceo' | 'contacto')}
+                  style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: '1px solid var(--border, #ddd)', background: 'var(--bg-secondary, #f5f5f5)', color: 'var(--text-primary)', fontSize: 13 }}>
+                  <option value="ceo">ceo@conniku.com</option>
+                  <option value="contacto">contacto@conniku.com</option>
+                </select>
+              </div>
               <div className="mail-compose-field">
                 <label>Para:</label>
                 <input value={composeTo} onChange={e => setComposeTo(e.target.value)} placeholder="email@ejemplo.com" />
