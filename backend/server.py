@@ -288,6 +288,19 @@ def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
+@app.get("/test-email")
+def test_email():
+    """Temporary endpoint to test SMTP configuration."""
+    try:
+        from notifications import _send_email_async, SMTP_USER, SMTP_PASS, SMTP_HOST
+        if not SMTP_PASS:
+            return {"status": "error", "message": "SMTP_PASS not configured", "smtp_user": SMTP_USER, "smtp_host": SMTP_HOST}
+        result = _send_email_async("ceo@conniku.com", "Test SMTP Conniku", "<h2>SMTP funciona correctamente</h2><p>Este es un email de prueba desde Conniku.</p>")
+        return {"status": "ok" if result else "error", "smtp_user": SMTP_USER, "smtp_host": SMTP_HOST}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
 @app.get("/projects")
 def list_projects(user: User = Depends(get_current_user)):
     projects = []
