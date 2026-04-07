@@ -100,9 +100,9 @@ def _validate_rut(rut: str) -> bool:
 
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
-SMTP_FROM = os.environ.get("SMTP_FROM", "")
+CEO_EMAIL_ADDR = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
+NOREPLY_EMAIL = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
 
 
 def _build_ceo_email_html(subject: str, body: str) -> str:
@@ -146,7 +146,7 @@ def send_ceo_alert(subject: str, body: str):
     """Send an HTML email alert to the CEO (owner) in a background thread.
     Silently skips if SMTP is not configured or no owner found."""
 
-    if not SMTP_PASS or not SMTP_FROM:
+    if not SMTP_PASS:
         logger.debug("CEO alert skipped: SMTP not configured")
         return
 
@@ -165,15 +165,15 @@ def send_ceo_alert(subject: str, body: str):
             html = _build_ceo_email_html(subject, body)
 
             msg = MIMEMultipart("alternative")
-            msg["From"] = f"Conniku <{SMTP_FROM}>"
+            msg["From"] = f"Conniku CEO <{CEO_EMAIL_ADDR}>"
             msg["To"] = ceo_email
             msg["Subject"] = f"[Conniku CEO] {subject}"
             msg.attach(MIMEText(html, "html", "utf-8"))
 
             with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
                 server.starttls()
-                server.login(SMTP_USER, SMTP_PASS)
-                server.sendmail(SMTP_FROM, ceo_email, msg.as_string())
+                server.login(CEO_EMAIL_ADDR, SMTP_PASS)
+                server.sendmail(CEO_EMAIL_ADDR, ceo_email, msg.as_string())
 
             logger.info(f"CEO alert sent: {subject}")
         except Exception:

@@ -297,9 +297,9 @@ def test_email():
     try:
         smtp_host = os.environ.get("SMTP_HOST", "smtp.zoho.com")
         smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-        smtp_user = os.environ.get("SMTP_USER", "")
+        smtp_user = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
         smtp_pass = os.environ.get("SMTP_PASS", "")
-        smtp_from = os.environ.get("SMTP_FROM", smtp_user)
+        smtp_from = smtp_user
         if not smtp_pass:
             return {"status": "error", "message": "SMTP_PASS not set"}
         msg = MIMEMultipart("alternative")

@@ -18,20 +18,42 @@ from middleware import get_current_user
 
 router = APIRouter(prefix="/email", tags=["email"])
 
-# Email config
+# Email config — 3 accounts:
+#   noreply@conniku.com  → all automated notifications
+#   contacto@conniku.com → contact forms, support, suggestions
+#   ceo@conniku.com      → CEO reports, payment alerts, financial metrics
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", os.environ.get("CEO_EMAIL", "ceo@conniku.com"))
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
-SMTP_FROM = os.environ.get("SMTP_FROM", os.environ.get("CEO_EMAIL", "ceo@conniku.com"))
-REPLY_TO = os.environ.get("SMTP_REPLY_TO", os.environ.get("CEO_EMAIL", "ceo@conniku.com"))
+# Per-account config
+NOREPLY_EMAIL = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "contacto@conniku.com")
 CEO_EMAIL = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "ceo@conniku.com")
+# Defaults (backward compat)
+SMTP_USER = os.environ.get("SMTP_USER", NOREPLY_EMAIL)
+SMTP_FROM = os.environ.get("SMTP_FROM", NOREPLY_EMAIL)
+REPLY_TO = os.environ.get("SMTP_REPLY_TO", CONTACT_EMAIL)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 
 
-def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str = None, email_type: str = "notification"):
-    """Send email in background thread and log it."""
+def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str = None, email_type: str = "notification", from_account: str = None):
+    """Send email in background thread and log it.
+    from_account: 'noreply' (default), 'contacto', or 'ceo'
+    """
+    # Determine which account to send from
+    if from_account == "ceo":
+        send_from = CEO_EMAIL
+        send_user = CEO_EMAIL
+        sender_name = "Conniku CEO"
+    elif from_account == "contacto":
+        send_from = CONTACT_EMAIL
+        send_user = CONTACT_EMAIL
+        sender_name = "Conniku Soporte"
+    else:
+        send_from = NOREPLY_EMAIL
+        send_user = NOREPLY_EMAIL
+        sender_name = "Conniku"
+
     def _send():
         status = "sent"
         error_msg = None
@@ -42,17 +64,17 @@ def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str
         else:
             try:
                 msg = MIMEMultipart("alternative")
-                msg["From"] = f"Conniku <{SMTP_FROM}>"
+                msg["From"] = f"{sender_name} <{send_from}>"
                 msg["To"] = to_email
                 msg["Subject"] = subject
-                msg["Reply-To"] = reply_to or REPLY_TO
+                msg["Reply-To"] = reply_to or (CONTACT_EMAIL if from_account != "ceo" else CEO_EMAIL)
                 msg.attach(MIMEText(html_body, "html", "utf-8"))
 
                 with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
                     server.starttls()
-                    server.login(SMTP_USER, SMTP_PASS)
-                    server.sendmail(SMTP_FROM, to_email, msg.as_string())
-                print(f"[Email] Sent to {to_email}: {subject}")
+                    server.login(send_user, SMTP_PASS)
+                    server.sendmail(send_from, to_email, msg.as_string())
+                print(f"[Email] Sent from {send_from} to {to_email}: {subject}")
             except Exception as e:
                 print(f"[Email Error] {e}")
                 status = "failed"
@@ -63,9 +85,9 @@ def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str
             from database import SessionLocal, EmailLog, gen_id
             db = SessionLocal()
             log = EmailLog(
-                id=gen_id(), from_email=SMTP_FROM, to_email=to_email,
+                id=gen_id(), from_email=send_from, to_email=to_email,
                 subject=subject, body_html=html_body, email_type=email_type,
-                status=status, error_message=error_msg, reply_to=reply_to or REPLY_TO,
+                status=status, error_message=error_msg, reply_to=reply_to or CONTACT_EMAIL,
             )
             db.add(log)
             db.commit()
@@ -194,7 +216,7 @@ def send_ceo_weekly_report(report_data: dict):
     <p>Posts: {eng.get('wallPosts', 0)} | Mensajes: {eng.get('messages', 0)} | Estudio: {eng.get('studyHours', 0)}h</p>
     """
     html = _email_template("Reporte Semanal CEO", body, "Ver Dashboard", f"{FRONTEND_URL}/admin")
-    _send_email_async(CEO_EMAIL, f"Conniku — Reporte Semanal {report_data.get('period', '')}", html, reply_to=CEO_EMAIL, email_type="ceo_report")
+    _send_email_async(CEO_EMAIL, f"Conniku — Reporte Semanal {report_data.get('period', '')}", html, reply_to=CEO_EMAIL, email_type="ceo_report", from_account="ceo")
 
 
 # ─── CEO Email Management ─────────────────────────────────────
@@ -324,7 +346,7 @@ def ceo_send_email(
     body_html = data.body.replace("\n", "<br>")
     full_body = f"<p>{body_html}</p>"
     html = _email_template(data.subject, full_body, data.cta_text, data.cta_url)
-    _send_email_async(data.to_email, data.subject, html, reply_to=CEO_EMAIL, email_type="manual")
+    _send_email_async(data.to_email, data.subject, html, reply_to=CEO_EMAIL, email_type="manual", from_account="ceo")
 
     return {"status": "queued", "message": f"Email enviado a {data.to_email}"}
 
@@ -400,7 +422,7 @@ def ceo_broadcast_email(
         if u.email:
             full_body = f"<p>Hola {u.first_name},</p><p>{body_html}</p>"
             html = _email_template(subject, full_body, cta_text, cta_url)
-            _send_email_async(u.email, subject, html, reply_to=CEO_EMAIL, email_type="broadcast")
+            _send_email_async(u.email, subject, html, reply_to=CEO_EMAIL, email_type="broadcast", from_account="ceo")
             count += 1
 
     return {"status": "sent", "recipients": count, "filter": filter_type}
@@ -430,8 +452,7 @@ def send_contact_message(data: ContactMessage):
     <p>{data.message.replace(chr(10), '<br>')}</p>
     """
     html = _email_template(f"Nuevo mensaje: {data.subject}", body)
-    # All contact messages go to CEO (single consolidated account)
-    _send_email_async(CEO_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email, email_type="contact")
+    _send_email_async(CONTACT_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email, email_type="contact", from_account="contacto")
 
     return {"status": "sent", "message": "Mensaje enviado. Te responderemos a la brevedad."}
 
@@ -454,8 +475,7 @@ def send_contact_from_profile(data: dict, user: User = Depends(get_current_user)
     <p>{message.replace(chr(10), '<br>')}</p>
     """
     html = _email_template(f"Mensaje de @{user.username}: {subject}", body)
-    # All contact messages go to CEO (single consolidated account)
-    _send_email_async(CEO_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email, email_type="contact")
+    _send_email_async(CONTACT_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email, email_type="contact", from_account="contacto")
 
     return {"status": "sent", "message": "Mensaje enviado al equipo de Conniku."}
 
