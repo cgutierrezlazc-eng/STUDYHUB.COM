@@ -80,6 +80,48 @@ export default function Courses({ onNavigate }: Props) {
   const [exerciseStats, setExerciseStats] = useState<any>(null)
   const [exerciseLoading, setExerciseLoading] = useState(false)
 
+  // ─── Progress persistence helpers ───
+  const saveProgress = (courseId: string, completedLessons: string[]) => {
+    try { localStorage.setItem(`conniku_course_progress_${courseId}`, JSON.stringify(completedLessons)) } catch {}
+  }
+  const loadProgress = (courseId: string): string[] | null => {
+    try { const d = localStorage.getItem(`conniku_course_progress_${courseId}`); return d ? JSON.parse(d) : null } catch { return null }
+  }
+  const saveQuizResult = (courseId: string, result: any) => {
+    try { localStorage.setItem(`conniku_course_quiz_${courseId}`, JSON.stringify(result)) } catch {}
+  }
+  const loadQuizResult = (courseId: string): any => {
+    try { const d = localStorage.getItem(`conniku_course_quiz_${courseId}`); return d ? JSON.parse(d) : null } catch { return null }
+  }
+  const saveExerciseResult = (courseId: string, result: any, stats: any) => {
+    try { localStorage.setItem(`conniku_course_exercises_${courseId}`, JSON.stringify({ result, stats })) } catch {}
+  }
+  const loadExerciseResult = (courseId: string): { result: any; stats: any } | null => {
+    try { const d = localStorage.getItem(`conniku_course_exercises_${courseId}`); return d ? JSON.parse(d) : null } catch { return null }
+  }
+
+  const handleDownloadCertificate = (courseName: string, score: number, studentName: string) => {
+    const dateStr = new Date().toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Certificado — ${courseName}</title><style>@media print{body{margin:0}}</style></head><body style="margin:0;padding:0;font-family:Georgia,serif;">
+<div style="text-align:center;padding:60px;border:3px double #2563EB;margin:40px;min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#2563EB;margin-bottom:20px;">Conniku SpA</div>
+  <h1 style="font-size:32px;margin:0 0 30px;color:#1E293B;">Certificado de Completaci\u00f3n</h1>
+  <p style="font-size:16px;color:#64748B;margin:0 0 8px;">Se certifica que</p>
+  <h2 style="font-size:28px;margin:0 0 20px;color:#1E293B;border-bottom:2px solid #2563EB;padding-bottom:8px;display:inline-block;">${studentName}</h2>
+  <p style="font-size:16px;color:#64748B;margin:0 0 8px;">ha completado exitosamente el curso</p>
+  <h2 style="font-size:24px;margin:0 0 20px;color:#2563EB;">${courseName}</h2>
+  <p style="font-size:18px;color:#1E293B;margin:0 0 30px;">con una calificaci\u00f3n de <strong>${score}%</strong></p>
+  <p style="font-size:14px;color:#64748B;margin:0 0 8px;">Fecha: ${dateStr}</p>
+  <div style="margin-top:40px;padding-top:20px;border-top:1px solid #E2E8F0;">
+    <p style="font-size:13px;color:#94A3B8;margin:0;">Conniku SpA — Plataforma de Estudio Universitario</p>
+    <p style="font-size:11px;color:#CBD5E1;margin:4px 0 0;">conniku.com</p>
+  </div>
+</div>
+</body></html>`
+    const w = window.open('', '_blank')
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 400) }
+  }
+
   useEffect(() => { loadCourses() }, [])
 
   const loadCourses = async () => {
@@ -112,6 +154,31 @@ export default function Courses({ onNavigate }: Props) {
       setExerciseStats(null)
       setSidebarOpen(false)
 
+      // Restore saved progress from localStorage
+      const savedProgress = loadProgress(courseId)
+      if (savedProgress && data.lessons) {
+        data.lessons = data.lessons.map((l: any) => ({
+          ...l,
+          completed: l.completed || savedProgress.includes(l.id),
+        }))
+        if (data.progress) {
+          const merged = Array.from(new Set([...(data.progress.completedLessons || []), ...savedProgress]))
+          data.progress.completedLessons = merged
+        }
+      }
+      const savedQuiz = loadQuizResult(courseId)
+      if (savedQuiz && !data.progress?.quizPassed) {
+        // Only restore if quiz was passed (don't restore failed attempts)
+        if (savedQuiz.passed) {
+          setQuizResult(savedQuiz)
+          setQuizMode(true)
+        }
+      }
+      const savedExercise = loadExerciseResult(courseId)
+      if (savedExercise?.stats) {
+        setExerciseStats(savedExercise.stats)
+      }
+
       if (data.needsGeneration) {
         setGenerating(true)
         try {
@@ -140,6 +207,8 @@ export default function Courses({ onNavigate }: Props) {
         progress: { ...prev.progress, completedLessons: result.completedLessons },
         lessons: prev.lessons.map((l: any) => ({ ...l, completed: result.completedLessons.includes(l.id) })),
       }))
+      // Persist progress to localStorage
+      saveProgress(courseDetail.id, result.completedLessons)
       // Auto-advance to next lesson
       const lessons = courseDetail.lessons || []
       if (activeLesson < lessons.length - 1) {
@@ -156,6 +225,8 @@ export default function Courses({ onNavigate }: Props) {
     try {
       const result = await api.submitCourseQuiz(courseDetail.id, quizAnswers)
       setQuizResult(result)
+      // Persist quiz result to localStorage
+      saveQuizResult(courseDetail.id, result)
       if (result.passed) {
         setCourseDetail((prev: any) => ({
           ...prev,
@@ -222,6 +293,8 @@ export default function Courses({ onNavigate }: Props) {
       const result = await api.submitExercises(courseDetail.id, exerciseAnswers, exercises)
       setExerciseResult(result)
       setExerciseStats(result.stats || null)
+      // Persist exercise results to localStorage
+      saveExerciseResult(courseDetail.id, result, result.stats || null)
     } catch (err: any) {
       console.error('Exercise submission failed:', err)
       setExerciseError('Error al enviar ejercicios. Intenta de nuevo.')
@@ -777,7 +850,7 @@ export default function Courses({ onNavigate }: Props) {
                         </div>
                       )}
 
-                      <div style={{ marginTop: 24 }}>
+                      <div style={{ marginTop: 24, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                         {!quizResult.passed ? (
                           <button onClick={() => { setQuizResult(null); setQuizAnswers({}) }}
                             style={{
@@ -787,13 +860,28 @@ export default function Courses({ onNavigate }: Props) {
                             Intentar de nuevo
                           </button>
                         ) : (
-                          <button onClick={() => { setCourseDetail(null); setSelectedCourse(null) }}
-                            style={{
-                              padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                              background: catColor, color: '#fff', fontSize: 14, fontWeight: 600,
-                            }}>
-                            Volver al catálogo
-                          </button>
+                          <>
+                            <button onClick={() => handleDownloadCertificate(
+                              courseDetail.title,
+                              quizResult.score,
+                              user?.name || user?.email || 'Estudiante'
+                            )}
+                              style={{
+                                padding: '12px 28px', borderRadius: 8, border: `2px solid ${catColor}`, cursor: 'pointer',
+                                background: '#fff', color: catColor, fontSize: 14, fontWeight: 600,
+                                display: 'flex', alignItems: 'center', gap: 8,
+                              }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              Descargar certificado
+                            </button>
+                            <button onClick={() => { setCourseDetail(null); setSelectedCourse(null) }}
+                              style={{
+                                padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                background: catColor, color: '#fff', fontSize: 14, fontWeight: 600,
+                              }}>
+                              Volver al catálogo
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>

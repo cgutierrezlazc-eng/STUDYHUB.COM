@@ -593,6 +593,31 @@ def get_wall_posts(
     return result
 
 
+@router.put("/posts/{post_id}")
+def update_post(
+    post_id: str,
+    body: WallPostBody,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    post = db.query(WallPost).filter(WallPost.id == post_id).first()
+    if not post:
+        raise HTTPException(404, "Post no encontrado")
+    if post.author_id != user.id:
+        raise HTTPException(403, "Solo puedes editar tus propios posts")
+    if body.content:
+        from moderation import check_content
+        mod = check_content(body.content)
+        if not mod["allowed"]:
+            raise HTTPException(400, f"Contenido bloqueado: {mod['reason']}")
+        post.content = body.content.strip()
+    if body.image_url is not None:
+        post.image_url = body.image_url
+    post.updated_at = datetime.utcnow()
+    db.commit()
+    return {"status": "updated", "id": post.id}
+
+
 @router.delete("/posts/{post_id}")
 def delete_post(
     post_id: str,
@@ -829,8 +854,13 @@ def get_feed(
         liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user.id).first() is not None
         comment_count = db.query(PostComment).filter(PostComment.post_id == post.id).count()
 
+        # Check if post has an associated poll
+        from database import Poll
+        poll = db.query(Poll).filter(Poll.wall_post_id == post.id).first()
+
         result.append({
             "id": post.id,
+            "authorId": post.author_id,
             "author": user_brief(author) if author else None,
             "wallOwner": user_brief(wall_owner) if wall_owner else None,
             "content": post.content,
@@ -845,6 +875,8 @@ def get_feed(
             "reactions": _get_reactions(db, post.id),
             "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
             "createdAt": post.created_at.isoformat(),
+            "updatedAt": post.updated_at.isoformat() if post.updated_at else None,
+            "pollId": poll.id if poll else None,
         })
 
     # Smart sorting: score by engagement + recency + media

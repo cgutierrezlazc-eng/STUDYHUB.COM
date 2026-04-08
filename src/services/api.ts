@@ -400,6 +400,8 @@ export const api = {
 
   createMilestonePost: (data: { type: string; content: string; visibility?: string }) =>
     request('/social/milestone', { method: 'POST', body: JSON.stringify(data) }),
+  editPost: (postId: string, data: { content: string; image_url?: string }) =>
+    request(`/social/posts/${postId}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteWallPost: (postId: string) =>
     request(`/social/posts/${postId}`, { method: 'DELETE' }),
   toggleLike: (postId: string) =>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { useI18n } from '../services/i18n'
-import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks, Sparkles } from '../components/Icons'
+import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks, Sparkles, MoreVertical, Pencil, Trash2, Check, X, Plus } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -41,11 +41,28 @@ export default function Feed({ onNavigate }: Props) {
   const [creatingList, setCreatingList] = useState(false)
   const visibilityRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const [suggestedPeople, setSuggestedPeople] = useState<any[]>([])
+  // Edit post state
+  const [editingPostId, setEditingPostId] = useState<string | null>(null)
+  const [editContent, setEditContent] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+  const [openMenuPostId, setOpenMenuPostId] = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+  // Poll creation state
+  const [showPollCreator, setShowPollCreator] = useState(false)
+  const [pollQuestion, setPollQuestion] = useState('')
+  const [pollOptions, setPollOptions] = useState<string[]>(['', ''])
+  const [pollAnonymous, setPollAnonymous] = useState(false)
+  const [creatingPoll, setCreatingPoll] = useState(false)
+  // Poll data cache
+  const [pollsData, setPollsData] = useState<Record<string, any>>({})
+  const [loadingPolls, setLoadingPolls] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadFeed()
     api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
     loadUniversityNews()
+    api.getFriendSuggestions().then(data => setSuggestedPeople((data || []).slice(0, 5))).catch(() => {})
   }, [])
 
   const loadUniversityNews = async () => {
@@ -63,6 +80,9 @@ export default function Feed({ onNavigate }: Props) {
       if (visibilityRef.current && !visibilityRef.current.contains(e.target as Node)) {
         setShowVisibilityMenu(false)
         setShowListSubmenu(false)
+      }
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuPostId(null)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -196,6 +216,108 @@ export default function Feed({ onNavigate }: Props) {
     reader.readAsDataURL(file)
   }
 
+  // ─── Edit Post ──────────────────────────────────────
+  const handleStartEdit = (post: any) => {
+    setEditingPostId(post.id)
+    setEditContent(post.content || '')
+    setOpenMenuPostId(null)
+  }
+
+  const handleSaveEdit = async (postId: string) => {
+    if (!editContent.trim()) return
+    setEditSaving(true)
+    try {
+      await api.editPost(postId, { content: editContent })
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, content: editContent, updatedAt: new Date().toISOString() } : p))
+      setEditingPostId(null)
+      setEditContent('')
+    } catch (err: any) {
+      alert(err.message || 'Error al editar')
+    }
+    setEditSaving(false)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingPostId(null)
+    setEditContent('')
+  }
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('¿Eliminar esta publicación?')) return
+    setOpenMenuPostId(null)
+    try {
+      await api.deleteWallPost(postId)
+      setPosts(prev => prev.filter(p => p.id !== postId))
+    } catch (err: any) {
+      alert(err.message || 'Error al eliminar')
+    }
+  }
+
+  // ─── Poll Creation ────────────────────────────────────
+  const handleCreatePoll = async () => {
+    if (!pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2) return
+    if (!user) return
+    setCreatingPoll(true)
+    try {
+      // First create a wall post for the poll
+      const post = await api.createWallPost(
+        user.id, `📊 ${pollQuestion}`, undefined,
+        postVisibility, undefined,
+        postVisibility === 'list' ? postVisibilityListId || undefined : undefined
+      )
+      // Then create the poll linked to that post
+      const poll = await api.createPoll({
+        question: pollQuestion,
+        options: pollOptions.filter(o => o.trim()),
+        is_anonymous: pollAnonymous,
+        wall_post_id: post.id,
+      })
+      setPollsData(prev => ({ ...prev, [poll.id]: poll }))
+      // Reset
+      setPollQuestion('')
+      setPollOptions(['', ''])
+      setPollAnonymous(false)
+      setShowPollCreator(false)
+      loadFeed(1)
+    } catch (err: any) {
+      alert(err.message || 'Error al crear encuesta')
+    }
+    setCreatingPoll(false)
+  }
+
+  const handleVotePoll = async (pollId: string, optionId: string) => {
+    try {
+      const result = await api.votePoll(pollId, optionId)
+      setPollsData(prev => ({
+        ...prev,
+        [pollId]: { ...prev[pollId], ...result, userVoted: result.userVoted },
+      }))
+    } catch (err: any) {
+      alert(err.message || 'Error al votar')
+    }
+  }
+
+  const loadPollData = async (pollId: string) => {
+    if (pollsData[pollId] || loadingPolls.has(pollId)) return
+    setLoadingPolls(prev => new Set(prev).add(pollId))
+    try {
+      const data = await api.getPoll(pollId)
+      setPollsData(prev => ({ ...prev, [pollId]: data }))
+    } catch (err: any) {
+      console.error('Failed to load poll:', err)
+    }
+    setLoadingPolls(prev => { const s = new Set(prev); s.delete(pollId); return s })
+  }
+
+  // Load poll data for posts that have pollId
+  useEffect(() => {
+    posts.forEach(post => {
+      if (post.pollId && !pollsData[post.pollId]) {
+        loadPollData(post.pollId)
+      }
+    })
+  }, [posts])
+
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime()
     const mins = Math.floor(diff / 60000)
@@ -289,6 +411,12 @@ export default function Feed({ onNavigate }: Props) {
                       <button onClick={() => imageInputRef.current?.click()} style={{
                         background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px',
                       }} title={t('feed.addPhoto')}>{Camera({ size: 18 })}</button>
+                      <button onClick={() => setShowPollCreator(!showPollCreator)} style={{
+                        background: showPollCreator ? 'var(--accent-alpha, rgba(79,140,255,0.15))' : 'none',
+                        border: showPollCreator ? '1px solid var(--accent)' : 'none',
+                        cursor: 'pointer', fontSize: 18, padding: '4px 8px', borderRadius: 8,
+                        color: showPollCreator ? 'var(--accent)' : 'inherit',
+                      }} title="Crear encuesta">{BarChart3({ size: 18 })}</button>
 
                       {/* Visibility selector */}
                       <div ref={visibilityRef} style={{ position: 'relative' }}>
@@ -425,6 +553,78 @@ export default function Feed({ onNavigate }: Props) {
                       </button>
                     </div>
                   </div>
+
+                  {/* Poll Creator */}
+                  {showPollCreator && (
+                    <div style={{
+                      marginTop: 12, padding: 14, borderRadius: 12,
+                      border: '1px solid var(--accent)', background: 'var(--bg-secondary)',
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>{BarChart3({ size: 16 })} Crear encuesta</span>
+                        <button onClick={() => setShowPollCreator(false)} style={{
+                          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4,
+                        }}>{X({ size: 16 })}</button>
+                      </div>
+                      <input
+                        value={pollQuestion}
+                        onChange={e => setPollQuestion(e.target.value)}
+                        placeholder="Pregunta de la encuesta..."
+                        style={{
+                          width: '100%', padding: '10px 12px', borderRadius: 8,
+                          border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                          color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit', marginBottom: 8,
+                        }}
+                      />
+                      {pollOptions.map((opt, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                          <input
+                            value={opt}
+                            onChange={e => {
+                              const newOpts = [...pollOptions]
+                              newOpts[i] = e.target.value
+                              setPollOptions(newOpts)
+                            }}
+                            placeholder={`Opcion ${i + 1}`}
+                            style={{
+                              flex: 1, padding: '8px 12px', borderRadius: 8,
+                              border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                              color: 'var(--text-primary)', fontSize: 13, fontFamily: 'inherit',
+                            }}
+                          />
+                          {pollOptions.length > 2 && (
+                            <button onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))} style={{
+                              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4,
+                            }}>{X({ size: 14 })}</button>
+                          )}
+                        </div>
+                      ))}
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 4, flexWrap: 'wrap' }}>
+                        {pollOptions.length < 5 && (
+                          <button onClick={() => setPollOptions([...pollOptions, ''])} style={{
+                            display: 'flex', alignItems: 'center', gap: 4, padding: '6px 12px',
+                            border: '1px dashed var(--border-color)', borderRadius: 8,
+                            background: 'none', color: 'var(--text-muted)', cursor: 'pointer',
+                            fontSize: 12, fontFamily: 'inherit',
+                          }}>
+                            {Plus({ size: 12 })} Agregar opcion
+                          </button>
+                        )}
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)', cursor: 'pointer', marginLeft: 'auto' }}>
+                          <input type="checkbox" checked={pollAnonymous} onChange={e => setPollAnonymous(e.target.checked)} />
+                          Anonima
+                        </label>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleCreatePoll}
+                          disabled={creatingPoll || !pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2}
+                          style={{ opacity: creatingPoll || !pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2 ? 0.5 : 1 }}
+                        >
+                          {creatingPoll ? 'Creando...' : 'Publicar encuesta'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -479,6 +679,9 @@ export default function Feed({ onNavigate }: Props) {
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
                           {timeAgo(post.createdAt)}
+                          {post.updatedAt && post.updatedAt !== post.createdAt && (
+                            <span style={{ fontStyle: 'italic', opacity: 0.7 }}>(editado)</span>
+                          )}
                           {post.visibility && post.visibility !== 'public' && (
                             <span title={
                               post.visibility === 'friends' ? t('feed.visibilityFriends') :
@@ -493,10 +696,149 @@ export default function Feed({ onNavigate }: Props) {
                           )}
                         </div>
                       </div>
+                      {/* Post menu (edit/delete) */}
+                      {(post.authorId === user?.id || post.author?.id === user?.id) && (
+                        <div style={{ position: 'relative' }} ref={openMenuPostId === post.id ? menuRef : undefined}>
+                          <button onClick={() => setOpenMenuPostId(openMenuPostId === post.id ? null : post.id)} style={{
+                            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+                            color: 'var(--text-muted)', borderRadius: 6,
+                          }}>
+                            {MoreVertical({ size: 18 })}
+                          </button>
+                          {openMenuPostId === post.id && (
+                            <div style={{
+                              position: 'absolute', top: '100%', right: 0, marginTop: 4, zIndex: 20,
+                              background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                              borderRadius: 10, boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                              minWidth: 150, overflow: 'hidden',
+                            }}>
+                              <button onClick={() => handleStartEdit(post)} style={{
+                                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                                padding: '10px 14px', border: 'none', background: 'transparent',
+                                color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13,
+                                textAlign: 'left', fontFamily: 'inherit',
+                              }}>
+                                {Pencil({ size: 14 })} Editar
+                              </button>
+                              <button onClick={() => handleDeletePost(post.id)} style={{
+                                display: 'flex', alignItems: 'center', gap: 8, width: '100%',
+                                padding: '10px 14px', border: 'none', background: 'transparent',
+                                color: '#ef4444', cursor: 'pointer', fontSize: 13,
+                                textAlign: 'left', fontFamily: 'inherit',
+                              }}>
+                                {Trash2({ size: 14 })} Eliminar
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Content */}
-                    {post.content && <p style={{ margin: '0 0 12px', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{post.content}</p>}
+                    {editingPostId === post.id ? (
+                      <div style={{ marginBottom: 12 }}>
+                        <textarea
+                          value={editContent}
+                          onChange={e => setEditContent(e.target.value)}
+                          style={{
+                            width: '100%', minHeight: 80, resize: 'vertical', padding: 12,
+                            border: '1px solid var(--accent)', borderRadius: 10,
+                            background: 'var(--bg-primary)', color: 'var(--text-primary)',
+                            fontSize: 14, fontFamily: 'inherit', lineHeight: 1.6,
+                          }}
+                          autoFocus
+                        />
+                        <div style={{ display: 'flex', gap: 8, marginTop: 8, justifyContent: 'flex-end' }}>
+                          <button onClick={handleCancelEdit} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {X({ size: 14 })} Cancelar
+                          </button>
+                          <button onClick={() => handleSaveEdit(post.id)} className="btn btn-primary btn-sm" disabled={editSaving || !editContent.trim()} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {Check({ size: 14 })} {editSaving ? 'Guardando...' : 'Guardar'}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      post.content && <p style={{ margin: '0 0 12px', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{post.content}</p>
+                    )}
+
+                    {/* Poll rendering */}
+                    {post.pollId && pollsData[post.pollId] && (() => {
+                      const poll = pollsData[post.pollId]
+                      const hasVoted = poll.userVoted !== null && poll.userVoted !== undefined
+                      const totalVotes = poll.totalVotes || 0
+                      return (
+                        <div style={{
+                          margin: '0 0 12px', padding: 14, borderRadius: 12,
+                          border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+                        }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 10 }}>
+                            {poll.question}
+                            {poll.isAnonymous && <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400, marginLeft: 8 }}>Anonima</span>}
+                          </div>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {(poll.options || []).map((opt: any) => {
+                              const pct = hasVoted && totalVotes > 0 ? Math.round(((opt.voteCount || 0) / totalVotes) * 100) : 0
+                              const isMyVote = poll.userVoted === opt.id
+                              return (
+                                <div key={opt.id}>
+                                  {hasVoted ? (
+                                    <div style={{
+                                      position: 'relative', borderRadius: 8, overflow: 'hidden',
+                                      border: isMyVote ? '2px solid var(--accent)' : '1px solid var(--border-color)',
+                                      background: 'var(--bg-primary)',
+                                    }}>
+                                      <div style={{
+                                        position: 'absolute', top: 0, left: 0, bottom: 0,
+                                        width: `${pct}%`, background: 'var(--accent-alpha, rgba(79,140,255,0.12))',
+                                        transition: 'width 0.4s ease',
+                                      }} />
+                                      <div style={{
+                                        position: 'relative', padding: '8px 12px', display: 'flex',
+                                        justifyContent: 'space-between', alignItems: 'center', fontSize: 13,
+                                      }}>
+                                        <span style={{ fontWeight: isMyVote ? 600 : 400 }}>
+                                          {isMyVote && <span style={{ marginRight: 4 }}>{Check({ size: 12 })}</span>}
+                                          {opt.text}
+                                        </span>
+                                        <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+                                          {pct}% ({opt.voteCount || 0})
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleVotePoll(post.pollId, opt.id)}
+                                      style={{
+                                        width: '100%', padding: '8px 12px', borderRadius: 8,
+                                        border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
+                                        color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13,
+                                        textAlign: 'left', fontFamily: 'inherit', transition: 'border-color 0.15s',
+                                      }}
+                                      onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                                      onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}
+                                    >
+                                      {opt.text}
+                                    </button>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                          <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
+                            {totalVotes} {totalVotes === 1 ? 'voto' : 'votos'}
+                            {poll.expiresAt && (() => {
+                              const exp = new Date(poll.expiresAt)
+                              const now = new Date()
+                              if (exp > now) {
+                                const hrs = Math.round((exp.getTime() - now.getTime()) / 3600000)
+                                return <span> · Cierra en {hrs}h</span>
+                              }
+                              return <span> · Finalizada</span>
+                            })()}
+                          </div>
+                        </div>
+                      )
+                    })()}
                     {(post.imageUrl || post.image_url) && (
                       <img src={post.imageUrl || post.image_url} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 12, maxHeight: 400, objectFit: 'cover' }} />
                     )}
@@ -625,6 +967,57 @@ export default function Feed({ onNavigate }: Props) {
 
           {/* Right Sidebar */}
           <div style={{ position: 'sticky', top: 20 }}>
+            {/* Suggested People */}
+            {suggestedPeople.length > 0 && (
+              <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
+                <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border, #2a3038)' }}>
+                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {UsersIcon({ size: 18 })} Personas sugeridas
+                  </h4>
+                </div>
+                <div style={{ padding: '8px 12px' }}>
+                  {suggestedPeople.map((s: any) => (
+                    <div
+                      key={s.id}
+                      onClick={() => onNavigate(`/user/${s.id}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 8px',
+                        borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <div style={{
+                        width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0, overflow: 'hidden',
+                      }}>
+                        {s.avatar ? <img src={s.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : (s.firstName?.[0] || '?')}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {s.firstName} {s.lastName}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {s.career || s.university || `@${s.username}`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <button
+                    onClick={() => onNavigate('/friends')}
+                    style={{
+                      width: '100%', padding: '8px', marginTop: 4, background: 'none',
+                      border: 'none', color: 'var(--accent)', fontSize: 12, fontWeight: 600,
+                      cursor: 'pointer', textAlign: 'center', borderRadius: 6,
+                    }}
+                  >
+                    Ver todos
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* University News */}
             {localStorage.getItem('conniku_university_news') !== 'false' && (
               <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
