@@ -10,7 +10,7 @@ from pathlib import Path
 import chromadb
 import google.generativeai as genai
 
-DATA_DIR = Path.home() / ".conniku"
+from database import DATA_DIR
 
 # Use API key from environment or config
 API_KEY = os.environ.get("GEMINI_API_KEY", "")

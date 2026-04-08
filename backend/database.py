@@ -13,7 +13,9 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 
-DATA_DIR = Path.home() / ".conniku"
+# Use persistent disk mount if available (Render), fallback to home dir (local dev)
+_persistent_mount = os.environ.get("RENDER_DISK_MOUNT_PATH")
+DATA_DIR = Path(_persistent_mount) if _persistent_mount else Path.home() / ".conniku"
 DATA_DIR.mkdir(exist_ok=True)
 DB_PATH = DATA_DIR / "conniku.db"
 

@@ -17,7 +17,7 @@ import uvicorn
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from database import init_db, get_db, User, gen_id
+from database import init_db, get_db, User, gen_id, DATA_DIR
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
@@ -160,10 +160,8 @@ def seed_ceo_profile(user: User = Depends(get_current_user), db: Session = Depen
     return result
 
 
-# Storage paths
-DATA_DIR = Path.home() / ".conniku"
+# Storage paths (DATA_DIR imported from database.py — uses persistent disk on Render)
 PROJECTS_DIR = DATA_DIR / "projects"
-DATA_DIR.mkdir(exist_ok=True)
 PROJECTS_DIR.mkdir(exist_ok=True)
 
 COVERS_DIR = DATA_DIR / "uploads" / "covers"
