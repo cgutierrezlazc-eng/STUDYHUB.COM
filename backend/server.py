@@ -288,34 +288,6 @@ def health():
     return {"status": "ok", "version": "2.0.0"}
 
 
-@app.get("/test-email")
-def test_email():
-    """Temporary endpoint to test SMTP configuration."""
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    try:
-        smtp_host = os.environ.get("SMTP_HOST", "smtp.zoho.com")
-        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-        smtp_user = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
-        smtp_pass = os.environ.get("SMTP_PASS", "")
-        smtp_from = smtp_user
-        if not smtp_pass:
-            return {"status": "error", "message": "SMTP_PASS not set"}
-        msg = MIMEMultipart("alternative")
-        msg["From"] = f"Conniku <{smtp_from}>"
-        msg["To"] = "ceo@conniku.com"
-        msg["Subject"] = "Test SMTP - Conniku funciona"
-        msg.attach(MIMEText("<h2>Email funciona</h2><p>SMTP configurado correctamente en Render.</p>", "html", "utf-8"))
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(smtp_from, "ceo@conniku.com", msg.as_string())
-        return {"status": "ok", "message": "Email sent to ceo@conniku.com", "smtp_user": smtp_user}
-    except Exception as e:
-        return {"status": "error", "message": str(e), "smtp_user": os.environ.get("SMTP_USER", "")}
-
-
 @app.get("/projects")
 def list_projects(user: User = Depends(get_current_user)):
     projects = []
