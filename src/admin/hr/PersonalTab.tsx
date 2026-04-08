@@ -245,12 +245,15 @@ function AddEmployeeModal({ onClose, onRefresh }: { onClose: () => void; onRefre
   const [form, setForm] = useState<any>({
     rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
     birthDate: '', nationality: 'Chilena', maritalStatus: 'soltero',
+    gender: 'masculino',
     emergencyContactName: '', emergencyContactPhone: '',
+    profession1: '', profession2: '',
     position: '', department: 'Tecnologia', hireDate: '', contractType: 'indefinido',
     workSchedule: 'full_time', weeklyHours: 45,
-    grossSalary: 500000, colacion: 0, movilizacion: 0,
+    grossSalary: 500000, colacion: 0, movilizacion: 0, bonoAsistencia: 0, bonoProduccion: 0,
     afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_vista', bankAccountNumber: '',
+    notes: '',
   })
   const [saving, setSaving] = useState(false)
 
@@ -279,20 +282,30 @@ function AddEmployeeModal({ onClose, onRefresh }: { onClose: () => void; onRefre
           <FormField label="Nombre" value={form.firstName} onChange={v => setForm({ ...form, firstName: v })} required />
           <FormField label="Apellido" value={form.lastName} onChange={v => setForm({ ...form, lastName: v })} required />
           <FormField label="Email" value={form.email} onChange={v => setForm({ ...form, email: v })} type="email" required />
-          <FormField label="Telefono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} placeholder="+56 9 1234 5678" />
-          <FormField label="Direccion" value={form.address} onChange={v => setForm({ ...form, address: v })} />
+          <FormField label="Teléfono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} placeholder="+56 9 1234 5678" />
+          <FormField label="Dirección" value={form.address} onChange={v => setForm({ ...form, address: v })} />
           <FormField label="Fecha Nacimiento" value={form.birthDate} onChange={v => setForm({ ...form, birthDate: v })} type="date" />
           <FormField label="Nacionalidad" value={form.nationality} onChange={v => setForm({ ...form, nationality: v })} />
+          <SelectField label="Género" value={form.gender} onChange={v => setForm({ ...form, gender: v })} options={[
+            { value: 'masculino', label: 'Masculino' }, { value: 'femenino', label: 'Femenino' },
+            { value: 'otro', label: 'Otro' }, { value: 'no_indica', label: 'Prefiere no indicar' },
+          ]} />
           <SelectField label="Estado Civil" value={form.maritalStatus} onChange={v => setForm({ ...form, maritalStatus: v })} options={[
             { value: 'soltero', label: 'Soltero/a' }, { value: 'casado', label: 'Casado/a' },
             { value: 'divorciado', label: 'Divorciado/a' }, { value: 'viudo', label: 'Viudo/a' },
           ]} />
         </div>
 
+        <SectionTitle>Formación Profesional</SectionTitle>
+        <div style={grid2}>
+          <FormField label="Profesión / Título 1" value={form.profession1} onChange={v => setForm({ ...form, profession1: v })} placeholder="Ej: Ingeniero Civil Industrial" />
+          <FormField label="Profesión / Título 2 (opcional)" value={form.profession2} onChange={v => setForm({ ...form, profession2: v })} placeholder="Ej: MBA, Diplomado, etc." />
+        </div>
+
         <SectionTitle>Contacto de Emergencia</SectionTitle>
         <div style={grid2}>
-          <FormField label="Nombre" value={form.emergencyContactName} onChange={v => setForm({ ...form, emergencyContactName: v })} />
-          <FormField label="Telefono" value={form.emergencyContactPhone} onChange={v => setForm({ ...form, emergencyContactPhone: v })} />
+          <FormField label="Nombre completo" value={form.emergencyContactName} onChange={v => setForm({ ...form, emergencyContactName: v })} />
+          <FormField label="Teléfono" value={form.emergencyContactPhone} onChange={v => setForm({ ...form, emergencyContactPhone: v })} placeholder="+56 9 ..." />
         </div>
 
         <SectionTitle>Datos Laborales</SectionTitle>
@@ -307,11 +320,13 @@ function AddEmployeeModal({ onClose, onRefresh }: { onClose: () => void; onRefre
           <FormField label="Horas Semanales" value={form.weeklyHours} onChange={v => setForm({ ...form, weeklyHours: Number(v) })} type="number" />
         </div>
 
-        <SectionTitle>Remuneracion</SectionTitle>
+        <SectionTitle>Remuneración</SectionTitle>
         <div style={grid2}>
           <FormField label="Sueldo Bruto (CLP)" value={form.grossSalary} onChange={v => setForm({ ...form, grossSalary: Number(v) })} type="number" required />
-          <FormField label="Colacion (CLP)" value={form.colacion} onChange={v => setForm({ ...form, colacion: Number(v) })} type="number" />
-          <FormField label="Movilizacion (CLP)" value={form.movilizacion} onChange={v => setForm({ ...form, movilizacion: Number(v) })} type="number" />
+          <FormField label="Colación (CLP)" value={form.colacion} onChange={v => setForm({ ...form, colacion: Number(v) })} type="number" />
+          <FormField label="Movilización (CLP)" value={form.movilizacion} onChange={v => setForm({ ...form, movilizacion: Number(v) })} type="number" />
+          <FormField label="Bono Asistencia (CLP)" value={form.bonoAsistencia} onChange={v => setForm({ ...form, bonoAsistencia: Number(v) })} type="number" />
+          <FormField label="Bono Producción (CLP)" value={form.bonoProduccion} onChange={v => setForm({ ...form, bonoProduccion: Number(v) })} type="number" />
         </div>
 
         <SectionTitle>Prevision Social</SectionTitle>
@@ -340,6 +355,15 @@ function AddEmployeeModal({ onClose, onRefresh }: { onClose: () => void; onRefre
           ]} />
           <FormField label="Numero Cuenta" value={form.bankAccountNumber} onChange={v => setForm({ ...form, bankAccountNumber: v })} />
         </div>
+
+        <SectionTitle>Notas Adicionales</SectionTitle>
+        <textarea
+          value={form.notes}
+          onChange={e => setForm({ ...form, notes: e.target.value })}
+          placeholder="Observaciones, alergias, condiciones especiales, etc."
+          rows={3}
+          style={{ ...inputStyle, width: '100%', resize: 'vertical', fontFamily: 'inherit' } as any}
+        />
 
         <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={btnSecondary}>Cancelar</button>
