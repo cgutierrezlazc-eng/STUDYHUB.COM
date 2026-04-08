@@ -3180,6 +3180,16 @@ body.touch-device select {
   .mobile-layout .main-content {
     padding-bottom: calc(var(--bottom-nav-height, 60px) + 8px);
   }
+
+  /* Cards: tighter mobile spacing */
+  .u-card { margin: 0 -4px; border-radius: 8px; }
+
+  /* Bottom nav body spacing */
+  .page-body { padding-bottom: 72px !important; }
+
+  /* Touch-friendly minimum sizes */
+  .btn { min-height: 44px; }
+  .nav-item { min-height: 44px; }
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -4019,4 +4029,87 @@ body.touch-device select {
     width: 48px;
     height: 48px;
   }
+}
+
+/* ─── Mobile "Más" Bottom Sheet ──────────────────────────────── */
+.mobile-more-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  animation: moreOverlayFadeIn 0.2s ease;
+}
+
+@keyframes moreOverlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.mobile-more-sheet {
+  width: 100%;
+  background: var(--bg-secondary, #1a1a2e);
+  border-radius: 16px 16px 0 0;
+  padding: 8px 16px calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 16px);
+  animation: moreSheetSlideUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes moreSheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.mobile-more-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-muted, #666);
+  opacity: 0.4;
+  margin: 0 auto 12px;
+}
+
+.mobile-more-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.mobile-more-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: none;
+  background: none;
+  color: var(--text-primary, #e0e0e0);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-more-item:active {
+  background: var(--bg-hover, rgba(255,255,255,0.06));
+}
+
+.mobile-more-item.active {
+  color: var(--accent, #2563EB);
+  background: var(--bg-hover, rgba(255,255,255,0.06));
+}
+
+.mobile-more-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.mobile-more-label {
+  flex: 1;
+  text-align: left;
 }

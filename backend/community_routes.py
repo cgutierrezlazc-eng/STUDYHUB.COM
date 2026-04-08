@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, or_
 
 from database import (get_db, User, Community, CommunityMember, CommunityPost,
-                      CommunityPostLike, CommunityPostComment, gen_id)
+                      CommunityPostLike, CommunityPostComment, UserReport, gen_id)
 from middleware import get_current_user
 from moderation import check_content
 
@@ -421,6 +421,25 @@ def delete_community_post(post_id: str, user: User = Depends(get_current_user), 
     db.delete(post)
     db.commit()
     return {"status": "deleted"}
+
+
+@router.post("/posts/{post_id}/report")
+def report_post(post_id: str, data: dict,
+                user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(404, "Post no encontrado")
+    reason = data.get("reason", "").strip()
+    if not reason:
+        raise HTTPException(400, "Debes indicar un motivo")
+    # Store as a UserReport (reporter → post author)
+    report = UserReport(
+        id=gen_id(), reporter_id=user.id, reported_id=post.author_id,
+        reason=f"[Post {post_id}] {reason}",
+    )
+    db.add(report)
+    db.commit()
+    return {"status": "reported"}
 
 
 @router.get("/suggestions")

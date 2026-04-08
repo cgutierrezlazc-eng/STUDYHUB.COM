@@ -46,6 +46,7 @@ const Events = React.lazy(() => import('./pages/Events'))
 const Mentorship = React.lazy(() => import('./pages/Mentorship'))
 const StudyRooms = React.lazy(() => import('./pages/StudyRooms'))
 const Quizzes = React.lazy(() => import('./pages/Quizzes'))
+const Gamification = React.lazy(() => import('./pages/Gamification'))
 const CeoDashboard = React.lazy(() => import('./pages/CeoDashboard'))
 const CeoMail = React.lazy(() => import('./pages/CeoMail'))
 const HRDashboard = React.lazy(() => import('./pages/HRDashboard'))
@@ -299,6 +300,7 @@ export default function App() {
             <Route path="/mentorship" element={<Mentorship onNavigate={(path) => navigate(path)} />} />
             <Route path="/study-rooms" element={<StudyRooms onNavigate={(path) => navigate(path)} />} />
             <Route path="/quizzes" element={<Quizzes projects={projects} onNavigate={(path) => navigate(path)} />} />
+            <Route path="/gamification" element={<Gamification onNavigate={(path) => navigate(path)} />} />
             <Route path="/communities" element={<Communities onNavigate={(path) => navigate(path)} />} />
             <Route path="/communities/:id" element={<CommunityView onNavigate={(path) => navigate(path)} />} />
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />

@@ -3,11 +3,13 @@ import { useParams } from 'react-router-dom'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
-import { Users, Star, Shield, ThumbsUp, MessageSquare, Globe, Lock, ClipboardList, Trash2, Megaphone, Pin } from '../components/Icons'
+import { Users, Star, Shield, ThumbsUp, MessageSquare, Globe, Lock, ClipboardList, Trash2, Megaphone, Pin, Settings, AlertTriangle, X, ChevronDown } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
 }
+
+const CATEGORIES = ['general', 'academico', 'deportes', 'tecnologia', 'arte', 'musica', 'ciencias', 'idiomas', 'social', 'otro']
 
 export default function CommunityView({ onNavigate }: Props) {
   const { id } = useParams<{ id: string }>()
@@ -22,6 +24,12 @@ export default function CommunityView({ onNavigate }: Props) {
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
+  const [showSettings, setShowSettings] = useState(false)
+  const [settingsForm, setSettingsForm] = useState({ name: '', description: '', rules: '', type: 'public', category: 'general' })
+  const [savingSettings, setSavingSettings] = useState(false)
+  const [rulesExpanded, setRulesExpanded] = useState(false)
+  const [reportPostId, setReportPostId] = useState<string | null>(null)
+  const [reportReason, setReportReason] = useState('')
 
   useEffect(() => {
     if (id) { loadCommunity(); loadPosts() }
@@ -106,6 +114,55 @@ export default function CommunityView({ onNavigate }: Props) {
     } catch (err: any) { console.error('Delete post failed:', err) }
   }
 
+  const handleReport = async () => {
+    if (!reportPostId || !reportReason.trim()) return
+    try {
+      await api.reportCommunityPost(reportPostId, reportReason)
+      alert('Reporte enviado. Gracias por ayudar a mantener la comunidad segura.')
+      setReportPostId(null)
+      setReportReason('')
+    } catch (err: any) { alert(err.message || 'Error al reportar') }
+  }
+
+  const handleChangeRole = async (userId: string, newRole: string) => {
+    const label = newRole === 'moderator' ? 'moderador' : 'miembro'
+    if (!confirm(`¿Cambiar rol a ${label}?`)) return
+    try {
+      await api.changeMemberRole(id!, userId, newRole)
+      loadMembers()
+    } catch (err: any) { alert(err.message || 'Error al cambiar rol') }
+  }
+
+  const handleKickMember = async (userId: string, name: string) => {
+    if (!confirm(`¿Expulsar a ${name} de la comunidad?`)) return
+    try {
+      await api.removeMember(id!, userId)
+      setMembers(prev => prev.filter(m => m.user?.id !== userId))
+    } catch (err: any) { alert(err.message || 'Error al expulsar') }
+  }
+
+  const openSettings = () => {
+    if (!community) return
+    setSettingsForm({
+      name: community.name || '',
+      description: community.description || '',
+      rules: community.rules || '',
+      type: community.type || 'public',
+      category: community.category || 'general',
+    })
+    setShowSettings(true)
+  }
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true)
+    try {
+      const updated = await api.updateCommunity(id!, settingsForm)
+      setCommunity((prev: any) => ({ ...prev, ...updated, rules: settingsForm.rules }))
+      setShowSettings(false)
+    } catch (err: any) { alert(err.message || 'Error al guardar') }
+    setSavingSettings(false)
+  }
+
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime()
     const mins = Math.floor(diff / 60000)
@@ -137,10 +194,15 @@ export default function CommunityView({ onNavigate }: Props) {
             </p>
           </div>
           {community.isMember ? (
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               {community.memberRole && <span className="badge" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)', padding: '4px 12px', borderRadius: 12, fontSize: 12 }}>
                 {isAdmin ? <>{Star({ size: 14 })} Admin</> : isMod ? <>{Shield({ size: 14 })} Mod</> : '✓ Miembro'}
               </span>}
+              {isAdmin && (
+                <button onClick={openSettings} className="btn btn-secondary btn-sm" style={{ display: 'flex', alignItems: 'center', gap: 4 }} title="Configuración">
+                  {Settings({ size: 16 })}
+                </button>
+              )}
               <button className="btn btn-secondary btn-sm" onClick={handleLeave}>{t('communityview.leave')}</button>
             </div>
           ) : (
@@ -155,8 +217,23 @@ export default function CommunityView({ onNavigate }: Props) {
       </div>
 
       <div className="page-body">
+        {/* Community Rules - collapsible section at top of posts */}
         {tab === 'posts' && (
           <>
+            <div className="u-card" style={{ marginBottom: 16, overflow: 'hidden' }}>
+              <button onClick={() => setRulesExpanded(!rulesExpanded)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)', fontSize: 14, fontWeight: 600 }}>
+                {ClipboardList({ size: 16 })} Reglas de la comunidad
+                <span style={{ marginLeft: 'auto', transform: rulesExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
+                  {ChevronDown({ size: 14 })}
+                </span>
+              </button>
+              {rulesExpanded && (
+                <div style={{ padding: '0 16px 12px', fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)', whiteSpace: 'pre-wrap' }}>
+                  {community.rules?.trim() ? community.rules : 'Esta comunidad no tiene reglas definidas.'}
+                </div>
+              )}
+            </div>
+
             {community.isMember && (
               <div className="u-card" style={{ padding: 16, marginBottom: 16 }}>
                 <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder={t('communityview.composerPlaceholder')}
@@ -177,12 +254,23 @@ export default function CommunityView({ onNavigate }: Props) {
                     <strong style={{ fontSize: 14, cursor: 'pointer' }} onClick={() => onNavigate(`/user/${post.author?.id}`)}>{post.author?.firstName} {post.author?.lastName}</strong>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{timeAgo(post.createdAt)}</div>
                   </div>
-                  {(isMod || post.author?.id === user?.id) && (
-                    <div style={{ display: 'flex', gap: 4 }}>
-                      {isMod && <button onClick={() => handlePin(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center' }} title={t('communityview.pin')}>{Pin({ size: 14 })}</button>}
-                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)', display: 'flex', alignItems: 'center' }} title={t('communityview.delete')}>{Trash2({ size: 14 })}</button>
-                    </div>
-                  )}
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {isMod && (
+                      <button onClick={() => handlePin(post.id)} style={{ background: post.isPinned ? 'var(--accent-orange)18' : 'none', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6, color: post.isPinned ? 'var(--accent-orange)' : 'var(--text-muted)' }} title={post.isPinned ? 'Desfijar' : 'Fijar'}>
+                        {Pin({ size: 14 })}
+                      </button>
+                    )}
+                    {(isMod || post.author?.id === user?.id) && (
+                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)', display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6 }} title="Eliminar">
+                        {Trash2({ size: 14 })}
+                      </button>
+                    )}
+                    {community.isMember && post.author?.id !== user?.id && (
+                      <button onClick={() => { setReportPostId(post.id); setReportReason('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', padding: 4, borderRadius: 6 }} title="Reportar">
+                        {AlertTriangle({ size: 14 })}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p style={{ margin: '0 0 8px', fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{post.content}</p>
                 {post.imageUrl && <img src={post.imageUrl} alt="" style={{ width: '100%', borderRadius: 8, marginBottom: 8, maxHeight: 300, objectFit: 'cover' }} />}
@@ -221,19 +309,43 @@ export default function CommunityView({ onNavigate }: Props) {
         )}
 
         {tab === 'members' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {members.map(m => (
               <div key={m.id} className="u-card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div onClick={() => onNavigate(`/user/${m.user?.id}`)} style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', overflow: 'hidden' }}>
                   {m.user?.avatar ? <img src={m.user.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} /> : (m.user?.firstName?.[0] || '?')}
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 600, fontSize: 14 }}>{m.user?.firstName} {m.user?.lastName}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>@{m.user?.username}</div>
                 </div>
-                <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: m.role === 'admin' ? 'var(--accent-orange)22' : m.role === 'moderator' ? 'var(--accent-blue)22' : 'var(--bg-secondary)', color: m.role === 'admin' ? 'var(--accent-orange)' : m.role === 'moderator' ? 'var(--accent-blue)' : 'var(--text-muted)' }}>
-                  {m.role === 'admin' ? <>{Star({ size: 12 })} Admin</> : m.role === 'moderator' ? <>{Shield({ size: 12 })} Mod</> : 'Miembro'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: m.role === 'admin' ? 'var(--accent-orange)22' : m.role === 'moderator' ? 'var(--accent-blue)22' : 'var(--bg-secondary)', color: m.role === 'admin' ? 'var(--accent-orange)' : m.role === 'moderator' ? 'var(--accent-blue)' : 'var(--text-muted)' }}>
+                    {m.role === 'admin' ? <>{Star({ size: 12 })} Admin</> : m.role === 'moderator' ? <>{Shield({ size: 12 })} Mod</> : 'Miembro'}
+                  </span>
+                  {/* Moderation actions - only for non-self, non-admin targets */}
+                  {isAdmin && m.user?.id !== user?.id && m.role !== 'admin' && (
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {m.role === 'moderator' ? (
+                        <button onClick={() => handleChangeRole(m.user.id, 'member')} className="btn btn-secondary btn-xs" style={{ fontSize: 11, padding: '2px 6px' }} title="Quitar moderador">
+                          Quitar mod
+                        </button>
+                      ) : (
+                        <button onClick={() => handleChangeRole(m.user.id, 'moderator')} className="btn btn-secondary btn-xs" style={{ fontSize: 11, padding: '2px 6px' }} title="Hacer moderador">
+                          {Shield({ size: 11 })} Mod
+                        </button>
+                      )}
+                      <button onClick={() => handleKickMember(m.user.id, `${m.user.firstName} ${m.user.lastName}`)} className="btn btn-xs" style={{ fontSize: 11, padding: '2px 6px', background: 'var(--accent-red)18', color: 'var(--accent-red)', border: 'none', borderRadius: 6, cursor: 'pointer' }} title="Expulsar">
+                        Expulsar
+                      </button>
+                    </div>
+                  )}
+                  {isMod && !isAdmin && m.user?.id !== user?.id && m.role === 'member' && (
+                    <button onClick={() => handleKickMember(m.user.id, `${m.user.firstName} ${m.user.lastName}`)} className="btn btn-xs" style={{ fontSize: 11, padding: '2px 6px', background: 'var(--accent-red)18', color: 'var(--accent-red)', border: 'none', borderRadius: 6, cursor: 'pointer' }} title="Expulsar">
+                      Expulsar
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -245,7 +357,7 @@ export default function CommunityView({ onNavigate }: Props) {
             {community.description && <p style={{ fontSize: 14, lineHeight: 1.6 }}>{community.description}</p>}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
               <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.category')}</strong><div>{community.category}</div></div>
-              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.type')}</strong><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{community.type === 'public' ? <>{Globe({ size: 14 })} Pública</> : <>{Lock({ size: 14 })} Privada</>}</div></div>
+              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.type')}</strong><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{community.type === 'public' ? <>{Globe({ size: 14 })} Publica</> : <>{Lock({ size: 14 })} Privada</>}</div></div>
               {community.university && <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.university')}</strong><div>{community.university}</div></div>}
               <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.created')}</strong><div>{community.createdAt ? new Date(community.createdAt).toLocaleDateString('es') : ''}</div></div>
             </div>
@@ -269,6 +381,86 @@ export default function CommunityView({ onNavigate }: Props) {
           </div>
         )}
       </div>
+
+      {/* Admin Settings Modal */}
+      {showSettings && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setShowSettings(false)}>
+          <div className="u-card" style={{ width: '100%', maxWidth: 480, maxHeight: '80vh', overflow: 'auto', padding: 24 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ margin: 0 }}>{Settings({ size: 18 })} Configuracion de la comunidad</h3>
+              <button onClick={() => setShowSettings(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>{X({ size: 18 })}</button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Nombre</label>
+                <input value={settingsForm.name} onChange={e => setSettingsForm(f => ({ ...f, name: e.target.value }))}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14 }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Descripcion</label>
+                <textarea value={settingsForm.description} onChange={e => setSettingsForm(f => ({ ...f, description: e.target.value }))}
+                  rows={3} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Reglas</label>
+                <textarea value={settingsForm.rules} onChange={e => setSettingsForm(f => ({ ...f, rules: e.target.value }))}
+                  rows={4} placeholder="Escribe las reglas de tu comunidad..."
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit' }} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Tipo</label>
+                  <select value={settingsForm.type} onChange={e => setSettingsForm(f => ({ ...f, type: e.target.value }))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14 }}>
+                    <option value="public">Publica</option>
+                    <option value="private">Privada</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 4, display: 'block' }}>Categoria</label>
+                  <select value={settingsForm.category} onChange={e => setSettingsForm(f => ({ ...f, category: e.target.value }))}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14 }}>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 4 }}>
+                <button className="btn btn-secondary" onClick={() => setShowSettings(false)}>Cancelar</button>
+                <button className="btn btn-primary" onClick={handleSaveSettings} disabled={savingSettings || !settingsForm.name.trim()}>
+                  {savingSettings ? 'Guardando...' : 'Guardar cambios'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Report Post Modal */}
+      {reportPostId && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={() => setReportPostId(null)}>
+          <div className="u-card" style={{ width: '100%', maxWidth: 400, padding: 24 }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ margin: 0 }}>{AlertTriangle({ size: 18 })} Reportar publicacion</h3>
+              <button onClick={() => setReportPostId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>{X({ size: 18 })}</button>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 0 }}>Indica el motivo del reporte. Nuestro equipo lo revisara.</p>
+            <textarea value={reportReason} onChange={e => setReportReason(e.target.value)}
+              rows={3} placeholder="Describe el problema..."
+              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, resize: 'vertical', fontFamily: 'inherit', marginBottom: 12 }} />
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setReportPostId(null)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleReport} disabled={!reportReason.trim()} style={{ background: 'var(--accent-red)', borderColor: 'var(--accent-red)' }}>
+                Enviar reporte
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

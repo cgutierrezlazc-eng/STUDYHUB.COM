@@ -579,6 +579,8 @@ export const api = {
     request(`/communities/posts/${postId}/pin`, { method: 'POST' }),
   deleteCommunityPost: (postId: string) =>
     request(`/communities/posts/${postId}`, { method: 'DELETE' }),
+  reportCommunityPost: (postId: string, reason: string) =>
+    request(`/communities/posts/${postId}/report`, { method: 'POST', body: JSON.stringify({ reason }) }),
   getCommunitySuggestions: () => request('/communities/suggestions'),
 
   // ─── Polls ────────────────────────────────────────────────
