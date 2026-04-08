@@ -9,6 +9,7 @@ import {
 
 interface Props {
   onNavigate: (path: string) => void
+  defaultAccount?: 'all' | 'ceo' | 'contacto'
 }
 
 interface EmailItem {
@@ -63,7 +64,7 @@ function stripHtml(html: string): string {
   return div.textContent || div.innerText || ''
 }
 
-export default function CeoMail({ onNavigate }: Props) {
+export default function CeoMail({ onNavigate, defaultAccount = 'all' }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [folder, setFolder] = useState<Folder>('inbox')
@@ -76,7 +77,7 @@ export default function CeoMail({ onNavigate }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [activeAccount, setActiveAccount] = useState<'all' | 'ceo' | 'contacto'>('all')
+  const [activeAccount, setActiveAccount] = useState<'all' | 'ceo' | 'contacto'>(defaultAccount)
 
   // Compose state
   const [showCompose, setShowCompose] = useState(false)

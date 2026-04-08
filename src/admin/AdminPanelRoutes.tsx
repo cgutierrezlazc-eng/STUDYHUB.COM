@@ -34,6 +34,7 @@ const ComplianceTab = lazy(() => import('./legal/ComplianceTab'))
 
 // Tools
 const CeoEmailModule = lazy(() => import('./tools/CeoEmailModule'))
+const ContactoEmailModule = lazy(() => import('./tools/ContactoEmailModule'))
 const CertificationsModule = lazy(() => import('./tools/CertificationsModule'))
 const TutoresExternosTab = lazy(() => import('./tools/TutoresExternosTab'))
 const OwnerGuideTab = lazy(() => import('./tools/OwnerGuideTab'))
@@ -96,7 +97,8 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="legal/fraude" element={<Wrap title="Anti-Fraude"><FraudTab /></Wrap>} />
 
         {/* Tools */}
-        <Route path="tools/email" element={<Wrap title="Email CEO"><CeoEmailModule onNavigate={onNavigate} /></Wrap>} />
+        <Route path="tools/email-ceo" element={<Wrap title="Email CEO"><CeoEmailModule onNavigate={onNavigate} /></Wrap>} />
+        <Route path="tools/email-contacto" element={<Wrap title="Email Contacto"><ContactoEmailModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/certificaciones" element={<Wrap title="Certificaciones"><CertificationsModule /></Wrap>} />
         <Route path="tools/ai-workflows" element={<Wrap title="IA Workflows"><AIWorkflowsModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/tutores" element={<Wrap title="Tutores Externos"><TutoresExternosTab /></Wrap>} />

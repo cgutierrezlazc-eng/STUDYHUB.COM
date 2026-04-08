@@ -35,7 +35,8 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'fraude', label: 'Anti-Fraude', description: 'Detección de fraude y referidos sospechosos', icon: '🔍', category: 'legal', route: '/admin-panel/legal/fraude', status: 'active' },
 
   // ─── Tools & Config ───────────────────────────────────
-  { id: 'email-ceo', label: 'Email CEO', description: 'Correo corporativo, broadcasts y configuración', icon: '✉️', category: 'tools', route: '/admin-panel/tools/email', status: 'active', windowSize: { width: 1400, height: 900 } },
+  { id: 'email-ceo', label: 'Email CEO', description: 'Correo ceo@conniku.com — Comunicaciones ejecutivas', icon: '✉️', category: 'tools', route: '/admin-panel/tools/email-ceo', status: 'active', windowSize: { width: 1400, height: 900 } },
+  { id: 'email-contacto', label: 'Email Contacto', description: 'Correo contacto@conniku.com — Soporte y consultas', icon: '📧', category: 'tools', route: '/admin-panel/tools/email-contacto', status: 'active', windowSize: { width: 1400, height: 900 } },
   { id: 'certificaciones', label: 'Certificaciones', description: 'Gestión de certificados y acreditaciones', icon: '🎓', category: 'tools', route: '/admin-panel/tools/certificaciones', status: 'active' },
   { id: 'ai-workflows', label: 'IA Workflows', description: 'Marketing, QA, diseño y comunidad con IA', icon: '🤖', category: 'tools', route: '/admin-panel/tools/ai-workflows', status: 'active' },
   { id: 'tutores', label: 'Tutores Externos', description: 'Directorio y gestión de tutores contratados', icon: '👨‍🏫', category: 'tools', route: '/admin-panel/tools/tutores', status: 'active' },
