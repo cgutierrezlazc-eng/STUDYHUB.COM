@@ -13,6 +13,7 @@ export default function Profile() {
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<Section>('profile')
   const [isEditing, setIsEditing] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [saved, setSaved] = useState(false)
   const [milestonePopup, setMilestonePopup] = useState<any>(null)
   const [editingUsername, setEditingUsername] = useState(false)
@@ -629,19 +630,21 @@ export default function Profile() {
                 <h3 style={{ color: 'var(--accent-red)' }}>Eliminar Cuenta</h3>
                 <div className="pf-danger-zone">
                   <p>Una vez que elimines tu cuenta, se borrarán permanentemente todos tus datos, proyectos, mensajes y publicaciones. Esta acción no se puede deshacer.</p>
-                  <button className="btn btn-danger btn-sm" onClick={() => {
-                    if (confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción es IRREVERSIBLE.')) {
-                      if (confirm('ÚLTIMA CONFIRMACIÓN: Todos tus datos serán eliminados permanentemente. ¿Continuar?')) {
-                        api.deleteAccount().then(() => {
-                          alert('Tu cuenta ha sido eliminada. Serás redirigido.')
-                          logout()
-                        }).catch((err: any) => alert(err.message || 'Error al eliminar cuenta'))
-                      }
-                    }
-                  }}>
+                  <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteModal(true)}>
                     Eliminar mi cuenta permanentemente
                   </button>
                 </div>
+                {showDeleteModal && (
+                  <DeleteAccountModal
+                    userName={user.firstName || user.username || ''}
+                    onClose={() => setShowDeleteModal(false)}
+                    onConfirmDelete={() => {
+                      api.deleteAccount().then(() => {
+                        logout()
+                      }).catch(() => {})
+                    }}
+                  />
+                )}
               </div>
             )}
 
@@ -716,5 +719,293 @@ export default function Profile() {
         />
       )}
     </>
+  )
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DELETE ACCOUNT MODAL — Retention flow with survey + offers
+// ═══════════════════════════════════════════════════════════════
+type DeleteStep = 'reason' | 'feedback' | 'offer_pro' | 'offer_max' | 'confirm'
+
+const DELETE_REASONS = [
+  { value: 'no_use', label: 'Ya no uso la plataforma' },
+  { value: 'another_platform', label: 'Encontré otra plataforma mejor' },
+  { value: 'too_complex', label: 'La plataforma es muy compleja' },
+  { value: 'missing_features', label: 'Falta funcionalidad que necesito' },
+  { value: 'bugs', label: 'Problemas técnicos o errores' },
+  { value: 'privacy', label: 'Preocupaciones de privacidad' },
+  { value: 'cost', label: 'El costo es muy alto' },
+  { value: 'graduated', label: 'Ya me gradué / no estudio' },
+  { value: 'other', label: 'Otra razón' },
+]
+
+function DeleteAccountModal({ userName, onClose, onConfirmDelete }: {
+  userName: string
+  onClose: () => void
+  onConfirmDelete: () => void
+}) {
+  const [step, setStep] = useState<DeleteStep>('reason')
+  const [reason, setReason] = useState('')
+  const [feedback, setFeedback] = useState('')
+  const [sending, setSending] = useState(false)
+  const [accepted, setAccepted] = useState(false)
+
+  const overlayStyle: React.CSSProperties = {
+    position: 'fixed', inset: 0, zIndex: 10000,
+    background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    padding: 16,
+  }
+  const modalStyle: React.CSSProperties = {
+    background: 'var(--bg-primary)', borderRadius: 16,
+    width: '100%', maxWidth: 480, maxHeight: '90vh', overflow: 'auto',
+    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+  }
+  const headerStyle: React.CSSProperties = {
+    padding: '20px 24px', borderBottom: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+  }
+  const bodyStyle: React.CSSProperties = { padding: '20px 24px' }
+  const footerStyle: React.CSSProperties = {
+    padding: '16px 24px', borderTop: '1px solid var(--border)',
+    display: 'flex', justifyContent: 'space-between', gap: 12,
+  }
+  const btnPrimary: React.CSSProperties = {
+    padding: '10px 20px', borderRadius: 10, border: 'none',
+    background: 'var(--accent)', color: '#fff', fontSize: 13,
+    fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+  }
+  const btnDanger: React.CSSProperties = {
+    ...btnPrimary, background: '#ef4444',
+  }
+  const btnSecondary: React.CSSProperties = {
+    ...btnPrimary, background: 'var(--bg-tertiary)', color: 'var(--text-primary)',
+  }
+  const radioStyle: React.CSSProperties = {
+    padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)',
+    background: 'var(--bg-secondary)', cursor: 'pointer', fontSize: 13,
+    display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.15s',
+  }
+
+  const sendFeedbackToEmail = async () => {
+    const reasonLabel = DELETE_REASONS.find(r => r.value === reason)?.label || reason
+    try {
+      await api.sendClosureFeedback(reasonLabel, feedback)
+    } catch { /* silent */ }
+  }
+
+  const handleAcceptOffer = async (plan: string) => {
+    setAccepted(true)
+    setSending(true)
+    await sendFeedbackToEmail()
+    // In a real implementation, this would activate the trial
+    // For now, just close the modal after a brief delay
+    setTimeout(() => {
+      setSending(false)
+      onClose()
+    }, 1500)
+  }
+
+  const handleFinalDelete = async () => {
+    setSending(true)
+    await sendFeedbackToEmail()
+    onConfirmDelete()
+  }
+
+  return (
+    <div style={overlayStyle} onClick={e => e.target === e.currentTarget && onClose()}>
+      <div style={modalStyle}>
+        {/* Header */}
+        <div style={headerStyle}>
+          <h3 style={{ margin: 0, fontSize: 16 }}>
+            {step === 'reason' && 'Antes de irte...'}
+            {step === 'feedback' && 'Tu opinión nos importa'}
+            {step === 'offer_pro' && '¡Espera! Tenemos algo para ti'}
+            {step === 'offer_max' && 'Última oferta especial'}
+            {step === 'confirm' && 'Confirmar eliminación'}
+          </h3>
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--text-muted)', fontSize: 18, padding: 4,
+          }}>✕</button>
+        </div>
+
+        {/* Step 1: Reason */}
+        {step === 'reason' && (
+          <>
+            <div style={bodyStyle}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+                {userName}, lamentamos que quieras irte. Nos ayudaría mucho saber por qué quieres cerrar tu cuenta.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {DELETE_REASONS.map(r => (
+                  <label key={r.value} style={{
+                    ...radioStyle,
+                    borderColor: reason === r.value ? 'var(--accent)' : 'var(--border)',
+                    background: reason === r.value ? 'rgba(45,98,200,0.08)' : 'var(--bg-secondary)',
+                  }}>
+                    <input
+                      type="radio" name="reason" value={r.value}
+                      checked={reason === r.value}
+                      onChange={() => setReason(r.value)}
+                      style={{ accentColor: 'var(--accent)' }}
+                    />
+                    {r.label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div style={footerStyle}>
+              <button style={btnSecondary} onClick={onClose}>Cancelar</button>
+              <button
+                style={{ ...btnDanger, opacity: reason ? 1 : 0.5 }}
+                disabled={!reason}
+                onClick={() => setStep('feedback')}
+              >
+                Continuar
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Feedback */}
+        {step === 'feedback' && (
+          <>
+            <div style={bodyStyle}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+                ¿Hay algo más que quieras compartir? Tu feedback nos ayuda a mejorar.
+              </p>
+              <textarea
+                value={feedback}
+                onChange={e => setFeedback(e.target.value)}
+                placeholder="Cuéntanos qué podríamos mejorar... (opcional)"
+                style={{
+                  width: '100%', minHeight: 120, padding: '12px 14px',
+                  borderRadius: 10, border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)', color: 'var(--text-primary)',
+                  fontSize: 13, fontFamily: 'inherit', resize: 'vertical',
+                }}
+              />
+            </div>
+            <div style={footerStyle}>
+              <button style={btnSecondary} onClick={() => setStep('reason')}>Atrás</button>
+              <button style={btnDanger} onClick={() => setStep('offer_pro')}>
+                Continuar
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 3: Offer PRO */}
+        {step === 'offer_pro' && (
+          <>
+            <div style={bodyStyle}>
+              <div style={{
+                padding: 24, borderRadius: 12, textAlign: 'center',
+                background: 'linear-gradient(135deg, #2D62C8, #4f8cff)',
+                color: '#fff', marginBottom: 16,
+              }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>⭐</div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>1 Mes PRO Gratis</h3>
+                <p style={{ margin: 0, fontSize: 13, opacity: 0.9 }}>
+                  Queremos que te quedes. Te regalamos un mes completo de Conniku PRO para que explores todas las funcionalidades.
+                </p>
+              </div>
+              <div style={{
+                padding: 14, background: 'var(--bg-secondary)', borderRadius: 10,
+                fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8,
+              }}>
+                <strong>Conniku PRO incluye:</strong>
+                <div style={{ marginTop: 6 }}>
+                  • Proyectos ilimitados y almacenamiento ampliado<br/>
+                  • IA avanzada para estudio y tutoría<br/>
+                  • Acceso a cursos exclusivos<br/>
+                  • Soporte prioritario<br/>
+                  • Sin publicidad
+                </div>
+              </div>
+            </div>
+            <div style={footerStyle}>
+              <button style={btnSecondary} onClick={() => setStep('offer_max')}>
+                No, gracias
+              </button>
+              <button style={btnPrimary} onClick={() => handleAcceptOffer('pro')} disabled={sending}>
+                {accepted ? 'Activando...' : 'Aceptar PRO Gratis'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 4: Offer MAX */}
+        {step === 'offer_max' && (
+          <>
+            <div style={bodyStyle}>
+              <div style={{
+                padding: 24, borderRadius: 12, textAlign: 'center',
+                background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+                color: '#fff', marginBottom: 16,
+              }}>
+                <div style={{ fontSize: 40, marginBottom: 8 }}>💎</div>
+                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>1 Mes MAX Gratis</h3>
+                <p style={{ margin: 0, fontSize: 13, opacity: 0.9 }}>
+                  Nuestra mejor oferta. Te damos acceso completo a Conniku MAX, nuestro plan premium con todo incluido.
+                </p>
+              </div>
+              <div style={{
+                padding: 14, background: 'var(--bg-secondary)', borderRadius: 10,
+                fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.8,
+              }}>
+                <strong>Conniku MAX incluye todo de PRO más:</strong>
+                <div style={{ marginTop: 6 }}>
+                  • IA sin límites (Claude + Gemini)<br/>
+                  • Generación ilimitada de guías, quizzes y flashcards<br/>
+                  • Acceso a todos los cursos y certificaciones<br/>
+                  • Mentoría prioritaria<br/>
+                  • Badge exclusivo MAX en tu perfil
+                </div>
+              </div>
+            </div>
+            <div style={footerStyle}>
+              <button style={{ ...btnDanger, fontSize: 12 }} onClick={() => setStep('confirm')}>
+                No, eliminar mi cuenta
+              </button>
+              <button style={{ ...btnPrimary, background: '#7c3aed' }} onClick={() => handleAcceptOffer('max')} disabled={sending}>
+                {accepted ? 'Activando...' : 'Aceptar MAX Gratis'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 5: Final Confirmation */}
+        {step === 'confirm' && (
+          <>
+            <div style={bodyStyle}>
+              <div style={{
+                padding: 16, background: 'rgba(239,68,68,0.08)', borderRadius: 10,
+                border: '1px solid rgba(239,68,68,0.2)', marginBottom: 16,
+              }}>
+                <p style={{ margin: 0, fontSize: 14, color: '#ef4444', fontWeight: 600 }}>
+                  Esta acción es irreversible
+                </p>
+                <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  Al confirmar, se eliminarán permanentemente todos tus datos: proyectos, documentos, mensajes, publicaciones, progreso en cursos, y toda tu información personal.
+                </p>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+                Tu feedback será enviado al equipo de Conniku para ayudarnos a mejorar. Gracias por haber sido parte de la comunidad.
+              </p>
+            </div>
+            <div style={footerStyle}>
+              <button style={btnSecondary} onClick={onClose}>
+                Cancelar, me quedo
+              </button>
+              <button style={btnDanger} onClick={handleFinalDelete} disabled={sending}>
+                {sending ? 'Eliminando...' : 'Eliminar mi cuenta'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }

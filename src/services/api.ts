@@ -343,6 +343,8 @@ export const api = {
 
   deleteAccount: () =>
     request('/auth/me', { method: 'DELETE' }),
+  sendClosureFeedback: (reason: string, feedback: string) =>
+    request('/auth/me/closure-feedback', { method: 'POST', body: JSON.stringify({ reason, feedback }) }),
 
   // ─── Password Recovery ──────────────────────────────────────
   forgotPassword: (email: string) =>

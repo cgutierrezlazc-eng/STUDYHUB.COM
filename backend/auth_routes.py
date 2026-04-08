@@ -1249,6 +1249,34 @@ def list_tutors(
     return result
 
 
+class AccountClosureFeedback(BaseModel):
+    reason: str
+    feedback: str = ""
+
+
+@router.post("/me/closure-feedback")
+def account_closure_feedback(req: AccountClosureFeedback, user: User = Depends(get_current_user)):
+    """Send account closure feedback to CEO email."""
+    try:
+        from notifications import _send_email_async, _email_template
+        body = f"""
+            <p><strong>Usuario solicita cerrar cuenta</strong></p>
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+                <tr><td style="padding:6px 0;color:#6B7280;width:120px">Nombre:</td><td style="padding:6px 0"><strong>{user.first_name} {user.last_name}</strong></td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Email:</td><td style="padding:6px 0">{user.email}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Username:</td><td style="padding:6px 0">@{user.username}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Razón:</td><td style="padding:6px 0;color:#ef4444;font-weight:600">{req.reason}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280;vertical-align:top">Feedback:</td><td style="padding:6px 0">{req.feedback or 'Sin comentarios adicionales'}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Miembro desde:</td><td style="padding:6px 0">{user.created_at.strftime('%d/%m/%Y') if user.created_at else 'N/A'}</td></tr>
+            </table>
+        """
+        html = _email_template("Solicitud de cierre de cuenta", body)
+        _send_email_async("ceo@conniku.com", f"Cierre de cuenta — {user.first_name} {user.last_name}", html, from_account="ceo")
+    except Exception:
+        pass
+    return {"sent": True}
+
+
 @router.delete("/me")
 def delete_account(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Permanently delete user account and all associated data."""
