@@ -202,6 +202,31 @@ export default function Jobs({ onNavigate }: Props) {
   const [coachLoading, setCoachLoading] = useState(false)
   const [coachError, setCoachError] = useState('')
 
+  // Quick Apply & local application tracking
+  const [showQuickApply, setShowQuickApply] = useState(false)
+  const [localApps, setLocalApps] = useState<Record<string, { jobTitle: string; companyName: string; date: string; status: string }>>(() => {
+    try { return JSON.parse(localStorage.getItem('conniku_applications') || '{}') } catch { return {} }
+  })
+  const saveLocalApp = (job: any) => {
+    const next = { ...localApps, [job.id]: { jobTitle: job.jobTitle, companyName: job.companyName, date: new Date().toISOString().slice(0, 10), status: 'Enviada' } }
+    setLocalApps(next)
+    localStorage.setItem('conniku_applications', JSON.stringify(next))
+  }
+  const localAppCount = Object.keys(localApps).length
+
+  // Match score heuristic
+  const getMatchScore = (job: any): { pct: number; label: string; icon: string } => {
+    const userKeywords = [user?.career, ...(cv.competencies || []), ...(cv.skillGroups?.flatMap(g => g.skills.map(s => s.name)) || [])].filter(Boolean).map(k => (k as string).toLowerCase())
+    if (userKeywords.length === 0) return { pct: 0, label: '', icon: '' }
+    const jobText = `${job.jobTitle} ${job.description || ''} ${job.requirements || ''} ${job.careerField || ''}`.toLowerCase()
+    const matches = userKeywords.filter(kw => jobText.includes(kw)).length
+    const pct = Math.min(99, Math.round((matches / Math.max(userKeywords.length, 1)) * 100))
+    if (pct >= 60) return { pct, label: 'Alta compatibilidad', icon: '\u26A1' }
+    if (pct >= 30) return { pct, label: 'Media', icon: '\uD83D\uDCCA' }
+    if (pct > 0) return { pct, label: 'Baja', icon: '\u2753' }
+    return { pct: 0, label: '', icon: '' }
+  }
+
   useEffect(() => {
     loadJobs()
     loadMyCV()
@@ -1005,7 +1030,7 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
         <div style={{ display: 'flex', gap: 8, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
           {TAB_CONFIG_KEYS.map(tc => (
             <button key={tc.key} className={`tab ${tab === tc.key ? 'active' : ''}`} onClick={() => handleTabChange(tc.key)}>
-              {tc.icon({ size: 14 })} {t(tc.labelKey)}
+              {tc.icon({ size: 14 })} {t(tc.labelKey)}{tc.key === 'my-apps' && localAppCount > 0 ? ` (${localAppCount})` : ''}
             </button>
           ))}
         </div>
@@ -1262,12 +1287,13 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
                           <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</span>
                         )}
                         <span style={{ color: 'var(--text-muted)' }}>{t(EXP_LEVEL_KEYS[job.experienceLevel] || '')}</span>
+                        {(() => { const m = getMatchScore(job); return m.pct > 0 ? <span style={{ color: m.pct >= 60 ? 'var(--accent-green)' : m.pct >= 30 ? '#D97706' : 'var(--text-muted)', fontWeight: 600 }}>{m.icon} {m.pct}% {m.label}</span> : null })()}
                       </div>
                     </div>
-                    {job.applied ? (
-                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} {t('jobs.applied')}</span>
+                    {job.applied || localApps[job.id] ? (
+                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} Postulacion enviada</span>
                     ) : (
-                      <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); setSelectedJob(job); setShowApply(true) }}>{t('jobs.apply')}</button>
+                      <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); setSelectedJob(job); setShowQuickApply(true) }} style={{ whiteSpace: 'nowrap' }}>{Zap({ size: 12 })} Postulacion Rapida</button>
                     )}
                   </div>
                 </div>
@@ -1305,11 +1331,25 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
         )}
 
         {/* My Applications */}
-        {tab === 'my-apps' && (
+        {tab === 'my-apps' && (() => {
+          // Merge server apps with localStorage apps (localStorage fills gaps for offline/quick-applied)
+          const serverIds = new Set(myApps.map((a: any) => a.job?.id || a.jobId))
+          const localOnly = Object.entries(localApps).filter(([id]) => !serverIds.has(id))
+          const hasAny = myApps.length > 0 || localOnly.length > 0
+          const STATUS_LABELS: Record<string, string> = { Enviada: 'Enviada', 'En revision': 'En revision', Entrevista: 'Entrevista', Aceptado: 'Aceptado', Rechazado: 'Rechazado' }
+          const STATUS_COLORS: Record<string, { bg: string; color: string }> = {
+            Enviada: { bg: 'var(--bg-tertiary)', color: 'var(--text-muted)' },
+            'En revision': { bg: 'rgba(59,130,246,0.08)', color: '#3B82F6' },
+            Entrevista: { bg: 'rgba(5,150,105,0.08)', color: 'var(--accent-green)' },
+            Aceptado: { bg: 'rgba(5,150,105,0.15)', color: 'var(--accent-green)' },
+            Rechazado: { bg: 'rgba(220,38,38,0.08)', color: 'var(--accent-red)' },
+          }
+          return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {myApps.length === 0 ? (
+            {!hasAny ? (
               <div className="empty-state" style={{ padding: 40 }}><div>{FileText({ size: 48 })}</div><h3>{t('jobs.noApplications')}</h3></div>
-            ) : myApps.map((a: any) => (
+            ) : (<>
+              {myApps.map((a: any) => (
               <div key={a.id} className="u-card hover-lift" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
                   {a.job?.companyLogo ? <img src={a.job.companyLogo} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
@@ -1326,9 +1366,25 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
                   {a.status === 'pending' ? <>{Hourglass({ size: 12 })} {t('jobs.statusPending')}</> : a.status === 'reviewed' ? <>{Eye({ size: 12 })} {t('jobs.statusReviewed')}</> : a.status === 'interview' ? <>{Target({ size: 12 })} {t('jobs.statusInterview')}</> : a.status === 'accepted' ? <>{CheckCircle({ size: 12 })} {t('jobs.statusAccepted')}</> : <>{XCircle({ size: 12 })} {t('jobs.statusRejected')}</>}
                 </span>
               </div>
-            ))}
+              ))}
+              {localOnly.map(([id, app]) => (
+              <div key={id} className="u-card hover-lift" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
+                  {BuildingIcon({ size: 20 })}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{app.jobTitle}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{app.companyName} · {app.date}</div>
+                </div>
+                <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 12, fontWeight: 600, background: (STATUS_COLORS[app.status] || STATUS_COLORS.Enviada).bg, color: (STATUS_COLORS[app.status] || STATUS_COLORS.Enviada).color }}>
+                  {Hourglass({ size: 12 })} {STATUS_LABELS[app.status] || app.status}
+                </span>
+              </div>
+              ))}
+            </>)}
           </div>
-        )}
+          )
+        })()}
 
         {/* Tutoring Tab */}
         {tab === 'tutoring' && (
@@ -1486,7 +1542,33 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
           </div>
         )}
 
-        {/* Apply Modal */}
+        {/* Quick Apply Modal */}
+        {showQuickApply && selectedJob && (
+          <div className="modal-overlay" onClick={() => setShowQuickApply(false)}>
+            <div className="modal" onClick={e => e.stopPropagation()}>
+              <h3>{Zap({ size: 18 })} Postulacion Rapida</h3>
+              <p style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Postular a {selectedJob.jobTitle} en {selectedJob.companyName}?</p>
+              <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: 14, marginTop: 12, fontSize: 13 }}>
+                <div style={{ marginBottom: 6 }}><strong>Nombre:</strong> {user?.firstName} {user?.lastName}</div>
+                <div style={{ marginBottom: 6 }}><strong>Email:</strong> {user?.email}</div>
+                {user?.career && <div style={{ marginBottom: 6 }}><strong>Carrera:</strong> {user.career}</div>}
+                {user?.university && <div><strong>Universidad:</strong> {user.university}</div>}
+              </div>
+              <div className="auth-field" style={{ marginTop: 12 }}>
+                <label>Carta de presentacion (opcional)</label>
+                <textarea value={coverLetter} onChange={e => setCoverLetter(e.target.value)}
+                  placeholder="Escribe un breve mensaje al reclutador..."
+                  style={{ width: '100%', minHeight: 80, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit', fontSize: 14 }} />
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                <button className="btn btn-secondary" onClick={() => setShowQuickApply(false)}>Cancelar</button>
+                <button className="btn btn-primary" onClick={() => { handleApply(selectedJob.id); saveLocalApp(selectedJob); setShowQuickApply(false) }}>{Zap({ size: 14 })} Confirmar Postulacion</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Full Apply Modal (from detail view) */}
         {showApply && selectedJob && (
           <div className="modal-overlay" onClick={() => setShowApply(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
@@ -1500,7 +1582,7 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button className="btn btn-secondary" onClick={() => setShowApply(false)}>{t('jobs.cancel')}</button>
-                <button className="btn btn-primary" onClick={() => handleApply(selectedJob.id)}>{t('jobs.sendApplication')}</button>
+                <button className="btn btn-primary" onClick={() => { handleApply(selectedJob.id); saveLocalApp(selectedJob) }}>{t('jobs.sendApplication')}</button>
               </div>
             </div>
           </div>
@@ -1585,7 +1667,11 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
               {selectedJob.benefits && <div style={{ marginBottom: 16 }}><h4 style={{ fontSize: 14, marginBottom: 4 }}>{t('jobs.benefits')}</h4><div style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{selectedJob.benefits}</div></div>}
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button className="btn btn-secondary" onClick={() => setSelectedJob(null)}>{t('jobs.close')}</button>
-                {!selectedJob.applied && <button className="btn btn-primary" onClick={() => setShowApply(true)}>{t('jobs.apply')}</button>}
+                {!selectedJob.applied && !localApps[selectedJob.id] ? (
+                  <button className="btn btn-primary" onClick={() => setShowQuickApply(true)}>{Zap({ size: 14 })} Postulacion Rapida</button>
+                ) : (
+                  <span style={{ fontSize: 13, color: 'var(--accent-green)', fontWeight: 600 }}>{CheckCircle({ size: 14 })} Postulacion enviada</span>
+                )}
               </div>
             </div>
           </div>

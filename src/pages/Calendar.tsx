@@ -346,12 +346,17 @@ export default function Calendar({ projects, onNavigate }: Props) {
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
         ) : events.length === 0 && !showForm ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div className="empty-state-icon">{CalendarIcon({ size: 48 })}</div>
-            <h3>{t('calendar.emptyTitle')}</h3>
-            <p>{t('calendar.emptySubtitle')}</p>
-            <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowForm(true)}>
-              {t('calendar.emptyBtn')}
+          <div className="empty-state" style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ marginBottom: 16, opacity: 0.6 }}>{CalendarIcon({ size: 56, color: 'var(--accent)' })}</div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Organiza tu semestre</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+              Agenda pruebas, entregas y sesiones de estudio para no olvidar nada importante
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+              Ej: Solemne 1 Calculo, Entrega informe, Repaso grupal
+            </p>
+            <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+              + Nuevo evento
             </button>
           </div>
         ) : view === 'month' ? (

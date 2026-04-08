@@ -130,12 +130,17 @@ export default function Marketplace({ onNavigate }: Props) {
         {loading ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
         ) : documents.length === 0 ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
-            <h3>{t('marketplace.emptyTitle')}</h3>
-            <p>{t('marketplace.emptySubtitle')}</p>
-            <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowShare(true)}>
-              {t('marketplace.emptyBtn')}
+          <div className="empty-state" style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ marginBottom: 16, opacity: 0.6 }}>{BookOpen({ size: 56, color: 'var(--accent)' })}</div>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Comparte y descubre apuntes</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+              Sube tus mejores apuntes para ayudar a otros y encuentra material de calidad para tus ramos
+            </p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+              Ej: Resumen Termodinamica, Guia Derecho Penal, Formulario Estadistica
+            </p>
+            <button className="btn btn-primary" onClick={() => setShowShare(true)}>
+              + Compartir documento
             </button>
           </div>
         ) : (

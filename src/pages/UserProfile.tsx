@@ -147,6 +147,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [examResult, setExamResult] = useState<any>(null)
   const [examLoading, setExamLoading] = useState(false)
   const [studentClassFilter, setStudentClassFilter] = useState<'upcoming' | 'past' | 'all'>('all')
+  const [mutualFriends, setMutualFriends] = useState<any[]>([])
+  const [showMutualList, setShowMutualList] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -158,6 +160,18 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     if (user && userId === user.id) {
       api.getMyTutorProfile().then(tp => setTutorProfile(tp)).catch(() => setTutorProfile(null))
     }
+  }, [userId, user])
+
+  // Compute mutual friends for other users' profiles
+  useEffect(() => {
+    if (!user || userId === user.id) { setMutualFriends([]); return }
+    Promise.all([api.getFriends(), api.getUserFriends(userId)])
+      .then(([myFriends, theirFriends]) => {
+        const myIds = new Set((myFriends || []).map((f: any) => f.id || f.userId))
+        const mutual = (theirFriends || []).filter((f: any) => myIds.has(f.id || f.userId))
+        setMutualFriends(mutual)
+      })
+      .catch(() => setMutualFriends([]))
   }, [userId, user])
 
   const loadCV = async () => {
@@ -689,6 +703,58 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {isOwn && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                   <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate('/friends')}>{t('userprofile.findFriends')}</button>
+                </div>
+              )}
+
+              {/* Social context — only on other users' profiles */}
+              {!isOwn && profile && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12, alignItems: 'center' }}>
+                  {mutualFriends.length > 0 && (
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={() => setShowMutualList(!showMutualList)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-hover)', border: '1px solid var(--border-subtle)', borderRadius: 20, padding: '4px 12px 4px 4px', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
+                        <div style={{ display: 'flex' }}>
+                          {mutualFriends.slice(0, 3).map((f: any, i: number) => (
+                            <div key={f.id || i} style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: i > 0 ? -6 : 0, border: '2px solid var(--bg-card)', overflow: 'hidden' }}>
+                              {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (f.firstName?.[0] || '?')}
+                            </div>
+                          ))}
+                        </div>
+                        👥 {mutualFriends.length} amigo{mutualFriends.length !== 1 ? 's' : ''} en común
+                      </button>
+                      {showMutualList && (
+                        <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: 8, minWidth: 200, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: 200, overflowY: 'auto' }}>
+                          {mutualFriends.map((f: any) => (
+                            <div key={f.id} onClick={() => { setShowMutualList(false); onNavigate(`/profile/${f.id}`) }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>
+                              <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                                {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (f.firstName?.[0] || '?')}
+                              </div>
+                              <span>{f.firstName} {f.lastName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {user?.university && profile.university && user.university === profile.university && (
+                    <span style={{ background: 'rgba(45,98,200,0.1)', color: 'var(--accent-blue)', borderRadius: 16, padding: '4px 12px', fontSize: 12, fontWeight: 500 }}>🏛️ Estudia en {profile.university}</span>
+                  )}
+                  {user?.career && profile.career && user.career === profile.career && (
+                    <span style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--accent-green)', borderRadius: 16, padding: '4px 12px', fontSize: 12, fontWeight: 500 }}>📚 Misma carrera: {profile.career}</span>
+                  )}
+                  {profile.lastLogin && (
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>⏰ Activo {(() => {
+                      const diff = Date.now() - new Date(profile.lastLogin).getTime()
+                      const mins = Math.floor(diff / 60000)
+                      if (mins < 1) return 'ahora'
+                      if (mins < 60) return `hace ${mins}m`
+                      const hrs = Math.floor(mins / 60)
+                      if (hrs < 24) return `hace ${hrs}h`
+                      return `hace ${Math.floor(hrs / 24)}d`
+                    })()}</span>
+                  )}
+                  {/* Quick actions */}
+                  <button className="btn btn-sm" style={{ borderRadius: 20, background: 'var(--accent)', color: '#fff', border: 'none', fontSize: 12, padding: '4px 14px', cursor: 'pointer' }} onClick={() => onNavigate(`/messages?new=${userId}`)}>💬 Enviar mensaje</button>
+                  <button className="btn btn-sm" style={{ borderRadius: 20, background: 'linear-gradient(135deg, #7c3aed, #6366f1)', color: '#fff', border: 'none', fontSize: 12, padding: '4px 14px', cursor: 'pointer' }} onClick={() => onNavigate(`/study-room?invite=${userId}`)}>📚 Estudiar juntos</button>
                 </div>
               )}
             </div>

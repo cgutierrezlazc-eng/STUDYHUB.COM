@@ -147,20 +147,36 @@ export default function Communities({ onNavigate }: Props) {
             ))}
           </div>
         ) : communities.length === 0 ? (
-          <div className="empty-state">
-            <div className="empty-state-icon" style={{ background: 'rgba(124,58,237,0.08)' }}>
-              {Users({ size: 28, color: 'var(--accent-purple)' })}
+          <div className="empty-state" style={{ padding: 48, textAlign: 'center' }}>
+            <div style={{ marginBottom: 16, opacity: 0.6 }}>
+              {Users({ size: 56, color: 'var(--accent-purple)' })}
             </div>
-            <div className="empty-state-title">{tab === 'my' ? t('communities.emptyMy') : t('communities.emptyExplore')}</div>
-            <div className="empty-state-desc">{tab === 'my' ? t('communities.emptyMyDesc') : t('communities.emptyExploreDesc')}</div>
             {tab === 'my' ? (
-              <button className="empty-state-cta" onClick={() => setTab('explore')}>
-                {SearchIcon({ size: 14 })} {t('communities.exploreBtn')}
-              </button>
+              <>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Aun no te unes a ninguna comunidad</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                  Unete a comunidades para discutir temas, compartir recursos y conocer gente de tu carrera
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+                  Ej: Ingenieria Civil UCH, Medicina UDP, Derecho PUC
+                </p>
+                <button className="btn btn-primary" onClick={() => setTab('explore')}>
+                  {SearchIcon({ size: 14 })} Explorar comunidades
+                </button>
+              </>
             ) : (
-              <button className="empty-state-cta" onClick={() => setShowCreate(true)}>
-                {t('communities.createBtn')}
-              </button>
+              <>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No se encontraron comunidades</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                  Se el primero en crear una comunidad para tu carrera, ramo o grupo de estudio
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+                  Ej: Grupo Calculo II, Foro Ingenieria, Club de Programacion
+                </p>
+                <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+                  + Crear comunidad
+                </button>
+              </>
             )}
           </div>
         ) : (

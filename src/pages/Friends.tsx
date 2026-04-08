@@ -130,11 +130,16 @@ export default function Friends({ onNavigate }: Props) {
           <div className="friends-grid">
             {friends.length === 0 ? (
               suggestions.length === 0 ? (
-                <div className="friends-empty">
-                  <div className="empty-state-icon">{Users({ size: 48 })}</div>
-                  <h3>{t('friends.emptyTitle')}</h3>
-                  <p>{t('friends.emptyDescSearch')}</p>
-                  <div className="friends-search-bar" style={{ marginTop: 16, marginBottom: 12 }}>
+                <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
+                  <div style={{ marginBottom: 16, opacity: 0.6 }}>{Users({ size: 56, color: 'var(--accent)' })}</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Conecta con tus companeros</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                    Agrega amigos para estudiar juntos, compartir apuntes y competir en las ligas semanales
+                  </p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+                    Busca por nombre, usuario o universidad
+                  </p>
+                  <div className="friends-search-bar" style={{ marginTop: 0, marginBottom: 12, maxWidth: 400, margin: '0 auto' }}>
                     <input
                       placeholder={t('friends.searchPlaceholder')}
                       value={searchQuery}
@@ -145,11 +150,13 @@ export default function Friends({ onNavigate }: Props) {
                   </div>
                 </div>
               ) : (
-                <div className="friends-empty">
-                  <div className="empty-state-icon">{Users({ size: 48 })}</div>
-                  <h3>{t('friends.emptyTitle')}</h3>
-                  <p>{t('friends.emptyDescSuggestions')}</p>
-                  <button className="btn btn-primary" onClick={() => setTab('search')}>{t('friends.tabSearch')}</button>
+                <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
+                  <div style={{ marginBottom: 16, opacity: 0.6 }}>{Users({ size: 56, color: 'var(--accent)' })}</div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Aun no tienes amigos</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                    Revisa las sugerencias de arriba o busca companeros de tu carrera para empezar
+                  </p>
+                  <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar companeros</button>
                 </div>
               )
             ) : (
@@ -181,9 +188,12 @@ export default function Friends({ onNavigate }: Props) {
         {tab === 'requests' && (
           <div className="friends-grid">
             {requests.length === 0 ? (
-              <div className="friends-empty">
-                <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
-                <h3>{t('friends.noRequests')}</h3>
+              <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
+                <div style={{ marginBottom: 16, opacity: 0.6 }}>{Inbox({ size: 56, color: 'var(--accent)' })}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Sin solicitudes pendientes</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                  Cuando alguien te envie una solicitud de amistad, aparecera aqui
+                </p>
               </div>
             ) : (
               requests.map(req => (
@@ -214,11 +224,13 @@ export default function Friends({ onNavigate }: Props) {
         {tab === 'sent' && (
           <div className="friends-grid">
             {sentRequests.length === 0 ? (
-              <div className="friends-empty">
-                <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
-                <h3>{t('friends.noSent')}</h3>
-                <p>{t('friends.noSentDesc')}</p>
-                <button className="btn btn-primary" onClick={() => setTab('search')}>{t('friends.tabSearch')}</button>
+              <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
+                <div style={{ marginBottom: 16, opacity: 0.6 }}>{Inbox({ size: 56, color: 'var(--accent)' })}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>No has enviado solicitudes</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                  Busca companeros de tu universidad y enviales una solicitud para estudiar juntos
+                </p>
+                <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar companeros</button>
               </div>
             ) : (
               sentRequests.map(req => (

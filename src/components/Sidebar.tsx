@@ -21,7 +21,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   // Collapsible section state — auto-open section containing active route
   const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
-  const academicPaths = ['/dashboard', '/study-rooms', '/quizzes', '/gamification', '/search', '/calendar', '/marketplace', '/jobs']
+  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/quizzes', '/gamification', '/search', '/calendar', '/marketplace', '/jobs']
   const supportPaths = ['/profile', '/subscription', '/suggestions', '/admin', '/admin-panel']
 
   const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
@@ -115,6 +115,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             </button>
             <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
               {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
+            </button>
+            <button className={`nav-item ${isActive('/study-paths') ? 'active' : ''}`} onClick={() => onNavigate('/study-paths')}>
+              {Icons.bookOpen(IC.rooms)} Rutas de Estudio
             </button>
             <button className={`nav-item ${isActive('/quizzes') ? 'active' : ''}`} onClick={() => onNavigate('/quizzes')}>
               {Icons.sparkles(IC.ai)} Quizzes
