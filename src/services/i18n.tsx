@@ -26,6 +26,9 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.documents': 'Documentos',
     'dash.guides': 'Guías Generadas',
     'dash.studyTime': 'Tiempo de Estudio',
+    'dash.projects': 'Asignaturas',
+    'dash.noProjects': 'Aún no tienes asignaturas',
+    'dash.noProjectsHint': 'Crea tu primera asignatura y sube tus apuntes para que Conniku te ayude a estudiar con IA',
     'dash.empty': 'No tienes asignaturas todavía',
     'dash.emptyHint': 'Crea tu primera asignatura para empezar a estudiar de forma interactiva',
 
