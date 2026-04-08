@@ -236,13 +236,22 @@ function OnboardingSection({ processes, setProcesses, templates }: {
 }) {
   const [showForm, setShowForm] = useState(false)
   const [selectedEmpId, setSelectedEmpId] = useState('')
-  const [selectedTplId, setSelectedTplId] = useState(templates[0]?.id || '')
+  const onboardingTemplates = templates.filter(t => t.type === 'onboarding')
+  const [selectedTplId, setSelectedTplId] = useState(onboardingTemplates[0]?.id || '')
   const [startDate, setStartDate] = useState(todayStr())
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
+  // Ensure template is selected when templates load
+  useEffect(() => {
+    if (!selectedTplId && onboardingTemplates.length > 0) {
+      setSelectedTplId(onboardingTemplates[0].id)
+    }
+  }, [onboardingTemplates.length])
+
   const handleCreate = () => {
     const emp = SEED_EMPLOYEES.find(e => e.id === selectedEmpId)
-    const tpl = templates.find(t => t.id === selectedTplId)
+    const tplId = selectedTplId || onboardingTemplates[0]?.id
+    const tpl = templates.find(t => t.id === tplId)
     if (!emp || !tpl) return
 
     // Prevent duplicates for active processes
@@ -341,7 +350,7 @@ function OnboardingSection({ processes, setProcesses, templates }: {
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)' }}>Plantilla</label>
               <select style={selectStyle} value={selectedTplId} onChange={e => setSelectedTplId(e.target.value)}>
-                {templates.map(t => (
+                {onboardingTemplates.map(t => (
                   <option key={t.id} value={t.id}>{t.name}</option>
                 ))}
               </select>
@@ -351,7 +360,7 @@ function OnboardingSection({ processes, setProcesses, templates }: {
               <input type="date" style={inputStyle} value={startDate} onChange={e => setStartDate(e.target.value)} />
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button style={btnPrimary} onClick={handleCreate} disabled={!selectedEmpId}>
+              <button style={btnPrimary} onClick={handleCreate} disabled={!selectedEmpId || !selectedTplId}>
                 Crear Onboarding
               </button>
             </div>
