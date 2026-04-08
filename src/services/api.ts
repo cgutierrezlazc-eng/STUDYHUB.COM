@@ -115,6 +115,22 @@ export const api = {
       body: JSON.stringify({ path: filePath }),
     }),
 
+  // ─── AI Workflows (Gemini — free) ──────────────────────────
+  aiMarketing: (data: any) =>
+    request('/ai-workflows/marketing/generate', { method: 'POST', body: JSON.stringify(data) }),
+  aiMarketingCalendar: (data: any) =>
+    request('/ai-workflows/marketing/calendar', { method: 'POST', body: JSON.stringify(data) }),
+  aiModerate: (data: any) =>
+    request('/ai-workflows/community/moderate', { method: 'POST', body: JSON.stringify(data) }),
+  aiEngage: (data: any) =>
+    request('/ai-workflows/community/engage', { method: 'POST', body: JSON.stringify(data) }),
+  aiCodeReview: (data: any) =>
+    request('/ai-workflows/qa/review', { method: 'POST', body: JSON.stringify(data) }),
+  aiTestPlan: (data: any) =>
+    request('/ai-workflows/qa/test-plan', { method: 'POST', body: JSON.stringify(data) }),
+  aiDesignBrief: (data: any) =>
+    request('/ai-workflows/design/brief', { method: 'POST', body: JSON.stringify(data) }),
+
   // ─── Support Chat ──────────────────────────────────────────
   supportChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),

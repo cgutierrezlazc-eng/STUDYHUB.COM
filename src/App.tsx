@@ -52,6 +52,7 @@ const Conferences = React.lazy(() => import('./pages/Conferences'))
 const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
 const CVProfile = React.lazy(() => import('./pages/CVProfile'))
 const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
+const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
@@ -302,6 +303,7 @@ export default function App() {
             <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/ai-workflows" element={<AIWorkflows onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />

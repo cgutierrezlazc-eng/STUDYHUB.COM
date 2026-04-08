@@ -235,6 +235,13 @@ const Icons = {
       </svg>
     </DuotoneIcon>
   ),
+  sparkles: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z" fill={`${c}20`} />
+      </svg>
+    </DuotoneIcon>
+  ),
 }
 
 /* ─── Icon color palette ─── */
@@ -262,6 +269,7 @@ const IC = {
   library:    '#D97706', // amber-dark
   hr:         '#8B5CF6', // violet
   admin:      '#64748B', // slate
+  ai:         '#10B981', // emerald
   plus:       '#94A3B8', // neutral
 }
 
@@ -281,7 +289,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   // Collapsible section state — auto-open section containing active route
   const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/mentorship', '/messages', '/my-profile']
   const academicPaths = ['/dashboard', '/study-rooms', '/conferences', '/search', '/calendar', '/marketplace', '/jobs', '/courses', '/tutores', '/biblioteca']
-  const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/admin']
+  const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/ai-workflows', '/admin']
 
   const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
   const isAcademicActive = academicPaths.some(p => currentPath.startsWith(p))
@@ -452,6 +460,11 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             {user?.role === 'owner' && (
               <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
                 {Icons.users2(IC.hr)} RRHH
+              </button>
+            )}
+            {user?.role === 'owner' && (
+              <button className={`nav-item ${isActive('/ai-workflows') ? 'active' : ''}`} onClick={() => onNavigate('/ai-workflows')}>
+                {Icons.sparkles(IC.ai)} IA Workflows
               </button>
             )}
             {user?.isAdmin && (
