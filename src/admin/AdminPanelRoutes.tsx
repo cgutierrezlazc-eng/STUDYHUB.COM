@@ -10,6 +10,12 @@ const PersonalTab = lazy(() => import('./hr/PersonalTab'))
 const ContratosTab = lazy(() => import('./hr/ContratosTab'))
 const AsistenciaTab = lazy(() => import('./hr/AsistenciaTab'))
 const VacacionesTab = lazy(() => import('./hr/VacacionesTab'))
+const AccessControlTab = lazy(() => import('./hr/AccessControlTab'))
+const OnboardingTab = lazy(() => import('./hr/OnboardingTab'))
+const DocumentosTab = lazy(() => import('./hr/DocumentosTab'))
+const DesempenoTab = lazy(() => import('./hr/DesempenoTab'))
+const ReclutamientoTab = lazy(() => import('./hr/ReclutamientoTab'))
+const CapacitacionTab = lazy(() => import('./hr/CapacitacionTab'))
 
 // Payroll
 const PayrollModule = lazy(() => import('./payroll/PayrollModule'))
@@ -79,6 +85,12 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="hr/contratos" element={<Wrap title="Contratos y Vida Laboral"><ContratosTab /></Wrap>} />
         <Route path="hr/asistencia" element={<Wrap title="Asistencia y Jornada"><AsistenciaTab /></Wrap>} />
         <Route path="hr/vacaciones" element={<Wrap title="Vacaciones y Permisos"><VacacionesTab /></Wrap>} />
+        <Route path="hr/accesos" element={<Wrap title="Control de Accesos"><AccessControlTab /></Wrap>} />
+        <Route path="hr/onboarding" element={<Wrap title="Onboarding / Offboarding"><OnboardingTab /></Wrap>} />
+        <Route path="hr/documentos" element={<Wrap title="Documentos del Trabajador"><DocumentosTab /></Wrap>} />
+        <Route path="hr/desempeno" element={<Wrap title="Evaluación de Desempeño"><DesempenoTab /></Wrap>} />
+        <Route path="hr/reclutamiento" element={<Wrap title="Reclutamiento"><ReclutamientoTab /></Wrap>} />
+        <Route path="hr/capacitacion" element={<Wrap title="Capacitación / SENCE"><CapacitacionTab /></Wrap>} />
 
         {/* Payroll & Legal */}
         <Route path="payroll" element={<Wrap title="Remuneraciones"><PayrollModule /></Wrap>} />
