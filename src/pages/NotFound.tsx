@@ -1,10 +1,12 @@
 import React from 'react'
+import { useI18n } from '../services/i18n'
 
 interface Props {
   onNavigate: (path: string) => void
 }
 
 export default function NotFound({ onNavigate }: Props) {
+  const { t } = useI18n()
   return (
     <div style={{
       height: '100%', minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -58,13 +60,13 @@ export default function NotFound({ onNavigate }: Props) {
         fontSize: 22, fontWeight: 700, margin: '8px 0 0', color: 'var(--text-primary)',
         letterSpacing: '-0.02em',
       }}>
-        Pagina no encontrada
+        {t('notfound.heading')}
       </h2>
       <p style={{
         fontSize: 14, color: 'var(--text-muted)', margin: '8px 0 0', textAlign: 'center',
         maxWidth: 400, lineHeight: 1.6,
       }}>
-        La pagina que buscas no existe o fue movida. Revisa la URL o vuelve al inicio.
+        {t('notfound.description')}
       </p>
 
       {/* Action buttons */}
@@ -79,7 +81,7 @@ export default function NotFound({ onNavigate }: Props) {
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(45,98,200,0.4)' }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '0 2px 12px rgba(45,98,200,0.3)' }}
         >
-          Ir al Inicio
+          {t('notfound.homeBtn')}
         </button>
         <button onClick={() => onNavigate('/dashboard')}
           style={{
@@ -90,7 +92,7 @@ export default function NotFound({ onNavigate }: Props) {
           onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
         >
-          Dashboard
+          {t('sidebar.dashboard')}
         </button>
         <button onClick={() => onNavigate('/courses')}
           style={{
@@ -101,7 +103,7 @@ export default function NotFound({ onNavigate }: Props) {
           onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-secondary)'}
         >
-          Cursos
+          {t('nav.mySubjects')}
         </button>
       </div>
 
@@ -112,17 +114,17 @@ export default function NotFound({ onNavigate }: Props) {
         maxWidth: 460, width: '100%',
       }}>
         <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Enlaces rapidos
+          {t('notfound.quickLinks')}
         </p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {[
-            { path: '/feed', label: 'Feed' },
-            { path: '/communities', label: 'Comunidades' },
-            { path: '/jobs', label: 'Bolsa de Trabajo' },
-            { path: '/events', label: 'Eventos' },
+            { path: '/feed', label: t('sidebar.feed') },
+            { path: '/communities', label: t('sidebar.communities') },
+            { path: '/jobs', label: t('sidebar.jobBoard') },
+            { path: '/events', label: t('sidebar.events') },
             { path: '/mentorship', label: 'Tutorias' },
             { path: '/friends', label: 'Amigos' },
-            { path: '/messages', label: 'Mensajes' },
+            { path: '/messages', label: t('sidebar.messages') },
             { path: '/marketplace', label: 'Marketplace' },
           ].map(link => (
             <button key={link.path} onClick={() => onNavigate(link.path)}

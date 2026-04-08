@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useDevice } from '../hooks/useDevice'
+import { useI18n } from '../services/i18n'
 
 interface Props {
   onLogin: () => void
@@ -102,6 +103,7 @@ function ProfileMockup() {
 
 /* Chat mockup */
 function ChatMockup() {
+  const { t } = useI18n()
   const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
   const msgs = [
     { text: 'Hola! Tienes la guia de estudio?', sent: false, time: '10:31' },
@@ -116,7 +118,7 @@ function ChatMockup() {
         <div style={{ width: 32, height: 32, borderRadius: '50%', backgroundImage: "url('https://i.pravatar.cc/150?img=12')", backgroundSize: 'cover' }} />
         <div>
           <div style={{ fontSize: 13, fontWeight: 600, color: vars.textPrimary }}>Carlos Mendoza</div>
-          <div style={{ fontSize: 10, color: '#34D399', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399' }} /> En linea</div>
+          <div style={{ fontSize: 10, color: '#34D399', display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34D399' }} /> {t('landing.online')}</div>
         </div>
       </div>
       <div style={{ padding: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -146,12 +148,13 @@ function ChatMockup() {
 
 /* Doc study mockup */
 function DocMockup() {
+  const { t } = useI18n()
   const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8', accentLight: '#E2EAF9' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: `1px solid ${vars.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke={vars.accent} strokeWidth="1.75"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
-        <span style={{ fontSize: 13, fontWeight: 600, color: vars.textPrimary }}>Asistente de Estudio</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: vars.textPrimary }}>{t('landing.studyAssistantTitle')}</span>
       </div>
       <div style={{ padding: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: vars.bgPrimary, borderRadius: 8, padding: '10px 12px', marginBottom: 12 }}>
@@ -160,7 +163,7 @@ function DocMockup() {
             <div style={{ fontSize: 12, fontWeight: 600, color: vars.textPrimary }}>Quimica_Organica.pdf</div>
             <div style={{ fontSize: 10, color: vars.textMuted }}>24 paginas - Subido hace 2 min</div>
           </div>
-          <div style={{ marginLeft: 'auto', fontSize: 10, color: '#34D399', fontWeight: 600 }}>Procesado</div>
+          <div style={{ marginLeft: 'auto', fontSize: 10, color: '#34D399', fontWeight: 600 }}>{t('landing.processed')}</div>
         </div>
         <div style={{ fontSize: 12, fontWeight: 600, color: vars.textPrimary, marginBottom: 8 }}>Guia de Estudio Generada</div>
         {['1. Reacciones de sustitucion nucleofilica (SN1/SN2)', '2. Reacciones de eliminacion (E1/E2)', '3. Adicion a alquenos y alquinos'].map((item, i) => (
@@ -295,6 +298,7 @@ function JobsMiniPreview() {
 
 /* "Ver demo" badge overlay */
 function DemoBadge() {
+  const { t } = useI18n()
   return (
     <div style={{
       position: 'absolute', bottom: 8, right: 8, zIndex: 10,
@@ -304,7 +308,7 @@ function DemoBadge() {
       display: 'flex', alignItems: 'center', gap: 4,
     }}>
       <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="#fff" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
-      Ver demo
+      {t('landing.viewDemo')}
     </div>
   )
 }
@@ -313,6 +317,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
   const { isMobile, isTablet } = useDevice()
   const compact = isMobile
   const mid = isTablet
+  const { t } = useI18n()
 
   const [activeModal, setActiveModal] = useState<ModalType>(null)
 
@@ -337,27 +342,27 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
   const modalData: Record<string, { title: string; description: string; mockup: React.ReactNode }> = {
     profile: {
-      title: 'Perfil Academico',
+      title: t('landing.profileTitle'),
       description: 'Tu perfil academico completo. Comparte tu trayectoria, conecta con companeros y muestra tus logros.',
       mockup: <ProfileMockup />,
     },
     chat: {
-      title: 'Mensajeria',
+      title: t('landing.messagingTitle'),
       description: 'Mensajeria en tiempo real con tus companeros. Comparte archivos, organiza grupos de estudio y mantente conectado.',
       mockup: <ChatMockup />,
     },
     docai: {
-      title: 'Asistente de Estudio',
+      title: t('landing.studyAssistantTitle'),
       description: 'Sube tus apuntes y documentos. Conniku genera guias de estudio, resumenes y material de repaso personalizado.',
       mockup: <DocMockup />,
     },
     feed: {
-      title: 'Feed Social',
+      title: t('landing.feedTitle'),
       description: 'Tu perfil social academico. Publica, comenta, comparte recursos y mantente al dia con tu comunidad universitaria.',
       mockup: <FeedMockup />,
     },
     job: {
-      title: 'Bolsa de Empleo',
+      title: t('landing.jobsTitle'),
       description: 'Bolsa de empleo exclusiva para estudiantes. Encuentra practicas, trabajos part-time y oportunidades que se ajustan a tu horario.',
       mockup: <JobsMockup />,
     },
@@ -482,14 +487,14 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
           <button onClick={onLogin} style={{ background: 'none', border: 'none', color: vars.textSecondary, fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: font }}>
-            {compact ? 'Ingresar' : 'Iniciar Sesion'}
+            {t('landing.login')}
           </button>
           <button onClick={onRegister} style={{
             background: vars.textPrimary, color: vars.bgSecondary,
             padding: compact ? '8px 16px' : '8px 20px', borderRadius: 8,
             fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: font,
           }}>
-            {compact ? 'Registrarse' : 'Crear cuenta gratis'}
+            {t('landing.signup')}
           </button>
         </div>
       </nav>
@@ -510,19 +515,19 @@ export default function Landing({ onLogin, onRegister }: Props) {
               padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, marginBottom: 20,
             }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', background: vars.accent }} />
-              127 estudiantes conectados
+              127 {t('landing.connectedStudents')}
             </div>
             <h1 style={{
               fontSize: compact ? 32 : mid ? 38 : 46, fontWeight: 800,
               color: vars.textPrimary, lineHeight: 1.08, letterSpacing: '-0.04em', margin: 0,
             }}>
-              Donde los estudiantes se <span style={{ color: vars.accent }}>conectan</span>, aprenden y crecen
+              {t('landing.heroTitle1')}<span style={{ color: vars.accent }}>{t('landing.heroHighlight')}</span>{t('landing.heroTitle2')}
             </h1>
             <p style={{
               fontSize: compact ? 14 : 16, color: vars.textMuted, lineHeight: 1.7,
               marginTop: 16, maxWidth: 440,
             }}>
-              La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad, y preparate para tu futuro profesional.
+              {t('landing.heroDescription')}
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 28, flexDirection: compact ? 'column' : 'row' }}>
               <button onClick={onRegister} style={{
@@ -530,7 +535,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                 padding: '13px 28px', borderRadius: 8, fontSize: 15, fontWeight: 600,
                 cursor: 'pointer', fontFamily: font, width: compact ? '100%' : 'auto',
               }}>
-                Comenzar gratis
+                {t('landing.startFree')}
               </button>
               <button onClick={onRegister} style={{
                 background: 'transparent', color: vars.textSecondary,
@@ -538,16 +543,22 @@ export default function Landing({ onLogin, onRegister }: Props) {
                 padding: '13px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600,
                 cursor: 'pointer', fontFamily: font, width: compact ? '100%' : 'auto',
               }}>
-                Ver tour de 2 min
+                {t('landing.viewTour')}
               </button>
             </div>
             <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', gap: 16, fontSize: 11, color: vars.textMuted, flexWrap: 'wrap' }}>
-                {['About', 'Help Center', 'Terms', 'Privacy', 'Contact'].map(l => (
-                  <a key={l} href="#" onClick={e => e.preventDefault()} style={{ color: vars.textMuted, textDecoration: 'none' }}>{l}</a>
+                {[
+                  { key: 'landing.footerAbout', label: t('landing.footerAbout') },
+                  { key: 'landing.footerHelpCenter', label: t('landing.footerHelpCenter') },
+                  { key: 'landing.footerTerms', label: t('landing.footerTerms') },
+                  { key: 'landing.footerPrivacy', label: t('landing.footerPrivacy') },
+                  { key: 'landing.footerContact', label: t('landing.footerContact') },
+                ].map(l => (
+                  <a key={l.key} href="#" onClick={e => e.preventDefault()} style={{ color: vars.textMuted, textDecoration: 'none' }}>{l.label}</a>
                 ))}
               </div>
-              <div style={{ fontSize: 10, color: vars.textMuted }}>© 2026 Conniku. All rights reserved.</div>
+              <div style={{ fontSize: 10, color: vars.textMuted }}>{t('landing.copyright')}</div>
             </div>
           </div>
 
@@ -643,7 +654,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" />
                       </svg>
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: vars.textPrimary }}>Asistente de estudio</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: vars.textPrimary }}>{t('landing.studyAssistantTitle')}</span>
                   </div>
                   <div style={{ padding: '10px 14px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: vars.bgPrimary, borderRadius: 8, padding: '8px 10px', marginBottom: 8 }}>
@@ -758,11 +769,11 @@ export default function Landing({ onLogin, onRegister }: Props) {
           {compact && (
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { key: 'profile' as ModalType, label: 'Perfil Academico', desc: 'Tu trayectoria y logros', icon: '👤' },
-                { key: 'chat' as ModalType, label: 'Mensajeria', desc: 'Chat en tiempo real', icon: '💬' },
-                { key: 'docai' as ModalType, label: 'Asistente de Estudio', desc: 'Guias y resumenes', icon: '📄' },
-                { key: 'feed' as ModalType, label: 'Feed Social', desc: 'Tu comunidad academica', icon: '📰' },
-                { key: 'job' as ModalType, label: 'Bolsa de Empleo', desc: 'Practicas y trabajos', icon: '💼' },
+                { key: 'profile' as ModalType, label: t('landing.profileTitle'), desc: t('landing.profileDesc'), icon: '👤' },
+                { key: 'chat' as ModalType, label: t('landing.messagingTitle'), desc: t('landing.messagingDesc'), icon: '💬' },
+                { key: 'docai' as ModalType, label: t('landing.studyAssistantTitle'), desc: t('landing.studyAssistantDesc'), icon: '📄' },
+                { key: 'feed' as ModalType, label: t('landing.feedTitle'), desc: t('landing.feedDesc'), icon: '📰' },
+                { key: 'job' as ModalType, label: t('landing.jobsTitle'), desc: t('landing.jobsDesc'), icon: '💼' },
               ].map(card => (
                 <div
                   key={card.key}
@@ -785,7 +796,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                     background: 'rgba(45,98,200,0.1)', color: vars.accent,
                     padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 600,
                   }}>
-                    Ver demo
+                    {t('landing.viewDemo')}
                   </div>
                 </div>
               ))}
@@ -798,10 +809,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
       <section id="comunidad" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
           <h2 style={{ fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 4 }}>
-            Todo lo que necesitas en un solo lugar
+            {t('landing.featureAll')}
           </h2>
           <div style={{ fontSize: 13, color: vars.textMuted, marginBottom: 36 }}>
-            Mas de 55 herramientas disenadas para tu exito academico y profesional
+            {t('landing.featureSubtitle')}
           </div>
           <div style={{
             display: 'flex',
@@ -837,7 +848,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                 {f.preview}
                 <p style={{ fontSize: 12, color: vars.textMuted, lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
                 <div style={{ marginTop: 12, fontSize: 11, color: vars.accent, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
-                  Ver demo
+                  {t('landing.viewDemo')}
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                 </div>
               </div>
@@ -854,10 +865,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
           gap: compact ? 32 : 56, flexWrap: 'wrap',
         }}>
           {[
-            { val: '55+', lbl: 'Herramientas' },
-            { val: '30', lbl: 'Cursos gratuitos' },
-            { val: '40', lbl: 'Idiomas' },
-            { val: 'CL', lbl: 'Hecho en Chile' },
+            { val: '55+', lbl: t('landing.statsTools') },
+            { val: '30', lbl: t('landing.statsFreeCourses') },
+            { val: '40', lbl: t('landing.statsLanguages') },
+            { val: 'CL', lbl: t('landing.statsMadeInChile') },
           ].map(s => (
             <div key={s.lbl} style={{ textAlign: 'center' }}>
               <div style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: vars.textPrimary }}>{s.val}</div>
@@ -871,10 +882,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
       <section id="planes" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
         <div style={{ maxWidth: 780, margin: '0 auto' }}>
           <h2 style={{ textAlign: 'center', fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 6 }}>
-            Planes para cada estudiante
+            {t('landing.pricingTitle')}
           </h2>
           <div style={{ textAlign: 'center', fontSize: 13, color: vars.textMuted, marginBottom: 32 }}>
-            Sin compromiso. Cancela cuando quieras.
+            {t('landing.pricingSubtitle')}
           </div>
           <div style={{
             display: 'flex', gap: 1, background: vars.border,
@@ -882,9 +893,9 @@ export default function Landing({ onLogin, onRegister }: Props) {
             flexDirection: compact ? 'column' : 'row',
           }}>
             {[
-              { name: 'Basico', price: '$0', per: 'Siempre gratis', features: ['2 asignaturas', 'Red social', 'Cursos', '300 MB'], hl: false },
-              { name: 'Pro', price: '$5', per: 'USD / mes', features: ['8 asignaturas', 'Herramientas avanzadas', 'Predictor de examen', '1 GB'], hl: true },
-              { name: 'Max', price: '$13', per: 'USD / mes', features: ['Todo ilimitado', 'Grabar clases', 'Publicar empleos', '3 GB'], hl: false },
+              { name: t('landing.planBasic'), price: '$0', per: t('landing.planFree'), features: ['2 asignaturas', 'Red social', 'Cursos', '300 MB'], hl: false },
+              { name: t('landing.planPro'), price: '$5', per: t('landing.planMonth'), features: ['8 asignaturas', 'Herramientas avanzadas', 'Predictor de examen', '1 GB'], hl: true },
+              { name: t('landing.planMax'), price: '$13', per: t('landing.planMonth'), features: ['Todo ilimitado', 'Grabar clases', 'Publicar empleos', '3 GB'], hl: false },
             ].map(plan => (
               <div key={plan.name} style={{
                 flex: 1, padding: compact ? '24px 20px' : '28px 24px', position: 'relative',
@@ -900,7 +911,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                     position: 'absolute', top: 14, right: 14,
                     background: vars.accent, color: '#fff',
                     padding: '3px 10px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                  }}>RECOMENDADO</div>
+                  }}>{t('landing.planRecommended')}</div>
                 )}
                 <div style={{
                   fontSize: 34, fontWeight: 800, margin: '6px 0 2px', letterSpacing: '-0.03em',
@@ -925,7 +936,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
                     ? { background: vars.accent, border: 'none', color: '#fff' }
                     : { background: 'transparent', border: `1.5px solid ${vars.border}`, color: vars.textSecondary }),
                 }}>
-                  {plan.name === 'Basico' ? 'Comenzar gratis' : `Elegir ${plan.name}`}
+                  {plan.name === t('landing.planBasic') ? t('landing.startFree') : `${t('landing.planChoose')} ${plan.name}`}
                 </button>
               </div>
             ))}
@@ -937,16 +948,16 @@ export default function Landing({ onLogin, onRegister }: Props) {
       <section style={{
         background: vars.textPrimary, padding: compact ? '48px 16px' : '64px 40px', textAlign: 'center',
       }}>
-        <h2 style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Unete a la comunidad</h2>
+        <h2 style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{t('landing.ctaJoin')}</h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-          Miles de estudiantes ya estan conectando, aprendiendo y creciendo juntos.
+          {t('landing.ctaSubtitle')}
         </p>
         <button onClick={onRegister} style={{
           background: vars.accent, color: '#fff', padding: '13px 32px',
           borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
           cursor: 'pointer', fontFamily: font, width: compact ? '100%' : 'auto', maxWidth: 320, minHeight: 44,
         }}>
-          Crear cuenta gratis
+          {t('landing.startFree')}
         </button>
       </section>
 
@@ -955,7 +966,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
         background: vars.bgCard, borderTop: `1px solid ${vars.border}`,
         padding: '20px 40px', textAlign: 'center', fontSize: 12, color: vars.textMuted,
       }}>
-        Terminos - Privacidad - Contacto - © 2026 Conniku SpA - Hecho en Chile
+        {t('landing.footerTerms')} - {t('landing.footerPrivacy')} - {t('landing.footerContact')} - {t('landing.copyright')} - {t('landing.statsMadeInChile')}
       </footer>
     </div>
   )

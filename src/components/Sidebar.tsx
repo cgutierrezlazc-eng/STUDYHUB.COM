@@ -349,27 +349,27 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       <div className="sidebar-section">
         <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('social')}>
           <ChevronIcon open={openSections.social} />
-          <span>Social</span>
+          <span>{t('sidebar.social')}</span>
         </button>
         {openSections.social && (
           <div className="sidebar-section-items">
             <button className={`nav-item ${currentPath === '/' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
-              {Icons.home(IC.home)} Inicio
+              {Icons.home(IC.home)} {t('sidebar.home')}
             </button>
             <button className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`} onClick={() => onNavigate('/my-profile')}>
-              {Icons.user(IC.profile)} Mi Perfil
+              {Icons.user(IC.profile)} {t('sidebar.myProfile')}
             </button>
             <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
-              {Icons.feed(IC.feed)} Feed
+              {Icons.feed(IC.feed)} {t('sidebar.feed')}
             </button>
             <button className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
-              {Icons.globe(IC.globe)} Comunidades
+              {Icons.globe(IC.globe)} {t('sidebar.communities')}
             </button>
             <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
-              {Icons.calendar(IC.events)} Eventos
+              {Icons.calendar(IC.events)} {t('sidebar.events')}
             </button>
             <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
-              {Icons.messageCircle(IC.messages)} Mensajes
+              {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
               {unreadMessages > 0 && (
                 <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
               )}
@@ -382,27 +382,27 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       <div className="sidebar-section">
         <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('academic')}>
           <ChevronIcon open={openSections.academic} />
-          <span>Académico</span>
+          <span>{t('sidebar.academic')}</span>
         </button>
         {openSections.academic && (
           <div className="sidebar-section-items">
             <button className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`} onClick={() => onNavigate('/dashboard')}>
-              {Icons.barChart(IC.dashboard)} Dashboard
+              {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
             </button>
             <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
-              {Icons.bookOpen(IC.rooms)} Salas de Estudio
+              {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
             </button>
             <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
-              {Icons.search(IC.search)} Buscador
+              {Icons.search(IC.search)} {t('sidebar.search')}
             </button>
             <button className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`} onClick={() => onNavigate('/calendar')}>
-              {Icons.calendar(IC.calendar)} Calendario
+              {Icons.calendar(IC.calendar)} {t('sidebar.calendar')}
             </button>
             <button className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`} onClick={() => onNavigate('/marketplace')}>
-              {Icons.fileText(IC.notes)} Apuntes
+              {Icons.fileText(IC.notes)} {t('sidebar.notes')}
             </button>
             <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
-              {Icons.briefcase(IC.jobs)} Bolsa de Trabajo
+              {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
             </button>
           </div>
         )}
@@ -433,35 +433,35 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       <div className="sidebar-section">
         <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('support')}>
           <ChevronIcon open={openSections.support} />
-          <span>Soporte</span>
+          <span>{t('sidebar.support')}</span>
         </button>
         {openSections.support && (
           <div className="sidebar-section-items">
             <button className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`} onClick={() => onNavigate('/profile')}>
-              {Icons.settings(IC.settings)} Configuración
+              {Icons.settings(IC.settings)} {t('sidebar.configuration')}
             </button>
             <button className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`} onClick={() => onNavigate('/subscription')}>
-              {Icons.diamond(IC.diamond)} Suscripción
+              {Icons.diamond(IC.diamond)} {t('sidebar.subscription')}
             </button>
             <button className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`} onClick={() => onNavigate('/suggestions')}>
-              {Icons.lightbulb(IC.lightbulb)} Sugerencias
+              {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
             </button>
             {user?.role === 'owner' && (
               <>
                 <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
-                  {Icons.building(IC.building)} CEO Panel
+                  {Icons.building(IC.building)} {t('sidebar.ceoPanel')}
                 </button>
                 <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
-                  {Icons.users2(IC.hr)} RRHH
+                  {Icons.users2(IC.hr)} {t('sidebar.hr')}
                 </button>
                 <button className={`nav-item ${isActive('/ai-workflows') ? 'active' : ''}`} onClick={() => onNavigate('/ai-workflows')}>
-                  {Icons.sparkles(IC.ai)} IA Workflows
+                  {Icons.sparkles(IC.ai)} {t('sidebar.aiWorkflows')}
                 </button>
               </>
             )}
             {user?.isAdmin && (
               <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>
-                {Icons.settings(IC.admin)} Admin
+                {Icons.settings(IC.admin)} {t('sidebar.admin')}
               </button>
             )}
           </div>

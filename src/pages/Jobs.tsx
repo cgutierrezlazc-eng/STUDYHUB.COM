@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { Briefcase, Sparkles, Search as SearchIcon, ClipboardList, GraduationCap, Users, FileText, Briefcase as BuildingIcon, Lock, Globe, RefreshCw, Star, CheckCircle, XCircle, Hourglass, Eye, Target, Map, BookOpen, Download, Upload, Share2, Save, Plus, Trash2, Award, Zap } from '../components/Icons'
 
 interface Props {
@@ -41,7 +42,7 @@ const EMPTY_CV: CVData = {
   links: [], competencies: [], visibility: 'private',
 }
 
-const LANG_LEVELS = ['Basico', 'Intermedio', 'Avanzado', 'Nativo/Bilingue']
+const LANG_LEVELS_KEYS = ['jobs.langBasic', 'jobs.langIntermediate', 'jobs.langAdvanced', 'jobs.langNative']
 const CV_LANGUAGES = [
   { value: 'es', label: 'Espanol' },
   { value: 'en', label: 'English' },
@@ -58,31 +59,31 @@ function parseJsonField(val: any, fallback: any) {
   return fallback
 }
 
-const JOB_TYPES = [
-  { value: '', label: 'Todos' },
-  { value: 'full_time', label: 'Tiempo Completo' },
-  { value: 'part_time', label: 'Medio Tiempo' },
-  { value: 'internship', label: 'Pasantia' },
-  { value: 'freelance', label: 'Freelance' },
-  { value: 'remote', label: 'Remoto' },
+const JOB_TYPE_KEYS: { value: string; labelKey: string }[] = [
+  { value: '', labelKey: 'jobs.allTypes' },
+  { value: 'full_time', labelKey: 'jobs.fullTime' },
+  { value: 'part_time', labelKey: 'jobs.partTime' },
+  { value: 'internship', labelKey: 'jobs.internship' },
+  { value: 'freelance', labelKey: 'jobs.freelance' },
+  { value: 'remote', labelKey: 'jobs.remote' },
 ]
 
-const EXP_LEVELS: Record<string, string> = {
-  entry: 'Junior', mid: 'Semi-Senior', senior: 'Senior', any: 'Cualquiera',
+const EXP_LEVEL_KEYS: Record<string, string> = {
+  entry: 'jobs.expJunior', mid: 'jobs.expMid', senior: 'jobs.expSenior', any: 'jobs.expAny',
 }
 
 type TabKey = 'profile' | 'listings' | 'cvs' | 'cv-coach' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'
 
-const TAB_CONFIG: { key: TabKey; label: string; icon: (p?: any) => React.ReactNode }[] = [
-  { key: 'profile', label: 'Mi Perfil', icon: (p) => FileText(p) },
-  { key: 'listings', label: 'Ofertas Laborales', icon: (p) => ClipboardList(p) },
-  { key: 'cvs', label: 'CVs Publicos', icon: (p) => FileText(p) },
-  { key: 'cv-coach', label: 'CV Coach IA', icon: (p) => Sparkles(p) },
-  { key: 'tutoring', label: 'Tutorias', icon: (p) => GraduationCap(p) },
-  { key: 'candidates', label: 'Talentos', icon: (p) => Users(p) },
-  { key: 'my-apps', label: 'Mis Postulaciones', icon: (p) => FileText(p) },
-  { key: 'my-listings', label: 'Mis Ofertas', icon: (p) => BuildingIcon(p) },
-  { key: 'recruiter', label: 'Soy Reclutador', icon: (p) => Lock(p) },
+const TAB_CONFIG_KEYS: { key: TabKey; labelKey: string; icon: (p?: any) => React.ReactNode }[] = [
+  { key: 'profile', labelKey: 'jobs.tabProfile', icon: (p) => FileText(p) },
+  { key: 'listings', labelKey: 'jobs.tabListings', icon: (p) => ClipboardList(p) },
+  { key: 'cvs', labelKey: 'jobs.tabCvs', icon: (p) => FileText(p) },
+  { key: 'cv-coach', labelKey: 'jobs.tabCvCoach', icon: (p) => Sparkles(p) },
+  { key: 'tutoring', labelKey: 'jobs.tabTutoring', icon: (p) => GraduationCap(p) },
+  { key: 'candidates', labelKey: 'jobs.tabCandidates', icon: (p) => Users(p) },
+  { key: 'my-apps', labelKey: 'jobs.tabMyApps', icon: (p) => FileText(p) },
+  { key: 'my-listings', labelKey: 'jobs.tabMyListings', icon: (p) => BuildingIcon(p) },
+  { key: 'recruiter', labelKey: 'jobs.tabRecruiter', icon: (p) => Lock(p) },
 ]
 
 /* ── Inline styles for CV section ── */
@@ -141,6 +142,7 @@ const cvStyles: Record<string, React.CSSProperties> = {
 
 export default function Jobs({ onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [tab, setTab] = useState<TabKey>('profile')
   const [publicCVs, setPublicCVs] = useState<any[]>([])
   const [cvSearch, setCvSearch] = useState('')
@@ -296,9 +298,9 @@ export default function Jobs({ onNavigate }: Props) {
         competencies: JSON.stringify(cv.competencies),
         visibility: cv.visibility,
       })
-      alert('Perfil profesional guardado exitosamente')
+      alert(t('jobs.savedSuccessfully'))
     } catch (e: any) {
-      alert(e.message || 'Error al guardar')
+      alert(e.message || t('jobs.errorSaving'))
     }
     setCvSaving(false)
   }
@@ -306,7 +308,7 @@ export default function Jobs({ onNavigate }: Props) {
   const handleCVFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setCvUploadMsg('Procesando documento...')
+    setCvUploadMsg(t('jobs.processingDoc'))
     try {
       const res = await api.uploadCV(file)
       if (res.draft) {
@@ -322,15 +324,15 @@ export default function Jobs({ onNavigate }: Props) {
           languages: parseJsonField(res.draft.languages, prev.languages),
           differentiators: parseJsonField(res.draft.differentiators, prev.differentiators),
         }))
-        setCvUploadMsg(res.message || 'Documento procesado. Competencias y habilidades importadas. Revisa los campos.')
+        setCvUploadMsg(res.message || t('jobs.docProcessed'))
       }
     } catch (err: any) {
-      setCvUploadMsg(err.message || 'Error al procesar el archivo')
+      setCvUploadMsg(err.message || t('jobs.errorProcessing'))
     }
   }
 
   const handleDownloadCVPDF = () => {
-    const name = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Profesional'
+    const name = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || t('jobs.defaultProfessional')
     const skills = cv.skillGroups.flatMap(g => g.skills.map(s => s.name)).join(', ')
     const langs = cv.languages.map(l => `${l.name} (${l.level})`).join(', ')
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
@@ -354,13 +356,13 @@ h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 1px; color: #2D
 <h1>${name}</h1>
 ${cv.headline ? `<div style="font-size:11pt;color:#2D62C8;margin-bottom:4pt;">${cv.headline}</div>` : ''}
 <div class="contact">${[cv.location, cv.email, cv.phone].filter(Boolean).join(' · ')}</div>
-${cv.summary ? `<h2>Perfil</h2><div class="summary">${cv.summary}</div>` : ''}
-${cv.experience.length ? `<h2>Experiencia</h2>${cv.experience.map(e => `<div class="entry"><div class="entry-title">${e.title} — ${e.company}</div><div class="entry-sub">${e.location ? e.location + ' · ' : ''}${e.startDate} - ${e.current ? 'Presente' : e.endDate}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
-${cv.education.length ? `<h2>Educacion</h2>${cv.education.map(e => `<div class="entry"><div class="entry-title">${e.degree} en ${e.field}</div><div class="entry-sub">${e.institution} · ${e.startYear} - ${e.endYear}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
-${skills ? `<h2>Habilidades</h2><div class="skills-list">${cv.skillGroups.flatMap(g => g.skills.map(s => `<span class="skill-tag">${s.name}</span>`)).join('')}</div>` : ''}
-${cv.certifications.length ? `<h2>Certificaciones</h2>${cv.certifications.map(c => `<div class="entry"><div class="entry-title">${c.name}</div><div class="entry-sub">${c.issuer} · ${c.date}</div></div>`).join('')}` : ''}
-${langs ? `<h2>Idiomas</h2><div>${langs}</div>` : ''}
-${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.competencies.map(c => `<span class="skill-tag">${c}</span>`).join('')}</div>` : ''}
+${cv.summary ? `<h2>${t('jobs.pdfProfile')}</h2><div class="summary">${cv.summary}</div>` : ''}
+${cv.experience.length ? `<h2>${t('jobs.pdfExperience')}</h2>${cv.experience.map(e => `<div class="entry"><div class="entry-title">${e.title} — ${e.company}</div><div class="entry-sub">${e.location ? e.location + ' · ' : ''}${e.startDate} - ${e.current ? t('jobs.pdfPresent') : e.endDate}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
+${cv.education.length ? `<h2>${t('jobs.pdfEducation')}</h2>${cv.education.map(e => `<div class="entry"><div class="entry-title">${e.degree} en ${e.field}</div><div class="entry-sub">${e.institution} · ${e.startYear} - ${e.endYear}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
+${skills ? `<h2>${t('jobs.pdfSkills')}</h2><div class="skills-list">${cv.skillGroups.flatMap(g => g.skills.map(s => `<span class="skill-tag">${s.name}</span>`)).join('')}</div>` : ''}
+${cv.certifications.length ? `<h2>${t('jobs.pdfCertifications')}</h2>${cv.certifications.map(c => `<div class="entry"><div class="entry-title">${c.name}</div><div class="entry-sub">${c.issuer} · ${c.date}</div></div>`).join('')}` : ''}
+${langs ? `<h2>${t('jobs.pdfLanguages')}</h2><div>${langs}</div>` : ''}
+${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="skills-list">${cv.competencies.map(c => `<span class="skill-tag">${c}</span>`).join('')}</div>` : ''}
 </body></html>`
     const w = window.open('', '_blank')
     if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500) }
@@ -441,7 +443,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
   function removeCompetency(idx: number) { updateCV('competencies', cv.competencies.filter((_, i) => i !== idx)) }
 
   const handleCreateTutoring = async () => {
-    if (!tutoringForm.subject) { alert('La materia es obligatoria'); return }
+    if (!tutoringForm.subject) { alert(t('jobs.subjectRequired2')); return }
     try {
       await api.createTutoringListing({
         ...tutoringForm,
@@ -450,26 +452,26 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
       })
       setShowTutoringForm(false)
       loadTutorings()
-      alert('Tutoria publicada exitosamente')
+      alert(t('jobs.tutoringPublished'))
     } catch (err: any) { alert(err.message || 'Error') }
   }
 
   const handleRegisterRecruiter = async () => {
     if (!recruiterForm.company_name || !recruiterForm.corporate_email || !recruiterForm.recruiter_title) {
-      alert('Completa los campos obligatorios'); return
+      alert(t('jobs.fillRequired')); return
     }
     try {
       const result = await api.registerRecruiter(recruiterForm)
-      alert(result.message || 'Registro enviado')
+      alert(result.message || t('jobs.registrationSent'))
       loadRecruiter()
     } catch (err: any) { alert(err.message || 'Error') }
   }
 
   const handleRequestTutoring = async (listingId: string) => {
-    const message = prompt('Escribe un mensaje para el tutor (opcional):')
+    const message = prompt(t('jobs.tutoringMessagePrompt'))
     try {
       await api.requestTutoring(listingId, { message: message || '' })
-      alert('Solicitud enviada al tutor')
+      alert(t('jobs.tutoringRequestSent'))
     } catch (err: any) { alert(err.message || 'Error') }
   }
 
@@ -479,9 +481,9 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
       setShowApply(false)
       setCoverLetter('')
       setJobs(prev => prev.map(j => j.id === jobId ? { ...j, applied: true } : j))
-      alert('Aplicacion enviada exitosamente')
+      alert(t('jobs.applicationSuccess'))
     } catch (err: any) {
-      alert(err.message || 'Error al aplicar')
+      alert(err.message || t('jobs.errorApplying'))
     }
   }
 
@@ -499,10 +501,10 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
       })
       setShowPostForm(false)
       setForm({ company_name: '', job_title: '', job_type: 'full_time', location: '', is_remote: false, salary_min: '', salary_max: '', salary_currency: 'USD', description: '', requirements: '', benefits: '', career_field: '', experience_level: 'entry', education_level: 'any', contact_email: '', application_deadline: '' })
-      alert('Oferta publicada exitosamente')
+      alert(t('jobs.offerPublished'))
       loadJobs()
     } catch (err: any) {
-      alert(err.message || 'Error al publicar')
+      alert(err.message || t('jobs.errorPublishing'))
     }
   }
 
@@ -522,17 +524,17 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
     if (!min && !max) return null
     const fmt = (n: number) => n >= 1000 ? `${(n/1000).toFixed(0)}k` : String(n)
     if (min && max) return `${currency} ${fmt(min)} - ${fmt(max)}`
-    if (min) return `Desde ${currency} ${fmt(min)}`
-    return `Hasta ${currency} ${fmt(max!)}`
+    if (min) return `${t('jobs.salaryFrom')} ${currency} ${fmt(min)}`
+    return `${t('jobs.salaryUpTo')} ${currency} ${fmt(max!)}`
   }
 
   const runCvCoach = async () => {
-    if (coachText.trim().length < 30) { setCoachError('Pega tu CV (minimo 30 caracteres)'); return }
+    if (coachText.trim().length < 30) { setCoachError(t('jobs.cvMinChars')); return }
     setCoachLoading(true); setCoachError(''); setCoachResult(null)
     try {
       const res = await api.cvCoach(coachText, coachRole)
       setCoachResult(res)
-    } catch (err: any) { setCoachError(err.message || 'Error al analizar el CV') }
+    } catch (err: any) { setCoachError(err.message || t('jobs.errorAnalyzing')) }
     finally { setCoachLoading(false) }
   }
 
@@ -552,7 +554,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
   const renderProfileTab = () => {
     if (cvLoadingProfile) return <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
 
-    const displayName = (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || 'Profesional'
+    const displayName = (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || t('jobs.defaultProfessional')
 
     return (
       <div>
@@ -563,20 +565,20 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         <div style={{ ...cvStyles.section, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <button className="btn btn-primary" onClick={() => fileInputRef.current?.click()}>
-              {Upload({ size: 14 })} Subir CV
+              {Upload({ size: 14 })} {t('jobs.uploadCv')}
             </button>
             <button className="btn btn-secondary" onClick={handleDownloadCVPDF}>
-              {Download({ size: 14 })} Descargar CV PDF
+              {Download({ size: 14 })} {t('jobs.downloadCvPdf')}
             </button>
             <button className="btn btn-secondary" onClick={handleShareWithRecruiters}>
-              {Share2({ size: 14 })} Compartir con Reclutadores
+              {Share2({ size: 14 })} {t('jobs.shareWithRecruiters')}
             </button>
             <button className="btn btn-primary" onClick={handleSaveCV} disabled={cvSaving}>
-              {Save({ size: 14 })} {cvSaving ? 'Guardando...' : 'Guardar Perfil'}
+              {Save({ size: 14 })} {cvSaving ? t('jobs.saving') : t('jobs.saveProfile')}
             </button>
           </div>
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>Idioma del CV:</label>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>{t('jobs.cvLanguage')}</label>
             <select value={cvLang} onChange={e => setCvLang(e.target.value)}
               style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}>
               {CV_LANGUAGES.map(l => <option key={l.value} value={l.value}>{l.label}</option>)}
@@ -593,14 +595,14 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Visibility & Open to Offers ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Eye({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Visibilidad del Perfil</span>
+            {Eye({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.profileVisibility')}</span>
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'center', marginBottom: 16 }}>
             {([
-              { value: 'public', label: 'Publico (todos en la bolsa)' },
-              { value: 'connections', label: 'Solo Amigos' },
-              { value: 'recruiters', label: 'Solo Reclutadores' },
-              { value: 'private', label: 'Privado' },
+              { value: 'public', label: t('jobs.visPublic') },
+              { value: 'connections', label: t('jobs.visFriends') },
+              { value: 'recruiters', label: t('jobs.visRecruiters') },
+              { value: 'private', label: t('jobs.visPrivate') },
             ] as const).map(opt => (
               <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, cursor: 'pointer', padding: '6px 12px', borderRadius: 10, background: cv.visibility === opt.value ? 'rgba(45,98,200,0.1)' : 'transparent', border: cv.visibility === opt.value ? '1px solid rgba(45,98,200,0.3)' : '1px solid transparent' }}>
                 <input type="radio" name="cv-visibility" checked={cv.visibility === opt.value}
@@ -610,7 +612,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>Abierto a ofertas</span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>{t('jobs.openToOffers')}</span>
             <button
               onClick={() => updateCV('openToOffers', !cv.openToOffers)}
               style={{
@@ -624,17 +626,17 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
               }} />
             </button>
-            {cv.openToOffers && <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>Activo</span>}
+            {cv.openToOffers && <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>{t('jobs.active')}</span>}
           </div>
         </div>
 
         {/* ── Core Competencies (FIRST — user's skills & competencies) ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Zap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Competencias Clave</span>
+            {Zap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.coreCompetencies')}</span>
           </div>
           <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 10px' }}>
-            Estas competencias se importan automaticamente al subir tu CV. Puedes agregar, editar o eliminar libremente.
+            {t('jobs.competenciesHint')}
           </p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
             {cv.competencies.map((c, i) => (
@@ -648,9 +650,9 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
             <input style={{ ...cvStyles.input, flex: 1 }} value={competencyInput}
               onChange={e => setCompetencyInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') { addCompetency(competencyInput); setCompetencyInput('') } }}
-              placeholder="Escribe una competencia y presiona Enter..." />
+              placeholder={t('jobs.competencyPlaceholder')} />
             <button style={cvStyles.addBtn} onClick={() => { addCompetency(competencyInput); setCompetencyInput('') }}>
-              {Plus({ size: 14 })} Agregar
+              {Plus({ size: 14 })} {t('jobs.add')}
             </button>
           </div>
         </div>
@@ -658,38 +660,38 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Headline & Summary ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Briefcase({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Informacion Profesional</span>
+            {Briefcase({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.professionalInfo')}</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <div>
-              <label style={cvStyles.label}>Titular profesional</label>
+              <label style={cvStyles.label}>{t('jobs.headlineLabel')}</label>
               <input style={cvStyles.input} value={cv.headline} onChange={e => updateCV('headline', e.target.value)}
-                placeholder="Ej: Ingeniero de Software Senior | Desarrollador Full-Stack" />
+                placeholder={t('jobs.headlinePlaceholder')} />
             </div>
             <div>
-              <label style={cvStyles.label}>Resumen profesional</label>
+              <label style={cvStyles.label}>{t('jobs.summaryLabel')}</label>
               <textarea style={cvStyles.textarea} value={cv.summary} onChange={e => updateCV('summary', e.target.value)}
-                placeholder="Describe tu experiencia, logros principales y lo que buscas profesionalmente..." rows={4} />
+                placeholder={t('jobs.summaryPlaceholder')} rows={4} />
             </div>
             <div style={cvStyles.grid2}>
               <div>
-                <label style={cvStyles.label}>Ubicacion</label>
+                <label style={cvStyles.label}>{t('jobs.locationLabel')}</label>
                 <input style={cvStyles.input} value={cv.location} onChange={e => updateCV('location', e.target.value)}
-                  placeholder="Ciudad, Pais" />
+                  placeholder={t('jobs.locationPlaceholder')} />
               </div>
               <div>
-                <label style={cvStyles.label}>Email de contacto</label>
+                <label style={cvStyles.label}>{t('jobs.contactEmail')}</label>
                 <input style={cvStyles.input} value={cv.email} onChange={e => updateCV('email', e.target.value)}
                   placeholder="tu@email.com" />
               </div>
               <div>
-                <label style={cvStyles.label}>Telefono</label>
+                <label style={cvStyles.label}>{t('jobs.phoneLabel')}</label>
                 <input style={cvStyles.input} value={cv.phone} onChange={e => updateCV('phone', e.target.value)}
                   placeholder="+56 9 1234 5678" />
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
                 <input type="checkbox" checked={cv.availableWorldwide} onChange={e => updateCV('availableWorldwide', e.target.checked)} />
-                <label style={{ fontSize: 14 }}>Disponible mundialmente</label>
+                <label style={{ fontSize: 14 }}>{t('jobs.availableWorldwide')}</label>
               </div>
             </div>
           </div>
@@ -698,12 +700,12 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Experience ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Briefcase({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Experiencia Laboral</span>
-            <button style={cvStyles.addBtn} onClick={addExperience}>{Plus({ size: 14 })} Agregar</button>
+            {Briefcase({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.workExperience')}</span>
+            <button style={cvStyles.addBtn} onClick={addExperience}>{Plus({ size: 14 })} {t('jobs.add')}</button>
           </div>
           {cv.experience.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              No has agregado experiencia laboral aun. Haz clic en "Agregar" para comenzar.
+              {t('jobs.noExperience')}
             </p>
           )}
           {cv.experience.map(exp => (
@@ -713,34 +715,34 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
               </button>
               <div style={cvStyles.grid2}>
                 <div>
-                  <label style={cvStyles.label}>Empresa</label>
-                  <input style={cvStyles.input} value={exp.company} onChange={e => updateExperience(exp.id, 'company', e.target.value)} placeholder="Nombre de la empresa" />
+                  <label style={cvStyles.label}>{t('jobs.companyLabel')}</label>
+                  <input style={cvStyles.input} value={exp.company} onChange={e => updateExperience(exp.id, 'company', e.target.value)} placeholder={t('jobs.companyPlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Cargo</label>
-                  <input style={cvStyles.input} value={exp.title} onChange={e => updateExperience(exp.id, 'title', e.target.value)} placeholder="Titulo del puesto" />
+                  <label style={cvStyles.label}>{t('jobs.positionLabel')}</label>
+                  <input style={cvStyles.input} value={exp.title} onChange={e => updateExperience(exp.id, 'title', e.target.value)} placeholder={t('jobs.positionPlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Ubicacion</label>
-                  <input style={cvStyles.input} value={exp.location} onChange={e => updateExperience(exp.id, 'location', e.target.value)} placeholder="Ciudad, Pais" />
+                  <label style={cvStyles.label}>{t('jobs.locationLabel')}</label>
+                  <input style={cvStyles.input} value={exp.location} onChange={e => updateExperience(exp.id, 'location', e.target.value)} placeholder={t('jobs.locationPlaceholder')} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 20 }}>
                   <input type="checkbox" checked={exp.current} onChange={e => updateExperience(exp.id, 'current', e.target.checked)} />
-                  <label style={{ fontSize: 13 }}>Trabajo actual</label>
+                  <label style={{ fontSize: 13 }}>{t('jobs.currentJob')}</label>
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Fecha inicio</label>
+                  <label style={cvStyles.label}>{t('jobs.startDate')}</label>
                   <input type="date" style={cvStyles.input} value={exp.startDate} onChange={e => updateExperience(exp.id, 'startDate', e.target.value)} />
                 </div>
                 {!exp.current && (
                   <div>
-                    <label style={cvStyles.label}>Fecha fin</label>
+                    <label style={cvStyles.label}>{t('jobs.endDate')}</label>
                     <input type="date" style={cvStyles.input} value={exp.endDate} onChange={e => updateExperience(exp.id, 'endDate', e.target.value)} />
                   </div>
                 )}
               </div>
               <div style={{ marginTop: 12 }}>
-                <label style={cvStyles.label}>Descripcion y logros (usa viñetas con "-")</label>
+                <label style={cvStyles.label}>{t('jobs.descriptionAchievements')}</label>
                 <textarea style={cvStyles.textarea} value={exp.description} onChange={e => updateExperience(exp.id, 'description', e.target.value)}
                   placeholder="- Lideré el equipo de 5 desarrolladores&#10;- Incrementé ventas en 30%&#10;- Implementé sistema de CI/CD" rows={4} />
               </div>
@@ -751,12 +753,12 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Education ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {GraduationCap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Educacion</span>
-            <button style={cvStyles.addBtn} onClick={addEducation}>{Plus({ size: 14 })} Agregar</button>
+            {GraduationCap({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.education')}</span>
+            <button style={cvStyles.addBtn} onClick={addEducation}>{Plus({ size: 14 })} {t('jobs.add')}</button>
           </div>
           {cv.education.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              No has agregado educacion aun.
+              {t('jobs.noEducation')}
             </p>
           )}
           {cv.education.map(edu => (
@@ -766,32 +768,32 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
               </button>
               <div style={cvStyles.grid2}>
                 <div>
-                  <label style={cvStyles.label}>Titulo / Grado</label>
-                  <input style={cvStyles.input} value={edu.degree} onChange={e => updateEducation(edu.id, 'degree', e.target.value)} placeholder="Ej: Licenciatura, Maestria" />
+                  <label style={cvStyles.label}>{t('jobs.degreeLabel')}</label>
+                  <input style={cvStyles.input} value={edu.degree} onChange={e => updateEducation(edu.id, 'degree', e.target.value)} placeholder={t('jobs.degreePlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Institucion</label>
-                  <input style={cvStyles.input} value={edu.institution} onChange={e => updateEducation(edu.id, 'institution', e.target.value)} placeholder="Nombre de la universidad" />
+                  <label style={cvStyles.label}>{t('jobs.institutionLabel')}</label>
+                  <input style={cvStyles.input} value={edu.institution} onChange={e => updateEducation(edu.id, 'institution', e.target.value)} placeholder={t('jobs.institutionPlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Campo / Carrera</label>
-                  <input style={cvStyles.input} value={edu.field} onChange={e => updateEducation(edu.id, 'field', e.target.value)} placeholder="Ej: Ingenieria Civil" />
+                  <label style={cvStyles.label}>{t('jobs.fieldLabel')}</label>
+                  <input style={cvStyles.input} value={edu.field} onChange={e => updateEducation(edu.id, 'field', e.target.value)} placeholder={t('jobs.fieldPlaceholder')} />
                 </div>
                 <div style={cvStyles.grid2}>
                   <div>
-                    <label style={cvStyles.label}>Ano inicio</label>
+                    <label style={cvStyles.label}>{t('jobs.startYear')}</label>
                     <input style={cvStyles.input} value={edu.startYear} onChange={e => updateEducation(edu.id, 'startYear', e.target.value)} placeholder="2018" />
                   </div>
                   <div>
-                    <label style={cvStyles.label}>Ano fin</label>
+                    <label style={cvStyles.label}>{t('jobs.endYear')}</label>
                     <input style={cvStyles.input} value={edu.endYear} onChange={e => updateEducation(edu.id, 'endYear', e.target.value)} placeholder="2023" />
                   </div>
                 </div>
               </div>
               <div style={{ marginTop: 12 }}>
-                <label style={cvStyles.label}>Descripcion (opcional)</label>
+                <label style={cvStyles.label}>{t('jobs.eduDescription')}</label>
                 <textarea style={{ ...cvStyles.textarea, minHeight: 50 }} value={edu.description} onChange={e => updateEducation(edu.id, 'description', e.target.value)}
-                  placeholder="Logros academicos, tesis, honores..." rows={2} />
+                  placeholder={t('jobs.eduDescPlaceholder')} rows={2} />
               </div>
             </div>
           ))}
@@ -800,12 +802,12 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Certifications ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Award({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Certificaciones</span>
-            <button style={cvStyles.addBtn} onClick={addCertification}>{Plus({ size: 14 })} Agregar</button>
+            {Award({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.certifications')}</span>
+            <button style={cvStyles.addBtn} onClick={addCertification}>{Plus({ size: 14 })} {t('jobs.add')}</button>
           </div>
           {cv.certifications.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              No has agregado certificaciones aun.
+              {t('jobs.noCertifications')}
             </p>
           )}
           {cv.certifications.map(cert => (
@@ -815,19 +817,19 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
               </button>
               <div style={cvStyles.grid2}>
                 <div>
-                  <label style={cvStyles.label}>Nombre de la certificacion</label>
-                  <input style={cvStyles.input} value={cert.name} onChange={e => updateCertification(cert.id, 'name', e.target.value)} placeholder="Ej: AWS Solutions Architect" />
+                  <label style={cvStyles.label}>{t('jobs.certName')}</label>
+                  <input style={cvStyles.input} value={cert.name} onChange={e => updateCertification(cert.id, 'name', e.target.value)} placeholder={t('jobs.certNamePlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Emisor</label>
-                  <input style={cvStyles.input} value={cert.issuer} onChange={e => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Ej: Amazon Web Services" />
+                  <label style={cvStyles.label}>{t('jobs.certIssuer')}</label>
+                  <input style={cvStyles.input} value={cert.issuer} onChange={e => updateCertification(cert.id, 'issuer', e.target.value)} placeholder={t('jobs.certIssuerPlaceholder')} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>Fecha</label>
+                  <label style={cvStyles.label}>{t('jobs.certDate')}</label>
                   <input type="date" style={cvStyles.input} value={cert.date} onChange={e => updateCertification(cert.id, 'date', e.target.value)} />
                 </div>
                 <div>
-                  <label style={cvStyles.label}>URL de verificacion (opcional)</label>
+                  <label style={cvStyles.label}>{t('jobs.certUrl')}</label>
                   <input style={cvStyles.input} value={cert.url} onChange={e => updateCertification(cert.id, 'url', e.target.value)} placeholder="https://..." />
                 </div>
               </div>
@@ -838,12 +840,12 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Skills by Category ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Star({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Habilidades por Categoria</span>
-            <button style={cvStyles.addBtn} onClick={addSkillGroup}>{Plus({ size: 14 })} Agregar Categoria</button>
+            {Star({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.skillsByCategory')}</span>
+            <button style={cvStyles.addBtn} onClick={addSkillGroup}>{Plus({ size: 14 })} {t('jobs.addCategory')}</button>
           </div>
           {cv.skillGroups.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              No has agregado habilidades aun. Organiza tus habilidades por categorias (Ej: Frontend, Backend, Gestion).
+              {t('jobs.noSkills')}
             </p>
           )}
           {cv.skillGroups.map((group, gIdx) => (
@@ -851,13 +853,13 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <input style={{ ...cvStyles.input, flex: 1, fontWeight: 700 }} value={group.category}
                   onChange={e => { const g = [...cv.skillGroups]; g[gIdx] = { ...g[gIdx], category: e.target.value }; updateCV('skillGroups', g) }}
-                  placeholder="Nombre de la categoria (Ej: Programacion)" />
+                  placeholder={t('jobs.categoryPlaceholder')} />
                 <button style={cvStyles.removeBtn} onClick={() => removeSkillGroup(gIdx)}>{Trash2({ size: 14 })}</button>
               </div>
               {group.skills.map((skill, sIdx) => (
                 <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <input style={{ ...cvStyles.input, width: 180 }} value={skill.name}
-                    onChange={e => updateSkillInGroup(gIdx, sIdx, 'name', e.target.value)} placeholder="Habilidad" />
+                    onChange={e => updateSkillInGroup(gIdx, sIdx, 'name', e.target.value)} placeholder={t('jobs.skillPlaceholder')} />
                   <div style={cvStyles.skillBar}>
                     <div style={{ ...cvStyles.skillFill, width: `${skill.level}%` }} />
                   </div>
@@ -869,7 +871,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 </div>
               ))}
               <button style={{ ...cvStyles.addBtn, fontSize: 12, padding: '5px 12px' }} onClick={() => addSkillToGroup(gIdx)}>
-                {Plus({ size: 12 })} Agregar habilidad
+                {Plus({ size: 12 })} {t('jobs.addSkill')}
               </button>
             </div>
           ))}
@@ -878,23 +880,23 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Languages ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Globe({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Idiomas</span>
-            <button style={cvStyles.addBtn} onClick={addLanguage}>{Plus({ size: 14 })} Agregar</button>
+            {Globe({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.languages')}</span>
+            <button style={cvStyles.addBtn} onClick={addLanguage}>{Plus({ size: 14 })} {t('jobs.add')}</button>
           </div>
           {cv.languages.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              No has agregado idiomas aun.
+              {t('jobs.noLanguages')}
             </p>
           )}
           {cv.languages.map((lang, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
               <input style={{ ...cvStyles.input, flex: 1 }} value={lang.name}
                 onChange={e => { const l = [...cv.languages]; l[idx] = { ...l[idx], name: e.target.value }; updateCV('languages', l) }}
-                placeholder="Ej: Ingles" />
+                placeholder={t('jobs.langPlaceholder')} />
               <select value={lang.level}
                 onChange={e => { const l = [...cv.languages]; l[idx] = { ...l[idx], level: e.target.value }; updateCV('languages', l) }}
                 style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14 }}>
-                {LANG_LEVELS.map(lv => <option key={lv} value={lv}>{lv}</option>)}
+                {LANG_LEVELS_KEYS.map(lk => <option key={lk} value={t(lk)}>{t(lk)}</option>)}
               </select>
               <button style={cvStyles.removeBtn} onClick={() => removeLanguage(idx)}>{Trash2({ size: 14 })}</button>
             </div>
@@ -904,19 +906,19 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Differentiators ── */}
         <div style={cvStyles.section}>
           <div style={cvStyles.sectionTitle}>
-            {Sparkles({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>Lo que me diferencia</span>
-            <button style={cvStyles.addBtn} onClick={addDifferentiator}>{Plus({ size: 14 })} Agregar</button>
+            {Sparkles({ size: 18 })} <span style={{ marginLeft: 8, flex: 1 }}>{t('jobs.differentiators')}</span>
+            <button style={cvStyles.addBtn} onClick={addDifferentiator}>{Plus({ size: 14 })} {t('jobs.add')}</button>
           </div>
           {cv.differentiators.length === 0 && (
             <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
-              Agrega puntos que te hacen unico como profesional.
+              {t('jobs.noDifferentiators')}
             </p>
           )}
           {cv.differentiators.map((d, idx) => (
             <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <input style={{ ...cvStyles.input, flex: 1 }} value={d}
                 onChange={e => { const arr = [...cv.differentiators]; arr[idx] = e.target.value; updateCV('differentiators', arr) }}
-                placeholder="Ej: 5 anos liderando equipos remotos multiculturales" />
+                placeholder={t('jobs.differentiatorPlaceholder')} />
               <button style={cvStyles.removeBtn} onClick={() => removeDifferentiator(idx)}>{Trash2({ size: 14 })}</button>
             </div>
           ))}
@@ -925,7 +927,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {/* ── Save bottom ── */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 8, marginBottom: 24 }}>
           <button className="btn btn-primary" onClick={handleSaveCV} disabled={cvSaving} style={{ padding: '12px 32px', fontSize: 15 }}>
-            {Save({ size: 16 })} {cvSaving ? 'Guardando...' : 'Guardar Perfil Profesional'}
+            {Save({ size: 16 })} {cvSaving ? t('jobs.saving') : t('jobs.saveProfessionalProfile')}
           </button>
         </div>
 
@@ -933,15 +935,15 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {showRecruiterModal && (
           <div className="modal-overlay" onClick={() => setShowRecruiterModal(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 550, maxHeight: '80vh', overflowY: 'auto' }}>
-              <h3>Compartir con Reclutadores</h3>
+              <h3>{t('jobs.shareWithRecruitersTitle')}</h3>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-                Selecciona un reclutador para enviarle tu perfil profesional y comenzar una conversacion.
+                {t('jobs.shareWithRecruitersDesc')}
               </p>
               {recruiterListLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : recruiterList.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
-                  <p>No hay reclutadores activos en este momento.</p>
+                  <p>{t('jobs.noRecruitersAvailable')}</p>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -963,14 +965,14 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                         {(r.headline || r.recruiterTitle) && <div style={{ fontSize: 12, color: '#2D62C8' }}>{r.headline || r.recruiterTitle}</div>}
                       </div>
                       <button className="btn btn-primary btn-sm" onClick={() => { setShowRecruiterModal(false); handleSendCVToRecruiter(r.userId || r.id) }}>
-                        Enviar
+                        {t('jobs.send')}
                       </button>
                     </div>
                   ))}
                 </div>
               )}
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowRecruiterModal(false)}>Cerrar</button>
+                <button className="btn btn-secondary" onClick={() => setShowRecruiterModal(false)}>{t('jobs.close')}</button>
               </div>
             </div>
           </div>
@@ -987,23 +989,23 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>{Briefcase()} Bolsa de Trabajo</h2>
-            <p>Conecta con empresas, muestra tu perfil profesional y encuentra tu proximo paso</p>
+            <h2>{Briefcase()} {t('jobs.title')}</h2>
+            <p>{t('jobs.subtitle')}</p>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <button
               onClick={toggleOpenToWork}
               className={`btn btn-sm ${careerStatus?.isOpenToOpportunities ? 'btn-primary' : 'btn-secondary'}`}
             >
-              {careerStatus?.isOpenToOpportunities ? <>{Sparkles()} Explorando Oportunidades</> : <>{SearchIcon()} Activar Visibilidad</>}
+              {careerStatus?.isOpenToOpportunities ? <>{Sparkles()} {t('jobs.exploringOpportunities')}</> : <>{SearchIcon()} {t('jobs.activateVisibility')}</>}
             </button>
-            <button className="btn btn-primary" onClick={() => setShowPostForm(true)}>+ Publicar Oferta</button>
+            <button className="btn btn-primary" onClick={() => setShowPostForm(true)}>{t('jobs.postOffer')}</button>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
-          {TAB_CONFIG.map(t => (
-            <button key={t.key} className={`tab ${tab === t.key ? 'active' : ''}`} onClick={() => handleTabChange(t.key)}>
-              {t.icon({ size: 14 })} {t.label}
+          {TAB_CONFIG_KEYS.map(tc => (
+            <button key={tc.key} className={`tab ${tab === tc.key ? 'active' : ''}`} onClick={() => handleTabChange(tc.key)}>
+              {tc.icon({ size: 14 })} {t(tc.labelKey)}
             </button>
           ))}
         </div>
@@ -1018,15 +1020,15 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
           <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <input value={search} onChange={e => setSearch(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && (tab === 'listings' ? loadJobs() : loadCandidates())}
-              placeholder={tab === 'listings' ? 'Buscar ofertas...' : 'Buscar talentos...'}
+              placeholder={tab === 'listings' ? t('jobs.searchOffers') : t('jobs.searchTalent')}
               style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
             {tab === 'listings' && (
               <select value={jobTypeFilter} onChange={e => { setJobTypeFilter(e.target.value); setTimeout(loadJobs, 100) }}
                 style={{ padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                {JOB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                {JOB_TYPE_KEYS.map(jt => <option key={jt.value} value={jt.value}>{t(jt.labelKey)}</option>)}
               </select>
             )}
-            <button className="btn btn-primary" onClick={() => tab === 'listings' ? loadJobs() : loadCandidates()}>Buscar</button>
+            <button className="btn btn-primary" onClick={() => tab === 'listings' ? loadJobs() : loadCandidates()}>{t('jobs.searchBtn')}</button>
           </div>
         )}
 
@@ -1036,19 +1038,19 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
             <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
               <input value={cvSearch} onChange={e => setCvSearch(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && loadPublicCVs(cvSearch)}
-                placeholder="Buscar por nombre, carrera, habilidad, universidad..."
+                placeholder={t('jobs.searchCvsPlaceholder')}
                 style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
-              <button className="btn btn-primary" onClick={() => loadPublicCVs(cvSearch)}>{SearchIcon({ size: 14 })} Buscar</button>
+              <button className="btn btn-primary" onClick={() => loadPublicCVs(cvSearch)}>{SearchIcon({ size: 14 })} {t('jobs.searchBtn')}</button>
             </div>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-              Perfiles profesionales de estudiantes que han decidido hacer publico su curriculum para aumentar su visibilidad laboral.
+              {t('jobs.publicCvsDesc')}
             </p>
             {cvLoading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
             publicCVs.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
                 <div>{FileText({ size: 48 })}</div>
-                <h3>No hay curriculums publicos todavia</h3>
-                <p>Completa tu curriculum en tu perfil y ponlo en visibilidad publica para aparecer aqui.</p>
+                <h3>{t('jobs.noPublicCvs')}</h3>
+                <p>{t('jobs.noPublicCvsDesc')}</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1105,7 +1107,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                       </div>
                       <button className="btn btn-sm btn-secondary" onClick={(e) => { e.stopPropagation(); onNavigate(`/user/${cv.userId}`) }}
                         style={{ flexShrink: 0 }}>
-                        Ver Perfil
+                        {t('jobs.viewProfile')}
                       </button>
                     </div>
                   </div>
@@ -1121,27 +1123,27 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
             <div className="u-card" style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 {Sparkles({ size: 20, color: '#f59e0b' })}
-                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>CV Coach con IA</h3>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>{t('jobs.cvCoachTitle')}</h3>
               </div>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
-                Pega el texto de tu CV y recibe un analisis detallado con puntaje, fortalezas, mejoras sugeridas y secciones faltantes.
+                {t('jobs.cvCoachDesc')}
               </p>
               <div style={{ marginBottom: 12 }}>
-                <label style={cvStyles.label}>Cargo al que postulas (opcional)</label>
+                <label style={cvStyles.label}>{t('jobs.targetRole')}</label>
                 <input value={coachRole} onChange={e => setCoachRole(e.target.value)}
-                  placeholder="Ej: Ingeniero de Software, Disenador UX, Analista de Datos..."
+                  placeholder={t('jobs.targetRolePlaceholder')}
                   style={cvStyles.input} />
               </div>
               <div style={{ marginBottom: 12 }}>
-                <label style={cvStyles.label}>Texto de tu CV</label>
+                <label style={cvStyles.label}>{t('jobs.cvTextLabel')}</label>
                 <textarea value={coachText} onChange={e => { setCoachText(e.target.value); setCoachError('') }}
-                  placeholder="Pega aqui todo el contenido de tu curriculum vitae..."
+                  placeholder={t('jobs.cvTextPlaceholder')}
                   style={{ ...cvStyles.textarea, minHeight: 180 }} />
               </div>
               {coachError && <p style={{ color: 'var(--accent-red, #dc2626)', fontSize: 13, marginBottom: 12 }}>{coachError}</p>}
               <button className="btn btn-primary btn-glow" onClick={runCvCoach} disabled={coachLoading}
                 style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                {coachLoading ? <>{RefreshCw({ size: 14 })} Analizando...</> : <>{Zap({ size: 14 })} Analizar CV</>}
+                {coachLoading ? <>{RefreshCw({ size: 14 })} {t('jobs.analyzingCv')}</> : <>{Zap({ size: 14 })} {t('jobs.analyzeCv')}</>}
               </button>
             </div>
 
@@ -1155,14 +1157,14 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                   }}>
                     {coachResult.score || 0}<span style={{ fontSize: 20, fontWeight: 500 }}>/100</span>
                   </div>
-                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Puntaje General</p>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>{t('jobs.overallScore')}</p>
                 </div>
 
                 {/* Strengths */}
                 {coachResult.strengths && coachResult.strengths.length > 0 && (
                   <div className="u-card">
                     <h4 style={{ fontSize: 15, fontWeight: 700, color: '#16a34a', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {CheckCircle({ size: 16 })} Fortalezas
+                      {CheckCircle({ size: 16 })} {t('jobs.strengths')}
                     </h4>
                     <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {coachResult.strengths.map((s: string, i: number) => (
@@ -1176,7 +1178,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 {coachResult.improvements && coachResult.improvements.length > 0 && (
                   <div className="u-card">
                     <h4 style={{ fontSize: 15, fontWeight: 700, color: '#f59e0b', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {Target({ size: 16 })} Mejoras Sugeridas
+                      {Target({ size: 16 })} {t('jobs.suggestedImprovements')}
                     </h4>
                     <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {coachResult.improvements.map((s: string, i: number) => (
@@ -1190,7 +1192,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 {coachResult.missing_sections && coachResult.missing_sections.length > 0 && (
                   <div className="u-card">
                     <h4 style={{ fontSize: 15, fontWeight: 700, color: '#dc2626', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {XCircle({ size: 16 })} Secciones Faltantes
+                      {XCircle({ size: 16 })} {t('jobs.missingSections')}
                     </h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                       {coachResult.missing_sections.map((s: string, i: number) => (
@@ -1208,7 +1210,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 {coachResult.rewrite_suggestion && (
                   <div className="u-card">
                     <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {Sparkles({ size: 16 })} Sugerencia de Reescritura
+                      {Sparkles({ size: 16 })} {t('jobs.rewriteSuggestion')}
                     </h4>
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
                       {coachResult.rewrite_suggestion}
@@ -1221,7 +1223,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                   <div className="u-card-flat" style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                     {Award({ size: 18, color: '#f59e0b' })}
                     <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-                      <strong>Consejo:</strong> {coachResult.tip}
+                      <strong>{t('jobs.tip')}</strong> {coachResult.tip}
                     </p>
                   </div>
                 )}
@@ -1236,8 +1238,8 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
           jobs.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
               <div>{Briefcase({ size: 48 })}</div>
-              <h3>No hay ofertas disponibles</h3>
-              <p>Se el primero en publicar una oportunidad</p>
+              <h3>{t('jobs.noOffers')}</h3>
+              <p>{t('jobs.beFirstToPost')}</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -1252,20 +1254,20 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                       <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>{job.companyName}</div>
                       <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap', fontSize: 12 }}>
                         <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>
-                          {JOB_TYPES.find(t => t.value === job.jobType)?.label || job.jobType}
+                          {t(JOB_TYPE_KEYS.find(jt => jt.value === job.jobType)?.labelKey || '') || job.jobType}
                         </span>
                         {job.location && <span style={{ color: 'var(--text-muted)' }}>{Map({ size: 12 })} {job.location}</span>}
-                        {job.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 12 })} Remoto</span>}
+                        {job.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 12 })} {t('jobs.remote')}</span>}
                         {formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency) && (
                           <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{formatSalary(job.salaryMin, job.salaryMax, job.salaryCurrency)}</span>
                         )}
-                        <span style={{ color: 'var(--text-muted)' }}>{EXP_LEVELS[job.experienceLevel] || ''}</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{t(EXP_LEVEL_KEYS[job.experienceLevel] || '')}</span>
                       </div>
                     </div>
                     {job.applied ? (
-                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} Aplicado</span>
+                      <span style={{ fontSize: 12, color: 'var(--accent-green)', fontWeight: 600, padding: '4px 12px', background: 'rgba(5,150,105,0.08)', borderRadius: 12, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} {t('jobs.applied')}</span>
                     ) : (
-                      <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); setSelectedJob(job); setShowApply(true) }}>Aplicar</button>
+                      <button className="btn btn-primary btn-sm" onClick={e => { e.stopPropagation(); setSelectedJob(job); setShowApply(true) }}>{t('jobs.apply')}</button>
                     )}
                   </div>
                 </div>
@@ -1293,12 +1295,12 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 </div>
                 {c.headline && <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 8px' }}>{c.headline}</p>}
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-secondary btn-xs" onClick={() => onNavigate(`/user/${c.user?.id}`)}>Ver Perfil</button>
-                  <button className="btn btn-primary btn-xs" onClick={() => onNavigate(`/messages`)}>Contactar</button>
+                  <button className="btn btn-secondary btn-xs" onClick={() => onNavigate(`/user/${c.user?.id}`)}>{t('jobs.viewProfile')}</button>
+                  <button className="btn btn-primary btn-xs" onClick={() => onNavigate(`/messages`)}>{t('jobs.contact')}</button>
                 </div>
               </div>
             ))}
-            {candidates.length === 0 && <div className="empty-state" style={{ gridColumn: '1/-1', padding: 40 }}><div>{Users({ size: 48 })}</div><h3>No hay talentos disponibles</h3></div>}
+            {candidates.length === 0 && <div className="empty-state" style={{ gridColumn: '1/-1', padding: 40 }}><div>{Users({ size: 48 })}</div><h3>{t('jobs.noTalent')}</h3></div>}
           </div>
         )}
 
@@ -1306,7 +1308,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {tab === 'my-apps' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {myApps.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div>{FileText({ size: 48 })}</div><h3>No has aplicado a ofertas</h3></div>
+              <div className="empty-state" style={{ padding: 40 }}><div>{FileText({ size: 48 })}</div><h3>{t('jobs.noApplications')}</h3></div>
             ) : myApps.map((a: any) => (
               <div key={a.id} className="u-card hover-lift" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
@@ -1321,7 +1323,7 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                   background: a.status === 'interview' ? 'rgba(5,150,105,0.08)' : a.status === 'accepted' ? 'rgba(5,150,105,0.15)' : a.status === 'rejected' ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)',
                   color: a.status === 'interview' ? 'var(--accent-green)' : a.status === 'accepted' ? 'var(--accent-green)' : a.status === 'rejected' ? 'var(--accent-red)' : 'var(--text-muted)',
                 }}>
-                  {a.status === 'pending' ? <>{Hourglass({ size: 12 })} Pendiente</> : a.status === 'reviewed' ? <>{Eye({ size: 12 })} Revisada</> : a.status === 'interview' ? <>{Target({ size: 12 })} Entrevista</> : a.status === 'accepted' ? <>{CheckCircle({ size: 12 })} Aceptada</> : <>{XCircle({ size: 12 })} Rechazada</>}
+                  {a.status === 'pending' ? <>{Hourglass({ size: 12 })} {t('jobs.statusPending')}</> : a.status === 'reviewed' ? <>{Eye({ size: 12 })} {t('jobs.statusReviewed')}</> : a.status === 'interview' ? <>{Target({ size: 12 })} {t('jobs.statusInterview')}</> : a.status === 'accepted' ? <>{CheckCircle({ size: 12 })} {t('jobs.statusAccepted')}</> : <>{XCircle({ size: 12 })} {t('jobs.statusRejected')}</>}
                 </span>
               </div>
             ))}
@@ -1336,67 +1338,67 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                   {GraduationCap({ size: 24 })}
-                  <h3 style={{ margin: 0, fontSize: 18, color: '#92400E' }}>Tutores Verificados por Conniku</h3>
+                  <h3 style={{ margin: 0, fontSize: 18, color: '#92400E' }}>{t('jobs.verifiedTutors')}</h3>
                 </div>
-                <p style={{ margin: 0, fontSize: 14, color: '#78350F' }}>Profesionales verificados, clases garantizadas y pagos seguros a traves de la plataforma.</p>
+                <p style={{ margin: 0, fontSize: 14, color: '#78350F' }}>{t('jobs.verifiedTutorsDesc')}</p>
               </div>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button className="btn btn-sm" onClick={() => onNavigate('/tutores')} style={{ background: '#F59E0B', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10, fontWeight: 600, cursor: 'pointer' }}>
-                  {SearchIcon({ size: 14 })} Buscar Tutores
+                  {SearchIcon({ size: 14 })} {t('jobs.searchTutors')}
                 </button>
                 <button className="btn btn-sm" onClick={() => onNavigate('/tutores?apply=true')} style={{ background: '#92400E', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10, fontWeight: 600, cursor: 'pointer' }}>
-                  Quiero ser Tutor
+                  {t('jobs.becomeTutor')}
                 </button>
               </div>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-              <button className="btn btn-primary btn-sm" onClick={() => setShowTutoringForm(true)}>+ Ofrecer Tutoria</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setShowTutoringForm(true)}>{t('jobs.offerTutoring')}</button>
             </div>
             {tutorings.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
                 <div>{GraduationCap({ size: 48 })}</div>
-                <h3>No hay tutorias disponibles</h3>
-                <p>Los estudiantes de ultimo ano y graduados pueden ofrecer tutorias</p>
+                <h3>{t('jobs.noTutoring')}</h3>
+                <p>{t('jobs.noTutoringDesc')}</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-                {tutorings.map((t: any) => (
-                  <div key={t.id} className="u-card hover-lift" style={{ padding: 20 }}>
+                {tutorings.map((tut: any) => (
+                  <div key={tut.id} className="u-card hover-lift" style={{ padding: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                       <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, overflow: 'hidden' }}>
-                        {t.tutor?.avatar ? <img src={t.tutor.avatar} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} /> : (t.tutor?.firstName?.[0] || '?')}
+                        {tut.tutor?.avatar ? <img src={tut.tutor.avatar} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} /> : (tut.tutor?.firstName?.[0] || '?')}
                       </div>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: 14 }}>
-                          {t.tutor?.firstName} {t.tutor?.lastName}
-                          {t.tutor?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>{GraduationCap({ size: 14 })}</span>}
-                          {t.tutor?.isSeniorYear && !t.tutor?.isGraduated && <span title="Ultimo ano" style={{ marginLeft: 4 }}>{BookOpen({ size: 14 })}</span>}
+                          {tut.tutor?.firstName} {tut.tutor?.lastName}
+                          {tut.tutor?.isGraduated && <span title="Graduado" style={{ marginLeft: 4 }}>{GraduationCap({ size: 14 })}</span>}
+                          {tut.tutor?.isSeniorYear && !tut.tutor?.isGraduated && <span title="Ultimo ano" style={{ marginLeft: 4 }}>{BookOpen({ size: 14 })}</span>}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.tutor?.career} · {t.tutor?.university}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{tut.tutor?.career} · {tut.tutor?.university}</div>
                       </div>
                     </div>
-                    <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{t.subject}</h4>
+                    <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{tut.subject}</h4>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8, fontSize: 12 }}>
                       <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>
-                        {t.modality === 'online' ? <>{Globe({ size: 12 })} Online</> : t.modality === 'presencial' ? <>{Map({ size: 12 })} Presencial</> : <>{RefreshCw({ size: 12 })} Hibrido</>}
+                        {tut.modality === 'online' ? <>{Globe({ size: 12 })} Online</> : tut.modality === 'presencial' ? <>{Map({ size: 12 })} {t('jobs.presencial')}</> : <>{RefreshCw({ size: 12 })} {t('jobs.hybrid')}</>}
                       </span>
-                      <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>{t.sessionDuration} min</span>
-                      {t.isFree ? (
-                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>Gratis</span>
-                      ) : t.pricePerHour ? (
-                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{t.currency} {t.pricePerHour}/hr</span>
+                      <span style={{ background: 'var(--bg-tertiary)', padding: '2px 8px', borderRadius: 12 }}>{tut.sessionDuration} min</span>
+                      {tut.isFree ? (
+                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{t('jobs.free')}</span>
+                      ) : tut.pricePerHour ? (
+                        <span style={{ color: 'var(--accent-green)', fontWeight: 600 }}>{tut.currency} {tut.pricePerHour}/hr</span>
                       ) : null}
-                      {t.freeTrial && <span style={{ color: 'var(--accent-blue)' }}>Clase de prueba gratis</span>}
+                      {tut.freeTrial && <span style={{ color: 'var(--accent-blue)' }}>{t('jobs.freeTrialClass')}</span>}
                     </div>
-                    {t.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{t.description}</p>}
-                    {t.ratingCount > 0 && (
+                    {tut.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>{tut.description}</p>}
+                    {tut.ratingCount > 0 && (
                       <div style={{ fontSize: 12, color: 'var(--accent-orange)', marginBottom: 8 }}>
-                        {Star({ size: 12 })} {t.rating}/5 ({t.ratingCount} resenas) · {t.totalSessions} sesiones
+                        {Star({ size: 12 })} {tut.rating}/5 ({tut.ratingCount} {t('jobs.reviews')}) · {tut.totalSessions} {t('jobs.sessions')}
                       </div>
                     )}
-                    <button className="btn btn-primary btn-sm" style={{ width: '100%' }} onClick={() => handleRequestTutoring(t.id)}>
-                      Solicitar Tutoria
+                    <button className="btn btn-primary btn-sm" style={{ width: '100%' }} onClick={() => handleRequestTutoring(tut.id)}>
+                      {t('jobs.requestTutoring')}
                     </button>
                   </div>
                 ))}
@@ -1423,61 +1425,61 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                     background: recruiterProfile.verificationStatus === 'verified' ? 'rgba(5,150,105,0.08)' : recruiterProfile.verificationStatus === 'rejected' ? 'rgba(220,38,38,0.08)' : 'var(--bg-tertiary)',
                     color: recruiterProfile.verificationStatus === 'verified' ? 'var(--accent-green)' : recruiterProfile.verificationStatus === 'rejected' ? 'var(--accent-red)' : 'var(--text-muted)',
                   }}>
-                    {recruiterProfile.verificationStatus === 'verified' ? <>{CheckCircle({ size: 12 })} Verificado</> : recruiterProfile.verificationStatus === 'rejected' ? <>{XCircle({ size: 12 })} Rechazado</> : <>{Hourglass({ size: 12 })} En revision</>}
+                    {recruiterProfile.verificationStatus === 'verified' ? <>{CheckCircle({ size: 12 })} {t('jobs.verified')}</> : recruiterProfile.verificationStatus === 'rejected' ? <>{XCircle({ size: 12 })} {t('jobs.rejected')}</> : <>{Hourglass({ size: 12 })} {t('jobs.underReview')}</>}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13 }}>
-                  {recruiterProfile.industry && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>Industria</strong><div>{recruiterProfile.industry}</div></div>}
-                  {recruiterProfile.companySize && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>Tamano</strong><div>{recruiterProfile.companySize} empleados</div></div>}
-                  {recruiterProfile.city && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>Ubicacion</strong><div>{recruiterProfile.city}, {recruiterProfile.country}</div></div>}
-                  {recruiterProfile.companyWebsite && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>Web</strong><div>{recruiterProfile.companyWebsite}</div></div>}
+                  {recruiterProfile.industry && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('jobs.industry')}</strong><div>{recruiterProfile.industry}</div></div>}
+                  {recruiterProfile.companySize && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('jobs.companySize')}</strong><div>{recruiterProfile.companySize} {t('jobs.employees')}</div></div>}
+                  {recruiterProfile.city && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('jobs.location')}</strong><div>{recruiterProfile.city}, {recruiterProfile.country}</div></div>}
+                  {recruiterProfile.companyWebsite && <div><strong style={{ color: 'var(--text-muted)', fontSize: 12 }}>{t('jobs.web')}</strong><div>{recruiterProfile.companyWebsite}</div></div>}
                 </div>
                 {recruiterProfile.verificationStatus === 'verified' && (
                   <div style={{ marginTop: 16 }}>
-                    <button className="btn btn-primary" onClick={() => setTab('candidates')}>Buscar Candidatos</button>
+                    <button className="btn btn-primary" onClick={() => setTab('candidates')}>{t('jobs.searchCandidates')}</button>
                   </div>
                 )}
               </div>
             ) : (
               <div className="u-card hover-lift" style={{ padding: 24 }}>
-                <h3 style={{ marginTop: 0 }}>{BuildingIcon()} Registrarse como Reclutador</h3>
-                <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>Registra tu empresa para publicar ofertas y buscar talento verificado</p>
+                <h3 style={{ marginTop: 0 }}>{BuildingIcon()} {t('jobs.registerAsRecruiter')}</h3>
+                <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>{t('jobs.registerRecruiterDesc')}</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  <div className="auth-field"><label>Empresa *</label>
-                    <input value={recruiterForm.company_name} onChange={e => setRecruiterForm({...recruiterForm, company_name: e.target.value})} placeholder="Nombre de la empresa" /></div>
-                  <div className="auth-field"><label>Correo corporativo *</label>
+                  <div className="auth-field"><label>{t('jobs.companyRequired')}</label>
+                    <input value={recruiterForm.company_name} onChange={e => setRecruiterForm({...recruiterForm, company_name: e.target.value})} placeholder={t('jobs.companyPlaceholder')} /></div>
+                  <div className="auth-field"><label>{t('jobs.corporateEmail')}</label>
                     <input value={recruiterForm.corporate_email} onChange={e => setRecruiterForm({...recruiterForm, corporate_email: e.target.value})} placeholder="rh@empresa.com" /></div>
-                  <div className="auth-field"><label>Tu cargo *</label>
+                  <div className="auth-field"><label>{t('jobs.yourTitle')}</label>
                     <input value={recruiterForm.recruiter_title} onChange={e => setRecruiterForm({...recruiterForm, recruiter_title: e.target.value})} placeholder="Ej: HR Manager" /></div>
-                  <div className="auth-field"><label>Sitio web</label>
+                  <div className="auth-field"><label>{t('jobs.website')}</label>
                     <input value={recruiterForm.company_website} onChange={e => setRecruiterForm({...recruiterForm, company_website: e.target.value})} placeholder="https://empresa.com" /></div>
-                  <div className="auth-field"><label>Industria</label>
-                    <input value={recruiterForm.industry} onChange={e => setRecruiterForm({...recruiterForm, industry: e.target.value})} placeholder="Ej: Tecnologia" /></div>
-                  <div className="auth-field"><label>Tamano empresa</label>
+                  <div className="auth-field"><label>{t('jobs.industryLabel')}</label>
+                    <input value={recruiterForm.industry} onChange={e => setRecruiterForm({...recruiterForm, industry: e.target.value})} placeholder={t('jobs.industryLabel')} /></div>
+                  <div className="auth-field"><label>{t('jobs.companySizeLabel')}</label>
                     <select value={recruiterForm.company_size} onChange={e => setRecruiterForm({...recruiterForm, company_size: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                      <option value="">Seleccionar</option>
-                      <option value="1-10">1-10 empleados</option>
-                      <option value="11-50">11-50 empleados</option>
-                      <option value="51-200">51-200 empleados</option>
-                      <option value="201-500">201-500 empleados</option>
-                      <option value="500+">500+ empleados</option>
+                      <option value="">{t('jobs.selectOption')}</option>
+                      <option value="1-10">1-10 {t('jobs.employees')}</option>
+                      <option value="11-50">11-50 {t('jobs.employees')}</option>
+                      <option value="51-200">51-200 {t('jobs.employees')}</option>
+                      <option value="201-500">201-500 {t('jobs.employees')}</option>
+                      <option value="500+">500+ {t('jobs.employees')}</option>
                     </select></div>
-                  <div className="auth-field"><label>RUC/NIT/ID Fiscal</label>
-                    <input value={recruiterForm.tax_id} onChange={e => setRecruiterForm({...recruiterForm, tax_id: e.target.value})} placeholder="Identificacion fiscal" /></div>
-                  <div className="auth-field"><label>Telefono</label>
+                  <div className="auth-field"><label>{t('jobs.taxId')}</label>
+                    <input value={recruiterForm.tax_id} onChange={e => setRecruiterForm({...recruiterForm, tax_id: e.target.value})} placeholder={t('jobs.taxIdPlaceholder')} /></div>
+                  <div className="auth-field"><label>{t('jobs.phone')}</label>
                     <input value={recruiterForm.phone} onChange={e => setRecruiterForm({...recruiterForm, phone: e.target.value})} placeholder="+1 234 567 8900" /></div>
-                  <div className="auth-field"><label>Pais</label>
-                    <input value={recruiterForm.country} onChange={e => setRecruiterForm({...recruiterForm, country: e.target.value})} placeholder="Pais" /></div>
-                  <div className="auth-field"><label>Ciudad</label>
-                    <input value={recruiterForm.city} onChange={e => setRecruiterForm({...recruiterForm, city: e.target.value})} placeholder="Ciudad" /></div>
-                  <div className="auth-field"><label>LinkedIn</label>
+                  <div className="auth-field"><label>{t('jobs.country')}</label>
+                    <input value={recruiterForm.country} onChange={e => setRecruiterForm({...recruiterForm, country: e.target.value})} placeholder={t('jobs.country')} /></div>
+                  <div className="auth-field"><label>{t('jobs.city')}</label>
+                    <input value={recruiterForm.city} onChange={e => setRecruiterForm({...recruiterForm, city: e.target.value})} placeholder={t('jobs.city')} /></div>
+                  <div className="auth-field"><label>{t('jobs.linkedin')}</label>
                     <input value={recruiterForm.linkedin_url} onChange={e => setRecruiterForm({...recruiterForm, linkedin_url: e.target.value})} placeholder="linkedin.com/company/..." /></div>
                 </div>
-                <div className="auth-field"><label>Descripcion de la empresa</label>
-                  <textarea value={recruiterForm.company_description} onChange={e => setRecruiterForm({...recruiterForm, company_description: e.target.value})} placeholder="A que se dedica tu empresa?"
+                <div className="auth-field"><label>{t('jobs.companyDescription')}</label>
+                  <textarea value={recruiterForm.company_description} onChange={e => setRecruiterForm({...recruiterForm, company_description: e.target.value})} placeholder={t('jobs.companyDescPlaceholder')}
                     style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
                 <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={handleRegisterRecruiter}>
-                  Registrar Empresa
+                  {t('jobs.registerCompany')}
                 </button>
               </div>
             )}
@@ -1488,17 +1490,17 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {showApply && selectedJob && (
           <div className="modal-overlay" onClick={() => setShowApply(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>Aplicar a {selectedJob.jobTitle}</h3>
+              <h3>{t('jobs.applyTo')} {selectedJob.jobTitle}</h3>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{selectedJob.companyName}</p>
               <div className="auth-field">
-                <label>Carta de presentacion</label>
+                <label>{t('jobs.coverLetter')}</label>
                 <textarea value={coverLetter} onChange={e => setCoverLetter(e.target.value)}
-                  placeholder="Cuentale a la empresa por que eres el candidato ideal..."
+                  placeholder={t('jobs.coverLetterPlaceholder')}
                   style={{ width: '100%', minHeight: 120, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit', fontSize: 14 }} />
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowApply(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={() => handleApply(selectedJob.id)}>Enviar Aplicacion</button>
+                <button className="btn btn-secondary" onClick={() => setShowApply(false)}>{t('jobs.cancel')}</button>
+                <button className="btn btn-primary" onClick={() => handleApply(selectedJob.id)}>{t('jobs.sendApplication')}</button>
               </div>
             </div>
           </div>
@@ -1508,52 +1510,52 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {showPostForm && (
           <div className="modal-overlay" onClick={() => setShowPostForm(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 600, maxHeight: '80vh', overflowY: 'auto' }}>
-              <h3>Publicar Oferta de Empleo</h3>
+              <h3>{t('jobs.postJobTitle')}</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div className="auth-field"><label>Empresa *</label>
-                  <input value={form.company_name} onChange={e => setForm({...form, company_name: e.target.value})} placeholder="Nombre de la empresa" /></div>
-                <div className="auth-field"><label>Puesto *</label>
-                  <input value={form.job_title} onChange={e => setForm({...form, job_title: e.target.value})} placeholder="Ej: Desarrollador Frontend" /></div>
-                <div className="auth-field"><label>Tipo de empleo</label>
+                <div className="auth-field"><label>{t('jobs.companyLabel2')}</label>
+                  <input value={form.company_name} onChange={e => setForm({...form, company_name: e.target.value})} placeholder={t('jobs.companyPlaceholder')} /></div>
+                <div className="auth-field"><label>{t('jobs.positionRequired')}</label>
+                  <input value={form.job_title} onChange={e => setForm({...form, job_title: e.target.value})} placeholder={t('jobs.positionPlaceholder2')} /></div>
+                <div className="auth-field"><label>{t('jobs.jobType')}</label>
                   <select value={form.job_type} onChange={e => setForm({...form, job_type: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    {JOB_TYPES.filter(t => t.value).map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                    {JOB_TYPE_KEYS.filter(jt => jt.value).map(jt => <option key={jt.value} value={jt.value}>{t(jt.labelKey)}</option>)}
                   </select></div>
-                <div className="auth-field"><label>Nivel de experiencia</label>
+                <div className="auth-field"><label>{t('jobs.expLevel')}</label>
                   <select value={form.experience_level} onChange={e => setForm({...form, experience_level: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    <option value="entry">Junior / Sin experiencia</option>
-                    <option value="mid">Semi-Senior (2-5 anos)</option>
-                    <option value="senior">Senior (5+ anos)</option>
-                    <option value="any">Cualquiera</option>
+                    <option value="entry">{t('jobs.expEntryLabel')}</option>
+                    <option value="mid">{t('jobs.expMidLabel')}</option>
+                    <option value="senior">{t('jobs.expSeniorLabel')}</option>
+                    <option value="any">{t('jobs.expAnyLabel')}</option>
                   </select></div>
-                <div className="auth-field"><label>Ubicacion</label>
-                  <input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="Ciudad, Pais" /></div>
+                <div className="auth-field"><label>{t('jobs.locationField')}</label>
+                  <input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder={t('jobs.locationPlaceholder')} /></div>
                 <div className="auth-field" style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 24 }}>
                   <input type="checkbox" checked={form.is_remote} onChange={e => setForm({...form, is_remote: e.target.checked})} />
-                  <label style={{ margin: 0 }}>Trabajo remoto</label>
+                  <label style={{ margin: 0 }}>{t('jobs.remoteWork')}</label>
                 </div>
-                <div className="auth-field"><label>Salario minimo</label>
-                  <input type="number" value={form.salary_min} onChange={e => setForm({...form, salary_min: e.target.value})} placeholder="Ej: 30000" /></div>
-                <div className="auth-field"><label>Salario maximo</label>
-                  <input type="number" value={form.salary_max} onChange={e => setForm({...form, salary_max: e.target.value})} placeholder="Ej: 50000" /></div>
-                <div className="auth-field"><label>Campo profesional</label>
-                  <input value={form.career_field} onChange={e => setForm({...form, career_field: e.target.value})} placeholder="Ej: Tecnologia, Ingenieria..." /></div>
-                <div className="auth-field"><label>Email de contacto</label>
+                <div className="auth-field"><label>{t('jobs.salaryMin')}</label>
+                  <input type="number" value={form.salary_min} onChange={e => setForm({...form, salary_min: e.target.value})} placeholder={t('jobs.salaryMinPlaceholder')} /></div>
+                <div className="auth-field"><label>{t('jobs.salaryMax')}</label>
+                  <input type="number" value={form.salary_max} onChange={e => setForm({...form, salary_max: e.target.value})} placeholder={t('jobs.salaryMaxPlaceholder')} /></div>
+                <div className="auth-field"><label>{t('jobs.careerField')}</label>
+                  <input value={form.career_field} onChange={e => setForm({...form, career_field: e.target.value})} placeholder={t('jobs.careerFieldPlaceholder')} /></div>
+                <div className="auth-field"><label>{t('jobs.contactEmailField')}</label>
                   <input value={form.contact_email} onChange={e => setForm({...form, contact_email: e.target.value})} placeholder="rh@empresa.com" /></div>
-                <div className="auth-field"><label>Fecha limite</label>
+                <div className="auth-field"><label>{t('jobs.deadline')}</label>
                   <input type="date" value={form.application_deadline} onChange={e => setForm({...form, application_deadline: e.target.value})} style={{ colorScheme: 'dark' }} /></div>
               </div>
-              <div className="auth-field"><label>Descripcion del puesto *</label>
-                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="Describe las responsabilidades del puesto..."
+              <div className="auth-field"><label>{t('jobs.jobDescription')}</label>
+                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder={t('jobs.jobDescPlaceholder')}
                   style={{ width: '100%', minHeight: 80, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
-              <div className="auth-field"><label>Requisitos</label>
-                <textarea value={form.requirements} onChange={e => setForm({...form, requirements: e.target.value})} placeholder="Requisitos y habilidades necesarias..."
+              <div className="auth-field"><label>{t('jobs.requirements')}</label>
+                <textarea value={form.requirements} onChange={e => setForm({...form, requirements: e.target.value})} placeholder={t('jobs.requirementsPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
-              <div className="auth-field"><label>Beneficios</label>
-                <textarea value={form.benefits} onChange={e => setForm({...form, benefits: e.target.value})} placeholder="Beneficios que ofrece la empresa..."
+              <div className="auth-field"><label>{t('jobs.benefits')}</label>
+                <textarea value={form.benefits} onChange={e => setForm({...form, benefits: e.target.value})} placeholder={t('jobs.benefitsPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowPostForm(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handlePostJob}>Publicar Oferta</button>
+                <button className="btn btn-secondary" onClick={() => setShowPostForm(false)}>{t('jobs.cancel')}</button>
+                <button className="btn btn-primary" onClick={handlePostJob}>{t('jobs.publishOffer')}</button>
               </div>
             </div>
           </div>
@@ -1573,17 +1575,17 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16, fontSize: 13 }}>
-                <span style={{ background: 'var(--bg-tertiary)', padding: '4px 12px', borderRadius: 12 }}>{JOB_TYPES.find(t => t.value === selectedJob.jobType)?.label}</span>
+                <span style={{ background: 'var(--bg-tertiary)', padding: '4px 12px', borderRadius: 12 }}>{t(JOB_TYPE_KEYS.find(jt => jt.value === selectedJob.jobType)?.labelKey || '')}</span>
                 {selectedJob.location && <span>{Map({ size: 13 })} {selectedJob.location}</span>}
-                {selectedJob.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 13 })} Remoto</span>}
+                {selectedJob.isRemote && <span style={{ color: 'var(--accent-green)' }}>{Globe({ size: 13 })} {t('jobs.remote')}</span>}
                 {formatSalary(selectedJob.salaryMin, selectedJob.salaryMax, selectedJob.salaryCurrency) && <span style={{ fontWeight: 600, color: 'var(--accent-green)' }}>{formatSalary(selectedJob.salaryMin, selectedJob.salaryMax, selectedJob.salaryCurrency)}</span>}
               </div>
               <div style={{ fontSize: 14, lineHeight: 1.6, whiteSpace: 'pre-wrap', marginBottom: 16 }}>{selectedJob.description}</div>
-              {selectedJob.requirements && <div style={{ marginBottom: 16 }}><h4 style={{ fontSize: 14, marginBottom: 4 }}>Requisitos</h4><div style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{selectedJob.requirements}</div></div>}
-              {selectedJob.benefits && <div style={{ marginBottom: 16 }}><h4 style={{ fontSize: 14, marginBottom: 4 }}>Beneficios</h4><div style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{selectedJob.benefits}</div></div>}
+              {selectedJob.requirements && <div style={{ marginBottom: 16 }}><h4 style={{ fontSize: 14, marginBottom: 4 }}>{t('jobs.requirements')}</h4><div style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{selectedJob.requirements}</div></div>}
+              {selectedJob.benefits && <div style={{ marginBottom: 16 }}><h4 style={{ fontSize: 14, marginBottom: 4 }}>{t('jobs.benefits')}</h4><div style={{ fontSize: 13, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)' }}>{selectedJob.benefits}</div></div>}
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setSelectedJob(null)}>Cerrar</button>
-                {!selectedJob.applied && <button className="btn btn-primary" onClick={() => setShowApply(true)}>Aplicar</button>}
+                <button className="btn btn-secondary" onClick={() => setSelectedJob(null)}>{t('jobs.close')}</button>
+                {!selectedJob.applied && <button className="btn btn-primary" onClick={() => setShowApply(true)}>{t('jobs.apply')}</button>}
               </div>
             </div>
           </div>
@@ -1592,43 +1594,43 @@ ${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.c
         {showTutoringForm && (
           <div className="modal-overlay" onClick={() => setShowTutoringForm(false)}>
             <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 550, maxHeight: '80vh', overflowY: 'auto' }}>
-              <h3>Ofrecer Tutoria</h3>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Comparte tu conocimiento con otros estudiantes</p>
+              <h3>{t('jobs.offerTutoringTitle')}</h3>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{t('jobs.shareKnowledge')}</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div className="auth-field"><label>Materia *</label>
-                  <input value={tutoringForm.subject} onChange={e => setTutoringForm({...tutoringForm, subject: e.target.value})} placeholder="Ej: Calculo II" /></div>
-                <div className="auth-field"><label>Categoria</label>
+                <div className="auth-field"><label>{t('jobs.subjectRequired')}</label>
+                  <input value={tutoringForm.subject} onChange={e => setTutoringForm({...tutoringForm, subject: e.target.value})} placeholder={t('jobs.subjectPlaceholder')} /></div>
+                <div className="auth-field"><label>{t('jobs.categoryLabel')}</label>
                   <select value={tutoringForm.category} onChange={e => setTutoringForm({...tutoringForm, category: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    <option value="">Seleccionar</option>
-                    <option value="ciencias">Ciencias</option><option value="ingenieria">Ingenieria</option>
-                    <option value="humanidades">Humanidades</option><option value="tecnologia">Tecnologia</option>
-                    <option value="idiomas">Idiomas</option><option value="negocios">Negocios</option>
-                    <option value="artes">Artes</option><option value="salud">Salud</option>
+                    <option value="">{t('jobs.selectOption')}</option>
+                    <option value="ciencias">{t('jobs.catSciences')}</option><option value="ingenieria">{t('jobs.catEngineering')}</option>
+                    <option value="humanidades">{t('jobs.catHumanities')}</option><option value="tecnologia">{t('jobs.catTech')}</option>
+                    <option value="idiomas">{t('jobs.catLanguages')}</option><option value="negocios">{t('jobs.catBusiness')}</option>
+                    <option value="artes">{t('jobs.catArts')}</option><option value="salud">{t('jobs.catHealth')}</option>
                   </select></div>
-                <div className="auth-field"><label>Modalidad</label>
+                <div className="auth-field"><label>{t('jobs.modality')}</label>
                   <select value={tutoringForm.modality} onChange={e => setTutoringForm({...tutoringForm, modality: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    <option value="online">Online</option><option value="presencial">Presencial</option><option value="hybrid">Hibrido</option>
+                    <option value="online">Online</option><option value="presencial">{t('jobs.presencial')}</option><option value="hybrid">{t('jobs.hybrid')}</option>
                   </select></div>
-                <div className="auth-field"><label>Duracion sesion</label>
+                <div className="auth-field"><label>{t('jobs.sessionDuration')}</label>
                   <select value={tutoringForm.session_duration} onChange={e => setTutoringForm({...tutoringForm, session_duration: Number(e.target.value)})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                     <option value={30}>30 min</option><option value={45}>45 min</option>
                     <option value={60}>60 min</option><option value={90}>90 min</option>
                   </select></div>
-                <div className="auth-field"><label>Precio por hora</label>
-                  <input type="number" value={tutoringForm.price_per_hour} onChange={e => setTutoringForm({...tutoringForm, price_per_hour: e.target.value})} placeholder="0 = gratis" /></div>
+                <div className="auth-field"><label>{t('jobs.pricePerHour')}</label>
+                  <input type="number" value={tutoringForm.price_per_hour} onChange={e => setTutoringForm({...tutoringForm, price_per_hour: e.target.value})} placeholder={t('jobs.freePricePlaceholder')} /></div>
                 <div className="auth-field" style={{ display: 'flex', alignItems: 'center', gap: 8, paddingTop: 24 }}>
                   <input type="checkbox" checked={tutoringForm.is_free} onChange={e => setTutoringForm({...tutoringForm, is_free: e.target.checked})} />
-                  <label style={{ margin: 0 }}>Tutoria gratuita</label>
+                  <label style={{ margin: 0 }}>{t('jobs.freeTutoring')}</label>
                 </div>
               </div>
-              <div className="auth-field"><label>Descripcion y metodologia</label>
-                <textarea value={tutoringForm.description} onChange={e => setTutoringForm({...tutoringForm, description: e.target.value})} placeholder="Que aprenderan tus estudiantes? Como son tus clases?"
+              <div className="auth-field"><label>{t('jobs.descAndMethodology')}</label>
+                <textarea value={tutoringForm.description} onChange={e => setTutoringForm({...tutoringForm, description: e.target.value})} placeholder={t('jobs.descAndMethodPlaceholder')}
                   style={{ width: '100%', minHeight: 80, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
-              <div className="auth-field"><label>Tags (separados por coma)</label>
-                <input value={tutoringForm.tags} onChange={e => setTutoringForm({...tutoringForm, tags: e.target.value})} placeholder="Ej: Parcial 2, Integrales, Repaso final" /></div>
+              <div className="auth-field"><label>{t('jobs.tagsLabel')}</label>
+                <input value={tutoringForm.tags} onChange={e => setTutoringForm({...tutoringForm, tags: e.target.value})} placeholder={t('jobs.tagsPlaceholder')} /></div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowTutoringForm(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleCreateTutoring}>Publicar Tutoria</button>
+                <button className="btn btn-secondary" onClick={() => setShowTutoringForm(false)}>{t('jobs.cancel')}</button>
+                <button className="btn btn-primary" onClick={handleCreateTutoring}>{t('jobs.publishTutoring')}</button>
               </div>
             </div>
           </div>

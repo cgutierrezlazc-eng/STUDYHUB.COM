@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { Calendar, Link, Users } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
 }
 
-const EVENT_TYPES = [
-  { value: 'study_session', label: 'Sesión de Estudio', color: 'var(--accent-blue)' },
-  { value: 'exam_prep', label: 'Preparación de Examen', color: 'var(--accent-orange)' },
-  { value: 'tutoring', label: 'Tutoría', color: 'var(--accent-green)' },
-  { value: 'social', label: 'Social', color: 'var(--accent-purple)' },
+const EVENT_TYPE_KEYS = [
+  { value: 'study_session', key: 'events.typeStudy', color: 'var(--accent-blue)' },
+  { value: 'exam_prep', key: 'events.typeExam', color: 'var(--accent-orange)' },
+  { value: 'tutoring', key: 'events.typeTutoring', color: 'var(--accent-green)' },
+  { value: 'social', key: 'events.typeSocial', color: 'var(--accent-purple)' },
 ]
 
 export default function Events({ onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [events, setEvents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [tab, setTab] = useState<'upcoming' | 'my'>('upcoming')
@@ -68,12 +70,12 @@ export default function Events({ onNavigate }: Props) {
     <>
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div><h2>{Calendar({ size: 20 })} Eventos</h2><p>Sesiones de estudio, preparacion de examenes y mas</p></div>
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Crear Evento</button>
+          <div><h2>{Calendar({ size: 20 })} {t('events.title')}</h2><p>{t('events.subtitle')}</p></div>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ {t('events.create')}</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-          <button className={`tab ${tab === 'upcoming' ? 'active' : ''}`} onClick={() => setTab('upcoming')}>Próximos</button>
-          <button className={`tab ${tab === 'my' ? 'active' : ''}`} onClick={() => setTab('my')}>Mis Eventos</button>
+          <button className={`tab ${tab === 'upcoming' ? 'active' : ''}`} onClick={() => setTab('upcoming')}>{t('events.tabUpcoming')}</button>
+          <button className={`tab ${tab === 'my' ? 'active' : ''}`} onClick={() => setTab('my')}>{t('events.tabMy')}</button>
         </div>
       </div>
       <div className="page-body">
@@ -81,14 +83,14 @@ export default function Events({ onNavigate }: Props) {
         events.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
             <div className="empty-state-icon">{Calendar({ size: 48 })}</div>
-            <h3>No hay eventos {tab === 'my' ? 'registrados' : 'proximos'}</h3>
-            <p>Crea uno para estudiar con la comunidad</p>
-            <button className="btn btn-primary empty-state-cta" onClick={() => setShowCreate(true)}>+ Crear Evento</button>
+            <h3>{t('events.emptyTitle')}</h3>
+            <p>{t('events.emptySubtitle')}</p>
+            <button className="btn btn-primary empty-state-cta" onClick={() => setShowCreate(true)}>+ {t('events.create')}</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {events.map(event => {
-              const typeInfo = EVENT_TYPES.find(t => t.value === event.eventType) || EVENT_TYPES[0]
+              const typeInfo = EVENT_TYPE_KEYS.find(tk => tk.value === event.eventType) || EVENT_TYPE_KEYS[0]
               return (
                 <div key={event.id} className="u-card hover-lift" style={{ display: 'flex', gap: 16 }}>
                   <div style={{ width: 56, textAlign: 'center', flexShrink: 0 }}>
@@ -103,13 +105,13 @@ export default function Events({ onNavigate }: Props) {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                       <h4 style={{ margin: 0, fontSize: 15 }}>{event.title}</h4>
-                      <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 12, background: `${typeInfo.color}15`, color: typeInfo.color }}>{typeInfo.label}</span>
+                      <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 12, background: `${typeInfo.color}15`, color: typeInfo.color }}>{t(typeInfo.key)}</span>
                     </div>
                     {event.description && <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>{event.description.slice(0, 120)}</p>}
                     <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)', flexWrap: 'wrap' }}>
                       {event.location && <span>{event.location}</span>}
-                      {event.meetingLink && <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Link({ size: 14 })} Unirse</a>}
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {event.attendeeCount}{event.maxAttendees ? `/${event.maxAttendees}` : ''} asistentes</span>
+                      {event.meetingLink && <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Link({ size: 14 })} {t('events.join')}</a>}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {event.attendeeCount}{event.maxAttendees ? `/${event.maxAttendees}` : ''} {t('events.attendees')}</span>
                       {event.organizer && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                         <span style={{
                           width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
@@ -123,9 +125,9 @@ export default function Events({ onNavigate }: Props) {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>
                     {event.userRsvp === 'going' ? (
-                      <button className="btn btn-secondary btn-sm" onClick={() => handleRsvp(event.id, 'not_going')}>✓ Asistiendo</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => handleRsvp(event.id, 'not_going')}>✓ {t('events.attending')}</button>
                     ) : (
-                      <button className="btn btn-primary btn-sm" onClick={() => handleRsvp(event.id, 'going')}>Asistir</button>
+                      <button className="btn btn-primary btn-sm" onClick={() => handleRsvp(event.id, 'going')}>{t('events.attend')}</button>
                     )}
                   </div>
                 </div>
@@ -136,25 +138,25 @@ export default function Events({ onNavigate }: Props) {
         {showCreate && (
           <div className="modal-overlay" onClick={() => setShowCreate(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>Crear Evento</h3>
-              <div className="auth-field"><label>Título *</label>
-                <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder="Ej: Repaso de Cálculo para el parcial" autoFocus /></div>
-              <div className="auth-field"><label>Tipo</label>
+              <h3>{t('events.modalTitle')}</h3>
+              <div className="auth-field"><label>{t('events.titleLabel')}</label>
+                <input value={form.title} onChange={e => setForm({...form, title: e.target.value})} placeholder={t('events.titlePlaceholder')} autoFocus /></div>
+              <div className="auth-field"><label>{t('events.typeLabel')}</label>
                 <select value={form.event_type} onChange={e => setForm({...form, event_type: e.target.value})} style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  {EVENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                  {EVENT_TYPE_KEYS.map(tk => <option key={tk.value} value={tk.value}>{t(tk.key)}</option>)}
                 </select></div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <div className="auth-field"><label>Inicio *</label><input type="datetime-local" value={form.start_time} onChange={e => setForm({...form, start_time: e.target.value})} style={{ colorScheme: 'dark' }} /></div>
-                <div className="auth-field"><label>Fin</label><input type="datetime-local" value={form.end_time} onChange={e => setForm({...form, end_time: e.target.value})} style={{ colorScheme: 'dark' }} /></div>
+                <div className="auth-field"><label>{t('events.startLabel')}</label><input type="datetime-local" value={form.start_time} onChange={e => setForm({...form, start_time: e.target.value})} style={{ colorScheme: 'dark' }} /></div>
+                <div className="auth-field"><label>{t('events.endLabel')}</label><input type="datetime-local" value={form.end_time} onChange={e => setForm({...form, end_time: e.target.value})} style={{ colorScheme: 'dark' }} /></div>
               </div>
-              <div className="auth-field"><label>Ubicación / Lugar</label><input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder="Virtual, Biblioteca, Sala 101..." /></div>
-              <div className="auth-field"><label>Link de reunión (Zoom, Meet...)</label><input value={form.meeting_link} onChange={e => setForm({...form, meeting_link: e.target.value})} placeholder="https://zoom.us/j/..." /></div>
-              <div className="auth-field"><label>Descripción</label>
-                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder="¿Qué van a estudiar? ¿Qué llevar?"
+              <div className="auth-field"><label>{t('events.locationLabel')}</label><input value={form.location} onChange={e => setForm({...form, location: e.target.value})} placeholder={t('events.locationPlaceholder')} /></div>
+              <div className="auth-field"><label>{t('events.meetingLinkLabel')}</label><input value={form.meeting_link} onChange={e => setForm({...form, meeting_link: e.target.value})} placeholder="https://zoom.us/j/..." /></div>
+              <div className="auth-field"><label>{t('events.descLabel')}</label>
+                <textarea value={form.description} onChange={e => setForm({...form, description: e.target.value})} placeholder={t('events.descPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleCreate}>Crear Evento</button>
+                <button className="btn btn-secondary" onClick={() => setShowCreate(false)}>{t('events.cancel')}</button>
+                <button className="btn btn-primary" onClick={handleCreate}>{t('events.createSubmit')}</button>
               </div>
             </div>
           </div>

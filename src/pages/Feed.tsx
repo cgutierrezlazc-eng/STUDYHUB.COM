@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks, Sparkles } from '../components/Icons'
 
 interface Props {
@@ -12,6 +13,7 @@ const REACTION_EMOJIS: Record<string, string> = {
 }
 
 export default function Feed({ onNavigate }: Props) {
+  const { t } = useI18n()
   const { user } = useAuth()
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -98,7 +100,7 @@ export default function Feed({ onNavigate }: Props) {
       setSuggestedTags([])
       loadFeed(1)
     } catch (err: any) {
-      alert(err.message || 'Error al publicar')
+      alert(err.message || t('feed.errorPosting'))
     }
     setPosting(false)
   }
@@ -121,10 +123,10 @@ export default function Feed({ onNavigate }: Props) {
   }
 
   const visibilityOptions: Record<string, { icon: React.ReactNode; label: string }> = {
-    public: { icon: Globe({ size: 14 }), label: 'Publico' },
-    friends: { icon: UsersIcon({ size: 14 }), label: 'Solo amigos' },
-    private: { icon: Lock({ size: 14 }), label: 'Solo yo' },
-    list: { icon: ListChecks({ size: 14 }), label: 'Lista de amigos' },
+    public: { icon: Globe({ size: 14 }), label: t('feed.visibilityPublic') },
+    friends: { icon: UsersIcon({ size: 14 }), label: t('feed.visibilityFriends') },
+    private: { icon: Lock({ size: 14 }), label: t('feed.visibilityPrivate') },
+    list: { icon: ListChecks({ size: 14 }), label: t('feed.visibilityList') },
   }
 
   const getVisibilityLabel = () => {
@@ -132,7 +134,7 @@ export default function Feed({ onNavigate }: Props) {
       const list = friendLists.find(l => l.id === postVisibilityListId)
       return list ? list.name : 'Lista'
     }
-    return visibilityOptions[postVisibility]?.label || 'Publico'
+    return visibilityOptions[postVisibility]?.label || t('feed.visibilityPublic')
   }
 
   const getVisibilityIcon = () => {
@@ -182,7 +184,7 @@ export default function Feed({ onNavigate }: Props) {
       setCommentTexts(prev => ({ ...prev, [postId]: '' }))
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, commentCount: (p.commentCount || 0) + 1 } : p))
     } catch (err: any) {
-      alert(err.message || 'Error al comentar')
+      alert(err.message || t('feed.errorCommenting'))
     }
   }
 
@@ -197,7 +199,7 @@ export default function Feed({ onNavigate }: Props) {
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime()
     const mins = Math.floor(diff / 60000)
-    if (mins < 1) return 'ahora'
+    if (mins < 1) return t('feed.timeNow')
     if (mins < 60) return `hace ${mins}m`
     const hrs = Math.floor(mins / 60)
     if (hrs < 24) return `hace ${hrs}h`
@@ -209,21 +211,21 @@ export default function Feed({ onNavigate }: Props) {
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>{Home({ size: 22 })} Inicio</h2>
-            <p>Actividad de tu red de estudio</p>
+            <h2>{Home({ size: 22 })} {t('feed.title')}</h2>
+            <p>{t('feed.subtitle')}</p>
           </div>
           <div style={{ display: 'flex', gap: 4, background: 'var(--bg-secondary)', borderRadius: 8, padding: 3 }}>
             <button
               className={`tab ${feedSort === 'recent' ? 'active' : ''}`}
               style={{ fontSize: 12, padding: '5px 12px' }}
               onClick={() => { setFeedSort('recent'); localStorage.setItem('conniku_feed_sort', 'recent'); setLoading(true); loadFeed(1, 'recent') }}>
-              Reciente
+              {t('feed.sortRecent')}
             </button>
             <button
               className={`tab ${feedSort === 'smart' ? 'active' : ''}`}
               style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { setFeedSort('smart'); localStorage.setItem('conniku_feed_sort', 'smart'); setLoading(true); loadFeed(1, 'smart') }}>
-              {Sparkles({ size: 12 })} Relevante
+              {Sparkles({ size: 12 })} {t('feed.sortRelevant')}
             </button>
           </div>
         </div>
@@ -263,7 +265,7 @@ export default function Feed({ onNavigate }: Props) {
                         setSuggestedTags([])
                       }
                     }}
-                    placeholder={'\u00BFQu\u00E9 est\u00E1s estudiando?'}
+                    placeholder={t('feed.composerPlaceholder')}
                     style={{
                       width: '100%', minHeight: 60, resize: 'vertical', padding: 12,
                       border: '1px solid var(--border-color)', borderRadius: 12,
@@ -286,7 +288,7 @@ export default function Feed({ onNavigate }: Props) {
                       <input ref={imageInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageSelect} />
                       <button onClick={() => imageInputRef.current?.click()} style={{
                         background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, padding: '4px 8px',
-                      }} title="Agregar foto">{Camera({ size: 18 })}</button>
+                      }} title={t('feed.addPhoto')}>{Camera({ size: 18 })}</button>
 
                       {/* Visibility selector */}
                       <div ref={visibilityRef} style={{ position: 'relative' }}>
@@ -367,7 +369,7 @@ export default function Feed({ onNavigate }: Props) {
                                         </button>
                                       )) : (
                                         <div style={{ padding: '12px 14px', fontSize: 12, color: 'var(--text-muted)' }}>
-                                          No tienes listas todavia
+                                          {t('feed.noLists')}
                                         </div>
                                       )}
                                       <div style={{ borderTop: '1px solid var(--border-color)', padding: '8px 10px' }}>
@@ -376,7 +378,7 @@ export default function Feed({ onNavigate }: Props) {
                                             value={newListName}
                                             onChange={e => setNewListName(e.target.value)}
                                             onKeyDown={e => e.key === 'Enter' && handleCreateFriendList()}
-                                            placeholder="Nueva lista..."
+                                            placeholder={t('feed.newList')}
                                             style={{
                                               flex: 1, padding: '6px 10px', borderRadius: 8, fontSize: 12,
                                               border: '1px solid var(--border-color)', background: 'var(--bg-primary)',
@@ -393,7 +395,7 @@ export default function Feed({ onNavigate }: Props) {
                                               opacity: creatingList || !newListName.trim() ? 0.5 : 1,
                                             }}
                                           >
-                                            {creatingList ? '...' : 'Crear'}
+                                            {creatingList ? '...' : t('feed.create')}
                                           </button>
                                         </div>
                                       </div>
@@ -417,9 +419,9 @@ export default function Feed({ onNavigate }: Props) {
                           ))}
                         </div>
                       )}
-                      {tagsLoading && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sugiriendo tags...</span>}
+                      {tagsLoading && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t('feed.suggestingTags')}</span>}
                       <button className="btn btn-primary btn-sm press-feedback" onClick={handlePost} disabled={posting || (!newPostContent.trim() && !postImage)}>
-                        {posting ? 'Publicando...' : 'Publicar'}
+                        {posting ? t('feed.publishing') : t('feed.publish')}
                       </button>
                     </div>
                   </div>
@@ -450,10 +452,10 @@ export default function Feed({ onNavigate }: Props) {
                 <div className="empty-state-icon" style={{ background: 'rgba(249,115,22,0.08)' }}>
                   {Megaphone({ size: 28, color: 'var(--accent-orange)' })}
                 </div>
-                <div className="empty-state-title">Tu feed esta vacio</div>
-                <div className="empty-state-desc">Conecta con otros estudiantes para ver publicaciones, apuntes y actividad de tu comunidad.</div>
+                <div className="empty-state-title">{t('feed.emptyTitle')}</div>
+                <div className="empty-state-desc">{t('feed.emptyDesc')}</div>
                 <button className="empty-state-cta" onClick={() => onNavigate('/friends')}>
-                  {UsersIcon({ size: 14 })} Buscar Companeros
+                  {UsersIcon({ size: 14 })} {t('feed.searchClassmates')}
                 </button>
               </div>
             ) : (
@@ -479,9 +481,9 @@ export default function Feed({ onNavigate }: Props) {
                           {timeAgo(post.createdAt)}
                           {post.visibility && post.visibility !== 'public' && (
                             <span title={
-                              post.visibility === 'friends' ? 'Solo amigos' :
-                              post.visibility === 'private' ? 'Solo yo' :
-                              post.visibility === 'list' ? 'Lista de amigos' : post.visibility
+                              post.visibility === 'friends' ? t('feed.visibilityFriends') :
+                              post.visibility === 'private' ? t('feed.visibilityPrivate') :
+                              post.visibility === 'list' ? t('feed.visibilityList') : post.visibility
                             } style={{ display: 'inline-flex', opacity: 0.6 }}>
                               {post.visibility === 'friends' ? UsersIcon({ size: 11 }) :
                                post.visibility === 'private' ? Lock({ size: 11 }) :
@@ -520,7 +522,7 @@ export default function Feed({ onNavigate }: Props) {
                           fontSize: 13, color: post.userReaction ? 'var(--accent)' : 'var(--text-muted)',
                           fontWeight: post.userReaction ? 700 : 400, borderRadius: 8,
                         }}>
-                          {post.userReaction ? REACTION_EMOJIS[post.userReaction] : '\u{1F44D}'} {post.userReaction ? 'Reaccionado' : 'Me gusta'}
+                          {post.userReaction ? REACTION_EMOJIS[post.userReaction] : '\u{1F44D}'} {post.userReaction ? t('feed.reacted') : t('feed.like')}
                         </button>
 
                         {hoveredReaction === post.id && (
@@ -548,7 +550,7 @@ export default function Feed({ onNavigate }: Props) {
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {MessageSquare({ size: 14 })} {post.commentCount || 0} Comentarios
+                        {MessageSquare({ size: 14 })} {post.commentCount || 0} {t('feed.comments')}
                       </button>
                       <button onClick={async () => {
                         try {
@@ -559,19 +561,19 @@ export default function Feed({ onNavigate }: Props) {
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: post.bookmarked ? 'var(--accent)' : 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {SaveIcon({ size: 14 })} Guardar
+                        {SaveIcon({ size: 14 })} {t('feed.save')}
                       </button>
                       <button onClick={async () => {
-                        const comment = prompt('Agrega un comentario (opcional):')
+                        const comment = prompt(t('feed.sharePrompt'))
                         try {
                           await api.sharePost(post.id, comment || '')
-                          alert('Publicación compartida en tu perfil')
+                          alert(t('feed.shareSuccess'))
                         } catch (err: any) { alert(err.message || 'Error') }
                       }} style={{
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',
                         fontSize: 13, color: 'var(--text-muted)', borderRadius: 8,
                       }}>
-                        {Share2({ size: 14 })} Compartir
+                        {Share2({ size: 14 })} {t('feed.share')}
                       </button>
                     </div>
 
@@ -598,14 +600,14 @@ export default function Feed({ onNavigate }: Props) {
                             value={commentTexts[post.id] || ''}
                             onChange={e => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
                             onKeyDown={e => e.key === 'Enter' && handleComment(post.id)}
-                            placeholder="Escribe un comentario..."
+                            placeholder={t('feed.commentPlaceholder')}
                             style={{
                               flex: 1, padding: '8px 12px', borderRadius: 20,
                               border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
                               color: 'var(--text-primary)', fontSize: 13,
                             }}
                           />
-                          <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>Enviar</button>
+                          <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>{t('feed.send')}</button>
                         </div>
                       </div>
                     )}
@@ -614,7 +616,7 @@ export default function Feed({ onNavigate }: Props) {
 
                 {hasMore && (
                   <button className="btn btn-secondary" onClick={() => loadFeed(page + 1)} style={{ alignSelf: 'center' }}>
-                    Cargar m&aacute;s
+                    {t('feed.loadMore')}
                   </button>
                 )}
               </div>
@@ -631,7 +633,7 @@ export default function Feed({ onNavigate }: Props) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
                     <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)' }}>
-                      Noticias de {user?.university || 'tu universidad'}
+                      {t('feed.newsTitle')} de {user?.university || 'tu universidad'}
                     </h4>
                   </div>
                   {universityNews.length > 0 && (
@@ -645,12 +647,12 @@ export default function Feed({ onNavigate }: Props) {
                 <div style={{ padding: '12px 16px' }}>
                   {newsLoading ? (
                     <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13 }}>
-                      Cargando noticias...
+                      {t('feed.loadingNews')}
                     </div>
                   ) : universityNews.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13, lineHeight: 1.5 }}>
                       <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 8 }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                      <div>Las noticias de tu universidad se actualizan cada 3 horas</div>
+                      <div>{t('feed.newsEmpty')}</div>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -705,7 +707,7 @@ export default function Feed({ onNavigate }: Props) {
 
             {/* Quick Links */}
             <div className="u-card" style={{ padding: 16 }}>
-              <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Accesos r&aacute;pidos</h4>
+              <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>{t('feed.quickAccess')}</h4>
               {[
                 { icon: Calendar({ size: 16 }), label: 'Calendario', path: '/calendar' },
                 { icon: BookOpen({ size: 16 }), label: 'Marketplace', path: '/marketplace' },

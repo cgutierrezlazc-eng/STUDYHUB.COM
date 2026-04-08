@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useI18n } from '../services/i18n'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { CalendarEvent, Project } from '../types'
@@ -10,13 +11,14 @@ interface Props {
 }
 
 const EVENT_TYPES = [
-  { value: 'task', label: 'Tarea', icon: () => ListChecks({ size: 20 }) },
-  { value: 'exam', label: 'Examen', icon: () => ClipboardList({ size: 20 }) },
-  { value: 'deadline', label: 'Entrega', icon: () => Clock({ size: 20 }) },
-  { value: 'study_session', label: 'Sesión de Estudio', icon: () => BookOpen({ size: 20 }) },
+  { value: 'task', labelKey: 'calendar.typeTask' as const, icon: () => ListChecks({ size: 20 }) },
+  { value: 'exam', labelKey: 'calendar.typeExam' as const, icon: () => ClipboardList({ size: 20 }) },
+  { value: 'deadline', labelKey: 'calendar.typeDeadline' as const, icon: () => Clock({ size: 20 }) },
+  { value: 'study_session', labelKey: 'calendar.typeStudy' as const, icon: () => BookOpen({ size: 20 }) },
 ]
 
 export default function Calendar({ projects, onNavigate }: Props) {
+  const { t } = useI18n()
   const { user } = useAuth()
   const [events, setEvents] = useState<CalendarEvent[]>([])
   const [loading, setLoading] = useState(true)
@@ -94,8 +96,8 @@ export default function Calendar({ projects, onNavigate }: Props) {
     const d = new Date(iso)
     const today = new Date()
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
-    if (d.toDateString() === today.toDateString()) return 'Hoy, ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
-    if (d.toDateString() === tomorrow.toDateString()) return 'Mañana, ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+    if (d.toDateString() === today.toDateString()) return t('calendar.today') + ', ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
+    if (d.toDateString() === tomorrow.toDateString()) return t('calendar.tomorrow') + ', ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
     return d.toLocaleDateString('es', { weekday: 'short', month: 'short', day: 'numeric' }) + ', ' + d.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
   }
 
@@ -143,15 +145,15 @@ export default function Calendar({ projects, onNavigate }: Props) {
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>{CalendarIcon()} Calendario</h2>
-            <p>Organiza tus tareas, exámenes y entregas</p>
+            <h2>{CalendarIcon()} {t('calendar.title')}</h2>
+            <p>{t('calendar.subtitle')}</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nuevo Evento</button>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>{t('calendar.new')}</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           {(['all', 'pending', 'completed'] as const).map(f => (
             <button key={f} className={`tab ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
-              {f === 'all' ? 'Todos' : f === 'pending' ? 'Pendientes' : 'Completados'}
+              {f === 'all' ? t('calendar.tabAll') : f === 'pending' ? t('calendar.tabPending') : t('calendar.tabCompleted')}
               {f === 'pending' && overdue.length > 0 && <span style={{ marginLeft: 6, background: 'var(--accent-red)', color: '#fff', borderRadius: 10, padding: '2px 6px', fontSize: 10 }}>{overdue.length}</span>}
             </button>
           ))}
@@ -164,29 +166,29 @@ export default function Calendar({ projects, onNavigate }: Props) {
         ) : events.length === 0 && !showForm ? (
           <div className="empty-state" style={{ padding: 40 }}>
             <div className="empty-state-icon">{CalendarIcon({ size: 48 })}</div>
-            <h3>Sin eventos todavía</h3>
-            <p>Agrega tareas, exámenes y fechas de entrega para mantenerte organizado</p>
+            <h3>{t('calendar.emptyTitle')}</h3>
+            <p>{t('calendar.emptySubtitle')}</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowForm(true)}>
-              Agregar primer evento
+              {t('calendar.emptyBtn')}
             </button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {overdue.length > 0 && filter !== 'completed' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--accent-red)', marginBottom: 8 }}>{AlertTriangle({ size: 14 })} Atrasados ({overdue.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--accent-red)', marginBottom: 8 }}>{AlertTriangle({ size: 14 })} {t('calendar.overdue')} ({overdue.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{overdue.map(renderEvent)}</div>
               </div>
             )}
             {upcoming.length > 0 && filter !== 'completed' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{Target({ size: 14 })} Próximos ({upcoming.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{Target({ size: 14 })} {t('calendar.upcoming')} ({upcoming.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{upcoming.map(renderEvent)}</div>
               </div>
             )}
             {completed.length > 0 && filter !== 'pending' && (
               <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{CheckCircle({ size: 14 })} Completados ({completed.length})</h3>
+                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>{CheckCircle({ size: 14 })} {t('calendar.completed')} ({completed.length})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{completed.map(renderEvent)}</div>
               </div>
             )}
@@ -196,39 +198,39 @@ export default function Calendar({ projects, onNavigate }: Props) {
         {showForm && (
           <div className="modal-overlay" onClick={() => setShowForm(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>Nuevo Evento</h3>
+              <h3>{t('calendar.modalTitle')}</h3>
               <div className="auth-field">
-                <label>Título *</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Ej: Examen de Cálculo" autoFocus />
+                <label>{t('calendar.titleLabel')}</label>
+                <input value={title} onChange={e => setTitle(e.target.value)} placeholder={t('calendar.titlePlaceholder')} autoFocus />
               </div>
               <div className="auth-field">
-                <label>Tipo</label>
+                <label>{t('calendar.typeLabel')}</label>
                 <select value={eventType} onChange={e => setEventType(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  {EVENT_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                  {EVENT_TYPES.map(et => (
+                    <option key={et.value} value={et.value}>{t(et.labelKey)}</option>
                   ))}
                 </select>
               </div>
               <div className="auth-field">
-                <label>Fecha y hora *</label>
+                <label>{t('calendar.dateLabel')}</label>
                 <input type="datetime-local" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ colorScheme: 'dark' }} />
               </div>
               <div className="auth-field">
-                <label>Asignatura (opcional)</label>
+                <label>{t('calendar.subjectLabel')}</label>
                 <select value={projectId} onChange={e => setProjectId(e.target.value)} style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                  <option value="">Sin asignatura</option>
+                  <option value="">{t('calendar.noSubject')}</option>
                   {projects.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
                 </select>
               </div>
               <div className="auth-field">
-                <label>Descripción (opcional)</label>
-                <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Notas adicionales..." />
+                <label>{t('calendar.descLabel')}</label>
+                <input value={description} onChange={e => setDescription(e.target.value)} placeholder={t('calendar.descPlaceholder')} />
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowForm(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleCreate} disabled={!title.trim() || !dueDate}>Crear Evento</button>
+                <button className="btn btn-secondary" onClick={() => setShowForm(false)}>{t('calendar.cancel')}</button>
+                <button className="btn btn-primary" onClick={handleCreate} disabled={!title.trim() || !dueDate}>{t('calendar.createSubmit')}</button>
               </div>
             </div>
           </div>

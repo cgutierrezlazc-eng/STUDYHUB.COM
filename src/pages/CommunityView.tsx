@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../services/auth'
+import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Users, Star, Shield, ThumbsUp, MessageSquare, Globe, Lock, ClipboardList, Trash2, Megaphone, Pin } from '../components/Icons'
 
@@ -11,6 +12,7 @@ interface Props {
 export default function CommunityView({ onNavigate }: Props) {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
+  const { t } = useI18n()
   const [community, setCommunity] = useState<any>(null)
   const [tab, setTab] = useState<'posts' | 'members' | 'info'>('posts')
   const [posts, setPosts] = useState<any[]>([])
@@ -115,7 +117,7 @@ export default function CommunityView({ onNavigate }: Props) {
   }
 
   if (loading) return <div className="page-body"><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div></div>
-  if (!community) return <div className="page-body"><div className="empty-state"><h3>Comunidad no encontrada</h3></div></div>
+  if (!community) return <div className="page-body"><div className="empty-state"><h3>{t('communityview.notfound')}</h3></div></div>
 
   const isAdmin = community.memberRole === 'admin'
   const isMod = community.memberRole === 'moderator' || isAdmin
@@ -139,16 +141,16 @@ export default function CommunityView({ onNavigate }: Props) {
               {community.memberRole && <span className="badge" style={{ background: 'var(--accent-green)22', color: 'var(--accent-green)', padding: '4px 12px', borderRadius: 12, fontSize: 12 }}>
                 {isAdmin ? <>{Star({ size: 14 })} Admin</> : isMod ? <>{Shield({ size: 14 })} Mod</> : '✓ Miembro'}
               </span>}
-              <button className="btn btn-secondary btn-sm" onClick={handleLeave}>Salir</button>
+              <button className="btn btn-secondary btn-sm" onClick={handleLeave}>{t('communityview.leave')}</button>
             </div>
           ) : (
-            <button className="btn btn-primary" onClick={handleJoin}>Unirse</button>
+            <button className="btn btn-primary" onClick={handleJoin}>{t('communityview.join')}</button>
           )}
         </div>
         <div className="tabs">
-          <button className={`tab ${tab === 'posts' ? 'active' : ''}`} onClick={() => setTab('posts')}>Publicaciones</button>
-          <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => { setTab('members'); loadMembers() }}>Miembros</button>
-          <button className={`tab ${tab === 'info' ? 'active' : ''}`} onClick={() => setTab('info')}>Info</button>
+          <button className={`tab ${tab === 'posts' ? 'active' : ''}`} onClick={() => setTab('posts')}>{t('communityview.posts')}</button>
+          <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => { setTab('members'); loadMembers() }}>{t('communityview.members')}</button>
+          <button className={`tab ${tab === 'info' ? 'active' : ''}`} onClick={() => setTab('info')}>{t('communityview.info')}</button>
         </div>
       </div>
 
@@ -157,16 +159,16 @@ export default function CommunityView({ onNavigate }: Props) {
           <>
             {community.isMember && (
               <div className="u-card" style={{ padding: 16, marginBottom: 16 }}>
-                <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder="Publica algo en la comunidad..."
+                <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder={t('communityview.composerPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit', marginBottom: 8 }} />
-                <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={!newPost.trim()}>Publicar</button>
+                <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={!newPost.trim()}>{t('communityview.publish')}</button>
               </div>
             )}
             {posts.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{Megaphone({ size: 48 })}</div><h3>Sin publicaciones aún</h3><p>Sé el primero en compartir algo</p></div>
+              <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{Megaphone({ size: 48 })}</div><h3>{t('communityview.emptyTitle')}</h3><p>{t('communityview.emptyDesc')}</p></div>
             ) : posts.map(post => (
               <div key={post.id} className="u-card" style={{ padding: 16, marginBottom: 12 }}>
-                {post.isPinned && <div style={{ fontSize: 12, color: 'var(--accent-orange)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Pin({ size: 12 })} Fijado</div>}
+                {post.isPinned && <div style={{ fontSize: 12, color: 'var(--accent-orange)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Pin({ size: 12 })} {t('communityview.pinned')}</div>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <div onClick={() => onNavigate(`/user/${post.author?.id}`)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', overflow: 'hidden', fontSize: 14 }}>
                     {post.author?.avatar ? <img src={post.author.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : (post.author?.firstName?.[0] || '?')}
@@ -177,8 +179,8 @@ export default function CommunityView({ onNavigate }: Props) {
                   </div>
                   {(isMod || post.author?.id === user?.id) && (
                     <div style={{ display: 'flex', gap: 4 }}>
-                      {isMod && <button onClick={() => handlePin(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center' }} title="Fijar">{Pin({ size: 14 })}</button>}
-                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)', display: 'flex', alignItems: 'center' }} title="Eliminar">{Trash2({ size: 14 })}</button>
+                      {isMod && <button onClick={() => handlePin(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center' }} title={t('communityview.pin')}>{Pin({ size: 14 })}</button>}
+                      <button onClick={() => handleDeletePost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: 'var(--accent-red)', display: 'flex', alignItems: 'center' }} title={t('communityview.delete')}>{Trash2({ size: 14 })}</button>
                     </div>
                   )}
                 </div>
@@ -207,9 +209,9 @@ export default function CommunityView({ onNavigate }: Props) {
                     ))}
                     <div style={{ display: 'flex', gap: 8 }}>
                       <input value={commentTexts[post.id] || ''} onChange={e => setCommentTexts(prev => ({ ...prev, [post.id]: e.target.value }))}
-                        onKeyDown={e => e.key === 'Enter' && handleComment(post.id)} placeholder="Comentar..."
+                        onKeyDown={e => e.key === 'Enter' && handleComment(post.id)} placeholder={t('communityview.commentPlaceholder')}
                         style={{ flex: 1, padding: '8px 12px', borderRadius: 20, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }} />
-                      <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>Enviar</button>
+                      <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>{t('communityview.send')}</button>
                     </div>
                   </div>
                 )}
@@ -239,23 +241,23 @@ export default function CommunityView({ onNavigate }: Props) {
 
         {tab === 'info' && (
           <div className="u-card" style={{ padding: 20 }}>
-            <h3 style={{ marginTop: 0 }}>Información</h3>
+            <h3 style={{ marginTop: 0 }}>{t('communityview.information')}</h3>
             {community.description && <p style={{ fontSize: 14, lineHeight: 1.6 }}>{community.description}</p>}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>
-              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Categoría</strong><div>{community.category}</div></div>
-              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Tipo</strong><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{community.type === 'public' ? <>{Globe({ size: 14 })} Pública</> : <>{Lock({ size: 14 })} Privada</>}</div></div>
-              {community.university && <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Universidad</strong><div>{community.university}</div></div>}
-              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Creada</strong><div>{community.createdAt ? new Date(community.createdAt).toLocaleDateString('es') : ''}</div></div>
+              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.category')}</strong><div>{community.category}</div></div>
+              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.type')}</strong><div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{community.type === 'public' ? <>{Globe({ size: 14 })} Pública</> : <>{Lock({ size: 14 })} Privada</>}</div></div>
+              {community.university && <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.university')}</strong><div>{community.university}</div></div>}
+              <div><strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.created')}</strong><div>{community.createdAt ? new Date(community.createdAt).toLocaleDateString('es') : ''}</div></div>
             </div>
             {community.rules && (
               <div style={{ marginTop: 16 }}>
-                <h4>{ClipboardList({ size: 16 })} Reglas</h4>
+                <h4>{ClipboardList({ size: 16 })} {t('communityview.rules')}</h4>
                 <div style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: 12, fontSize: 14, whiteSpace: 'pre-wrap' }}>{community.rules}</div>
               </div>
             )}
             {community.creator && (
               <div style={{ marginTop: 16 }}>
-                <strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>Creador</strong>
+                <strong style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('communityview.creator')}</strong>
                 <div onClick={() => onNavigate(`/user/${community.creator.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, cursor: 'pointer' }}>
                   <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 12, overflow: 'hidden' }}>
                     {community.creator.avatar ? <img src={community.creator.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} /> : community.creator.firstName?.[0]}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import {
   Inbox, Send, Trash2, Star, Search, RefreshCw, Plus, X, ChevronLeft, ChevronRight,
   Pencil, Eye, EyeOff, Paperclip, Megaphone, CheckCircle, Clock, AlertTriangle, Settings
@@ -64,6 +65,7 @@ function stripHtml(html: string): string {
 
 export default function CeoMail({ onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [folder, setFolder] = useState<Folder>('inbox')
   const [emails, setEmails] = useState<EmailItem[]>([])
   const [selectedEmail, setSelectedEmail] = useState<EmailItem | null>(null)
@@ -185,44 +187,44 @@ export default function CeoMail({ onNavigate }: Props) {
       setShowCompose(false)
       resetCompose()
       loadEmails(1)
-    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    } catch (e: any) { alert(e.message || t('ceomail.errorSending')) }
     setComposeSending(false)
   }
 
   const handleBroadcast = async () => {
     if (!broadcastSubject || !broadcastBody) return
-    if (!confirm(`¿Enviar email masivo a usuarios (${broadcastFilter})? Esta accion no se puede deshacer.`)) return
+    if (!confirm(t('ceomail.broadcastConfirm').replace('{filter}', broadcastFilter))) return
     setBroadcastSending(true)
     try {
       const result = await api.ceoBroadcastEmail(broadcastSubject, broadcastBody + getSignatureHtml(), broadcastFilter, broadcastCta, broadcastCtaUrl)
-      alert(`Email enviado a ${result.recipients} usuarios.`)
+      alert(t('ceomail.broadcastSentTo').replace('{count}', String(result.recipients)))
       setShowBroadcast(false)
       resetBroadcast()
       loadEmails(1)
-    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    } catch (e: any) { alert(e.message || t('ceomail.errorSending')) }
     setBroadcastSending(false)
   }
 
   const handleDelete = async (emailId: string) => {
-    if (!confirm('¿Eliminar este email?')) return
+    if (!confirm(t('ceomail.deleteConfirm'))) return
     try {
       await api.ceoDeleteEmail(emailId)
       setEmails(prev => prev.filter(e => e.id !== emailId))
       setTotal(prev => prev - 1)
       if (selectedEmail?.id === emailId) { setSelectedEmail(null); setMobileView('list') }
-    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    } catch (e: any) { alert(e.message || t('ceomail.errorDeleting')) }
   }
 
   const handleBulkDelete = async () => {
     if (selectedIds.size === 0) return
-    if (!confirm(`¿Eliminar ${selectedIds.size} email(s)?`)) return
+    if (!confirm(t('ceomail.bulkDeleteConfirm').replace('{count}', String(selectedIds.size)))) return
     try {
       await api.ceoDeleteEmailsBulk([...selectedIds])
       setEmails(prev => prev.filter(e => !selectedIds.has(e.id)))
       setTotal(prev => prev - selectedIds.size)
       setSelectedIds(new Set())
       if (selectedEmail && selectedIds.has(selectedEmail.id)) { setSelectedEmail(null); setMobileView('list') }
-    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    } catch (e: any) { alert(e.message || t('ceomail.errorDeleting')) }
   }
 
   const toggleSelection = (id: string, e: React.MouseEvent) => {
@@ -238,7 +240,7 @@ export default function CeoMail({ onNavigate }: Props) {
     setComposeMode('reply')
     setComposeTo(email.to_email || email.from_name || '')
     setComposeSubject(`Re: ${email.subject}`)
-    setComposeBody(`\n\n--- Mensaje original ---\n${stripHtml(email.body || '')}`)
+    setComposeBody(`\n\n${t('ceomail.originalMessage')}\n${stripHtml(email.body || '')}`)
     setShowCompose(true)
   }
 
@@ -246,7 +248,7 @@ export default function CeoMail({ onNavigate }: Props) {
     setComposeMode('forward')
     setComposeTo('')
     setComposeSubject(`Fwd: ${email.subject}`)
-    setComposeBody(`\n\n--- Mensaje reenviado ---\nDe: ${email.from_name || email.to_email || ''}\nAsunto: ${email.subject}\n\n${stripHtml(email.body || '')}`)
+    setComposeBody(`\n\n${t('ceomail.forwardedMessage')}\n${t('ceomail.forwardFrom')} ${email.from_name || email.to_email || ''}\n${t('ceomail.forwardSubject')} ${email.subject}\n\n${stripHtml(email.body || '')}`)
     setShowCompose(true)
   }
 
@@ -305,8 +307,8 @@ export default function CeoMail({ onNavigate }: Props) {
   if (user?.role !== 'owner') {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-secondary)' }}>
-        <p>Acceso restringido al CEO.</p>
-        <button onClick={() => onNavigate('/')} style={{ marginTop: 16, padding: '8px 24px', borderRadius: 6, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>Volver</button>
+        <p>{t('ceomail.restrictedAccess')}</p>
+        <button onClick={() => onNavigate('/')} style={{ marginTop: 16, padding: '8px 24px', borderRadius: 6, background: 'var(--accent)', color: '#fff', border: 'none', cursor: 'pointer' }}>{t('ceomail.goBack')}</button>
       </div>
     )
   }
@@ -997,13 +999,13 @@ export default function CeoMail({ onNavigate }: Props) {
         <button onClick={() => onNavigate('/ceo')} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', padding: 4 }}>
           <ChevronLeft size={18} />
         </button>
-        <span className="mail-header-title">Correo CEO</span>
+        <span className="mail-header-title">{t('ceomail.title')}</span>
 
         <div className="mail-search-wrap">
           <Search size={14} />
           <input
             className="mail-search"
-            placeholder="Buscar correos..."
+            placeholder={t('ceomail.searchPlaceholder')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -1016,23 +1018,23 @@ export default function CeoMail({ onNavigate }: Props) {
               className={`mail-filter-tab ${filterMode === f ? 'active' : ''}`}
               onClick={() => setFilterMode(f)}
             >
-              {f === 'all' ? 'Todos' : f === 'unread' ? 'No leidos' : 'Destacados'}
+              {f === 'all' ? t('ceomail.filterAll') : f === 'unread' ? t('ceomail.filterUnread') : t('ceomail.filterStarred')}
             </button>
           ))}
         </div>
 
         <div className="mail-header-actions">
-          <button className="mail-header-btn" onClick={() => loadEmails(1)} title="Actualizar">
+          <button className="mail-header-btn" onClick={() => loadEmails(1)} title={t('ceo.refresh')}>
             <RefreshCw size={14} />
           </button>
           <button className="mail-header-btn" onClick={() => { resetCompose(); setShowCompose(true) }}>
-            <Plus size={14} /> Nuevo
+            <Plus size={14} /> {t('ceomail.new')}
           </button>
           <button className="mail-header-btn" onClick={() => setShowBroadcast(true)}>
-            <Megaphone size={14} /> Masivo
+            <Megaphone size={14} /> {t('ceomail.broadcast')}
           </button>
-          <button className="mail-header-btn" onClick={() => setShowSignatureSettings(true)} title="Configuración">
-            <Settings size={14} /> Configuración
+          <button className="mail-header-btn" onClick={() => setShowSignatureSettings(true)} title={t('ceomail.settings')}>
+            <Settings size={14} /> {t('ceomail.settings')}
           </button>
         </div>
       </div>
@@ -1042,9 +1044,9 @@ export default function CeoMail({ onNavigate }: Props) {
 
         {/* Left Folder Panel */}
         <div className="mail-folders">
-          <div className="mail-folder-section">Cuenta</div>
+          <div className="mail-folder-section">{t('ceomail.accountSection')}</div>
           {([
-            { key: 'all' as const, label: 'Todas', color: '#64748B' },
+            { key: 'all' as const, label: t('ceomail.allAccounts'), color: '#64748B' },
             { key: 'ceo' as const, label: 'ceo@conniku.com', color: '#0078d4' },
             { key: 'contacto' as const, label: 'contacto@conniku.com', color: '#10B981' },
           ]).map(a => (
@@ -1059,13 +1061,13 @@ export default function CeoMail({ onNavigate }: Props) {
             </div>
           ))}
           <div className="mail-folder-divider" />
-          <div className="mail-folder-section">Carpetas</div>
+          <div className="mail-folder-section">{t('ceomail.foldersSection')}</div>
           {([
-            { key: 'inbox' as Folder, icon: <Inbox size={15} />, label: 'Bandeja de entrada' },
-            { key: 'sent' as Folder, icon: <Send size={15} />, label: 'Enviados' },
-            { key: 'drafts' as Folder, icon: <Pencil size={15} />, label: 'Borradores' },
-            { key: 'starred' as Folder, icon: <Star size={15} />, label: 'Destacados' },
-            { key: 'trash' as Folder, icon: <Trash2 size={15} />, label: 'Papelera' },
+            { key: 'inbox' as Folder, icon: <Inbox size={15} />, label: t('ceomail.inbox') },
+            { key: 'sent' as Folder, icon: <Send size={15} />, label: t('ceomail.sent') },
+            { key: 'drafts' as Folder, icon: <Pencil size={15} />, label: t('ceomail.drafts') },
+            { key: 'starred' as Folder, icon: <Star size={15} />, label: t('ceomail.starred') },
+            { key: 'trash' as Folder, icon: <Trash2 size={15} />, label: t('ceomail.trash') },
           ]).map(f => (
             <div
               key={f.key}
@@ -1080,17 +1082,17 @@ export default function CeoMail({ onNavigate }: Props) {
             </div>
           ))}
           <div className="mail-folder-divider" />
-          <div className="mail-folder-section">Estadisticas</div>
+          <div className="mail-folder-section">{t('ceomail.statsSection')}</div>
           {stats && (
             <div style={{ padding: '4px 16px', fontSize: 12, color: 'var(--text-secondary)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span>Total enviados</span><strong>{stats.sent || 0}</strong>
+                <span>{t('ceomail.totalSent')}</span><strong>{stats.sent || 0}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span>No leidos</span><strong style={{ color: '#0078d4' }}>{stats.unread || 0}</strong>
+                <span>{t('ceomail.unread')}</span><strong style={{ color: '#0078d4' }}>{stats.unread || 0}</strong>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span>Total</span><strong>{stats.total || 0}</strong>
+                <span>{t('ceomail.total')}</span><strong>{stats.total || 0}</strong>
               </div>
             </div>
           )}
@@ -1108,15 +1110,15 @@ export default function CeoMail({ onNavigate }: Props) {
                   else setSelectedIds(new Set(filteredEmails.map(e => e.id)))
                 }}
               />
-              Seleccionar
+              {t('ceomail.select')}
             </label>
             {selectedIds.size > 0 && (
               <button className="mail-action-btn danger" style={{ fontSize: 11, padding: '3px 8px' }} onClick={handleBulkDelete}>
-                <Trash2 size={12} /> Eliminar ({selectedIds.size})
+                <Trash2 size={12} /> {t('ceomail.delete')} ({selectedIds.size})
               </button>
             )}
             <span style={{ marginLeft: 'auto', color: 'var(--text-tertiary)', fontSize: 11 }}>
-              {filteredEmails.length} de {total}
+              {filteredEmails.length} {t('ceomail.of')} {total}
             </span>
           </div>
 
@@ -1126,7 +1128,7 @@ export default function CeoMail({ onNavigate }: Props) {
             ) : filteredEmails.length === 0 ? (
               <div className="mail-list-empty">
                 <Inbox size={32} />
-                <p style={{ marginTop: 8 }}>No hay correos en esta carpeta</p>
+                <p style={{ marginTop: 8 }}>{t('ceomail.noEmails')}</p>
               </div>
             ) : (
               filteredEmails.map(email => (
@@ -1147,14 +1149,14 @@ export default function CeoMail({ onNavigate }: Props) {
                       <span className="mail-item-sender">
                         {email.email_type && (
                           <span className={`mail-item-badge ${email.email_type === 'broadcast' ? 'broadcast' : email.email_type === 'system' ? 'system' : 'direct'}`}>
-                            {email.email_type === 'broadcast' ? 'Masivo' : email.email_type === 'system' ? 'Sistema' : 'Directo'}
+                            {email.email_type === 'broadcast' ? t('ceomail.typeBroadcast') : email.email_type === 'system' ? t('ceomail.typeSystem') : t('ceomail.typeDirect')}
                           </span>
                         )}
-                        {email.to_email || email.from_name || 'Desconocido'}
+                        {email.to_email || email.from_name || t('ceomail.unknown')}
                       </span>
                       <span className="mail-item-date">{formatDate(email.created_at)}</span>
                     </div>
-                    <div className="mail-item-subject">{email.subject || '(sin asunto)'}</div>
+                    <div className="mail-item-subject">{email.subject || t('ceomail.noSubject')}</div>
                     <div className="mail-item-preview">{email.preview || stripHtml(email.body || '').slice(0, 100)}</div>
                   </div>
                   <div
@@ -1171,11 +1173,11 @@ export default function CeoMail({ onNavigate }: Props) {
           {total > 20 && (
             <div className="mail-list-pagination">
               <button disabled={page <= 1} onClick={() => loadEmails(page - 1)}>
-                <ChevronLeft size={12} /> Anterior
+                <ChevronLeft size={12} /> {t('ceomail.previous')}
               </button>
-              <span>Pagina {page}</span>
+              <span>{t('ceomail.page')} {page}</span>
               <button disabled={filteredEmails.length < 20} onClick={() => loadEmails(page + 1)}>
-                Siguiente <ChevronRight size={12} />
+                {t('ceomail.next')} <ChevronRight size={12} />
               </button>
             </div>
           )}
@@ -1186,13 +1188,13 @@ export default function CeoMail({ onNavigate }: Props) {
           {!selectedEmail ? (
             <div className="mail-reading-empty">
               <Inbox size={48} />
-              <p style={{ fontSize: 15 }}>Selecciona un correo para leer</p>
-              <p style={{ fontSize: 12, marginTop: -4 }}>Atajos: J (siguiente), K (anterior), E (eliminar)</p>
+              <p style={{ fontSize: 15 }}>{t('ceomail.selectToRead')}</p>
+              <p style={{ fontSize: 12, marginTop: -4 }}>{t('ceomail.shortcuts')}</p>
             </div>
           ) : (
             <>
               <button className="mail-back-btn" onClick={() => { setSelectedEmail(null); setMobileView('list') }}>
-                <ChevronLeft size={14} /> Volver a la lista
+                <ChevronLeft size={14} /> {t('ceomail.backToList')}
               </button>
               <div className="mail-reading-header">
                 <div className="mail-reading-subject">{selectedEmail.subject}</div>
@@ -1211,9 +1213,9 @@ export default function CeoMail({ onNavigate }: Props) {
                   )}
                   {selectedEmail.status && (
                     <span style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      {selectedEmail.status === 'delivered' ? <><CheckCircle size={12} /> Entregado</> :
-                       selectedEmail.status === 'pending' ? <><Clock size={12} /> Pendiente</> :
-                       selectedEmail.status === 'failed' ? <><AlertTriangle size={12} /> Error</> :
+                      {selectedEmail.status === 'delivered' ? <><CheckCircle size={12} /> {t('ceomail.delivered')}</> :
+                       selectedEmail.status === 'pending' ? <><Clock size={12} /> {t('ceomail.pending')}</> :
+                       selectedEmail.status === 'failed' ? <><AlertTriangle size={12} /> {t('ceomail.error')}</> :
                        selectedEmail.status}
                     </span>
                   )}
@@ -1221,18 +1223,18 @@ export default function CeoMail({ onNavigate }: Props) {
               </div>
               <div className="mail-reading-actions">
                 <button className="mail-action-btn" onClick={() => handleReply(selectedEmail)}>
-                  <Send size={12} /> Responder
+                  <Send size={12} /> {t('ceomail.reply')}
                 </button>
                 <button className="mail-action-btn" onClick={() => handleForward(selectedEmail)}>
-                  <Send size={12} /> Reenviar
+                  <Send size={12} /> {t('ceomail.forward')}
                 </button>
                 <button className="mail-action-btn danger" onClick={() => handleDelete(selectedEmail.id)}>
-                  <Trash2 size={12} /> Eliminar
+                  <Trash2 size={12} /> {t('ceomail.delete')}
                 </button>
               </div>
               <div
                 className="mail-reading-body"
-                dangerouslySetInnerHTML={{ __html: selectedEmail.body || '<p style="color:#999;">Sin contenido</p>' }}
+                dangerouslySetInnerHTML={{ __html: selectedEmail.body || `<p style="color:#999;">${t('ceomail.noContent')}</p>` }}
               />
             </>
           )}
@@ -1244,12 +1246,12 @@ export default function CeoMail({ onNavigate }: Props) {
         <div className="mail-compose-overlay" onClick={() => setShowCompose(false)}>
           <div className="mail-compose" onClick={e => e.stopPropagation()}>
             <div className="mail-compose-header">
-              <span>{composeMode === 'reply' ? 'Responder' : composeMode === 'forward' ? 'Reenviar' : 'Nuevo mensaje'}</span>
+              <span>{composeMode === 'reply' ? t('ceomail.composeReply') : composeMode === 'forward' ? t('ceomail.composeForward') : t('ceomail.composeNew')}</span>
               <button onClick={() => setShowCompose(false)}><X size={16} /></button>
             </div>
             <div className="mail-compose-fields">
               <div className="mail-compose-field">
-                <label>De:</label>
+                <label>{t('ceomail.from')}</label>
                 <select value={composeFrom} onChange={e => setComposeFrom(e.target.value as 'ceo' | 'contacto')}
                   style={{ flex: 1, padding: '6px 10px', borderRadius: 4, border: '1px solid var(--border, #ddd)', background: 'var(--bg-secondary, #f5f5f5)', color: 'var(--text-primary)', fontSize: 13 }}>
                   <option value="ceo">ceo@conniku.com</option>
@@ -1257,53 +1259,53 @@ export default function CeoMail({ onNavigate }: Props) {
                 </select>
               </div>
               <div className="mail-compose-field">
-                <label>Para:</label>
-                <input value={composeTo} onChange={e => setComposeTo(e.target.value)} placeholder="email@ejemplo.com" />
+                <label>{t('ceomail.to')}</label>
+                <input value={composeTo} onChange={e => setComposeTo(e.target.value)} placeholder={t('ceomail.toPlaceholder')} />
               </div>
               <div className="mail-compose-field">
-                <label>CC:</label>
-                <input value={composeCc} onChange={e => setComposeCc(e.target.value)} placeholder="Opcional" />
+                <label>{t('ceomail.cc')}</label>
+                <input value={composeCc} onChange={e => setComposeCc(e.target.value)} placeholder={t('ceomail.optional')} />
               </div>
               <div className="mail-compose-field">
-                <label>CCO:</label>
-                <input value={composeBcc} onChange={e => setComposeBcc(e.target.value)} placeholder="Opcional" />
+                <label>{t('ceomail.bcc')}</label>
+                <input value={composeBcc} onChange={e => setComposeBcc(e.target.value)} placeholder={t('ceomail.optional')} />
               </div>
               <div className="mail-compose-field">
-                <label>Asunto:</label>
-                <input value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder="Asunto del mensaje" />
+                <label>{t('ceomail.subject')}</label>
+                <input value={composeSubject} onChange={e => setComposeSubject(e.target.value)} placeholder={t('ceomail.subjectPlaceholder')} />
               </div>
             </div>
             <div className="mail-compose-toolbar">
-              <button onClick={() => insertFormatting('bold')} title="Negrita"><strong>N</strong></button>
-              <button onClick={() => insertFormatting('italic')} title="Cursiva"><em>C</em></button>
-              <button onClick={() => insertFormatting('underline')} title="Subrayado"><u>S</u></button>
+              <button onClick={() => insertFormatting('bold')} title={t('ceomail.bold')}><strong>N</strong></button>
+              <button onClick={() => insertFormatting('italic')} title={t('ceomail.italic')}><em>C</em></button>
+              <button onClick={() => insertFormatting('underline')} title={t('ceomail.underline')}><u>S</u></button>
               <span style={{ width: 1, height: 16, background: 'var(--border, #ddd)', margin: '0 4px' }} />
-              <button onClick={() => insertFormatting('list')} title="Lista">• Lista</button>
+              <button onClick={() => insertFormatting('list')} title={t('ceomail.list')}>• {t('ceomail.list')}</button>
               <span style={{ width: 1, height: 16, background: 'var(--border, #ddd)', margin: '0 4px' }} />
-              <button title="Adjuntar"><Paperclip size={13} /></button>
+              <button title={t('ceomail.attach')}><Paperclip size={13} /></button>
             </div>
             <div className="mail-compose-body">
               <textarea
                 ref={bodyRef}
                 value={composeBody}
                 onChange={e => setComposeBody(e.target.value)}
-                placeholder="Escribe tu mensaje..."
+                placeholder={t('ceomail.bodyPlaceholder')}
               />
             </div>
             <div className="mail-compose-cta">
-              <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)' }}>CTA (opcional):</span>
-              <input value={composeCta} onChange={e => setComposeCta(e.target.value)} placeholder="Texto del boton" />
-              <input value={composeCtaUrl} onChange={e => setComposeCtaUrl(e.target.value)} placeholder="URL del boton" />
+              <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)' }}>{t('ceomail.ctaOptional')}</span>
+              <input value={composeCta} onChange={e => setComposeCta(e.target.value)} placeholder={t('ceomail.ctaTextPlaceholder')} />
+              <input value={composeCtaUrl} onChange={e => setComposeCtaUrl(e.target.value)} placeholder={t('ceomail.ctaUrlPlaceholder')} />
             </div>
             <div className="mail-compose-footer">
               <div className="left">
                 <button className="mail-btn primary" disabled={composeSending || !composeTo || !composeSubject} onClick={handleSend}>
-                  {composeSending ? 'Enviando...' : 'Enviar'}
+                  {composeSending ? t('ceomail.sending') : t('ceomail.send')}
                 </button>
-                <button className="mail-btn secondary" onClick={() => setShowCompose(false)}>Guardar Borrador</button>
+                <button className="mail-btn secondary" onClick={() => setShowCompose(false)}>{t('ceomail.saveDraft')}</button>
               </div>
               <div className="right">
-                <button className="mail-btn danger" onClick={() => { setShowCompose(false); resetCompose() }}>Descartar</button>
+                <button className="mail-btn danger" onClick={() => { setShowCompose(false); resetCompose() }}>{t('ceomail.discard')}</button>
               </div>
             </div>
           </div>
@@ -1315,47 +1317,47 @@ export default function CeoMail({ onNavigate }: Props) {
         <div className="mail-compose-overlay" onClick={() => setShowBroadcast(false)}>
           <div className="mail-compose" onClick={e => e.stopPropagation()}>
             <div className="mail-compose-header" style={{ background: '#e65100' }}>
-              <span>Envio masivo</span>
+              <span>{t('ceomail.broadcastTitle')}</span>
               <button onClick={() => setShowBroadcast(false)}><X size={16} /></button>
             </div>
             <div className="mail-compose-fields">
               <div className="mail-compose-field">
-                <label>Filtro:</label>
+                <label>{t('ceomail.filterLabel')}</label>
                 <select
                   value={broadcastFilter}
                   onChange={e => setBroadcastFilter(e.target.value)}
                   style={{ flex: 1, border: 'none', background: 'none', fontSize: 13, color: 'var(--text-primary)', outline: 'none', padding: '4px 0' }}
                 >
-                  <option value="all">Todos los usuarios</option>
-                  <option value="active">Usuarios activos</option>
-                  <option value="premium">Usuarios premium</option>
+                  <option value="all">{t('ceomail.filterAllUsers')}</option>
+                  <option value="active">{t('ceomail.filterActiveUsers')}</option>
+                  <option value="premium">{t('ceomail.filterPremiumUsers')}</option>
                 </select>
               </div>
               <div className="mail-compose-field">
-                <label>Asunto:</label>
-                <input value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)} placeholder="Asunto del email masivo" />
+                <label>{t('ceomail.subject')}</label>
+                <input value={broadcastSubject} onChange={e => setBroadcastSubject(e.target.value)} placeholder={t('ceomail.broadcastSubjectPlaceholder')} />
               </div>
             </div>
             <div className="mail-compose-body">
               <textarea
                 value={broadcastBody}
                 onChange={e => setBroadcastBody(e.target.value)}
-                placeholder="Contenido del email masivo..."
+                placeholder={t('ceomail.broadcastBodyPlaceholder')}
               />
             </div>
             <div className="mail-compose-cta">
-              <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)' }}>CTA (opcional):</span>
-              <input value={broadcastCta} onChange={e => setBroadcastCta(e.target.value)} placeholder="Texto del boton" />
-              <input value={broadcastCtaUrl} onChange={e => setBroadcastCtaUrl(e.target.value)} placeholder="URL del boton" />
+              <span style={{ fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)' }}>{t('ceomail.ctaOptional')}</span>
+              <input value={broadcastCta} onChange={e => setBroadcastCta(e.target.value)} placeholder={t('ceomail.ctaTextPlaceholder')} />
+              <input value={broadcastCtaUrl} onChange={e => setBroadcastCtaUrl(e.target.value)} placeholder={t('ceomail.ctaUrlPlaceholder')} />
             </div>
             <div className="mail-compose-footer">
               <div className="left">
                 <button className="mail-btn primary" style={{ background: '#e65100' }} disabled={broadcastSending || !broadcastSubject || !broadcastBody} onClick={handleBroadcast}>
-                  {broadcastSending ? 'Enviando...' : 'Enviar masivo'}
+                  {broadcastSending ? t('ceomail.sending') : t('ceomail.sendBroadcast')}
                 </button>
               </div>
               <div className="right">
-                <button className="mail-btn danger" onClick={() => { setShowBroadcast(false); resetBroadcast() }}>Cancelar</button>
+                <button className="mail-btn danger" onClick={() => { setShowBroadcast(false); resetBroadcast() }}>{t('ceomail.cancel')}</button>
               </div>
             </div>
           </div>
@@ -1367,41 +1369,41 @@ export default function CeoMail({ onNavigate }: Props) {
         <div className="sig-overlay" onClick={() => setShowSignatureSettings(false)}>
           <div className="sig-modal" onClick={e => e.stopPropagation()}>
             <div className="sig-header">
-              <span>Configurar Firma</span>
+              <span>{t('ceomail.configureSignature')}</span>
               <button onClick={() => setShowSignatureSettings(false)} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}>
                 <X size={16} />
               </button>
             </div>
             <div className="sig-body">
               <div className="sig-field">
-                <label>Cargo o departamento</label>
-                <input value={signature.department} onChange={e => setSignature(s => ({ ...s, department: e.target.value }))} placeholder="Cargo o departamento" />
+                <label>{t('ceomail.department')}</label>
+                <input value={signature.department} onChange={e => setSignature(s => ({ ...s, department: e.target.value }))} placeholder={t('ceomail.departmentPlaceholder')} />
               </div>
               <div className="sig-field">
-                <label>Linea descriptiva</label>
+                <label>{t('ceomail.tagline')}</label>
                 <input value={signature.tagline} onChange={e => setSignature(s => ({ ...s, tagline: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Ubicacion</label>
+                <label>{t('ceomail.location')}</label>
                 <input value={signature.location} onChange={e => setSignature(s => ({ ...s, location: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Sitio web</label>
+                <label>{t('ceomail.website')}</label>
                 <input value={signature.website} onChange={e => setSignature(s => ({ ...s, website: e.target.value }))} />
               </div>
               <div className="sig-field">
-                <label>Lema</label>
+                <label>{t('ceomail.motto')}</label>
                 <input value={signature.motto} onChange={e => setSignature(s => ({ ...s, motto: e.target.value }))} />
               </div>
               <div className="sig-field">
                 <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
                   <input type="checkbox" checked={signature.showLogo} onChange={e => setSignature(s => ({ ...s, showLogo: e.target.checked }))} style={{ accentColor: '#0078d4' }} />
-                  Incluir logo de Conniku
+                  {t('ceomail.includeLogo')}
                 </label>
               </div>
 
               <div className="sig-preview">
-                <div className="sig-preview-title">Vista previa</div>
+                <div className="sig-preview-title">{t('ceomail.preview')}</div>
                 <div style={{ borderTop: '1px solid #d0d0d0', paddingTop: 12, fontFamily: 'Arial, sans-serif', fontSize: 13, color: '#555' }}>
                   —<br />
                   <strong style={{ color: '#333', fontSize: 14 }}>{signature.department}</strong><br />
@@ -1414,8 +1416,8 @@ export default function CeoMail({ onNavigate }: Props) {
               </div>
             </div>
             <div className="sig-footer">
-              <button className="mail-btn secondary" onClick={() => setShowSignatureSettings(false)}>Cancelar</button>
-              <button className="mail-btn primary" onClick={saveSignature}>Guardar firma</button>
+              <button className="mail-btn secondary" onClick={() => setShowSignatureSettings(false)}>{t('ceomail.cancelSig')}</button>
+              <button className="mail-btn primary" onClick={saveSignature}>{t('ceomail.saveSignature')}</button>
             </div>
           </div>
         </div>

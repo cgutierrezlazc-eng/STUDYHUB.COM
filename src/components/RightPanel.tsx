@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
+import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Flame, Globe, Users } from './Icons'
 
@@ -10,6 +11,7 @@ interface Props {
 
 export default function RightPanel({ currentPath, onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [stats, setStats] = useState<any>(null)
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [communities, setCommunities] = useState<any[]>([])
@@ -28,12 +30,12 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
       {/* Progress Widget */}
       {stats && (
         <div className="rp-widget">
-          <h4 className="rp-widget-title">Tu Progreso</h4>
+          <h4 className="rp-widget-title">{t('rightpanel.myProgress')}</h4>
           <div className="rp-progress-row">
             <span style={{ fontSize: 24 }}>{Flame({ size: 24 })}</span>
             <div>
               <div style={{ fontSize: 20, fontWeight: 700 }}>{stats.streakDays || 0} días</div>
-              <div className="rp-label">Racha de estudio</div>
+              <div className="rp-label">{t('rightpanel.studyStreak')}</div>
             </div>
           </div>
           <div style={{ marginTop: 12 }}>
@@ -58,7 +60,7 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
       {/* Friend Suggestions */}
       {suggestions.length > 0 && (
         <div className="rp-widget">
-          <h4 className="rp-widget-title">Personas sugeridas</h4>
+          <h4 className="rp-widget-title">{t('rightpanel.suggestedPeople')}</h4>
           {suggestions.map(s => (
             <div key={s.id} className="rp-person" onClick={() => onNavigate(`/user/${s.id}`)}>
               <div className="rp-avatar">
@@ -70,14 +72,14 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
               </div>
             </div>
           ))}
-          <button className="rp-see-more" onClick={() => onNavigate('/friends')}>Ver más</button>
+          <button className="rp-see-more" onClick={() => onNavigate('/friends')}>{t('rightpanel.seeMore')}</button>
         </div>
       )}
 
       {/* Community Suggestions */}
       {communities.length > 0 && (
         <div className="rp-widget">
-          <h4 className="rp-widget-title">Comunidades populares</h4>
+          <h4 className="rp-widget-title">{t('rightpanel.popularCommunities')}</h4>
           {communities.map(c => (
             <div key={c.id} className="rp-person" onClick={() => onNavigate(`/communities/${c.id}`)}>
               <div className="rp-avatar" style={{ borderRadius: 8 }}>
@@ -85,11 +87,11 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="rp-person-name">{c.name}</div>
-                <div className="rp-label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {c.memberCount} miembros</div>
+                <div className="rp-label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {c.memberCount} {t('rightpanel.members')}</div>
               </div>
             </div>
           ))}
-          <button className="rp-see-more" onClick={() => onNavigate('/communities')}>Explorar</button>
+          <button className="rp-see-more" onClick={() => onNavigate('/communities')}>{t('rightpanel.explore')}</button>
         </div>
       )}
     </aside>

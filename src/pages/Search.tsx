@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { FolderOpen, Search as SearchIcon, FileText, Trash2, Brain, Link, Download, Save, Hourglass, GraduationCap } from '../components/Icons'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
 
 export default function Search({ onNavigate, initialQuery }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [query, setQuery] = useState(initialQuery || '')
   const [results, setResults] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
@@ -35,7 +37,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       setResults(data.results || [])
       if (data.message) setAiSummary(data.message)
     } catch (err: any) {
-      alert(err.message || 'Error en la búsqueda')
+      alert(err.message || t('search.errorSearch'))
     }
     setLoading(false)
   }
@@ -47,7 +49,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       const data = await api.getAiSearchSummary(query, results)
       setAiSummary(data.summary || '')
     } catch (err: any) {
-      setAiSummary('No se pudo generar el resumen. Requiere Plan Pro o superior.')
+      setAiSummary(t('search.errorSummary'))
     }
     setLoadingSummary(false)
   }
@@ -56,10 +58,10 @@ export default function Search({ onNavigate, initialQuery }: Props) {
     setDownloading(url)
     try {
       const result = await api.downloadToConniku(url, title)
-      alert(`Guardado en Conniku: ${result.filename} (${result.sizeFormatted}). Almacenamiento: ${result.storagePercent}%`)
+      alert(`${t('search.savedToConniku')}: ${result.filename} (${result.sizeFormatted}). ${t('search.storage')}: ${result.storagePercent}%`)
       setStorageInfo({ used: result.storageUsed, limit: result.storageLimit, percent: result.storagePercent })
     } catch (err: any) {
-      alert(err.message || 'Error al descargar')
+      alert(err.message || t('search.errorDownload'))
     }
     setDownloading('')
   }
@@ -87,12 +89,12 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{SearchIcon({ size: 20 })} Búsqueda Académica</h2>
-            <p>Encuentra recursos de estudio en toda la web — contenido seguro y académico</p>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{SearchIcon({ size: 20 })} {t('search.title')}</h2>
+            <p>{t('search.subtitle')}</p>
           </div>
           <button className={`btn btn-sm ${showDownloads ? 'btn-primary' : 'btn-secondary'}`}
             onClick={() => { setShowDownloads(!showDownloads); if (!showDownloads) loadDownloads() }}>
-            {FolderOpen({ size: 16 })} Mis Descargas {storageInfo ? `(${storageInfo.percent}%)` : ''}
+            {FolderOpen({ size: 16 })} {t('search.myDownloads')} {storageInfo ? `(${storageInfo.percent}%)` : ''}
           </button>
         </div>
 
@@ -101,7 +103,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Buscar artículos, PDFs, tutoriales, investigaciones..."
+            placeholder={t('search.placeholder')}
             style={{
               flex: 1, padding: '12px 16px', borderRadius: 12,
               border: '2px solid var(--border)', background: 'var(--bg-card)',
@@ -110,7 +112,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
             autoFocus
           />
           <button className="btn btn-primary" onClick={() => handleSearch()} disabled={loading} style={{ padding: '12px 24px' }}>
-            {loading ? Hourglass() : SearchIcon()} Buscar
+            {loading ? Hourglass() : SearchIcon()} {t('search.searchBtn')}
           </button>
         </div>
       </div>
@@ -120,7 +122,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {showDownloads && (
           <div className="u-card" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{FolderOpen({ size: 16 })} Mis Descargas</h3>
+              <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{FolderOpen({ size: 16 })} {t('search.myDownloads')}</h3>
               {storageInfo && (
                 <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   {fmtSize(storageInfo.used)} / {fmtSize(storageInfo.limit)} ({storageInfo.percent}%)
@@ -133,7 +135,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
               </div>
             )}
             {downloads.length === 0 ? (
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>No tienes archivos guardados</p>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', textAlign: 'center' }}>{t('search.noSavedFiles')}</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {downloads.map(d => (
@@ -143,7 +145,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
                       <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{d.filename}</div>
                       <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{d.sizeFormatted} · {d.createdAt?.split('T')[0]}</div>
                     </div>
-                    <button onClick={() => handleDeleteDownload(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: 14 }} title="Eliminar">{Trash2({ size: 14 })}</button>
+                    <button onClick={() => handleDeleteDownload(d.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-red)', fontSize: 14 }} title={t('search.deleteTooltip')}>{Trash2({ size: 14 })}</button>
                   </div>
                 ))}
               </div>
@@ -156,7 +158,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
           <div className="u-card" style={{ marginBottom: 16, borderLeft: '4px solid var(--accent)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 16 }}>{Brain()}</span>
-              <strong style={{ fontSize: 14 }}>Resumen IA</strong>
+              <strong style={{ fontSize: 14 }}>{t('search.aiSummary')}</strong>
             </div>
             <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', margin: 0, whiteSpace: 'pre-wrap' }}>{aiSummary}</p>
           </div>
@@ -171,9 +173,9 @@ export default function Search({ onNavigate, initialQuery }: Props) {
           <>
             {!aiSummary && (
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{results.length} resultados para "{query}"</span>
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{results.length} {t('search.resultsFor')} "{query}"</span>
                 <button className="btn btn-secondary btn-sm" onClick={handleAiSummary} disabled={loadingSummary}>
-                  {loadingSummary ? <>{Hourglass()} Analizando...</> : <>{Brain()} Resumir con IA</>}
+                  {loadingSummary ? <>{Hourglass()} {t('search.analyzing')}</> : <>{Brain()} {t('search.summarizeAi')}</>}
                 </button>
               </div>
             )}
@@ -188,23 +190,23 @@ export default function Search({ onNavigate, initialQuery }: Props) {
                   <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 8px', lineHeight: 1.6 }}>{r.snippet}</p>
                   <div style={{ display: 'flex', gap: 8 }}>
                     <a href={r.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-xs">
-                      {Link()} Abrir
+                      {Link()} {t('search.open')}
                     </a>
                     {r.fileFormat && (
                       <button className="btn btn-secondary btn-xs" onClick={() => {
-                        if (confirm('¿Dónde quieres guardar?\n\n• OK = Guardar en Conniku (usa tu almacenamiento)\n• Cancelar = Descargar a tu computador')) {
+                        if (confirm(t('search.saveWherePrompt'))) {
                           handleDownloadToConniku(r.url, r.title)
                         } else {
                           window.open(r.url, '_blank')
                         }
                       }}>
-                        {Download()} Descargar {r.fileFormat}
+                        {Download()} {t('search.download')} {r.fileFormat}
                       </button>
                     )}
                     <button className="btn btn-secondary btn-xs"
                       onClick={() => handleDownloadToConniku(r.url, `${r.title || 'pagina'}.html`)}
                       disabled={downloading === r.url}>
-                      {downloading === r.url ? Hourglass() : Save()} Guardar en Conniku
+                      {downloading === r.url ? Hourglass() : Save()} {t('search.saveToConniku')}
                     </button>
                   </div>
                 </div>
@@ -212,17 +214,17 @@ export default function Search({ onNavigate, initialQuery }: Props) {
             </div>
             {results.length >= 10 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 16 }}>
-                {page > 1 && <button className="btn btn-secondary btn-sm" onClick={() => handleSearch(page - 1)}>← Anterior</button>}
-                <span style={{ padding: '8px 16px', fontSize: 13 }}>Página {page}</span>
-                <button className="btn btn-secondary btn-sm" onClick={() => handleSearch(page + 1)}>Siguiente →</button>
+                {page > 1 && <button className="btn btn-secondary btn-sm" onClick={() => handleSearch(page - 1)}>{t('search.previous')}</button>}
+                <span style={{ padding: '8px 16px', fontSize: 13 }}>{t('search.page')} {page}</span>
+                <button className="btn btn-secondary btn-sm" onClick={() => handleSearch(page + 1)}>{t('search.next')}</button>
               </div>
             )}
           </>
         ) : !loading && query && (
           <div className="empty-state" style={{ padding: 40 }}>
             <div className="empty-state-icon">{SearchIcon({ size: 48 })}</div>
-            <h3>No se encontraron resultados</h3>
-            <p>Intenta con otras palabras clave o verifica tu búsqueda</p>
+            <h3>{t('search.noResults')}</h3>
+            <p>{t('search.tryOtherKeywords')}</p>
           </div>
         )}
 
@@ -230,8 +232,8 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {!loading && !query && results.length === 0 && (
           <div className="empty-state" style={{ padding: 40 }}>
             <div className="empty-state-icon">{GraduationCap({ size: 48 })}</div>
-            <h3>Buscador Academico de Conniku</h3>
-            <p>Busca articulos, PDFs, tutoriales, investigaciones y recursos de estudio</p>
+            <h3>{t('search.emptyTitle')}</h3>
+            <p>{t('search.emptyDesc')}</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
               {['Integrales dobles', 'Machine Learning tutorial', 'Historia de Chile PDF', 'Anatomia cardiovascular'].map(s => (
                 <button key={s} className="btn btn-secondary btn-xs empty-state-cta" onClick={() => { setQuery(s); setTimeout(() => handleSearch(), 100) }}>{s}</button>

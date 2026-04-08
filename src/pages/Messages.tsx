@@ -246,7 +246,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
         await loadMessages(activeConv)
         await loadConversations()
       } catch (err: any) {
-        alert(err.message || 'Error al enviar mensaje')
+        alert(err.message || t('msg.errorSend'))
         setNewMsg(content) // Restore message on error
       }
       setSending(false)
@@ -323,7 +323,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setRecordingTime(0)
       recordTimerRef.current = window.setInterval(() => setRecordingTime(p => p + 1), 1000)
     } catch {
-      alert('No se pudo acceder al micrófono')
+      alert(t('msg.errorMic'))
     }
   }
 
@@ -358,7 +358,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       await loadConversations()
       setActiveConv(conv.id)
     } catch (err: any) {
-      alert(err.message || 'Error al iniciar conversación')
+      alert(err.message || t('msg.errorStartChat'))
     }
   }
 
@@ -373,7 +373,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       await loadConversations()
       setActiveConv(conv.id)
     } catch (err: any) {
-      alert(err.message || 'Error al crear grupo')
+      alert(err.message || t('msg.errorCreateGroup'))
     }
   }
 
@@ -385,39 +385,39 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       setShowNewFolder(false)
       await loadFolders()
     } catch (err: any) {
-      alert(err.message || 'Error al crear carpeta')
+      alert(err.message || t('msg.errorCreateFolder'))
     }
   }
 
   const deleteMsg = async (msgId: string) => {
     if (!activeConv) return
     try { await api.deleteMessage(activeConv, msgId); await loadMessages(activeConv) } catch (err: any) {
-      alert(err.message || 'Error al eliminar mensaje')
+      alert(err.message || t('msg.errorDeleteMsg'))
     }
   }
 
   const handleBlockUser = async () => {
     const otherUser = activeConversation?.participants.find(p => p.id !== user?.id)
     if (!otherUser) return
-    if (confirm(`¿Bloquear a ${otherUser.firstName} ${otherUser.lastName}? No podrá enviarte mensajes ni ver tu perfil.`)) {
+    if (confirm(t('msg.confirmBlock').replace('{name}', `${otherUser.firstName} ${otherUser.lastName}`))) {
       try {
         await api.blockUser(otherUser.id)
-        alert(`${otherUser.firstName} ha sido bloqueado.`)
+        alert(t('msg.userBlocked').replace('{name}', otherUser.firstName))
         setShowContactMenu(false)
-      } catch { alert('Error al bloquear usuario') }
+      } catch { alert(t('msg.errorBlockUser')) }
     }
   }
 
   const handleReportUser = async () => {
     const otherUser = activeConversation?.participants.find(p => p.id !== user?.id)
     if (!otherUser) return
-    const reason = prompt(`¿Por qué quieres denunciar a ${otherUser.firstName}?`)
+    const reason = prompt(t('msg.reportReason').replace('{name}', otherUser.firstName))
     if (reason) {
       try {
         await api.reportUser(otherUser.id, reason)
-        alert('Denuncia enviada. Nuestro equipo la revisará.')
+        alert(t('msg.reportSent'))
         setShowContactMenu(false)
-      } catch { alert('Error al enviar denuncia') }
+      } catch { alert(t('msg.errorReportUser')) }
     }
   }
 
@@ -426,7 +426,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       await api.acceptMessageRequest(convId)
       await loadConversations()
     } catch (err: any) {
-      alert(err.message || 'Error al aceptar solicitud')
+      alert(err.message || t('msg.errorAcceptRequest'))
     }
   }
 
@@ -436,7 +436,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       await loadConversations()
       if (activeConv === convId) setActiveConv(null)
     } catch (err: any) {
-      alert(err.message || 'Error al rechazar solicitud')
+      alert(err.message || t('msg.errorRejectRequest'))
     }
   }
 
@@ -504,26 +504,26 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 className={`msg-tab ${sidebarTab === 'chats' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('chats')}
               >
-                {MessageSquare({ size: 16 })} Chats
+                {MessageSquare({ size: 16 })} {t('msg.chats')}
                 {totalUnread > 0 && <span className="msg-tab-badge">{totalUnread}</span>}
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'friends' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('friends')}
               >
-                {Users({ size: 16 })} Amigos
+                {Users({ size: 16 })} {t('msg.friends')}
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'groups' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('groups')}
               >
-                {BookOpen({ size: 16 })} Grupos
+                {BookOpen({ size: 16 })} {t('msg.groups')}
               </button>
               <button
                 className={`msg-tab ${sidebarTab === 'requests' ? 'active' : ''}`}
                 onClick={() => setSidebarTab('requests')}
               >
-                {Inbox({ size: 16 })} Solicitudes
+                {Inbox({ size: 16 })} {t('msg.requests')}
                 {incomingRequests.length > 0 && <span className="msg-tab-badge">{incomingRequests.length}</span>}
               </button>
             </div>
@@ -532,8 +532,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             {sidebarTab === 'chats' && (
               <>
                 <div className="msg-sidebar-header">
-                  <button className="btn btn-primary btn-sm" onClick={() => setShowNewChat(true)}>+ Nuevo Chat</button>
-                  <button className="btn btn-secondary btn-sm" onClick={() => setShowNewGroup(true)}>+ Grupo</button>
+                  <button className="btn btn-primary btn-sm" onClick={() => setShowNewChat(true)}>{t('msg.newChatBtn')}</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowNewGroup(true)}>{t('msg.newGroupBtn')}</button>
                 </div>
 
                 {folders.length > 0 && (
@@ -552,8 +552,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
                       <div className="empty-state-icon">{MessageSquare({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>{t('msg.noConversations')}</h3>
-                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Empieza una conversación con tus compañeros</p>
-                      <button className="btn btn-primary btn-sm" onClick={() => setSidebarTab('friends')}>Ver amigos</button>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>{t('msg.emptyConvDesc')}</p>
+                      <button className="btn btn-primary btn-sm" onClick={() => setSidebarTab('friends')}>{t('msg.viewFriends')}</button>
                     </div>
                   ) : (
                     conversations.map(conv => {
@@ -603,7 +603,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-sidebar-header" style={{ padding: '8px 12px' }}>
                   <input
                     className="msg-friends-search"
-                    placeholder="Buscar amigo..."
+                    placeholder={t('msg.searchFriend')}
                     value={friendsFilter}
                     onChange={e => setFriendsFilter(e.target.value)}
                     style={{
@@ -618,9 +618,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   {friends.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
                       <div className="empty-state-icon">{Users({ size: 48 })}</div>
-                      <h3 style={{ margin: '0 0 8px' }}>Sin amigos aún</h3>
-                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Agrega amigos desde la Comunidad para chatear</p>
-                      <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>Ir a Comunidad</button>
+                      <h3 style={{ margin: '0 0 8px' }}>{t('msg.noFriends')}</h3>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>{t('msg.noFriendsDesc')}</p>
+                      <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>{t('msg.goToCommunity')}</button>
                     </div>
                   ) : (
                     filteredFriends.map(friend => (
@@ -663,7 +663,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                               fontSize: 10, color: 'var(--accent)', fontWeight: 600,
                               background: 'var(--accent-bg, rgba(99,102,241,0.1))',
                               padding: '2px 8px', borderRadius: 10,
-                            }}>Nuevo</span>
+                            }}>{t('msg.new')}</span>
                           )}
                         </div>
                       </div>
@@ -678,7 +678,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               <>
                 <div className="msg-sidebar-header">
                   <button className="btn btn-primary btn-sm" onClick={() => setShowNewGroup(true)} style={{ width: '100%' }}>
-                    + Crear grupo de estudio
+                    {t('msg.createStudyGroup')}
                   </button>
                 </div>
 
@@ -686,11 +686,11 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   {groupChats.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
                       <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
-                      <h3 style={{ margin: '0 0 8px' }}>Sin grupos</h3>
+                      <h3 style={{ margin: '0 0 8px' }}>{t('msg.noGroups')}</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
-                        Crea un grupo de estudio con tus compañeros de asignatura
+                        {t('msg.noGroupsDesc')}
                       </p>
-                      <button className="btn btn-primary btn-sm" onClick={() => setShowNewGroup(true)}>Crear grupo</button>
+                      <button className="btn btn-primary btn-sm" onClick={() => setShowNewGroup(true)}>{t('msg.createGroupBtn')}</button>
                     </div>
                   ) : (
                     groupChats.map(conv => (
@@ -708,7 +708,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                             {conv.unreadCount > 0 && <span className="msg-badge">{conv.unreadCount}</span>}
                           </div>
                           <div className="msg-conv-preview">
-                            {conv.participants.length} miembros
+                            {conv.participants.length} {t('msg.members')}
                             {conv.lastMessage && (
                               <> · {conv.lastMessage.sender?.firstName}: {conv.lastMessage.content?.slice(0, 25)}</>
                             )}
@@ -730,9 +730,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 {incomingRequests.length === 0 && sentRequests.length === 0 ? (
                   <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
                     <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
-                    <h3 style={{ margin: '0 0 8px' }}>Sin solicitudes</h3>
+                    <h3 style={{ margin: '0 0 8px' }}>{t('msg.noRequests')}</h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-                      Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí
+                      {t('msg.noRequestsDesc')}
                     </p>
                   </div>
                 ) : (
@@ -740,7 +740,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     {incomingRequests.length > 0 && (
                       <div style={{ padding: '8px 12px 4px' }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          Recibidas ({incomingRequests.length})
+                          {t('msg.received')} ({incomingRequests.length})
                         </div>
                       </div>
                     )}
@@ -757,7 +757,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ fontWeight: 600, fontSize: 13 }}>{other?.firstName} {other?.lastName}</div>
-                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{other?.username} quiere enviarte un mensaje</div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>@{other?.username} {t('msg.wantsToMessage')}</div>
                             </div>
                           </div>
                           {conv.lastMessage && (
@@ -775,14 +775,14 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                               style={{ flex: 1, fontSize: 12 }}
                               onClick={(e) => { e.stopPropagation(); acceptMessageRequest(conv.id) }}
                             >
-                              ✓ Aceptar
+                              {t('msg.accept')}
                             </button>
                             <button
                               className="btn btn-secondary btn-sm"
                               style={{ flex: 1, fontSize: 12 }}
                               onClick={(e) => { e.stopPropagation(); rejectMessageRequest(conv.id) }}
                             >
-                              ✕ Rechazar
+                              {t('msg.reject')}
                             </button>
                           </div>
                         </div>
@@ -793,7 +793,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                       <>
                         <div style={{ padding: '12px 12px 4px' }}>
                           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                            Enviadas ({sentRequests.length})
+                            {t('msg.sent')} ({sentRequests.length})
                           </div>
                         </div>
                         {sentRequests.map(conv => {
@@ -808,7 +808,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                               </div>
                               <div className="msg-conv-info">
                                 <div className="msg-conv-name">{other?.firstName} {other?.lastName}</div>
-                                <div className="msg-conv-preview">{Hourglass({ size: 12 })} Esperando respuesta...</div>
+                                <div className="msg-conv-preview">{Hourglass({ size: 12 })} {t('msg.waitingResponse')}</div>
                               </div>
                             </div>
                           )
@@ -838,15 +838,15 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     <div>
                       <strong>{activeConversation.name}</strong>
                       {activeConversation.type === 'group_study' ? (
-                        <small>{activeConversation.participants.length} miembros</small>
+                        <small>{activeConversation.participants.length} {t('msg.members')}</small>
                       ) : (
                         <small>@{otherParticipant?.username}</small>
                       )}
                     </div>
                   </div>
                   <div className="wa-header-actions">
-                    <button className="wa-icon-btn" title="Llamada de voz" disabled>{Mic({ size: 16 })}</button>
-                    <button className="wa-icon-btn" title="Videollamada" disabled>{Video({ size: 16 })}</button>
+                    <button className="wa-icon-btn" title={t('msg.voiceCall')} disabled>{Mic({ size: 16 })}</button>
+                    <button className="wa-icon-btn" title={t('msg.videoCall')} disabled>{Video({ size: 16 })}</button>
                     <div style={{ position: 'relative' }}>
                       <button className="wa-icon-btn" onClick={() => setShowContactMenu(!showContactMenu)}>{MoreVertical({ size: 16 })}</button>
                       {showContactMenu && (
@@ -854,13 +854,13 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                           {otherParticipant && (
                             <>
                               <button onClick={() => { onNavigate(`/user/${otherParticipant.id}`); setShowContactMenu(false) }}>
-                                {Eye({ size: 14 })} Ver perfil
+                                {Eye({ size: 14 })} {t('msg.viewProfile')}
                               </button>
                               <button onClick={handleBlockUser}>
-                                {Shield({ size: 14 })} Bloquear contacto
+                                {Shield({ size: 14 })} {t('msg.blockContact')}
                               </button>
                               <button onClick={handleReportUser} className="wa-danger">
-                                {AlertTriangle({ size: 14 })} Denunciar
+                                {AlertTriangle({ size: 14 })} {t('msg.report')}
                               </button>
                             </>
                           )}
@@ -915,7 +915,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                   const btn = e.currentTarget
                                   if (btn.dataset.translated) {
                                     btn.textContent = 'Aa'
-                                    btn.title = 'Traducir'
+                                    btn.title = t('msg.translate')
                                     const original = btn.dataset.original || ''
                                     const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
                                     if (contentEl) contentEl.textContent = original
@@ -930,14 +930,14 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                         contentEl.textContent = result.translated
                                       }
                                       btn.textContent = 'Aa'
-                                      btn.title = 'Ver original'
+                                      btn.title = t('msg.viewOriginal')
                                       btn.dataset.translated = 'true'
                                     } catch {
                                       btn.textContent = 'Aa'
                                     }
                                   }
                                 }}
-                                title="Traducir"
+                                title={t('msg.translate')}
                                 style={{
                                   background: 'none', border: 'none', cursor: 'pointer',
                                   fontSize: 11, padding: '2px 4px', opacity: 0.5,
@@ -969,7 +969,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         <span className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-muted)', animation: 'typingBounce 1.4s infinite', animationDelay: '0.2s' }} />
                         <span className="typing-dot" style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--text-muted)', animation: 'typingBounce 1.4s infinite', animationDelay: '0.4s' }} />
                       </span>
-                      {Object.values(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'escribiendo...' : 'escribiendo...'}
+                      {Object.values(typingUsers).join(', ')} {t('msg.typing')}
                     </div>
                   )}
                 </div>
@@ -983,18 +983,18 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   }}>
                     <div style={{ flex: 1, fontSize: 13 }}>
                       {activeConversation.participants.find(p => p.role === 'admin')?.id === user?.id ? (
-                        <span style={{ color: 'var(--text-muted)' }}>{Hourglass({ size: 14 })} Esperando que acepten tu solicitud de mensaje...</span>
+                        <span style={{ color: 'var(--text-muted)' }}>{Hourglass({ size: 14 })} {t('msg.waitingAccept')}</span>
                       ) : (
-                        <span><strong>{otherParticipant?.firstName}</strong> quiere enviarte un mensaje</span>
+                        <span><strong>{otherParticipant?.firstName}</strong> {t('msg.wantsToMessage')}</span>
                       )}
                     </div>
                     {activeConversation.participants.find(p => p.role === 'admin')?.id !== user?.id && (
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button className="btn btn-primary btn-sm" onClick={() => acceptMessageRequest(activeConversation.id)}>
-                          ✓ Aceptar
+                          {t('msg.accept')}
                         </button>
                         <button className="btn btn-secondary btn-sm" onClick={() => rejectMessageRequest(activeConversation.id)}>
-                          ✕ Rechazar
+                          {t('msg.reject')}
                         </button>
                       </div>
                     )}
@@ -1006,8 +1006,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   <div className="wa-photo-preview">
                     <img src={photoPreview} alt="" />
                     <div className="wa-photo-preview-actions">
-                      <button className="btn btn-secondary btn-sm" onClick={() => setPhotoPreview(null)}>Cancelar</button>
-                      <button className="btn btn-primary btn-sm" onClick={handleSendPhoto} disabled={sending}>Enviar Foto</button>
+                      <button className="btn btn-secondary btn-sm" onClick={() => setPhotoPreview(null)}>{t('msg.cancel')}</button>
+                      <button className="btn btn-primary btn-sm" onClick={handleSendPhoto} disabled={sending}>{t('msg.sendPhoto')}</button>
                     </div>
                   </div>
                 )}
@@ -1018,27 +1018,27 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
                   {isRecordingAudio ? (
                     <div className="wa-recording-bar">
-                      <button className="wa-icon-btn wa-cancel-rec" onClick={cancelAudioRecording} title="Cancelar">
+                      <button className="wa-icon-btn wa-cancel-rec" onClick={cancelAudioRecording} title={t('msg.cancelRecording')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                       </button>
                       <div className="recording-indicator" style={{ flex: 1 }}>
                         <span className="recording-dot" />
                         <span style={{ fontWeight: 600 }}>{formatRecTime(recordingTime)}</span>
                       </div>
-                      <button className="wa-icon-btn wa-send-rec" onClick={stopAudioRecording} title="Enviar audio">
+                      <button className="wa-icon-btn wa-send-rec" onClick={stopAudioRecording} title={t('msg.sendAudio')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                       </button>
                     </div>
                   ) : (
                     <>
                       <div className="wa-actions-group">
-                        <button className="wa-icon-btn" onClick={() => photoInputRef.current?.click()} title="Enviar foto">
+                        <button className="wa-icon-btn" onClick={() => photoInputRef.current?.click()} title={t('msg.sendPhotoTooltip')}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                         </button>
-                        <button className="wa-icon-btn" title="Adjuntar archivo" disabled>
+                        <button className="wa-icon-btn" title={t('msg.attachFile')} disabled>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                         </button>
-                        <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title="Mensaje de voz">
+                        <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title={t('msg.voiceMessage')}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                       </div>
@@ -1050,7 +1050,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         disabled={sending}
                         className="wa-text-input"
                       />
-                      <button className="wa-send-btn" onClick={handleSend} disabled={sending || !newMsg.trim()} title="Enviar">
+                      <button className="wa-send-btn" onClick={handleSend} disabled={sending || !newMsg.trim()} title={t('msg.send')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                       </button>
                     </>
@@ -1062,11 +1062,11 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-no-chat-icon">{MessageSquare({ size: 48 })}</div>
                 <h3>{t('msg.selectChat')}</h3>
                 <p style={{ color: 'var(--text-muted)', maxWidth: 320, margin: '8px auto 0' }}>
-                  Selecciona una conversación o elige un amigo para empezar a chatear
+                  {t('msg.selectChatDesc')}
                 </p>
                 {friends.length > 0 && (
                   <div style={{ marginTop: 24, maxWidth: 360 }}>
-                    <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12, fontWeight: 600 }}>Amigos recientes:</p>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 12, fontWeight: 600 }}>{t('msg.recentFriends')}</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
                       {friends.slice(0, 6).map(f => (
                         <div
@@ -1131,10 +1131,10 @@ export default function Messages({ conversationId, onNavigate }: Props) {
         {showNewGroup && (
           <div className="modal-overlay" onClick={() => setShowNewGroup(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>Crear grupo de estudio</h3>
+              <h3>{t('msg.createStudyGroupTitle')}</h3>
               <div className="auth-field">
-                <label>Nombre del grupo</label>
-                <input placeholder="Ej: Cálculo II - Sección A" value={groupName} onChange={e => setGroupName(e.target.value)} autoFocus />
+                <label>{t('msg.groupNameLabel')}</label>
+                <input placeholder={t('msg.groupNameExample')} value={groupName} onChange={e => setGroupName(e.target.value)} autoFocus />
               </div>
               <div className="auth-field">
                 <label>{t('msg.addMembers')}</label>
@@ -1144,7 +1144,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               {/* Quick add from friends */}
               {friends.length > 0 && selectedUsers.length === 0 && !searchQuery && (
                 <div style={{ marginBottom: 12 }}>
-                  <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Amigos:</label>
+                  <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{t('msg.friendsLabel')}</label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 6 }}>
                     {friends.slice(0, 8).map(f => (
                       <button

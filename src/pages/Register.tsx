@@ -120,9 +120,9 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     if (step === 0) {
       if (!form.email.trim()) { setError(t('err.invalidEmail')); return false }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) { setError(t('err.invalidEmail')); return false }
-      if (form.password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres'); return false }
-      if (!/[A-Z]/.test(form.password)) { setError('La contraseña debe incluir al menos una mayúscula'); return false }
-      if (!/[0-9]/.test(form.password)) { setError('La contraseña debe incluir al menos un número'); return false }
+      if (form.password.length < 8) { setError(t('err.pwdMin8')); return false }
+      if (!/[A-Z]/.test(form.password)) { setError(t('err.pwdUppercase')); return false }
+      if (!/[0-9]/.test(form.password)) { setError(t('err.pwdNumber')); return false }
       if (form.password !== form.confirmPassword) { setError(t('err.passwordMismatch')); return false }
     }
     if (step === 1) {
@@ -132,16 +132,16 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
       if (calculateAge(form.birthDate) < 18) { setError(t('err.under18')); return false }
     }
     if (step === 2) {
-      if (!form.username.trim()) { setError('Debes elegir un nombre de usuario'); return false }
-      if (form.username.length < 3 || form.username.length > 30) { setError('El usuario debe tener entre 3 y 30 caracteres'); return false }
-      if (!/^[a-z0-9._]+$/.test(form.username)) { setError('Solo letras minúsculas, números, puntos y guiones bajos'); return false }
-      if (usernameAvailable === false) { setError('Este nombre de usuario ya está en uso'); return false }
+      if (!form.username.trim()) { setError(t('err.usernameRequired')); return false }
+      if (form.username.length < 3 || form.username.length > 30) { setError(t('err.usernameLength')); return false }
+      if (!/^[a-z0-9._]+$/.test(form.username)) { setError(t('err.usernameChars')); return false }
+      if (usernameAvailable === false) { setError(t('err.usernameTaken')); return false }
       if (!form.university.trim()) { setError(t('err.enterUniversity')); return false }
       if (!form.career.trim()) { setError(t('err.enterCareer')); return false }
-      if (form.academicStatus === 'titulado' && !form.professionalTitle.trim()) { setError('Ingresa tu título profesional'); return false }
-      if ((form.academicStatus === 'egresado' || form.academicStatus === 'titulado') && !form.graduationStatusYear) { setError('Selecciona tu año de egreso'); return false }
-      if (form.academicStatus === 'titulado' && !form.titleYear) { setError('Selecciona tu año de título'); return false }
-      if (form.mentoringServices.length > 0 && form.mentoringPriceType === 'paid' && !form.mentoringPricePerHour) { setError('Indica tu precio por hora'); return false }
+      if (form.academicStatus === 'titulado' && !form.professionalTitle.trim()) { setError(t('err.enterProfTitle')); return false }
+      if ((form.academicStatus === 'egresado' || form.academicStatus === 'titulado') && !form.graduationStatusYear) { setError(t('err.selectGradYear')); return false }
+      if (form.academicStatus === 'titulado' && !form.titleYear) { setError(t('err.selectTitleYear')); return false }
+      if (form.mentoringServices.length > 0 && form.mentoringPriceType === 'paid' && !form.mentoringPricePerHour) { setError(t('err.enterMentoringPrice')); return false }
       if (!form.tosAccepted) { setError(t('err.acceptTOS')); return false }
     }
     return true
@@ -224,12 +224,12 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
           </div>
         </div>
         <div className="auth-free-badge">
-          Gratis por 7 días — sin tarjeta de crédito
+          {t('reg.freeTrial')}
         </div>
         <div className="auth-features">
           <div className="auth-feature">
             <span className="auth-feature-icon">{Brain({ size: 20 })}</span>
-            <div><strong>Estudia de forma interactiva</strong><p>Sube tus documentos y videos, estudia con herramientas inteligentes</p></div>
+            <div><strong>{t('reg.featStudy')}</strong><p>{t('reg.featStudyDesc')}</p></div>
           </div>
           <div className="auth-feature">
             <span className="auth-feature-icon">{Users({ size: 20 })}</span>
@@ -237,7 +237,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
           </div>
           <div className="auth-feature">
             <span className="auth-feature-icon">{BookOpen({ size: 20 })}</span>
-            <div><strong>Guías, quizzes y flashcards</strong><p>Genera material de estudio automáticamente</p></div>
+            <div><strong>{t('reg.featGuides')}</strong><p>{t('reg.featGuidesDesc')}</p></div>
           </div>
         </div>
       </div>
@@ -246,7 +246,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
         <div className="auth-card">
           {onBack && (
             <button onClick={onBack} style={{ position: 'absolute', top: 16, left: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 14 }}>
-              ← Volver
+              {t('auth.backBtn')}
             </button>
           )}
           {/* Language selector at top */}
@@ -376,11 +376,11 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
           {step === 2 && (
             <>
               <div className="auth-field">
-                <label>Nombre de usuario *</label>
+                <label>{t('reg.usernameLabel')}</label>
                 <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15 }}>@</span>
                   <input
-                    placeholder="tu.usuario"
+                    placeholder={t('reg.usernamePlaceholderShort')}
                     value={form.username}
                     onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
                     style={{ paddingLeft: 32 }}
@@ -389,16 +389,16 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                   />
                   {form.username.length >= 3 && (
                     <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>
-                      {checkingUsername ? '...' : usernameAvailable === true ? '✓' : usernameAvailable === false ? '✗ En uso' : ''}
+                      {checkingUsername ? '...' : usernameAvailable === true ? '✓' : usernameAvailable === false ? `✗ ${t('reg.usernameInUse')}` : ''}
                     </span>
                   )}
                 </div>
                 <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
-                  Este será tu identificador único. Solo letras, números, puntos y guiones bajos.
+                  {t('reg.usernameHelp')}
                 </small>
               </div>
               <div className="auth-field">
-                <label>País</label>
+                <label>{t('reg.country')}</label>
                 <select value={form.country || 'CL'} onChange={e => update('country', e.target.value)}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                   {[
@@ -440,7 +440,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                     <>
                       <input
                         ref={uniInputRef}
-                        placeholder="Buscar universidad, instituto o CFT..."
+                        placeholder={t('reg.uniSearchPlaceholder')}
                         value={uniSearch}
                         onChange={e => { setUniSearch(e.target.value); setShowUniDropdown(true) }}
                         onFocus={() => setShowUniDropdown(true)}
@@ -455,10 +455,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                         }}>
                           {uniResults.length === 0 ? (
                             <div style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 13 }}>
-                              No se encontraron resultados. Puedes escribir el nombre manualmente.
+                              {t('reg.uniNoResults')}
                               <button type="button" onClick={() => { update('university', uniSearch); setShowUniDropdown(false) }}
                                 style={{ display: 'block', marginTop: 6, color: '#2D62C8', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                                Usar "{uniSearch}" como nombre
+                                {t('reg.uniUseCustom').replace('{name}', uniSearch)}
                               </button>
                             </div>
                           ) : (
@@ -506,30 +506,30 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
               {/* Study Start Date */}
               <div className="auth-field">
-                <label>Fecha de inicio de estudios</label>
+                <label>{t('reg.studyStartDate')}</label>
                 <input
                   type="date"
                   value={form.studyStartDate}
                   onChange={e => update('studyStartDate', e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  min="2000-01-01"
+                  min="1950-01-01"
                 />
                 <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
                   {form.studyStartDate
-                    ? `${Math.max(0, Math.floor((Date.now() - new Date(form.studyStartDate).getTime()) / 86400000))} días estudiando`
-                    : 'Indica cuándo comenzaste tus estudios superiores'
+                    ? `${Math.max(0, Math.floor((Date.now() - new Date(form.studyStartDate).getTime()) / 86400000))} ${t('reg.studyingDays')}`
+                    : t('reg.studyStartHint')
                   }
                 </small>
               </div>
 
               {/* Academic Status */}
               <div className="auth-field">
-                <label>Estado académico *</label>
+                <label>{t('reg.academicStatus')}</label>
                 <div className="auth-semester-picker">
                   {([
-                    { value: 'estudiante', label: 'Estudiante', desc: 'Cursando actualmente' },
-                    { value: 'egresado', label: 'Egresado', desc: 'Completó materias' },
-                    { value: 'titulado', label: 'Titulado', desc: 'Con título profesional' },
+                    { value: 'estudiante', label: t('reg.statusStudent'), desc: t('reg.statusStudentDesc') },
+                    { value: 'egresado', label: t('reg.statusGraduate'), desc: t('reg.statusGraduateDesc') },
+                    { value: 'titulado', label: t('reg.statusTitled'), desc: t('reg.statusTitledDesc') },
                   ] as const).map(opt => (
                     <button key={opt.value} type="button"
                       className={`auth-semester-btn ${form.academicStatus === opt.value ? 'active' : ''}`}
@@ -551,22 +551,22 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               {(form.academicStatus === 'egresado' || form.academicStatus === 'titulado') && (
                 <div className="auth-row">
                   <div className="auth-field">
-                    <label>Año de egreso *</label>
+                    <label>{t('reg.graduationYear')}</label>
                     <select value={form.graduationStatusYear || ''} onChange={e => setForm(prev => ({ ...prev, graduationStatusYear: parseInt(e.target.value) || null }))}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                      <option value="">Seleccionar</option>
-                      {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                      <option value="">{t('reg.selectOption')}</option>
+                      {Array.from({ length: new Date().getFullYear() - 1950 + 1 }, (_, i) => new Date().getFullYear() - i).map(y => (
                         <option key={y} value={y}>{y}</option>
                       ))}
                     </select>
                   </div>
                   {form.academicStatus === 'titulado' && (
                     <div className="auth-field">
-                      <label>Año de título *</label>
+                      <label>{t('reg.titleYear')}</label>
                       <select value={form.titleYear || ''} onChange={e => setForm(prev => ({ ...prev, titleYear: parseInt(e.target.value) || null }))}
                         style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                        <option value="">Seleccionar</option>
-                        {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option value="">{t('reg.selectOption')}</option>
+                        {Array.from({ length: new Date().getFullYear() - 1950 + 1 }, (_, i) => new Date().getFullYear() - i).map(y => (
                           <option key={y} value={y}>{y}</option>
                         ))}
                       </select>
@@ -578,8 +578,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               {/* Professional Title - for titulado */}
               {form.academicStatus === 'titulado' && (
                 <div className="auth-field">
-                  <label>Título profesional *</label>
-                  <input placeholder="Ej: Ingeniero Civil Industrial, Abogado, Médico..."
+                  <label>{t('reg.professionalTitle')}</label>
+                  <input placeholder={t('reg.professionalTitlePlaceholder')}
                     value={form.professionalTitle}
                     onChange={e => update('professionalTitle', e.target.value)} />
                 </div>
@@ -589,18 +589,18 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               {(form.academicStatus === 'titulado' || form.academicStatus === 'egresado') && (
                 <div className="auth-field" style={{ background: 'var(--bg-tertiary, rgba(45,98,200,0.04))', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, fontWeight: 600, fontSize: 15 }}>
-                    ¿Quieres ofrecer tutorías?
+                    {t('reg.offerTutoring')}
                   </label>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-                    Como {form.academicStatus}, puedes ofrecer ayudantías, cursos o clases particulares a otros estudiantes.
+                    {t('reg.tutoringDesc').replace('{status}', form.academicStatus)}
                   </p>
 
                   {/* Service type selection */}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
                     {[
-                      { id: 'ayudantias', label: 'Ayudantías', desc: 'Apoyo en materias' },
-                      { id: 'cursos', label: 'Cursos', desc: 'Temas específicos' },
-                      { id: 'clases_particulares', label: 'Clases particulares', desc: 'Sesiones 1 a 1' },
+                      { id: 'ayudantias', label: t('reg.svcTutoring'), desc: t('reg.svcTutoringDesc') },
+                      { id: 'cursos', label: t('reg.svcCourses'), desc: t('reg.svcCoursesDesc') },
+                      { id: 'clases_particulares', label: t('reg.svcPrivate'), desc: t('reg.svcPrivateDesc') },
                     ].map(svc => {
                       const selected = form.mentoringServices.includes(svc.id)
                       return (
@@ -642,10 +642,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                           }}>PRO</div>
                           <div>
                             <p style={{ fontSize: 13, fontWeight: 700, color: '#92400E', margin: '0 0 4px' }}>
-                              Plan PRO requerido para ofrecer tutorías
+                              {t('reg.proRequired')}
                             </p>
                             <p style={{ fontSize: 12, color: '#A16207', margin: 0, lineHeight: 1.5 }}>
-                              Para que tus servicios sean visibles a <strong>todos los usuarios</strong> (Free, Pro y Max), necesitas tener al menos el <strong>plan Pro activo</strong>. Puedes completar tu registro ahora y activar el plan Pro desde tu perfil para comenzar a recibir solicitudes.
+                              {t('reg.proRequiredDesc')}
                             </p>
                           </div>
                         </div>
@@ -653,9 +653,9 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
                       {/* Subjects */}
                       <div className="auth-field" style={{ marginBottom: 12 }}>
-                        <label style={{ fontSize: 13, fontWeight: 600 }}>Materias que puedes enseñar</label>
+                        <label style={{ fontSize: 13, fontWeight: 600 }}>{t('reg.subjectsLabel')}</label>
                         <input
-                          placeholder="Ej: Cálculo, Física, Programación (separar con comas)"
+                          placeholder={t('reg.subjectsPlaceholder')}
                           value={form.mentoringSubjects.join(', ')}
                           onChange={e => setForm(prev => ({ ...prev, mentoringSubjects: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }))}
                           style={{ fontSize: 13 }}
@@ -664,9 +664,9 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
                       {/* Description */}
                       <div className="auth-field" style={{ marginBottom: 12 }}>
-                        <label style={{ fontSize: 13, fontWeight: 600 }}>Describe brevemente tu oferta</label>
+                        <label style={{ fontSize: 13, fontWeight: 600 }}>{t('reg.offerDescription')}</label>
                         <textarea
-                          placeholder="Ej: Tengo experiencia en cálculo diferencial e integral. Puedo ayudar con ejercicios y preparación de pruebas."
+                          placeholder={t('reg.offerDescPlaceholder')}
                           value={form.mentoringDescription}
                           onChange={e => setForm(prev => ({ ...prev, mentoringDescription: e.target.value }))}
                           rows={2}
@@ -676,7 +676,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
                       {/* Pricing */}
                       <div className="auth-field" style={{ marginBottom: 12 }}>
-                        <label style={{ fontSize: 13, fontWeight: 600 }}>Modalidad de cobro</label>
+                        <label style={{ fontSize: 13, fontWeight: 600 }}>{t('reg.pricingMode')}</label>
                         <div style={{ display: 'flex', gap: 8 }}>
                           <button type="button"
                             style={{
@@ -686,8 +686,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                               color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'center',
                             }}
                             onClick={() => setForm(prev => ({ ...prev, mentoringPriceType: 'free' as const, mentoringPricePerHour: null }))}>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: '#22c55e' }}>Gratis</div>
-                            <div style={{ fontSize: 10, opacity: 0.7 }}>Voluntariado</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#22c55e' }}>{t('reg.priceFree')}</div>
+                            <div style={{ fontSize: 10, opacity: 0.7 }}>{t('reg.priceFreeDesc')}</div>
                           </button>
                           <button type="button"
                             style={{
@@ -697,15 +697,15 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                               color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'center',
                             }}
                             onClick={() => setForm(prev => ({ ...prev, mentoringPriceType: 'paid' as const }))}>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: '#2D62C8' }}>Con cobro</div>
-                            <div style={{ fontSize: 10, opacity: 0.7 }}>Precio por hora</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: '#2D62C8' }}>{t('reg.pricePaid')}</div>
+                            <div style={{ fontSize: 10, opacity: 0.7 }}>{t('reg.pricePaidDesc')}</div>
                           </button>
                         </div>
                       </div>
 
                       {form.mentoringPriceType === 'paid' && (
                         <div className="auth-field" style={{ marginBottom: 12 }}>
-                          <label style={{ fontSize: 13, fontWeight: 600 }}>Precio por hora (USD)</label>
+                          <label style={{ fontSize: 13, fontWeight: 600 }}>{t('reg.pricePerHour')}</label>
                           <div style={{ position: 'relative' }}>
                             <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 600 }}>$</span>
                             <input
@@ -723,11 +723,11 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                               <span style={{ fontSize: 12, color: '#2D62C8', fontWeight: 600 }}>
                                 ≈ {formatUsdToLocal(form.mentoringPricePerHour, form.country)} /hora
                               </span>
-                              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>(conversión aproximada)</span>
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)', marginLeft: 6 }}>{t('reg.approxConversion')}</span>
                             </div>
                           )}
                           <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
-                            Se transparente con tu precio. Los acuerdos se realizan por el chat de la plataforma.
+                            {t('reg.priceTransparency')}
                           </small>
                         </div>
                       )}
@@ -735,7 +735,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                       {/* Chat platform notice */}
                       <div style={{ background: 'rgba(45,98,200,0.06)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(45,98,200,0.15)' }}>
                         <p style={{ fontSize: 12, color: '#2D62C8', margin: 0, fontWeight: 500 }}>
-                          Toda coordinación de tutorías se realiza a través del <strong>chat de Conniku</strong>. Los estudiantes te enviarán una solicitud que podrás aceptar o rechazar desde tu perfil. Esto garantiza seguridad y registro para ambas partes.
+                          {t('reg.tutoringChatNotice')}
                         </p>
                       </div>
                     </>
@@ -744,13 +744,13 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               )}
 
               <div className="auth-field">
-                <label>Régimen académico</label>
+                <label>{t('reg.academicRegime')}</label>
                 <div className="auth-semester-picker">
                   {[
-                    { value: 'semestral', label: 'Semestral' },
-                    { value: 'trimestral', label: 'Trimestral' },
-                    { value: 'cuatrimestral', label: 'Cuatrimestral' },
-                    { value: 'anual', label: 'Anual' },
+                    { value: 'semestral', label: t('reg.regimeSemester') },
+                    { value: 'trimestral', label: t('reg.regimeTrimester') },
+                    { value: 'cuatrimestral', label: t('reg.regimeQuarter') },
+                    { value: 'anual', label: t('reg.regimeAnnual') },
                   ].map(r => (
                     <button key={r.value} type="button" className={`auth-semester-btn ${form.academicRegime === r.value ? 'active' : ''}`}
                       style={{ flex: 1 }}
@@ -759,7 +759,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 </div>
               </div>
               <div className="auth-field">
-                <label>{form.academicRegime === 'semestral' ? 'Semestre actual' : form.academicRegime === 'trimestral' ? 'Trimestre actual' : form.academicRegime === 'cuatrimestral' ? 'Cuatrimestre actual' : 'Año de cursada actual'}</label>
+                <label>{form.academicRegime === 'semestral' ? t('reg.currentSemester') : form.academicRegime === 'trimestral' ? t('reg.currentTrimester') : form.academicRegime === 'cuatrimestral' ? t('reg.currentQuarter') : t('reg.currentYear')}</label>
                 <div className="auth-semester-picker">
                   {Array.from({ length: form.academicRegime === 'semestral' ? 10 : form.academicRegime === 'trimestral' ? 12 : form.academicRegime === 'cuatrimestral' ? 9 : 8 }, (_, i) => i + 1).map(s => (
                     <button key={s} type="button" className={`auth-semester-btn ${form.semester === s ? 'active' : ''}`} onClick={() => update('semester', s)}>
@@ -770,20 +770,20 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               </div>
               <div className="auth-row">
                 <div className="auth-field">
-                  <label>Año de ingreso</label>
+                  <label>{t('reg.entryYear')}</label>
                   <select value={form.entryYear} onChange={e => update('entryYear', parseInt(e.target.value))}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
-                    {Array.from({ length: 9 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                    {Array.from({ length: new Date().getFullYear() - 1950 + 1 }, (_, i) => new Date().getFullYear() - i).map(y => (
                       <option key={y} value={y}>{y}</option>
                     ))}
                   </select>
                 </div>
                 <div className="auth-field">
-                  <label>Duración de la carrera</label>
+                  <label>{t('reg.careerDuration')}</label>
                   <select value={form.careerDuration} onChange={e => update('careerDuration', parseInt(e.target.value))}
                     style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                     {[2,3,4,5,6,7,8].map(y => (
-                      <option key={y} value={y}>{y} años</option>
+                      <option key={y} value={y}>{y} {t('reg.years')}</option>
                     ))}
                   </select>
                 </div>

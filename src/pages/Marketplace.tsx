@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useI18n } from '../services/i18n'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { SharedDoc } from '../types'
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function Marketplace({ onNavigate }: Props) {
+  const { t } = useI18n()
   const { user } = useAuth()
   const [documents, setDocuments] = useState<SharedDoc[]>([])
   const [loading, setLoading] = useState(true)
@@ -100,27 +102,27 @@ export default function Marketplace({ onNavigate }: Props) {
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2>{BookOpen({ size: 20 })} Marketplace de Apuntes</h2>
-            <p>Comparte y descubre material de estudio de otros estudiantes</p>
+            <h2>{BookOpen({ size: 20 })} {t('marketplace.title')}</h2>
+            <p>{t('marketplace.subtitle')}</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowShare(true)}>+ Compartir Apuntes</button>
+          <button className="btn btn-primary" onClick={() => setShowShare(true)}>{t('marketplace.share')}</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Buscar por título o materia..."
+            placeholder={t('marketplace.searchPlaceholder')}
             style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           />
           <input
             value={filterUniversity}
             onChange={e => setFilterUniversity(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="Universidad..."
+            placeholder={t('marketplace.universityPlaceholder')}
             style={{ width: 180, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
           />
-          <button className="btn btn-primary" onClick={handleSearch}>Buscar</button>
+          <button className="btn btn-primary" onClick={handleSearch}>{t('marketplace.search')}</button>
         </div>
       </div>
 
@@ -130,10 +132,10 @@ export default function Marketplace({ onNavigate }: Props) {
         ) : documents.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
             <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
-            <h3>No hay apuntes todavía</h3>
-            <p>Sé el primero en compartir material de estudio con la comunidad</p>
+            <h3>{t('marketplace.emptyTitle')}</h3>
+            <p>{t('marketplace.emptySubtitle')}</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowShare(true)}>
-              Compartir mis apuntes
+              {t('marketplace.emptyBtn')}
             </button>
           </div>
         ) : (
@@ -159,7 +161,7 @@ export default function Marketplace({ onNavigate }: Props) {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     {renderStars(doc.rating, doc.id)}
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      {doc.rating > 0 ? `${doc.rating}/5` : 'Sin calificar'} ({doc.ratingCount})
+                      {doc.rating > 0 ? `${doc.rating}/5` : t('marketplace.unrated')} ({doc.ratingCount})
                     </span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -182,7 +184,7 @@ export default function Marketplace({ onNavigate }: Props) {
                       <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'inline-flex', alignItems: 'center', gap: 3 }}>{Download({ size: 12 })} {doc.downloads}</span>
                     </div>
                     <button className="btn btn-primary btn-xs" onClick={() => handleDownload(doc.id)}>
-                      Descargar
+                      {t('marketplace.download')}
                     </button>
                   </div>
                 </div>
@@ -190,9 +192,9 @@ export default function Marketplace({ onNavigate }: Props) {
             </div>
             {total > 20 && (
               <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
-                <button className="btn btn-secondary btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>← Anterior</button>
-                <span style={{ padding: '8px 16px', fontSize: 13 }}>Página {page} de {Math.ceil(total / 20)}</span>
-                <button className="btn btn-secondary btn-sm" disabled={page >= Math.ceil(total / 20)} onClick={() => setPage(p => p + 1)}>Siguiente →</button>
+                <button className="btn btn-secondary btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>{t('marketplace.previous')}</button>
+                <span style={{ padding: '8px 16px', fontSize: 13 }}>{t('marketplace.page')} {page} {t('marketplace.of')} {Math.ceil(total / 20)}</span>
+                <button className="btn btn-secondary btn-sm" disabled={page >= Math.ceil(total / 20)} onClick={() => setPage(p => p + 1)}>{t('marketplace.next')}</button>
               </div>
             )}
           </>
@@ -201,29 +203,29 @@ export default function Marketplace({ onNavigate }: Props) {
         {showShare && (
           <div className="modal-overlay" onClick={() => setShowShare(false)}>
             <div className="modal" onClick={e => e.stopPropagation()}>
-              <h3>Compartir Apuntes</h3>
+              <h3>{t('marketplace.modalTitle')}</h3>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-                Comparte tus apuntes y gana XP por cada descarga. ¡Ayuda a otros estudiantes!
+                {t('marketplace.modalSubtitle')}
               </p>
               <div className="auth-field">
-                <label>Título *</label>
-                <input value={shareTitle} onChange={e => setShareTitle(e.target.value)} placeholder="Ej: Resumen Cálculo II - Integrales" autoFocus />
+                <label>{t('marketplace.titleLabel')}</label>
+                <input value={shareTitle} onChange={e => setShareTitle(e.target.value)} placeholder={t('marketplace.titlePlaceholder')} autoFocus />
               </div>
               <div className="auth-field">
-                <label>Materia</label>
-                <input value={shareCourse} onChange={e => setShareCourse(e.target.value)} placeholder="Ej: Cálculo II" />
+                <label>{t('marketplace.subjectLabel')}</label>
+                <input value={shareCourse} onChange={e => setShareCourse(e.target.value)} placeholder={t('marketplace.subjectPlaceholder')} />
               </div>
               <div className="auth-field">
-                <label>Descripción</label>
-                <input value={shareDesc} onChange={e => setShareDesc(e.target.value)} placeholder="Breve descripción del contenido..." />
+                <label>{t('marketplace.descLabel')}</label>
+                <input value={shareDesc} onChange={e => setShareDesc(e.target.value)} placeholder={t('marketplace.descPlaceholder')} />
               </div>
               <div className="auth-field">
-                <label>Archivo *</label>
+                <label>{t('marketplace.fileLabel')}</label>
                 <input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt" onChange={handleFileSelect} />
               </div>
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowShare(false)}>Cancelar</button>
-                <button className="btn btn-primary" onClick={handleShare} disabled={!shareTitle.trim() || !shareFile}>Compartir</button>
+                <button className="btn btn-secondary" onClick={() => setShowShare(false)}>{t('marketplace.cancel')}</button>
+                <button className="btn btn-primary" onClick={handleShare} disabled={!shareTitle.trim() || !shareFile}>{t('marketplace.submit')}</button>
               </div>
             </div>
           </div>

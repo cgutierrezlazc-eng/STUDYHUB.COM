@@ -31,7 +31,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
     <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       {onBack && (
         <button onClick={onBack} style={{ position: 'fixed', top: 16, left: 16, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 14 }}>
-          ← Volver
+          {t('auth.backBtn')}
         </button>
       )}
       {/* Language dropdown — top right */}
@@ -93,7 +93,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
 
         {onForgotPassword && (
           <button onClick={onForgotPassword} style={{ display: 'block', width: '100%', textAlign: 'center', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: 13, marginTop: 12 }}>
-            ¿Olvidaste tu contraseña?
+            {t('auth.forgotPassword')}
           </button>
         )}
       </div>
@@ -109,7 +109,7 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
 
       {/* Universities */}
       <div style={{ marginTop: 32, textAlign: 'center' }}>
-        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>Estudiantes de</p>
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{t('auth.studentsOf')}</p>
         <p style={{ fontSize: 12, color: 'var(--text-muted)', letterSpacing: '0.02em' }}>
           UNAB · USS · UCN · UDP · PUC · USACH · U. de Chile · UDD · UAI · UST
         </p>
@@ -117,10 +117,10 @@ export default function Login({ onSwitchToRegister, onForgotPassword, onBack }: 
 
       {/* Footer */}
       <div style={{ marginTop: 24, display: 'flex', gap: 16, fontSize: 11, color: 'var(--text-muted)' }}>
-        <span>Hecho en Chile 🇨🇱</span>
-        <span>Términos</span>
-        <span>Privacidad</span>
-        <span>Contacto</span>
+        <span>{t('auth.madeInChile')}</span>
+        <span>{t('auth.terms')}</span>
+        <span>{t('auth.privacy')}</span>
+        <span>{t('auth.contact')}</span>
       </div>
     </div>
   )

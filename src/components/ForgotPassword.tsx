@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { CheckCircle } from './Icons'
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function ForgotPassword({ onBack }: Props) {
+  const { t } = useI18n()
   const [step, setStep] = useState<'email' | 'code' | 'newpass' | 'done'>('email')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -17,7 +19,7 @@ export default function ForgotPassword({ onBack }: Props) {
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSendCode = async () => {
-    if (!email.trim()) { setError('Ingresa tu correo electrónico'); return }
+    if (!email.trim()) { setError(t('forgot.errEmail')); return }
     setIsLoading(true)
     setError('')
     try {
@@ -25,27 +27,27 @@ export default function ForgotPassword({ onBack }: Props) {
       if (result.code) setDemoCode(result.code) // MVP demo
       setStep('code')
     } catch (err: any) {
-      setError(err.message || 'Error al enviar código')
+      setError(err.message || t('forgot.errSend'))
     }
     setIsLoading(false)
   }
 
   const handleVerifyAndReset = async () => {
-    if (code.length !== 6) { setError('Ingresa el código de 6 dígitos'); return }
+    if (code.length !== 6) { setError(t('forgot.errCode')); return }
     setStep('newpass')
     setError('')
   }
 
   const handleResetPassword = async () => {
-    if (newPassword.length < 8) { setError('La contraseña debe tener al menos 8 caracteres, una mayúscula y un número'); return }
-    if (newPassword !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
+    if (newPassword.length < 8) { setError(t('forgot.errNewPwd')); return }
+    if (newPassword !== confirmPassword) { setError(t('forgot.errMismatch')); return }
     setIsLoading(true)
     setError('')
     try {
       await api.resetPassword(email, code, newPassword)
       setStep('done')
     } catch (err: any) {
-      setError(err.message || 'Error al cambiar contraseña')
+      setError(err.message || t('forgot.errReset'))
     }
     setIsLoading(false)
   }
@@ -54,18 +56,18 @@ export default function ForgotPassword({ onBack }: Props) {
     <div className="auth-page">
       <div className="auth-right" style={{ margin: '0 auto' }}>
         <div className="auth-card" style={{ maxWidth: 420 }}>
-          <h2>Recuperar Contraseña</h2>
+          <h2>{t('forgot.title')}</h2>
 
           {step === 'email' && (
             <>
               <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>
-                Ingresa el correo asociado a tu cuenta y te enviaremos un código de verificación.
+                {t('forgot.instructions')}
               </p>
               <div className="auth-field">
-                <label>Correo electrónico</label>
+                <label>{t('forgot.emailLabel')}</label>
                 <input
                   type="email"
-                  placeholder="tu@email.com"
+                  placeholder={t('forgot.emailPlaceholder')}
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   autoFocus
@@ -73,7 +75,7 @@ export default function ForgotPassword({ onBack }: Props) {
               </div>
               {error && <div className="auth-error">{error}</div>}
               <button className="btn-auth-primary" onClick={handleSendCode} disabled={isLoading}>
-                {isLoading ? 'Enviando...' : 'Enviar Código'}
+                {isLoading ? t('forgot.sending') : t('forgot.sendCode')}
               </button>
             </>
           )}
@@ -82,9 +84,9 @@ export default function ForgotPassword({ onBack }: Props) {
             <>
               <div className="auth-verification">
                 <div className="auth-verification-icon">📧</div>
-                <p>Hemos enviado un código de verificación a <strong>{email}</strong></p>
+                <p>{t('forgot.codeSent')} <strong>{email}</strong></p>
                 <div className="auth-field">
-                  <label>Código de verificación</label>
+                  <label>{t('forgot.codeLabel')}</label>
                   <input
                     type="text"
                     maxLength={6}
@@ -97,13 +99,13 @@ export default function ForgotPassword({ onBack }: Props) {
                 </div>
                 {demoCode && (
                   <p className="auth-verification-demo">
-                    Demo: Tu código es <strong>{demoCode}</strong>
+                    {t('forgot.demoCode')} <strong>{demoCode}</strong>
                   </p>
                 )}
               </div>
               {error && <div className="auth-error">{error}</div>}
               <button className="btn-auth-primary" onClick={handleVerifyAndReset} disabled={code.length !== 6}>
-                Verificar Código
+                {t('forgot.verifyCode')}
               </button>
             </>
           )}
@@ -111,30 +113,30 @@ export default function ForgotPassword({ onBack }: Props) {
           {step === 'newpass' && (
             <>
               <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>
-                Elige tu nueva contraseña.
+                {t('forgot.newPassInstructions')}
               </p>
               <div className="auth-field">
-                <label>Nueva contraseña</label>
+                <label>{t('forgot.newPassLabel')}</label>
                 <input
                   type="password"
-                  placeholder="Mínimo 8 caracteres, 1 mayúscula, 1 número"
+                  placeholder={t('forgot.newPassPlaceholder')}
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   autoFocus
                 />
               </div>
               <div className="auth-field">
-                <label>Confirmar contraseña</label>
+                <label>{t('forgot.confirmLabel')}</label>
                 <input
                   type="password"
-                  placeholder="Repite tu nueva contraseña"
+                  placeholder={t('forgot.confirmPlaceholder')}
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
                 />
               </div>
               {error && <div className="auth-error">{error}</div>}
               <button className="btn-auth-primary" onClick={handleResetPassword} disabled={isLoading}>
-                {isLoading ? 'Cambiando...' : 'Cambiar Contraseña'}
+                {isLoading ? t('forgot.changing') : t('forgot.changePassword')}
               </button>
             </>
           )}
@@ -142,19 +144,19 @@ export default function ForgotPassword({ onBack }: Props) {
           {step === 'done' && (
             <div style={{ textAlign: 'center', padding: 20 }}>
               <div style={{ fontSize: 48 }}>{CheckCircle({ size: 48, color: 'var(--accent-green)' })}</div>
-              <h3 style={{ marginTop: 16 }}>Contraseña Actualizada</h3>
+              <h3 style={{ marginTop: 16 }}>{t('forgot.doneTitle')}</h3>
               <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>
-                Tu contraseña ha sido cambiada exitosamente. Ya puedes iniciar sesión.
+                {t('forgot.doneMessage')}
               </p>
               <button className="btn-auth-primary" onClick={onBack} style={{ marginTop: 20 }}>
-                Iniciar Sesión
+                {t('forgot.loginBtn')}
               </button>
             </div>
           )}
 
           {step !== 'done' && (
             <p className="auth-switch">
-              <button onClick={onBack}>← Volver al inicio de sesión</button>
+              <button onClick={onBack}>{t('forgot.backToLogin')}</button>
             </p>
           )}
         </div>

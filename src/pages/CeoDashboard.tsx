@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { BarChart3, GraduationCap, Gem, ClipboardList, Shield, CheckCircle, AlertTriangle, Link, RefreshCw, Users, Medal, BookOpen, Search as SearchIcon, Hourglass, Briefcase, Inbox, Send, Megaphone, Pencil, Trash2 } from '../components/Icons'
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 
 export default function CeoDashboard({ onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [weeklyReport, setWeeklyReport] = useState<any>(null)
   const [financials, setFinancials] = useState<any>(null)
   const [fraudReport, setFraudReport] = useState<any>(null)
@@ -95,21 +97,21 @@ export default function CeoDashboard({ onNavigate }: Props) {
       setComposeTo(''); setComposeSubject(''); setComposeBody(''); setComposeCta(''); setComposeCtaUrl('')
       setEmailView('inbox')
       loadEmailData(1, emailFilter)
-    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    } catch (e: any) { alert(e.message || t('ceo.errorSending')) }
     setComposeSending(false)
   }
 
   const handleBroadcast = async () => {
     if (!broadcastSubject || !broadcastBody) return
-    if (!confirm(`¿Enviar email masivo a usuarios (${broadcastFilter})? Esta accion no se puede deshacer.`)) return
+    if (!confirm(t('ceo.broadcastConfirm').replace('{filter}', broadcastFilter))) return
     setBroadcastSending(true)
     try {
       const result = await api.ceoBroadcastEmail(broadcastSubject, broadcastBody, broadcastFilter, broadcastCta, broadcastCtaUrl)
-      alert(`Email enviado a ${result.recipients} usuarios.`)
+      alert(t('ceo.emailSentTo').replace('{count}', String(result.recipients)))
       setBroadcastSubject(''); setBroadcastBody(''); setBroadcastCta(''); setBroadcastCtaUrl('')
       setEmailView('inbox')
       loadEmailData(1, emailFilter)
-    } catch (e: any) { alert(e.message || 'Error al enviar') }
+    } catch (e: any) { alert(e.message || t('ceo.errorSending')) }
     setBroadcastSending(false)
   }
 
@@ -122,27 +124,27 @@ export default function CeoDashboard({ onNavigate }: Props) {
   }
 
   const handleDeleteEmail = async (emailId: string) => {
-    if (!confirm('¿Eliminar este email del historial?')) return
+    if (!confirm(t('ceo.deleteEmailConfirm'))) return
     setDeletingEmail(true)
     try {
       await api.ceoDeleteEmail(emailId)
       setEmailInbox(prev => prev.filter(e => e.id !== emailId))
       setEmailTotal(prev => prev - 1)
       if (emailView === 'detail') setEmailView('inbox')
-    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    } catch (e: any) { alert(e.message || t('ceo.errorDeleting')) }
     setDeletingEmail(false)
   }
 
   const handleDeleteSelectedEmails = async () => {
     if (selectedEmails.size === 0) return
-    if (!confirm(`¿Eliminar ${selectedEmails.size} email(s) del historial?`)) return
+    if (!confirm(t('ceo.deleteEmailsConfirm').replace('{count}', String(selectedEmails.size)))) return
     setDeletingEmail(true)
     try {
       await api.ceoDeleteEmailsBulk([...selectedEmails])
       setEmailInbox(prev => prev.filter(e => !selectedEmails.has(e.id)))
       setEmailTotal(prev => prev - selectedEmails.size)
       setSelectedEmails(new Set())
-    } catch (e: any) { alert(e.message || 'Error al eliminar') }
+    } catch (e: any) { alert(e.message || t('ceo.errorDeleting')) }
     setDeletingEmail(false)
   }
 
@@ -189,37 +191,37 @@ export default function CeoDashboard({ onNavigate }: Props) {
     setCertMessage(null)
     try {
       const result = await api.adminCertifyUser(userId, courseIds, certScoreOverride)
-      setCertMessage({ type: 'success', text: result.message || 'Certificado(s) emitido(s)' })
+      setCertMessage({ type: 'success', text: result.message || t('ceo.certIssued') })
       setSelectedUsers(prev => ({ ...prev, [userId]: [] }))
       // Reload data
       await loadProgressOverview()
     } catch (e: any) {
-      setCertMessage({ type: 'error', text: e.message || 'Error al certificar' })
+      setCertMessage({ type: 'error', text: e.message || t('ceo.errorSending') })
     }
     setCertifying(false)
   }
 
   const handleRevokeCert = async (userId: string, courseId: string, courseTitle: string) => {
-    if (!confirm(`¿Revocar certificado de "${courseTitle}"? Esta acción no se puede deshacer.`)) return
+    if (!confirm(t('ceo.revokeCertConfirm').replace('{title}', courseTitle))) return
     try {
       await api.adminRevokeCertificate(userId, courseId)
-      setCertMessage({ type: 'success', text: 'Certificado revocado' })
+      setCertMessage({ type: 'success', text: t('ceo.certRevoked') })
       await loadProgressOverview()
     } catch (e: any) {
-      setCertMessage({ type: 'error', text: e.message || 'Error al revocar' })
+      setCertMessage({ type: 'error', text: e.message || t('ceo.errorDeleting') })
     }
   }
 
   const submitF129 = async () => {
     if (!f129) return
-    if (!confirm('¿Enviar el F129 al SII? Verifica los datos primero.')) return
+    if (!confirm(t('ceo.submitF129Confirm'))) return
     try {
       const result = await api.submitF129(f129)
-      alert(result.message || 'F129 procesado')
+      alert(result.message || t('ceo.f129Processed'))
     } catch (e: any) { alert(e.message || 'Error') }
   }
 
-  if (user?.role !== 'owner') return <div className="page-body"><p>Acceso restringido al CEO/Owner.</p></div>
+  if (user?.role !== 'owner') return <div className="page-body"><p>{t('ceo.restrictedAccess')}</p></div>
 
   const fmt = (n: number) => n?.toLocaleString('es-CL') || '0'
   const fmtUsd = (n: number) => `$${(n || 0).toFixed(2)}`
@@ -227,18 +229,18 @@ export default function CeoDashboard({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header page-enter">
-        <h2>{Briefcase({ size: 22 })} Panel CEO — Conniku</h2>
-        <p>Vista exclusiva del estado completo de la plataforma</p>
+        <h2>{Briefcase({ size: 22 })} {t('ceo.title')}</h2>
+        <p>{t('ceo.subtitle')}</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
           <button className="tab" style={{ background: '#0078d4', color: '#fff', border: '1px solid #0078d4', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
-            {Inbox({ size: 14 })} Correo CEO
+            {Inbox({ size: 14 })} {t('ceo.ceoMail')}
           </button>
           <button className="tab" style={{ background: '#10B981', color: '#fff', border: '1px solid #10B981', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
-            {Inbox({ size: 14 })} Correo Contacto
+            {Inbox({ size: 14 })} {t('ceo.contactMail')}
           </button>
-          {(['overview', 'push', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(t => (
-            <button key={t} className={`tab ${tab === t ? 'active' : ''}`} onClick={() => { setTab(t); if (t === 'f129' && !f129) loadF129(); if (t === 'certifications' && !progressData) loadProgressOverview(); }}>
-              {t === 'overview' ? <>{BarChart3({ size: 14 })} Resumen</> : t === 'push' ? <>{Megaphone({ size: 14 })} Push</> : t === 'certifications' ? <>{GraduationCap({ size: 14 })} Certificaciones</> : t === 'financial' ? <>{Gem({ size: 14 })} Finanzas</> : t === 'f129' ? <>{ClipboardList({ size: 14 })} F129 SII</> : t === 'fraud' ? <>{Shield({ size: 14 })} Anti-Fraude</> : <>{CheckCircle({ size: 14 })} Compliance</>}
+          {(['overview', 'push', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(tb => (
+            <button key={tb} className={`tab ${tab === tb ? 'active' : ''}`} onClick={() => { setTab(tb); if (tb === 'f129' && !f129) loadF129(); if (tb === 'certifications' && !progressData) loadProgressOverview(); }}>
+              {tb === 'overview' ? <>{BarChart3({ size: 14 })} {t('ceo.tabOverview')}</> : tb === 'push' ? <>{Megaphone({ size: 14 })} {t('ceo.tabPush')}</> : tb === 'certifications' ? <>{GraduationCap({ size: 14 })} {t('ceo.tabCertifications')}</> : tb === 'financial' ? <>{Gem({ size: 14 })} {t('ceo.tabFinancial')}</> : tb === 'f129' ? <>{ClipboardList({ size: 14 })} {t('ceo.tabF129')}</> : tb === 'fraud' ? <>{Shield({ size: 14 })} {t('ceo.tabFraud')}</> : <>{CheckCircle({ size: 14 })} {t('ceo.tabCompliance')}</>}
             </button>
           ))}
         </div>
@@ -250,39 +252,39 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {/* OVERVIEW */}
           {tab === 'overview' && weeklyReport && (
             <div>
-              <h3 style={{ fontSize: 15, marginBottom: 4 }}>Reporte Semanal</h3>
+              <h3 style={{ fontSize: 15, marginBottom: 4 }}>{t('ceo.weeklyReport')}</h3>
               <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>{weeklyReport.period}</p>
 
               <div className="stats-grid" style={{ marginBottom: 24 }}>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
                   <div className="stat-value">{fmtUsd(weeklyReport.revenue?.grossUsd)}</div>
-                  <div className="stat-label">Ingresos Semana {weeklyReport.revenue?.trend}</div>
+                  <div className="stat-label">{t('ceo.weekRevenue')} {weeklyReport.revenue?.trend}</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
                   <div className="stat-value">{weeklyReport.users?.newThisWeek}</div>
-                  <div className="stat-label">Usuarios Nuevos ({weeklyReport.users?.growthPercent > 0 ? '+' : ''}{weeklyReport.users?.growthPercent}%)</div>
+                  <div className="stat-label">{t('ceo.newUsers')} ({weeklyReport.users?.growthPercent > 0 ? '+' : ''}{weeklyReport.users?.growthPercent}%)</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
                   <div className="stat-value">{weeklyReport.users?.activeThisWeek}</div>
-                  <div className="stat-label">Activos ({weeklyReport.users?.activeRate}%)</div>
+                  <div className="stat-label">{t('ceo.activeUsers')} ({weeklyReport.users?.activeRate}%)</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
                   <div className="stat-value">{weeklyReport.engagement?.studyHours}h</div>
-                  <div className="stat-label">Horas de Estudio</div>
+                  <div className="stat-label">{t('ceo.studyHours')}</div>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div className="u-card" style={{ padding: 20 }}>
-                  <h4 style={{ marginTop: 0 }}>{Gem({ size: 16 })} Ganancia Neta</h4>
+                  <h4 style={{ marginTop: 0 }}>{Gem({ size: 16 })} {t('ceo.netProfit')}</h4>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>${fmt(weeklyReport.revenue?.gananciaNetaClp)} CLP</div>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Despues de comisiones + IVA 19%</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('ceo.afterCommissions')}</p>
                 </div>
                 <div className="u-card" style={{ padding: 20 }}>
-                  <h4 style={{ marginTop: 0 }}>{BarChart3({ size: 16 })} Engagement</h4>
+                  <h4 style={{ marginTop: 0 }}>{BarChart3({ size: 16 })} {t('ceo.engagement')}</h4>
                   <div style={{ fontSize: 13 }}>
-                    <div>Posts: {weeklyReport.engagement?.wallPosts} | Comunidad: {weeklyReport.engagement?.communityPosts}</div>
-                    <div>Mensajes: {weeklyReport.engagement?.messages} | Quizzes: {weeklyReport.engagement?.quizzesTaken}</div>
+                    <div>{t('ceo.posts')}: {weeklyReport.engagement?.wallPosts} | {t('ceo.community')}: {weeklyReport.engagement?.communityPosts}</div>
+                    <div>{t('ceo.messages')}: {weeklyReport.engagement?.messages} | {t('ceo.quizzes')}: {weeklyReport.engagement?.quizzesTaken}</div>
                   </div>
                 </div>
               </div>
@@ -302,8 +304,8 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     {'💙'}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Mercado Pago</div>
-                    <div style={{ fontSize: 11, color: '#009ee3' }}>Activo — Chile (CLP)</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{t('ceo.mercadoPago')}</div>
+                    <div style={{ fontSize: 11, color: '#009ee3' }}>{t('ceo.mercadoPagoStatus')}</div>
                   </div>
                 </div>
                 <div className="u-card" style={{
@@ -314,8 +316,8 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     {'🅿️'}
                   </div>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>PayPal</div>
-                    <div style={{ fontSize: 11, color: '#003087' }}>Internacional (USD)</div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{t('ceo.paypal')}</div>
+                    <div style={{ fontSize: 11, color: '#003087' }}>{t('ceo.paypalStatus')}</div>
                   </div>
                 </div>
               </div>
@@ -324,43 +326,43 @@ export default function CeoDashboard({ onNavigate }: Props) {
               <div className="stats-grid" style={{ marginBottom: 24 }}>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-green)' }}>
                   <div className="stat-value">{fmtUsd(financials.grossRevenueUsd)}</div>
-                  <div className="stat-label">Ingresos Totales USD</div>
+                  <div className="stat-label">{t('ceo.totalRevenueUsd')}</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
                   <div className="stat-value">${fmt(financials.gananciaNetaTotalClp)}</div>
-                  <div className="stat-label">Ganancia Neta CLP</div>
+                  <div className="stat-label">{t('ceo.netProfitClp')}</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
                   <div className="stat-value">{financials.activeSubscribers}</div>
-                  <div className="stat-label">Suscriptores ({financials.proSubscribers} Pro + {financials.maxSubscribers} Max)</div>
+                  <div className="stat-label">{t('ceo.subscribers')} ({financials.proSubscribers} Pro + {financials.maxSubscribers} Max)</div>
                 </div>
                 <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
                   <div className="stat-value">{fmtUsd(financials.arpu)}</div>
-                  <div className="stat-label">ARPU (ingreso por usuario)</div>
+                  <div className="stat-label">{t('ceo.arpu')}</div>
                 </div>
               </div>
 
               <div className="u-card" style={{ padding: 20, marginBottom: 16 }}>
-                <h4 style={{ marginTop: 0 }}>Desglose Financiero (CLP)</h4>
+                <h4 style={{ marginTop: 0 }}>{t('ceo.financialBreakdown')}</h4>
                 <table style={{ width: '100%', fontSize: 14 }}>
                   <tbody>
-                    <tr><td>Bruto total</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.grossRevenueClp)}</td></tr>
-                    <tr style={{ color: 'var(--accent-red)' }}><td>- Comisión plataforma</td><td style={{ textAlign: 'right' }}>-${fmt(financials.grossRevenueClp - financials.netAfterStripeClp)}</td></tr>
-                    <tr><td>Neto despues comisiones</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.netAfterStripeClp)}</td></tr>
-                    <tr style={{ color: 'var(--accent-red)' }}><td>- IVA 19%</td><td style={{ textAlign: 'right' }}>-${fmt(financials.totalIvaClp)}</td></tr>
-                    <tr style={{ borderTop: '2px solid var(--border)', fontWeight: 700, fontSize: 16 }}><td>GANANCIA NETA</td><td style={{ textAlign: 'right', color: 'var(--accent-green)' }}>${fmt(financials.gananciaNetaTotalClp)}</td></tr>
+                    <tr><td>{t('ceo.grossTotal')}</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.grossRevenueClp)}</td></tr>
+                    <tr style={{ color: 'var(--accent-red)' }}><td>{t('ceo.platformCommission')}</td><td style={{ textAlign: 'right' }}>-${fmt(financials.grossRevenueClp - financials.netAfterStripeClp)}</td></tr>
+                    <tr><td>{t('ceo.netAfterCommissions')}</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(financials.netAfterStripeClp)}</td></tr>
+                    <tr style={{ color: 'var(--accent-red)' }}><td>{t('ceo.iva19')}</td><td style={{ textAlign: 'right' }}>-${fmt(financials.totalIvaClp)}</td></tr>
+                    <tr style={{ borderTop: '2px solid var(--border)', fontWeight: 700, fontSize: 16 }}><td>{t('ceo.netProfitLabel')}</td><td style={{ textAlign: 'right', color: 'var(--accent-green)' }}>${fmt(financials.gananciaNetaTotalClp)}</td></tr>
                   </tbody>
                 </table>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>TC: 1 USD = ${fmt(financials.exchangeRateUsdClp)} CLP</p>
+                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>{t('ceo.exchangeRate')} ${fmt(financials.exchangeRateUsdClp)} CLP</p>
               </div>
 
               {financials.recentPayments?.length > 0 && (
                 <div className="u-card" style={{ padding: 20 }}>
-                  <h4 style={{ marginTop: 0 }}>Pagos Recientes</h4>
+                  <h4 style={{ marginTop: 0 }}>{t('ceo.recentPayments')}</h4>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
                       <thead><tr style={{ borderBottom: '1px solid var(--border)', textAlign: 'left' }}>
-                        <th style={{ padding: 8 }}>Usuario</th><th>Pais</th><th>USD</th><th>CLP</th><th>IVA</th><th>Fecha</th>
+                        <th style={{ padding: 8 }}>{t('ceo.user')}</th><th>{t('ceo.country')}</th><th>USD</th><th>CLP</th><th>IVA</th><th>{t('ceo.date')}</th>
                       </tr></thead>
                       <tbody>
                         {financials.recentPayments.slice(0, 10).map((p: any) => (
@@ -387,9 +389,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
             <div>
               {!f129 ? (
                 <div className="u-card" style={{ padding: 24, textAlign: 'center' }}>
-                  <h3>{ClipboardList({ size: 18 })} Generar F129</h3>
-                  <p style={{ color: 'var(--text-muted)' }}>Genera el formulario F129 para declarar IVA ante el SII</p>
-                  <button className="btn btn-primary" onClick={() => loadF129()}>Generar Período Actual</button>
+                  <h3>{ClipboardList({ size: 18 })} {t('ceo.generateF129')}</h3>
+                  <p style={{ color: 'var(--text-muted)' }}>{t('ceo.generateF129Desc')}</p>
+                  <button className="btn btn-primary" onClick={() => loadF129()}>{t('ceo.generateCurrentPeriod')}</button>
                 </div>
               ) : (
                 <div>
@@ -397,25 +399,25 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <h3 style={{ margin: 0 }}>{ClipboardList({ size: 18 })} F129 — {f129.periodoTexto}</h3>
                       <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 12, background: f129.estado === 'generado' ? 'var(--bg-tertiary)' : 'rgba(5,150,105,0.08)', color: f129.estado === 'generado' ? 'var(--text-muted)' : 'var(--accent-green)' }}>
-                        {f129.estado === 'generado' ? <>{Hourglass({ size: 12 })} Pendiente de envío</> : <>{CheckCircle({ size: 12 })} Enviado</>}
+                        {f129.estado === 'generado' ? <>{Hourglass({ size: 12 })} {t('ceo.pendingSubmission')}</> : <>{CheckCircle({ size: 12 })} {t('ceo.submitted')}</>}
                       </span>
                     </div>
                     <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
                       <tbody>
-                        <tr><td style={{ padding: 8 }}>RUT Emisor</td><td style={{ textAlign: 'right' }}>{f129.rutEmisor}</td></tr>
-                        <tr><td style={{ padding: 8 }}>Razón Social</td><td style={{ textAlign: 'right' }}>{f129.razonSocial}</td></tr>
-                        <tr style={{ borderTop: '1px solid var(--border)' }}><td style={{ padding: 8 }}>Ventas Netas Afectas</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(f129.ventasNetasAfectas)} CLP</td></tr>
-                        <tr><td style={{ padding: 8 }}>Tasa IVA</td><td style={{ textAlign: 'right' }}>{f129.tasaIva}</td></tr>
-                        <tr style={{ borderTop: '2px solid var(--border)', fontSize: 16, fontWeight: 700 }}><td style={{ padding: 8 }}>IVA A PAGAR</td><td style={{ textAlign: 'right', color: 'var(--accent-red)' }}>${fmt(f129.ivaAPagar)} CLP</td></tr>
+                        <tr><td style={{ padding: 8 }}>{t('ceo.rutIssuer')}</td><td style={{ textAlign: 'right' }}>{f129.rutEmisor}</td></tr>
+                        <tr><td style={{ padding: 8 }}>{t('ceo.businessName')}</td><td style={{ textAlign: 'right' }}>{f129.razonSocial}</td></tr>
+                        <tr style={{ borderTop: '1px solid var(--border)' }}><td style={{ padding: 8 }}>{t('ceo.netTaxableSales')}</td><td style={{ textAlign: 'right', fontWeight: 600 }}>${fmt(f129.ventasNetasAfectas)} CLP</td></tr>
+                        <tr><td style={{ padding: 8 }}>{t('ceo.ivaRate')}</td><td style={{ textAlign: 'right' }}>{f129.tasaIva}</td></tr>
+                        <tr style={{ borderTop: '2px solid var(--border)', fontSize: 16, fontWeight: 700 }}><td style={{ padding: 8 }}>{t('ceo.ivaToPay')}</td><td style={{ textAlign: 'right', color: 'var(--accent-red)' }}>${fmt(f129.ivaAPagar)} CLP</td></tr>
                       </tbody>
                     </table>
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 12 }}>{f129.nota}</p>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Plazo: {f129.plazoDeclaracion}</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('ceo.deadline')}: {f129.plazoDeclaracion}</p>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-primary" onClick={submitF129}>Enviar al SII</button>
-                    <a href={f129.urlSii} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">{Link({ size: 14 })} Portal SII</a>
-                    <button className="btn btn-secondary" onClick={() => loadF129()}>{RefreshCw({ size: 14 })} Regenerar</button>
+                    <button className="btn btn-primary" onClick={submitF129}>{t('ceo.submitToSii')}</button>
+                    <a href={f129.urlSii} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">{Link({ size: 14 })} {t('ceo.siiPortal')}</a>
+                    <button className="btn btn-secondary" onClick={() => loadF129()}>{RefreshCw({ size: 14 })} {t('ceo.regenerate')}</button>
                   </div>
                 </div>
               )}
@@ -426,8 +428,8 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {tab === 'fraud' && fraudReport && (
             <div>
               <div className="u-card" style={{ padding: 20, marginBottom: 16 }}>
-                <h4 style={{ marginTop: 0 }}>{Shield({ size: 16 })} Referidos — Detección de Fraude</h4>
-                <p style={{ fontSize: 14 }}>Total referidos: <strong>{fraudReport.totalReferrals}</strong></p>
+                <h4 style={{ marginTop: 0 }}>{Shield({ size: 16 })} {t('ceo.fraudDetection')}</h4>
+                <p style={{ fontSize: 14 }}>{t('ceo.totalReferrals')}: <strong>{fraudReport.totalReferrals}</strong></p>
               </div>
               {fraudReport.suspiciousAccounts?.length > 0 ? (
                 fraudReport.suspiciousAccounts.map((s: any) => (
@@ -435,16 +437,16 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <div>
                         <strong>{s.name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{s.username}</span>
-                        <div style={{ fontSize: 13 }}>Referidos: {s.totalReferred} | Inactivos: {s.inactiveReferred}</div>
+                        <div style={{ fontSize: 13 }}>{t('ceo.referrals')}: {s.totalReferred} | {t('ceo.inactive')}: {s.inactiveReferred}</div>
                       </div>
                       <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 12, background: s.fraudProbability > 70 ? 'rgba(220,38,38,0.08)' : 'rgba(217,119,6,0.08)', color: s.fraudProbability > 70 ? 'var(--accent-red)' : 'var(--accent-orange)', fontWeight: 600 }}>
-                        {s.fraudProbability}% riesgo — {s.recommendation}
+                        {s.fraudProbability}% {t('ceo.risk')} — {s.recommendation}
                       </span>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{CheckCircle({ size: 48 })}</div><h3>Sin actividad sospechosa</h3></div>
+                <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{CheckCircle({ size: 48 })}</div><h3>{t('ceo.noSuspiciousActivity')}</h3></div>
               )}
             </div>
           )}
@@ -452,7 +454,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {/* COMPLIANCE */}
           {tab === 'compliance' && compliance && (
             <div className="u-card" style={{ padding: 24 }}>
-              <h3 style={{ marginTop: 0 }}>{CheckCircle({ size: 18 })} Estado de Cumplimiento Legal</h3>
+              <h3 style={{ marginTop: 0 }}>{CheckCircle({ size: 18 })} {t('ceo.complianceStatus')}</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                 {compliance.requirements?.map((req: string, i: number) => (
                   <div key={i} style={{ fontSize: 14, padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8 }}>{req}</div>
@@ -460,14 +462,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
               </div>
               {compliance.pending?.length > 0 && (
                 <div style={{ marginTop: 16 }}>
-                  <h4 style={{ color: 'var(--accent-orange)' }}>{Hourglass({ size: 16 })} Pendientes</h4>
+                  <h4 style={{ color: 'var(--accent-orange)' }}>{Hourglass({ size: 16 })} {t('ceo.pending')}</h4>
                   {compliance.pending.map((p: string, i: number) => (
                     <div key={i} style={{ fontSize: 13, padding: 8, color: 'var(--accent-orange)' }}>• {p}</div>
                   ))}
                 </div>
               )}
               <div style={{ marginTop: 16 }}>
-                <h4>{ClipboardList({ size: 16 })} Notas Legales</h4>
+                <h4>{ClipboardList({ size: 16 })} {t('ceo.legalNotes')}</h4>
                 {compliance.legalNotes?.map((n: string, i: number) => (
                   <div key={i} style={{ fontSize: 13, padding: 4, color: 'var(--text-muted)' }}>• {n}</div>
                 ))}
@@ -480,13 +482,13 @@ export default function CeoDashboard({ onNavigate }: Props) {
               {/* Header */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
                 <div>
-                  <h3 style={{ fontSize: 17, margin: '0 0 4px' }}>{GraduationCap({ size: 18 })} Gestión de Certificaciones</h3>
+                  <h3 style={{ fontSize: 17, margin: '0 0 4px' }}>{GraduationCap({ size: 18 })} {t('ceo.certManagement')}</h3>
                   <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
-                    Certifica manualmente a usuarios, revoca certificados o revisa el progreso de cada estudiante.
+                    {t('ceo.certManagementDesc')}
                   </p>
                 </div>
                 <button className="btn btn-secondary btn-sm" onClick={loadProgressOverview} disabled={certLoading}>
-                  {RefreshCw({ size: 14 })} Actualizar
+                  {RefreshCw({ size: 14 })} {t('ceo.refresh')}
                 </button>
               </div>
 
@@ -511,10 +513,10 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   {/* Summary cards */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 12, marginBottom: 24 }}>
                     {[
-                      { label: 'Estudiantes activos', value: progressData.summary.totalUsersWithProgress, icon: Users({ size: 24 }), color: '#2D62C8' },
-                      { label: 'Certificados emitidos', value: progressData.summary.totalCertificatesIssued, icon: Medal({ size: 24 }), color: '#059669' },
-                      { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: BookOpen({ size: 24 }), color: '#C4882A' },
-                      { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: BookOpen({ size: 24 }), color: '#5B5FC7' },
+                      { label: t('ceo.activeStudents'), value: progressData.summary.totalUsersWithProgress, icon: Users({ size: 24 }), color: '#2D62C8' },
+                      { label: t('ceo.certsIssued'), value: progressData.summary.totalCertificatesIssued, icon: Medal({ size: 24 }), color: '#059669' },
+                      { label: t('ceo.coursesInProgress'), value: progressData.summary.totalInProgress, icon: BookOpen({ size: 24 }), color: '#C4882A' },
+                      { label: t('ceo.totalCourses'), value: progressData.summary.totalCourses, icon: BookOpen({ size: 24 }), color: '#5B5FC7' },
                     ].map((card, i) => (
                       <div key={i} className="u-card" style={{ padding: 16, textAlign: 'center' }}>
                         <div style={{ fontSize: 24, marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{card.icon}</div>
@@ -529,7 +531,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16,
                     padding: '10px 16px', background: 'var(--bg-secondary)', borderRadius: 8, flexWrap: 'wrap',
                   }}>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>Puntuación al certificar:</span>
+                    <span style={{ fontSize: 13, fontWeight: 600 }}>{t('ceo.scoreOnCertify')}</span>
                     {[80, 90, 100].map(s => (
                       <button key={s} onClick={() => setCertScoreOverride(s)}
                         style={{
@@ -542,12 +544,12 @@ export default function CeoDashboard({ onNavigate }: Props) {
                       </button>
                     ))}
                     <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                      Se asignará como puntuación del examen
+                      {t('ceo.scoreAssigned')}
                     </span>
                   </div>
 
                   {/* Search */}
-                  <input type="text" placeholder="Buscar por nombre o correo..." value={certSearch}
+                  <input type="text" placeholder={t('ceo.searchByNameOrEmail')} value={certSearch}
                     onChange={e => setCertSearch(e.target.value)}
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)',
@@ -590,10 +592,10 @@ export default function CeoDashboard({ onNavigate }: Props) {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                               <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>
-                                {Medal({ size: 14 })} {userData.completedCount} completados
+                                {Medal({ size: 14 })} {userData.completedCount} {t('ceo.completed')}
                               </span>
                               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                                {BookOpen({ size: 14 })} {userData.totalStarted} iniciados
+                                {BookOpen({ size: 14 })} {userData.totalStarted} {t('ceo.started')}
                               </span>
                               {userSelected.length > 0 && (
                                 <button onClick={() => handleCertify(userData.userId)} disabled={certifying}
@@ -601,7 +603,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                     padding: '6px 16px', borderRadius: 6, border: 'none', cursor: 'pointer',
                                     background: '#059669', color: '#fff', fontSize: 12, fontWeight: 600,
                                   }}>
-                                  {certifying ? '...' : <>{GraduationCap({ size: 14 })} Certificar {userSelected.length} curso(s)</>}
+                                  {certifying ? '...' : <>{GraduationCap({ size: 14 })} {t('ceo.certifyCourses')} {userSelected.length} {t('ceo.course')}</>}
                                 </button>
                               )}
                             </div>
@@ -613,7 +615,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                             {completedCourses.length > 0 && (
                               <div style={{ marginBottom: completedCourses.length > 0 && incompleteCourses.length > 0 ? 12 : 0 }}>
                                 <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#059669', marginBottom: 6 }}>
-                                  {CheckCircle({ size: 12 })} Certificados obtenidos
+                                  {CheckCircle({ size: 12 })} {t('ceo.certsObtained')}
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                                   {completedCourses.map((c: any) => (
@@ -627,7 +629,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                       <span style={{ fontWeight: 500 }}>{c.courseTitle}</span>
                                       <span style={{ color: 'var(--text-muted)' }}>({c.quizScore}%)</span>
                                       <button onClick={() => handleRevokeCert(userData.userId, c.courseId, c.courseTitle)}
-                                        title="Revocar certificado"
+                                        title={t('ceo.revokeTooltip')}
                                         style={{
                                           background: 'none', border: 'none', cursor: 'pointer',
                                           color: '#DC2626', fontSize: 12, padding: '0 2px', marginLeft: 2,
@@ -648,13 +650,13 @@ export default function CeoDashboard({ onNavigate }: Props) {
                                   color: 'var(--text-muted)', marginBottom: 6,
                                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                 }}>
-                                  <span>{ClipboardList({ size: 12 })} Cursos disponibles para certificar</span>
+                                  <span>{ClipboardList({ size: 12 })} {t('ceo.availableToCertify')}</span>
                                   <button onClick={() => selectAllCoursesForUser(userData.userId, incompleteCourses.map((c: any) => c.id))}
                                     style={{
                                       background: 'none', border: 'none', cursor: 'pointer',
                                       fontSize: 10, color: '#2D62C8', fontWeight: 700, textTransform: 'uppercase',
                                     }}>
-                                    {incompleteCourses.every((c: any) => userSelected.includes(c.id)) ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                                    {incompleteCourses.every((c: any) => userSelected.includes(c.id)) ? t('ceo.deselectAll') : t('ceo.selectAll')}
                                   </button>
                                 </div>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -699,7 +701,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
                             {completedCourses.length === progressData.courses.length && (
                               <div style={{ textAlign: 'center', padding: 12, color: '#059669', fontSize: 13, fontWeight: 600 }}>
-                                {CheckCircle({ size: 16 })} Todos los cursos completados
+                                {CheckCircle({ size: 16 })} {t('ceo.allCoursesCompleted')}
                               </div>
                             )}
                           </div>
@@ -710,17 +712,17 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   {progressData.users.length === 0 && (
                     <div className="empty-state" style={{ padding: 40 }}>
                       <div className="empty-state-icon">{ClipboardList({ size: 48 })}</div>
-                      <h3>Sin actividad aún</h3>
-                      <p style={{ color: 'var(--text-muted)' }}>Ningún usuario ha empezado cursos todavía.</p>
+                      <h3>{t('ceo.noActivityYet')}</h3>
+                      <p style={{ color: 'var(--text-muted)' }}>{t('ceo.noActivityDesc')}</p>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="empty-state" style={{ padding: 40 }}>
                   <div className="empty-state-icon">{GraduationCap({ size: 48 })}</div>
-                  <h3>Carga los datos de progreso</h3>
+                  <h3>{t('ceo.loadProgressData')}</h3>
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
-                    Cargar datos
+                    {t('ceo.loadData')}
                   </button>
                 </div>
               )}
@@ -730,34 +732,34 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     {/* PUSH NOTIFICATIONS TAB */}
           {tab === 'push' && (
             <div className="u-card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
-              <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 Notificación Push a Todos los Usuarios</h4>
-              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).</p>
+              <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 {t('ceo.pushTitle')}</h4>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>{t('ceo.pushDesc')}</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <button className="btn btn-primary btn-sm" onClick={async () => {
-                  if (!confirm('¿Enviar notificación push a TODOS los usuarios para actualizar la app?')) return;
+                  if (!confirm(t('ceo.pushUpdateConfirm'))) return;
                   try {
                     await api.broadcastPush(
                       '🔄 Actualiza tu App Conniku',
                       'Hemos actualizado el logo oficial y mejorado la plataforma. Actualiza para ver los cambios.',
                       '/'
                     );
-                    alert('Notificación push enviada a todos los usuarios');
+                    alert(t('ceo.pushSent'));
                   } catch (e: any) { alert('Error: ' + (e.message || e)); }
                 }} style={{ background: '#2563EB' }}>
-                  Enviar: Actualizar App (Logo)
+                  {t('ceo.pushUpdateApp')}
                 </button>
                 <button className="btn btn-primary btn-sm" onClick={async () => {
-                  const titulo = prompt('Título de la notificación:');
+                  const titulo = prompt(t('ceo.pushTitlePrompt'));
                   if (!titulo) return;
-                  const mensaje = prompt('Mensaje:');
+                  const mensaje = prompt(t('ceo.pushMessagePrompt'));
                   if (!mensaje) return;
-                  const url = prompt('URL (dejar vacío para /)', '/');
+                  const url = prompt(t('ceo.pushUrlPrompt'), '/');
                   try {
                     await api.broadcastPush(titulo, mensaje, url || '/');
-                    alert('Push enviado');
+                    alert(t('ceo.pushSentShort'));
                   } catch (e: any) { alert('Error: ' + (e.message || e)); }
                 }} style={{ background: '#059669' }}>
-                  Push Personalizado
+                  {t('ceo.pushCustom')}
                 </button>
               </div>
             </div>

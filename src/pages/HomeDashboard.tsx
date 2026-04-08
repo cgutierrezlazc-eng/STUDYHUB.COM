@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
+import { useI18n } from '../services/i18n'
 import { Project } from '../types'
 import { BookOpen, FileText, Clock, Star, Flame, Trophy, Calendar, MessageSquare, Users, BarChart3, Sun, CloudSun, Moon, Shield, ChevronRight, Plus, Sparkles } from '../components/Icons'
 
@@ -9,11 +10,11 @@ interface Props {
   onNavigate: (path: string) => void
 }
 
-function getGreeting(): { text: string; icon: React.ReactNode } {
+function getGreeting(t: (key: string) => string): { text: string; icon: React.ReactNode } {
   const h = new Date().getHours()
-  if (h < 12) return { text: 'Buenos dias', icon: Sun({ size: 22, color: '#f59e0b' }) }
-  if (h < 18) return { text: 'Buenas tardes', icon: CloudSun({ size: 22, color: '#f59e0b' }) }
-  return { text: 'Buenas noches', icon: Moon({ size: 22, color: '#6366f1' }) }
+  if (h < 12) return { text: t('dash.goodMorning'), icon: Sun({ size: 22, color: '#f59e0b' }) }
+  if (h < 18) return { text: t('dash.goodAfternoon'), icon: CloudSun({ size: 22, color: '#f59e0b' }) }
+  return { text: t('dash.goodEvening'), icon: Moon({ size: 22, color: '#6366f1' }) }
 }
 
 function formatTime(seconds: number): string {
@@ -25,21 +26,22 @@ function formatTime(seconds: number): string {
   return `${h}h ${m}m`
 }
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string, t: (key: string) => string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return 'ahora'
-  if (mins < 60) return `hace ${mins}m`
+  if (mins < 1) return t('dash.timeAgoNow')
+  if (mins < 60) return t('dash.timeAgoMin').replace('{n}', String(mins))
   const hrs = Math.floor(mins / 60)
-  if (hrs < 24) return `hace ${hrs}h`
-  return `hace ${Math.floor(hrs / 24)}d`
+  if (hrs < 24) return t('dash.timeAgoHr').replace('{n}', String(hrs))
+  return t('dash.timeAgoDay').replace('{n}', String(Math.floor(hrs / 24)))
 }
 
-const DAYS_ES = ['Domingo', 'Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado']
-const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const DAY_KEYS = ['dash.daySun', 'dash.dayMon', 'dash.dayTue', 'dash.dayWed', 'dash.dayThu', 'dash.dayFri', 'dash.daySat']
+const MONTH_KEYS = ['dash.monthJan', 'dash.monthFeb', 'dash.monthMar', 'dash.monthApr', 'dash.monthMay', 'dash.monthJun', 'dash.monthJul', 'dash.monthAug', 'dash.monthSep', 'dash.monthOct', 'dash.monthNov', 'dash.monthDec']
 
 export default function HomeDashboard({ projects, onNavigate }: Props) {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [stats, setStats] = useState<any>(null)
   const [studyTime, setStudyTime] = useState<any>(null)
   const [activity, setActivity] = useState<any[]>([])
@@ -62,7 +64,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
   }, [])
 
   const now = new Date()
-  const greeting = getGreeting()
+  const greeting = getGreeting(t)
   const totalDocs = projects.reduce((sum, p) => sum + p.documents.length, 0)
   const weekNum = Math.ceil(((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000 + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7)
 
@@ -99,7 +101,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
             {greeting.icon} {greeting.text}, <span>{user?.firstName}</span>
           </div>
           <div className="home-date">
-            {DAYS_ES[now.getDay()]} {now.getDate()} de {MONTHS_ES[now.getMonth()]}, {now.getFullYear()} — Semana {weekNum}
+            {t(DAY_KEYS[now.getDay()])} {now.getDate()} {t('dash.dateOf') ? t('dash.dateOf') + ' ' : ''}{t(MONTH_KEYS[now.getMonth()])}, {now.getFullYear()} — {t('dash.week')} {weekNum}
           </div>
         </div>
 
@@ -117,7 +119,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
                 {stats.streakDays}
               </div>
               <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>
-                {stats.streakDays === 1 ? 'dia' : 'dias'} de racha
+                {stats.streakDays === 1 ? t('dash.streakDay') : t('dash.streakDays')} {t('dash.streakOf')}
               </div>
             </div>
             {(stats.streakFreezes || 0) > 0 && (
@@ -151,7 +153,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
               <div style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text-primary)' }}>{dailySummary.summary}</div>
               {dailySummary.tip && (
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic' }}>
-                  Tip: {dailySummary.tip}
+                  {t('dash.tip')} {dailySummary.tip}
                 </div>
               )}
             </div>
@@ -166,16 +168,16 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
             {BookOpen({ size: 18, color: 'var(--accent-blue)' })}
           </div>
           <div className="home-stat-value">{projects.length}</div>
-          <div className="home-stat-label">Materias activas</div>
+          <div className="home-stat-label">{t('dash.activeSubjects')}</div>
         </div>
         <div className="home-stat hover-lift">
           <div className="home-stat-icon" style={{ background: 'rgba(5,150,105,0.08)', color: 'var(--accent-green)' }}>
             {Clock({ size: 18, color: 'var(--accent-green)' })}
           </div>
           <div className="home-stat-value">{formatTime(studyTime?.weekSeconds || 0)}</div>
-          <div className="home-stat-label">Horas esta semana</div>
+          <div className="home-stat-label">{t('dash.hoursThisWeek')}</div>
           {studyTime?.todaySeconds > 0 && (
-            <div className="home-stat-trend up">+{formatTime(studyTime.todaySeconds)} hoy</div>
+            <div className="home-stat-trend up">+{formatTime(studyTime.todaySeconds)} {t('dash.todayPlus')}</div>
           )}
         </div>
         <div className="home-stat hover-lift" onClick={() => onNavigate('/marketplace')} style={{ cursor: 'pointer' }}>
@@ -183,14 +185,14 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
             {FileText({ size: 18, color: 'var(--accent-purple)' })}
           </div>
           <div className="home-stat-value">{totalDocs}</div>
-          <div className="home-stat-label">Apuntes creados</div>
+          <div className="home-stat-label">{t('dash.notesCreated')}</div>
         </div>
         <div className="home-stat hover-lift" onClick={() => onNavigate('/dashboard')} style={{ cursor: 'pointer' }}>
           <div className="home-stat-icon" style={{ background: 'rgba(217,119,6,0.08)', color: 'var(--accent-orange)' }}>
             {BarChart3({ size: 18, color: 'var(--accent-orange)' })}
           </div>
-          <div className="home-stat-value">Nv. {stats?.level || 1}</div>
-          <div className="home-stat-label">{stats?.xp || 0} XP total</div>
+          <div className="home-stat-value">{t('dash.level')} {stats?.level || 1}</div>
+          <div className="home-stat-label">{stats?.xp || 0} {t('dash.xpTotal')}</div>
           {stats && (
             <div style={{ marginTop: 8, height: 4, background: 'var(--bg-primary)', borderRadius: 99, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${(stats.xp || 0) % 100}%`, background: 'var(--accent-orange)', borderRadius: 99, transition: 'width 0.6s' }} />
@@ -204,8 +206,8 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
         {/* Left: Activity Feed */}
         <div className="home-widget">
           <div className="home-widget-title">
-            Actividad Reciente
-            <button className="see-all" onClick={() => onNavigate('/feed')}>Ver todo →</button>
+            {t('dash.recentActivity')}
+            <button className="see-all" onClick={() => onNavigate('/feed')}>{t('dash.seeAll')} →</button>
           </div>
           {activity.length > 0 ? (
             activity.map((act: any, i: number) => (
@@ -220,7 +222,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
                   <div className="mini-feed-text">
                     <strong>{act.firstName} {act.lastName}</strong> {act.activityType || act.content || ''}
                   </div>
-                  <div className="mini-feed-time">{act.createdAt ? timeAgo(act.createdAt) : ''}</div>
+                  <div className="mini-feed-time">{act.createdAt ? timeAgo(act.createdAt, t) : ''}</div>
                 </div>
               </div>
             ))
@@ -229,11 +231,11 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
               <div className="empty-state-icon" style={{ background: 'rgba(249,115,22,0.08)', width: 48, height: 48, borderRadius: 12 }}>
                 {Users({ size: 22, color: 'var(--accent-orange)' })}
               </div>
-              <div className="empty-state-title" style={{ fontSize: 14 }}>Sin actividad reciente</div>
-              <div className="empty-state-desc" style={{ fontSize: 12 }}>Conecta con otros estudiantes para ver su actividad</div>
+              <div className="empty-state-title" style={{ fontSize: 14 }}>{t('dash.noRecentActivity')}</div>
+              <div className="empty-state-desc" style={{ fontSize: 12 }}>{t('dash.connectStudents')}</div>
               <button className="empty-state-cta" style={{ padding: '8px 16px', fontSize: 12 }}
                 onClick={() => onNavigate('/friends')}>
-                {Plus({ size: 14 })} Buscar Estudiantes
+                {Plus({ size: 14 })} {t('dash.findStudents')}
               </button>
             </div>
           )}
@@ -244,8 +246,8 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
           {/* Today's events */}
           <div className="home-widget">
             <div className="home-widget-title">
-              {Calendar({ size: 15 })} Hoy
-              <button className="see-all" onClick={() => onNavigate('/calendar')}>Calendario →</button>
+              {Calendar({ size: 15 })} {t('dash.today')}
+              <button className="see-all" onClick={() => onNavigate('/calendar')}>{t('dash.calendar')} →</button>
             </div>
             {events.length > 0 ? (
               events.map((ev: any, i: number) => (
@@ -261,12 +263,12 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
               ))
             ) : (
               <div style={{ padding: '12px 0', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nada programado hoy</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('dash.nothingScheduled')}</div>
                 <button style={{
                   marginTop: 8, border: 'none', background: 'none', cursor: 'pointer',
                   fontSize: 12, color: 'var(--accent)', fontWeight: 600,
                 }} onClick={() => onNavigate('/calendar')}>
-                  + Agregar evento
+                  {t('dash.addEvent')}
                 </button>
               </div>
             )}
@@ -274,7 +276,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
 
           {/* Subject Progress */}
           <div className="home-widget">
-            <div className="home-widget-title">Progreso Materias</div>
+            <div className="home-widget-title">{t('dash.subjectProgress')}</div>
             {projects.length > 0 ? (
               projects.slice(0, 4).map((p, i) => {
                 const prog = Math.min(100, p.documents.length * 15)
@@ -291,7 +293,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
               })
             ) : (
               <div style={{ padding: '8px 0', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Agrega tu primera materia</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('dash.addFirstSubject')}</div>
               </div>
             )}
           </div>
@@ -301,10 +303,10 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
       {/* Quick Actions */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 20 }}>
         {[
-          { icon: MessageSquare({ size: 20 }), label: 'Mensajes', path: '/messages', color: 'var(--accent-green)' },
-          { icon: Calendar({ size: 20 }), label: 'Calendario', path: '/calendar', color: 'var(--accent-orange)' },
-          { icon: BookOpen({ size: 20 }), label: 'Apuntes', path: '/marketplace', color: 'var(--accent-blue)' },
-          { icon: Users({ size: 20 }), label: 'Comunidades', path: '/communities', color: 'var(--accent-purple)' },
+          { icon: MessageSquare({ size: 20 }), label: t('dash.messages'), path: '/messages', color: 'var(--accent-green)' },
+          { icon: Calendar({ size: 20 }), label: t('dash.calendar'), path: '/calendar', color: 'var(--accent-orange)' },
+          { icon: BookOpen({ size: 20 }), label: t('dash.notes'), path: '/marketplace', color: 'var(--accent-blue)' },
+          { icon: Users({ size: 20 }), label: t('dash.communities'), path: '/communities', color: 'var(--accent-purple)' },
         ].map(a => (
           <button key={a.path} className="u-card hover-lift press-feedback" onClick={() => onNavigate(a.path)}
             style={{ cursor: 'pointer', textAlign: 'center', padding: 16, border: '1px solid var(--border-subtle)', background: 'var(--bg-card)' }}>
@@ -319,11 +321,11 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
         <div style={{ marginTop: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
             <h3 style={{ fontSize: 15, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-              {BookOpen({ size: 16 })} Mis Asignaturas
+              {BookOpen({ size: 16 })} {t('dash.mySubjects')}
             </h3>
             <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', fontWeight: 500, cursor: 'pointer' }}
               onClick={() => onNavigate('/dashboard')}>
-              Ver todo →
+              {t('dash.seeAll')} →
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
@@ -342,7 +344,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
                   </div>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.documents.length} documentos</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{p.documents.length} {t('dash.documents').toLowerCase()}</div>
                   </div>
                 </div>
               </div>
@@ -378,28 +380,26 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
             padding: '4px 12px', fontSize: 11, fontWeight: 700,
             letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12,
           }}>
-            Pronto
+            {t('dash.comingSoon')}
           </div>
           <h3 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 8 }}>
-            Conniku JR
+            {t('dash.conniku.jrTitle')}
           </h3>
           <p style={{ fontSize: 14, opacity: 0.9, lineHeight: 1.5, maxWidth: 500, marginBottom: 16 }}>
-            La comunidad para estudiantes secundarios que se preparan para la PAES.
-            Materias enfocadas en Competencia Lectora, Matematica, Ciencias e Historia.
-            Simulacros, guias de estudio y comunidad entre futuros universitarios.
+            {t('dash.conniku.jrDesc')}
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, opacity: 0.85 }}>
             <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              Preparacion PAES
+              {t('dash.conniku.jrPaes')}
             </span>
             <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              Comunidad Estudiantil
+              {t('dash.conniku.jrCommunity')}
             </span>
             <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              Simulacros con IA
+              {t('dash.conniku.jrSimulations')}
             </span>
             <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              100% Gratuito
+              {t('dash.conniku.jrFree')}
             </span>
           </div>
         </div>

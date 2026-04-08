@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
+import { useI18n } from '../services/i18n'
 import { api, getApiBase } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
 
@@ -60,6 +61,7 @@ interface Props {
 
 export default function UserProfile({ userId, onNavigate }: Props) {
   const { user, updateProfile } = useAuth()
+  const { t } = useI18n()
   const [profile, setProfile] = useState<any>(null)
   const [posts, setPosts] = useState<any[]>([])
   const [newPost, setNewPost] = useState('')
@@ -465,7 +467,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   }
 
   const handleUnfriend = async () => {
-    if (!confirm('¿Eliminar a este amigo?')) return
+    if (!confirm(t('userprofile.confirmRemoveFriend'))) return
     await api.unfriend(userId)
     loadProfile()
   }
@@ -487,7 +489,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       await api.reportUser(userId, reportReason)
       setShowReportModal(false)
       setReportReason('')
-      alert('Reporte enviado. Nuestro equipo lo revisará.')
+      alert(t('userprofile.reportSent'))
     } catch (err: any) {
       alert(err.message || 'Error al enviar reporte')
     }
@@ -568,7 +570,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   }
 
   if (loading) return <div className="page-body"><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div></div>
-  if (!profile) return <div className="page-body"><div className="empty-state"><h3>Usuario no encontrado</h3></div></div>
+  if (!profile) return <div className="page-body"><div className="empty-state"><h3>{t('userprofile.notFound')}</h3></div></div>
 
   const isOwn = profile.isOwnProfile
   const isOtherUser = !isOwn
@@ -600,7 +602,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         }}>
           {isOwn && (
             <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
-              {Camera({ size: 14 })} {profile.coverPhoto ? 'Cambiar portada' : 'Agregar foto de portada'}
+              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
             </button>
           )}
         </div>
@@ -623,7 +625,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
           {isOwn && !profile.avatar && (
             <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-              Sube una foto profesional tipo CV
+              {t('userprofile.uploadPhoto')}
             </div>
           )}
 
@@ -633,13 +635,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {profile.firstName} {profile.lastName}
               </h1>
               <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4 }}>
-                {profile.career || 'Estudiante'} | Semestre {profile.semester}
+                {profile.career || t('userprofile.student')} | {t('userprofile.semester')} {profile.semester}
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-                {profile.university || 'Sin universidad'}
+                {profile.university || t('userprofile.noUni')}
               </div>
               <div style={{ fontSize: 13, color: 'var(--accent-blue)', marginTop: 6, cursor: 'pointer', fontWeight: 500 }}>
-                {profile.friendCount > 0 ? `${profile.friendCount} conexiones` : '0 conexiones'}
+                {profile.friendCount > 0 ? `${profile.friendCount} ${t('userprofile.connections')}` : `0 ${t('userprofile.connections')}`}
               </div>
 
               {/* Action buttons */}
@@ -648,36 +650,36 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   {profile.isFriend ? (
                     <>
                       <button className="btn btn-primary btn-sm" style={{ borderRadius: 24, background: 'var(--accent-green)', borderColor: 'var(--accent-green)' }}>✓ Amigos</button>
-                      <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={handleUnfriend}>Eliminar</button>
+                      <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={handleUnfriend}>{t('userprofile.removeFriend')}</button>
                     </>
                   ) : profile.friendshipStatus === 'pending' && profile.friendshipId ? (
                     <>
                       <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>
-                        ✓ Aceptar Solicitud
+                        {`✓ ${t('userprofile.acceptRequest')}`}
                       </button>
                       <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => { api.rejectFriendRequest(profile.friendshipId); loadProfile() }}>
-                        Rechazar
+                        {t('userprofile.reject')}
                       </button>
                     </>
                   ) : profile.friendshipStatus === 'pending' ? (
                     <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24, cursor: 'default', opacity: 0.8 }} disabled>
-                      {Hourglass({ size: 14 })} Invitación Enviada
+                      {Hourglass({ size: 14 })} {t('userprofile.inviteSent')}
                     </button>
                   ) : profile.friendshipStatus === 'rejected' ? (
-                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
+                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>{t('userprofile.addFriend')}</button>
                   ) : (
-                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>+ Agregar Amigo</button>
+                    <button className="btn btn-primary btn-sm" style={{ borderRadius: 24 }} onClick={handleFriendAction}>{t('userprofile.addFriend')}</button>
                   )}
-                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate(`/messages?new=${userId}`)}>{MessageSquare({ size: 14 })} Mensaje</button>
+                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate(`/messages?new=${userId}`)}>{MessageSquare({ size: 14 })} {t('userprofile.message')}</button>
                   <div style={{ position: 'relative' }}>
-                    <button className="btn btn-secondary btn-sm" onClick={() => setShowMoreMenu(!showMoreMenu)} style={{ borderRadius: 24, padding: '6px 14px' }}>Más ···</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => setShowMoreMenu(!showMoreMenu)} style={{ borderRadius: 24, padding: '6px 14px' }}>{t('userprofile.more')} ···</button>
                     {showMoreMenu && (
                       <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, minWidth: 220, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', overflow: 'hidden' }}>
-                        <button onClick={handleBlock} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{XCircle({ size: 14 })} Bloquear usuario</button>
-                        <button onClick={() => { setShowReportModal(true); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} Reportar usuario</button>
-                        <button onClick={() => { alert('Usuario silenciado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{EyeOff({ size: 14 })} Silenciar publicaciones</button>
+                        <button onClick={handleBlock} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{XCircle({ size: 14 })} {t('userprofile.blockUser')}</button>
+                        <button onClick={() => { setShowReportModal(true); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} {t('userprofile.reportUser')}</button>
+                        <button onClick={() => { alert(t('userprofile.userMuted')); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{EyeOff({ size: 14 })} {t('userprofile.muteUser')}</button>
                         <div style={{ height: 1, background: 'var(--border)' }} />
-                        <button onClick={() => { alert('Reporte enviado.'); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} No colabora en grupo</button>
+                        <button onClick={() => { alert(t('userprofile.reportSentShort')); setShowMoreMenu(false) }} style={{ width: '100%', padding: '10px 16px', background: 'none', border: 'none', color: 'var(--accent-red)', cursor: 'pointer', textAlign: 'left', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }} onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')} onMouseLeave={e => (e.currentTarget.style.background = 'none')}>{AlertTriangle({ size: 14 })} {t('userprofile.noCollaborate')}</button>
                       </div>
                     )}
                   </div>
@@ -686,7 +688,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
               {isOwn && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate('/friends')}>Encuentra amigos</button>
+                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate('/friends')}>{t('userprofile.findFriends')}</button>
                 </div>
               )}
             </div>
@@ -694,7 +696,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {/* Right side info */}
             <div style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-muted)', paddingTop: 4 }}>
               <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{profile.university || ''}</div>
-              <div>Semestre {profile.semester}</div>
+              <div>{t('userprofile.semester')} {profile.semester}</div>
               <div style={{ marginTop: 2 }}>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</div>
             </div>
           </div>
@@ -704,22 +706,22 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       {/* Profile Tabs — outside header card, LinkedIn style */}
       <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
         <button className={`fb-tab ${activeTab === 'wall' ? 'active' : ''}`} onClick={() => setActiveTab('wall')}>
-          Publicaciones
+          {t('userprofile.tabPosts')}
         </button>
         <button className={`fb-tab ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
-          Información
+          {t('userprofile.tabInfo')}
         </button>
         <button className={`fb-tab ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>
-          Fotos
+          {t('userprofile.tabPhotos')}
         </button>
         <button className={`fb-tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends() }}>
-          Amigos
+          {t('userprofile.tabFriends')}
         </button>
         <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
-          Cursos
+          {t('userprofile.tabCourses')}
         </button>
         <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
-          Curriculum
+          {t('userprofile.tabCV')}
         </button>
         {isOwn && tutorProfile && (
           <button
@@ -727,7 +729,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             onClick={() => { setActiveTab('servicios'); loadTutorData() }}
             style={activeTab === 'servicios' ? { borderColor: '#d97706', color: '#d97706' } : {}}
           >
-            Servicios
+            {t('userprofile.tabServices')}
           </button>
         )}
         {isOwn && (
@@ -736,7 +738,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData() }}
             style={activeTab === 'tutorias' ? { borderColor: '#7c3aed', color: '#7c3aed' } : {}}
           >
-            {GraduationCap({ size: 14 })} Tutorias
+            {GraduationCap({ size: 14 })} {t('userprofile.tabTutoring')}
           </button>
         )}
       </div>
@@ -748,19 +750,19 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           {activeTab === 'wall' && (
             <div className="fb-wall-sidebar">
               <div className="card fb-info-card">
-                <h4>Información Académica</h4>
-                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>Estudia <strong>{profile.career}</strong></span></div>
+                <h4>{t('userprofile.academicInfo')}</h4>
+                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{t('userprofile.studies')} <strong>{profile.career}</strong></span></div>
                 <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{profile.university}</span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>Semestre {profile.semester}</span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>{t('userprofile.semester')} {profile.semester}</span></div>
                 {profile.studyDays > 0 && (
-                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span></div>
+                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> {t('userprofile.daysStudying')}</span></div>
                 )}
               </div>
 
               {/* Tutoring card */}
               {profile.offersMentoring && (
                 <div className="card fb-info-card">
-                  <h4>Ofrece Tutorías</h4>
+                  <h4>{t('userprofile.offersTutoring')}</h4>
                   {profile.mentoringServices && profile.mentoringServices.length > 0 && (
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
                       {profile.mentoringServices.map((s: string) => (
@@ -796,7 +798,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         width: '100%', marginTop: 8, padding: '8px 12px', background: '#2D62C8', color: '#fff',
                         border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
                       }}>
-                      Solicitar Tutoría
+                      {t('userprofile.requestTutoring')}
                     </button>
                   )}
                 </div>
@@ -805,7 +807,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {/* Photos card */}
               {allPhotos.length > 0 && (
                 <div className="card fb-info-card">
-                  <h4>Fotos</h4>
+                  <h4>{t('userprofile.photos')}</h4>
                   <div className="fb-photos-mini-grid">
                     {allPhotos.slice(0, 9).map((url, i) => (
                       <div key={i} className="fb-photo-thumb" style={{ backgroundImage: `url(${url})` }} />
@@ -817,7 +819,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {/* Friends mini */}
               {profile.friendCount > 0 && (
                 <div className="card fb-info-card">
-                  <h4>Amigos ({profile.friendCount})</h4>
+                  <h4>{t('userprofile.friends')} ({profile.friendCount})</h4>
                   <div className="fb-photos-mini-grid">
                     {friendsList.slice(0, 9).map(f => (
                       <div key={f.id} style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => onNavigate(`/user/${f.id}`)}>
@@ -839,13 +841,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <>
                   {/* Presentación card — LinkedIn "About" section */}
                   <div className="card fb-info-card">
-                <h4>Presentación</h4>
+                <h4>{t('userprofile.presentation')}</h4>
                 {editingBio ? (
                   <div style={{ marginBottom: 12 }}>
-                    <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={3} placeholder="Escribe algo sobre ti..." maxLength={300} />
+                    <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={3} placeholder={t('userprofile.bioPlaceholder')} maxLength={300} />
                     <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-                      <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>Cancelar</button>
-                      <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>Guardar</button>
+                      <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>{t('userprofile.cancelBtn')}</button>
+                      <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>{t('userprofile.saveBtn')}</button>
                     </div>
                   </div>
                 ) : (
@@ -853,12 +855,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     {profile.bio ? (
                       <p className="fb-bio">{profile.bio}</p>
                     ) : (
-                      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Sin presentación todavía.</p>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('userprofile.noPresentation')}</p>
                     )}
                     {isOwn && (
                       <button className="btn btn-secondary btn-sm" style={{ width: '100%', borderRadius: 24, marginTop: 8 }}
                         onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }}>
-                        {profile.bio ? <>{Pencil({ size: 14 })} Editar bio</> : '+ Agregar bio'}
+                        {profile.bio ? <>{Pencil({ size: 14 })} {t('userprofile.editBio')}</> : t('userprofile.addBio')}
                       </button>
                     )}
                   </>
@@ -879,7 +881,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     </div>
                     <textarea
                       className="fb-composer-input"
-                      placeholder={isOwn ? '¿Qué estás pensando?' : `Escribe en el perfil de ${profile.firstName}...`}
+                      placeholder={isOwn ? t('userprofile.thinking') : `${t('userprofile.writeOnProfile')} ${profile.firstName}...`}
                       value={newPost}
                       onChange={e => setNewPost(e.target.value)}
                       rows={2}
@@ -894,7 +896,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   <div className="fb-composer-actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <input ref={postImageRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handlePostImageSelect} />
                     <button className="fb-composer-action-btn" onClick={() => postImageRef.current?.click()}>
-                      {Image({ size: 14 })} Foto
+                      {Image({ size: 14 })} {t('userprofile.photo')}
                     </button>
                     {/* Visibility selector */}
                     <div style={{ position: 'relative' }}>
@@ -906,9 +908,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-secondary)',
                           color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontWeight: 500,
                         }}>
-                        {postVisibility === 'friends' ? <>{Globe({ size: 14 })} Amigos</> :
-                         postVisibility === 'university' ? <>{GraduationCap({ size: 14 })} Mi universidad</> :
-                         postVisibility === 'private' ? <>{Lock({ size: 14 })} Solo yo</> : <>{Users({ size: 14 })} Específicos</>}
+                        {postVisibility === 'friends' ? <>{Globe({ size: 14 })} {t('userprofile.visibilityFriends')}</> :
+                         postVisibility === 'university' ? <>{GraduationCap({ size: 14 })} {t('userprofile.visibilityUniversity')}</> :
+                         postVisibility === 'private' ? <>{Lock({ size: 14 })} {t('userprofile.visibilityPrivate')}</> : <>{Users({ size: 14 })} {t('userprofile.visibilitySpecific')}</>}
                         <span style={{ fontSize: 10, marginLeft: 2 }}>▼</span>
                       </button>
                       {showVisibilityMenu && (
@@ -919,9 +921,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                         }}>
                           {[
-                            { value: 'friends', icon: Globe({ size: 16 }), label: 'Todos mis amigos', desc: 'Visible para todos tus contactos' },
-                            { value: 'university', icon: GraduationCap({ size: 16 }), label: 'Mi universidad', desc: 'Solo amigos de tu universidad' },
-                            { value: 'private', icon: Lock({ size: 16 }), label: 'Solo mi perfil', desc: 'Solo visible en tu perfil' },
+                            { value: 'friends', icon: Globe({ size: 16 }), label: t('userprofile.allFriends'), desc: t('userprofile.allFriendsDesc') },
+                            { value: 'university', icon: GraduationCap({ size: 16 }), label: t('userprofile.myUniversity'), desc: t('userprofile.myUniversityDesc') },
+                            { value: 'private', icon: Lock({ size: 16 }), label: t('userprofile.onlyProfile'), desc: t('userprofile.onlyProfileDesc') },
                           ].map(opt => (
                             <button key={opt.value} type="button"
                               onClick={() => { setPostVisibility(opt.value as any); setShowVisibilityMenu(false) }}
@@ -948,7 +950,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                       onClick={handlePost}
                       disabled={!newPost.trim() && !postImage}
                     >
-                      Publicar
+                      {t('userprofile.publish')}
                     </button>
                   </div>
                 </div>
@@ -957,7 +959,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {/* Actividad Reciente - mixed feed for own profile */}
               {isOwn && activityFeed.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: 18, fontWeight: 600 }}>Actividad Reciente</h3>
+                  <h3 style={{ margin: '0 0 12px 0', fontSize: 18, fontWeight: 600 }}>{t('userprofile.recentActivity')}</h3>
                   {activityLoading ? (
                     <div className="u-card" style={{ textAlign: 'center', padding: 20 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
@@ -1028,10 +1030,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                               className={`fb-action-btn ${item.liked ? 'liked' : ''}`}
                               onClick={() => handleLike(item.id)}
                             >
-                              {Heart({ size: 14, color: item.liked ? '#ef4444' : undefined })} Me gusta
+                              {Heart({ size: 14, color: item.liked ? '#ef4444' : undefined })} {t('userprofile.like')}
                             </button>
                             <button className="fb-action-btn" onClick={() => toggleComments(item.id)}>
-                              {MessageSquare({ size: 14 })} Comentar
+                              {MessageSquare({ size: 14 })} {t('userprofile.comment')}
                             </button>
                           </div>
                           {expandedComments.has(item.id) && (
@@ -1058,13 +1060,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                               ))}
                               <div className="fb-comment-input-row">
                                 <input
-                                  placeholder="Escribe un comentario..."
+                                  placeholder={t('userprofile.writeComment')}
                                   value={commentText[item.id] || ''}
                                   onChange={e => setCommentText(prev => ({ ...prev, [item.id]: e.target.value }))}
                                   onKeyDown={e => e.key === 'Enter' && handleComment(item.id)}
                                 />
                                 <button className="btn btn-primary btn-xs" onClick={() => handleComment(item.id)}>
-                                  Enviar
+                                  {t('userprofile.send')}
                                 </button>
                               </div>
                             </div>
@@ -1082,8 +1084,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {posts.length === 0 ? (
                 <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                   <div className="empty-state-icon">{FileText({ size: 48 })}</div>
-                  <p style={{ color: 'var(--text-muted)' }}>No hay publicaciones todavía</p>
-                  {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Comparte algo con tus compañeros</p>}
+                  <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noPosts')}</p>
+                  {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t('userprofile.shareWithPeers')}</p>}
                 </div>
               ) : (
                 posts.map(post => (
@@ -1131,10 +1133,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         className={`fb-action-btn ${post.liked ? 'liked' : ''}`}
                         onClick={() => handleLike(post.id)}
                       >
-                        {Heart({ size: 14, color: post.liked ? '#ef4444' : undefined })} Me gusta
+                        {Heart({ size: 14, color: post.liked ? '#ef4444' : undefined })} {t('userprofile.like')}
                       </button>
                       <button className="fb-action-btn" onClick={() => toggleComments(post.id)}>
-                        {MessageSquare({ size: 14 })} Comentar
+                        {MessageSquare({ size: 14 })} {t('userprofile.comment')}
                       </button>
                     </div>
 
@@ -1162,7 +1164,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         ))}
                         <div className="fb-comment-input-row">
                           <input
-                            placeholder="Escribe un comentario..."
+                            placeholder={t('userprofile.writeComment')}
                             value={commentText[post.id] || ''}
                             onChange={e => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
                             onKeyDown={e => e.key === 'Enter' && handleComment(post.id)}
@@ -1182,53 +1184,53 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {activeTab === 'about' && (
           <div className="fb-about-section">
             <div className="u-card" style={{ padding: 24 }}>
-              <h3 style={{ marginTop: 0 }}>Información Personal</h3>
+              <h3 style={{ marginTop: 0 }}>{t('userprofile.personalInfo')}</h3>
               <div className="fb-about-grid">
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Nombre completo</span>
+                  <span className="fb-about-label">{t('userprofile.fullName')}</span>
                   <span>{profile.firstName} {profile.lastName}</span>
                 </div>
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Usuario</span>
+                  <span className="fb-about-label">{t('userprofile.user')}</span>
                   <span>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</span>
                 </div>
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Carrera</span>
-                  <span>{profile.career || 'No especificada'}</span>
+                  <span className="fb-about-label">{t('userprofile.career')}</span>
+                  <span>{profile.career || t('userprofile.notSpecified')}</span>
                 </div>
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Universidad</span>
-                  <span>{profile.university || 'No especificada'}</span>
+                  <span className="fb-about-label">{t('userprofile.universityLabel')}</span>
+                  <span>{profile.university || t('userprofile.notSpecified')}</span>
                 </div>
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Semestre</span>
-                  <span>Semestre {profile.semester}</span>
+                  <span className="fb-about-label">{t('userprofile.semesterLabel')}</span>
+                  <span>{t('userprofile.semester')} {profile.semester}</span>
                 </div>
                 {profile.studyDays > 0 && (
                   <div className="fb-about-item">
-                    <span className="fb-about-label">Días estudiando</span>
+                    <span className="fb-about-label">{t('userprofile.daysStudyingLabel')}</span>
                     <span style={{ fontWeight: 600, color: '#2D62C8' }}>{profile.studyDays.toLocaleString()} días</span>
                   </div>
                 )}
                 {profile.bio && (
                   <div className="fb-about-item">
-                    <span className="fb-about-label">Bio</span>
+                    <span className="fb-about-label">{t('userprofile.bioLabel')}</span>
                     <span>{profile.bio}</span>
                   </div>
                 )}
                 <div className="fb-about-item">
-                  <span className="fb-about-label">Amigos</span>
-                  <span>{profile.friendCount} conexiones</span>
+                  <span className="fb-about-label">{t('userprofile.friendsLabel')}</span>
+                  <span>{profile.friendCount} {t('userprofile.connections')}</span>
                 </div>
                 {profile.academicStatus && profile.academicStatus !== 'estudiante' && (
                   <div className="fb-about-item">
-                    <span className="fb-about-label">Estado académico</span>
+                    <span className="fb-about-label">{t('userprofile.academicStatusLabel')}</span>
                     <span style={{ textTransform: 'capitalize' }}>{profile.academicStatus}</span>
                   </div>
                 )}
                 {profile.professionalTitle && (
                   <div className="fb-about-item">
-                    <span className="fb-about-label">Título</span>
+                    <span className="fb-about-label">{t('userprofile.titleLabel')}</span>
                     <span>{profile.professionalTitle}</span>
                   </div>
                 )}
@@ -1237,31 +1239,31 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               {/* Tutoring section in about */}
               {profile.offersMentoring && (
                 <>
-                  <h3 style={{ marginTop: 24 }}>Servicios de Tutoría</h3>
+                  <h3 style={{ marginTop: 24 }}>{t('userprofile.tutoringServices')}</h3>
                   <div className="fb-about-grid">
                     {profile.mentoringServices && profile.mentoringServices.length > 0 && (
                       <div className="fb-about-item">
-                        <span className="fb-about-label">Servicios</span>
+                        <span className="fb-about-label">{t('userprofile.servicesLabel')}</span>
                         <span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span>
                       </div>
                     )}
                     {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
                       <div className="fb-about-item">
-                        <span className="fb-about-label">Materias</span>
+                        <span className="fb-about-label">{t('userprofile.subjectsLabel')}</span>
                         <span>{profile.mentoringSubjects.join(', ')}</span>
                       </div>
                     )}
                     {profile.mentoringDescription && (
                       <div className="fb-about-item">
-                        <span className="fb-about-label">Descripción</span>
+                        <span className="fb-about-label">{t('userprofile.descriptionLabel')}</span>
                         <span>{profile.mentoringDescription}</span>
                       </div>
                     )}
                     <div className="fb-about-item">
-                      <span className="fb-about-label">Precio</span>
+                      <span className="fb-about-label">{t('userprofile.priceLabel')}</span>
                       <div>
                         <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
-                          {profile.mentoringPriceType === 'free' ? 'Gratis (voluntariado)' : `$${profile.mentoringPricePerHour || 0} USD por hora`}
+                          {profile.mentoringPriceType === 'free' ? t('userprofile.freeVolunteer') : `$${profile.mentoringPricePerHour || 0} USD por hora`}
                         </span>
                         {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
                           const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
@@ -1278,7 +1280,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         marginTop: 12, padding: '10px 20px', background: '#2D62C8', color: '#fff',
                         border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14,
                       }}>
-                      Solicitar Tutoría
+                      {t('userprofile.requestTutoring')}
                     </button>
                   )}
                 </>
@@ -1292,13 +1294,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {coursesLoading ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
-                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando cursos...</p>
+                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>{t('userprofile.loadingCourses')}</p>
               </div>
             ) : completedCourses.length === 0 ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 12 }}>{GraduationCap({ size: 48, color: 'var(--text-muted)' })}</div>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-                  {isOwn ? 'Aun no has completado ningun curso. Comienza uno en la seccion de Cursos.' : 'Este usuario aun no ha completado cursos.'}
+                  {isOwn ? t('userprofile.noCoursesOwn') : t('userprofile.noCoursesOther')}
                 </p>
               </div>
             ) : (
@@ -1306,8 +1308,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <div className="u-card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                   {Trophy({ size: 22, color: '#f59e0b' })}
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>{completedCourses.length} cursos completados</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Haz clic en un curso para ver el certificado</div>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>{completedCourses.length} {t('userprofile.coursesCompleted')}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('userprofile.clickToSeeCert')}</div>
                   </div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
@@ -1340,7 +1342,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>
                             {CheckCircle({ size: 12, color: '#22c55e' })}
-                            <span>Nota: {cert.score}%</span>
+                            <span>{t('userprofile.score')}: {cert.score}%</span>
                             <span style={{ margin: '0 2px' }}>·</span>
                             <span>{cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es', { month: 'short', year: 'numeric' }) : ''}</span>
                           </div>
@@ -1348,7 +1350,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                             display: 'flex', alignItems: 'center', gap: 4, fontSize: 11,
                             color: accentColor, fontWeight: 600,
                           }}>
-                            {Award({ size: 12 })} Ver certificado
+                            {Award({ size: 12 })} {t('userprofile.viewCert')}
                           </div>
                         </div>
                       </div>
@@ -1365,13 +1367,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {cvLoading ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
-                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando curriculum...</p>
+                <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>{t('userprofile.loadingCV')}</p>
               </div>
             ) : !cvData || (!cvData.headline && !cvData.aboutMe && (!cvData.skills || cvData.skills.length === 0) && (!cvData.experience || cvData.experience.length === 0)) ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-                  {isOwn ? 'Aun no has completado tu curriculum. Ve a Cursos > tu CV para llenarlo.' : 'Este usuario aun no ha completado su curriculum.'}
+                  {isOwn ? t('userprofile.noCVOwn') : t('userprofile.noCVOther')}
                 </p>
               </div>
             ) : (
@@ -1390,7 +1392,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {cvData.experience && cvData.experience.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {Zap({ size: 16, color: '#2D62C8' })} Experiencia
+                      {Zap({ size: 16, color: '#2D62C8' })} {t('userprofile.experience')}
                     </h4>
                     {cvData.experience.map((exp: any, i: number) => (
                       <div key={i} style={{ marginBottom: i < cvData.experience.length - 1 ? 16 : 0, paddingBottom: i < cvData.experience.length - 1 ? 16 : 0, borderBottom: i < cvData.experience.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
@@ -1407,7 +1409,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {cvData.projectsPortfolio && cvData.projectsPortfolio.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {BookOpen({ size: 16, color: '#2D62C8' })} Proyectos
+                      {BookOpen({ size: 16, color: '#2D62C8' })} {t('userprofile.projects')}
                     </h4>
                     {cvData.projectsPortfolio.map((proj: any, i: number) => (
                       <div key={i} style={{ marginBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, paddingBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, borderBottom: i < cvData.projectsPortfolio.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
@@ -1434,7 +1436,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     {cvData.skills && cvData.skills.length > 0 && (
                       <>
                         <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {CheckCircle({ size: 16, color: '#22c55e' })} Habilidades
+                          {CheckCircle({ size: 16, color: '#22c55e' })} {t('userprofile.skills')}
                         </h4>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: cvData.tools?.length ? 18 : 0 }}>
                           {cvData.skills.map((s: string, i: number) => (
@@ -1446,7 +1448,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     {cvData.tools && cvData.tools.length > 0 && (
                       <>
                         <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                          {Pencil({ size: 16, color: '#f59e0b' })} Herramientas
+                          {Pencil({ size: 16, color: '#f59e0b' })} {t('userprofile.tools')}
                         </h4>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                           {cvData.tools.map((t: string, i: number) => (
@@ -1462,7 +1464,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {cvData.languagesSpoken && cvData.languagesSpoken.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {Globe({ size: 16, color: '#2D62C8' })} Idiomas
+                      {Globe({ size: 16, color: '#2D62C8' })} {t('userprofile.languages')}
                     </h4>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {cvData.languagesSpoken.map((l: any, i: number) => (
@@ -1479,7 +1481,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {cvData.volunteering && cvData.volunteering.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {Heart({ size: 16, color: '#ef4444' })} Voluntariado
+                      {Heart({ size: 16, color: '#ef4444' })} {t('userprofile.volunteering')}
                     </h4>
                     {cvData.volunteering.map((v: any, i: number) => (
                       <div key={i} style={{ marginBottom: i < cvData.volunteering.length - 1 ? 12 : 0 }}>
@@ -1495,7 +1497,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {/* Interests */}
                 {cvData.interests && cvData.interests.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
-                    <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)' }}>Intereses</h4>
+                    <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)' }}>{t('userprofile.interests')}</h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {cvData.interests.map((interest: string, i: number) => (
                         <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>{interest}</span>
@@ -1507,7 +1509,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {/* Testimonials */}
                 {cvData.testimonials && cvData.testimonials.length > 0 && (
                   <div className="u-card" style={{ padding: 20 }}>
-                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)' }}>Recomendaciones</h4>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)' }}>{t('userprofile.recommendations')}</h4>
                     {cvData.testimonials.map((t: any, i: number) => (
                       <div key={i} style={{ marginBottom: i < cvData.testimonials.length - 1 ? 14 : 0, padding: 14, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: '3px solid #2D62C8' }}>
                         <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>"{t.text}"</p>
@@ -1526,11 +1528,11 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {activeTab === 'photos' && (
           <div className="fb-photos-section">
-            <h3>Fotos</h3>
+            <h3>{t('userprofile.photos')}</h3>
             {allPhotos.length === 0 ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div className="empty-state-icon">{Camera({ size: 48 })}</div>
-                <p style={{ color: 'var(--text-muted)' }}>No hay fotos todavía</p>
+                <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noPhotos')}</p>
               </div>
             ) : (
               <div className="fb-photos-grid">
@@ -1546,7 +1548,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {activeTab === 'friends' && (
           <div className="fb-friends-section">
-            <h3>Amigos ({profile.friendCount})</h3>
+            <h3>{t('userprofile.friends')} ({profile.friendCount})</h3>
             <div className="friends-grid">
               {friendsList.map(friend => (
                 <div key={friend.id} className="friend-card card" onClick={() => onNavigate(`/user/${friend.id}`)}>
@@ -1566,7 +1568,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               ))}
               {friendsList.length === 0 && (
                 <div className="u-card" style={{ textAlign: 'center', padding: 40, gridColumn: '1 / -1' }}>
-                  <p style={{ color: 'var(--text-muted)' }}>No hay amigos para mostrar</p>
+                  <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noFriends')}</p>
                 </div>
               )}
             </div>
@@ -1580,10 +1582,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h3 style={{ margin: 0, color: '#92400e', fontSize: 18 }}>
-                    {Award({ size: 20 })} Prestador de Servicios
+                    {Award({ size: 20 })} {t('userprofile.serviceProvider')}
                   </h3>
                   <p style={{ margin: '4px 0 0', fontSize: 13, color: '#a16207' }}>
-                    Rol N° {String(tutorProfile.roleNumber || tutorProfile.id || 0).padStart(4, '0')}
+                    {t('userprofile.roleNumber')} {String(tutorProfile.roleNumber || tutorProfile.id || 0).padStart(4, '0')}
                   </p>
                 </div>
                 <span style={{
@@ -1597,7 +1599,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   color: tutorProfile.status === 'approved' ? '#166534' : tutorProfile.status === 'suspended' ? '#991b1b' : '#854d0e',
                   border: `1px solid ${tutorProfile.status === 'approved' ? '#86efac' : tutorProfile.status === 'suspended' ? '#fca5a5' : '#fde047'}`
                 }}>
-                  {tutorProfile.status === 'approved' ? 'Aprobado' : tutorProfile.status === 'suspended' ? 'Suspendido' : 'Pendiente'}
+                  {tutorProfile.status === 'approved' ? t('userprofile.approved') : tutorProfile.status === 'suspended' ? t('userprofile.suspended') : t('userprofile.pendingStatus')}
                 </span>
               </div>
             </div>
@@ -1606,58 +1608,58 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
               <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalStudents || 0}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Estudiantes Totales</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{t('userprofile.totalStudents')}</div>
               </div>
               <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>
                   {tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : '—'}
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Calificación Promedio</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{t('userprofile.avgRating')}</div>
               </div>
               <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalHours || 0}h</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Horas Impartidas</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{t('userprofile.hoursGiven')}</div>
               </div>
             </div>
 
             {/* Rating y clases */}
             <div className="u-card" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Medal({ size: 16 })} Calificación y Clases</h4>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Medal({ size: 16 })} {t('userprofile.ratingAndClasses')}</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <div style={{ display: 'flex', gap: 2 }}>
                   {[1, 2, 3, 4, 5].map(star => (
                     <span key={star} style={{ color: star <= Math.round(tutorProfile.averageRating || 0) ? '#f59e0b' : '#d1d5db', fontSize: 20 }}>★</span>
                   ))}
                 </div>
-                <span style={{ fontWeight: 600, fontSize: 15 }}>{tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : 'Sin calificaciones'}</span>
+                <span style={{ fontWeight: 600, fontSize: 15 }}>{tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : t('userprofile.noRatings')}</span>
                 <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>({tutorProfile.totalRatings || 0} evaluaciones)</span>
               </div>
               <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
-                Total de clases impartidas: <strong>{tutorProfile.totalClasses || 0}</strong>
+                {t('userprofile.totalClasses')}: <strong>{tutorProfile.totalClasses || 0}</strong>
               </p>
             </div>
 
             {/* Crear Clase / Programa */}
             <div className="u-card" style={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showCreateClass ? 16 : 0 }}>
-                <h4 style={{ margin: 0, color: '#92400e' }}>Crear Clase o Programa</h4>
+                <h4 style={{ margin: 0, color: '#92400e' }}>{t('userprofile.createClassOrProgram')}</h4>
                 <button onClick={() => { setShowCreateClass(!showCreateClass); setCcSuccess(false) }}
                   style={{ padding: '6px 16px', background: showCreateClass ? 'var(--bg-secondary)' : '#d97706', color: showCreateClass ? 'var(--text-primary)' : '#fff', border: '1px solid ' + (showCreateClass ? 'var(--border)' : '#d97706'), borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
-                  {showCreateClass ? 'Cerrar' : '+ Nueva Clase'}
+                  {showCreateClass ? t('userprofile.close') : t('userprofile.newClass')}
                 </button>
               </div>
               {showCreateClass && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                  {ccSuccess && <div style={{ padding: 12, background: '#dcfce7', borderRadius: 8, color: '#166534', fontWeight: 600, fontSize: 13 }}>✓ Clase creada exitosamente{ccMode === 'program' ? ` (Sesion ${ccSessionNumber - 1} de ${ccProgramSessions})` : ''}</div>}
+                  {ccSuccess && <div style={{ padding: 12, background: '#dcfce7', borderRadius: 8, color: '#166534', fontWeight: 600, fontSize: 13 }}>{`✓ ${t('userprofile.classCreated')}`}{ccMode === 'program' ? ` (Sesion ${ccSessionNumber - 1} de ${ccProgramSessions})` : ''}</div>}
                   {/* Mode selector */}
                   <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => { setCcMode('individual'); setCcProgramId(''); setCcSessionNumber(1) }}
                       style={{ flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid', borderColor: ccMode === 'individual' ? '#d97706' : 'var(--border)', background: ccMode === 'individual' ? '#fffbeb' : 'var(--bg-card)', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: ccMode === 'individual' ? '#92400e' : 'var(--text-secondary)' }}>
-                      Clase Individual
+                      {t('userprofile.individualClass')}
                     </button>
                     <button onClick={() => setCcMode('program')}
                       style={{ flex: 1, padding: '10px 16px', borderRadius: 8, border: '2px solid', borderColor: ccMode === 'program' ? '#d97706' : 'var(--border)', background: ccMode === 'program' ? '#fffbeb' : 'var(--bg-card)', cursor: 'pointer', fontWeight: 600, fontSize: 13, color: ccMode === 'program' ? '#92400e' : 'var(--text-secondary)' }}>
-                      Programa (Multi-sesion)
+                      {t('userprofile.programMulti')}
                     </button>
                   </div>
                   {ccMode === 'program' && (
@@ -1759,7 +1761,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
             {/* Próximas clases */}
             <div className="u-card" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Calendar({ size: 16 })} Próximas Clases</h4>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Calendar({ size: 16 })} {t('userprofile.upcomingClasses')}</h4>
               {tutorLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : tutorClasses.length > 0 ? (
@@ -1784,34 +1786,34 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   ))}
                 </div>
               ) : (
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>No tienes clases programadas próximamente.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{t('userprofile.noUpcomingClasses')}</p>
               )}
             </div>
 
             {/* Resumen de pagos */}
             <div className="u-card" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{FileText({ size: 16 })} Resumen de Pagos</h4>
+              <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{FileText({ size: 16 })} {t('userprofile.paymentSummary')}</h4>
               {tutorPayments ? (
                 <>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12, marginBottom: 16 }}>
                     <div style={{ padding: 12, background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0' }}>
-                      <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>Total Ganado</div>
+                      <div style={{ fontSize: 12, color: '#166534', fontWeight: 600 }}>{t('userprofile.totalEarned')}</div>
                       <div style={{ fontSize: 20, fontWeight: 700, color: '#15803d' }}>
                         ${(tutorPayments.totalEarned || tutorPayments.total || 0).toLocaleString()}
                       </div>
                     </div>
                     <div style={{ padding: 12, background: '#fffbeb', borderRadius: 8, border: '1px solid #fde68a' }}>
-                      <div style={{ fontSize: 12, color: '#92400e', fontWeight: 600 }}>Pagos Pendientes</div>
+                      <div style={{ fontSize: 12, color: '#92400e', fontWeight: 600 }}>{t('userprofile.pendingPayments')}</div>
                       <div style={{ fontSize: 20, fontWeight: 700, color: '#d97706' }}>
                         ${(tutorPayments.pendingAmount || 0).toLocaleString()}
                       </div>
                     </div>
                     <div style={{ padding: 12, background: '#f8fafc', borderRadius: 8, border: '1px solid #e2e8f0' }}>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Último Pago</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>{t('userprofile.lastPayment')}</div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>
                         {tutorPayments.lastPaymentDate
                           ? new Date(tutorPayments.lastPaymentDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })
-                          : 'Sin pagos aún'}
+                          : t('userprofile.noPaymentsYet')}
                       </div>
                     </div>
                   </div>
@@ -1825,12 +1827,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         fontWeight: 600, fontSize: 13
                       }}
                     >
-                      {FileText({ size: 14 })} Subir Boleta de Honorarios
+                      {FileText({ size: 14 })} {t('userprofile.uploadReceipt')}
                     </button>
                   )}
                 </>
               ) : (
-                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>No hay información de pagos disponible.</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0 }}>{t('userprofile.noPaymentInfo')}</p>
               )}
             </div>
           </div>
@@ -1842,10 +1844,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h3 style={{ margin: 0, color: '#5b21b6', fontSize: 18 }}>
-                    {GraduationCap({ size: 20 })} Mis Tutorias
+                    {GraduationCap({ size: 20 })} {t('userprofile.myTutoring')}
                   </h3>
                   <p style={{ margin: '4px 0 0', fontSize: 13, color: '#7c3aed' }}>
-                    Gestiona las clases en las que estas inscrito como estudiante
+                    {t('userprofile.myTutoringDesc')}
                   </p>
                 </div>
                 <button
@@ -1856,7 +1858,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
-                  {Calendar({ size: 14 })} Reservar Clase
+                  {Calendar({ size: 14 })} {t('userprofile.bookClass')}
                 </button>
               </div>
             </div>
@@ -1873,14 +1875,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     cursor: 'pointer', fontSize: 13, fontWeight: 600,
                   }}
                 >
-                  {f === 'all' ? 'Todas' : f === 'upcoming' ? 'Proximas' : 'Pasadas'}
+                  {f === 'all' ? t('userprofile.filterAll') : f === 'upcoming' ? t('userprofile.filterUpcoming') : t('userprofile.filterPast')}
                 </button>
               ))}
             </div>
 
             {/* Enrolled Classes */}
             <div className="u-card" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{Calendar({ size: 16 })} Clases Inscritas</h4>
+              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{Calendar({ size: 16 })} {t('userprofile.enrolledClasses')}</h4>
               {studentClassesLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : (() => {
@@ -1998,8 +2000,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 ) : (
                   <div style={{ textAlign: 'center', padding: 30, color: 'var(--text-muted)' }}>
                     <div style={{ marginBottom: 8 }}>{BookOpen({ size: 36, color: 'var(--text-muted)' })}</div>
-                    <p style={{ fontSize: 14 }}>No tienes clases inscritas</p>
-                    <p style={{ fontSize: 12 }}>Reserva una clase con un tutor del directorio</p>
+                    <p style={{ fontSize: 14 }}>{t('userprofile.noEnrolledClasses')}</p>
+                    <p style={{ fontSize: 12 }}>{t('userprofile.bookFromDirectory')}</p>
                   </div>
                 )
               })()}
@@ -2008,9 +2010,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {/* Available Classes from Tutors */}
             <div className="u-card" style={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <h4 style={{ margin: 0, color: '#5b21b6' }}>Clases Disponibles</h4>
+                <h4 style={{ margin: 0, color: '#5b21b6' }}>{t('userprofile.availableClasses')}</h4>
                 <button onClick={() => onNavigate('/tutores')} style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
-                  Ver todas →
+                  {t('userprofile.viewAll')}
                 </button>
               </div>
               {tutorClassCategories.length > 0 && (
@@ -2062,14 +2064,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               ) : (
                 <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, textAlign: 'center', padding: 20 }}>
-                  No hay clases disponibles en este momento
+                  {t('userprofile.noClassesAvailable')}
                 </p>
               )}
             </div>
 
             {/* Payment History */}
             <div className="u-card" style={{ padding: 20 }}>
-              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{FileText({ size: 16 })} Historial de Pagos</h4>
+              <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{FileText({ size: 16 })} {t('userprofile.paymentHistory')}</h4>
               {studentPaymentsLoading ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : studentPayments.length > 0 ? (
@@ -2122,7 +2124,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               ) : (
                 <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, textAlign: 'center', padding: 20 }}>
-                  No tienes pagos registrados
+                  {t('userprofile.noPaymentsRegistered')}
                 </p>
               )}
             </div>
@@ -2381,7 +2383,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {tutoringSuccess ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
                 <div className="empty-state-icon">{CheckCircle({ size: 48 })}</div>
-                <h3 style={{ margin: '0 0 8px' }}>Solicitud enviada</h3>
+                <h3 style={{ margin: '0 0 8px' }}>{t('userprofile.requestSent')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                   {profile?.firstName} recibirá tu solicitud y podrá aceptarla o rechazarla.
                 </p>
@@ -2465,12 +2467,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       {showReportModal && (
         <div className="modal-overlay" onClick={() => setShowReportModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
-            <h3>Reportar a {profile?.firstName} {profile?.lastName}</h3>
+            <h3>{t('userprofile.reportTitle')} {profile?.firstName} {profile?.lastName}</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
-              Describe el motivo de tu reporte. Nuestro equipo lo revisará.
+              {t('userprofile.reportDesc')}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
-              {['Contenido inapropiado', 'Acoso o bullying', 'Spam o publicidad', 'Cuenta falsa', 'No colabora en grupos de estudio'].map(reason => (
+              {[t('userprofile.reportInappropriate'), t('userprofile.reportHarassment'), t('userprofile.reportSpam'), t('userprofile.reportFakeAccount'), t('userprofile.reportNoCollab')].map(reason => (
                 <button key={reason} onClick={() => setReportReason(reason)}
                   style={{
                     padding: '10px 14px', background: reportReason === reason ? 'var(--accent-blue)' : 'var(--bg-primary)',
@@ -2484,14 +2486,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <textarea
               className="form-input"
               rows={3}
-              placeholder="Detalles adicionales (opcional)..."
+              placeholder={t('userprofile.additionalDetails')}
               value={reportReason}
               onChange={e => setReportReason(e.target.value)}
               style={{ marginBottom: 12 }}
             />
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button className="btn btn-secondary btn-sm" onClick={() => setShowReportModal(false)}>Cancelar</button>
-              <button className="btn btn-danger btn-sm" onClick={handleReport} disabled={!reportReason.trim()}>Enviar Reporte</button>
+              <button className="btn btn-danger btn-sm" onClick={handleReport} disabled={!reportReason.trim()}>{t('userprofile.sendReport')}</button>
             </div>
           </div>
         </div>

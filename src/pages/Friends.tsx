@@ -82,29 +82,29 @@ export default function Friends({ onNavigate }: Props) {
   return (
     <>
       <div className="page-header page-enter">
-        <h2>Comunidad</h2>
-        <p>Conecta con otros estudiantes, comparte y aprende juntos</p>
+        <h2>{t('friends.title')}</h2>
+        <p>{t('friends.subtitle')}</p>
       </div>
       <div className="page-body">
         <div className="friends-tabs">
           <button className={`friends-tab ${tab === 'friends' ? 'active' : ''}`} onClick={() => setTab('friends')}>
-            Amigos {friends.length > 0 && <span className="badge">{friends.length}</span>}
+            {t('friends.tabFriends')} {friends.length > 0 && <span className="badge">{friends.length}</span>}
           </button>
           <button className={`friends-tab ${tab === 'requests' ? 'active' : ''}`} onClick={() => setTab('requests')}>
-            Solicitudes {requests.length > 0 && <span className="badge badge-red">{requests.length}</span>}
+            {t('friends.tabRequests')} {requests.length > 0 && <span className="badge badge-red">{requests.length}</span>}
           </button>
           <button className={`friends-tab ${tab === 'sent' ? 'active' : ''}`} onClick={() => setTab('sent')}>
-            Enviadas {sentRequests.length > 0 && <span className="badge">{sentRequests.length}</span>}
+            {t('friends.tabSent')} {sentRequests.length > 0 && <span className="badge">{sentRequests.length}</span>}
           </button>
           <button className={`friends-tab ${tab === 'search' ? 'active' : ''}`} onClick={() => setTab('search')}>
-            Buscar Estudiantes
+            {t('friends.tabSearch')}
           </button>
         </div>
 
         {tab === 'friends' && suggestions.length > 0 && (
           <div className="suggestions-section">
-            <h3>Personas que quizás conozcas</h3>
-            <p>Basado en tu universidad, carrera y contactos en común</p>
+            <h3>{t('friends.suggestionsTitle')}</h3>
+            <p>{t('friends.suggestionsSubtitle')}</p>
             <div className="suggestions-grid">
               {suggestions.slice(0, 8).map(s => (
                 <div key={s.id} className="suggestion-card" onClick={() => onNavigate(`/user/${s.id}`)}>
@@ -117,7 +117,7 @@ export default function Friends({ onNavigate }: Props) {
                   {s.career && <div className="suggestion-meta">{s.career}</div>}
                   <div className="suggestion-actions" onClick={e => e.stopPropagation()}>
                     <button className="btn btn-primary btn-xs" onClick={() => { handleSendRequest(s.id); setSuggestions(prev => prev.filter(x => x.id !== s.id)) }}>
-                      Agregar
+                      {t('friends.add')}
                     </button>
                   </div>
                 </div>
@@ -132,11 +132,11 @@ export default function Friends({ onNavigate }: Props) {
               suggestions.length === 0 ? (
                 <div className="friends-empty">
                   <div className="empty-state-icon">{Users({ size: 48 })}</div>
-                  <h3>Aún no tienes conexiones</h3>
-                  <p>Busca estudiantes de tu universidad y envíales una solicitud</p>
+                  <h3>{t('friends.emptyTitle')}</h3>
+                  <p>{t('friends.emptyDescSearch')}</p>
                   <div className="friends-search-bar" style={{ marginTop: 16, marginBottom: 12 }}>
                     <input
-                      placeholder="Buscar por nombre, usuario o email..."
+                      placeholder={t('friends.searchPlaceholder')}
                       value={searchQuery}
                       onChange={e => setSearchQuery(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') { handleSearch(); setTab('search') } }}
@@ -147,9 +147,9 @@ export default function Friends({ onNavigate }: Props) {
               ) : (
                 <div className="friends-empty">
                   <div className="empty-state-icon">{Users({ size: 48 })}</div>
-                  <h3>Aún no tienes conexiones</h3>
-                  <p>Agrega compañeros de las sugerencias de arriba o busca estudiantes</p>
-                  <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
+                  <h3>{t('friends.emptyTitle')}</h3>
+                  <p>{t('friends.emptyDescSuggestions')}</p>
+                  <button className="btn btn-primary" onClick={() => setTab('search')}>{t('friends.tabSearch')}</button>
                 </div>
               )
             ) : (
@@ -169,8 +169,8 @@ export default function Friends({ onNavigate }: Props) {
                     <p className="friend-meta">{friend.university}</p>
                   </div>
                   <div className="friend-actions" onClick={e => e.stopPropagation()}>
-                    <button className="btn btn-secondary btn-xs" onClick={() => onNavigate(`/user/${friend.id}`)}>Ver Perfil</button>
-                    <button className="btn btn-danger btn-xs" onClick={() => handleUnfriend(friend.id)}>Eliminar</button>
+                    <button className="btn btn-secondary btn-xs" onClick={() => onNavigate(`/user/${friend.id}`)}>{t('friends.viewProfile')}</button>
+                    <button className="btn btn-danger btn-xs" onClick={() => handleUnfriend(friend.id)}>{t('friends.remove')}</button>
                   </div>
                 </div>
               ))
@@ -183,7 +183,7 @@ export default function Friends({ onNavigate }: Props) {
             {requests.length === 0 ? (
               <div className="friends-empty">
                 <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
-                <h3>No tienes solicitudes pendientes</h3>
+                <h3>{t('friends.noRequests')}</h3>
               </div>
             ) : (
               requests.map(req => (
@@ -202,8 +202,8 @@ export default function Friends({ onNavigate }: Props) {
                     <p className="friend-meta">{req.user.university}</p>
                   </div>
                   <div className="friend-actions">
-                    <button className="btn btn-primary btn-xs" onClick={() => handleAccept(req.id)}>Aceptar</button>
-                    <button className="btn btn-secondary btn-xs" onClick={() => handleReject(req.id)}>Rechazar</button>
+                    <button className="btn btn-primary btn-xs" onClick={() => handleAccept(req.id)}>{t('friends.accept')}</button>
+                    <button className="btn btn-secondary btn-xs" onClick={() => handleReject(req.id)}>{t('friends.reject')}</button>
                   </div>
                 </div>
               ))
@@ -216,9 +216,9 @@ export default function Friends({ onNavigate }: Props) {
             {sentRequests.length === 0 ? (
               <div className="friends-empty">
                 <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
-                <h3>No has enviado solicitudes</h3>
-                <p>Busca compañeros y enviales una solicitud de amistad</p>
-                <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
+                <h3>{t('friends.noSent')}</h3>
+                <p>{t('friends.noSentDesc')}</p>
+                <button className="btn btn-primary" onClick={() => setTab('search')}>{t('friends.tabSearch')}</button>
               </div>
             ) : (
               sentRequests.map(req => (
@@ -238,7 +238,7 @@ export default function Friends({ onNavigate }: Props) {
                   </div>
                   <div className="friend-actions" onClick={e => e.stopPropagation()}>
                     <span className="badge" style={{ background: 'var(--accent-blue)', color: '#fff', padding: '6px 14px', borderRadius: 20, fontSize: 12 }}>
-                      {Hourglass({ size: 14 })} Invitación Enviada
+                      {Hourglass({ size: 14 })} {t('friends.invitationSent')}
                     </span>
                   </div>
                 </div>
@@ -251,7 +251,7 @@ export default function Friends({ onNavigate }: Props) {
           <>
             <div className="friends-search-bar">
               <input
-                placeholder="Buscar por nombre, usuario o email..."
+                placeholder={t('friends.searchPlaceholder')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSearch()}
@@ -279,11 +279,11 @@ export default function Friends({ onNavigate }: Props) {
                     </div>
                     <div className="friend-actions" onClick={e => e.stopPropagation()}>
                       {isFriend ? (
-                        <span className="badge badge-green">Amigos</span>
+                        <span className="badge badge-green">{t('friends.friends')}</span>
                       ) : requestSent ? (
-                        <span className="badge">Solicitud enviada</span>
+                        <span className="badge">{t('friends.requestSent')}</span>
                       ) : (
-                        <button className="btn btn-primary btn-xs" onClick={() => handleSendRequest(u.id)}>Agregar</button>
+                        <button className="btn btn-primary btn-xs" onClick={() => handleSendRequest(u.id)}>{t('friends.add')}</button>
                       )}
                     </div>
                   </div>

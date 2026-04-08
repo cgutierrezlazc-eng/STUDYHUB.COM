@@ -59,9 +59,9 @@ export default function Profile() {
           portfolio: res.draft.portfolio || cvData.portfolio,
         })
       }
-      setCvUploadMsg(res.message || 'CV procesado. Revisa y corrige los campos antes de guardar.')
+      setCvUploadMsg(res.message || t('profile.cvProcessed'))
     } catch (err: any) {
-      setCvUploadMsg(err.message || 'Error al subir el CV.')
+      setCvUploadMsg(err.message || t('profile.cvUploadError'))
     } finally {
       setCvUploading(false)
     }
@@ -80,13 +80,13 @@ export default function Profile() {
     if (result?.milestones?.length > 0) {
       const m = result.milestones[0]
       const milestoneMap: Record<string, { title: string; icon: string }> = {
-        university_change: { title: '¡Nueva universidad!', icon: '🎓' },
-        academic_status: { title: '¡Estado actualizado!', icon: '📜' },
-        tutoring_started: { title: '¡Ahora eres tutor!', icon: '👨‍🏫' },
+        university_change: { title: t('profile.milestoneNewUni'), icon: '🎓' },
+        academic_status: { title: t('profile.milestoneStatus'), icon: '📜' },
+        tutoring_started: { title: t('profile.milestoneTutor'), icon: '👨‍🏫' },
       }
       const info = milestoneMap[m.type]
       if (info) {
-        setMilestonePopup({ type: m.type, title: info.title, description: m.university || m.status || 'Has comenzado a ofrecer servicios de tutoría', icon: info.icon })
+        setMilestonePopup({ type: m.type, title: info.title, description: m.university || m.status || t('profile.milestoneTutorDesc'), icon: info.icon })
       }
     }
   }
@@ -126,13 +126,13 @@ export default function Profile() {
   ]
 
   const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
-    { id: 'profile', label: 'Mi Perfil', icon: Users({ size: 16 }) },
-    { id: 'academic', label: 'Académico', icon: GraduationCap({ size: 16 }) },
-    { id: 'cv', label: 'Curriculum Vitae', icon: ClipboardList({ size: 16 }) },
-    { id: 'appearance', label: 'Apariencia', icon: Settings({ size: 16 }) },
-    { id: 'notifications', label: 'Notificaciones', icon: Bell({ size: 16 }) },
-    { id: 'security', label: 'Seguridad', icon: Lock({ size: 16 }) },
-    ...(user.role === 'owner' ? [{ id: 'email' as Section, label: 'Correo Corporativo', icon: CheckCircle({ size: 16 }) }] : []),
+    { id: 'profile', label: t('profile.sectionProfile'), icon: Users({ size: 16 }) },
+    { id: 'academic', label: t('profile.sectionAcademic'), icon: GraduationCap({ size: 16 }) },
+    { id: 'cv', label: t('profile.sectionCV'), icon: ClipboardList({ size: 16 }) },
+    { id: 'appearance', label: t('profile.sectionAppearance'), icon: Settings({ size: 16 }) },
+    { id: 'notifications', label: t('profile.sectionNotifications'), icon: Bell({ size: 16 }) },
+    { id: 'security', label: t('profile.sectionSecurity'), icon: Lock({ size: 16 }) },
+    ...(user.role === 'owner' ? [{ id: 'email' as Section, label: t('profile.sectionEmail'), icon: CheckCircle({ size: 16 }) }] : []),
   ]
 
   const ToggleRow = ({ label, desc, defaultOn = true }: { label: string; desc: string; defaultOn?: boolean }) => (
@@ -148,8 +148,8 @@ export default function Profile() {
   return (
     <>
       <div className="page-header page-enter">
-        <h2>Configuración</h2>
-        <p>Gestiona tu cuenta, privacidad y preferencias</p>
+        <h2>{t('profile.settings')}</h2>
+        <p>{t('profile.settingsDesc')}</p>
       </div>
       <div className="page-body">
         {saved && <div className="profile-toast">{t('profile.saved')}</div>}
@@ -164,10 +164,10 @@ export default function Profile() {
               ) : (
                 <div className="pf-avatar-initials">{initials || '?'}</div>
               )}
-              <div className="pf-avatar-edit">Editar</div>
+              <div className="pf-avatar-edit">{t('profile.editAvatar')}</div>
             </div>
             <span style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 120, lineHeight: 1.3 }}>
-              Usa una foto profesional tipo CV o LinkedIn
+              {t('profile.avatarHint')}
             </span>
           </div>
           <div className="pf-header-info">
@@ -177,8 +177,8 @@ export default function Profile() {
                 <div className="pf-username-edit">
                   <span>@</span>
                   <input value={newUsername} onChange={e => setNewUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))} placeholder={user.username} />
-                  <button className="btn btn-primary btn-xs" onClick={handleChangeUsername}>Guardar</button>
-                  <button className="btn btn-secondary btn-xs" onClick={() => setEditingUsername(false)}>Cancelar</button>
+                  <button className="btn btn-primary btn-xs" onClick={handleChangeUsername}>{t('profile.saveBtn')}</button>
+                  <button className="btn btn-secondary btn-xs" onClick={() => setEditingUsername(false)}>{t('profile.cancelBtn')}</button>
                   {usernameError && <span style={{ color: 'var(--accent-red)', fontSize: 12 }}>{usernameError}</span>}
                 </div>
               ) : (
@@ -187,18 +187,18 @@ export default function Profile() {
                 </span>
               )}
               <span className="pf-header-dot">·</span>
-              <span>{user.career || 'Estudiante'}</span>
+              <span>{user.career || t('profile.student')}</span>
               <span className="pf-header-dot">·</span>
-              <span>{user.university || 'Sin universidad'}</span>
+              <span>{user.university || t('profile.noUni')}</span>
             </div>
             <div className="pf-header-badges">
               {user.emailVerified ? (
-                <span className="pf-badge pf-badge-green">✓ Correo verificado</span>
+                <span className="pf-badge pf-badge-green">✓ {t('profile.emailVerified')}</span>
               ) : (
-                <span className="pf-badge pf-badge-orange">{AlertTriangle({ size: 14 })} Correo sin verificar</span>
+                <span className="pf-badge pf-badge-orange">{AlertTriangle({ size: 14 })} {t('profile.emailNotVerified')}</span>
               )}
               {user.role === 'owner' && <span className="pf-badge pf-badge-blue">Owner / CEO</span>}
-              {user.isAdmin && user.role !== 'owner' && <span className="pf-badge pf-badge-purple">Administrador</span>}
+              {user.isAdmin && user.role !== 'owner' && <span className="pf-badge pf-badge-purple">{t('profile.admin')}</span>}
               <span className="pf-badge">{t('reg.semester')} {user.semester}</span>
             </div>
           </div>
@@ -217,7 +217,7 @@ export default function Profile() {
             ))}
             <div className="pf-nav-divider" />
             <button className="pf-nav-item pf-nav-danger" onClick={logout}>
-              Cerrar Sesión
+              {t('profile.logout')}
             </button>
           </nav>
 
@@ -228,13 +228,13 @@ export default function Profile() {
             {activeSection === 'profile' && (
               <div className="pf-section">
                 <div className="pf-section-header">
-                  <h3>Información Personal</h3>
+                  <h3>{t('profile.personalInfo')}</h3>
                   {!isEditing ? (
-                    <button className="btn btn-secondary btn-sm" onClick={() => { setForm({ ...user }); setIsEditing(true) }}>Editar</button>
+                    <button className="btn btn-secondary btn-sm" onClick={() => { setForm({ ...user }); setIsEditing(true) }}>{t('profile.editBtn')}</button>
                   ) : (
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button className="btn btn-secondary btn-sm" onClick={() => setIsEditing(false)}>Cancelar</button>
-                      <button className="btn btn-primary btn-sm" onClick={handleSave}>Guardar cambios</button>
+                      <button className="btn btn-primary btn-sm" onClick={handleSave}>{t('profile.saveChanges')}</button>
                     </div>
                   )}
                 </div>
@@ -267,16 +267,16 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                <h3>Bio</h3>
+                <h3>{t('profile.bio')}</h3>
                 {isEditing ? (
-                  <textarea className="form-input" rows={3} value={form.bio || ''} onChange={e => update('bio', e.target.value)} placeholder="Cuéntanos sobre ti..." />
+                  <textarea className="form-input" rows={3} value={form.bio || ''} onChange={e => update('bio', e.target.value)} placeholder={t('profile.bioPlaceholder')} />
                 ) : (
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{user.bio || 'Sin bio. Haz clic en Editar para agregar una.'}</p>
+                  <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{user.bio || t('profile.bioEmpty')}</p>
                 )}
 
                 <div className="pf-footer-meta">
-                  <small>Cuenta creada: {new Date(user.createdAt).toLocaleDateString()}</small>
-                  <small>Último acceso: {new Date(user.lastLogin).toLocaleDateString()}</small>
+                  <small>{t('profile.accountCreated')}: {new Date(user.createdAt).toLocaleDateString()}</small>
+                  <small>{t('profile.lastAccess')}: {new Date(user.lastLogin).toLocaleDateString()}</small>
                 </div>
               </div>
             )}
@@ -285,7 +285,7 @@ export default function Profile() {
             {activeSection === 'academic' && (
               <div className="pf-section">
                 <div className="pf-section-header">
-                  <h3>Información Académica</h3>
+                  <h3>{t('profile.academicInfo')}</h3>
                   {!isEditing ? (
                     <button className="btn btn-secondary btn-sm" onClick={() => { setForm({ ...user }); setIsEditing(true) }}>Editar</button>
                   ) : (
@@ -305,9 +305,9 @@ export default function Profile() {
                     {isEditing ? <input className="form-input" value={form.career} onChange={e => update('career', e.target.value)} /> : <p>{user.career || '—'}</p>}
                   </div>
                   <div className="pf-field">
-                    <label>Inicio de estudios</label>
+                    <label>{t('profile.studyStart')}</label>
                     {isEditing ? (
-                      <input type="date" className="form-input" value={form.studyStartDate || ''} onChange={e => update('studyStartDate', e.target.value)} max={new Date().toISOString().split('T')[0]} min="2000-01-01" />
+                      <input type="date" className="form-input" value={form.studyStartDate || ''} onChange={e => update('studyStartDate', e.target.value)} max={new Date().toISOString().split('T')[0]} min="1950-01-01" />
                     ) : (
                       <p>{user.studyStartDate ? `${user.studyStartDate} (${(user.studyDays || 0).toLocaleString()} días)` : '—'}</p>
                     )}
@@ -323,12 +323,12 @@ export default function Profile() {
                 </div>
 
                 <div className="pf-divider" />
-                <h3>Estado Académico</h3>
+                <h3>{t('profile.academicStatus')}</h3>
                 <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
                   {([
-                    { value: 'estudiante', label: 'Estudiante' },
-                    { value: 'egresado', label: 'Egresado' },
-                    { value: 'titulado', label: 'Titulado' },
+                    { value: 'estudiante', label: t('profile.statusStudent') },
+                    { value: 'egresado', label: t('profile.statusGraduate') },
+                    { value: 'titulado', label: t('profile.statusTitled') },
                   ] as const).map(opt => (
                     <button key={opt.value}
                       className={`pf-skill-btn ${((user as any).academicStatus || 'estudiante') === opt.value ? 'active' : ''}`}
@@ -349,9 +349,9 @@ export default function Profile() {
                 {/* Professional Title for titulado */}
                 {((user as any).academicStatus === 'titulado') && (
                   <div className="pf-field" style={{ marginBottom: 16 }}>
-                    <label>Título profesional</label>
+                    <label>{t('profile.professionalTitle')}</label>
                     {isEditing ? (
-                      <input className="form-input" value={(form as any).professionalTitle || ''} placeholder="Ej: Ingeniero Civil Industrial"
+                      <input className="form-input" value={(form as any).professionalTitle || ''} placeholder={t('profile.professionalTitlePlaceholder')}
                         onChange={e => update('professionalTitle' as any, e.target.value)} />
                     ) : <p>{(user as any).professionalTitle || '—'}</p>}
                   </div>
@@ -360,15 +360,15 @@ export default function Profile() {
                 {/* Mentoring for titulado/egresado */}
                 {((user as any).academicStatus === 'titulado' || (user as any).academicStatus === 'egresado') && (
                   <div style={{ background: 'var(--bg-tertiary, #f0f4f8)', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
-                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14 }}>{Users({ size: 14 })} Ayuda a otros estudiantes</h4>
+                    <h4 style={{ margin: '0 0 8px 0', fontSize: 14 }}>{Users({ size: 14 })} {t('profile.helpStudents')}</h4>
                     <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
-                      Selecciona los servicios que quieres ofrecer. La coordinación se realiza por el chat de la plataforma.
+                      {t('profile.helpStudentsDesc')}
                     </p>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       {[
-                        { id: 'ayudantias', label: 'Ayudantías' },
-                        { id: 'cursos', label: 'Cursos' },
-                        { id: 'clases_particulares', label: 'Clases particulares' },
+                        { id: 'ayudantias', label: t('profile.mentorAssistance') },
+                        { id: 'cursos', label: t('profile.mentorCourses') },
+                        { id: 'clases_particulares', label: t('profile.mentorPrivate') },
                       ].map(svc => {
                         const services: string[] = (user as any).mentoringServices || []
                         const selected = services.includes(svc.id)
@@ -392,7 +392,7 @@ export default function Profile() {
                     {((user as any).mentoringServices || []).length > 0 && (
                       <div style={{ marginTop: 12, background: 'rgba(45,138,86,0.08)', borderRadius: 8, padding: '10px 12px', border: '1px solid rgba(45,138,86,0.2)' }}>
                         <p style={{ fontSize: 12, color: '#2D8A56', margin: 0 }}>
-                          {MessageSquare({ size: 14 })} Toda coordinación se realiza a través del <strong>chat de la plataforma</strong> para garantizar seguridad.
+                          {MessageSquare({ size: 14 })} {t('profile.mentorChatNote')} <strong>{t('profile.mentorChatPlatform')}</strong> {t('profile.mentorChatSecurity')}
                         </p>
                       </div>
                     )}
@@ -423,9 +423,9 @@ export default function Profile() {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
                   </svg>
                 </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>Perfil Profesional</h3>
+                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>{t('profile.professionalProfile')}</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
-                  Tu CV profesional completo se gestiona desde la Bolsa de Trabajo, donde puedes editar competencias, experiencia, habilidades, subir documentos y compartir con reclutadores.
+                  {t('profile.professionalProfileDesc')}
                 </p>
                 <button
                   onClick={() => window.location.href = '/jobs'}
@@ -436,7 +436,7 @@ export default function Profile() {
                     boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
                   }}
                 >
-                  Ir a Mi Perfil Profesional →
+                  {t('profile.goToProfessionalProfile')}
                 </button>
               </div>
             )}
@@ -444,20 +444,20 @@ export default function Profile() {
             {/* ─── Apariencia ─── */}
             {activeSection === 'appearance' && (
               <div className="pf-section">
-                <h3>Foto de Portada</h3>
-                <p className="pf-hint">Personaliza la portada de tu perfil con una plantilla o imagen propia</p>
+                <h3>{t('profile.coverPhoto')}</h3>
+                <p className="pf-hint">{t('profile.coverPhotoHint')}</p>
                 <button
                   className="btn btn-secondary"
                   style={{ marginBottom: 20 }}
                   onClick={() => { window.location.href = '/my-profile' }}
                 >
-                  {Pencil({ size: 14 })} Cambiar foto de portada
+                  {Pencil({ size: 14 })} {t('profile.changeCover')}
                 </button>
 
                 <div className="pf-divider" />
 
-                <h3>Tema Visual</h3>
-                <p className="pf-hint">Elige la apariencia que prefieras para Conniku</p>
+                <h3>{t('profile.visualTheme')}</h3>
+                <p className="pf-hint">{t('profile.visualThemeHint')}</p>
                 <div className="theme-selector">
                   {([
                     { id: 'sereno', name: 'Conniku Theme', desc: 'Principal — azul y blanco', colors: ['#F5F3EF', '#2563EB', '#1D2939'] },
@@ -483,8 +483,8 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                <h3>Idioma de la Plataforma</h3>
-                <p className="pf-hint">Elige el idioma en que Conniku se comunica contigo</p>
+                <h3>{t('profile.platformLanguage')}</h3>
+                <p className="pf-hint">{t('profile.platformLanguageHint')}</p>
                 <select
                   value={user.platformLanguage || user.language || 'es'}
                   onChange={e => updateProfile({ platformLanguage: e.target.value } as any)}
@@ -495,8 +495,8 @@ export default function Profile() {
                   ))}
                 </select>
 
-                <h3>Idiomas Adicionales</h3>
-                <p className="pf-hint">Selecciona hasta 3 idiomas adicionales que hablas. Conniku adaptará el contenido y las interacciones.</p>
+                <h3>{t('profile.additionalLanguages')}</h3>
+                <p className="pf-hint">{t('profile.additionalLanguagesHint')}</p>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
                   {LANGUAGES.filter(l => l.code !== (user.platformLanguage || user.language || 'es')).map(l => {
                     const selected = (user.secondaryLanguages || []).includes(l.code)
@@ -529,7 +529,7 @@ export default function Profile() {
                   })}
                 </div>
                 {(user.secondaryLanguages || []).length >= 3 && (
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Máximo 3 idiomas adicionales seleccionados</p>
+                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('profile.maxLanguages')}</p>
                 )}
               </div>
             )}
@@ -537,22 +537,22 @@ export default function Profile() {
             {/* ─── Notificaciones & Privacidad ─── */}
             {activeSection === 'notifications' && (
               <div className="pf-section">
-                <h3>Privacidad</h3>
+                <h3>{t('profile.privacy')}</h3>
                 <div className="pf-toggles">
-                  <ToggleRow label="Perfil privado" desc="Solo amigos pueden ver tu perfil completo" />
-                  <ToggleRow label="Mostrar estado en línea" desc="Otros usuarios pueden ver cuando estás conectado" />
-                  <ToggleRow label="Aparecer en sugerencias" desc="Permitir que otros te encuentren como sugerencia de amistad" />
+                  <ToggleRow label={t('profile.privateProfile')} desc={t('profile.privateProfileDesc')} />
+                  <ToggleRow label={t('profile.showOnline')} desc={t('profile.showOnlineDesc')} />
+                  <ToggleRow label={t('profile.showSuggestions')} desc={t('profile.showSuggestionsDesc')} />
                 </div>
 
                 <div className="pf-divider" />
 
-                <h3>Universidad</h3>
+                <h3>{t('profile.universitySection')}</h3>
                 <div className="pf-toggles">
                   {/* University News Toggle */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>Noticias de mi universidad</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Recibir noticias oficiales de tu universidad en tu perfil</div>
+                      <div style={{ fontSize: 14, fontWeight: 600 }}>{t('profile.uniNews')}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('profile.uniNewsDesc')}</div>
                     </div>
                     <button
                       onClick={() => {
@@ -577,12 +577,12 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                <h3>Notificaciones por Email</h3>
+                <h3>{t('profile.emailNotifications')}</h3>
                 <div className="pf-toggles">
-                  <ToggleRow label="Notificaciones por email" desc="Recibir emails sobre actividad de amigos y mensajes" />
-                  <ToggleRow label="Nuevas publicaciones de amigos" desc="Notificar cuando un amigo publica en su perfil" />
-                  <ToggleRow label="Solicitudes de amistad" desc="Notificar cuando alguien quiere ser tu amigo" />
-                  <ToggleRow label="Mensajes directos" desc="Notificar cuando recibes un mensaje nuevo" />
+                  <ToggleRow label={t('profile.emailNotifToggle')} desc={t('profile.emailNotifDesc')} />
+                  <ToggleRow label={t('profile.friendPosts')} desc={t('profile.friendPostsDesc')} />
+                  <ToggleRow label={t('profile.friendRequests')} desc={t('profile.friendRequestsDesc')} />
+                  <ToggleRow label={t('profile.directMessages')} desc={t('profile.directMessagesDesc')} />
                 </div>
               </div>
             )}
@@ -590,48 +590,48 @@ export default function Profile() {
             {/* ─── Seguridad ─── */}
             {activeSection === 'security' && (
               <div className="pf-section">
-                <h3>Cambiar Contraseña</h3>
+                <h3>{t('profile.changePassword')}</h3>
                 {user.provider === 'email' ? (
                   !showPasswordChange ? (
                     <div>
-                      <p className="pf-hint">Actualiza tu contraseña para mantener tu cuenta segura.</p>
+                      <p className="pf-hint">{t('profile.changePasswordHint')}</p>
                       <button className="btn btn-secondary btn-sm" onClick={() => setShowPasswordChange(true)}>
-                        Cambiar contraseña
+                        {t('profile.changePasswordBtn')}
                       </button>
                     </div>
                   ) : (
                     <div className="pf-password-form">
-                      <div className="pf-field"><label>Contraseña actual</label><input className="form-input" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} /></div>
-                      <div className="pf-field"><label>Nueva contraseña</label><input className="form-input" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} /></div>
-                      <div className="pf-field"><label>Confirmar nueva contraseña</label><input className="form-input" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} /></div>
+                      <div className="pf-field"><label>{t('profile.currentPassword')}</label><input className="form-input" type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} /></div>
+                      <div className="pf-field"><label>{t('profile.newPassword')}</label><input className="form-input" type="password" value={newPw} onChange={e => setNewPw(e.target.value)} /></div>
+                      <div className="pf-field"><label>{t('profile.confirmNewPassword')}</label><input className="form-input" type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} /></div>
                       {pwError && <p style={{ color: 'var(--accent-red)', fontSize: 13 }}>{pwError}</p>}
-                      {pwSuccess && <p style={{ color: 'var(--accent-green)', fontSize: 13 }}>Contraseña actualizada correctamente</p>}
+                      {pwSuccess && <p style={{ color: 'var(--accent-green)', fontSize: 13 }}>{t('profile.passwordUpdated')}</p>}
                       <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                         <button className="btn btn-primary btn-sm" onClick={async () => {
                           setPwError(''); setPwSuccess(false)
-                          if (newPw.length < 6) { setPwError('Mínimo 6 caracteres'); return }
-                          if (newPw !== confirmPw) { setPwError('Las contraseñas no coinciden'); return }
+                          if (newPw.length < 6) { setPwError(t('profile.passwordMin')); return }
+                          if (newPw !== confirmPw) { setPwError(t('profile.passwordMismatch')); return }
                           try {
                             await api.changePassword(currentPw, newPw)
                             setPwSuccess(true); setCurrentPw(''); setNewPw(''); setConfirmPw('')
                             setTimeout(() => setShowPasswordChange(false), 2000)
                           } catch (e: any) { setPwError(e.message || 'Error al cambiar contraseña') }
-                        }}>Guardar contraseña</button>
+                        }}>{t('profile.savePassword')}</button>
                         <button className="btn btn-secondary btn-sm" onClick={() => { setShowPasswordChange(false); setPwError('') }}>Cancelar</button>
                       </div>
                     </div>
                   )
                 ) : (
-                  <p className="pf-hint">Tu cuenta usa inicio de sesión con Google. No puedes cambiar la contraseña aquí.</p>
+                  <p className="pf-hint">{t('profile.googleSignIn')}</p>
                 )}
 
                 <div className="pf-divider" />
 
-                <h3 style={{ color: 'var(--accent-red)' }}>Eliminar Cuenta</h3>
+                <h3 style={{ color: 'var(--accent-red)' }}>{t('profile.deleteAccount')}</h3>
                 <div className="pf-danger-zone">
-                  <p>Una vez que elimines tu cuenta, se borrarán permanentemente todos tus datos, proyectos, mensajes y publicaciones. Esta acción no se puede deshacer.</p>
+                  <p>{t('profile.deleteAccountDesc')}</p>
                   <button className="btn btn-danger btn-sm" onClick={() => setShowDeleteModal(true)}>
-                    Eliminar mi cuenta permanentemente
+                    {t('profile.deleteAccountBtn')}
                   </button>
                 </div>
                 {showDeleteModal && (
@@ -651,10 +651,9 @@ export default function Profile() {
             {/* ─── Correo Corporativo (Owner) ─── */}
             {activeSection === 'email' && user.role === 'owner' && (
               <div className="pf-section">
-                <h3>Cuentas de Correo Corporativo</h3>
+                <h3>{t('profile.emailAccounts')}</h3>
                 <p className="pf-hint" style={{ marginBottom: 20 }}>
-                  Administra las cuentas de correo electrónico de Conniku. Configura estas cuentas en tu cliente de correo (Outlook, Gmail, etc.)
-                  usando los datos IMAP/SMTP de tu proveedor de dominio.
+                  {t('profile.emailAccountsHint')}
                 </p>
                 <div className="pf-toggles">
                   {[
@@ -673,7 +672,7 @@ export default function Profile() {
                         <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{account.desc}</div>
                       </div>
                       <span className={`pf-badge ${account.status === 'active' ? 'pf-badge-green' : 'pf-badge-orange'}`}>
-                        {account.status === 'active' ? 'Activa' : 'Pendiente'}
+                        {account.status === 'active' ? t('profile.active') : t('profile.pending')}
                       </span>
                     </div>
                   ))}
@@ -682,24 +681,24 @@ export default function Profile() {
                   const email = prompt('Nuevo correo (ej: marketing@conniku.com):')
                   if (email) alert(`Para crear ${email}, configúralo en tu panel de hosting (cPanel, Google Workspace, Zoho Mail, etc.)`)
                 }}>
-                  + Crear nueva cuenta de correo
+                  {t('profile.createEmail')}
                 </button>
 
                 <div className="pf-divider" />
 
-                <h3>Configuración para Outlook / Gmail</h3>
+                <h3>{t('profile.outlookConfig')}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
                   <div className="pf-config-box">
-                    <h4 style={{ color: 'var(--accent-blue)' }}>Correo Entrante (IMAP)</h4>
+                    <h4 style={{ color: 'var(--accent-blue)' }}>{t('profile.incomingMail')}</h4>
                     <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>mail.conniku.com</strong></div>
                     <div>Puerto: <strong>993</strong> (SSL/TLS)</div>
                     <div>Usuario: <strong style={{ fontFamily: 'var(--font-mono)' }}>tu@conniku.com</strong></div>
                   </div>
                   <div className="pf-config-box">
-                    <h4 style={{ color: 'var(--accent-green)' }}>Correo Saliente (SMTP)</h4>
+                    <h4 style={{ color: 'var(--accent-green)' }}>{t('profile.outgoingMail')}</h4>
                     <div>Servidor: <strong style={{ fontFamily: 'var(--font-mono)' }}>smtp.conniku.com</strong></div>
                     <div>Puerto: <strong>587</strong> (STARTTLS)</div>
-                    <div>Autenticación: <strong>Requerida</strong></div>
+                    <div>Autenticación: <strong>{t('profile.authRequired')}</strong></div>
                   </div>
                 </div>
               </div>

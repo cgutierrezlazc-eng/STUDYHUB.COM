@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/auth'
+import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import NotificationBell from './NotificationBell'
 
@@ -9,15 +10,16 @@ interface Props {
   showMenuButton?: boolean
 }
 
-const QUICK_CATEGORIES = [
-  { label: 'Personas', path: '/friends', icon: '👤' },
-  { label: 'Comunidades', path: '/communities', icon: '🏘' },
-  { label: 'Empleo', path: '/jobs', icon: '💼' },
-  { label: 'Asignaturas', path: '/subjects', icon: '📚' },
-]
-
 export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Props) {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
+
+  const QUICK_CATEGORIES = [
+    { label: t('topbar.people'), path: '/friends', icon: '👤' },
+    { label: t('topbar.communities'), path: '/communities', icon: '🏘' },
+    { label: t('topbar.jobs'), path: '/jobs', icon: '💼' },
+    { label: t('topbar.subjects'), path: '/subjects', icon: '📚' },
+  ]
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -92,7 +94,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
           </svg>
           <input
             type="text"
-            placeholder="Buscar personas, comunidades, temas..."
+            placeholder={t('topbar.searchPlaceholder')}
             value={searchQuery}
             onChange={e => { setSearchQuery(e.target.value); fetchSuggestions(e.target.value) }}
             onFocus={() => setShowSuggestions(true)}
@@ -108,7 +110,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
             <div className="search-suggestions">
               {!searchQuery.trim() && (
                 <>
-                  <div className="search-sug-label">Accesos rapidos</div>
+                  <div className="search-sug-label">{t('topbar.quickAccess')}</div>
                   {QUICK_CATEGORIES.map(c => (
                     <button key={c.path} className="search-sug-item" onClick={() => { onNavigate(c.path); setShowSuggestions(false) }}>
                       <span style={{ fontSize: 16 }}>{c.icon}</span>
@@ -119,10 +121,10 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
               )}
               {searchQuery.trim().length >= 2 && (
                 <>
-                  {sugLoading && <div className="search-sug-label" style={{ textAlign: 'center', padding: 12 }}>Buscando...</div>}
+                  {sugLoading && <div className="search-sug-label" style={{ textAlign: 'center', padding: 12 }}>{t('topbar.searching')}</div>}
                   {!sugLoading && suggestions.length > 0 && (
                     <>
-                      <div className="search-sug-label">Personas</div>
+                      <div className="search-sug-label">{t('topbar.people')}</div>
                       {suggestions.map((u: any) => (
                         <button key={u.id} className="search-sug-item" onClick={() => { onNavigate(`/user/${u.id}`); setSearchQuery(''); setShowSuggestions(false) }}>
                           <div style={{
@@ -150,7 +152,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
                   <button className="search-sug-item" style={{ color: 'var(--accent)', fontWeight: 600 }}
                     onClick={() => { onNavigate(`/search?q=${encodeURIComponent(searchQuery)}`); setSearchQuery(''); setShowSuggestions(false) }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <span>Buscar "{searchQuery}" en la web</span>
+                    <span>{t('topbar.searchWeb')} "{searchQuery}"</span>
                   </button>
                 </>
               )}
@@ -179,20 +181,20 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
               </div>
               <button onClick={() => { onNavigate(user ? `/user/${user.id}` : '/'); setShowUserMenu(false) }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                Mi Perfil
+                {t('topbar.myProfile')}
               </button>
               <button onClick={() => { onNavigate('/profile'); setShowUserMenu(false) }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Ajustes
+                {t('topbar.settings')}
               </button>
               <button onClick={() => { onNavigate('/subscription'); setShowUserMenu(false) }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                Plan
+                {t('topbar.plan')}
               </button>
               <div style={{ borderTop: '1px solid var(--border)', margin: '4px 0' }} />
               <button onClick={logout} style={{ color: 'var(--accent-red)' }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                Cerrar sesión
+                {t('topbar.logout')}
               </button>
             </div>
           )}
