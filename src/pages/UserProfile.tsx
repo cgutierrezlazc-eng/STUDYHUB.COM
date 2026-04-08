@@ -879,7 +879,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     </div>
                     <textarea
                       className="fb-composer-input"
-                      placeholder={isOwn ? '¿Qué estás pensando?' : `Escribe en el muro de ${profile.firstName}...`}
+                      placeholder={isOwn ? '¿Qué estás pensando?' : `Escribe en el perfil de ${profile.firstName}...`}
                       value={newPost}
                       onChange={e => setNewPost(e.target.value)}
                       rows={2}
@@ -921,7 +921,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           {[
                             { value: 'friends', icon: Globe({ size: 16 }), label: 'Todos mis amigos', desc: 'Visible para todos tus contactos' },
                             { value: 'university', icon: GraduationCap({ size: 16 }), label: 'Mi universidad', desc: 'Solo amigos de tu universidad' },
-                            { value: 'private', icon: Lock({ size: 16 }), label: 'Solo mi muro', desc: 'Solo visible en tu perfil' },
+                            { value: 'private', icon: Lock({ size: 16 }), label: 'Solo mi perfil', desc: 'Solo visible en tu perfil' },
                           ].map(opt => (
                             <button key={opt.value} type="button"
                               onClick={() => { setPostVisibility(opt.value as any); setShowVisibilityMenu(false) }}
@@ -998,7 +998,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                                 <strong>{item.author?.firstName} {item.author?.lastName}</strong>
                                 {isOnOtherWall && (
                                   <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
-                                    {' '}public\u00f3 en el muro de{' '}
+                                    {' '}public\u00f3 en el perfil de{' '}
                                     <strong
                                       style={{ cursor: 'pointer', color: 'var(--text-primary)' }}
                                       onClick={e => { e.stopPropagation(); onNavigate(`/user/${item.wallOwner.id}`) }}

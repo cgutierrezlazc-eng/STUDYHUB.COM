@@ -643,23 +643,24 @@ class GoogleAuthRequest(BaseModel):
 @router.post("/google")
 def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = Depends(get_db)):
     """Authenticate with Google credential. Creates account if needed."""
-    import base64
-    import json as _json
+    from google.oauth2 import id_token
+    from google.auth.transport import requests as google_requests
 
     # Rate limit
     client_ip = request.client.host if request and request.client else "unknown"
     _check_rate_limit(f"google:{client_ip}", max_attempts=10, window_minutes=15)
 
-    # Decode Google JWT (header.payload.signature)
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
+
+    # Verify Google JWT signature against Google's public keys
     try:
-        parts = req.credential.split(".")
-        if len(parts) != 3:
-            raise HTTPException(400, "Token de Google inválido")
-        # Pad base64 if needed
-        payload_b64 = parts[1] + "=" * (4 - len(parts[1]) % 4)
-        payload = _json.loads(base64.urlsafe_b64decode(payload_b64))
-    except Exception:
-        raise HTTPException(400, "No se pudo decodificar el token de Google")
+        payload = id_token.verify_oauth2_token(
+            req.credential,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID or None,  # None skips audience check if not configured
+        )
+    except ValueError:
+        raise HTTPException(400, "Token de Google inválido o expirado")
 
     google_email = payload.get("email", "").lower()
     if not google_email:
@@ -1255,41 +1256,264 @@ def delete_account(user: User = Depends(get_current_user), db: Session = Depends
 
     from database import (
         ConversationParticipant, Message, Conversation,
-        WallPost, PostComment, PostLike,
+        WallPost, PostComment, PostLike, PostReaction, PostShare, PostBookmark,
         Friendship, BlockedUser, UserReport,
-        ConversationFolder, ConversationFolderItem
+        ConversationFolder, ConversationFolderItem,
+        FriendList, FriendListMember,
+        ModerationLog, VideoDocument, PaymentLog,
+        StudySession, SharedDocument, DocumentRating,
+        CalendarEvent, LeagueMembership, InAppNotification,
+        CommunityMember, CommunityPost, CommunityPostLike, CommunityPostComment,
+        Poll, PollOption, PollVote,
+        AcademicMilestone,
+        JobListing, JobApplication, UserCareerStatus, StudentCV,
+        UserCourseProgress, UserExerciseHistory, Certificate,
+        SocialMediaAccount, CrossPost, RecruiterProfile,
+        TutoringListing, TutoringListingRequest, TutoringRequest,
+        StudyEvent, EventRSVP,
+        UserSkill, SkillEndorsement,
+        MentorProfile, MentorshipRelation,
+        StudyPlan, StudyRoom, StudyRoomParticipant,
+        QuizHistory, ScheduledQuiz, FlashcardReview,
+        MoodCheckIn, ClassAttendance, UserDownload,
+        UserSession, PushSubscription,
+        VideoConference, ConferenceParticipant,
     )
 
-    # Delete messages sent by user
-    db.query(Message).filter(Message.sender_id == user_id).delete(synchronize_session=False)
+    # ── Push subscriptions & sessions ──
+    try:
+        db.query(PushSubscription).filter(PushSubscription.user_id == user_id).delete(synchronize_session=False)
+        db.query(UserSession).filter(UserSession.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
 
-    # Remove from conversation participants
+    # ── Video conferences ──
+    try:
+        conf_ids = [c.id for c in db.query(VideoConference).filter(VideoConference.creator_id == user_id).all()]
+        db.query(ConferenceParticipant).filter(ConferenceParticipant.user_id == user_id).delete(synchronize_session=False)
+        if conf_ids:
+            db.query(ConferenceParticipant).filter(ConferenceParticipant.conference_id.in_(conf_ids)).delete(synchronize_session=False)
+            db.query(VideoConference).filter(VideoConference.id.in_(conf_ids)).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Study rooms ──
+    try:
+        db.query(StudyRoomParticipant).filter(StudyRoomParticipant.user_id == user_id).delete(synchronize_session=False)
+        room_ids = [r.id for r in db.query(StudyRoom).filter(StudyRoom.host_id == user_id).all()]
+        if room_ids:
+            db.query(StudyRoomParticipant).filter(StudyRoomParticipant.room_id.in_(room_ids)).delete(synchronize_session=False)
+            db.query(StudyRoom).filter(StudyRoom.id.in_(room_ids)).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Quizzes, flashcards, mood, attendance, downloads ──
+    try:
+        db.query(QuizHistory).filter(QuizHistory.user_id == user_id).delete(synchronize_session=False)
+        db.query(ScheduledQuiz).filter(ScheduledQuiz.user_id == user_id).delete(synchronize_session=False)
+        db.query(FlashcardReview).filter(FlashcardReview.user_id == user_id).delete(synchronize_session=False)
+        db.query(MoodCheckIn).filter(MoodCheckIn.user_id == user_id).delete(synchronize_session=False)
+        db.query(ClassAttendance).filter(ClassAttendance.user_id == user_id).delete(synchronize_session=False)
+        db.query(UserDownload).filter(UserDownload.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Study plans ──
+    try:
+        db.query(StudyPlan).filter(StudyPlan.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Mentorship ──
+    try:
+        db.query(MentorshipRelation).filter(
+            (MentorshipRelation.mentor_id == user_id) | (MentorshipRelation.mentee_id == user_id)
+        ).delete(synchronize_session=False)
+        db.query(MentorProfile).filter(MentorProfile.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Skills & endorsements ──
+    try:
+        skill_ids = [s.id for s in db.query(UserSkill).filter(UserSkill.user_id == user_id).all()]
+        if skill_ids:
+            db.query(SkillEndorsement).filter(SkillEndorsement.skill_id.in_(skill_ids)).delete(synchronize_session=False)
+        db.query(SkillEndorsement).filter(SkillEndorsement.endorser_id == user_id).delete(synchronize_session=False)
+        db.query(UserSkill).filter(UserSkill.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Study events & RSVPs ──
+    try:
+        db.query(EventRSVP).filter(EventRSVP.user_id == user_id).delete(synchronize_session=False)
+        event_ids = [e.id for e in db.query(StudyEvent).filter(StudyEvent.organizer_id == user_id).all()]
+        if event_ids:
+            db.query(EventRSVP).filter(EventRSVP.event_id.in_(event_ids)).delete(synchronize_session=False)
+            db.query(StudyEvent).filter(StudyEvent.id.in_(event_ids)).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Tutoring listings & requests ──
+    try:
+        listing_ids = [t.id for t in db.query(TutoringListing).filter(TutoringListing.tutor_id == user_id).all()]
+        if listing_ids:
+            db.query(TutoringListingRequest).filter(TutoringListingRequest.listing_id.in_(listing_ids)).delete(synchronize_session=False)
+            db.query(TutoringListing).filter(TutoringListing.id.in_(listing_ids)).delete(synchronize_session=False)
+        db.query(TutoringListingRequest).filter(
+            (TutoringListingRequest.student_id == user_id) | (TutoringListingRequest.tutor_id == user_id)
+        ).delete(synchronize_session=False)
+        db.query(TutoringRequest).filter(
+            (TutoringRequest.student_id == user_id) | (TutoringRequest.tutor_id == user_id)
+        ).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Courses, certificates, exercise history ──
+    try:
+        db.query(UserExerciseHistory).filter(UserExerciseHistory.user_id == user_id).delete(synchronize_session=False)
+        db.query(UserCourseProgress).filter(UserCourseProgress.user_id == user_id).delete(synchronize_session=False)
+        db.query(Certificate).filter(Certificate.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Job board ──
+    try:
+        job_ids = [j.id for j in db.query(JobListing).filter(JobListing.posted_by == user_id).all()]
+        if job_ids:
+            db.query(JobApplication).filter(JobApplication.job_id.in_(job_ids)).delete(synchronize_session=False)
+            db.query(JobListing).filter(JobListing.id.in_(job_ids)).delete(synchronize_session=False)
+        db.query(JobApplication).filter(JobApplication.applicant_id == user_id).delete(synchronize_session=False)
+        db.query(UserCareerStatus).filter(UserCareerStatus.user_id == user_id).delete(synchronize_session=False)
+        db.query(StudentCV).filter(StudentCV.user_id == user_id).delete(synchronize_session=False)
+        db.query(RecruiterProfile).filter(RecruiterProfile.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Academic milestones ──
+    try:
+        db.query(AcademicMilestone).filter(AcademicMilestone.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Community content (children first) ──
+    try:
+        community_post_ids = [p.id for p in db.query(CommunityPost).filter(CommunityPost.author_id == user_id).all()]
+        if community_post_ids:
+            db.query(CommunityPostComment).filter(CommunityPostComment.post_id.in_(community_post_ids)).delete(synchronize_session=False)
+            db.query(CommunityPostLike).filter(CommunityPostLike.post_id.in_(community_post_ids)).delete(synchronize_session=False)
+            db.query(CommunityPost).filter(CommunityPost.id.in_(community_post_ids)).delete(synchronize_session=False)
+        db.query(CommunityPostComment).filter(CommunityPostComment.author_id == user_id).delete(synchronize_session=False)
+        db.query(CommunityPostLike).filter(CommunityPostLike.user_id == user_id).delete(synchronize_session=False)
+        db.query(CommunityMember).filter(CommunityMember.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Polls ──
+    try:
+        poll_ids = [p.id for p in db.query(Poll).filter(Poll.author_id == user_id).all()]
+        if poll_ids:
+            db.query(PollVote).filter(PollVote.poll_id.in_(poll_ids)).delete(synchronize_session=False)
+            db.query(PollOption).filter(PollOption.poll_id.in_(poll_ids)).delete(synchronize_session=False)
+            db.query(Poll).filter(Poll.id.in_(poll_ids)).delete(synchronize_session=False)
+        db.query(PollVote).filter(PollVote.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Notifications ──
+    try:
+        db.query(InAppNotification).filter(InAppNotification.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Calendar events ──
+    try:
+        db.query(CalendarEvent).filter(CalendarEvent.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── League memberships ──
+    try:
+        db.query(LeagueMembership).filter(LeagueMembership.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Shared documents & ratings ──
+    try:
+        doc_ids = [d.id for d in db.query(SharedDocument).filter(SharedDocument.user_id == user_id).all()]
+        if doc_ids:
+            db.query(DocumentRating).filter(DocumentRating.document_id.in_(doc_ids)).delete(synchronize_session=False)
+            db.query(SharedDocument).filter(SharedDocument.id.in_(doc_ids)).delete(synchronize_session=False)
+        db.query(DocumentRating).filter(DocumentRating.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Video documents ──
+    try:
+        db.query(VideoDocument).filter(VideoDocument.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Study sessions ──
+    try:
+        db.query(StudySession).filter(StudySession.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Social media & cross-posting ──
+    try:
+        db.query(CrossPost).filter(CrossPost.user_id == user_id).delete(synchronize_session=False)
+        db.query(SocialMediaAccount).filter(SocialMediaAccount.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Payment logs ──
+    try:
+        db.query(PaymentLog).filter(PaymentLog.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Moderation logs ──
+    try:
+        db.query(ModerationLog).filter(
+            (ModerationLog.user_id == user_id) | (ModerationLog.admin_id == user_id)
+        ).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    # ── Messages & conversations (original) ──
+    db.query(Message).filter(Message.sender_id == user_id).delete(synchronize_session=False)
     db.query(ConversationParticipant).filter(ConversationParticipant.user_id == user_id).delete(synchronize_session=False)
 
-    # Delete wall posts authored by user
+    # ── Wall posts & interactions ──
+    db.query(PostBookmark).filter(PostBookmark.user_id == user_id).delete(synchronize_session=False)
+    db.query(PostShare).filter(PostShare.user_id == user_id).delete(synchronize_session=False)
+    db.query(PostReaction).filter(PostReaction.user_id == user_id).delete(synchronize_session=False)
     db.query(PostComment).filter(PostComment.author_id == user_id).delete(synchronize_session=False)
     db.query(PostLike).filter(PostLike.user_id == user_id).delete(synchronize_session=False)
     db.query(WallPost).filter(WallPost.author_id == user_id).delete(synchronize_session=False)
-
-    # Delete wall posts on user's wall
     db.query(WallPost).filter(WallPost.wall_owner_id == user_id).delete(synchronize_session=False)
 
-    # Delete friendships
+    # ── Friendships, friend lists, blocks, reports ──
+    try:
+        list_ids = [fl.id for fl in db.query(FriendList).filter(FriendList.user_id == user_id).all()]
+        if list_ids:
+            db.query(FriendListMember).filter(FriendListMember.list_id.in_(list_ids)).delete(synchronize_session=False)
+        db.query(FriendListMember).filter(FriendListMember.friend_id == user_id).delete(synchronize_session=False)
+        db.query(FriendList).filter(FriendList.user_id == user_id).delete(synchronize_session=False)
+    except Exception:
+        pass
+
     db.query(Friendship).filter((Friendship.requester_id == user_id) | (Friendship.addressee_id == user_id)).delete(synchronize_session=False)
-
-    # Delete blocks
     db.query(BlockedUser).filter((BlockedUser.blocker_id == user_id) | (BlockedUser.blocked_id == user_id)).delete(synchronize_session=False)
-
-    # Delete reports
     db.query(UserReport).filter((UserReport.reporter_id == user_id) | (UserReport.reported_id == user_id)).delete(synchronize_session=False)
 
-    # Delete folders and folder items
+    # ── Conversation folders ──
     folder_ids = [f.id for f in db.query(ConversationFolder).filter(ConversationFolder.user_id == user_id).all()]
     if folder_ids:
         db.query(ConversationFolderItem).filter(ConversationFolderItem.folder_id.in_(folder_ids)).delete(synchronize_session=False)
     db.query(ConversationFolder).filter(ConversationFolder.user_id == user_id).delete(synchronize_session=False)
 
-    # Delete the user
+    # ── Finally, delete the user record ──
     db.query(User).filter(User.id == user_id).delete(synchronize_session=False)
 
     db.commit()

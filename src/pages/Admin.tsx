@@ -172,7 +172,7 @@ export default function Admin() {
     { id: 'subscribers', label: 'Suscriptores', icon: Gem({ size: 14 }) },
     ...(user?.role === 'owner' ? [{ id: 'payments', label: 'Pagos/Finanzas', icon: Gem({ size: 14 }) }] : []),
     { id: 'reports', label: `Reportes${stats?.pendingReports ? ` (${stats.pendingReports})` : ''}`, icon: AlertTriangle({ size: 14 }) },
-    { id: 'flagged', label: 'Mensajes Flag.', icon: AlertTriangle({ size: 14 }) },
+    { id: 'flagged', label: 'Mensajes Report.', icon: AlertTriangle({ size: 14 }) },
     { id: 'blocks', label: 'Bloqueos', icon: Shield({ size: 14 }) },
     { id: 'logs', label: 'Registro', icon: ClipboardList({ size: 14 }) },
   ]
@@ -186,7 +186,7 @@ export default function Admin() {
           <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
             <span>Total usuarios: <strong>{stats.totalUsers}</strong></span>
             <span>Reportes pendientes: <strong style={{ color: stats.pendingReports ? '#ef4444' : 'inherit' }}>{stats.pendingReports}</strong></span>
-            <span>Mensajes flagged: <strong style={{ color: stats.flaggedMessages ? '#f59e0b' : 'inherit' }}>{stats.flaggedMessages}</strong></span>
+            <span>Mensajes reportados: <strong style={{ color: stats.flaggedMessages ? '#f59e0b' : 'inherit' }}>{stats.flaggedMessages}</strong></span>
           </div>
         )}
       </div>
@@ -218,7 +218,7 @@ export default function Admin() {
             </div>
             <h3 style={{ margin: '24px 0 16px' }}>Moderación</h3>
             <div className="stats-grid">
-              <div className="stat-card clickable" onClick={() => { setTab('flagged'); setPage(1) }}><div className="stat-value" style={{ color: '#f59e0b' }}>{stats.flaggedMessages}</div><div className="stat-label">Mensajes Flagged</div></div>
+              <div className="stat-card clickable" onClick={() => { setTab('flagged'); setPage(1) }}><div className="stat-value" style={{ color: '#f59e0b' }}>{stats.flaggedMessages}</div><div className="stat-label">Mensajes Reportados</div></div>
               <div className="stat-card clickable" onClick={() => { setTab('reports'); setPage(1) }}><div className="stat-value" style={{ color: '#ef4444' }}>{stats.pendingReports}</div><div className="stat-label">Reportes Pendientes</div></div>
               <div className="stat-card"><div className="stat-value" style={{ color: 'var(--accent-orange)' }}>{stats.totalReports}</div><div className="stat-label">Reportes Totales</div></div>
               <div className="stat-card clickable" onClick={() => { setTab('blocks'); setPage(1) }}><div className="stat-value" style={{ color: 'var(--text-muted)' }}>{stats.totalBlocks}</div><div className="stat-label">Bloqueos Activos</div></div>
@@ -636,11 +636,11 @@ export default function Admin() {
           </div>
         )}
 
-        {/* ─── Flagged Messages ─── */}
+        {/* ─── Reported Messages ─── */}
         {tab === 'flagged' && (
           <div className="admin-flagged">
             {flagged.length === 0 ? (
-              <div className="msg-empty"><p>No hay mensajes flagged</p></div>
+              <div className="msg-empty"><p>No hay mensajes reportados</p></div>
             ) : (
               flagged.map(msg => (
                 <div key={msg.id} className="admin-flagged-item card">

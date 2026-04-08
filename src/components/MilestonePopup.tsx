@@ -14,7 +14,7 @@ type Visibility = 'friends' | 'university' | 'wall' | 'none'
 const VISIBILITY_OPTIONS: { key: Visibility; label: string; icon: string }[] = [
   { key: 'friends', label: 'Todos mis amigos', icon: '\u{1F310}' },
   { key: 'university', label: 'Mi universidad', icon: '\u{1F393}' },
-  { key: 'wall', label: 'Solo mi muro', icon: '\u{1F512}' },
+  { key: 'wall', label: 'Solo mi perfil', icon: '\u{1F512}' },
   { key: 'none', label: 'No compartir', icon: '\u{1F6AB}' },
 ]
 

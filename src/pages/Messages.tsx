@@ -52,7 +52,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
   // ─── WebSocket Setup ──────────────────────────────────────────
   useEffect(() => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('conniku_token')
     if (token && !wsService.connected) {
       wsService.connect(token)
     }

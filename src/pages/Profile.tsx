@@ -551,7 +551,7 @@ export default function Profile() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 600 }}>Noticias de mi universidad</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Recibir noticias oficiales de tu universidad en tu muro</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Recibir noticias oficiales de tu universidad en tu perfil</div>
                     </div>
                     <button
                       onClick={() => {
@@ -579,7 +579,7 @@ export default function Profile() {
                 <h3>Notificaciones por Email</h3>
                 <div className="pf-toggles">
                   <ToggleRow label="Notificaciones por email" desc="Recibir emails sobre actividad de amigos y mensajes" />
-                  <ToggleRow label="Nuevas publicaciones de amigos" desc="Notificar cuando un amigo publica en su muro" />
+                  <ToggleRow label="Nuevas publicaciones de amigos" desc="Notificar cuando un amigo publica en su perfil" />
                   <ToggleRow label="Solicitudes de amistad" desc="Notificar cuando alguien quiere ser tu amigo" />
                   <ToggleRow label="Mensajes directos" desc="Notificar cuando recibes un mensaje nuevo" />
                 </div>

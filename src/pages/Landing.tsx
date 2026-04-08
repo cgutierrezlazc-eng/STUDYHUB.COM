@@ -353,7 +353,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
     },
     feed: {
       title: 'Feed Social',
-      description: 'Tu muro social academico. Publica, comenta, comparte recursos y mantente al dia con tu comunidad universitaria.',
+      description: 'Tu perfil social academico. Publica, comenta, comparte recursos y mantente al dia con tu comunidad universitaria.',
       mockup: <FeedMockup />,
     },
     job: {

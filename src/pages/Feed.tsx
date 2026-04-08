@@ -496,7 +496,7 @@ export default function Feed({ onNavigate }: Props) {
                         const comment = prompt('Agrega un comentario (opcional):')
                         try {
                           await api.sharePost(post.id, comment || '')
-                          alert('Publicación compartida en tu muro')
+                          alert('Publicación compartida en tu perfil')
                         } catch (err: any) { alert(err.message || 'Error') }
                       }} style={{
                         background: 'none', border: 'none', cursor: 'pointer', padding: '6px 12px',

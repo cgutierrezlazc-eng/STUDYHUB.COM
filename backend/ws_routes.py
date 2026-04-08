@@ -213,7 +213,11 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
         # Content moderation
         flagged = False
         try:
-            flagged = check_content(content)
+            moderation = check_content(content)
+            if not moderation.get("allowed", True):
+                await websocket.send_json({"type": "error", "message": moderation.get("reason", "Contenido no permitido.")})
+                return
+            flagged = moderation.get("flagged", False)
         except Exception:
             pass
 
@@ -232,7 +236,7 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
         # Update conversation last activity
         conv = db.query(Conversation).filter(Conversation.id == conv_id).first()
         if conv:
-            conv.last_message_at = datetime.utcnow()
+            conv.updated_at = datetime.utcnow()
 
         db.commit()
 
