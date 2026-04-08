@@ -118,6 +118,40 @@ def _search_bing(query: str, page: int = 1) -> list[dict]:
         return []
 
 
+def _search_duckduckgo(query: str, page: int = 1) -> list[dict]:
+    """Free fallback search using DuckDuckGo HTML (no API key needed)."""
+    import re
+    try:
+        url = f"https://html.duckduckgo.com/html/?q={urllib.parse.quote(query)}"
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; ConnikusBot/1.0)"}
+        req = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            html = resp.read().decode("utf-8", errors="ignore")
+
+        results = []
+        # Parse DuckDuckGo HTML results
+        blocks = re.findall(
+            r'<a rel="nofollow" class="result__a" href="(.*?)">(.*?)</a>.*?<a class="result__snippet".*?>(.*?)</a>',
+            html, re.DOTALL,
+        )
+        for href, title, snippet in blocks[:10]:
+            # Clean HTML tags
+            title = re.sub(r'<.*?>', '', title).strip()
+            snippet = re.sub(r'<.*?>', '', snippet).strip()
+            if href.startswith('//duckduckgo.com/l/?uddg='):
+                href = urllib.parse.unquote(href.split('uddg=')[1].split('&')[0])
+            results.append({
+                "title": title,
+                "snippet": snippet,
+                "url": href,
+                "displayUrl": href[:60] + "..." if len(href) > 60 else href,
+            })
+        return results
+    except Exception as e:
+        print(f"[DuckDuckGo Search Error] {e}")
+        return []
+
+
 # ─── Search Endpoints ───────────────────────────────────────
 
 @router.get("/web")
@@ -131,12 +165,14 @@ def search_web(q: str, page: int = 1, user: User = Depends(get_current_user)):
     # Add academic context to query
     academic_query = f"{q} (academic OR university OR education OR research)"
 
-    # Try Google first, fallback to Bing
+    # Try Google first, fallback to Bing, then DuckDuckGo (free)
     results = _search_google(academic_query, page)
     if not results:
         results = _search_bing(academic_query, page)
+    if not results:
+        results = _search_duckduckgo(q, page)
 
-    # If no API configured, use a message
+    # If nothing worked at all, show config message
     if not results and not GOOGLE_API_KEY and not BING_API_KEY:
         return {
             "query": q,
