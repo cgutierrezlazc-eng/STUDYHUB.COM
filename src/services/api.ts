@@ -1013,7 +1013,10 @@ export const api = {
 
   // ─── HR / RRHH ────────────────────────────────────────────
   getChileIndicators: () => request('/hr/indicators'),
-  getEmployees: (filters?: string) => request(`/hr/employees${filters ? `?${filters}` : ''}`),
+  getEmployees: async (filters?: string) => {
+    const data = await request(`/hr/employees${filters ? `?${filters}` : ''}`)
+    return Array.isArray(data) ? data : (data?.employees || [])
+  },
   getEmployee: (id: string) => request(`/hr/employees/${id}`),
   createEmployee: (data: any) => request('/hr/employees', { method: 'POST', body: JSON.stringify(data) }),
   updateEmployee: (id: string, data: any) => request(`/hr/employees/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
