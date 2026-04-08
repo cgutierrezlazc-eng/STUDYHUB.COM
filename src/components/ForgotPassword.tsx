@@ -37,7 +37,7 @@ export default function ForgotPassword({ onBack }: Props) {
   }
 
   const handleResetPassword = async () => {
-    if (newPassword.length < 6) { setError('La contraseña debe tener al menos 6 caracteres'); return }
+    if (newPassword.length < 8) { setError('La contraseña debe tener al menos 8 caracteres, una mayúscula y un número'); return }
     if (newPassword !== confirmPassword) { setError('Las contraseñas no coinciden'); return }
     setIsLoading(true)
     setError('')
@@ -117,7 +117,7 @@ export default function ForgotPassword({ onBack }: Props) {
                 <label>Nueva contraseña</label>
                 <input
                   type="password"
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres, 1 mayúscula, 1 número"
                   value={newPassword}
                   onChange={e => setNewPassword(e.target.value)}
                   autoFocus

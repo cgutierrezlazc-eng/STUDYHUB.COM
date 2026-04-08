@@ -966,7 +966,7 @@ def forgot_password(req: ForgotPasswordRequest, request: Request = None, db: Ses
         # Don't reveal if email exists
         return {"sent": True}
 
-    code = ''.join(random.choices(string.digits, k=8))
+    code = ''.join(random.choices(string.digits, k=6))
     from datetime import timedelta
     user.reset_code = code
     user.reset_code_expires = datetime.utcnow() + timedelta(minutes=15)

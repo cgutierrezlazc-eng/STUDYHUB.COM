@@ -112,7 +112,8 @@ def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = ""
 <body style="margin:0;padding:0;background:#F5F3EF;font-family:Inter,-apple-system,sans-serif">
 <div style="max-width:560px;margin:0 auto;padding:32px 16px">
     <div style="text-align:center;margin-bottom:24px">
-        <span style="font-size:22px;font-weight:700;color:#1D2939">conni<span style="color:#2D62C8">ku</span></span>
+        <img src="https://conniku.com/logo_original.png" alt="Conniku" width="40" height="40" style="border-radius:10px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'" />
+        <span style="font-size:22px;font-weight:700;color:#1D2939;vertical-align:middle">conni<span style="color:#2D62C8">ku</span></span>
     </div>
     <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #E5E7EB">
         <h2 style="margin:0 0 16px;font-size:18px;color:#1D2939">{title}</h2>
@@ -124,8 +125,8 @@ def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = ""
         <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
             <tr>
                 <td style="width:48px;vertical-align:top;padding-right:16px">
-                    <div style="width:44px;height:44px;border-radius:10px;background:#2D62C8;display:flex;align-items:center;justify-content:center">
-                        <span style="color:#fff;font-weight:700;font-size:16px;line-height:44px;text-align:center;display:block;width:44px">CK</span>
+                    <div style="width:44px;height:44px;border-radius:10px;background:#2D62C8;text-align:center">
+                        <img src="https://conniku.com/logo_original.png" alt="Conniku" width="44" height="44" style="border-radius:10px;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=&quot;color:#fff;font-weight:700;font-size:16px;line-height:44px;display:block&quot;>CK</span>'" />
                     </div>
                 </td>
                 <td style="vertical-align:top">
@@ -533,7 +534,7 @@ def notify_wall_post(db, wall_owner: User, author: User, content_preview: str):
         {preview}
     </div>
     """
-    html = _email_template("Nueva publicacion en tu muro", body, "Ver Publicacion", f"{FRONTEND_URL}/user/{wall_owner.id}")
+    html = _email_template("Nueva publicacion en tu perfil", body, "Ver Publicacion", f"{FRONTEND_URL}/user/{wall_owner.id}")
     _send_email_async(wall_owner.email, f"{author.first_name} publico en tu muro — Conniku", html, email_type="wall_post")
 
 
