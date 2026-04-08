@@ -235,7 +235,7 @@ export default function Conferences({ onNavigate }: Props) {
         <div style={{ textAlign: 'center', padding: 40, opacity: 0.5 }}>Cargando...</div>
       ) : filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 60, opacity: 0.5 }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>{Video({ size: 48 })}</div>
+          <div className="empty-state-icon">{Video({ size: 48 })}</div>
           <p>No hay conferencias en esta seccion</p>
         </div>
       ) : (

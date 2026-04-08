@@ -773,6 +773,7 @@ def get_comments(
 @router.get("/feed")
 def get_feed(
     page: int = Query(1, ge=1),
+    sort: str = Query("recent", regex="^(recent|smart)$"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -845,6 +846,23 @@ def get_feed(
             "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
             "createdAt": post.created_at.isoformat(),
         })
+
+    # Smart sorting: score by engagement + recency + media
+    if sort == "smart" and result:
+        from datetime import datetime, timezone
+        now = datetime.now(timezone.utc)
+        for item in result:
+            created = datetime.fromisoformat(item["createdAt"].replace("Z", "+00:00")) if "+" not in item["createdAt"] and "Z" not in item["createdAt"] else datetime.fromisoformat(item["createdAt"].replace("Z", "+00:00"))
+            hours_ago = max((now - created).total_seconds() / 3600, 0.5)
+            engagement = item["likes"] * 2 + item["commentCount"] * 3
+            media_bonus = 5 if item.get("imageUrl") else 0
+            milestone_bonus = 10 if item.get("isMilestone") else 0
+            # Decay: engagement matters more, recency less
+            item["_score"] = (engagement + media_bonus + milestone_bonus) / (hours_ago ** 0.5)
+        result.sort(key=lambda x: x.get("_score", 0), reverse=True)
+        for item in result:
+            item.pop("_score", None)
+
     return result
 
 

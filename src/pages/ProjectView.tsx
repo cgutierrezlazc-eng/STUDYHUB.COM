@@ -367,7 +367,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
@@ -558,7 +558,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               </div>
 
               {showVideoModal && (
-                <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+                <div className="u-card" style={{ padding: 16, marginBottom: 16 }}>
                   <h4 style={{ marginTop: 0 }}>Agregar video o clase</h4>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                     <input
@@ -836,7 +836,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 </div>
 
                 {/* Question card */}
-                <div className="card" style={{ padding: 24, marginBottom: 20 }}>
+                <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
                   <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>
                     {quizQuestions[quizCurrentIndex].question}
                   </h3>
@@ -914,8 +914,8 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             {quizSubmitted && quizQuestions.length > 0 && (
               <div>
                 {/* Score summary */}
-                <div className="card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
-                  <div style={{ fontSize: 48, marginBottom: 8 }}>
+                <div className="u-card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
+                  <div className="empty-state-icon">
                     {quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? BookOpen({ size: 40 }) : Dumbbell({ size: 40 })}
                   </div>
                   <h2 style={{ margin: '0 0 8px' }}>
@@ -974,7 +974,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   return (
                     <div
                       key={i}
-                      className="card"
+                      className="u-card"
                       style={{
                         padding: 20,
                         marginBottom: 12,
@@ -1343,7 +1343,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         {tab === 'summary' && (
           <div style={{ maxWidth: 900, margin: '0 auto' }}>
             {/* Controls */}
-            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+            <div className="u-card" style={{ padding: 20, marginBottom: 20 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                 <div style={{ flex: 1, minWidth: 200 }}>
                   <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, display: 'block' }}>Nivel de detalle</label>
@@ -1399,7 +1399,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
             {/* Summary content */}
             {summaryData && (
-              <div className="card" style={{ padding: 24 }}>
+              <div className="u-card" style={{ padding: 24 }}>
                 {/* Export buttons */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
                   <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>
@@ -1493,7 +1493,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
             {/* Concept Map */}
             {conceptMap && conceptMap.nodes?.length > 0 && (
-              <div className="card" style={{ padding: 24, marginTop: 20 }}>
+              <div className="u-card" style={{ padding: 24, marginTop: 20 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 16 }}>{Map()} Mapa Conceptual</h3>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center' }}>
                   {conceptMap.nodes.map((node: any) => (
@@ -1531,7 +1531,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
             {/* Loading states */}
             {isGeneratingSummary && (
-              <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+              <div className="u-card" style={{ padding: 40, textAlign: 'center' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{Brain({ size: 40 })}</div>
                 <p style={{ fontSize: 15, color: 'var(--text-secondary)' }}>
                   Gemini está analizando tus documentos y creando un resumen inteligente...
@@ -1547,7 +1547,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         {tab === 'live' && (
           <div className="live-class-container">
             {/* Zoom / Meeting Link */}
-            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+            <div className="u-card" style={{ padding: 20, marginBottom: 20 }}>
               <h3 style={{ marginTop: 0 }}>{Link({ size: 16 })} Enlace de Clase en Vivo</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 12 }}>
                 Pega el enlace de Zoom, Google Meet u otra plataforma para acceder a tu clase directamente
@@ -1590,7 +1590,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             </div>
 
             {/* Recording */}
-            <div className="card" style={{ padding: 20, marginBottom: 20 }}>
+            <div className="u-card" style={{ padding: 20, marginBottom: 20 }}>
               <h3 style={{ marginTop: 0 }}>{Mic()} Grabar Clase</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 12 }}>
                 Graba el audio de tu clase para transcribirlo y agregarlo como material de estudio
@@ -1632,14 +1632,14 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               )}
 
               {liveTranscription && (
-                <div className="card" style={{ marginTop: 16, padding: 12, background: 'var(--bg-hover)' }}>
+                <div className="u-card" style={{ marginTop: 16, padding: 12, background: 'var(--bg-hover)' }}>
                   <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>{liveTranscription}</p>
                 </div>
               )}
             </div>
 
             {/* Save transcription to project selector */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h3 style={{ marginTop: 0 }}>{ClipboardList()} Transcripciones de Clases</h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>
                 Las grabaciones transcritas aparecerán automáticamente en la pestaña <strong>Documentos</strong> de esta asignatura

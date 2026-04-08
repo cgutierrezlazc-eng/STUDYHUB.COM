@@ -66,9 +66,9 @@ export default function Events({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div><h2>{Calendar({ size: 20 })} Eventos</h2><p>Sesiones de estudio, preparación de exámenes y más</p></div>
+          <div><h2>{Calendar({ size: 20 })} Eventos</h2><p>Sesiones de estudio, preparacion de examenes y mas</p></div>
           <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ Crear Evento</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -77,19 +77,20 @@ export default function Events({ onNavigate }: Props) {
         </div>
       </div>
       <div className="page-body">
-        {loading ? <div className="loading-dots"><span /><span /><span /></div> :
+        {loading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
         events.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{Calendar({ size: 48 })}</div>
-            <h3>No hay eventos {tab === 'my' ? 'registrados' : 'próximos'}</h3>
+            <div className="empty-state-icon">{Calendar({ size: 48 })}</div>
+            <h3>No hay eventos {tab === 'my' ? 'registrados' : 'proximos'}</h3>
             <p>Crea uno para estudiar con la comunidad</p>
+            <button className="btn btn-primary empty-state-cta" onClick={() => setShowCreate(true)}>+ Crear Evento</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {events.map(event => {
               const typeInfo = EVENT_TYPES.find(t => t.value === event.eventType) || EVENT_TYPES[0]
               return (
-                <div key={event.id} className="card" style={{ padding: 20, display: 'flex', gap: 16 }}>
+                <div key={event.id} className="u-card hover-lift" style={{ display: 'flex', gap: 16 }}>
                   <div style={{ width: 56, textAlign: 'center', flexShrink: 0 }}>
                     <div style={{ fontSize: 11, color: typeInfo.color, fontWeight: 700, textTransform: 'uppercase' }}>
                       {new Date(event.startTime).toLocaleDateString('es', { month: 'short' })}
@@ -109,7 +110,15 @@ export default function Events({ onNavigate }: Props) {
                       {event.location && <span>{event.location}</span>}
                       {event.meetingLink && <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Link({ size: 14 })} Unirse</a>}
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Users({ size: 14 })} {event.attendeeCount}{event.maxAttendees ? `/${event.maxAttendees}` : ''} asistentes</span>
-                      {event.organizer && <span>Organiza: {event.organizer.firstName}</span>}
+                      {event.organizer && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{
+                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          background: event.organizer.avatar ? `url(${event.organizer.avatar}) center/cover` : 'linear-gradient(135deg, #2D62C8, #5B8DEF)',
+                          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 9, fontWeight: 700,
+                        }}>{!event.organizer.avatar && (event.organizer.firstName?.[0] || '?')}</span>
+                        {event.organizer.firstName}
+                      </span>}
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, alignItems: 'flex-end' }}>

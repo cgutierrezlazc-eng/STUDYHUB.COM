@@ -242,10 +242,19 @@ const Icons = {
       </svg>
     </DuotoneIcon>
   ),
+  home: (c: string) => (
+    <DuotoneIcon color={c}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill={`${c}20`} />
+        <polyline points="9 22 9 12 15 12 15 22" />
+      </svg>
+    </DuotoneIcon>
+  ),
 }
 
 /* ─── Icon color palette ─── */
 const IC = {
+  home:       '#2563EB', // brand blue
   profile:    '#3B82F6', // blue
   feed:       '#F97316', // orange
   community:  '#8B5CF6', // violet
@@ -287,8 +296,8 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const [unreadMessages, setUnreadMessages] = useState(0)
 
   // Collapsible section state — auto-open section containing active route
-  const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/mentorship', '/messages', '/my-profile']
-  const academicPaths = ['/dashboard', '/study-rooms', '/conferences', '/search', '/calendar', '/marketplace', '/jobs', '/courses', '/tutores', '/biblioteca']
+  const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
+  const academicPaths = ['/dashboard', '/study-rooms', '/search', '/calendar', '/marketplace', '/jobs']
   const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/ai-workflows', '/admin']
 
   const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
@@ -344,23 +353,20 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         </button>
         {openSections.social && (
           <div className="sidebar-section-items">
-            <button className={`nav-item ${isActive('/') || currentPath === `/user/${user?.id}` || currentPath === '/my-profile' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
+            <button className={`nav-item ${currentPath === '/' ? 'active' : ''}`} onClick={() => onNavigate('/')}>
+              {Icons.home(IC.home)} Inicio
+            </button>
+            <button className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`} onClick={() => onNavigate('/my-profile')}>
               {Icons.user(IC.profile)} Mi Perfil
             </button>
             <button className={`nav-item ${isActive('/feed') ? 'active' : ''}`} onClick={() => onNavigate('/feed')}>
               {Icons.feed(IC.feed)} Feed
             </button>
-            <button className={`nav-item ${isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/friends')}>
-              {Icons.community(IC.community)} Comunidad
-            </button>
-            <button className={`nav-item ${isActive('/communities') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
+            <button className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`} onClick={() => onNavigate('/communities')}>
               {Icons.globe(IC.globe)} Comunidades
             </button>
             <button className={`nav-item ${isActive('/events') ? 'active' : ''}`} onClick={() => onNavigate('/events')}>
               {Icons.calendar(IC.events)} Eventos
-            </button>
-            <button className={`nav-item ${isActive('/mentorship') ? 'active' : ''}`} onClick={() => onNavigate('/mentorship')}>
-              {Icons.compass(IC.compass)} Mentoría
             </button>
             <button className={`nav-item ${isActive('/messages') ? 'active' : ''}`} onClick={() => onNavigate('/messages')}>
               {Icons.messageCircle(IC.messages)} Mensajes
@@ -386,9 +392,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             <button className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`} onClick={() => onNavigate('/study-rooms')}>
               {Icons.bookOpen(IC.rooms)} Salas de Estudio
             </button>
-            <button className={`nav-item ${isActive('/conferences') ? 'active' : ''}`} onClick={() => onNavigate('/conferences')}>
-              {Icons.video(IC.video)} Conferencias
-            </button>
             <button className={`nav-item ${isActive('/search') ? 'active' : ''}`} onClick={() => onNavigate('/search')}>
               {Icons.search(IC.search)} Buscador
             </button>
@@ -400,15 +403,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             </button>
             <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
               {Icons.briefcase(IC.jobs)} Bolsa de Trabajo
-            </button>
-            <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
-              {Icons.diploma(IC.courses)} Cursos
-            </button>
-            <button className={`nav-item ${isActive('/tutores') ? 'active' : ''}`} onClick={() => onNavigate('/tutores')}>
-              {Icons.tutors(IC.tutors)} Tutores
-            </button>
-            <button className={`nav-item ${isActive('/biblioteca') ? 'active' : ''}`} onClick={() => onNavigate('/biblioteca')}>
-              {Icons.book(IC.library)} Biblioteca
             </button>
           </div>
         )}
@@ -453,19 +447,17 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
               {Icons.lightbulb(IC.lightbulb)} Sugerencias
             </button>
             {user?.role === 'owner' && (
-              <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
-                {Icons.building(IC.building)} CEO Panel
-              </button>
-            )}
-            {user?.role === 'owner' && (
-              <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
-                {Icons.users2(IC.hr)} RRHH
-              </button>
-            )}
-            {user?.role === 'owner' && (
-              <button className={`nav-item ${isActive('/ai-workflows') ? 'active' : ''}`} onClick={() => onNavigate('/ai-workflows')}>
-                {Icons.sparkles(IC.ai)} IA Workflows
-              </button>
+              <>
+                <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
+                  {Icons.building(IC.building)} CEO Panel
+                </button>
+                <button className={`nav-item ${isActive('/hr') ? 'active' : ''}`} onClick={() => onNavigate('/hr')}>
+                  {Icons.users2(IC.hr)} RRHH
+                </button>
+                <button className={`nav-item ${isActive('/ai-workflows') ? 'active' : ''}`} onClick={() => onNavigate('/ai-workflows')}>
+                  {Icons.sparkles(IC.ai)} IA Workflows
+                </button>
+              </>
             )}
             {user?.isAdmin && (
               <button className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`} onClick={() => onNavigate('/admin')}>

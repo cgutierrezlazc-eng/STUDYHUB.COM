@@ -71,12 +71,13 @@ const EXP_LEVELS: Record<string, string> = {
   entry: 'Junior', mid: 'Semi-Senior', senior: 'Senior', any: 'Cualquiera',
 }
 
-type TabKey = 'profile' | 'listings' | 'cvs' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'
+type TabKey = 'profile' | 'listings' | 'cvs' | 'cv-coach' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'
 
 const TAB_CONFIG: { key: TabKey; label: string; icon: (p?: any) => React.ReactNode }[] = [
   { key: 'profile', label: 'Mi Perfil', icon: (p) => FileText(p) },
   { key: 'listings', label: 'Ofertas Laborales', icon: (p) => ClipboardList(p) },
   { key: 'cvs', label: 'CVs Publicos', icon: (p) => FileText(p) },
+  { key: 'cv-coach', label: 'CV Coach IA', icon: (p) => Sparkles(p) },
   { key: 'tutoring', label: 'Tutorias', icon: (p) => GraduationCap(p) },
   { key: 'candidates', label: 'Talentos', icon: (p) => Users(p) },
   { key: 'my-apps', label: 'Mis Postulaciones', icon: (p) => FileText(p) },
@@ -192,6 +193,13 @@ export default function Jobs({ onNavigate }: Props) {
   const [recruiterListLoading, setRecruiterListLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // CV Coach state
+  const [coachText, setCoachText] = useState('')
+  const [coachRole, setCoachRole] = useState('')
+  const [coachResult, setCoachResult] = useState<any>(null)
+  const [coachLoading, setCoachLoading] = useState(false)
+  const [coachError, setCoachError] = useState('')
+
   useEffect(() => {
     loadJobs()
     loadMyCV()
@@ -244,21 +252,8 @@ export default function Jobs({ onNavigate }: Props) {
   const loadMyCV = async () => {
     setCvLoadingProfile(true)
     try {
-      const [draft, cvRes] = await Promise.all([
-        fetch(`/api/cv/draft`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
-        }).then(r => r.ok ? r.json() : null).catch(() => null),
-        api.getMyCV().catch(() => null),
-      ])
+      const cvRes = await api.getMyCV().catch(() => null)
       if (cvRes) hydrateCV(cvRes)
-      if (draft) {
-        setCv(prev => ({
-          ...prev,
-          headline: draft.headline || prev.headline,
-          summary: draft.summary || prev.summary,
-          visibility: draft.visibility || prev.visibility,
-        }))
-      }
     } catch (e) { console.error('Error loading CV:', e) }
     setCvLoadingProfile(false)
   }
@@ -334,26 +329,41 @@ export default function Jobs({ onNavigate }: Props) {
     }
   }
 
-  const handleDownloadCVPDF = async () => {
-    try {
-      const token = localStorage.getItem('token')
-      const base = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'
-      const res = await fetch(`${base}/cv/download`, {
-        headers: { 'Authorization': `Bearer ${token}` },
-      })
-      if (!res.ok) throw new Error('Error al generar PDF')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `CV_Conniku.pdf`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    } catch (err: any) {
-      alert(err.message || 'Error al descargar CV')
-    }
+  const handleDownloadCVPDF = () => {
+    const name = `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Profesional'
+    const skills = cv.skillGroups.flatMap(g => g.skills.map(s => s.name)).join(', ')
+    const langs = cv.languages.map(l => `${l.name} (${l.level})`).join(', ')
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>CV - ${name}</title>
+<style>
+@page { size: letter; margin: 2cm 2.5cm; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 10pt; line-height: 1.5; color: #222; }
+h1 { font-size: 20pt; margin-bottom: 2pt; }
+h2 { font-size: 11pt; text-transform: uppercase; letter-spacing: 1px; color: #2D62C8; border-bottom: 1.5px solid #2D62C8; padding-bottom: 3pt; margin: 14pt 0 6pt; }
+.contact { font-size: 9pt; color: #555; margin-bottom: 10pt; }
+.summary { margin-bottom: 10pt; }
+.entry { margin-bottom: 8pt; }
+.entry-title { font-weight: 700; font-size: 10pt; }
+.entry-sub { font-size: 9pt; color: #555; }
+.entry-desc { font-size: 9.5pt; margin-top: 2pt; }
+.skills-list { display: flex; flex-wrap: wrap; gap: 4pt; }
+.skill-tag { font-size: 8.5pt; padding: 2pt 6pt; background: #EEF2F7; border-radius: 3pt; }
+@media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style></head><body>
+<h1>${name}</h1>
+${cv.headline ? `<div style="font-size:11pt;color:#2D62C8;margin-bottom:4pt;">${cv.headline}</div>` : ''}
+<div class="contact">${[cv.location, cv.email, cv.phone].filter(Boolean).join(' · ')}</div>
+${cv.summary ? `<h2>Perfil</h2><div class="summary">${cv.summary}</div>` : ''}
+${cv.experience.length ? `<h2>Experiencia</h2>${cv.experience.map(e => `<div class="entry"><div class="entry-title">${e.title} — ${e.company}</div><div class="entry-sub">${e.location ? e.location + ' · ' : ''}${e.startDate} - ${e.current ? 'Presente' : e.endDate}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
+${cv.education.length ? `<h2>Educacion</h2>${cv.education.map(e => `<div class="entry"><div class="entry-title">${e.degree} en ${e.field}</div><div class="entry-sub">${e.institution} · ${e.startYear} - ${e.endYear}</div>${e.description ? `<div class="entry-desc">${e.description}</div>` : ''}</div>`).join('')}` : ''}
+${skills ? `<h2>Habilidades</h2><div class="skills-list">${cv.skillGroups.flatMap(g => g.skills.map(s => `<span class="skill-tag">${s.name}</span>`)).join('')}</div>` : ''}
+${cv.certifications.length ? `<h2>Certificaciones</h2>${cv.certifications.map(c => `<div class="entry"><div class="entry-title">${c.name}</div><div class="entry-sub">${c.issuer} · ${c.date}</div></div>`).join('')}` : ''}
+${langs ? `<h2>Idiomas</h2><div>${langs}</div>` : ''}
+${cv.competencies.length ? `<h2>Competencias</h2><div class="skills-list">${cv.competencies.map(c => `<span class="skill-tag">${c}</span>`).join('')}</div>` : ''}
+</body></html>`
+    const w = window.open('', '_blank')
+    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500) }
   }
 
   const handleShareWithRecruiters = async () => {
@@ -516,6 +526,16 @@ export default function Jobs({ onNavigate }: Props) {
     return `Hasta ${currency} ${fmt(max!)}`
   }
 
+  const runCvCoach = async () => {
+    if (coachText.trim().length < 30) { setCoachError('Pega tu CV (minimo 30 caracteres)'); return }
+    setCoachLoading(true); setCoachError(''); setCoachResult(null)
+    try {
+      const res = await api.cvCoach(coachText, coachRole)
+      setCoachResult(res)
+    } catch (err: any) { setCoachError(err.message || 'Error al analizar el CV') }
+    finally { setCoachLoading(false) }
+  }
+
   const handleTabChange = (t: TabKey) => {
     setTab(t)
     if (t === 'profile') loadMyCV()
@@ -530,7 +550,7 @@ export default function Jobs({ onNavigate }: Props) {
      RENDER: Professional Profile Tab
   ══════════════════════════════════════════════════ */
   const renderProfileTab = () => {
-    if (cvLoadingProfile) return <div className="loading-dots"><span /><span /><span /></div>
+    if (cvLoadingProfile) return <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
 
     const displayName = (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || 'Profesional'
 
@@ -918,7 +938,7 @@ export default function Jobs({ onNavigate }: Props) {
                 Selecciona un reclutador para enviarle tu perfil profesional y comenzar una conversacion.
               </p>
               {recruiterListLoading ? (
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : recruiterList.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)' }}>
                   <p>No hay reclutadores activos en este momento.</p>
@@ -964,7 +984,7 @@ export default function Jobs({ onNavigate }: Props) {
   ══════════════════════════════════════════════════ */
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>{Briefcase()} Bolsa de Trabajo</h2>
@@ -1023,7 +1043,7 @@ export default function Jobs({ onNavigate }: Props) {
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
               Perfiles profesionales de estudiantes que han decidido hacer publico su curriculum para aumentar su visibilidad laboral.
             </p>
-            {cvLoading ? <div className="loading-dots"><span /><span /><span /></div> :
+            {cvLoading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
             publicCVs.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}>
                 <div>{FileText({ size: 48 })}</div>
@@ -1033,7 +1053,7 @@ export default function Jobs({ onNavigate }: Props) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {publicCVs.map(cv => (
-                  <div key={cv.userId} className="card" style={{ padding: 18, cursor: 'pointer' }}
+                  <div key={cv.userId} className="u-card hover-lift" style={{ padding: 18, cursor: 'pointer' }}
                     onClick={() => onNavigate(`/user/${cv.userId}`)}>
                     <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                       <div style={{
@@ -1095,9 +1115,124 @@ export default function Jobs({ onNavigate }: Props) {
           </div>
         )}
 
+        {/* CV Coach IA */}
+        {tab === 'cv-coach' && (
+          <div style={{ maxWidth: 720 }}>
+            <div className="u-card" style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                {Sparkles({ size: 20, color: '#f59e0b' })}
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700, color: 'var(--text-primary)' }}>CV Coach con IA</h3>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
+                Pega el texto de tu CV y recibe un analisis detallado con puntaje, fortalezas, mejoras sugeridas y secciones faltantes.
+              </p>
+              <div style={{ marginBottom: 12 }}>
+                <label style={cvStyles.label}>Cargo al que postulas (opcional)</label>
+                <input value={coachRole} onChange={e => setCoachRole(e.target.value)}
+                  placeholder="Ej: Ingeniero de Software, Disenador UX, Analista de Datos..."
+                  style={cvStyles.input} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={cvStyles.label}>Texto de tu CV</label>
+                <textarea value={coachText} onChange={e => { setCoachText(e.target.value); setCoachError('') }}
+                  placeholder="Pega aqui todo el contenido de tu curriculum vitae..."
+                  style={{ ...cvStyles.textarea, minHeight: 180 }} />
+              </div>
+              {coachError && <p style={{ color: 'var(--accent-red, #dc2626)', fontSize: 13, marginBottom: 12 }}>{coachError}</p>}
+              <button className="btn btn-primary btn-glow" onClick={runCvCoach} disabled={coachLoading}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {coachLoading ? <>{RefreshCw({ size: 14 })} Analizando...</> : <>{Zap({ size: 14 })} Analizar CV</>}
+              </button>
+            </div>
+
+            {coachResult && (
+              <div className="page-enter" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Score */}
+                <div className="u-card" style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: 48, fontWeight: 800, lineHeight: 1,
+                    color: (coachResult.score || 0) >= 70 ? '#16a34a' : (coachResult.score || 0) >= 40 ? '#f59e0b' : '#dc2626',
+                  }}>
+                    {coachResult.score || 0}<span style={{ fontSize: 20, fontWeight: 500 }}>/100</span>
+                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>Puntaje General</p>
+                </div>
+
+                {/* Strengths */}
+                {coachResult.strengths && coachResult.strengths.length > 0 && (
+                  <div className="u-card">
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: '#16a34a', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {CheckCircle({ size: 16 })} Fortalezas
+                    </h4>
+                    <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {coachResult.strengths.map((s: string, i: number) => (
+                        <li key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Improvements */}
+                {coachResult.improvements && coachResult.improvements.length > 0 && (
+                  <div className="u-card">
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: '#f59e0b', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {Target({ size: 16 })} Mejoras Sugeridas
+                    </h4>
+                    <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {coachResult.improvements.map((s: string, i: number) => (
+                        <li key={i} style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Missing Sections */}
+                {coachResult.missing_sections && coachResult.missing_sections.length > 0 && (
+                  <div className="u-card">
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: '#dc2626', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {XCircle({ size: 16 })} Secciones Faltantes
+                    </h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                      {coachResult.missing_sections.map((s: string, i: number) => (
+                        <span key={i} style={{
+                          fontSize: 12, padding: '4px 10px', borderRadius: 12,
+                          background: 'rgba(220,38,38,0.08)', color: '#dc2626',
+                          border: '1px solid rgba(220,38,38,0.15)',
+                        }}>{s}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rewrite Suggestion */}
+                {coachResult.rewrite_suggestion && (
+                  <div className="u-card">
+                    <h4 style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', margin: '0 0 10px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {Sparkles({ size: 16 })} Sugerencia de Reescritura
+                    </h4>
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                      {coachResult.rewrite_suggestion}
+                    </p>
+                  </div>
+                )}
+
+                {/* Tip */}
+                {coachResult.tip && (
+                  <div className="u-card-flat" style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    {Award({ size: 18, color: '#f59e0b' })}
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+                      <strong>Consejo:</strong> {coachResult.tip}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Job Listings */}
         {tab === 'listings' && (
-          loading ? <div className="loading-dots"><span /><span /><span /></div> :
+          loading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
           jobs.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
               <div>{Briefcase({ size: 48 })}</div>
@@ -1107,7 +1242,7 @@ export default function Jobs({ onNavigate }: Props) {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {jobs.map(job => (
-                <div key={job.id} className="card" style={{ padding: 20, cursor: 'pointer' }} onClick={() => setSelectedJob(job)}>
+                <div key={job.id} className="u-card hover-lift" style={{ padding: 20, cursor: 'pointer' }} onClick={() => setSelectedJob(job)}>
                   <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
                     <div style={{ width: 48, height: 48, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>
                       {job.companyLogo ? <img src={job.companyLogo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
@@ -1143,7 +1278,7 @@ export default function Jobs({ onNavigate }: Props) {
         {tab === 'candidates' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
             {candidates.map((c: any) => (
-              <div key={c.user?.id} className="card" style={{ padding: 16 }}>
+              <div key={c.user?.id} className="u-card hover-lift" style={{ padding: 16 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                   <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, overflow: 'hidden', cursor: 'pointer' }}
                     onClick={() => onNavigate(`/user/${c.user?.id}`)}>
@@ -1173,7 +1308,7 @@ export default function Jobs({ onNavigate }: Props) {
             {myApps.length === 0 ? (
               <div className="empty-state" style={{ padding: 40 }}><div>{FileText({ size: 48 })}</div><h3>No has aplicado a ofertas</h3></div>
             ) : myApps.map((a: any) => (
-              <div key={a.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div key={a.id} className="u-card hover-lift" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
                 <div style={{ width: 40, height: 40, borderRadius: 8, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>
                   {a.job?.companyLogo ? <img src={a.job.companyLogo} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
                 </div>
@@ -1227,7 +1362,7 @@ export default function Jobs({ onNavigate }: Props) {
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
                 {tutorings.map((t: any) => (
-                  <div key={t.id} className="card" style={{ padding: 20 }}>
+                  <div key={t.id} className="u-card hover-lift" style={{ padding: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                       <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 16, overflow: 'hidden' }}>
                         {t.tutor?.avatar ? <img src={t.tutor.avatar} alt="" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} /> : (t.tutor?.firstName?.[0] || '?')}
@@ -1274,7 +1409,7 @@ export default function Jobs({ onNavigate }: Props) {
         {tab === 'recruiter' && (
           <div>
             {recruiterProfile ? (
-              <div className="card" style={{ padding: 24 }}>
+              <div className="u-card hover-lift" style={{ padding: 24 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
                   <div style={{ width: 56, height: 56, borderRadius: 12, background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
                     {recruiterProfile.companyLogo ? <img src={recruiterProfile.companyLogo} alt="" style={{ width: 56, height: 56, borderRadius: 12, objectFit: 'cover' }} /> : BuildingIcon({ size: 20 })}
@@ -1304,7 +1439,7 @@ export default function Jobs({ onNavigate }: Props) {
                 )}
               </div>
             ) : (
-              <div className="card" style={{ padding: 24 }}>
+              <div className="u-card hover-lift" style={{ padding: 24 }}>
                 <h3 style={{ marginTop: 0 }}>{BuildingIcon()} Registrarse como Reclutador</h3>
                 <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>Registra tu empresa para publicar ofertas y buscar talento verificado</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>

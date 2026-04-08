@@ -114,7 +114,7 @@ export default function CommunityView({ onNavigate }: Props) {
     return `${Math.floor(hrs / 24)}d`
   }
 
-  if (loading) return <div className="page-body"><div className="loading-dots"><span /><span /><span /></div></div>
+  if (loading) return <div className="page-body"><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div></div>
   if (!community) return <div className="page-body"><div className="empty-state"><h3>Comunidad no encontrada</h3></div></div>
 
   const isAdmin = community.memberRole === 'admin'
@@ -122,7 +122,7 @@ export default function CommunityView({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 12 }}>
           <div style={{ width: 56, height: 56, borderRadius: 12, background: 'linear-gradient(135deg, var(--accent)33, var(--accent-purple)33)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28 }}>
             {community.avatar || Globe({ size: 36 })}
@@ -156,16 +156,16 @@ export default function CommunityView({ onNavigate }: Props) {
         {tab === 'posts' && (
           <>
             {community.isMember && (
-              <div className="card" style={{ padding: 16, marginBottom: 16 }}>
+              <div className="u-card" style={{ padding: 16, marginBottom: 16 }}>
                 <textarea value={newPost} onChange={e => setNewPost(e.target.value)} placeholder="Publica algo en la comunidad..."
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border-color)', borderRadius: 12, background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, fontFamily: 'inherit', marginBottom: 8 }} />
                 <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={!newPost.trim()}>Publicar</button>
               </div>
             )}
             {posts.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{Megaphone({ size: 48 })}</div><h3>Sin publicaciones aún</h3><p>Sé el primero en compartir algo</p></div>
+              <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{Megaphone({ size: 48 })}</div><h3>Sin publicaciones aún</h3><p>Sé el primero en compartir algo</p></div>
             ) : posts.map(post => (
-              <div key={post.id} className="card" style={{ padding: 16, marginBottom: 12 }}>
+              <div key={post.id} className="u-card" style={{ padding: 16, marginBottom: 12 }}>
                 {post.isPinned && <div style={{ fontSize: 12, color: 'var(--accent-orange)', fontWeight: 600, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Pin({ size: 12 })} Fijado</div>}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <div onClick={() => onNavigate(`/user/${post.author?.id}`)} style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', overflow: 'hidden', fontSize: 14 }}>
@@ -221,7 +221,7 @@ export default function CommunityView({ onNavigate }: Props) {
         {tab === 'members' && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 12 }}>
             {members.map(m => (
-              <div key={m.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div key={m.id} className="u-card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div onClick={() => onNavigate(`/user/${m.user?.id}`)} style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', overflow: 'hidden' }}>
                   {m.user?.avatar ? <img src={m.user.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} /> : (m.user?.firstName?.[0] || '?')}
                 </div>
@@ -238,7 +238,7 @@ export default function CommunityView({ onNavigate }: Props) {
         )}
 
         {tab === 'info' && (
-          <div className="card" style={{ padding: 20 }}>
+          <div className="u-card" style={{ padding: 20 }}>
             <h3 style={{ marginTop: 0 }}>Información</h3>
             {community.description && <p style={{ fontSize: 14, lineHeight: 1.6 }}>{community.description}</p>}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 16 }}>

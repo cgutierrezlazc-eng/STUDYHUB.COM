@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks } from '../components/Icons'
+import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks, Sparkles } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -17,9 +17,13 @@ export default function Feed({ onNavigate }: Props) {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [feedSort, setFeedSort] = useState<'recent' | 'smart'>(() => (localStorage.getItem('conniku_feed_sort') as any) || 'recent')
   const [newPostContent, setNewPostContent] = useState('')
   const [postImage, setPostImage] = useState<string | null>(null)
   const [posting, setPosting] = useState(false)
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([])
+  const [tagsLoading, setTagsLoading] = useState(false)
+  const tagTimeoutRef = useRef<any>(null)
   const [universityNews, setUniversityNews] = useState<any[]>([])
   const [newsLoading, setNewsLoading] = useState(false)
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({})
@@ -63,9 +67,9 @@ export default function Feed({ onNavigate }: Props) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const loadFeed = async (p: number = 1) => {
+  const loadFeed = async (p: number = 1, sort?: 'recent' | 'smart') => {
     try {
-      const data = await api.getFeed(p)
+      const data = await api.getFeed(p, sort || feedSort)
       const items = Array.isArray(data) ? data : (data.posts || data.items || [])
       if (p === 1) setPosts(items)
       else setPosts(prev => [...prev, ...items])
@@ -91,6 +95,7 @@ export default function Feed({ onNavigate }: Props) {
       setPostImage(null)
       setPostVisibility('public')
       setPostVisibilityListId(null)
+      setSuggestedTags([])
       loadFeed(1)
     } catch (err: any) {
       alert(err.message || 'Error al publicar')
@@ -201,9 +206,27 @@ export default function Feed({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
-        <h2>{Home({ size: 22 })} Inicio</h2>
-        <p>Actividad de tu red de estudio</p>
+      <div className="page-header page-enter">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2>{Home({ size: 22 })} Inicio</h2>
+            <p>Actividad de tu red de estudio</p>
+          </div>
+          <div style={{ display: 'flex', gap: 4, background: 'var(--bg-secondary)', borderRadius: 8, padding: 3 }}>
+            <button
+              className={`tab ${feedSort === 'recent' ? 'active' : ''}`}
+              style={{ fontSize: 12, padding: '5px 12px' }}
+              onClick={() => { setFeedSort('recent'); localStorage.setItem('conniku_feed_sort', 'recent'); setLoading(true); loadFeed(1, 'recent') }}>
+              Reciente
+            </button>
+            <button
+              className={`tab ${feedSort === 'smart' ? 'active' : ''}`}
+              style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 4 }}
+              onClick={() => { setFeedSort('smart'); localStorage.setItem('conniku_feed_sort', 'smart'); setLoading(true); loadFeed(1, 'smart') }}>
+              {Sparkles({ size: 12 })} Relevante
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="page-body">
@@ -211,7 +234,7 @@ export default function Feed({ onNavigate }: Props) {
           {/* Main Feed */}
           <div>
             {/* Composer */}
-            <div className="card" style={{ padding: 16, marginBottom: 20 }}>
+            <div className="u-card" style={{ padding: 16, marginBottom: 20 }}>
               <div style={{ display: 'flex', gap: 12 }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)',
@@ -223,7 +246,23 @@ export default function Feed({ onNavigate }: Props) {
                 <div style={{ flex: 1 }}>
                   <textarea
                     value={newPostContent}
-                    onChange={e => setNewPostContent(e.target.value)}
+                    onChange={e => {
+                      setNewPostContent(e.target.value)
+                      // Auto-tag after 30+ chars with debounce
+                      if (tagTimeoutRef.current) clearTimeout(tagTimeoutRef.current)
+                      if (e.target.value.trim().length >= 30) {
+                        tagTimeoutRef.current = setTimeout(async () => {
+                          setTagsLoading(true)
+                          try {
+                            const result = await api.autoTag(e.target.value)
+                            if (result.tags?.length) setSuggestedTags(result.tags)
+                          } catch {}
+                          setTagsLoading(false)
+                        }, 1500)
+                      } else {
+                        setSuggestedTags([])
+                      }
+                    }}
                     placeholder={'\u00BFQu\u00E9 est\u00E1s estudiando?'}
                     style={{
                       width: '100%', minHeight: 60, resize: 'vertical', padding: 12,
@@ -367,9 +406,22 @@ export default function Feed({ onNavigate }: Props) {
                         )}
                       </div>
                     </div>
-                    <button className="btn btn-primary btn-sm" onClick={handlePost} disabled={posting || (!newPostContent.trim() && !postImage)}>
-                      {posting ? 'Publicando...' : 'Publicar'}
-                    </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {suggestedTags.length > 0 && (
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                          {suggestedTags.map((tag, i) => (
+                            <span key={i} className="u-card-tag" style={{ fontSize: 10, cursor: 'pointer' }}
+                              onClick={() => setNewPostContent(prev => prev + ` #${tag.replace(/\s/g, '')}`)}>
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {tagsLoading && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sugiriendo tags...</span>}
+                      <button className="btn btn-primary btn-sm press-feedback" onClick={handlePost} disabled={posting || (!newPostContent.trim() && !postImage)}>
+                        {posting ? 'Publicando...' : 'Publicar'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -377,20 +429,37 @@ export default function Feed({ onNavigate }: Props) {
 
             {/* Posts */}
             {loading ? (
-              <div className="loading-dots"><span /><span /><span /></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="u-card-flat" style={{ padding: 16 }}>
+                    <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
+                      <div className="skeleton skeleton-avatar" />
+                      <div style={{ flex: 1 }}>
+                        <div className="skeleton skeleton-text" style={{ width: '40%' }} />
+                        <div className="skeleton skeleton-text" style={{ width: '20%' }} />
+                      </div>
+                    </div>
+                    <div className="skeleton skeleton-text" style={{ width: '100%' }} />
+                    <div className="skeleton skeleton-text" style={{ width: '80%' }} />
+                    <div className="skeleton skeleton-text" style={{ width: '60%' }} />
+                  </div>
+                ))}
+              </div>
             ) : posts.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}>
-                <div style={{ fontSize: 48 }}>{Megaphone({ size: 48 })}</div>
-                <h3>Tu feed est&aacute; vac&iacute;o</h3>
-                <p>Agrega amigos para ver su actividad aqu&iacute;</p>
-                <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => onNavigate('/friends')}>
-                  Buscar Compa&ntilde;eros
+              <div className="empty-state">
+                <div className="empty-state-icon" style={{ background: 'rgba(249,115,22,0.08)' }}>
+                  {Megaphone({ size: 28, color: 'var(--accent-orange)' })}
+                </div>
+                <div className="empty-state-title">Tu feed esta vacio</div>
+                <div className="empty-state-desc">Conecta con otros estudiantes para ver publicaciones, apuntes y actividad de tu comunidad.</div>
+                <button className="empty-state-cta" onClick={() => onNavigate('/friends')}>
+                  {UsersIcon({ size: 14 })} Buscar Companeros
                 </button>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {posts.map(post => (
-                  <div key={post.id} className="card" style={{ padding: 16 }}>
+                  <div key={post.id} className="u-card" style={{ padding: 16 }}>
                     {/* Post Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                       <div onClick={() => onNavigate(`/user/${post.authorId || post.author?.id}`)} style={{
@@ -635,7 +704,7 @@ export default function Feed({ onNavigate }: Props) {
             )}
 
             {/* Quick Links */}
-            <div className="card" style={{ padding: 16 }}>
+            <div className="u-card" style={{ padding: 16 }}>
               <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Accesos r&aacute;pidos</h4>
               {[
                 { icon: Calendar({ size: 16 }), label: 'Calendario', path: '/calendar' },

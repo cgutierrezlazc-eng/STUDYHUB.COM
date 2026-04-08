@@ -80,7 +80,7 @@ export default function StudyRooms({ onNavigate }: Props) {
   if (activeRoom) {
     return (
       <>
-        <div className="page-header">
+        <div className="page-header page-enter">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2>{BookOpen()} {activeRoom.name}</h2>
@@ -116,7 +116,7 @@ export default function StudyRooms({ onNavigate }: Props) {
 
           {/* Video Link */}
           {activeRoom.meetingUrl && (
-            <div className="card" style={{ padding: 20, textAlign: 'center', width: '100%', maxWidth: 500 }}>
+            <div className="u-card hover-lift" style={{ padding: 20, textAlign: 'center', width: '100%', maxWidth: 500 }}>
               <h4 style={{ marginTop: 0 }}>{Video()} Videollamada</h4>
               <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>Estudia con cámara prendida para mantener el enfoque</p>
               <a href={activeRoom.meetingUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
@@ -132,7 +132,7 @@ export default function StudyRooms({ onNavigate }: Props) {
   // Room list
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>{BookOpen()} Salas de Estudio</h2>
@@ -142,7 +142,7 @@ export default function StudyRooms({ onNavigate }: Props) {
         </div>
       </div>
       <div className="page-body">
-        {loading ? <div className="loading-dots"><span /><span /><span /></div> :
+        {loading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
         rooms.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
             <div>{BookOpen({ size: 48 })}</div>
@@ -152,7 +152,7 @@ export default function StudyRooms({ onNavigate }: Props) {
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
             {rooms.map(room => (
-              <div key={room.id} className="card" style={{ padding: 20 }}>
+              <div key={room.id} className="u-card hover-lift" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                   <h4 style={{ margin: 0, fontSize: 15 }}>{room.name}</h4>
                   <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 12, background: room.roomType === 'pomodoro' ? 'rgba(37,99,235,0.08)' : 'var(--bg-tertiary)', color: room.roomType === 'pomodoro' ? 'var(--accent)' : 'var(--text-muted)' }}>

@@ -226,7 +226,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>{Briefcase({ size: 22 })} Panel CEO — Conniku</h2>
         <p>Vista exclusiva del estado completo de la plataforma</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -245,7 +245,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
       </div>
 
       <div className="page-body">
-        {loading ? <div className="loading-dots"><span /><span /><span /></div> : <>
+        {loading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3,4].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> : <>
 
           {/* OVERVIEW */}
           {tab === 'overview' && weeklyReport && (
@@ -273,12 +273,12 @@ export default function CeoDashboard({ onNavigate }: Props) {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div className="card" style={{ padding: 20 }}>
+                <div className="u-card" style={{ padding: 20 }}>
                   <h4 style={{ marginTop: 0 }}>{Gem({ size: 16 })} Ganancia Neta</h4>
                   <div style={{ fontSize: 28, fontWeight: 700 }}>${fmt(weeklyReport.revenue?.gananciaNetaClp)} CLP</div>
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Despues de comisiones + IVA 19%</p>
                 </div>
-                <div className="card" style={{ padding: 20 }}>
+                <div className="u-card" style={{ padding: 20 }}>
                   <h4 style={{ marginTop: 0 }}>{BarChart3({ size: 16 })} Engagement</h4>
                   <div style={{ fontSize: 13 }}>
                     <div>Posts: {weeklyReport.engagement?.wallPosts} | Comunidad: {weeklyReport.engagement?.communityPosts}</div>
@@ -294,7 +294,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
             <div>
               {/* Payment Providers Status */}
               <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
-                <div className="card" style={{
+                <div className="u-card" style={{
                   padding: 16, flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 12,
                   borderLeft: '4px solid #009ee3',
                 }}>
@@ -306,7 +306,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                     <div style={{ fontSize: 11, color: '#009ee3' }}>Activo — Chile (CLP)</div>
                   </div>
                 </div>
-                <div className="card" style={{
+                <div className="u-card" style={{
                   padding: 16, flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 12,
                   borderLeft: '4px solid #003087',
                 }}>
@@ -340,7 +340,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 </div>
               </div>
 
-              <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+              <div className="u-card" style={{ padding: 20, marginBottom: 16 }}>
                 <h4 style={{ marginTop: 0 }}>Desglose Financiero (CLP)</h4>
                 <table style={{ width: '100%', fontSize: 14 }}>
                   <tbody>
@@ -355,7 +355,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
               </div>
 
               {financials.recentPayments?.length > 0 && (
-                <div className="card" style={{ padding: 20 }}>
+                <div className="u-card" style={{ padding: 20 }}>
                   <h4 style={{ marginTop: 0 }}>Pagos Recientes</h4>
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', fontSize: 13, borderCollapse: 'collapse' }}>
@@ -386,14 +386,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {tab === 'f129' && (
             <div>
               {!f129 ? (
-                <div className="card" style={{ padding: 24, textAlign: 'center' }}>
+                <div className="u-card" style={{ padding: 24, textAlign: 'center' }}>
                   <h3>{ClipboardList({ size: 18 })} Generar F129</h3>
                   <p style={{ color: 'var(--text-muted)' }}>Genera el formulario F129 para declarar IVA ante el SII</p>
                   <button className="btn btn-primary" onClick={() => loadF129()}>Generar Período Actual</button>
                 </div>
               ) : (
                 <div>
-                  <div className="card" style={{ padding: 24, marginBottom: 16 }}>
+                  <div className="u-card" style={{ padding: 24, marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                       <h3 style={{ margin: 0 }}>{ClipboardList({ size: 18 })} F129 — {f129.periodoTexto}</h3>
                       <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 12, background: f129.estado === 'generado' ? 'var(--bg-tertiary)' : 'rgba(5,150,105,0.08)', color: f129.estado === 'generado' ? 'var(--text-muted)' : 'var(--accent-green)' }}>
@@ -425,13 +425,13 @@ export default function CeoDashboard({ onNavigate }: Props) {
           {/* FRAUD */}
           {tab === 'fraud' && fraudReport && (
             <div>
-              <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+              <div className="u-card" style={{ padding: 20, marginBottom: 16 }}>
                 <h4 style={{ marginTop: 0 }}>{Shield({ size: 16 })} Referidos — Detección de Fraude</h4>
                 <p style={{ fontSize: 14 }}>Total referidos: <strong>{fraudReport.totalReferrals}</strong></p>
               </div>
               {fraudReport.suspiciousAccounts?.length > 0 ? (
                 fraudReport.suspiciousAccounts.map((s: any) => (
-                  <div key={s.userId} className="card" style={{ padding: 16, marginBottom: 8, borderLeft: `4px solid ${s.fraudProbability > 70 ? 'var(--accent-red)' : 'var(--accent-orange)'}` }}>
+                  <div key={s.userId} className="u-card" style={{ padding: 16, marginBottom: 8, borderLeft: `4px solid ${s.fraudProbability > 70 ? 'var(--accent-red)' : 'var(--accent-orange)'}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                       <div>
                         <strong>{s.name}</strong> <span style={{ color: 'var(--text-muted)' }}>@{s.username}</span>
@@ -444,14 +444,14 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   </div>
                 ))
               ) : (
-                <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{CheckCircle({ size: 48 })}</div><h3>Sin actividad sospechosa</h3></div>
+                <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{CheckCircle({ size: 48 })}</div><h3>Sin actividad sospechosa</h3></div>
               )}
             </div>
           )}
 
           {/* COMPLIANCE */}
           {tab === 'compliance' && compliance && (
-            <div className="card" style={{ padding: 24 }}>
+            <div className="u-card" style={{ padding: 24 }}>
               <h3 style={{ marginTop: 0 }}>{CheckCircle({ size: 18 })} Estado de Cumplimiento Legal</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                 {compliance.requirements?.map((req: string, i: number) => (
@@ -505,7 +505,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
               )}
 
               {certLoading ? (
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : progressData ? (
                 <>
                   {/* Summary cards */}
@@ -516,7 +516,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                       { label: 'Cursos en progreso', value: progressData.summary.totalInProgress, icon: BookOpen({ size: 24 }), color: '#C4882A' },
                       { label: 'Total de cursos', value: progressData.summary.totalCourses, icon: BookOpen({ size: 24 }), color: '#5B5FC7' },
                     ].map((card, i) => (
-                      <div key={i} className="card" style={{ padding: 16, textAlign: 'center' }}>
+                      <div key={i} className="u-card" style={{ padding: 16, textAlign: 'center' }}>
                         <div style={{ fontSize: 24, marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{card.icon}</div>
                         <div style={{ fontSize: 28, fontWeight: 700, color: card.color }}>{card.value}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{card.label}</div>
@@ -569,7 +569,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                       const completedCourses = userData.courses.filter((c: any) => c.completed)
 
                       return (
-                        <div key={userData.userId} className="card" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
+                        <div key={userData.userId} className="u-card" style={{ padding: 0, marginBottom: 12, overflow: 'hidden' }}>
                           {/* User header */}
                           <div style={{
                             padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -709,7 +709,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
                   {progressData.users.length === 0 && (
                     <div className="empty-state" style={{ padding: 40 }}>
-                      <div style={{ fontSize: 48 }}>{ClipboardList({ size: 48 })}</div>
+                      <div className="empty-state-icon">{ClipboardList({ size: 48 })}</div>
                       <h3>Sin actividad aún</h3>
                       <p style={{ color: 'var(--text-muted)' }}>Ningún usuario ha empezado cursos todavía.</p>
                     </div>
@@ -717,7 +717,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
                 </>
               ) : (
                 <div className="empty-state" style={{ padding: 40 }}>
-                  <div style={{ fontSize: 48 }}>{GraduationCap({ size: 48 })}</div>
+                  <div className="empty-state-icon">{GraduationCap({ size: 48 })}</div>
                   <h3>Carga los datos de progreso</h3>
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
                     Cargar datos
@@ -729,7 +729,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
                     {/* PUSH NOTIFICATIONS TAB */}
           {tab === 'push' && (
-            <div className="card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
+            <div className="u-card" style={{ padding: 20, marginTop: 16, border: '2px solid var(--accent-blue)', borderRadius: 12 }}>
               <h4 style={{ margin: '0 0 12px', fontSize: 15 }}>📲 Notificación Push a Todos los Usuarios</h4>
               <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).</p>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>

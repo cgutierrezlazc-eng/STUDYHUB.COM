@@ -69,7 +69,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <h2>{getGreetingIcon()} {t(`welcome.${user?.gender || 'unspecified'}`)}, {user?.firstName}!</h2>
@@ -135,7 +135,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
         {/* League + Study Time Row */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 20 }}>
           {/* League Widget */}
-          <div className="card" style={{ padding: 20 }}>
+          <div className="u-card" style={{ padding: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{Trophy({ size: 16, color: 'var(--accent-orange)' })} Liga Semanal</h3>
               {league && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{league.daysLeft}d restantes</span>}
@@ -181,7 +181,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
           </div>
 
           {/* Study Time Breakdown */}
-          <div className="card" style={{ padding: 20 }}>
+          <div className="u-card" style={{ padding: 20 }}>
             <h3 style={{ margin: '0 0 12px', fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{BarChart3({ size: 16 })} Tiempo de Estudio</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: 12, textAlign: 'center' }}>
@@ -225,7 +225,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
             { icon: BookOpen({ size: 24 }), label: 'Apuntes', path: '/marketplace' },
             { icon: Users({ size: 24 }), label: 'Comunidad', path: '/friends' },
           ].map(action => (
-            <button key={action.path} className="card" onClick={() => onNavigate(action.path)}
+            <button key={action.path} className="u-card" onClick={() => onNavigate(action.path)}
               style={{ padding: 16, textAlign: 'center', cursor: 'pointer', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
               <div style={{ color: 'var(--accent)' }}>{action.icon}</div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{action.label}</div>
@@ -254,7 +254,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
 
         {/* Tip Card */}
         {totalDocs === 0 && projects.length > 0 && (
-          <div className="card" style={{ marginTop: 20, padding: 16, borderLeft: '4px solid var(--accent-orange)' }}>
+          <div className="u-card" style={{ marginTop: 20, padding: 16, borderLeft: '4px solid var(--accent-orange)' }}>
             <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>{Lightbulb({ size: 16, color: 'var(--accent-orange)' })} Consejo:</strong> Sube documentos a una asignatura para que Conniku genere guías, quizzes y flashcards automáticamente.
           </div>
         )}
@@ -263,7 +263,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
         {friendActivity.length > 0 && (
           <div style={{ marginTop: 20 }}>
             <h3 style={{ fontSize: 15, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>{Megaphone({ size: 16 })} Actividad de amigos</h3>
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <div className="u-card" style={{ padding: 0, overflow: 'hidden' }}>
               {friendActivity.map((act: any, i: number) => (
                 <div key={i} onClick={() => act.userId && onNavigate(`/user/${act.userId}`)}
                   style={{

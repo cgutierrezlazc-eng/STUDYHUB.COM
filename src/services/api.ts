@@ -346,6 +346,21 @@ export const api = {
   sendClosureFeedback: (reason: string, feedback: string) =>
     request('/auth/me/closure-feedback', { method: 'POST', body: JSON.stringify({ reason, feedback }) }),
 
+  sendSuggestion: (type: string, subject: string, message: string) =>
+    request('/auth/me/suggestion', { method: 'POST', body: JSON.stringify({ type, subject, message }) }),
+
+  // ─── AI Study Buddy & Auto-tag ─────────────────────────────
+  studyBuddy: (message: string, context: string = '', history: any[] = []) =>
+    request('/ai/study-buddy', { method: 'POST', body: JSON.stringify({ message, context, history }) }),
+
+  autoTag: (text: string) =>
+    request('/ai/auto-tag', { method: 'POST', body: JSON.stringify({ text }) }),
+
+  dailySummary: () => request('/ai/daily-summary'),
+
+  cvCoach: (cvText: string, targetRole: string = '') =>
+    request('/ai/cv-coach', { method: 'POST', body: JSON.stringify({ cv_text: cvText, target_role: targetRole }) }),
+
   // ─── Password Recovery ──────────────────────────────────────
   forgotPassword: (email: string) =>
     request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
@@ -370,8 +385,8 @@ export const api = {
     request(`/social/users/search?q=${encodeURIComponent(q)}`),
   getUserProfile: (userId: string) =>
     request(`/social/users/${userId}/profile`),
-  getFeed: (page: number = 1) =>
-    request(`/social/feed?page=${page}`),
+  getFeed: (page: number = 1, sort: 'recent' | 'smart' = 'recent') =>
+    request(`/social/feed?page=${page}&sort=${sort}`),
   getActivityFeed: (page: number = 1) =>
     request(`/social/activity-feed?page=${page}`),
 

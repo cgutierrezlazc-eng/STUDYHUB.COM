@@ -97,7 +97,7 @@ export default function Marketplace({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>{BookOpen({ size: 20 })} Marketplace de Apuntes</h2>
@@ -126,10 +126,10 @@ export default function Marketplace({ onNavigate }: Props) {
 
       <div className="page-body">
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
         ) : documents.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{BookOpen({ size: 48 })}</div>
+            <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
             <h3>No hay apuntes todavía</h3>
             <p>Sé el primero en compartir material de estudio con la comunidad</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowShare(true)}>
@@ -140,7 +140,7 @@ export default function Marketplace({ onNavigate }: Props) {
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
               {documents.map(doc => (
-                <div key={doc.id} className="card" style={{ padding: 20 }}>
+                <div key={doc.id} className="u-card" style={{ padding: 20 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                     <div>
                       <h4 style={{ margin: '0 0 4px', fontSize: 15 }}>{doc.title}</h4>

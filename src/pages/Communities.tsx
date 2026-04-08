@@ -75,7 +75,7 @@ export default function Communities({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>{Users({ size: 22 })} Comunidades</h2>
@@ -91,7 +91,7 @@ export default function Communities({ onNavigate }: Props) {
 
       <div className="page-body">
         {tab === 'explore' && suggestions.length > 0 && (
-          <div className="card" style={{ padding: 16, marginBottom: 20 }}>
+          <div className="u-card hover-lift" style={{ padding: 16, marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h4 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{Users({ size: 16 })} Personas sugeridas</h4>
               <button className="btn btn-secondary btn-xs" onClick={() => onNavigate('/friends')}>Ver todas</button>
@@ -139,18 +139,32 @@ export default function Communities({ onNavigate }: Props) {
         )}
 
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="skeleton skeleton-card" style={{ height: 160 }} />
+            ))}
+          </div>
         ) : communities.length === 0 ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
-            <h3>{tab === 'my' ? 'Aún no te has unido a ninguna comunidad' : 'No se encontraron comunidades'}</h3>
-            <p>{tab === 'my' ? 'Explora y únete a comunidades de tu interés' : 'Sé el primero en crear una'}</p>
-            {tab === 'my' && <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setTab('explore')}>Explorar</button>}
+          <div className="empty-state">
+            <div className="empty-state-icon" style={{ background: 'rgba(124,58,237,0.08)' }}>
+              {Users({ size: 28, color: 'var(--accent-purple)' })}
+            </div>
+            <div className="empty-state-title">{tab === 'my' ? 'Aun no te unes a comunidades' : 'No se encontraron comunidades'}</div>
+            <div className="empty-state-desc">{tab === 'my' ? 'Conecta con estudiantes de tu carrera, comparte apuntes y resuelve dudas juntos.' : 'Se el primero en crear una comunidad para tu area.'}</div>
+            {tab === 'my' ? (
+              <button className="empty-state-cta" onClick={() => setTab('explore')}>
+                {SearchIcon({ size: 14 })} Explorar Comunidades
+              </button>
+            ) : (
+              <button className="empty-state-cta" onClick={() => setShowCreate(true)}>
+                Crear Comunidad
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
             {communities.map(c => (
-              <div key={c.id} className="card" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
+              <div key={c.id} className="u-card hover-lift" style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
                 onClick={() => onNavigate(`/communities/${c.id}`)}>
                 <div style={{ height: 80, background: `linear-gradient(135deg, var(--accent)33, var(--accent-purple)33)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: 36 }}>{c.avatar || Globe({ size: 36 })}</span>

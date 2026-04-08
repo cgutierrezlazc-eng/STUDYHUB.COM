@@ -147,7 +147,7 @@ export default function Profile() {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>Configuración</h2>
         <p>Gestiona tu cuenta, privacidad y preferencias</p>
       </div>

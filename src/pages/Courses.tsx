@@ -296,7 +296,7 @@ export default function Courses({ onNavigate }: Props) {
 
         {generating ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 20px' }}>
-            <div className="loading-dots"><span /><span /><span /></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
             <h3 style={{ marginTop: 20, color: 'var(--text-primary)' }}>Preparando contenido...</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Esto puede tomar unos segundos</p>
           </div>
@@ -452,7 +452,7 @@ export default function Courses({ onNavigate }: Props) {
                 <div style={{ maxWidth: 720 }}>
                   {exerciseLoading ? (
                     <div style={{ textAlign: 'center', padding: 60 }}>
-                      <div className="loading-dots"><span /><span /><span /></div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                       <p style={{ color: 'var(--text-muted)', marginTop: 12, fontSize: 14 }}>Preparando ejercicios...</p>
                     </div>
                   ) : exerciseError && exercises.length === 0 ? (
@@ -946,7 +946,7 @@ export default function Courses({ onNavigate }: Props) {
   // ─── CATALOG VIEW ─────────────────────────────────────────────
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         {/* Reward banner */}
         <div style={{
           background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 100%)',
@@ -996,7 +996,7 @@ export default function Courses({ onNavigate }: Props) {
         {tab === 'my-certs' ? (
           certificates.length === 0 ? (
             <div className="empty-state" style={{ padding: 40 }}>
-              <div style={{ fontSize: 48 }}>{Medal({ size: 48 })}</div>
+              <div className="empty-state-icon">{Medal({ size: 48 })}</div>
               <h3>Aún no tienes certificados</h3>
               <p>Completa cursos para obtener certificados que se agregan a tu perfil profesional</p>
               <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => setTab('catalog')}>Ver Cursos</button>
@@ -1004,7 +1004,7 @@ export default function Courses({ onNavigate }: Props) {
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
               {certificates.map((cert: any) => (
-                <div key={cert.certificateId || cert.courseId} className="card" style={{ padding: 24, textAlign: 'center' }}>
+                <div key={cert.certificateId || cert.courseId} className="u-card hover-lift" style={{ padding: 24, textAlign: 'center' }}>
                   <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}><CourseIcon category={cert.courseCategory} size={36} /></div>
                   <h4 style={{ margin: '0 0 6px', fontSize: 15 }}>{cert.courseTitle}</h4>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
@@ -1068,10 +1068,10 @@ export default function Courses({ onNavigate }: Props) {
             </div>
           )
         ) : loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
         ) : error ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{AlertTriangle({ size: 48 })}</div>
+            <div className="empty-state-icon">{AlertTriangle({ size: 48 })}</div>
             <h3>Error al cargar cursos</h3>
             <p style={{ color: 'var(--text-muted)' }}>{error}</p>
             <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => { setLoading(true); loadCourses() }}>
@@ -1080,7 +1080,7 @@ export default function Courses({ onNavigate }: Props) {
           </div>
         ) : courses.length === 0 ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{BookOpen({ size: 48 })}</div>
+            <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
             <h3>No hay cursos disponibles</h3>
             <p style={{ color: 'var(--text-muted)' }}>
               {selectedCategory ? 'No se encontraron cursos en esta categoría.' : 'Los cursos estarán disponibles próximamente.'}
@@ -1101,7 +1101,7 @@ export default function Courses({ onNavigate }: Props) {
                   {courses.filter(c => c.isFeatured).map(course => {
                     const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
                     return (
-                      <div key={course.id} className="card" style={{
+                      <div key={course.id} className="u-card hover-lift" style={{
                         padding: 20, cursor: 'pointer', borderLeft: `4px solid ${cc}`,
                         transition: 'transform 0.15s, box-shadow 0.15s',
                       }}
@@ -1133,7 +1133,7 @@ export default function Courses({ onNavigate }: Props) {
               {courses.map(course => {
                 const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
                 return (
-                  <div key={course.id} className="card" style={{
+                  <div key={course.id} className="u-card hover-lift" style={{
                     padding: 16, cursor: 'pointer',
                     transition: 'transform 0.15s, box-shadow 0.15s',
                   }}

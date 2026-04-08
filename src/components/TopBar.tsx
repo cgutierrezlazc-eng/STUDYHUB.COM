@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/auth'
+import { api } from '../services/api'
 import NotificationBell from './NotificationBell'
 
 interface Props {
@@ -8,11 +9,23 @@ interface Props {
   showMenuButton?: boolean
 }
 
+const QUICK_CATEGORIES = [
+  { label: 'Personas', path: '/friends', icon: '👤' },
+  { label: 'Comunidades', path: '/communities', icon: '🏘' },
+  { label: 'Empleo', path: '/jobs', icon: '💼' },
+  { label: 'Asignaturas', path: '/subjects', icon: '📚' },
+]
+
 export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Props) {
   const { user, logout } = useAuth()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [suggestions, setSuggestions] = useState<any[]>([])
+  const [sugLoading, setSugLoading] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
   useEffect(() => {
     if (!showUserMenu) return
@@ -22,6 +35,28 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [showUserMenu])
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setShowSuggestions(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const fetchSuggestions = useCallback((q: string) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (q.trim().length < 2) { setSuggestions([]); return }
+    debounceRef.current = setTimeout(async () => {
+      setSugLoading(true)
+      try {
+        const data = await api.searchSocialUsers(q)
+        setSuggestions((data.users || data || []).slice(0, 5))
+      } catch { setSuggestions([]) }
+      setSugLoading(false)
+    }, 300)
+  }, [])
 
   const initials = user ? `${user.firstName?.[0] || ''}${user.lastName?.[0] || ''}`.toUpperCase() : '?'
 
@@ -51,7 +86,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
       </div>
 
       <div className="topbar-center">
-        <div className="topbar-search">
+        <div className="topbar-search" ref={searchRef} style={{ position: 'relative' }}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
             <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
           </svg>
@@ -59,14 +94,68 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
             type="text"
             placeholder="Buscar personas, comunidades, temas..."
             value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
+            onChange={e => { setSearchQuery(e.target.value); fetchSuggestions(e.target.value) }}
+            onFocus={() => setShowSuggestions(true)}
             onKeyDown={e => {
               if (e.key === 'Enter' && searchQuery.trim()) {
                 onNavigate(`/search?q=${encodeURIComponent(searchQuery)}`)
-                setSearchQuery('')
+                setSearchQuery(''); setShowSuggestions(false)
               }
+              if (e.key === 'Escape') setShowSuggestions(false)
             }}
           />
+          {showSuggestions && (
+            <div className="search-suggestions">
+              {!searchQuery.trim() && (
+                <>
+                  <div className="search-sug-label">Accesos rapidos</div>
+                  {QUICK_CATEGORIES.map(c => (
+                    <button key={c.path} className="search-sug-item" onClick={() => { onNavigate(c.path); setShowSuggestions(false) }}>
+                      <span style={{ fontSize: 16 }}>{c.icon}</span>
+                      <span>{c.label}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {searchQuery.trim().length >= 2 && (
+                <>
+                  {sugLoading && <div className="search-sug-label" style={{ textAlign: 'center', padding: 12 }}>Buscando...</div>}
+                  {!sugLoading && suggestions.length > 0 && (
+                    <>
+                      <div className="search-sug-label">Personas</div>
+                      {suggestions.map((u: any) => (
+                        <button key={u.id} className="search-sug-item" onClick={() => { onNavigate(`/user/${u.id}`); setSearchQuery(''); setShowSuggestions(false) }}>
+                          <div style={{
+                            width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                            background: u.avatar ? `url(${u.avatar}) center/cover` : 'linear-gradient(135deg, #2D62C8, #5B8DEF)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#fff', fontSize: 11, fontWeight: 700,
+                          }}>
+                            {!u.avatar && ((u.firstName || u.first_name || '?')[0])}
+                          </div>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {u.firstName || u.first_name} {u.lastName || u.last_name}
+                            </div>
+                            {(u.career || u.university) && (
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {u.career}{u.career && u.university ? ' · ' : ''}{u.university}
+                              </div>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                  <button className="search-sug-item" style={{ color: 'var(--accent)', fontWeight: 600 }}
+                    onClick={() => { onNavigate(`/search?q=${encodeURIComponent(searchQuery)}`); setSearchQuery(''); setShowSuggestions(false) }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <span>Buscar "{searchQuery}" en la web</span>
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

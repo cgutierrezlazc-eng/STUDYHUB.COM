@@ -140,7 +140,7 @@ export default function Calendar({ projects, onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2>{CalendarIcon()} Calendario</h2>
@@ -160,10 +160,10 @@ export default function Calendar({ projects, onNavigate }: Props) {
 
       <div className="page-body">
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
         ) : events.length === 0 && !showForm ? (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{CalendarIcon({ size: 48 })}</div>
+            <div className="empty-state-icon">{CalendarIcon({ size: 48 })}</div>
             <h3>Sin eventos todavía</h3>
             <p>Agrega tareas, exámenes y fechas de entrega para mantenerte organizado</p>
             <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={() => setShowForm(true)}>

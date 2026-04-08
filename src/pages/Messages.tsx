@@ -490,7 +490,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>{t('msg.title')}</h2>
         <p>{t('msg.subtitle')}</p>
       </div>
@@ -550,7 +550,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     <div className="msg-empty">{t('msg.loading')}</div>
                   ) : conversations.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>{MessageSquare({ size: 48 })}</div>
+                      <div className="empty-state-icon">{MessageSquare({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>{t('msg.noConversations')}</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Empieza una conversación con tus compañeros</p>
                       <button className="btn btn-primary btn-sm" onClick={() => setSidebarTab('friends')}>Ver amigos</button>
@@ -617,7 +617,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-conv-list">
                   {friends.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>{Users({ size: 48 })}</div>
+                      <div className="empty-state-icon">{Users({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>Sin amigos aún</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>Agrega amigos desde la Comunidad para chatear</p>
                       <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>Ir a Comunidad</button>
@@ -685,7 +685,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                 <div className="msg-conv-list">
                   {groupChats.length === 0 ? (
                     <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                      <div style={{ fontSize: 48, marginBottom: 12 }}>{BookOpen({ size: 48 })}</div>
+                      <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
                       <h3 style={{ margin: '0 0 8px' }}>Sin grupos</h3>
                       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 16 }}>
                         Crea un grupo de estudio con tus compañeros de asignatura
@@ -729,7 +729,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
               <div className="msg-conv-list">
                 {incomingRequests.length === 0 && sentRequests.length === 0 ? (
                   <div className="msg-empty" style={{ textAlign: 'center', padding: '24px 16px' }}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>{Inbox({ size: 48 })}</div>
+                    <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
                     <h3 style={{ margin: '0 0 8px' }}>Sin solicitudes</h3>
                     <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                       Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí

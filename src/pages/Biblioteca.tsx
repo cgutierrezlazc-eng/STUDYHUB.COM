@@ -166,7 +166,7 @@ export default function Biblioteca({ onNavigate }: Props) {
 
         {filtered.length === 0 ? (
           <div className="empty-state" style={{ padding: 60 }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>{BookOpen({ size: 48 })}</div>
+            <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
             <h3>No se encontraron recursos</h3>
             <p>Intenta con otros terminos de busqueda o categoria</p>
             {(search || category) && (
@@ -181,7 +181,7 @@ export default function Biblioteca({ onNavigate }: Props) {
             {filtered.map(book => (
               <div
                 key={book.id}
-                className="card"
+                className="u-card"
                 style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
                 onClick={() => setSelectedBook(book)}
                 onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
@@ -246,7 +246,7 @@ export default function Biblioteca({ onNavigate }: Props) {
             {filtered.map(book => (
               <div
                 key={book.id}
-                className="card"
+                className="u-card"
                 style={{ padding: 16, cursor: 'pointer', display: 'flex', gap: 16, alignItems: 'center' }}
                 onClick={() => setSelectedBook(book)}
               >

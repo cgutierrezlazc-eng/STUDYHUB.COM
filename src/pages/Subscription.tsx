@@ -88,14 +88,14 @@ export default function Subscription({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>{Gem()} Suscripción</h2>
         <p>Potencia tu estudio con Conniku PRO</p>
       </div>
       <div className="page-body">
         {/* Current Status */}
         {subStatus && (
-          <div className="card" style={{ padding: 20, marginBottom: 24, borderLeft: `4px solid ${isActive ? 'var(--accent-green)' : isTrial ? 'var(--accent-orange)' : 'var(--border)'}` }}>
+          <div className="u-card" style={{ padding: 20, marginBottom: 24, borderLeft: `4px solid ${isActive ? 'var(--accent-green)' : isTrial ? 'var(--accent-orange)' : 'var(--border)'}` }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: 16 }}>
@@ -143,7 +143,7 @@ export default function Subscription({ onNavigate }: Props) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, maxWidth: 900, margin: '0 auto' }}>
               {/* Free Plan */}
-              <div className="card" style={{ padding: 24 }}>
+              <div className="u-card" style={{ padding: 24 }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Básico</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>$0</div>
                 <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>Para empezar y conectar</div>
@@ -162,7 +162,7 @@ export default function Subscription({ onNavigate }: Props) {
               </div>
 
               {/* PRO Plan */}
-              <div className="card" style={{ padding: 24, border: '2px solid var(--accent)', position: 'relative' }}>
+              <div className="u-card" style={{ padding: 24, border: '2px solid var(--accent)', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>MÁS POPULAR</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Star({ size: 14 })} Pro</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
@@ -198,7 +198,7 @@ export default function Subscription({ onNavigate }: Props) {
               </div>
 
               {/* MAX Plan */}
-              <div className="card" style={{ padding: 24, border: '2px solid var(--accent-purple)', position: 'relative' }}>
+              <div className="u-card" style={{ padding: 24, border: '2px solid var(--accent-purple)', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: -12, right: 16, background: 'var(--accent-purple)', color: '#fff', padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>PREMIUM</div>
                 <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent-purple)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}>{Crown({ size: 14 })} Max</div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
@@ -286,7 +286,7 @@ export default function Subscription({ onNavigate }: Props) {
                 { icon: Download({ size: 24 }), label: 'Exportar a Word' },
                 { icon: Zap({ size: 24 }), label: 'Soporte prioritario' },
               ].map(f => (
-                <div key={f.label} className="card" style={{ padding: 16, textAlign: 'center' }}>
+                <div key={f.label} className="u-card" style={{ padding: 16, textAlign: 'center' }}>
                   <div style={{ marginBottom: 4, display: 'flex', justifyContent: 'center' }}>{f.icon}</div>
                   <div style={{ fontSize: 12, fontWeight: 600 }}>{f.label}</div>
                 </div>

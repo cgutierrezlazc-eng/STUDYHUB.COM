@@ -16,6 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import AppAvailableBanner from './components/AppAvailableBanner'
 import SupportChat from './components/SupportChat'
+import StudyBuddy from './components/StudyBuddy'
 import Landing from './pages/Landing'
 import { Project } from './types'
 import { api, initPushNotifications } from './services/api'
@@ -53,6 +54,7 @@ const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
 const CVProfile = React.lazy(() => import('./pages/CVProfile'))
 const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
+const HomeDashboard = React.lazy(() => import('./pages/HomeDashboard'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 
 // ─── Page loading spinner ────────────────────────────────────────
@@ -65,7 +67,7 @@ function PageLoader() {
       justifyContent: 'center',
       background: 'var(--bg-primary)',
     }}>
-      <div className="loading-dots"><span /><span /><span /></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 400 }}><div className="skeleton skeleton-text" style={{ width: '70%' }} /><div className="skeleton skeleton-text" style={{ width: '50%' }} /><div className="skeleton skeleton-text" style={{ width: '60%' }} /></div>
     </div>
   )
 }
@@ -192,7 +194,7 @@ export default function App() {
             conni<span style={{ color: '#2D62C8' }}>ku</span>
           </span>
         </div>
-        <div className="loading-dots"><span /><span /><span /></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 400 }}><div className="skeleton skeleton-text" style={{ width: '70%' }} /><div className="skeleton skeleton-text" style={{ width: '50%' }} /><div className="skeleton skeleton-text" style={{ width: '60%' }} /></div>
       </div>
     )
   }
@@ -276,7 +278,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <SEORouter />
             <Routes>
-            <Route path="/" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/" element={user ? <HomeDashboard projects={projects} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} />} />
@@ -344,6 +346,13 @@ export default function App() {
       <PWAInstallPrompt />
       <AppAvailableBanner />
       <SupportChat />
+      {user && <StudyBuddy context={
+        location.pathname.startsWith('/project/') ? `Materia: ${projects.find(p => p.id === location.pathname.split('/')[2])?.name || 'Asignatura'}`
+        : location.pathname === '/dashboard' ? 'Pagina: Dashboard de estudio'
+        : location.pathname === '/feed' ? 'Pagina: Feed social academico'
+        : location.pathname === '/' ? 'Pagina: Inicio'
+        : ''
+      } projectId={location.pathname.startsWith('/project/') ? location.pathname.split('/')[2] : undefined} />}
     </div>
   )
 }

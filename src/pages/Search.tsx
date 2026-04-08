@@ -84,7 +84,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{SearchIcon({ size: 20 })} Búsqueda Académica</h2>
@@ -118,7 +118,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
       <div className="page-body">
         {/* Downloads Panel */}
         {showDownloads && (
-          <div className="card" style={{ padding: 20, marginBottom: 16 }}>
+          <div className="u-card" style={{ marginBottom: 16 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
               <h3 style={{ margin: 0, fontSize: 15, display: 'flex', alignItems: 'center', gap: 6 }}>{FolderOpen({ size: 16 })} Mis Descargas</h3>
               {storageInfo && (
@@ -153,7 +153,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
 
         {/* AI Summary */}
         {aiSummary && (
-          <div className="card" style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid var(--accent)' }}>
+          <div className="u-card" style={{ marginBottom: 16, borderLeft: '4px solid var(--accent)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{ fontSize: 16 }}>{Brain()}</span>
               <strong style={{ fontSize: 14 }}>Resumen IA</strong>
@@ -164,7 +164,9 @@ export default function Search({ onNavigate, initialQuery }: Props) {
 
         {/* Results */}
         {loading ? (
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}
+          </div>
         ) : results.length > 0 ? (
           <>
             {!aiSummary && (
@@ -177,7 +179,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {results.map((r, i) => (
-                <div key={i} className="card" style={{ padding: 16 }}>
+                <div key={i} className="u-card hover-lift">
                   <a href={r.url} target="_blank" rel="noopener noreferrer"
                     style={{ fontSize: 16, fontWeight: 600, color: 'var(--accent)', textDecoration: 'none', display: 'block', marginBottom: 4 }}>
                     {r.title}
@@ -218,7 +220,7 @@ export default function Search({ onNavigate, initialQuery }: Props) {
           </>
         ) : !loading && query && (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{SearchIcon({ size: 48 })}</div>
+            <div className="empty-state-icon">{SearchIcon({ size: 48 })}</div>
             <h3>No se encontraron resultados</h3>
             <p>Intenta con otras palabras clave o verifica tu búsqueda</p>
           </div>
@@ -227,12 +229,12 @@ export default function Search({ onNavigate, initialQuery }: Props) {
         {/* Empty state */}
         {!loading && !query && results.length === 0 && (
           <div className="empty-state" style={{ padding: 40 }}>
-            <div style={{ fontSize: 48 }}>{GraduationCap({ size: 48 })}</div>
-            <h3>Buscador Académico de Conniku</h3>
-            <p>Busca artículos, PDFs, tutoriales, investigaciones y recursos de estudio</p>
+            <div className="empty-state-icon">{GraduationCap({ size: 48 })}</div>
+            <h3>Buscador Academico de Conniku</h3>
+            <p>Busca articulos, PDFs, tutoriales, investigaciones y recursos de estudio</p>
             <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['Integrales dobles', 'Machine Learning tutorial', 'Historia de Chile PDF', 'Anatomía cardiovascular'].map(s => (
-                <button key={s} className="btn btn-secondary btn-xs" onClick={() => { setQuery(s); setTimeout(() => handleSearch(), 100) }}>{s}</button>
+              {['Integrales dobles', 'Machine Learning tutorial', 'Historia de Chile PDF', 'Anatomia cardiovascular'].map(s => (
+                <button key={s} className="btn btn-secondary btn-xs empty-state-cta" onClick={() => { setQuery(s); setTimeout(() => handleSearch(), 100) }}>{s}</button>
               ))}
             </div>
           </div>

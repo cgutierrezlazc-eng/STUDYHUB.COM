@@ -58,7 +58,7 @@ export default function Mentorship({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>{'\u{1F9ED}'} Mentoría</h2>
         <p>Conecta con mentores experimentados o comparte tu conocimiento</p>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
@@ -76,13 +76,13 @@ export default function Mentorship({ onNavigate }: Props) {
                 style={{ flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }} />
               <button className="btn btn-primary" onClick={loadMentors}>Buscar</button>
             </div>
-            {loading ? <div className="loading-dots"><span /><span /><span /></div> :
+            {loading ? <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div> :
             mentors.length === 0 ? (
-              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{'\u{1F9ED}'}</div><h3>No hay mentores disponibles</h3><p>¡Sé el primero en ofrecer mentoría!</p></div>
+              <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{'\u{1F9ED}'}</div><h3>No hay mentores disponibles</h3><p>¡Sé el primero en ofrecer mentoría!</p></div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
                 {mentors.map((m: any) => (
-                  <div key={m.id} className="card" style={{ padding: 20 }}>
+                  <div key={m.id} className="u-card" style={{ padding: 20 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                       <div onClick={() => onNavigate(`/user/${m.mentor?.id}`)} style={{ width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 18, overflow: 'hidden', cursor: 'pointer' }}>
                         {m.mentor?.avatar ? <img src={m.mentor.avatar} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : (m.mentor?.firstName?.[0] || '?')}
@@ -117,7 +117,7 @@ export default function Mentorship({ onNavigate }: Props) {
             {myMentors.length > 0 && (
               <div><h3 style={{ fontSize: 15, marginBottom: 8 }}>Mis Mentores</h3>
                 {myMentors.map((r: any) => (
-                  <div key={r.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <div key={r.id} className="u-card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', overflow: 'hidden' }}>
                       {r.mentor?.avatar ? <img src={r.mentor.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} /> : (r.mentor?.firstName?.[0] || '?')}
                     </div>
@@ -131,7 +131,7 @@ export default function Mentorship({ onNavigate }: Props) {
             {myMentees.length > 0 && (
               <div><h3 style={{ fontSize: 15, marginBottom: 8 }}>Mis Mentoreados</h3>
                 {myMentees.map((r: any) => (
-                  <div key={r.id} className="card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+                  <div key={r.id} className="u-card" style={{ padding: 16, display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', overflow: 'hidden' }}>
                       {r.mentee?.avatar ? <img src={r.mentee.avatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} /> : (r.mentee?.firstName?.[0] || '?')}
                     </div>
@@ -145,12 +145,12 @@ export default function Mentorship({ onNavigate }: Props) {
                 ))}</div>
             )}
             {myMentors.length === 0 && myMentees.length === 0 && (
-              <div className="empty-state" style={{ padding: 40 }}><div style={{ fontSize: 48 }}>{'\u{1F9ED}'}</div><h3>No tienes mentorías activas</h3></div>
+              <div className="empty-state" style={{ padding: 40 }}><div className="empty-state-icon">{'\u{1F9ED}'}</div><h3>No tienes mentorías activas</h3></div>
             )}
           </div>
         )}
         {tab === 'become' && (
-          <div className="card" style={{ padding: 24, maxWidth: 600 }}>
+          <div className="u-card" style={{ padding: 24, maxWidth: 600 }}>
             <h3 style={{ marginTop: 0 }}>{'\u{1F9ED}'} Ser Mentor</h3>
             <p style={{ color: 'var(--text-muted)', marginBottom: 16 }}>Comparte tu experiencia y ayuda a otros estudiantes. Ganas +50 XP por cada mentoría completada.</p>
             <div className="auth-field"><label>Materias que puedes mentorar *</label>

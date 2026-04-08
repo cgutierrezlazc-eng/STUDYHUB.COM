@@ -1,82 +1,101 @@
 import React, { useState } from 'react'
-import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
-import { BookOpen, MessageSquare, Target, Smile } from './Icons'
+import { BookOpen, MessageSquare, Target, Smile, Briefcase, Users, Sparkles, Home } from './Icons'
 
 interface Props {
   onComplete: () => void
 }
 
-export default function Onboarding({ onComplete }: Props) {
-  const { t } = useI18n()
-  const [step, setStep] = useState(0)
+const STEPS = [
+  {
+    icon: Smile({ size: 36 }),
+    color: '#f59e0b',
+    title: 'Bienvenido a Conniku',
+    desc: 'Tu plataforma todo-en-uno para la vida universitaria. Vamos a hacer un recorrido rapido para que saques el maximo provecho.',
+  },
+  {
+    icon: Home({ size: 36 }),
+    color: '#2563eb',
+    title: 'Tu Dashboard',
+    desc: 'En el inicio veras tu resumen diario con IA, actividad reciente, estadisticas de estudio y accesos rapidos a todo.',
+  },
+  {
+    icon: BookOpen({ size: 36 }),
+    color: '#16a34a',
+    title: 'Asignaturas y Estudio',
+    desc: 'Crea tus asignaturas, genera guias con IA, usa flashcards y quizzes adaptativos. Toda tu herramienta de estudio en un lugar.',
+  },
+  {
+    icon: Users({ size: 36 }),
+    color: '#8b5cf6',
+    title: 'Comunidades',
+    desc: 'Unete a comunidades por carrera, materia o interes. Comparte apuntes, haz preguntas y conecta con otros estudiantes.',
+  },
+  {
+    icon: MessageSquare({ size: 36 }),
+    color: '#06b6d4',
+    title: 'Mensajeria y Study Buddy',
+    desc: 'Chat en tiempo real con tus companeros. Ademas, el Study Buddy con IA te ayuda a resolver dudas en cualquier momento.',
+  },
+  {
+    icon: Briefcase({ size: 36 }),
+    color: '#ea580c',
+    title: 'Empleo y CV Coach',
+    desc: 'Explora practicas, postula a empleos, y usa el CV Coach con IA para mejorar tu curriculum profesional.',
+  },
+  {
+    icon: Sparkles({ size: 36 }),
+    color: '#2563eb',
+    title: 'Listo para empezar',
+    desc: 'Explora, aprende y crece con Conniku. Puedes volver a ver este tour desde tu perfil cuando quieras.',
+  },
+]
 
-  const steps = [
-    {
-      icon: Smile({ size: 32 }),
-      title: t('onb.welcomeTitle'),
-      desc: t('onb.welcomeDesc'),
-    },
-    {
-      icon: BookOpen({ size: 32 }),
-      title: t('onb.subjectsTitle'),
-      desc: t('onb.subjectsDesc'),
-    },
-    {
-      icon: BookOpen({ size: 32 }),
-      title: t('onb.studyTitle'),
-      desc: t('onb.studyDesc'),
-    },
-    {
-      icon: MessageSquare({ size: 32 }),
-      title: t('onb.chatTitle'),
-      desc: t('onb.chatDesc'),
-    },
-    {
-      icon: Target({ size: 32 }),
-      title: t('onb.readyTitle'),
-      desc: t('onb.readyDesc'),
-    },
-  ]
+export default function Onboarding({ onComplete }: Props) {
+  const [step, setStep] = useState(0)
 
   const handleComplete = async () => {
     try { await api.completeOnboarding() } catch {}
     onComplete()
   }
 
-  const current = steps[step]
+  const current = STEPS[step]
+  const progress = ((step + 1) / STEPS.length) * 100
 
   return (
     <div className="onb-overlay">
       <div className="onb-card">
-        <div className="onb-progress">
-          {steps.map((_, i) => (
-            <div key={i} className={`onb-dot ${i === step ? 'active' : ''} ${i < step ? 'done' : ''}`} />
-          ))}
+        {/* Progress bar */}
+        <div style={{ width: '100%', height: 4, background: 'var(--bg-hover)', borderRadius: 2, marginBottom: 24 }}>
+          <div style={{ width: `${progress}%`, height: '100%', background: current.color, borderRadius: 2, transition: 'width 0.4s ease' }} />
         </div>
 
-        <div className="onb-icon">{current.icon}</div>
+        <div className="onb-step-counter" style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+          {step + 1} de {STEPS.length}
+        </div>
+
+        <div className="onb-icon" style={{ color: current.color }}>{current.icon}</div>
         <h2>{current.title}</h2>
         <p>{current.desc}</p>
 
         <div className="onb-actions">
           {step > 0 && (
             <button className="btn btn-secondary btn-sm" onClick={() => setStep(s => s - 1)}>
-              {t('auth.back')}
+              Atras
             </button>
           )}
-          {step < steps.length - 1 ? (
-            <button className="btn btn-primary btn-sm" onClick={() => setStep(s => s + 1)}>
-              {t('auth.next')}
+          {step < STEPS.length - 1 ? (
+            <button className="btn btn-primary btn-sm btn-glow" onClick={() => setStep(s => s + 1)}>
+              Siguiente
             </button>
           ) : (
-            <button className="btn btn-primary btn-sm" onClick={handleComplete}>
-              {t('onb.start')}
+            <button className="btn btn-primary btn-sm btn-glow" onClick={handleComplete}>
+              Comenzar
             </button>
           )}
         </div>
 
-        <button className="onb-skip" onClick={handleComplete}>{t('onb.skip')}</button>
+        <button className="onb-skip" onClick={handleComplete}>Saltar tour</button>
       </div>
     </div>
   )

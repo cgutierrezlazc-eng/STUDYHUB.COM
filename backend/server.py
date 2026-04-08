@@ -9,7 +9,7 @@ from typing import Optional
 
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request, Body
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -534,6 +534,186 @@ Funciones principales de Conniku:
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
+
+
+class StudyBuddyRequest(BaseModel):
+    message: str
+    context: str = ""  # page context: subject name, topic, etc.
+    history: list = []
+
+@app.post("/ai/study-buddy")
+def study_buddy_chat(req: StudyBuddyRequest, user: User = Depends(get_current_user)):
+    """AI Study Buddy — contextual study help using Gemini (free)."""
+    check_chat_limit(user)
+
+    context_info = f"\nContexto actual del estudiante: {req.context}" if req.context else ""
+
+    system = f"""Eres el Study Buddy de Conniku, un companero de estudio inteligente.
+Tu rol es ayudar al estudiante con cualquier tema academico de forma clara y didactica.
+Responde en espanol, de forma amigable y cercana.
+{context_info}
+
+Reglas:
+- Respuestas concisas pero completas (max 200 palabras)
+- Usa ejemplos practicos cuando sea posible
+- Si hay formulas, usa notacion clara
+- Motiva al estudiante, se positivo
+- Si no sabes algo, dilo honestamente
+- Nunca digas "como modelo de lenguaje" — eres un companero de estudio
+- Si preguntan algo no academico, redirige amablemente al estudio"""
+
+    # Build conversation context from history
+    history_text = ""
+    for msg in (req.history or [])[-6:]:
+        role = "Estudiante" if msg.get("role") == "user" else "Study Buddy"
+        history_text += f"\n{role}: {msg.get('content', '')}"
+
+    full_message = f"{history_text}\nEstudiante: {req.message}" if history_text else req.message
+
+    try:
+        response = ai_engine._call_gemini(system, full_message)
+    except Exception:
+        response = "Lo siento, no pude procesar tu pregunta. Intenta de nuevo."
+
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return {"response": response}
+
+
+@app.post("/ai/auto-tag")
+def auto_tag_content(req: dict = Body(...), user: User = Depends(get_current_user)):
+    """Auto-suggest tags for a post using Gemini (free)."""
+    text = req.get("text", "")
+    if not text or len(text) < 10:
+        return {"tags": []}
+
+    system = """Analiza el siguiente texto academico y sugiere 3-5 tags relevantes.
+Responde SOLO con un JSON array de strings, sin explicacion.
+Los tags deben ser en espanol, cortos (1-2 palabras), y relevantes para estudiantes universitarios.
+Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
+
+    try:
+        result = ai_engine._call_gemini_json(system, text)
+        import json as json_mod
+        # Try to parse the response
+        if isinstance(result, str):
+            result = result.strip()
+            if result.startswith("["):
+                tags = json_mod.loads(result)
+            else:
+                # Try to extract JSON array from response
+                import re
+                match = re.search(r'\[.*?\]', result, re.DOTALL)
+                if match:
+                    tags = json_mod.loads(match.group())
+                else:
+                    tags = []
+        else:
+            tags = []
+        return {"tags": tags[:5]}
+    except Exception:
+        return {"tags": []}
+
+
+@app.get("/ai/daily-summary")
+def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Generate a personalized daily study summary using Gemini (free)."""
+    from database import WallPost, CalendarEvent, StudySession
+    from sqlalchemy import func
+
+    today = datetime.utcnow().date()
+    week_ago = today - timedelta(days=7)
+
+    # Gather user data for summary
+    try:
+        # Recent study sessions
+        sessions = db.query(StudySession).filter(
+            StudySession.user_id == user.id,
+            func.date(StudySession.created_at) >= week_ago
+        ).all()
+        total_study_secs = sum(s.duration_seconds or 0 for s in sessions)
+        today_secs = sum(s.duration_seconds or 0 for s in sessions if s.created_at and s.created_at.date() == today)
+
+        # Upcoming events
+        events = db.query(CalendarEvent).filter(
+            CalendarEvent.user_id == user.id,
+            CalendarEvent.date >= str(today)
+        ).order_by(CalendarEvent.date).limit(3).all()
+        event_list = [{"title": e.title, "date": str(e.date)} for e in events]
+
+        # Recent posts count
+        post_count = db.query(func.count(WallPost.id)).filter(
+            WallPost.author_id == user.id,
+            func.date(WallPost.created_at) >= week_ago
+        ).scalar() or 0
+    except Exception:
+        total_study_secs = 0
+        today_secs = 0
+        event_list = []
+        post_count = 0
+
+    context = f"""Datos del estudiante {user.first_name}:
+- Tiempo de estudio esta semana: {total_study_secs // 3600}h {(total_study_secs % 3600) // 60}m
+- Tiempo de estudio hoy: {today_secs // 3600}h {(today_secs % 3600) // 60}m
+- Posts publicados esta semana: {post_count}
+- Proximos eventos: {event_list if event_list else 'ninguno programado'}
+- Dia: {today.strftime('%A %d de %B')}"""
+
+    system = """Genera un resumen diario personalizado y motivador para un estudiante universitario.
+Responde en espanol, maximo 3-4 oraciones.
+Se positivo, concreto y breve. Incluye un tip de estudio si es relevante.
+Responde SOLO con JSON: {"summary": "...", "tip": "...", "mood": "positive|neutral|alert"}
+- mood "positive" si va bien, "neutral" si regular, "alert" si hay entregas pronto o poco estudio"""
+
+    try:
+        result = ai_engine._call_gemini_json(system, context)
+        import json as json_mod, re
+        if isinstance(result, str):
+            match = re.search(r'\{.*\}', result, re.DOTALL)
+            if match:
+                data = json_mod.loads(match.group())
+                return data
+        return {"summary": f"Hola {user.first_name}! Revisa tu calendario y organiza tu dia.", "tip": "Estudia en bloques de 25 minutos con descansos.", "mood": "neutral"}
+    except Exception:
+        return {"summary": f"Hola {user.first_name}! Que tengas un gran dia de estudio.", "tip": "Repasa tus apuntes antes de dormir para mejor retencion.", "mood": "neutral"}
+
+
+class CVCoachRequest(BaseModel):
+    cv_text: str
+    target_role: str = ""
+
+@app.post("/ai/cv-coach")
+def cv_coach(req: CVCoachRequest, user: User = Depends(get_current_user)):
+    """AI CV Coach — review and improve a CV/resume using Gemini (free)."""
+    if len(req.cv_text) < 20:
+        raise HTTPException(400, "El CV debe tener al menos 20 caracteres")
+
+    role_context = f"\nEl estudiante busca un puesto de: {req.target_role}" if req.target_role else ""
+
+    system = f"""Eres un coach profesional de CVs especializado en estudiantes universitarios chilenos.
+Analiza el CV proporcionado y da feedback constructivo.{role_context}
+
+Responde en espanol con JSON:
+{{
+  "score": 0-100,
+  "strengths": ["punto fuerte 1", "punto fuerte 2"],
+  "improvements": ["mejora 1", "mejora 2", "mejora 3"],
+  "rewrite_suggestion": "parrafo de perfil profesional reescrito y mejorado",
+  "missing_sections": ["seccion que falta 1"],
+  "tip": "un consejo clave"
+}}
+
+Se especifico, practico y motivador. No inventes informacion que no esta en el CV."""
+
+    try:
+        result = ai_engine._call_gemini_json(system, f"CV del estudiante:\n{req.cv_text}")
+        import json as json_mod, re
+        if isinstance(result, str):
+            match = re.search(r'\{.*\}', result, re.DOTALL)
+            if match:
+                return json_mod.loads(match.group())
+        return {"score": 50, "strengths": [], "improvements": ["No pude analizar el CV"], "rewrite_suggestion": "", "missing_sections": [], "tip": "Intenta de nuevo con mas detalle"}
+    except Exception:
+        return {"score": 50, "strengths": [], "improvements": ["Error al analizar"], "rewrite_suggestion": "", "missing_sections": [], "tip": "Intenta de nuevo"}
 
 
 @app.post("/projects/{project_id}/guide")

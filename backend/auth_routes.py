@@ -1254,6 +1254,34 @@ class AccountClosureFeedback(BaseModel):
     feedback: str = ""
 
 
+class SuggestionRequest(BaseModel):
+    type: str  # feature, bug, improvement, other
+    subject: str
+    message: str
+
+@router.post("/me/suggestion")
+def submit_suggestion(req: SuggestionRequest, user: User = Depends(get_current_user)):
+    """Send user suggestion/feedback to contacto@conniku.com."""
+    type_labels = {"feature": "Nueva Funcionalidad", "bug": "Reporte de Error", "improvement": "Mejora", "other": "Otro"}
+    type_label = type_labels.get(req.type, req.type)
+    try:
+        from notifications import _send_email_async, _email_template
+        body = f"""
+            <p><strong>Nueva sugerencia de usuario</strong></p>
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+                <tr><td style="padding:6px 0;color:#6B7280;width:120px">Usuario:</td><td style="padding:6px 0"><strong>{user.first_name} {user.last_name}</strong> (@{user.username})</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Email:</td><td style="padding:6px 0">{user.email}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Tipo:</td><td style="padding:6px 0;font-weight:600">{type_label}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280">Asunto:</td><td style="padding:6px 0;font-weight:600">{req.subject}</td></tr>
+                <tr><td style="padding:6px 0;color:#6B7280;vertical-align:top">Mensaje:</td><td style="padding:6px 0">{req.message}</td></tr>
+            </table>
+        """
+        html = _email_template(f"Sugerencia: {req.subject}", body)
+        _send_email_async("contacto@conniku.com", f"[{type_label}] {req.subject} — {user.first_name}", html, reply_to=user.email, from_account="ceo")
+    except Exception:
+        pass
+    return {"sent": True}
+
 @router.post("/me/closure-feedback")
 def account_closure_feedback(req: AccountClosureFeedback, user: User = Depends(get_current_user)):
     """Send account closure feedback to CEO email."""

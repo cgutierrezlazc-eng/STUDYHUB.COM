@@ -650,7 +650,7 @@ export default function CVProfile({ onNavigate }: Props) {
   if (loading) {
     return (
       <div style={{ ...styles.page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div className="loading-dots"><span /><span /><span /></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 600, margin: '0 auto' }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
       </div>
     )
   }

@@ -81,7 +81,7 @@ export default function Friends({ onNavigate }: Props) {
 
   return (
     <>
-      <div className="page-header">
+      <div className="page-header page-enter">
         <h2>Comunidad</h2>
         <p>Conecta con otros estudiantes, comparte y aprende juntos</p>
       </div>
@@ -131,7 +131,7 @@ export default function Friends({ onNavigate }: Props) {
             {friends.length === 0 ? (
               suggestions.length === 0 ? (
                 <div className="friends-empty">
-                  <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
+                  <div className="empty-state-icon">{Users({ size: 48 })}</div>
                   <h3>Aún no tienes conexiones</h3>
                   <p>Busca estudiantes de tu universidad y envíales una solicitud</p>
                   <div className="friends-search-bar" style={{ marginTop: 16, marginBottom: 12 }}>
@@ -146,7 +146,7 @@ export default function Friends({ onNavigate }: Props) {
                 </div>
               ) : (
                 <div className="friends-empty">
-                  <div style={{ fontSize: 48 }}>{Users({ size: 48 })}</div>
+                  <div className="empty-state-icon">{Users({ size: 48 })}</div>
                   <h3>Aún no tienes conexiones</h3>
                   <p>Agrega compañeros de las sugerencias de arriba o busca estudiantes</p>
                   <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>
@@ -182,7 +182,7 @@ export default function Friends({ onNavigate }: Props) {
           <div className="friends-grid">
             {requests.length === 0 ? (
               <div className="friends-empty">
-                <div style={{ fontSize: 48 }}>{Inbox({ size: 48 })}</div>
+                <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
                 <h3>No tienes solicitudes pendientes</h3>
               </div>
             ) : (
@@ -215,7 +215,7 @@ export default function Friends({ onNavigate }: Props) {
           <div className="friends-grid">
             {sentRequests.length === 0 ? (
               <div className="friends-empty">
-                <div style={{ fontSize: 48 }}>{Inbox({ size: 48 })}</div>
+                <div className="empty-state-icon">{Inbox({ size: 48 })}</div>
                 <h3>No has enviado solicitudes</h3>
                 <p>Busca compañeros y enviales una solicitud de amistad</p>
                 <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar Estudiantes</button>

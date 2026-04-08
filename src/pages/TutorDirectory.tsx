@@ -463,7 +463,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
       {/* Loading state */}
       {loading && (
         <div style={{ textAlign: 'center', padding: 60 }}>
-          <div className="loading-dots"><span /><span /><span /></div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
           <p style={{ color: 'var(--text-tertiary)', marginTop: 12, fontSize: 14 }}>Cargando tutores...</p>
         </div>
       )}
@@ -474,7 +474,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
           textAlign: 'center', padding: '60px 20px', background: 'var(--bg-secondary)',
           borderRadius: 14, border: '1px solid var(--border-color)',
         }}>
-          <div style={{ fontSize: 48, marginBottom: 12 }}>
+          <div className="empty-state-icon">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -667,7 +667,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
           {/* Loading */}
           {classesLoading && (
             <div style={{ textAlign: 'center', padding: 60 }}>
-              <div className="loading-dots"><span /><span /><span /></div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               <p style={{ color: 'var(--text-tertiary)', marginTop: 12, fontSize: 14 }}>Cargando clases...</p>
             </div>
           )}
@@ -678,7 +678,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
               textAlign: 'center', padding: '60px 20px', background: 'var(--bg-secondary)',
               borderRadius: 14, border: '1px solid var(--border-color)',
             }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>
+              <div className="empty-state-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-tertiary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
@@ -855,7 +855,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
             }}>
               {chatLoading ? (
                 <div style={{ textAlign: 'center', padding: 40 }}>
-                  <div className="loading-dots"><span /><span /><span /></div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                   <p style={{ color: 'var(--text-tertiary)', marginTop: 12, fontSize: 13 }}>Cargando mensajes...</p>
                 </div>
               ) : chatMessages.length === 0 ? (
@@ -949,7 +949,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
 
             {profileLoading ? (
               <div style={{ padding: 60, textAlign: 'center' }}>
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{[1,2].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               </div>
             ) : selectedTutor && (
               <div style={{ padding: '24px 28px' }}>

@@ -567,7 +567,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     }
   }
 
-  if (loading) return <div className="page-body"><div className="loading-dots"><span /><span /><span /></div></div>
+  if (loading) return <div className="page-body"><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div></div>
   if (!profile) return <div className="page-body"><div className="empty-state"><h3>Usuario no encontrado</h3></div></div>
 
   const isOwn = profile.isOwnProfile
@@ -959,14 +959,14 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <div style={{ marginBottom: 16 }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: 18, fontWeight: 600 }}>Actividad Reciente</h3>
                   {activityLoading ? (
-                    <div className="card" style={{ textAlign: 'center', padding: 20 }}>
-                      <div className="loading-dots"><span /><span /><span /></div>
+                    <div className="u-card" style={{ textAlign: 'center', padding: 20 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                     </div>
                   ) : (
                     activityFeed.slice(0, 5).map(item => {
                       if (item.type === 'activity') {
                         return (
-                          <div key={item.id} className="card" style={{ padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div key={item.id} className="u-card" style={{ padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
                             <span style={{ fontSize: 20 }}>
                               {item.activityType === 'quiz_generated' ? FileText({ size: 20 }) :
                                item.activityType === 'guide_generated' ? BookOpen({ size: 20 }) :
@@ -1080,8 +1080,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
               {/* Posts */}
               {posts.length === 0 ? (
-                <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                  <div style={{ fontSize: 48, marginBottom: 12 }}>{FileText({ size: 48 })}</div>
+                <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                  <div className="empty-state-icon">{FileText({ size: 48 })}</div>
                   <p style={{ color: 'var(--text-muted)' }}>No hay publicaciones todavía</p>
                   {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>Comparte algo con tus compañeros</p>}
                 </div>
@@ -1181,7 +1181,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {activeTab === 'about' && (
           <div className="fb-about-section">
-            <div className="card" style={{ padding: 24 }}>
+            <div className="u-card" style={{ padding: 24 }}>
               <h3 style={{ marginTop: 0 }}>Información Personal</h3>
               <div className="fb-about-grid">
                 <div className="fb-about-item">
@@ -1290,12 +1290,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {activeTab === 'courses' && (
           <div>
             {coursesLoading ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                <div className="loading-dots"><span /><span /><span /></div>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                 <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando cursos...</p>
               </div>
             ) : completedCourses.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 12 }}>{GraduationCap({ size: 48, color: 'var(--text-muted)' })}</div>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
                   {isOwn ? 'Aun no has completado ningun curso. Comienza uno en la seccion de Cursos.' : 'Este usuario aun no ha completado cursos.'}
@@ -1303,7 +1303,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               </div>
             ) : (
               <>
-                <div className="card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div className="u-card" style={{ padding: '16px 20px', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
                   {Trophy({ size: 22, color: '#f59e0b' })}
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>{completedCourses.length} cursos completados</div>
@@ -1322,7 +1322,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                       <div
                         key={cert.certificateId || cert.courseId}
                         onClick={() => setSelectedCert({ ...cert, accentColor })}
-                        className="card"
+                        className="u-card"
                         style={{
                           padding: 0, cursor: 'pointer', overflow: 'hidden',
                           transition: 'transform 0.15s, box-shadow 0.15s',
@@ -1363,12 +1363,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {activeTab === 'cv' && (
           <div>
             {cvLoading ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                <div className="loading-dots"><span /><span /><span /></div>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                 <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando curriculum...</p>
               </div>
             ) : !cvData || (!cvData.headline && !cvData.aboutMe && (!cvData.skills || cvData.skills.length === 0) && (!cvData.experience || cvData.experience.length === 0)) ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
                 <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
                   {isOwn ? 'Aun no has completado tu curriculum. Ve a Cursos > tu CV para llenarlo.' : 'Este usuario aun no ha completado su curriculum.'}
@@ -1378,7 +1378,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {/* Headline */}
                 {cvData.headline && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h3 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)' }}>{cvData.headline}</h3>
                     {cvData.aboutMe && (
                       <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{cvData.aboutMe}</p>
@@ -1388,7 +1388,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Experience */}
                 {cvData.experience && cvData.experience.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                       {Zap({ size: 16, color: '#2D62C8' })} Experiencia
                     </h4>
@@ -1405,7 +1405,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Projects / Portfolio */}
                 {cvData.projectsPortfolio && cvData.projectsPortfolio.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                       {BookOpen({ size: 16, color: '#2D62C8' })} Proyectos
                     </h4>
@@ -1430,7 +1430,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Skills & Tools */}
                 {((cvData.skills && cvData.skills.length > 0) || (cvData.tools && cvData.tools.length > 0)) && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     {cvData.skills && cvData.skills.length > 0 && (
                       <>
                         <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1460,7 +1460,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Languages */}
                 {cvData.languagesSpoken && cvData.languagesSpoken.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                       {Globe({ size: 16, color: '#2D62C8' })} Idiomas
                     </h4>
@@ -1477,7 +1477,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Volunteering */}
                 {cvData.volunteering && cvData.volunteering.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
                       {Heart({ size: 16, color: '#ef4444' })} Voluntariado
                     </h4>
@@ -1494,7 +1494,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Interests */}
                 {cvData.interests && cvData.interests.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)' }}>Intereses</h4>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {cvData.interests.map((interest: string, i: number) => (
@@ -1506,7 +1506,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                 {/* Testimonials */}
                 {cvData.testimonials && cvData.testimonials.length > 0 && (
-                  <div className="card" style={{ padding: 20 }}>
+                  <div className="u-card" style={{ padding: 20 }}>
                     <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)' }}>Recomendaciones</h4>
                     {cvData.testimonials.map((t: any, i: number) => (
                       <div key={i} style={{ marginBottom: i < cvData.testimonials.length - 1 ? 14 : 0, padding: 14, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: '3px solid #2D62C8' }}>
@@ -1528,8 +1528,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           <div className="fb-photos-section">
             <h3>Fotos</h3>
             {allPhotos.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>{Camera({ size: 48 })}</div>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                <div className="empty-state-icon">{Camera({ size: 48 })}</div>
                 <p style={{ color: 'var(--text-muted)' }}>No hay fotos todavía</p>
               </div>
             ) : (
@@ -1565,7 +1565,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               ))}
               {friendsList.length === 0 && (
-                <div className="card" style={{ textAlign: 'center', padding: 40, gridColumn: '1 / -1' }}>
+                <div className="u-card" style={{ textAlign: 'center', padding: 40, gridColumn: '1 / -1' }}>
                   <p style={{ color: 'var(--text-muted)' }}>No hay amigos para mostrar</p>
                 </div>
               )}
@@ -1576,7 +1576,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {activeTab === 'servicios' && tutorProfile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Header con rol y estado */}
-            <div className="card" style={{ padding: 20, borderLeft: '4px solid #d97706', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}>
+            <div className="u-card" style={{ padding: 20, borderLeft: '4px solid #d97706', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h3 style={{ margin: 0, color: '#92400e', fontSize: 18 }}>
@@ -1604,24 +1604,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
             {/* Quick Stats */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
-              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+              <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalStudents || 0}</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Estudiantes Totales</div>
               </div>
-              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+              <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>
                   {tutorProfile.averageRating ? Number(tutorProfile.averageRating).toFixed(1) : '—'}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Calificación Promedio</div>
               </div>
-              <div className="card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
+              <div className="u-card" style={{ padding: 16, textAlign: 'center', borderTop: '3px solid #d97706' }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: '#d97706' }}>{tutorProfile.totalHours || 0}h</div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>Horas Impartidas</div>
               </div>
             </div>
 
             {/* Rating y clases */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Medal({ size: 16 })} Calificación y Clases</h4>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                 <div style={{ display: 'flex', gap: 2 }}>
@@ -1638,7 +1638,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Crear Clase / Programa */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: showCreateClass ? 16 : 0 }}>
                 <h4 style={{ margin: 0, color: '#92400e' }}>Crear Clase o Programa</h4>
                 <button onClick={() => { setShowCreateClass(!showCreateClass); setCcSuccess(false) }}
@@ -1758,10 +1758,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Próximas clases */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{Calendar({ size: 16 })} Próximas Clases</h4>
               {tutorLoading ? (
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : tutorClasses.length > 0 ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {tutorClasses.slice(0, 10).map((cls: any) => (
@@ -1789,7 +1789,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Resumen de pagos */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 12px', color: '#92400e' }}>{FileText({ size: 16 })} Resumen de Pagos</h4>
               {tutorPayments ? (
                 <>
@@ -1838,7 +1838,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {activeTab === 'tutorias' && isOwn && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {/* Header */}
-            <div className="card" style={{ padding: 20, borderLeft: '4px solid #7c3aed', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
+            <div className="u-card" style={{ padding: 20, borderLeft: '4px solid #7c3aed', background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
                 <div>
                   <h3 style={{ margin: 0, color: '#5b21b6', fontSize: 18 }}>
@@ -1879,10 +1879,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Enrolled Classes */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{Calendar({ size: 16 })} Clases Inscritas</h4>
               {studentClassesLoading ? (
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : (() => {
                 const now = new Date()
                 const filtered = studentClasses.filter((cls: any) => {
@@ -2006,7 +2006,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Available Classes from Tutors */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <h4 style={{ margin: 0, color: '#5b21b6' }}>Clases Disponibles</h4>
                 <button onClick={() => onNavigate('/tutores')} style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
@@ -2068,10 +2068,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Payment History */}
-            <div className="card" style={{ padding: 20 }}>
+            <div className="u-card" style={{ padding: 20 }}>
               <h4 style={{ margin: '0 0 14px', color: '#5b21b6' }}>{FileText({ size: 16 })} Historial de Pagos</h4>
               {studentPaymentsLoading ? (
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
               ) : studentPayments.length > 0 ? (
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
@@ -2243,7 +2243,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           }}>
             {examLoading ? (
               <div style={{ textAlign: 'center', padding: 40 }}>
-                <div className="loading-dots"><span /><span /><span /></div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                 <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>Cargando examen...</p>
               </div>
             ) : examResult ? (
@@ -2380,7 +2380,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
             {tutoringSuccess ? (
               <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>{CheckCircle({ size: 48 })}</div>
+                <div className="empty-state-icon">{CheckCircle({ size: 48 })}</div>
                 <h3 style={{ margin: '0 0 8px' }}>Solicitud enviada</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                   {profile?.firstName} recibirá tu solicitud y podrá aceptarla o rechazarla.

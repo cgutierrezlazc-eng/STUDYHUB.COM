@@ -101,7 +101,7 @@ const resultBox: React.CSSProperties = {
 function LoadingDots() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, justifyContent: 'center' }}>
-      <div className="loading-dots"><span /><span /><span /></div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 300 }}><div className="skeleton skeleton-text" style={{ width: '80%' }} /><div className="skeleton skeleton-text" style={{ width: '60%' }} /><div className="skeleton skeleton-text" style={{ width: '70%' }} /></div>
       <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Generando con IA...</span>
     </div>
   )
@@ -134,7 +134,7 @@ function MarketingTab() {
 
   return (
     <div>
-      <div className="card" style={cardStyle}>
+      <div className="u-card" style={cardStyle}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Generar Contenido de Marketing</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
@@ -180,7 +180,7 @@ function MarketingTab() {
       {error && <div style={{ ...resultBox, color: '#ef4444', borderColor: '#ef4444' }}>{error}</div>}
 
       {result && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Contenido Generado</h4>
           <div style={resultBox}>{result.content}</div>
           {result.suggestions?.length > 0 && (
@@ -243,7 +243,7 @@ function CalendarTab() {
 
   return (
     <div>
-      <div className="card" style={cardStyle}>
+      <div className="u-card" style={cardStyle}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Calendario de Contenido</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
           <div>
@@ -293,7 +293,7 @@ function CalendarTab() {
       {error && <div style={{ ...resultBox, color: '#ef4444' }}>{error}</div>}
 
       {calendar.length > 0 && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <h4 style={{ margin: '0 0 16px', fontSize: 14 }}>Calendario {MONTHS[month]} {year} — {calendar.length} posts</h4>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {calendar.map((post: any, i: number) => (
@@ -361,7 +361,7 @@ function CommunityTab() {
 
   return (
     <div>
-      <div className="card" style={cardStyle}>
+      <div className="u-card" style={cardStyle}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Gestion de Comunidad con IA</h3>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button onClick={() => { setMode('moderate'); setResult(null) }} style={{
@@ -412,7 +412,7 @@ function CommunityTab() {
       {error && <div style={{ ...resultBox, color: '#ef4444' }}>{error}</div>}
 
       {result?.type === 'moderate' && (
-        <div className="card" style={{ ...cardStyle, borderLeft: `4px solid ${result.data.approved ? '#22c55e' : '#ef4444'}` }}>
+        <div className="u-card" style={{ ...cardStyle, borderLeft: `4px solid ${result.data.approved ? '#22c55e' : '#ef4444'}` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
             <span style={{
               padding: '4px 12px', borderRadius: 20, fontSize: 12, fontWeight: 700,
@@ -439,7 +439,7 @@ function CommunityTab() {
       )}
 
       {result?.type === 'engage' && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>Respuesta Generada</h4>
           <div style={resultBox}>{result.data.reply}</div>
           {result.data.questions?.length > 0 && (
@@ -508,7 +508,7 @@ function QATab() {
 
   return (
     <div>
-      <div className="card" style={cardStyle}>
+      <div className="u-card" style={cardStyle}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>QA y Revision de Codigo</h3>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button onClick={() => { setMode('review'); setResult(null) }} style={{
@@ -581,7 +581,7 @@ function QATab() {
       {error && <div style={{ ...resultBox, color: '#ef4444' }}>{error}</div>}
 
       {result?.type === 'review' && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <h4 style={{ margin: 0, fontSize: 14 }}>Resultado de la Revision</h4>
             <div style={{
@@ -620,7 +620,7 @@ function QATab() {
       )}
 
       {result?.type === 'testplan' && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <h4 style={{ margin: '0 0 16px', fontSize: 14 }}>Plan de Pruebas — {result.data.test_cases?.length || 0} casos</h4>
           {result.data.test_cases?.map((tc: any, i: number) => (
             <div key={i} style={{
@@ -682,7 +682,7 @@ function DesignTab() {
 
   return (
     <div>
-      <div className="card" style={cardStyle}>
+      <div className="u-card" style={cardStyle}>
         <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Brief de Diseno con IA</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
@@ -713,7 +713,7 @@ function DesignTab() {
       {error && <div style={{ ...resultBox, color: '#ef4444' }}>{error}</div>}
 
       {result && (
-        <div className="card" style={cardStyle}>
+        <div className="u-card" style={cardStyle}>
           <h4 style={{ margin: '0 0 16px', fontSize: 14 }}>Brief Generado</h4>
           <div style={resultBox}>{result.brief}</div>
 
