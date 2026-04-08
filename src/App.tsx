@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './services/auth'
 import { wsService } from './services/websocket'
 import { isNative } from './services/capacitor'
@@ -303,10 +303,10 @@ export default function App() {
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
             <Route path="/biblioteca" element={<Biblioteca onNavigate={(path) => navigate(path)} />} />
-            <Route path="/ceo" element={<CeoDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/ceo" element={<Navigate to="/admin-panel" replace />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
-            <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
-            <Route path="/ai-workflows" element={<AIWorkflows onNavigate={(path) => navigate(path)} />} />
+            <Route path="/hr" element={<Navigate to="/admin-panel" replace />} />
+            <Route path="/ai-workflows" element={<Navigate to="/admin-panel/tools/ai-workflows" replace />} />
             <Route path="/admin-panel/*" element={<AdminPanelRoutes onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />

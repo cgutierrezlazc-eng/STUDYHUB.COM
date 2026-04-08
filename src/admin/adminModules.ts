@@ -40,6 +40,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'certificaciones', label: 'Certificaciones', description: 'Gestión de certificados y acreditaciones', icon: '🎓', category: 'tools', route: '/admin-panel/tools/certificaciones', status: 'active' },
   { id: 'ai-workflows', label: 'IA Workflows', description: 'Marketing, QA, diseño y comunidad con IA', icon: '🤖', category: 'tools', route: '/admin-panel/tools/ai-workflows', status: 'active' },
   { id: 'tutores', label: 'Tutores Externos', description: 'Directorio y gestión de tutores contratados', icon: '👨‍🏫', category: 'tools', route: '/admin-panel/tools/tutores', status: 'active' },
+  { id: 'push-notifications', label: 'Push Notifications', description: 'Notificaciones push masivas a usuarios', icon: '📲', category: 'tools', route: '/admin-panel/tools/push', status: 'active', isNew: true },
   { id: 'guia-owner', label: 'Guía del Owner', description: 'Guía legal y administrativa para el dueño', icon: '📖', category: 'tools', route: '/admin-panel/tools/guia-owner', status: 'active' },
 ]
 

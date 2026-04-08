@@ -40,6 +40,7 @@ const CeoEmailModule = lazy(() => import('./tools/CeoEmailModule'))
 const ContactoEmailModule = lazy(() => import('./tools/ContactoEmailModule'))
 const CertificationsModule = lazy(() => import('./tools/CertificationsModule'))
 const TutoresExternosTab = lazy(() => import('./tools/TutoresExternosTab'))
+const PushNotificationsModule = lazy(() => import('./tools/PushNotificationsModule'))
 const OwnerGuideTab = lazy(() => import('./tools/OwnerGuideTab'))
 const AIWorkflowsModule = lazy(() => import('../pages/AIWorkflows'))
 
@@ -108,6 +109,7 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="tools/certificaciones" element={<Wrap title="Certificaciones"><CertificationsModule /></Wrap>} />
         <Route path="tools/ai-workflows" element={<Wrap title="IA Workflows"><AIWorkflowsModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/tutores" element={<Wrap title="Tutores Externos"><TutoresExternosTab /></Wrap>} />
+        <Route path="tools/push" element={<Wrap title="Push Notifications"><PushNotificationsModule /></Wrap>} />
         <Route path="tools/guia-owner" element={<Wrap title="Guía del Owner"><OwnerGuideTab /></Wrap>} />
       </Routes>
     </Suspense>
