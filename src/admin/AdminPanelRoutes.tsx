@@ -17,6 +17,8 @@ const RemuneracionesTab = lazy(() => import('./hr/RemuneracionesTab'))
 const PreviredTab = lazy(() => import('./hr/PreviredTab'))
 const FiniquitosTab = lazy(() => import('./hr/FiniquitosTab'))
 const HistorialPagosTab = lazy(() => import('./hr/HistorialPagosTab'))
+const LibroRemuneracionesTab = lazy(() => import('./payroll/LibroRemuneracionesTab'))
+const DJ1887Tab = lazy(() => import('./payroll/DJ1887Tab'))
 const ImpuestosTab = lazy(() => import('./finance/ImpuestosTab'))
 const InspeccionTrabajoTab = lazy(() => import('./hr/InspeccionTrabajoTab'))
 
@@ -79,6 +81,8 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="payroll/previred" element={<Wrap title="Previred"><PreviredTab /></Wrap>} />
         <Route path="payroll/finiquitos" element={<Wrap title="Finiquitos"><FiniquitosTab /></Wrap>} />
         <Route path="payroll/historial" element={<Wrap title="Historial de Pagos"><HistorialPagosTab /></Wrap>} />
+        <Route path="payroll/libro-rem" element={<Wrap title="Libro de Remuneraciones"><LibroRemuneracionesTab /></Wrap>} />
+        <Route path="payroll/dj1887" element={<Wrap title="DJ1887"><DJ1887Tab /></Wrap>} />
         <Route path="payroll/impuestos" element={<Wrap title="Impuestos / F129"><ImpuestosTab /></Wrap>} />
         <Route path="payroll/inspeccion" element={<Wrap title="Inspección del Trabajo"><InspeccionTrabajoTab /></Wrap>} />
 

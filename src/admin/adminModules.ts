@@ -17,8 +17,8 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'previred', label: 'Previred', description: 'Declaración de cotizaciones previsionales', icon: '🏦', category: 'payroll', route: '/admin-panel/payroll/previred', status: 'active' },
   { id: 'finiquitos', label: 'Finiquitos', description: 'Cálculo de finiquitos y desvinculación', icon: '📄', category: 'payroll', route: '/admin-panel/payroll/finiquitos', status: 'active' },
   { id: 'historial-pagos', label: 'Historial de Pagos', description: 'Registro histórico de todas las remuneraciones', icon: '📊', category: 'payroll', route: '/admin-panel/payroll/historial', status: 'active' },
-  { id: 'libro-rem', label: 'Libro de Remuneraciones', description: 'Libro de Remuneraciones Electrónico (DT)', icon: '📒', category: 'payroll', route: '/admin-panel/payroll/libro-rem', status: 'coming-soon', isNew: true },
-  { id: 'dj1887', label: 'DJ1887', description: 'Declaración Jurada 1887 anual (SII)', icon: '📑', category: 'payroll', route: '/admin-panel/payroll/dj1887', status: 'coming-soon', isNew: true },
+  { id: 'libro-rem', label: 'Libro de Remuneraciones', description: 'Libro de Remuneraciones Electrónico (DT)', icon: '📒', category: 'payroll', route: '/admin-panel/payroll/libro-rem', status: 'active', isNew: true },
+  { id: 'dj1887', label: 'DJ1887', description: 'Declaración Jurada 1887 anual (SII)', icon: '📑', category: 'payroll', route: '/admin-panel/payroll/dj1887', status: 'active', isNew: true },
   { id: 'impuestos', label: 'Impuestos / F129', description: 'Formulario 129 y reportes tributarios', icon: '🧾', category: 'payroll', route: '/admin-panel/payroll/impuestos', status: 'active' },
   { id: 'inspeccion', label: 'Inspección del Trabajo', description: 'Compliance laboral y checklist inspección', icon: '🛡️', category: 'payroll', route: '/admin-panel/payroll/inspeccion', status: 'active' },
 
