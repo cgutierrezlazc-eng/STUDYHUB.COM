@@ -664,13 +664,13 @@ export default function Landing({ onLogin, onRegister }: Props) {
             <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
               <div style={{ display: 'flex', gap: 16, fontSize: 11, color: vars.textMuted, flexWrap: 'wrap' }}>
                 {[
-                  { key: 'landing.footerAbout', label: t('landing.footerAbout') },
-                  { key: 'landing.footerHelpCenter', label: t('landing.footerHelpCenter') },
-                  { key: 'landing.footerTerms', label: t('landing.footerTerms') },
-                  { key: 'landing.footerPrivacy', label: t('landing.footerPrivacy') },
-                  { key: 'landing.footerContact', label: t('landing.footerContact') },
+                  { key: 'landing.footerAbout', label: t('landing.footerAbout'), href: '#' },
+                  { key: 'landing.footerHelpCenter', label: t('landing.footerHelpCenter'), href: '#' },
+                  { key: 'landing.footerTerms', label: t('landing.footerTerms'), href: '/terms' },
+                  { key: 'landing.footerPrivacy', label: t('landing.footerPrivacy'), href: '/privacy' },
+                  { key: 'landing.footerContact', label: t('landing.footerContact'), href: '#' },
                 ].map(l => (
-                  <a key={l.key} href="#" onClick={e => e.preventDefault()} style={{ color: vars.textMuted, textDecoration: 'none' }}>{l.label}</a>
+                  <a key={l.key} href={l.href} onClick={e => { e.preventDefault(); if (l.href !== '#') window.open(l.href, '_blank') }} style={{ color: vars.textMuted, textDecoration: 'none' }}>{l.label}</a>
                 ))}
               </div>
               <div style={{ fontSize: 10, color: vars.textMuted }}>{t('landing.copyright')}</div>
@@ -1104,7 +1104,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
         background: vars.bgCard, borderTop: `1px solid ${vars.border}`,
         padding: '20px 40px', textAlign: 'center', fontSize: 12, color: vars.textMuted,
       }}>
-        {t('landing.footerTerms')} - {t('landing.footerPrivacy')} - {t('landing.footerContact')} - {t('landing.copyright')} - {t('landing.statsMadeInChile')}
+        <a href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>{t('landing.footerTerms')}</a>
+        {' - '}
+        <a href="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>{t('landing.footerPrivacy')}</a>
+        {' - '}{t('landing.footerContact')} - {t('landing.copyright')} - {t('landing.statsMadeInChile')}
       </footer>
     </div>
   )

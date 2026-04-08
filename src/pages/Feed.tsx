@@ -19,7 +19,9 @@ export default function Feed({ onNavigate }: Props) {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [feedSort, setFeedSort] = useState<'recent' | 'smart'>(() => (localStorage.getItem('conniku_feed_sort') as any) || 'recent')
+  const [feedSort, setFeedSort] = useState<'recent' | 'smart'>(() => (localStorage.getItem('conniku_feed_sort') as any) || 'smart')
+  const [feedFilter, setFeedFilter] = useState<'all' | 'career' | 'university' | 'friends'>('all')
+  const [trendingPosts, setTrendingPosts] = useState<any[]>([])
   const [newPostContent, setNewPostContent] = useState('')
   const [postImage, setPostImage] = useState<string | null>(null)
   const [posting, setPosting] = useState(false)
@@ -63,6 +65,7 @@ export default function Feed({ onNavigate }: Props) {
     api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
     loadUniversityNews()
     api.getFriendSuggestions().then(data => setSuggestedPeople((data || []).slice(0, 5))).catch(() => {})
+    api.getTrendingPosts().then(data => setTrendingPosts(data || [])).catch(() => {})
   }, [])
 
   const loadUniversityNews = async () => {
@@ -89,9 +92,9 @@ export default function Feed({ onNavigate }: Props) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const loadFeed = async (p: number = 1, sort?: 'recent' | 'smart') => {
+  const loadFeed = async (p: number = 1, sort?: 'recent' | 'smart', filter?: 'all' | 'career' | 'university' | 'friends') => {
     try {
-      const data = await api.getFeed(p, sort || feedSort)
+      const data = await api.getFeed(p, sort || feedSort, filter || feedFilter)
       const items = Array.isArray(data) ? data : (data.posts || data.items || [])
       if (p === 1) setPosts(items)
       else setPosts(prev => [...prev, ...items])
@@ -338,25 +341,101 @@ export default function Feed({ onNavigate }: Props) {
           </div>
           <div style={{ display: 'flex', gap: 4, background: 'var(--bg-secondary)', borderRadius: 8, padding: 3 }}>
             <button
-              className={`tab ${feedSort === 'recent' ? 'active' : ''}`}
-              style={{ fontSize: 12, padding: '5px 12px' }}
-              onClick={() => { setFeedSort('recent'); localStorage.setItem('conniku_feed_sort', 'recent'); setLoading(true); loadFeed(1, 'recent') }}>
-              {t('feed.sortRecent')}
-            </button>
-            <button
               className={`tab ${feedSort === 'smart' ? 'active' : ''}`}
               style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 4 }}
               onClick={() => { setFeedSort('smart'); localStorage.setItem('conniku_feed_sort', 'smart'); setLoading(true); loadFeed(1, 'smart') }}>
               {Sparkles({ size: 12 })} {t('feed.sortRelevant')}
+            </button>
+            <button
+              className={`tab ${feedSort === 'recent' ? 'active' : ''}`}
+              style={{ fontSize: 12, padding: '5px 12px' }}
+              onClick={() => { setFeedSort('recent'); localStorage.setItem('conniku_feed_sort', 'recent'); setLoading(true); loadFeed(1, 'recent') }}>
+              {t('feed.sortRecent')}
             </button>
           </div>
         </div>
       </div>
 
       <div className="page-body">
+        {/* Category Filter Pills */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+          {([
+            { key: 'all' as const, label: t('feed.filterAll') },
+            { key: 'career' as const, label: t('feed.filterCareer') },
+            { key: 'university' as const, label: t('feed.filterUniversity') },
+            { key: 'friends' as const, label: t('feed.filterFriends') },
+          ]).map(f => (
+            <button
+              key={f.key}
+              onClick={() => { setFeedFilter(f.key); setLoading(true); loadFeed(1, undefined, f.key) }}
+              style={{
+                padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+                border: feedFilter === f.key ? '1.5px solid var(--accent)' : '1px solid var(--border-color)',
+                background: feedFilter === f.key ? 'var(--accent-alpha, rgba(79,140,255,0.12))' : 'var(--bg-secondary)',
+                color: feedFilter === f.key ? 'var(--accent)' : 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 20, alignItems: 'start' }}>
           {/* Main Feed */}
           <div>
+            {/* Trending Section */}
+            {feedSort === 'smart' && trendingPosts.length > 0 && (
+              <div style={{
+                marginBottom: 20, padding: 16, borderRadius: 12,
+                background: 'linear-gradient(135deg, var(--accent-alpha, rgba(79,140,255,0.08)), var(--bg-secondary))',
+                border: '1px solid var(--accent-alpha, rgba(79,140,255,0.2))',
+              }}>
+                <h4 style={{ margin: '0 0 12px', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {Sparkles({ size: 16 })} {t('feed.trendingTitle')}
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {trendingPosts.map(tp => (
+                    <div key={tp.id} style={{
+                      display: 'flex', gap: 10, padding: 10, borderRadius: 10,
+                      background: 'var(--bg-primary)', cursor: 'pointer',
+                      border: '1px solid var(--border-color)', transition: 'border-color 0.15s',
+                    }}
+                    onClick={() => {
+                      const el = document.getElementById(`post-${tp.id}`)
+                      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                    onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-color)')}
+                    >
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontWeight: 700, fontSize: 13, flexShrink: 0, overflow: 'hidden',
+                      }}>
+                        {tp.author?.avatar
+                          ? <img src={tp.author.avatar} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                          : (tp.author?.firstName?.[0] || '?')}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600 }}>{tp.author?.firstName} {tp.author?.lastName}</div>
+                        <div style={{
+                          fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4,
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {tp.content?.slice(0, 80)}{tp.content?.length > 80 ? '...' : ''}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2, display: 'flex', gap: 8 }}>
+                          <span>{tp.likes || 0} reacciones</span>
+                          <span>{tp.commentCount || 0} comentarios</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Composer */}
             <div className="u-card" style={{ padding: 16, marginBottom: 20 }}>
               <div style={{ display: 'flex', gap: 12 }}>
@@ -661,7 +740,7 @@ export default function Feed({ onNavigate }: Props) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {posts.map(post => (
-                  <div key={post.id} className="u-card" style={{ padding: 16 }}>
+                  <div key={post.id} id={`post-${post.id}`} className="u-card" style={{ padding: 16 }}>
                     {/* Post Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                       <div onClick={() => onNavigate(`/user/${post.authorId || post.author?.id}`)} style={{

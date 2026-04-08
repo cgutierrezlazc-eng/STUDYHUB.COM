@@ -799,6 +799,7 @@ def get_comments(
 def get_feed(
     page: int = Query(1, ge=1),
     sort: str = Query("recent", regex="^(recent|smart)$"),
+    filter: str = Query("all", regex="^(all|career|university|friends)$"),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -813,10 +814,33 @@ def get_feed(
         friend_ids.add(f.addressee_id if f.requester_id == user.id else f.requester_id)
     friend_ids.add(user.id)  # Include own posts
 
+    # Build base query depending on filter
     per_page = 20
-    posts = db.query(WallPost).filter(
-        WallPost.author_id.in_(friend_ids)
-    ).order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    if filter == "friends":
+        # Only posts from friends (not own)
+        query = db.query(WallPost).filter(WallPost.author_id.in_(friend_ids))
+    elif filter == "career":
+        # Posts from anyone with the same career
+        if user.career:
+            career_user_ids = [u.id for u in db.query(User.id).filter(User.career == user.career).all()]
+            query = db.query(WallPost).filter(WallPost.author_id.in_(career_user_ids))
+        else:
+            query = db.query(WallPost).filter(WallPost.author_id.in_(friend_ids))
+    elif filter == "university":
+        # Posts from anyone at the same university
+        if user.university:
+            uni_user_ids = [u.id for u in db.query(User.id).filter(User.university == user.university).all()]
+            query = db.query(WallPost).filter(WallPost.author_id.in_(uni_user_ids))
+        else:
+            query = db.query(WallPost).filter(WallPost.author_id.in_(friend_ids))
+    else:
+        query = db.query(WallPost).filter(WallPost.author_id.in_(friend_ids))
+
+    # For smart sorting, fetch more posts to score; for recent, paginate normally
+    if sort == "smart" and page == 1:
+        posts = query.order_by(WallPost.created_at.desc()).limit(50).all()
+    else:
+        posts = query.order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
     # Get current user's university for "university" visibility filtering
     user_university = getattr(user, "university", None)
@@ -879,23 +903,121 @@ def get_feed(
             "pollId": poll.id if poll else None,
         })
 
-    # Smart sorting: score by engagement + recency + media
+    # Smart sorting: personalized ranking
     if sort == "smart" and result:
         from datetime import datetime, timezone
         now = datetime.now(timezone.utc)
+
+        # Pre-fetch author info for scoring
+        author_cache = {}
         for item in result:
+            aid = item["authorId"]
+            if aid not in author_cache:
+                author_cache[aid] = db.query(User).filter(User.id == aid).first()
+
+        for item in result:
+            score = 0.0
             created = datetime.fromisoformat(item["createdAt"].replace("Z", "+00:00")) if "+" not in item["createdAt"] and "Z" not in item["createdAt"] else datetime.fromisoformat(item["createdAt"].replace("Z", "+00:00"))
-            hours_ago = max((now - created).total_seconds() / 3600, 0.5)
-            engagement = item["likes"] * 2 + item["commentCount"] * 3
-            media_bonus = 5 if item.get("imageUrl") else 0
-            milestone_bonus = 10 if item.get("isMilestone") else 0
-            # Decay: engagement matters more, recency less
-            item["_score"] = (engagement + media_bonus + milestone_bonus) / (hours_ago ** 0.5)
+            age_hours = max((now - created).total_seconds() / 3600, 0.5)
+
+            # Recency decay (newer = higher score)
+            score += max(0, 100 - age_hours * 2)
+
+            # Engagement boost
+            score += item["likes"] * 3
+            score += item["commentCount"] * 5
+
+            # Friend boost (posts from friends rank higher)
+            if item["authorId"] in friend_ids and item["authorId"] != user.id:
+                score += 50
+
+            # Same career/university boost
+            author = author_cache.get(item["authorId"])
+            if author:
+                if author.career and author.career == user.career:
+                    score += 30
+                if author.university and author.university == user.university:
+                    score += 20
+
+            # Poll boost (polls get more visibility)
+            if item.get("pollId"):
+                score += 15
+
+            # Image boost
+            if item.get("imageUrl"):
+                score += 10
+
+            # Milestone bonus
+            if item.get("isMilestone"):
+                score += 10
+
+            item["_score"] = score
+
         result.sort(key=lambda x: x.get("_score", 0), reverse=True)
         for item in result:
             item.pop("_score", None)
 
     return result
+
+
+@router.get("/feed/trending")
+def get_trending_posts(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return top 3 trending posts from the user's career field (last 72h)."""
+    from datetime import datetime, timezone, timedelta
+
+    if not user.career:
+        return []
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
+
+    # Get users in the same career
+    career_user_ids = [u.id for u in db.query(User.id).filter(User.career == user.career).all()]
+    if not career_user_ids:
+        return []
+
+    posts = db.query(WallPost).filter(
+        WallPost.author_id.in_(career_user_ids),
+        WallPost.created_at >= cutoff,
+    ).order_by(WallPost.created_at.desc()).limit(30).all()
+
+    scored = []
+    for post in posts:
+        # Visibility check: skip private posts not authored by user
+        visibility = getattr(post, "visibility", "friends") or "friends"
+        if post.author_id != user.id and visibility == "private":
+            continue
+
+        author = db.query(User).filter(User.id == post.author_id).first()
+        like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
+        comment_count = db.query(PostComment).filter(PostComment.post_id == post.id).count()
+
+        age_hours = max((datetime.now(timezone.utc) - post.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600, 0.5)
+        score = (like_count * 3 + comment_count * 5) / (age_hours ** 0.5)
+
+        from database import Poll
+        poll = db.query(Poll).filter(Poll.wall_post_id == post.id).first()
+
+        scored.append({
+            "id": post.id,
+            "authorId": post.author_id,
+            "author": user_brief(author) if author else None,
+            "content": post.content,
+            "imageUrl": post.image_url,
+            "likes": like_count,
+            "commentCount": comment_count,
+            "createdAt": post.created_at.isoformat(),
+            "pollId": poll.id if poll else None,
+            "_score": score,
+        })
+
+    scored.sort(key=lambda x: x["_score"], reverse=True)
+    for item in scored:
+        item.pop("_score", None)
+
+    return scored[:3]
 
 
 # ─── Activity Feed (mixed posts + academic activity) ─────────

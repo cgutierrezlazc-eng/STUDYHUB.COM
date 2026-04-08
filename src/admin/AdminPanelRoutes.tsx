@@ -35,6 +35,7 @@ const GastosTab = lazy(() => import('./finance/GastosTab'))
 const ContabilidadTab = lazy(() => import('./finance/ContabilidadTab'))
 const FacturacionTab = lazy(() => import('./finance/FacturacionTab'))
 const PresupuestosTab = lazy(() => import('./finance/PresupuestosTab'))
+const AnalyticsTab = lazy(() => import('./finance/AnalyticsTab'))
 
 // Legal
 const LegalTab = lazy(() => import('./legal/LegalTab'))
@@ -110,6 +111,7 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="finance/contabilidad" element={<Wrap title="Contabilidad"><ContabilidadTab /></Wrap>} />
         <Route path="finance/facturacion" element={<Wrap title="Facturación / DTE"><FacturacionTab /></Wrap>} />
         <Route path="finance/presupuestos" element={<Wrap title="Presupuestos"><PresupuestosTab /></Wrap>} />
+        <Route path="finance/analytics" element={<Wrap title="Analytics"><AnalyticsTab /></Wrap>} />
 
         {/* Legal & Compliance */}
         <Route path="legal/compliance" element={<Wrap title="Legal y Compliance"><LegalTab /></Wrap>} />

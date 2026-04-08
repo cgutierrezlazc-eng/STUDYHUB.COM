@@ -864,7 +864,7 @@ export default function Courses({ onNavigate }: Props) {
                             <button onClick={() => handleDownloadCertificate(
                               courseDetail.title,
                               quizResult.score,
-                              user?.name || user?.email || 'Estudiante'
+                              user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.email || 'Estudiante')
                             )}
                               style={{
                                 padding: '12px 28px', borderRadius: 8, border: `2px solid ${catColor}`, cursor: 'pointer',

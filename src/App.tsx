@@ -60,6 +60,8 @@ const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
 const HomeDashboard = React.lazy(() => import('./pages/HomeDashboard'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
+const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
+const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -204,6 +206,22 @@ export default function App() {
   }
 
   if (!user) {
+    // Legal pages accessible without authentication
+    if (location.pathname === '/terms') {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <TermsOfService onNavigate={(path) => navigate(path)} />
+        </Suspense>
+      )
+    }
+    if (location.pathname === '/privacy') {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <PrivacyPolicy onNavigate={(path) => navigate(path)} />
+        </Suspense>
+      )
+    }
+
     const authSEO = authView === 'login' ? PAGE_SEO.login : authView === 'register' ? PAGE_SEO.register : PAGE_SEO.landing
     return (
       <Suspense fallback={<PageLoader />}>
@@ -316,6 +334,8 @@ export default function App() {
             <Route path="/admin-panel/*" element={<AdminPanelRoutes onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
+            <Route path="/terms" element={<TermsOfService onNavigate={(path) => navigate(path)} />} />
+            <Route path="/privacy" element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />

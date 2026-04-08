@@ -385,8 +385,10 @@ export const api = {
     request(`/social/users/search?q=${encodeURIComponent(q)}`),
   getUserProfile: (userId: string) =>
     request(`/social/users/${userId}/profile`),
-  getFeed: (page: number = 1, sort: 'recent' | 'smart' = 'recent') =>
-    request(`/social/feed?page=${page}&sort=${sort}`),
+  getFeed: (page: number = 1, sort: 'recent' | 'smart' = 'recent', filter: 'all' | 'career' | 'university' | 'friends' = 'all') =>
+    request(`/social/feed?page=${page}&sort=${sort}&filter=${filter}`),
+  getTrendingPosts: () =>
+    request(`/social/feed/trending`),
   getActivityFeed: (page: number = 1) =>
     request(`/social/activity-feed?page=${page}`),
 

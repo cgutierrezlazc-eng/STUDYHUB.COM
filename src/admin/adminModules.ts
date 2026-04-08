@@ -30,6 +30,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'contabilidad', label: 'Contabilidad', description: 'Plan de cuentas, asientos y conciliación', icon: 'calculator', category: 'finance', route: '/admin-panel/finance/contabilidad', status: 'active', isNew: true },
   { id: 'facturacion', label: 'Facturación / DTE', description: 'Emisión de facturas electrónicas (SII)', icon: 'file-text', category: 'finance', route: '/admin-panel/finance/facturacion', status: 'active', isNew: true },
   { id: 'presupuestos', label: 'Presupuestos', description: 'Presupuesto por centro de costo y varianzas', icon: 'pie-chart', category: 'finance', route: '/admin-panel/finance/presupuestos', status: 'active', isNew: true },
+  { id: 'analytics', label: 'Analytics', description: 'Métricas de usuarios, engagement y crecimiento', icon: 'trending-up', category: 'finance', route: '/admin-panel/finance/analytics', status: 'active', isNew: true },
 
   // ─── Legal & Compliance ───────────────────────────────
   { id: 'legal', label: 'Legal y Compliance', description: 'Estado de cumplimiento normativo', icon: 'scale', category: 'legal', route: '/admin-panel/legal/compliance', status: 'active' },

@@ -45,3 +45,21 @@ profile-mockups.html
 
 # Claude
 .claude/
+
+# IDE / JDK
+.jdk/
+
+# Binaries / installers
+*.dmg
+
+# Screenshots and images not needed in repo
+screenshots/
+*.png
+!public/*.png
+!src/**/*.png
+
+# PDFs
+*.pdf
+
+# Mac files
+Thumbs.db
