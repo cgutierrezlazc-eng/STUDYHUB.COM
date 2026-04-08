@@ -1981,9 +1981,9 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
                 Completa todas las pestanas y revisa en "Vista Previa" antes de generar.
               </div>
               <button onClick={() => {
-                const tabOrder: typeof activeTab[] = ['empresa', 'trabajador', 'contrato', 'jornada', 'remuneracion', 'previsional', 'clausulas', 'preview']
+                const tabOrder: string[] = ['empresa', 'trabajador', 'contrato', 'jornada', 'remuneracion', 'previsional', 'clausulas', 'preview']
                 const idx = tabOrder.indexOf(activeTab)
-                if (idx < tabOrder.length - 1) setActiveTab(tabOrder[idx + 1])
+                if (idx >= 0 && idx < tabOrder.length - 1) setActiveTab(tabOrder[idx + 1] as any)
               }} style={btnPrimary}>
                 Siguiente <ArrowRight size={14} />
               </button>

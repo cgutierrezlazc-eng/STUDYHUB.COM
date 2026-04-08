@@ -11,6 +11,7 @@ interface IconProps {
   className?: string
   style?: React.CSSProperties
   color?: string
+  fill?: string
 }
 
 const svg = (size: number, children: React.ReactNode, props?: IconProps) => (
@@ -18,7 +19,7 @@ const svg = (size: number, children: React.ReactNode, props?: IconProps) => (
     width={props?.size || size}
     height={props?.size || size}
     viewBox="0 0 24 24"
-    fill="none"
+    fill={props?.fill || 'none'}
     stroke={props?.color || 'currentColor'}
     strokeWidth="2"
     strokeLinecap="round"

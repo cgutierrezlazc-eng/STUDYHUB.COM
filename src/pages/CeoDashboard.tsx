@@ -17,7 +17,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [compliance, setComplianceStatus] = useState<any>(null)
   const [f129, setF129] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications' | 'email'>('overview')
+  const [tab, setTab] = useState<'overview' | 'push' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications' | 'email'>('overview')
   const [progressData, setProgressData] = useState<any>(null)
   const [certSearch, setCertSearch] = useState('')
   const [certLoading, setCertLoading] = useState(false)
