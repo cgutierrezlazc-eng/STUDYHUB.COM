@@ -1,6 +1,97 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { useDevice } from '../hooks/useDevice'
 import { useI18n } from '../services/i18n'
+
+/* ─── Scroll Animation Hook ─── */
+function useScrollAnimation() {
+  const ref = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) setIsVisible(true) },
+      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+    )
+    if (ref.current) observer.observe(ref.current)
+    return () => observer.disconnect()
+  }, [])
+  return { ref, isVisible }
+}
+
+/* ─── Animated Section Wrapper ─── */
+function AnimatedSection({ children, delay = 0, className = '', style = {} }: { children: React.ReactNode; delay?: number; className?: string; style?: React.CSSProperties }) {
+  const { ref, isVisible } = useScrollAnimation()
+  return (
+    <div ref={ref} className={className} style={{
+      opacity: isVisible ? 1 : 0,
+      transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
+      transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+/* ─── Count-Up Animation ─── */
+function CountUp({ target, suffix = '' }: { target: string; suffix?: string }) {
+  const { ref, isVisible } = useScrollAnimation()
+  const [display, setDisplay] = useState('0')
+  const numericPart = parseInt(target.replace(/[^0-9]/g, ''), 10)
+  const isNumeric = !isNaN(numericPart) && numericPart > 0
+
+  useEffect(() => {
+    if (!isVisible || !isNumeric) {
+      if (!isNumeric && isVisible) setDisplay(target)
+      return
+    }
+    let current = 0
+    const duration = 1200
+    const steps = 30
+    const increment = numericPart / steps
+    const interval = duration / steps
+    const timer = setInterval(() => {
+      current += increment
+      if (current >= numericPart) {
+        current = numericPart
+        clearInterval(timer)
+      }
+      const prefix = target.includes('+') ? '' : ''
+      const suffixStr = target.includes('+') ? '+' : ''
+      setDisplay(Math.round(current) + suffixStr + suffix)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [isVisible])
+
+  return <span ref={ref}>{isVisible ? display : '0'}</span>
+}
+
+/* ─── CSS Keyframes (injected once) ─── */
+function LandingKeyframes() {
+  return (
+    <style>{`
+      @keyframes conniku-float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes conniku-fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes conniku-pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+      @keyframes conniku-slideInLeft {
+        from { opacity: 0; transform: translateX(-40px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes conniku-slideInRight {
+        from { opacity: 0; transform: translateX(40px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+    `}</style>
+  )
+}
 
 interface Props {
   onLogin: () => void
@@ -320,6 +411,27 @@ export default function Landing({ onLogin, onRegister }: Props) {
   const { t } = useI18n()
 
   const [activeModal, setActiveModal] = useState<ModalType>(null)
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const lastScrollY = useRef(0)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    const handleScroll = () => {
+      const currentY = container.scrollTop
+      if (currentY < 10) {
+        setHeaderVisible(true)
+      } else if (currentY > lastScrollY.current && currentY > 60) {
+        setHeaderVisible(false)
+      } else if (currentY < lastScrollY.current) {
+        setHeaderVisible(true)
+      }
+      lastScrollY.current = currentY
+    }
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const font = "'Outfit', -apple-system, sans-serif"
   const vars = {
@@ -384,7 +496,8 @@ export default function Landing({ onLogin, onRegister }: Props) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', width: '100vw', overflow: 'hidden', background: vars.bgPrimary, position: 'fixed', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', fontFamily: font }}>
+    <div ref={scrollContainerRef} style={{ minHeight: '100vh', width: '100vw', overflow: 'hidden', background: vars.bgPrimary, position: 'fixed', inset: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', fontFamily: font }}>
+      <LandingKeyframes />
 
       {/* ─── Modal / Lightbox ─── */}
       {activeModal && modalData[activeModal] && (
@@ -452,9 +565,11 @@ export default function Landing({ onLogin, onRegister }: Props) {
       <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: compact ? '0 16px' : '0 40px', height: compact ? 56 : 60,
-        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
         borderBottom: `1px solid ${vars.border}`,
         position: 'sticky', top: 0, zIndex: 50,
+        transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
+        transition: 'transform 0.3s ease',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 8 : 10 }}>
           <LogoMark size={compact ? 28 : 34} />
@@ -508,7 +623,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
           flexDirection: compact ? 'column' : 'row',
         }}>
           {/* Left */}
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, animation: 'conniku-slideInLeft 0.8s ease forwards' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               background: vars.accentLight, color: vars.accent,
@@ -518,10 +633,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
               127 {t('landing.connectedStudents')}
             </div>
             <h1 style={{
-              fontSize: compact ? 32 : mid ? 38 : 46, fontWeight: 800,
+              fontSize: compact ? 32 : mid ? 42 : 54, fontWeight: 800,
               color: vars.textPrimary, lineHeight: 1.08, letterSpacing: '-0.04em', margin: 0,
             }}>
-              {t('landing.heroTitle1')}<span style={{ color: vars.accent }}>{t('landing.heroHighlight')}</span>{t('landing.heroTitle2')}
+              {t('landing.heroTitle1')}<span style={{ color: vars.accent, position: 'relative', display: 'inline-block' }}>{t('landing.heroHighlight')}<span style={{ position: 'absolute', bottom: -2, left: 0, width: '100%', height: 4, borderRadius: 2, background: 'linear-gradient(90deg, #2D62C8, #4A7FE0)', opacity: 0.5 }} /></span>{t('landing.heroTitle2')}
             </h1>
             <p style={{
               fontSize: compact ? 14 : 16, color: vars.textMuted, lineHeight: 1.7,
@@ -564,8 +679,8 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
           {/* Right — Hero showcase cards (desktop/tablet) */}
           {!compact && (
-            <div style={{ flex: 1, maxWidth: mid ? 420 : 580 }}>
-              <div style={{ position: 'relative', height: mid ? 460 : 580 }}>
+            <div style={{ flex: 1, maxWidth: mid ? 420 : 580, animation: 'conniku-slideInRight 0.8s ease forwards', animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards' }}>
+              <div style={{ position: 'relative', height: mid ? 460 : 580, animation: 'conniku-float 4s ease-in-out infinite' }}>
                 {/* Profile card */}
                 <div
                   onClick={() => setActiveModal('profile')}
@@ -806,14 +921,16 @@ export default function Landing({ onLogin, onRegister }: Props) {
       </section>
 
       {/* ─── Features ─── */}
-      <section id="comunidad" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
+      <section id="comunidad" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px', borderRadius: '40px 40px 0 0', marginTop: -20, position: 'relative', zIndex: 2 }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <h2 style={{ fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 4 }}>
-            {t('landing.featureAll')}
-          </h2>
-          <div style={{ fontSize: 13, color: vars.textMuted, marginBottom: 36 }}>
-            {t('landing.featureSubtitle')}
-          </div>
+          <AnimatedSection>
+            <h2 style={{ fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 4 }}>
+              {t('landing.featureAll')}
+            </h2>
+            <div style={{ fontSize: 13, color: vars.textMuted, marginBottom: 36 }}>
+              {t('landing.featureSubtitle')}
+            </div>
+          </AnimatedSection>
           <div style={{
             display: 'flex',
             flexDirection: compact ? 'column' : 'row',
@@ -823,15 +940,24 @@ export default function Landing({ onLogin, onRegister }: Props) {
               { num: '01', key: 'estudia' as ModalType, title: 'Estudia mejor', desc: 'Guias de estudio, quizzes adaptativos, flashcards con repeticion espaciada y herramientas interactivas.', bg: vars.accentLight, color: vars.accent, preview: <FlashcardMiniPreview /> },
               { num: '02', key: 'conecta' as ModalType, title: 'Conecta', desc: 'Comunidades por materia, mensajeria, mentorias, eventos de estudio y red social para estudiantes.', bg: '#E0E7FF', color: '#7B82B8', preview: <CommunityMiniPreview /> },
               { num: '03', key: 'crece' as ModalType, title: 'Crece', desc: 'Bolsa de empleo, CV profesional, tutorias, cursos de desarrollo integral.', bg: '#FEF3C7', color: '#C4882A', preview: <JobsMiniPreview /> },
-            ].map(f => (
-              <div
+            ].map((f, idx) => (
+              <AnimatedSection
                 key={f.num}
-                onClick={() => setActiveModal(f.key)}
+                delay={idx * 0.15}
                 style={{
                   flex: 1, background: vars.bgSecondary,
-                  padding: compact ? '24px 20px' : '28px 24px',
                   cursor: 'pointer',
                   transition: 'transform 0.2s ease, background 0.2s ease',
+                }}
+              >
+              <div
+                onClick={() => setActiveModal(f.key)}
+                style={{
+                  background: vars.bgSecondary,
+                  padding: compact ? '24px 20px' : '28px 24px',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease',
+                  height: '100%',
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F0F2F5' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = vars.bgSecondary }}
@@ -852,41 +978,46 @@ export default function Landing({ onLogin, onRegister }: Props) {
                   <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
                 </div>
               </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
       </section>
 
       {/* ─── Stats ─── */}
-      <section style={{ padding: compact ? '36px 16px' : '48px 40px', background: vars.bgPrimary }}>
-        <div style={{
-          maxWidth: 800, margin: '0 auto',
-          display: 'flex', justifyContent: 'center',
-          gap: compact ? 32 : 56, flexWrap: 'wrap',
-        }}>
-          {[
-            { val: '55+', lbl: t('landing.statsTools') },
-            { val: '30', lbl: t('landing.statsFreeCourses') },
-            { val: '40', lbl: t('landing.statsLanguages') },
-            { val: 'CL', lbl: t('landing.statsMadeInChile') },
-          ].map(s => (
-            <div key={s.lbl} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: vars.textPrimary }}>{s.val}</div>
-              <div style={{ fontSize: 12, color: vars.textMuted, marginTop: 2 }}>{s.lbl}</div>
-            </div>
-          ))}
-        </div>
+      <section style={{ padding: compact ? '36px 16px' : '48px 40px', background: vars.bgPrimary, borderRadius: '0 0 40px 40px', position: 'relative', zIndex: 1 }}>
+        <AnimatedSection>
+          <div style={{
+            maxWidth: 800, margin: '0 auto',
+            display: 'flex', justifyContent: 'center',
+            gap: compact ? 32 : 56, flexWrap: 'wrap',
+          }}>
+            {[
+              { val: '55+', lbl: t('landing.statsTools') },
+              { val: '30', lbl: t('landing.statsFreeCourses') },
+              { val: '40', lbl: t('landing.statsLanguages') },
+              { val: 'CL', lbl: t('landing.statsMadeInChile') },
+            ].map((s, idx) => (
+              <AnimatedSection key={s.lbl} delay={idx * 0.1} style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: vars.textPrimary }}><CountUp target={s.val} /></div>
+                <div style={{ fontSize: 12, color: vars.textMuted, marginTop: 2 }}>{s.lbl}</div>
+              </AnimatedSection>
+            ))}
+          </div>
+        </AnimatedSection>
       </section>
 
       {/* ─── Pricing ─── */}
-      <section id="planes" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px' }}>
+      <section id="planes" style={{ background: vars.bgCard, padding: compact ? '48px 16px' : '64px 40px', borderRadius: '40px 40px 0 0', marginTop: -20, position: 'relative', zIndex: 2 }}>
         <div style={{ maxWidth: 780, margin: '0 auto' }}>
-          <h2 style={{ textAlign: 'center', fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 6 }}>
-            {t('landing.pricingTitle')}
-          </h2>
-          <div style={{ textAlign: 'center', fontSize: 13, color: vars.textMuted, marginBottom: 32 }}>
-            {t('landing.pricingSubtitle')}
-          </div>
+          <AnimatedSection>
+            <h2 style={{ textAlign: 'center', fontSize: compact ? 22 : 26, fontWeight: 700, color: vars.textPrimary, letterSpacing: '-0.02em', marginBottom: 6 }}>
+              {t('landing.pricingTitle')}
+            </h2>
+            <div style={{ textAlign: 'center', fontSize: 13, color: vars.textMuted, marginBottom: 32 }}>
+              {t('landing.pricingSubtitle')}
+            </div>
+          </AnimatedSection>
           <div style={{
             display: 'flex', gap: 1, background: vars.border,
             borderRadius: 14, overflow: 'hidden',
@@ -896,49 +1027,52 @@ export default function Landing({ onLogin, onRegister }: Props) {
               { name: t('landing.planBasic'), price: '$0', per: t('landing.planFree'), features: ['2 asignaturas', 'Red social', 'Cursos', '300 MB'], hl: false },
               { name: t('landing.planPro'), price: '$5', per: t('landing.planMonth'), features: ['8 asignaturas', 'Herramientas avanzadas', 'Predictor de examen', '1 GB'], hl: true },
               { name: t('landing.planMax'), price: '$13', per: t('landing.planMonth'), features: ['Todo ilimitado', 'Grabar clases', 'Publicar empleos', '3 GB'], hl: false },
-            ].map(plan => (
-              <div key={plan.name} style={{
-                flex: 1, padding: compact ? '24px 20px' : '28px 24px', position: 'relative',
-                background: plan.hl ? vars.textPrimary : vars.bgSecondary,
-                color: plan.hl ? '#fff' : vars.textPrimary,
-              }}>
+            ].map((plan, idx) => (
+              <AnimatedSection key={plan.name} delay={idx * 0.15} style={{ flex: 1 }}>
                 <div style={{
-                  fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em',
-                  color: plan.hl ? 'rgba(255,255,255,0.5)' : vars.textMuted,
-                }}>{plan.name}</div>
-                {plan.hl && (
-                  <div style={{
-                    position: 'absolute', top: 14, right: 14,
-                    background: vars.accent, color: '#fff',
-                    padding: '3px 10px', borderRadius: 6, fontSize: 9, fontWeight: 600,
-                  }}>{t('landing.planRecommended')}</div>
-                )}
-                <div style={{
-                  fontSize: 34, fontWeight: 800, margin: '6px 0 2px', letterSpacing: '-0.03em',
+                  padding: compact ? '24px 20px' : '28px 24px', position: 'relative',
+                  background: plan.hl ? vars.textPrimary : vars.bgSecondary,
                   color: plan.hl ? '#fff' : vars.textPrimary,
-                }}>{plan.price}</div>
-                <div style={{
-                  fontSize: 12, marginBottom: 18,
-                  color: plan.hl ? 'rgba(255,255,255,0.4)' : vars.textMuted,
-                }}>{plan.per}</div>
-                <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 12, lineHeight: 2.2, color: plan.hl ? 'rgba(255,255,255,0.7)' : vars.textSecondary }}>
-                  {plan.features.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <CheckIcon />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button onClick={onRegister} style={{
-                  marginTop: 18, width: '100%', padding: 10, borderRadius: 8,
-                  fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font, minHeight: 44,
-                  ...(plan.hl
-                    ? { background: vars.accent, border: 'none', color: '#fff' }
-                    : { background: 'transparent', border: `1.5px solid ${vars.border}`, color: vars.textSecondary }),
+                  height: '100%', boxSizing: 'border-box',
                 }}>
-                  {plan.name === t('landing.planBasic') ? t('landing.startFree') : `${t('landing.planChoose')} ${plan.name}`}
-                </button>
-              </div>
+                  <div style={{
+                    fontSize: 11, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em',
+                    color: plan.hl ? 'rgba(255,255,255,0.5)' : vars.textMuted,
+                  }}>{plan.name}</div>
+                  {plan.hl && (
+                    <div style={{
+                      position: 'absolute', top: 14, right: 14,
+                      background: vars.accent, color: '#fff',
+                      padding: '3px 10px', borderRadius: 6, fontSize: 9, fontWeight: 600,
+                    }}>{t('landing.planRecommended')}</div>
+                  )}
+                  <div style={{
+                    fontSize: 34, fontWeight: 800, margin: '6px 0 2px', letterSpacing: '-0.03em',
+                    color: plan.hl ? '#fff' : vars.textPrimary,
+                  }}>{plan.price}</div>
+                  <div style={{
+                    fontSize: 12, marginBottom: 18,
+                    color: plan.hl ? 'rgba(255,255,255,0.4)' : vars.textMuted,
+                  }}>{plan.per}</div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: 12, lineHeight: 2.2, color: plan.hl ? 'rgba(255,255,255,0.7)' : vars.textSecondary }}>
+                    {plan.features.map(f => (
+                      <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <CheckIcon />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <button onClick={onRegister} style={{
+                    marginTop: 18, width: '100%', padding: 10, borderRadius: 8,
+                    fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font, minHeight: 44,
+                    ...(plan.hl
+                      ? { background: vars.accent, border: 'none', color: '#fff' }
+                      : { background: 'transparent', border: `1.5px solid ${vars.border}`, color: vars.textSecondary }),
+                  }}>
+                    {plan.name === t('landing.planBasic') ? t('landing.startFree') : `${t('landing.planChoose')} ${plan.name}`}
+                  </button>
+                </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
@@ -946,19 +1080,23 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
       {/* ─── Final CTA ─── */}
       <section style={{
-        background: vars.textPrimary, padding: compact ? '48px 16px' : '64px 40px', textAlign: 'center',
+        background: vars.textPrimary, padding: compact ? '48px 16px' : '80px 40px', textAlign: 'center',
+        borderRadius: '40px 40px 0 0', marginTop: -20, position: 'relative', zIndex: 3,
       }}>
-        <h2 style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{t('landing.ctaJoin')}</h2>
-        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
-          {t('landing.ctaSubtitle')}
-        </p>
-        <button onClick={onRegister} style={{
-          background: vars.accent, color: '#fff', padding: '13px 32px',
-          borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
-          cursor: 'pointer', fontFamily: font, width: compact ? '100%' : 'auto', maxWidth: 320, minHeight: 44,
-        }}>
-          {t('landing.startFree')}
-        </button>
+        <AnimatedSection>
+          <h2 style={{ fontSize: compact ? 24 : 28, fontWeight: 700, color: '#fff', marginBottom: 8 }}>{t('landing.ctaJoin')}</h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28 }}>
+            {t('landing.ctaSubtitle')}
+          </p>
+          <button onClick={onRegister} style={{
+            background: vars.accent, color: '#fff', padding: '13px 32px',
+            borderRadius: 10, fontSize: 15, fontWeight: 600, border: 'none',
+            cursor: 'pointer', fontFamily: font, width: compact ? '100%' : 'auto', maxWidth: 320, minHeight: 44,
+            animation: 'conniku-pulse 2.5s ease-in-out infinite',
+          }}>
+            {t('landing.startFree')}
+          </button>
+        </AnimatedSection>
       </section>
 
       {/* ─── Footer ─── */}
