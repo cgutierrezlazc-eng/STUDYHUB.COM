@@ -26,9 +26,9 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'dashboard-ceo', label: 'Dashboard Ejecutivo', description: 'Resumen semanal, métricas clave y KPIs', icon: '📈', category: 'finance', route: '/admin-panel/finance/dashboard', status: 'active' },
   { id: 'gastos', label: 'Gastos Operacionales', description: 'Control de gastos, proveedores y categorías', icon: '💳', category: 'finance', route: '/admin-panel/finance/gastos', status: 'active' },
   { id: 'financiero', label: 'Panel Financiero', description: 'Ingresos, suscripciones y métricas financieras', icon: '💹', category: 'finance', route: '/admin-panel/finance/financiero', status: 'active' },
-  { id: 'contabilidad', label: 'Contabilidad', description: 'Plan de cuentas, asientos y conciliación', icon: '📗', category: 'finance', route: '/admin-panel/finance/contabilidad', status: 'coming-soon', isNew: true },
-  { id: 'facturacion', label: 'Facturación / DTE', description: 'Emisión de facturas electrónicas (SII)', icon: '🧾', category: 'finance', route: '/admin-panel/finance/facturacion', status: 'coming-soon', isNew: true },
-  { id: 'presupuestos', label: 'Presupuestos', description: 'Presupuesto por centro de costo y varianzas', icon: '📐', category: 'finance', route: '/admin-panel/finance/presupuestos', status: 'coming-soon', isNew: true },
+  { id: 'contabilidad', label: 'Contabilidad', description: 'Plan de cuentas, asientos y conciliación', icon: '📗', category: 'finance', route: '/admin-panel/finance/contabilidad', status: 'active', isNew: true },
+  { id: 'facturacion', label: 'Facturación / DTE', description: 'Emisión de facturas electrónicas (SII)', icon: '🧾', category: 'finance', route: '/admin-panel/finance/facturacion', status: 'active', isNew: true },
+  { id: 'presupuestos', label: 'Presupuestos', description: 'Presupuesto por centro de costo y varianzas', icon: '📐', category: 'finance', route: '/admin-panel/finance/presupuestos', status: 'active', isNew: true },
 
   // ─── Legal & Compliance ───────────────────────────────
   { id: 'legal', label: 'Legal y Compliance', description: 'Estado de cumplimiento normativo', icon: '⚖️', category: 'legal', route: '/admin-panel/legal/compliance', status: 'active' },

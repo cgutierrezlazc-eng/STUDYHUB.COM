@@ -26,6 +26,9 @@ const InspeccionTrabajoTab = lazy(() => import('./hr/InspeccionTrabajoTab'))
 const CeoOverview = lazy(() => import('./finance/CeoOverview'))
 const FinancialTab = lazy(() => import('./finance/FinancialTab'))
 const GastosTab = lazy(() => import('./finance/GastosTab'))
+const ContabilidadTab = lazy(() => import('./finance/ContabilidadTab'))
+const FacturacionTab = lazy(() => import('./finance/FacturacionTab'))
+const PresupuestosTab = lazy(() => import('./finance/PresupuestosTab'))
 
 // Legal
 const LegalTab = lazy(() => import('./legal/LegalTab'))
@@ -91,6 +94,9 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="finance/dashboard" element={<Wrap title="Dashboard Ejecutivo"><CeoOverview onNavigate={onNavigate} /></Wrap>} />
         <Route path="finance/financiero" element={<Wrap title="Panel Financiero"><FinancialTab /></Wrap>} />
         <Route path="finance/gastos" element={<Wrap title="Gastos Operacionales"><GastosTab /></Wrap>} />
+        <Route path="finance/contabilidad" element={<Wrap title="Contabilidad"><ContabilidadTab /></Wrap>} />
+        <Route path="finance/facturacion" element={<Wrap title="Facturación / DTE"><FacturacionTab /></Wrap>} />
+        <Route path="finance/presupuestos" element={<Wrap title="Presupuestos"><PresupuestosTab /></Wrap>} />
 
         {/* Legal & Compliance */}
         <Route path="legal/compliance" element={<Wrap title="Legal y Compliance"><LegalTab /></Wrap>} />
