@@ -8,6 +8,8 @@ const AdminPanel = lazy(() => import('./AdminPanel'))
 // HR & People
 const PersonalTab = lazy(() => import('./hr/PersonalTab'))
 const ContratosTab = lazy(() => import('./hr/ContratosTab'))
+const AsistenciaTab = lazy(() => import('./hr/AsistenciaTab'))
+const VacacionesTab = lazy(() => import('./hr/VacacionesTab'))
 
 // Payroll
 const PayrollModule = lazy(() => import('./payroll/PayrollModule'))
@@ -68,6 +70,8 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         {/* HR & People */}
         <Route path="hr/personal" element={<Wrap title="Directorio de Personal"><PersonalTab /></Wrap>} />
         <Route path="hr/contratos" element={<Wrap title="Contratos y Vida Laboral"><ContratosTab /></Wrap>} />
+        <Route path="hr/asistencia" element={<Wrap title="Asistencia y Jornada"><AsistenciaTab /></Wrap>} />
+        <Route path="hr/vacaciones" element={<Wrap title="Vacaciones y Permisos"><VacacionesTab /></Wrap>} />
 
         {/* Payroll & Legal */}
         <Route path="payroll" element={<Wrap title="Remuneraciones"><PayrollModule /></Wrap>} />

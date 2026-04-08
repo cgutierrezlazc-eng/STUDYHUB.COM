@@ -4,8 +4,8 @@ export const ADMIN_MODULES: AdminModule[] = [
   // ─── HR & People ─────────────────────────────────────
   { id: 'personal', label: 'Directorio de Personal', description: 'Gestiona colaboradores, datos personales y contratos', icon: '👥', category: 'hr', route: '/admin-panel/hr/personal', status: 'active' },
   { id: 'contratos', label: 'Contratos y Vida Laboral', description: 'Ciclo de vida del contrato, renovaciones y progresión', icon: '📋', category: 'hr', route: '/admin-panel/hr/contratos', status: 'active' },
-  { id: 'asistencia', label: 'Asistencia y Jornada', description: 'Control horario, horas extra, Art. 22', icon: '⏱️', category: 'hr', route: '/admin-panel/hr/asistencia', status: 'coming-soon', isNew: true },
-  { id: 'vacaciones', label: 'Vacaciones y Permisos', description: 'Saldos, solicitudes, permisos legales', icon: '🏖️', category: 'hr', route: '/admin-panel/hr/vacaciones', status: 'coming-soon', isNew: true },
+  { id: 'asistencia', label: 'Asistencia y Jornada', description: 'Control horario, horas extra, Art. 22', icon: '⏱️', category: 'hr', route: '/admin-panel/hr/asistencia', status: 'active', isNew: true },
+  { id: 'vacaciones', label: 'Vacaciones y Permisos', description: 'Saldos, solicitudes, permisos legales', icon: '🏖️', category: 'hr', route: '/admin-panel/hr/vacaciones', status: 'active', isNew: true },
   { id: 'onboarding-hr', label: 'Onboarding / Offboarding', description: 'Checklists de ingreso y salida', icon: '🚀', category: 'hr', route: '/admin-panel/hr/onboarding', status: 'coming-soon', isNew: true },
   { id: 'documentos', label: 'Documentos del Trabajador', description: 'Bóveda digital de documentos laborales', icon: '📁', category: 'hr', route: '/admin-panel/hr/documentos', status: 'coming-soon', isNew: true },
   { id: 'desempeno', label: 'Evaluación de Desempeño', description: 'Metas, KRAs y ciclos de evaluación', icon: '⭐', category: 'hr', route: '/admin-panel/hr/desempeno', status: 'coming-soon', isNew: true },
