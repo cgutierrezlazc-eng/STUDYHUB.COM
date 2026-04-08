@@ -56,6 +56,7 @@ const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
 const HomeDashboard = React.lazy(() => import('./pages/HomeDashboard'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
+const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -306,6 +307,7 @@ export default function App() {
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<HRDashboard onNavigate={(path) => navigate(path)} />} />
             <Route path="/ai-workflows" element={<AIWorkflows onNavigate={(path) => navigate(path)} />} />
+            <Route path="/admin-panel/*" element={<AdminPanelRoutes onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/admin" element={<Admin />} />

@@ -298,7 +298,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   // Collapsible section state — auto-open section containing active route
   const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
   const academicPaths = ['/dashboard', '/study-rooms', '/search', '/calendar', '/marketplace', '/jobs']
-  const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/ai-workflows', '/admin']
+  const supportPaths = ['/profile', '/subscription', '/suggestions', '/ceo', '/hr', '/ai-workflows', '/admin', '/admin-panel']
 
   const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
   const isAcademicActive = academicPaths.some(p => currentPath.startsWith(p))
@@ -448,6 +448,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             </button>
             {user?.role === 'owner' && (
               <>
+                <button className={`nav-item ${isActive('/admin-panel') ? 'active' : ''}`} onClick={() => onNavigate('/admin-panel')} style={{ fontWeight: 600 }}>
+                  {Icons.building(IC.building)} Panel Admin
+                </button>
                 <button className={`nav-item ${isActive('/ceo') ? 'active' : ''}`} onClick={() => onNavigate('/ceo')}>
                   {Icons.building(IC.building)} {t('sidebar.ceoPanel')}
                 </button>
