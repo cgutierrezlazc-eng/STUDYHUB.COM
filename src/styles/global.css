@@ -276,32 +276,35 @@ h1, h2, h3,
 }
 
 /* ─── Animations ─────────────────────────────────────────── */
+/* NOTE: opacity is NOT animated here — content must always be visible.
+   Only transform animates. fill-mode:both only affects translateY,
+   so re-renders never leave content invisible. */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(10px); }
+  to   { transform: translateY(0); }
 }
 
 @keyframes slideInLeft {
-  from { opacity: 0; transform: translateX(-12px); }
-  to { opacity: 1; transform: translateX(0); }
+  from { transform: translateX(-14px); }
+  to   { transform: translateX(0); }
 }
 
-/* Page load stagger */
-.page-header { animation: fadeInUp 0.3s ease both; }
-.page-body > * { animation: fadeInUp 0.3s ease both; }
-.page-body > *:nth-child(1) { animation-delay: 0.05s; }
-.page-body > *:nth-child(2) { animation-delay: 0.1s; }
-.page-body > *:nth-child(3) { animation-delay: 0.15s; }
-.page-body > *:nth-child(4) { animation-delay: 0.2s; }
-.page-body > *:nth-child(5) { animation-delay: 0.25s; }
+/* Page load stagger — content always visible, only slides up */
+.page-header { animation: fadeInUp 0.28s ease both; }
+.page-body > * { animation: fadeInUp 0.28s ease both; }
+.page-body > *:nth-child(1) { animation-delay: 0.04s; }
+.page-body > *:nth-child(2) { animation-delay: 0.08s; }
+.page-body > *:nth-child(3) { animation-delay: 0.12s; }
+.page-body > *:nth-child(4) { animation-delay: 0.16s; }
+.page-body > *:nth-child(5) { animation-delay: 0.20s; }
 
-.stat-card { animation: fadeInUp 0.3s ease both; }
-.stat-card:nth-child(1) { animation-delay: 0.06s; }
-.stat-card:nth-child(2) { animation-delay: 0.12s; }
-.stat-card:nth-child(3) { animation-delay: 0.18s; }
-.stat-card:nth-child(4) { animation-delay: 0.24s; }
+.stat-card { animation: fadeInUp 0.28s ease both; }
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.10s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.20s; }
 
-.sidebar { animation: slideInLeft 0.25s ease both; }
+.sidebar { animation: slideInLeft 0.22s ease both; }
 
 /* ─── App Layout ─────────────────────────────────────────── */
 .app-layout {
@@ -3440,11 +3443,11 @@ body.touch-device select {
 
 /* Page transition */
 @keyframes pageEnter {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { transform: translateY(10px); }
+  to   { transform: translateY(0); }
 }
 .page-enter {
-  animation: pageEnter 0.3s ease both;
+  animation: pageEnter 0.28s ease both;
 }
 
 /* Hover lift for interactive cards */
