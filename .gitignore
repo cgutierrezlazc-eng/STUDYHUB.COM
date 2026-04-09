@@ -32,6 +32,10 @@ backend/conniku_data/
 
 # Capacitor native builds
 android/app/build/
+android/build/
+android/app/build.old/
+android/.kotlin/
+android/*.keystore
 ios/App/Pods/
 
 # Logs
