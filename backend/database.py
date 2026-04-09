@@ -563,6 +563,7 @@ class CommunityPost(Base):
     content = Column(Text, nullable=False)
     image_url = Column(Text, nullable=True)
     is_pinned = Column(Boolean, default=False)
+    is_announcement = Column(Boolean, default=False)
     like_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -583,6 +584,47 @@ class CommunityPostComment(Base):
     author_id = Column(String(16), ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CommunityResource(Base):
+    __tablename__ = "community_resources"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
+    uploader_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    resource_type = Column(String(20), default="link")  # link | file | note
+    title = Column(String(255), nullable=False)
+    url = Column(Text, nullable=True)           # for links
+    description = Column(Text, default="")
+    download_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    uploader = relationship("User", foreign_keys=[uploader_id])
+
+
+class CommunityEvent(Base):
+    __tablename__ = "community_events"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
+    creator_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, default="")
+    event_date = Column(DateTime, nullable=False)
+    location = Column(String(255), default="")  # can be "Online", room name, etc.
+    meet_url = Column(Text, nullable=True)       # optional Jitsi/Meet link
+    rsvp_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    creator = relationship("User", foreign_keys=[creator_id])
+
+
+class CommunityEventRSVP(Base):
+    __tablename__ = "community_event_rsvps"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    event_id = Column(String(16), ForeignKey("community_events.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    status = Column(String(20), default="going")  # going | maybe | not_going
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("event_id", "user_id", name="uq_event_rsvp"),)
 
 
 # ─── Polls / Encuestas ─────────────────────────────────────

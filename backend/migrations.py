@@ -222,6 +222,19 @@ def migrate():
                 except Exception as e:
                     logger.debug(f"Column messages.moderation_status skipped: {e}")
 
+    # Add is_announcement to community_posts table
+    if inspector.has_table("community_posts"):
+        existing_cp_columns = {col["name"] for col in inspector.get_columns("community_posts")}
+        if "is_announcement" not in existing_cp_columns:
+            with engine.begin() as conn:
+                try:
+                    conn.execute(text(
+                        "ALTER TABLE community_posts ADD COLUMN is_announcement BOOLEAN DEFAULT FALSE"
+                    ))
+                    logger.info("Added column community_posts.is_announcement")
+                except Exception as e:
+                    logger.debug(f"Column community_posts.is_announcement skipped: {e}")
+
     # Create moderation_queue table if it doesn't exist
     if not inspector.has_table("moderation_queue"):
         with engine.begin() as conn:

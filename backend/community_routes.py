@@ -2,13 +2,14 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func, or_
 
 from database import (get_db, User, Community, CommunityMember, CommunityPost,
-                      CommunityPostLike, CommunityPostComment, UserReport, gen_id)
+                      CommunityPostLike, CommunityPostComment, CommunityResource,
+                      CommunityEvent, CommunityEventRSVP, UserReport, gen_id)
 from middleware import get_current_user
 from moderation import check_content
 
@@ -270,6 +271,7 @@ def create_community_post(community_id: str, data: dict,
         raise HTTPException(403, "Debes ser miembro para publicar")
     content = data.get("content", "").strip()
     image_url = data.get("image_url")
+    is_announcement = data.get("is_announcement", False)
     if not content and not image_url:
         raise HTTPException(400, "El post no puede estar vacío")
 
@@ -280,6 +282,7 @@ def create_community_post(community_id: str, data: dict,
     post = CommunityPost(
         id=gen_id(), community_id=community_id, author_id=user.id,
         content=content, image_url=image_url,
+        is_announcement=is_announcement if member.role in ("admin", "moderator") else False,
     )
     db.add(post)
 
@@ -290,7 +293,9 @@ def create_community_post(community_id: str, data: dict,
     return {
         "id": post.id, "communityId": post.community_id,
         "content": post.content, "imageUrl": post.image_url,
-        "isPinned": post.is_pinned, "likeCount": 0, "commentCount": 0,
+        "isPinned": post.is_pinned,
+        "isAnnouncement": post.is_announcement or False,
+        "likeCount": 0, "commentCount": 0,
         "author": user_brief(user),
         "createdAt": post.created_at.isoformat() if post.created_at else "",
         "reactions": {}, "userReaction": None,
@@ -301,8 +306,11 @@ def create_community_post(community_id: str, data: dict,
 def get_community_posts(community_id: str, page: int = 1,
                         user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     q = db.query(CommunityPost).filter(CommunityPost.community_id == community_id)
-    posts = q.order_by(desc(CommunityPost.is_pinned), desc(CommunityPost.created_at)).offset(
-        (page - 1) * 20).limit(20).all()
+    posts = q.order_by(
+        desc(CommunityPost.is_announcement),
+        desc(CommunityPost.is_pinned),
+        desc(CommunityPost.created_at)
+    ).offset((page - 1) * 20).limit(20).all()
 
     author_ids = list(set(p.author_id for p in posts))
     authors = {u.id: u for u in db.query(User).filter(User.id.in_(author_ids)).all()} if author_ids else {}
@@ -324,6 +332,7 @@ def get_community_posts(community_id: str, page: int = 1,
             "id": p.id, "communityId": p.community_id,
             "content": p.content, "imageUrl": p.image_url,
             "isPinned": p.is_pinned,
+            "isAnnouncement": p.is_announcement or False,
             "likeCount": sum(reactions.values()) if reactions else 0,
             "commentCount": p.comment_count or 0,
             "author": user_brief(authors.get(p.author_id)),
@@ -455,3 +464,336 @@ def community_suggestions(user: User = Depends(get_current_user), db: Session = 
         desc(Community.member_count)
     ).limit(10).all()
     return [community_brief(c) for c in suggestions]
+
+
+@router.get("/trending")
+def get_trending_communities(
+    limit: int = 6,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Communities with most activity in the last 7 days."""
+    from sqlalchemy import func
+    from datetime import timedelta
+
+    week_ago = datetime.utcnow() - timedelta(days=7)
+
+    # Count posts per community in last 7 days
+    activity = db.query(
+        CommunityPost.community_id,
+        func.count(CommunityPost.id).label("post_count")
+    ).filter(
+        CommunityPost.created_at >= week_ago
+    ).group_by(CommunityPost.community_id).subquery()
+
+    communities = db.query(Community).join(
+        activity, Community.id == activity.c.community_id, isouter=True
+    ).filter(
+        Community.type == "public"
+    ).order_by(
+        func.coalesce(activity.c.post_count, 0).desc(),
+        Community.member_count.desc()
+    ).limit(limit).all()
+
+    result = []
+    for c in communities:
+        my_membership = db.query(CommunityMember).filter(
+            CommunityMember.community_id == c.id,
+            CommunityMember.user_id == user.id
+        ).first()
+        result.append({
+            "id": c.id,
+            "name": c.name,
+            "description": c.description,
+            "avatar": c.avatar,
+            "coverImage": c.cover_image,
+            "category": c.category,
+            "memberCount": c.member_count,
+            "isMember": my_membership is not None,
+        })
+    return result
+
+
+# ─── Community Resources ─────────────────────────────────────────────────────
+
+class CreateResourceRequest(BaseModel):
+    resource_type: str = "link"
+    title: str
+    url: Optional[str] = None
+    description: str = ""
+
+
+@router.get("/{community_id}/resources")
+def get_community_resources(
+    community_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id
+    ).first()
+    community = db.query(Community).filter(Community.id == community_id).first()
+    if not community:
+        raise HTTPException(404, "Comunidad no encontrada")
+    if community.type == "private" and not member:
+        raise HTTPException(403, "Comunidad privada")
+
+    resources = db.query(CommunityResource).filter(
+        CommunityResource.community_id == community_id
+    ).order_by(CommunityResource.created_at.desc()).all()
+
+    result = []
+    for r in resources:
+        uploader = db.query(User).filter(User.id == r.uploader_id).first()
+        result.append({
+            "id": r.id,
+            "resourceType": r.resource_type,
+            "title": r.title,
+            "url": r.url,
+            "description": r.description,
+            "downloadCount": r.download_count,
+            "uploaderId": r.uploader_id,
+            "uploaderName": f"{uploader.first_name} {uploader.last_name}" if uploader else "Usuario",
+            "uploaderUsername": uploader.username if uploader else "",
+            "createdAt": r.created_at.isoformat() if r.created_at else "",
+        })
+    return result
+
+
+@router.post("/{community_id}/resources")
+def add_community_resource(
+    community_id: str,
+    req: CreateResourceRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id
+    ).first()
+    if not member:
+        raise HTTPException(403, "No eres miembro de esta comunidad")
+
+    resource = CommunityResource(
+        id=gen_id(),
+        community_id=community_id,
+        uploader_id=user.id,
+        resource_type=req.resource_type,
+        title=req.title,
+        url=req.url,
+        description=req.description,
+    )
+    db.add(resource)
+    db.commit()
+    db.refresh(resource)
+    return {"id": resource.id, "title": resource.title, "resourceType": resource.resource_type, "createdAt": resource.created_at.isoformat()}
+
+
+@router.delete("/{community_id}/resources/{resource_id}")
+def delete_community_resource(
+    community_id: str,
+    resource_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    resource = db.query(CommunityResource).filter(
+        CommunityResource.id == resource_id,
+        CommunityResource.community_id == community_id
+    ).first()
+    if not resource:
+        raise HTTPException(404, "Recurso no encontrado")
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id
+    ).first()
+    # Only uploader or admin/mod can delete
+    if resource.uploader_id != user.id and (not member or member.role not in ("admin", "moderator")):
+        raise HTTPException(403, "Sin permisos")
+    db.delete(resource)
+    db.commit()
+    return {"success": True}
+
+
+# ─── Community Events ─────────────────────────────────────────────────────────
+
+class CreateEventRequest(BaseModel):
+    title: str
+    description: str = ""
+    event_date: str  # ISO format
+    location: str = ""
+    meet_url: Optional[str] = None
+
+
+@router.get("/{community_id}/events")
+def get_community_events(
+    community_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    events = db.query(CommunityEvent).filter(
+        CommunityEvent.community_id == community_id
+    ).order_by(CommunityEvent.event_date.asc()).all()
+
+    result = []
+    for e in events:
+        creator = db.query(User).filter(User.id == e.creator_id).first()
+        my_rsvp = db.query(CommunityEventRSVP).filter(
+            CommunityEventRSVP.event_id == e.id,
+            CommunityEventRSVP.user_id == user.id
+        ).first()
+        result.append({
+            "id": e.id,
+            "title": e.title,
+            "description": e.description,
+            "eventDate": e.event_date.isoformat() if e.event_date else "",
+            "location": e.location,
+            "meetUrl": e.meet_url,
+            "rsvpCount": e.rsvp_count,
+            "myRsvp": my_rsvp.status if my_rsvp else None,
+            "creatorName": f"{creator.first_name}" if creator else "Usuario",
+            "createdAt": e.created_at.isoformat() if e.created_at else "",
+        })
+    return result
+
+
+@router.post("/{community_id}/events")
+def create_community_event(
+    community_id: str,
+    req: CreateEventRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id
+    ).first()
+    if not member or member.role not in ("admin", "moderator"):
+        raise HTTPException(403, "Solo administradores pueden crear eventos")
+
+    try:
+        event_dt = datetime.fromisoformat(req.event_date.replace("Z", "+00:00"))
+    except ValueError:
+        raise HTTPException(400, "Formato de fecha inválido")
+
+    event = CommunityEvent(
+        id=gen_id(),
+        community_id=community_id,
+        creator_id=user.id,
+        title=req.title,
+        description=req.description,
+        event_date=event_dt,
+        location=req.location,
+        meet_url=req.meet_url,
+    )
+    db.add(event)
+    db.commit()
+    db.refresh(event)
+    return {"id": event.id, "title": event.title, "eventDate": event.event_date.isoformat()}
+
+
+@router.post("/{community_id}/events/{event_id}/rsvp")
+def rsvp_event(
+    community_id: str,
+    event_id: str,
+    status: str = "going",
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if status not in ("going", "maybe", "not_going"):
+        raise HTTPException(400, "Estado inválido")
+
+    event = db.query(CommunityEvent).filter(
+        CommunityEvent.id == event_id,
+        CommunityEvent.community_id == community_id
+    ).first()
+    if not event:
+        raise HTTPException(404, "Evento no encontrado")
+
+    existing = db.query(CommunityEventRSVP).filter(
+        CommunityEventRSVP.event_id == event_id,
+        CommunityEventRSVP.user_id == user.id
+    ).first()
+
+    if existing:
+        old_status = existing.status
+        existing.status = status
+        # Update count
+        if old_status == "going" and status != "going":
+            event.rsvp_count = max(0, event.rsvp_count - 1)
+        elif old_status != "going" and status == "going":
+            event.rsvp_count += 1
+    else:
+        rsvp = CommunityEventRSVP(id=gen_id(), event_id=event_id, user_id=user.id, status=status)
+        db.add(rsvp)
+        if status == "going":
+            event.rsvp_count += 1
+
+    db.commit()
+    return {"success": True, "status": status, "rsvpCount": event.rsvp_count}
+
+
+@router.delete("/{community_id}/events/{event_id}")
+def delete_community_event(
+    community_id: str,
+    event_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    event = db.query(CommunityEvent).filter(
+        CommunityEvent.id == event_id,
+        CommunityEvent.community_id == community_id
+    ).first()
+    if not event:
+        raise HTTPException(404, "Evento no encontrado")
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id
+    ).first()
+    if event.creator_id != user.id and (not member or member.role not in ("admin", "moderator")):
+        raise HTTPException(403, "Sin permisos")
+    db.delete(event)
+    db.commit()
+    return {"success": True}
+
+
+# ─── Community Cover Upload ───────────────────────────────────────────────────
+
+@router.post("/{community_id}/cover")
+async def upload_community_cover(
+    community_id: str,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Upload community cover image. Admin only."""
+    member = db.query(CommunityMember).filter(
+        CommunityMember.community_id == community_id,
+        CommunityMember.user_id == user.id,
+        CommunityMember.role == "admin"
+    ).first()
+    if not member:
+        raise HTTPException(403, "Solo administradores pueden cambiar la portada")
+
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(413, "Imagen demasiado grande (máx 5 MB)")
+
+    import uuid as _uuid
+    from database import DATA_DIR
+    covers_dir = DATA_DIR / "uploads" / "community_covers"
+    covers_dir.mkdir(parents=True, exist_ok=True)
+
+    ext = "jpg"
+    if file.filename and "." in file.filename:
+        ext = file.filename.rsplit(".", 1)[-1].lower()
+    filename = f"{community_id}_{_uuid.uuid4().hex[:8]}.{ext}"
+    with open(covers_dir / filename, "wb") as f:
+        f.write(content)
+
+    url = f"/uploads/community_covers/{filename}"
+    community = db.query(Community).filter(Community.id == community_id).first()
+    if community:
+        community.cover_image = url
+        db.commit()
+    return {"url": url}

@@ -222,6 +222,19 @@ async def serve_cover_photo(filename: str):
     return FileResponse(str(file_path))
 
 
+COMMUNITY_COVERS_DIR = DATA_DIR / "uploads" / "community_covers"
+COMMUNITY_COVERS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+@app.get("/uploads/community_covers/{filename}")
+async def serve_community_cover(filename: str):
+    """Serve uploaded community cover image files."""
+    file_path = COMMUNITY_COVERS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Imagen no encontrada")
+    return FileResponse(str(file_path))
+
+
 @app.get("/uploads/videos/{filename}")
 async def serve_video_message(filename: str):
     """Serve uploaded video message files."""

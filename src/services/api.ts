@@ -609,8 +609,8 @@ export const api = {
     request(`/communities/${communityId}/members/${userId}/remove`, { method: 'POST' }),
   getCommunityPosts: (id: string, page?: number) =>
     request(`/communities/${id}/posts${page ? `?page=${page}` : ''}`),
-  createCommunityPost: (id: string, content: string, imageUrl?: string) =>
-    request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, image_url: imageUrl }) }),
+  createCommunityPost: (id: string, content: string, extras?: { image_url?: string; is_announcement?: boolean }) =>
+    request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, ...extras }) }),
   likeCommunityPost: (postId: string, reactionType?: string) =>
     request(`/communities/posts/${postId}/like`, { method: 'POST', body: JSON.stringify({ reaction_type: reactionType || 'like' }) }),
   getCommunityPostComments: (postId: string) =>
@@ -624,6 +624,47 @@ export const api = {
   reportCommunityPost: (postId: string, reason: string) =>
     request(`/communities/posts/${postId}/report`, { method: 'POST', body: JSON.stringify({ reason }) }),
   getCommunitySuggestions: () => request('/communities/suggestions'),
+
+  // Communities — Trending
+  getTrendingCommunities: (): Promise<any[]> =>
+    request('/communities/trending'),
+
+  // Communities — Resources
+  getCommunityResources: (communityId: string): Promise<any[]> =>
+    request(`/communities/${communityId}/resources`),
+  addCommunityResource: (communityId: string, data: { resource_type: string; title: string; url?: string; description?: string }): Promise<any> =>
+    request(`/communities/${communityId}/resources`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteCommunityResource: (communityId: string, resourceId: string): Promise<any> =>
+    request(`/communities/${communityId}/resources/${resourceId}`, { method: 'DELETE' }),
+
+  // Communities — Events
+  getCommunityEvents: (communityId: string): Promise<any[]> =>
+    request(`/communities/${communityId}/events`),
+  createCommunityEvent: (communityId: string, data: { title: string; description?: string; event_date: string; location?: string; meet_url?: string }): Promise<any> =>
+    request(`/communities/${communityId}/events`, { method: 'POST', body: JSON.stringify(data) }),
+  rsvpCommunityEvent: (communityId: string, eventId: string, status: string): Promise<any> =>
+    request(`/communities/${communityId}/events/${eventId}/rsvp?status=${status}`, { method: 'POST' }),
+  deleteCommunityEvent: (communityId: string, eventId: string): Promise<any> =>
+    request(`/communities/${communityId}/events/${eventId}`, { method: 'DELETE' }),
+
+  // Communities — Cover upload
+  uploadCommunityCover: async (communityId: string, file: File): Promise<{ url: string }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const token = localStorage.getItem('conniku_token');
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${getApiBase()}/communities/${communityId}/cover`, {
+      method: 'POST',
+      body: formData,
+      headers,
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error((data as any).detail || `API Error: ${res.status}`);
+    }
+    return res.json();
+  },
 
   // ─── Polls ────────────────────────────────────────────────
   createPoll: (data: { question: string; options: string[]; is_anonymous?: boolean; expires_in_hours?: number; wall_post_id?: string }) =>
