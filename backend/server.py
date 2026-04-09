@@ -23,6 +23,7 @@ from database import init_db, get_db, User, gen_id, DATA_DIR
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
+from konni_engine import call_konni
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -720,7 +721,7 @@ PWA movil: Chrome > menu 3 puntos > Agregar a pantalla de inicio.
 
 @app.post("/support/chat")
 def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Konni USER — personalized assistant powered by Gemini (free)."""
+    """Konni USER — personalized assistant powered by Claude Haiku."""
     check_chat_limit(user)
 
     # Build personalized context
@@ -741,10 +742,7 @@ def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    try:
-        response = ai_engine._call_gemini_chat(system, messages)
-    except Exception:
-        response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
+    response = call_konni(system, messages)
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
@@ -844,10 +842,7 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    try:
-        response = ai_engine._call_gemini_chat(system, messages)
-    except Exception:
-        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo."
+    response = call_konni(system, messages)
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
