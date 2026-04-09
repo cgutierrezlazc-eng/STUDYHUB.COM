@@ -61,9 +61,21 @@ screenshots/
 *.png
 !public/*.png
 !src/**/*.png
+public/logo_original.png
 
-# PDFs
+# Large/personal media
+*.jpeg
+*.jpg
+*.mp4
+*.mov
+
+# PDFs (personal docs)
 *.pdf
+
+# Seed/test scripts
+seed_*.py
+seed_*.js
 
 # Mac files
 Thumbs.db
+.DS_Store

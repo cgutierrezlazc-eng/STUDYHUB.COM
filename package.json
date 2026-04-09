@@ -35,9 +35,7 @@
     "@capacitor/share": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",
-    "electron-store": "^8.1.0",
-    "html2canvas": "^1.4.1",
-    "playwright": "^1.59.1"
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.48",
@@ -45,7 +43,6 @@
     "@vitejs/plugin-react": "^4.2.1",
     "concurrently": "^8.2.2",
     "electron": "^28.1.4",
-    "katex": "^0.16.9",
     "lucide-react": "^1.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
