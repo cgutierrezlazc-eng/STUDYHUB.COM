@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useDevice } from '../hooks/useDevice'
 import { useI18n } from '../services/i18n'
+import { useOnlineCount } from '../services/useOnlineCount'
 
 /* ─── Scroll Animation Hook ─── */
 function useScrollAnimation() {
@@ -409,6 +410,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
   const compact = isMobile
   const mid = isTablet
   const { t } = useI18n()
+  const online = useOnlineCount()
 
   const [activeModal, setActiveModal] = useState<ModalType>(null)
   const [headerVisible, setHeaderVisible] = useState(true)
@@ -629,8 +631,12 @@ export default function Landing({ onLogin, onRegister }: Props) {
               background: vars.accentLight, color: vars.accent,
               padding: '6px 14px', borderRadius: 20, fontSize: 12, fontWeight: 500, marginBottom: 20,
             }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: vars.accent }} />
-              127 {t('landing.connectedStudents')}
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: online.total > 0 ? '#22c55e' : vars.accent, animation: online.total > 0 ? 'conniku-pulse 2s infinite' : 'none' }} />
+              {online.total > 0 ? (
+                <>{online.students} {t('landing.connectedStudents')}{online.tutors > 0 ? ` · ${online.tutors} tutores` : ''}</>
+              ) : (
+                <>Conniku</>
+              )}
             </div>
             <h1 style={{
               fontSize: compact ? 32 : mid ? 42 : 54, fontWeight: 800,

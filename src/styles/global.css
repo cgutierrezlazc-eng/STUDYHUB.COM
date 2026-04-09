@@ -2387,6 +2387,10 @@ h1, h2, h3,
   0%, 100% { opacity: 1; }
   50% { opacity: 0.3; }
 }
+@keyframes conniku-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.3); }
+}
 
 /* ─── Friends & Community ────────────────────────────────── */
 .friends-tabs { display: flex; gap: 8px; margin-bottom: 20px; }

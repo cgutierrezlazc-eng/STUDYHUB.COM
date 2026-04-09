@@ -17,6 +17,27 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["websocket"])
 
 
+# ─── Public endpoint: live online count (no auth required) ───
+@router.get("/ws/online-count")
+def get_online_count(db: Session = Depends(get_db)):
+    """Return live count of connected students and tutors."""
+    online_ids = manager.get_online_users()
+    total = len(online_ids)
+
+    tutors = 0
+    if online_ids:
+        tutors = db.query(User).filter(
+            User.id.in_(online_ids),
+            User.offers_mentoring == True,
+        ).count()
+
+    return {
+        "total": total,
+        "students": total - tutors,
+        "tutors": tutors,
+    }
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(
     websocket: WebSocket,

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
+import { useOnlineCount } from '../services/useOnlineCount'
 import NotificationBell from './NotificationBell'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Props) {
   const { user, logout } = useAuth()
   const { t } = useI18n()
+  const online = useOnlineCount()
 
   const QUICK_CATEGORIES = [
     { label: t('topbar.people'), path: '/friends', icon: '👤' },
@@ -162,6 +164,17 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
       </div>
 
       <div className="topbar-right">
+        {online.total > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '4px 10px', borderRadius: 16,
+            background: 'rgba(34,197,94,0.1)', fontSize: 11, fontWeight: 600,
+            color: '#22c55e', whiteSpace: 'nowrap',
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', animation: 'conniku-pulse 2s infinite' }} />
+            {online.total} en linea
+          </div>
+        )}
         <NotificationBell onNavigate={onNavigate} />
 
         <div ref={menuRef} style={{ position: 'relative' }}>

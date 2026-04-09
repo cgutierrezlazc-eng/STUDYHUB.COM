@@ -1015,6 +1015,9 @@ export const api = {
   deleteConference: (id: string) =>
     request(`/conferences/${id}`, { method: 'DELETE' }),
 
+  // ─── Live Online Count ──────────────────────────────────
+  getOnlineCount: () => request('/ws/online-count'),
+
   // ─── HR / RRHH ────────────────────────────────────────────
   getChileIndicators: () => request('/hr/indicators'),
   getEmployees: async (filters?: string) => {
