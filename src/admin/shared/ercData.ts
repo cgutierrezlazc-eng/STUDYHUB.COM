@@ -64,7 +64,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     title: 'CTO — Director de Tecnologia',
     department: 'Tecnologia',
     email: 'cto@conniku.com',
-    reportTo: 'CEO / Cristian Gaete',
+    reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
     mision: 'Liderar la vision tecnologica de Conniku, asegurando que la plataforma sea robusta, escalable y este a la vanguardia de la tecnologia educativa en Chile.',
     expectations: [
       'Mantener la plataforma con 99.5% de uptime mensual',
@@ -133,7 +133,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     title: 'Head of Operations',
     department: 'Operaciones',
     email: 'operaciones@conniku.com',
-    reportTo: 'CEO / Cristian Gaete',
+    reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
     mision: 'Asegurar que todas las operaciones de Conniku funcionen de manera eficiente, desde la gestion interna hasta la experiencia del usuario, optimizando procesos y recursos.',
     expectations: [
       'Mantener los procesos internos documentados y optimizados',
@@ -332,7 +332,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     title: 'Marketing & Growth Lead',
     department: 'Marketing',
     email: 'marketing@conniku.com',
-    reportTo: 'CEO / Cristian Gaete',
+    reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
     mision: 'Disenar y ejecutar la estrategia de crecimiento de Conniku, posicionando la plataforma como la herramienta #1 para estudiantes universitarios en Chile, adquiriendo usuarios de forma eficiente y sostenible.',
     expectations: [
       'Lograr crecimiento sostenido de usuarios activos mensuales',
@@ -700,7 +700,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — CTO',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como CTO — Director de Tecnologia, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -722,7 +722,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Head of Operations',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Head of Operations, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -744,7 +744,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Community Manager',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Community Manager, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -767,7 +767,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Customer Support Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Customer Support Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -789,7 +789,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Marketing & Growth Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Marketing & Growth Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -953,8 +953,8 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     <div class="clause">
       <div class="clause-title">PRIMERO: ANTECEDENTES DEL EMPLEADOR</div>
       <div class="clause-content">
-        CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don <strong>Cristian Gaete Lazcano</strong>,
-        en adelante "el Empleador", con domicilio en Santiago, Region Metropolitana, Chile.
+        CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don <strong>Cristian Andrés Gutiérrez Lazcano</strong>,
+        en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.
       </div>
     </div>
 
@@ -1231,8 +1231,8 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
       <div class="signature-line">
         <br><br><br><br>
         <hr />
-        <p><strong>Cristian Gaete Lazcano</strong></p>
-        <p>RUT: [RUT REPRESENTANTE]</p>
+        <p><strong>Cristian Andrés Gutiérrez Lazcano</strong></p>
+        <p>RUT: 14.112.896-5</p>
         <p>Conniku SpA — El Empleador</p>
       </div>
     </div>
@@ -1321,7 +1321,7 @@ export function generateJobDescriptionPDF(emp: EmployeeData) {
       <div class="signature-line">
         <br><br><br>
         <hr />
-        <p><strong>Cristian Gaete Lazcano</strong></p>
+        <p><strong>Cristian Andrés Gutiérrez Lazcano</strong></p>
         <p>CEO — Conniku SpA</p>
       </div>
     </div>
@@ -1390,7 +1390,7 @@ export function generateExpectationMemoPDF(emp: EmployeeData) {
       <div class="signature-line">
         <br><br><br>
         <hr />
-        <p><strong>Cristian Gaete Lazcano</strong></p>
+        <p><strong>Cristian Andrés Gutiérrez Lazcano</strong></p>
         <p>CEO — Conniku SpA</p>
       </div>
     </div>

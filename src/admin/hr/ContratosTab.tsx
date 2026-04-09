@@ -339,7 +339,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
     companyCity: COMPANY.city,
     companyGiro: COMPANY.giro,
     repName: COMPANY.repName,
-    repRut: '',
+    repRut: COMPANY.repRut,
     firstName: employee.firstName,
     lastName: employee.lastName,
     rut: employee.rut,

@@ -71,7 +71,7 @@ export interface AccountCategory {
   key: string
   name: string
   group: 'ingreso' | 'costo_operacional' | 'gasto_admin' | 'gasto_ventas' | 'inversion' | 'remuneracion' | 'prevision' | 'impuesto'
-  siiCode: string                 // codigo cuenta SII simplificado
+  codigoSII: string                 // codigo cuenta SII simplificado
   defaultIVA: boolean             // si normalmente tiene IVA
   defaultDeductible: number       // % deducible por defecto
   defaultCurrency: Currency
@@ -81,59 +81,59 @@ export interface AccountCategory {
 
 export const ACCOUNT_CATEGORIES: AccountCategory[] = [
   // ─── INGRESOS ───
-  { key: 'suscripciones_ingreso', name: 'Ingresos por Suscripciones', group: 'ingreso', siiCode: '4.1.01', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['suscripcion', 'plan pro', 'plan basico', 'premium', 'mensualidad', 'pago estudiante'], icon: '💰' },
-  { key: 'licencias_ingreso', name: 'Licencias Institucionales', group: 'ingreso', siiCode: '4.1.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['licencia', 'universidad', 'institucion', 'corporativo', 'contrato anual'], icon: '🏛️' },
-  { key: 'otros_ingresos', name: 'Otros Ingresos', group: 'ingreso', siiCode: '4.1.99', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['otro ingreso', 'devolucion', 'reembolso'], icon: '📥' },
+  { key: 'suscripciones_ingreso', name: 'Ingresos por Suscripciones', group: 'ingreso', codigoSII: '4.1.01', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['suscripcion', 'plan pro', 'plan basico', 'premium', 'mensualidad', 'pago estudiante'], icon: '💰' },
+  { key: 'licencias_ingreso', name: 'Licencias Institucionales', group: 'ingreso', codigoSII: '4.1.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['licencia', 'universidad', 'institucion', 'corporativo', 'contrato anual'], icon: '🏛️' },
+  { key: 'otros_ingresos', name: 'Otros Ingresos', group: 'ingreso', codigoSII: '4.1.99', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['otro ingreso', 'devolucion', 'reembolso'], icon: '📥' },
 
   // ─── COSTOS OPERACIONALES (directos del servicio) ───
-  { key: 'hosting', name: 'Hosting e Infraestructura Cloud', group: 'costo_operacional', siiCode: '5.1.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['render', 'vercel', 'aws', 'heroku', 'railway', 'netlify', 'digitalocean', 'hosting', 'cloud', 'servidor'], icon: '☁️' },
-  { key: 'api_ia', name: 'APIs de Inteligencia Artificial', group: 'costo_operacional', siiCode: '5.1.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['anthropic', 'claude', 'openai', 'gemini', 'google ai', 'api ia', 'tokens', 'chatgpt'], icon: '🤖' },
-  { key: 'dominio_ssl', name: 'Dominios y Certificados SSL', group: 'costo_operacional', siiCode: '5.1.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['dominio', 'namecheap', 'godaddy', 'cloudflare', 'ssl', 'certificado', 'conniku.com'], icon: '🌐' },
-  { key: 'email_corporativo', name: 'Correo Corporativo', group: 'costo_operacional', siiCode: '5.1.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['zoho', 'google workspace', 'microsoft 365', 'correo', 'email', 'smtp'], icon: '📧' },
-  { key: 'app_stores', name: 'Tiendas de Aplicaciones', group: 'costo_operacional', siiCode: '5.1.05', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['google play', 'apple store', 'app store', 'play console', 'developer account', 'apple developer'], icon: '📱' },
-  { key: 'software_suscripciones', name: 'Software y Suscripciones', group: 'costo_operacional', siiCode: '5.1.06', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['github', 'figma', 'canva', 'slack', 'notion', 'trello', 'jira', 'adobe', 'copilot', 'cursor', 'vscode'], icon: '💻' },
-  { key: 'pasarela_pago', name: 'Pasarelas de Pago (comisiones)', group: 'costo_operacional', siiCode: '5.1.07', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['mercadopago', 'paypal', 'stripe', 'flow', 'transbank', 'comision', 'pasarela'], icon: '💳' },
-  { key: 'base_datos', name: 'Bases de Datos', group: 'costo_operacional', siiCode: '5.1.08', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['postgresql', 'mongodb', 'redis', 'supabase', 'firebase', 'neon', 'planetscale', 'database'], icon: '🗄️' },
+  { key: 'hosting', name: 'Hosting e Infraestructura Cloud', group: 'costo_operacional', codigoSII: '5.1.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['render', 'vercel', 'aws', 'heroku', 'railway', 'netlify', 'digitalocean', 'hosting', 'cloud', 'servidor'], icon: '☁️' },
+  { key: 'api_ia', name: 'APIs de Inteligencia Artificial', group: 'costo_operacional', codigoSII: '5.1.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['anthropic', 'claude', 'openai', 'gemini', 'google ai', 'api ia', 'tokens', 'chatgpt'], icon: '🤖' },
+  { key: 'dominio_ssl', name: 'Dominios y Certificados SSL', group: 'costo_operacional', codigoSII: '5.1.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['dominio', 'namecheap', 'godaddy', 'cloudflare', 'ssl', 'certificado', 'conniku.com'], icon: '🌐' },
+  { key: 'email_corporativo', name: 'Correo Corporativo', group: 'costo_operacional', codigoSII: '5.1.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['zoho', 'google workspace', 'microsoft 365', 'correo', 'email', 'smtp'], icon: '📧' },
+  { key: 'app_stores', name: 'Tiendas de Aplicaciones', group: 'costo_operacional', codigoSII: '5.1.05', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['google play', 'apple store', 'app store', 'play console', 'developer account', 'apple developer'], icon: '📱' },
+  { key: 'software_suscripciones', name: 'Software y Suscripciones', group: 'costo_operacional', codigoSII: '5.1.06', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['github', 'figma', 'canva', 'slack', 'notion', 'trello', 'jira', 'adobe', 'copilot', 'cursor', 'vscode'], icon: '💻' },
+  { key: 'pasarela_pago', name: 'Pasarelas de Pago (comisiones)', group: 'costo_operacional', codigoSII: '5.1.07', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['mercadopago', 'paypal', 'stripe', 'flow', 'transbank', 'comision', 'pasarela'], icon: '💳' },
+  { key: 'base_datos', name: 'Bases de Datos', group: 'costo_operacional', codigoSII: '5.1.08', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['postgresql', 'mongodb', 'redis', 'supabase', 'firebase', 'neon', 'planetscale', 'database'], icon: '🗄️' },
 
   // ─── GASTOS ADMINISTRATIVOS ───
-  { key: 'arriendo', name: 'Arriendo Oficina / Cowork', group: 'gasto_admin', siiCode: '5.2.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['arriendo', 'alquiler', 'oficina', 'cowork', 'leasity', 'miss propiedades', 'corredora', 'gastos comunes'], icon: '🏢' },
-  { key: 'luz', name: 'Electricidad', group: 'gasto_admin', siiCode: '5.2.02', defaultIVA: true, defaultDeductible: 40, defaultCurrency: 'CLP', keywords: ['luz', 'electricidad', 'enel', 'cge', 'saesa', 'elecda', 'energia'], icon: '⚡' },
-  { key: 'agua', name: 'Agua', group: 'gasto_admin', siiCode: '5.2.03', defaultIVA: true, defaultDeductible: 25, defaultCurrency: 'CLP', keywords: ['agua', 'aguas antofagasta', 'sanitaria', 'esval'], icon: '💧' },
-  { key: 'gas', name: 'Gas', group: 'gasto_admin', siiCode: '5.2.04', defaultIVA: true, defaultDeductible: 20, defaultCurrency: 'CLP', keywords: ['gas', 'abastible', 'gasco', 'lipigas', 'metrogas'], icon: '🔥' },
-  { key: 'internet', name: 'Internet', group: 'gasto_admin', siiCode: '5.2.05', defaultIVA: true, defaultDeductible: 80, defaultCurrency: 'CLP', keywords: ['internet', 'fibra', 'banda ancha', 'movistar', 'entel', 'vtr', 'wom', 'claro', 'telsur', 'gtd'], icon: '📶' },
-  { key: 'telefonia', name: 'Telefonia Movil', group: 'gasto_admin', siiCode: '5.2.06', defaultIVA: true, defaultDeductible: 60, defaultCurrency: 'CLP', keywords: ['celular', 'telefono', 'plan movil', 'entel', 'movistar', 'wom', 'claro'], icon: '📞' },
-  { key: 'servicios_legales', name: 'Servicios Legales', group: 'gasto_admin', siiCode: '5.2.07', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['abogado', 'legal', 'notaria', 'escritura', 'contrato', 'asesoria legal', 'patente'], icon: '⚖️' },
-  { key: 'contabilidad', name: 'Contabilidad y Auditoria', group: 'gasto_admin', siiCode: '5.2.08', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['contador', 'contabilidad', 'auditoria', 'declaracion', 'f29', 'renta'], icon: '📊' },
-  { key: 'patente_municipal', name: 'Patente Municipal', group: 'gasto_admin', siiCode: '5.2.09', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['patente', 'municipal', 'municipalidad', 'antofagasta', 'rentas municipales'], icon: '🏛️' },
-  { key: 'seguros', name: 'Seguros', group: 'gasto_admin', siiCode: '5.2.10', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['seguro', 'poliza', 'siniestro', 'cobertura'], icon: '🛡️' },
-  { key: 'utiles_oficina', name: 'Utiles de Oficina', group: 'gasto_admin', siiCode: '5.2.11', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['utiles', 'papel', 'tinta', 'impresora', 'escritorio', 'oficina'], icon: '📎' },
-  { key: 'constitucion_empresa', name: 'Gastos de Constitucion', group: 'gasto_admin', siiCode: '5.2.12', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['constitucion', 'registro empresas', 'inscripcion', 'tu empresa en un dia'], icon: '📜' },
+  { key: 'arriendo', name: 'Arriendo Oficina / Cowork', group: 'gasto_admin', codigoSII: '5.2.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['arriendo', 'alquiler', 'oficina', 'cowork', 'leasity', 'miss propiedades', 'corredora', 'gastos comunes'], icon: '🏢' },
+  { key: 'luz', name: 'Electricidad', group: 'gasto_admin', codigoSII: '5.2.02', defaultIVA: true, defaultDeductible: 40, defaultCurrency: 'CLP', keywords: ['luz', 'electricidad', 'enel', 'cge', 'saesa', 'elecda', 'energia'], icon: '⚡' },
+  { key: 'agua', name: 'Agua', group: 'gasto_admin', codigoSII: '5.2.03', defaultIVA: true, defaultDeductible: 25, defaultCurrency: 'CLP', keywords: ['agua', 'aguas antofagasta', 'sanitaria', 'esval'], icon: '💧' },
+  { key: 'gas', name: 'Gas', group: 'gasto_admin', codigoSII: '5.2.04', defaultIVA: true, defaultDeductible: 20, defaultCurrency: 'CLP', keywords: ['gas', 'abastible', 'gasco', 'lipigas', 'metrogas'], icon: '🔥' },
+  { key: 'internet', name: 'Internet', group: 'gasto_admin', codigoSII: '5.2.05', defaultIVA: true, defaultDeductible: 80, defaultCurrency: 'CLP', keywords: ['internet', 'fibra', 'banda ancha', 'movistar', 'entel', 'vtr', 'wom', 'claro', 'telsur', 'gtd'], icon: '📶' },
+  { key: 'telefonia', name: 'Telefonia Movil', group: 'gasto_admin', codigoSII: '5.2.06', defaultIVA: true, defaultDeductible: 60, defaultCurrency: 'CLP', keywords: ['celular', 'telefono', 'plan movil', 'entel', 'movistar', 'wom', 'claro'], icon: '📞' },
+  { key: 'servicios_legales', name: 'Servicios Legales', group: 'gasto_admin', codigoSII: '5.2.07', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['abogado', 'legal', 'notaria', 'escritura', 'contrato', 'asesoria legal', 'patente'], icon: '⚖️' },
+  { key: 'contabilidad', name: 'Contabilidad y Auditoria', group: 'gasto_admin', codigoSII: '5.2.08', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['contador', 'contabilidad', 'auditoria', 'declaracion', 'f29', 'renta'], icon: '📊' },
+  { key: 'patente_municipal', name: 'Patente Municipal', group: 'gasto_admin', codigoSII: '5.2.09', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['patente', 'municipal', 'municipalidad', 'antofagasta', 'rentas municipales'], icon: '🏛️' },
+  { key: 'seguros', name: 'Seguros', group: 'gasto_admin', codigoSII: '5.2.10', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['seguro', 'poliza', 'siniestro', 'cobertura'], icon: '🛡️' },
+  { key: 'utiles_oficina', name: 'Utiles de Oficina', group: 'gasto_admin', codigoSII: '5.2.11', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['utiles', 'papel', 'tinta', 'impresora', 'escritorio', 'oficina'], icon: '📎' },
+  { key: 'constitucion_empresa', name: 'Gastos de Constitucion', group: 'gasto_admin', codigoSII: '5.2.12', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['constitucion', 'registro empresas', 'inscripcion', 'tu empresa en un dia'], icon: '📜' },
 
   // ─── GASTOS DE VENTAS Y MARKETING ───
-  { key: 'marketing_digital', name: 'Marketing Digital (Ads)', group: 'gasto_ventas', siiCode: '5.3.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['google ads', 'meta ads', 'facebook ads', 'instagram ads', 'tiktok ads', 'publicidad', 'campana'], icon: '📢' },
-  { key: 'marketing_contenido', name: 'Marketing de Contenido', group: 'gasto_ventas', siiCode: '5.3.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['contenido', 'blog', 'video', 'diseno', 'branding', 'logo', 'marca'], icon: '🎨' },
-  { key: 'eventos', name: 'Eventos y Representacion', group: 'gasto_ventas', siiCode: '5.3.03', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['evento', 'webinar', 'conferencia', 'feria', 'networking', 'representacion'], icon: '🎪' },
+  { key: 'marketing_digital', name: 'Marketing Digital (Ads)', group: 'gasto_ventas', codigoSII: '5.3.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'USD', keywords: ['google ads', 'meta ads', 'facebook ads', 'instagram ads', 'tiktok ads', 'publicidad', 'campana'], icon: '📢' },
+  { key: 'marketing_contenido', name: 'Marketing de Contenido', group: 'gasto_ventas', codigoSII: '5.3.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['contenido', 'blog', 'video', 'diseno', 'branding', 'logo', 'marca'], icon: '🎨' },
+  { key: 'eventos', name: 'Eventos y Representacion', group: 'gasto_ventas', codigoSII: '5.3.03', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['evento', 'webinar', 'conferencia', 'feria', 'networking', 'representacion'], icon: '🎪' },
 
   // ─── INVERSIONES ───
-  { key: 'equipamiento', name: 'Equipamiento y Hardware', group: 'inversion', siiCode: '5.4.01', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['computador', 'notebook', 'monitor', 'teclado', 'mouse', 'macbook', 'hardware', 'equipo'], icon: '🖥️' },
-  { key: 'mobiliario', name: 'Mobiliario de Oficina', group: 'inversion', siiCode: '5.4.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['escritorio', 'silla', 'mueble', 'estante', 'mobiliario'], icon: '🪑' },
+  { key: 'equipamiento', name: 'Equipamiento y Hardware', group: 'inversion', codigoSII: '5.4.01', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['computador', 'notebook', 'monitor', 'teclado', 'mouse', 'macbook', 'hardware', 'equipo'], icon: '🖥️' },
+  { key: 'mobiliario', name: 'Mobiliario de Oficina', group: 'inversion', codigoSII: '5.4.02', defaultIVA: true, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['escritorio', 'silla', 'mueble', 'estante', 'mobiliario'], icon: '🪑' },
 
   // ─── REMUNERACIONES ───
-  { key: 'sueldos', name: 'Sueldos y Salarios', group: 'remuneracion', siiCode: '5.5.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['sueldo', 'salario', 'remuneracion', 'liquidacion', 'nomina'], icon: '👥' },
-  { key: 'honorarios', name: 'Honorarios (Boleta)', group: 'remuneracion', siiCode: '5.5.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['honorario', 'boleta honorarios', 'tutor', 'freelancer', 'externo', 'prestacion servicios'], icon: '📄' },
-  { key: 'gratificacion', name: 'Gratificacion Legal', group: 'remuneracion', siiCode: '5.5.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['gratificacion', 'art 50'], icon: '🎁' },
-  { key: 'colacion_movilizacion', name: 'Colacion y Movilizacion', group: 'remuneracion', siiCode: '5.5.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['colacion', 'movilizacion', 'transporte', 'alimentacion laboral'], icon: '🍽️' },
+  { key: 'sueldos', name: 'Sueldos y Salarios', group: 'remuneracion', codigoSII: '5.5.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['sueldo', 'salario', 'remuneracion', 'liquidacion', 'nomina'], icon: '👥' },
+  { key: 'honorarios', name: 'Honorarios (Boleta)', group: 'remuneracion', codigoSII: '5.5.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['honorario', 'boleta honorarios', 'tutor', 'freelancer', 'externo', 'prestacion servicios'], icon: '📄' },
+  { key: 'gratificacion', name: 'Gratificacion Legal', group: 'remuneracion', codigoSII: '5.5.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['gratificacion', 'art 50'], icon: '🎁' },
+  { key: 'colacion_movilizacion', name: 'Colacion y Movilizacion', group: 'remuneracion', codigoSII: '5.5.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['colacion', 'movilizacion', 'transporte', 'alimentacion laboral'], icon: '🍽️' },
 
   // ─── PREVISION SOCIAL ───
-  { key: 'afp_empleador', name: 'AFP (aporte empleador)', group: 'prevision', siiCode: '5.6.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['afp', 'pension', 'prevision', 'cotizacion'], icon: '🏦' },
-  { key: 'afc_empleador', name: 'AFC Seguro Cesantia (empleador)', group: 'prevision', siiCode: '5.6.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['afc', 'cesantia', 'seguro cesantia'], icon: '🛡️' },
-  { key: 'sis', name: 'SIS Seguro Invalidez', group: 'prevision', siiCode: '5.6.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['sis', 'invalidez', 'sobrevivencia'], icon: '🏥' },
-  { key: 'mutual', name: 'Mutual de Seguridad', group: 'prevision', siiCode: '5.6.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['mutual', 'achs', 'ist', 'museg', 'cchc'], icon: '⛑️' },
+  { key: 'afp_empleador', name: 'AFP (aporte empleador)', group: 'prevision', codigoSII: '5.6.01', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['afp', 'pension', 'prevision', 'cotizacion'], icon: '🏦' },
+  { key: 'afc_empleador', name: 'AFC Seguro Cesantia (empleador)', group: 'prevision', codigoSII: '5.6.02', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['afc', 'cesantia', 'seguro cesantia'], icon: '🛡️' },
+  { key: 'sis', name: 'SIS Seguro Invalidez', group: 'prevision', codigoSII: '5.6.03', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['sis', 'invalidez', 'sobrevivencia'], icon: '🏥' },
+  { key: 'mutual', name: 'Mutual de Seguridad', group: 'prevision', codigoSII: '5.6.04', defaultIVA: false, defaultDeductible: 100, defaultCurrency: 'CLP', keywords: ['mutual', 'achs', 'ist', 'museg', 'cchc'], icon: '⛑️' },
 
   // ─── IMPUESTOS (no deducibles, pero se registran) ───
-  { key: 'iva_pago', name: 'Pago IVA (F29)', group: 'impuesto', siiCode: '6.1.01', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['iva', 'f29', 'formulario 29', 'debito fiscal'], icon: '🏛️' },
-  { key: 'ppm', name: 'PPM (Pago Provisional Mensual)', group: 'impuesto', siiCode: '6.1.02', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['ppm', 'provisional', 'anticipo impuesto'], icon: '📋' },
-  { key: 'impuesto_renta', name: 'Impuesto a la Renta (F22)', group: 'impuesto', siiCode: '6.1.03', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['renta', 'f22', 'declaracion anual', 'abril'], icon: '📑' },
+  { key: 'iva_pago', name: 'Pago IVA (F29)', group: 'impuesto', codigoSII: '6.1.01', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['iva', 'f29', 'formulario 29', 'debito fiscal'], icon: '🏛️' },
+  { key: 'ppm', name: 'PPM (Pago Provisional Mensual)', group: 'impuesto', codigoSII: '6.1.02', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['ppm', 'provisional', 'anticipo impuesto'], icon: '📋' },
+  { key: 'impuesto_renta', name: 'Impuesto a la Renta (F22)', group: 'impuesto', codigoSII: '6.1.03', defaultIVA: false, defaultDeductible: 0, defaultCurrency: 'CLP', keywords: ['renta', 'f22', 'declaracion anual', 'abril'], icon: '📑' },
 ]
 
 // ─── SMART CATEGORY MATCHER ───

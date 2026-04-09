@@ -41,6 +41,10 @@ export interface PayrollRecord {
   id: string
   employeeId: string
   employeeName: string
+  employeeRut?: string
+  employeePosition?: string
+  employeeAfp?: string
+  employeeHealthSystem?: string
   periodMonth: number
   periodYear: number
   grossSalary: number
@@ -56,6 +60,8 @@ export interface PayrollRecord {
   healthEmployee: number
   afcEmployee: number
   taxAmount: number
+  voluntaryDeductions?: number
+  otherDeductions?: number
   totalDeductions: number
   netSalary: number
   afpEmployer: number
@@ -63,6 +69,7 @@ export interface PayrollRecord {
   mutualEmployer: number
   totalEmployerCost: number
   status: string
+  paidAt?: string | null
 }
 
 export interface OperationalExpense {

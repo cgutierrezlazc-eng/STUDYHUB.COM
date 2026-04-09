@@ -1561,6 +1561,19 @@ def calculate_payroll(
     for pr in records:
         db.refresh(pr)
 
+    # Enrich with employee details (same as get_payroll)
+    emp_map = {e.id: e for e in active_employees}
+    enriched = []
+    for pr in records:
+        d = _payroll_to_dict(pr)
+        emp = emp_map.get(pr.employee_id)
+        d["employee_name"] = f"{emp.first_name} {emp.last_name}" if emp else "Desconocido"
+        d["employee_rut"] = emp.rut if emp else ""
+        d["employee_position"] = emp.position if emp else ""
+        d["employee_afp"] = emp.afp if emp else ""
+        d["employee_health_system"] = emp.health_system if emp else ""
+        enriched.append(d)
+
     total_net = sum(pr.net_salary for pr in records)
     total_employer = sum(pr.total_employer_cost for pr in records)
 
@@ -1569,7 +1582,7 @@ def calculate_payroll(
         "employee_count": len(records),
         "total_net_salary": round(total_net),
         "total_employer_cost": round(total_employer),
-        "records": [_payroll_to_dict(pr) for pr in records],
+        "records": enriched,
     }
 
 
@@ -1588,9 +1601,10 @@ def get_payroll(
         .all()
     )
     if not records:
-        raise HTTPException(404, f"No hay registros de nomina para {month}/{year}")
+        return {"period": f"{year}-{month:02d}", "employee_count": 0,
+                "total_net_salary": 0, "total_employer_cost": 0, "records": []}
 
-    # Enrich with employee names
+    # Enrich with employee names and details
     employee_ids = [r.employee_id for r in records]
     employees = db.query(Employee).filter(Employee.id.in_(employee_ids)).all()
     emp_map = {e.id: e for e in employees}
@@ -1601,6 +1615,9 @@ def get_payroll(
         emp = emp_map.get(pr.employee_id)
         d["employee_name"] = f"{emp.first_name} {emp.last_name}" if emp else "Desconocido"
         d["employee_rut"] = emp.rut if emp else ""
+        d["employee_position"] = emp.position if emp else ""
+        d["employee_afp"] = emp.afp if emp else ""
+        d["employee_health_system"] = emp.health_system if emp else ""
         enriched.append(d)
 
     total_net = sum(r.net_salary for r in records)

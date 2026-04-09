@@ -29,51 +29,10 @@ interface Factura {
   formaPago: string
 }
 
-// Demo invoices
-const DEMO_FACTURAS: Factura[] = [
-  {
-    id: '1', tipo: 33, folio: 1001, fecha: '2026-04-01',
-    rutReceptor: '76.111.222-3', razonSocial: 'Universidad de Chile', giro: 'Educación Superior',
-    items: [
-      { descripcion: 'Licencia Conniku PRO — 50 usuarios x 12 meses', cantidad: 1, precioUnit: 3000000, total: 3000000 },
-      { descripcion: 'Soporte técnico dedicado', cantidad: 12, precioUnit: 150000, total: 1800000 },
-    ],
-    neto: 4800000, iva: 912000, total: 5712000,
-    estado: 'emitida', formaPago: 'Transferencia',
-  },
-  {
-    id: '2', tipo: 33, folio: 1002, fecha: '2026-04-03',
-    rutReceptor: '77.333.444-5', razonSocial: 'TechCorp SpA', giro: 'Desarrollo de Software',
-    items: [
-      { descripcion: 'Servicio consultoría plataforma educativa', cantidad: 40, precioUnit: 80000, total: 3200000 },
-    ],
-    neto: 3200000, iva: 608000, total: 3808000,
-    estado: 'pagada', formaPago: 'Transferencia',
-  },
-  {
-    id: '3', tipo: 39, folio: 5001, fecha: '2026-04-05',
-    rutReceptor: '12.345.678-9', razonSocial: 'María González', giro: 'Particular',
-    items: [
-      { descripcion: 'Suscripción Conniku MAX anual', cantidad: 1, precioUnit: 156000, total: 156000 },
-    ],
-    neto: 131092, iva: 24908, total: 156000,
-    estado: 'emitida', formaPago: 'Tarjeta',
-  },
-  {
-    id: '4', tipo: 61, folio: 101, fecha: '2026-04-06',
-    rutReceptor: '76.111.222-3', razonSocial: 'Universidad de Chile', giro: 'Educación Superior',
-    items: [
-      { descripcion: 'Descuento institucional 10% — Ref. Factura 1001', cantidad: 1, precioUnit: -480000, total: -480000 },
-    ],
-    neto: -480000, iva: -91200, total: -571200,
-    estado: 'emitida', formaPago: 'N/A',
-  },
-]
-
 export default function FacturacionTab() {
   const { user } = useAuth()
   const [activeView, setActiveView] = useState<'facturas' | 'nueva' | 'resumen'>('facturas')
-  const [facturas] = useState<Factura[]>(DEMO_FACTURAS)
+  const [facturas] = useState<Factura[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [filterEstado, setFilterEstado] = useState<string>('all')
   const [filterTipo, setFilterTipo] = useState<string>('all')

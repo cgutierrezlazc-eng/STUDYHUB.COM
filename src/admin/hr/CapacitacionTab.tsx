@@ -35,86 +35,13 @@ interface Training {
 
 // ─── Constants ──────────────────────────────────────────────────
 
-const STORAGE_KEY = 'conniku_capacitacion'
+const STORAGE_KEY = 'conniku_capacitacion_v2'  // v2: limpia datos demo previos
 const MODALIDADES: Modalidad[] = ['Presencial', 'E-learning', 'Blended']
 const ESTADOS: EstadoCurso[] = ['Planificada', 'En curso', 'Completada', 'Cancelada']
 const TIPOS: TipoCurso[] = ['Técnica', 'Habilidades blandas', 'Seguridad laboral (ODI)', 'Normativa']
 
 // Ley 19.518 Art. 36: Franquicia tributaria = 1% planilla anual remuneraciones imponibles
 const FRANQUICIA_PERCENT = 0.01
-
-// ─── Seed Data ──────────────────────────────────────────────────
-
-const SEED_TRAININGS: Training[] = [
-  {
-    id: 'cap-001',
-    nombre: 'Inducción Seguridad y Salud Ocupacional (ODI)',
-    proveedorOTEC: 'ACHS - Asociación Chilena de Seguridad',
-    modalidad: 'Presencial',
-    duracionHoras: 8,
-    fechaInicio: '2026-04-15',
-    fechaFin: '2026-04-15',
-    costoCLP: 180000,
-    empleadosInscritos: ['emp-001', 'emp-002', 'emp-003', 'emp-004', 'emp-005'],
-    estado: 'Planificada',
-    tipo: 'Seguridad laboral (ODI)',
-    codigoSENCE: '1238-0045-2026',
-    acogidoFranquicia: true,
-    montoImputado: 180000,
-    certificadoURL: null,
-  },
-  {
-    id: 'cap-002',
-    nombre: 'React Avanzado y TypeScript para Equipos',
-    proveedorOTEC: 'Desafío Latam',
-    modalidad: 'E-learning',
-    duracionHoras: 40,
-    fechaInicio: '2026-05-01',
-    fechaFin: '2026-06-15',
-    costoCLP: 450000,
-    empleadosInscritos: ['emp-001', 'emp-003'],
-    estado: 'Planificada',
-    tipo: 'Técnica',
-    codigoSENCE: '1238-0112-2026',
-    acogidoFranquicia: true,
-    montoImputado: 450000,
-    certificadoURL: null,
-  },
-  {
-    id: 'cap-003',
-    nombre: 'Liderazgo y Comunicación Efectiva',
-    proveedorOTEC: 'Fundación Chile',
-    modalidad: 'Blended',
-    duracionHoras: 16,
-    fechaInicio: '2026-03-01',
-    fechaFin: '2026-03-15',
-    costoCLP: 320000,
-    empleadosInscritos: ['emp-002', 'emp-005'],
-    estado: 'Completada',
-    tipo: 'Habilidades blandas',
-    codigoSENCE: null,
-    acogidoFranquicia: false,
-    montoImputado: 0,
-    certificadoURL: 'certificado_liderazgo_2026.pdf',
-  },
-  {
-    id: 'cap-004',
-    nombre: 'Normativa Laboral Chilena — Código del Trabajo',
-    proveedorOTEC: 'OTEC Cumplimiento Legal Ltda.',
-    modalidad: 'Presencial',
-    duracionHoras: 12,
-    fechaInicio: '2026-06-10',
-    fechaFin: '2026-06-11',
-    costoCLP: 250000,
-    empleadosInscritos: ['emp-002', 'emp-004'],
-    estado: 'Planificada',
-    tipo: 'Normativa',
-    codigoSENCE: '1238-0078-2026',
-    acogidoFranquicia: true,
-    montoImputado: 250000,
-    certificadoURL: null,
-  },
-]
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -123,8 +50,7 @@ function loadTrainings(): Training[] {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) return JSON.parse(raw)
   } catch {}
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(SEED_TRAININGS))
-  return SEED_TRAININGS
+  return []
 }
 
 function saveTrainings(t: Training[]) {

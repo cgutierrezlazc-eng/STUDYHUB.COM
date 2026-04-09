@@ -3,6 +3,7 @@ import {
   Shield, Star, Globe, CheckCircle, AlertTriangle, Minus, ChevronDown, ChevronRight,
   FileText, Download, Clock, Info, X
 } from 'lucide-react'
+import { api } from '../../services/api'
 
 // ─── Types ──────────────────────────────────────────────────────
 type ObligationStatus = 'pendiente' | 'completo' | 'na'
@@ -252,20 +253,6 @@ const OBLIGATIONS: Obligation[] = [
     ],
   },
 ]
-
-// ─── localStorage helpers ───────────────────────────────────────
-const LS_KEY = 'conniku_obligaciones_status'
-
-function loadStatuses(): Record<string, StatusRecord> {
-  try {
-    const raw = localStorage.getItem(LS_KEY)
-    return raw ? JSON.parse(raw) : {}
-  } catch { return {} }
-}
-
-function saveStatuses(data: Record<string, StatusRecord>) {
-  localStorage.setItem(LS_KEY, JSON.stringify(data))
-}
 
 // ─── Document Generator ─────────────────────────────────────────
 const DOC_STYLES = `
@@ -534,33 +521,71 @@ function generateReglamentoInterno(): string {
 
 // ─── Main Component ─────────────────────────────────────────────
 export default function LegalTab() {
-  const [statuses, setStatuses] = useState<Record<string, StatusRecord>>(loadStatuses)
+  const [statuses, setStatuses] = useState<Record<string, StatusRecord>>({})
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [showGuide, setShowGuide] = useState<string | null>(null)
   const [noteInput, setNoteInput] = useState('')
 
-  useEffect(() => { saveStatuses(statuses) }, [statuses])
+  useEffect(() => {
+    api.getLegalObligations()
+      .then((res: any) => {
+        const mapped: Record<string, StatusRecord> = {}
+        if (res.statuses) {
+          for (const [id, data] of Object.entries(res.statuses) as any) {
+             mapped[id] = {
+               status: data.status as ObligationStatus,
+               notes: data.notes,
+               completedAt: data.completed_at
+             }
+          }
+        }
+        setStatuses(mapped)
+      })
+      .catch(console.error)
+  }, [])
+
+  const saveToBackend = async (newStatuses: Record<string, StatusRecord>) => {
+    try {
+      const payload = Object.entries(newStatuses).map(([id, st]) => ({
+        id,
+        status: st.status,
+        notes: st.notes,
+        completed_at: st.completedAt
+      }))
+      await api.saveLegalObligations(payload)
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   const getStatus = (ob: Obligation): ObligationStatus => {
     return statuses[ob.id]?.status ?? ob.defaultStatus
   }
 
   const setObStatus = (id: string, status: ObligationStatus) => {
-    setStatuses(prev => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        status,
-        completedAt: status === 'completo' ? new Date().toISOString() : undefined,
-      },
-    }))
+    setStatuses(prev => {
+      const next = {
+        ...prev,
+        [id]: {
+          ...prev[id],
+          status,
+          completedAt: status === 'completo' ? new Date().toISOString() : undefined,
+        },
+      }
+      saveToBackend(next)
+      return next
+    })
   }
 
   const setNote = (id: string, notes: string) => {
-    setStatuses(prev => ({
-      ...prev,
-      [id]: { ...prev[id], status: prev[id]?.status ?? 'pendiente', notes },
-    }))
+    setStatuses(prev => {
+      const next = {
+        ...prev,
+        [id]: { ...prev[id], status: prev[id]?.status ?? 'pendiente', notes },
+      }
+      saveToBackend(next)
+      return next
+    })
   }
 
   const openDoc = (html: string) => {

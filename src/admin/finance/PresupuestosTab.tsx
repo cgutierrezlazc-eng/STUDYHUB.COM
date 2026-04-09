@@ -23,34 +23,13 @@ const MONTHS = [
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ]
 
-// Demo budget data
-const DEMO_BUDGET: BudgetLine[] = [
-  { id: '1', categoria: 'Remuneraciones', presupuesto: 4500000, ejecutado: 4400000, comprometido: 0 },
-  { id: '2', categoria: 'Leyes Sociales', presupuesto: 1200000, ejecutado: 1150000, comprometido: 0 },
-  { id: '3', categoria: 'Hosting y Servidores', presupuesto: 250000, ejecutado: 195000, comprometido: 53550 },
-  { id: '4', categoria: 'Licencias Software', presupuesto: 400000, ejecutado: 320000, comprometido: 142800 },
-  { id: '5', categoria: 'Marketing Digital', presupuesto: 600000, ejecutado: 450000, comprometido: 100000 },
-  { id: '6', categoria: 'Servicios Profesionales', presupuesto: 500000, ejecutado: 280000, comprometido: 0 },
-  { id: '7', categoria: 'Oficina y Cowork', presupuesto: 350000, ejecutado: 350000, comprometido: 0 },
-  { id: '8', categoria: 'Capacitación', presupuesto: 200000, ejecutado: 80000, comprometido: 0 },
-  { id: '9', categoria: 'Gastos Generales', presupuesto: 300000, ejecutado: 210000, comprometido: 45000 },
-  { id: '10', categoria: 'Contingencia', presupuesto: 500000, ejecutado: 0, comprometido: 0 },
-]
-
-// Monthly historical data for charts
-const MONTHLY_HISTORY = [
-  { month: 'Ene', presupuesto: 8500000, ejecutado: 7800000 },
-  { month: 'Feb', presupuesto: 8500000, ejecutado: 8200000 },
-  { month: 'Mar', presupuesto: 8800000, ejecutado: 8600000 },
-  { month: 'Abr', presupuesto: 8800000, ejecutado: 7435000 },
-]
-
 export default function PresupuestosTab() {
   const { user } = useAuth()
   const [activeView, setActiveView] = useState<'presupuesto' | 'varianzas' | 'historico'>('presupuesto')
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
-  const [budget, setBudget] = useState<BudgetLine[]>(DEMO_BUDGET)
+  const [budget, setBudget] = useState<BudgetLine[]>([])
+  const [monthlyHistory] = useState<{ month: string; presupuesto: number; ejecutado: number }[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
 
@@ -330,8 +309,8 @@ export default function PresupuestosTab() {
               <BarChart3 size={18} /> Presupuesto vs. Ejecución — {selectedYear}
             </h3>
             <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, height: 200 }}>
-              {MONTHLY_HISTORY.map((m, i) => {
-                const maxVal = Math.max(...MONTHLY_HISTORY.map(h => Math.max(h.presupuesto, h.ejecutado)))
+              {monthlyHistory.map((m, i) => {
+                const maxVal = Math.max(...monthlyHistory.map(h => Math.max(h.presupuesto, h.ejecutado)))
                 const presH = (m.presupuesto / maxVal) * 180
                 const ejecH = (m.ejecutado / maxVal) * 180
                 const pct = (m.ejecutado / m.presupuesto * 100).toFixed(0)
@@ -376,7 +355,7 @@ export default function PresupuestosTab() {
                 </tr>
               </thead>
               <tbody>
-                {MONTHLY_HISTORY.map((m, i) => {
+                {monthlyHistory.map((m, i) => {
                   const varianza = m.presupuesto - m.ejecutado
                   const pct = (m.ejecutado / m.presupuesto * 100)
                   return (

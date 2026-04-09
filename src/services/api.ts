@@ -38,6 +38,44 @@ async function request(endpoint: string, options?: RequestInit) {
   return res.json();
 }
 
+// ─── Payroll record mapper (snake_case → camelCase) ──────────────
+function _mapPayrollRecord(r: any) {
+  return {
+    id: r.id,
+    employeeId: r.employee_id,
+    employeeName: r.employee_name || '',
+    employeeRut: r.employee_rut || '',
+    employeePosition: r.employee_position || '',
+    employeeAfp: r.employee_afp || '',
+    employeeHealthSystem: r.employee_health_system || '',
+    periodMonth: r.period_month,
+    periodYear: r.period_year,
+    grossSalary: r.gross_salary,
+    gratificacion: r.gratificacion,
+    overtimeHours: r.overtime_hours,
+    overtimeAmount: r.overtime_amount,
+    bonuses: r.bonuses,
+    colacion: r.colacion,
+    movilizacion: r.movilizacion,
+    totalHaberesImponibles: r.total_haberes_imponibles,
+    totalHaberesNoImponibles: r.total_haberes_no_imponibles,
+    afpEmployee: r.afp_employee,
+    healthEmployee: r.health_employee,
+    afcEmployee: r.afc_employee,
+    taxAmount: r.tax_amount,
+    voluntaryDeductions: r.voluntary_deductions || 0,
+    otherDeductions: r.other_deductions || 0,
+    totalDeductions: r.total_deductions,
+    netSalary: r.net_salary,
+    afpEmployer: r.afp_employer,
+    afcEmployer: r.afc_employer,
+    mutualEmployer: r.mutual_employer,
+    totalEmployerCost: r.total_employer_cost,
+    status: r.status,
+    paidAt: r.paid_at || null,
+  }
+}
+
 export const api = {
   // ─── Auth ──────────────────────────────────────────────────
   register: (data: any) =>
@@ -1060,8 +1098,15 @@ export const api = {
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
   uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
   signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
-  calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
-  getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
+  calculatePayroll: (month: number, year: number, overrides?: Record<string, { overtimeHours?: number; bonuses?: number }>) =>
+    request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ period_month: month, period_year: year, overrides: overrides || {} }) })
+      .then((d: any) => ({ ...d, records: (d.records || []).map(_mapPayrollRecord) })),
+  getPayroll: async (year: number, month: number) => {
+    try {
+      const d: any = await request(`/hr/payroll/${year}/${month}`)
+      return (d.records || []).map(_mapPayrollRecord) as import('../admin/shared/types').PayrollRecord[]
+    } catch { return [] as import('../admin/shared/types').PayrollRecord[] }
+  },
   approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),
   markPayrollPaid: (id: string) => request(`/hr/payroll/${id}/mark-paid`, { method: 'PUT' }),
   getPrevired: (year: number, month: number) => request(`/hr/payroll/previred/${year}/${month}`),

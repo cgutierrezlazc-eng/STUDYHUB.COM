@@ -1,18 +1,18 @@
 // ─── Shared Constants for Admin Panel ──────────────────────────
 
 // ─── Datos legales de la empresa ─────────────────────────────────
-// Fuente: SII — inscripción 08-04-2026
+// Fuente: SII — inscripción 08-04-2026 + Escritura constitución CONNIKU SpA
 export const COMPANY = {
   name:        'CONNIKU SpA',
   rut:         '78.395.702-7',
   giro:        'Portales y Plataformas Web',                      // Código SII 631200
-  address:     'Avenida Argentina 01805, Depto. 502',
+  address:     'Avenida Argentina N°01805, Depto. 502',           // Según escritura constitución
   commune:     'Antofagasta',
   city:        'Antofagasta',
   cityHeader:  'Antofagasta, Chile',                              // Para encabezados
   region:      'II Región de Antofagasta',
-  repName:     'Cristian Gaete Lazcano',                          // Representante legal
-  repRut:      '',                                                 // Completar con RUT personal del rep. legal
+  repName:     'Cristian Andrés Gutiérrez Lazcano',               // Gerente General — según CI y escritura
+  repRut:      '14.112.896-5',                                    // Según CI y escritura constitución
 } as const
 
 export const AFP_OPTIONS = [
