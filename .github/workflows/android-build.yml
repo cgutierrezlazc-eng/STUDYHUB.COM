@@ -46,8 +46,13 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_B64" | tr -d '[:space:]' | base64 -d > android/conniku-release.keystore
+          echo -n "$KEYSTORE_B64" > /tmp/keystore_b64.txt
+          echo "Base64 length: $(wc -c < /tmp/keystore_b64.txt)"
+          echo "First 20 chars: $(head -c 20 /tmp/keystore_b64.txt)"
+          echo "Last 20 chars: $(tail -c 20 /tmp/keystore_b64.txt)"
+          base64 -d /tmp/keystore_b64.txt > android/conniku-release.keystore
           echo "Keystore size: $(wc -c < android/conniku-release.keystore) bytes"
+          rm /tmp/keystore_b64.txt
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
