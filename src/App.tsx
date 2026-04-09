@@ -354,7 +354,10 @@ export default function App() {
       )}
 
       {showOnboarding && (
-        <Onboarding onComplete={() => { setShowOnboarding(false); refreshUser() }} />
+        <Onboarding
+          onComplete={() => { setShowOnboarding(false); refreshUser() }}
+          onNavigate={(path) => navigate(path)}
+        />
       )}
 
       {showMobileUI && (

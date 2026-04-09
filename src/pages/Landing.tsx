@@ -75,20 +75,20 @@ function LandingKeyframes() {
         50% { transform: translateY(-3px); }
       }
       @keyframes conniku-fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        from { transform: translateY(24px); }
+        to { transform: translateY(0); }
       }
       @keyframes conniku-pulse {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.02); }
       }
       @keyframes conniku-slideInLeft {
-        from { opacity: 0; transform: translateX(-40px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { transform: translateX(-32px); }
+        to { transform: translateX(0); }
       }
       @keyframes conniku-slideInRight {
-        from { opacity: 0; transform: translateX(40px); }
-        to { opacity: 1; transform: translateX(0); }
+        from { transform: translateX(32px); }
+        to { transform: translateX(0); }
       }
     `}</style>
   )
@@ -625,7 +625,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
           flexDirection: compact ? 'column' : 'row',
         }}>
           {/* Left */}
-          <div style={{ flex: 1, animation: 'conniku-slideInLeft 0.8s ease forwards' }}>
+          <div style={{ flex: 1, animation: 'conniku-slideInLeft 0.8s ease both' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               background: vars.accentLight, color: vars.accent,
@@ -658,7 +658,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
               }}>
                 {t('landing.startFree')}
               </button>
-              <button onClick={onRegister} style={{
+              <button onClick={() => {
+                const el = document.getElementById('comunidad')
+                el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+              }} style={{
                 background: 'transparent', color: vars.textSecondary,
                 border: `1.5px solid ${vars.border}`,
                 padding: '13px 24px', borderRadius: 8, fontSize: 13, fontWeight: 600,
@@ -685,7 +688,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
           {/* Right — Hero showcase cards (desktop/tablet) */}
           {!compact && (
-            <div style={{ flex: 1, maxWidth: mid ? 420 : 580, animation: 'conniku-slideInRight 0.8s ease forwards', animationDelay: '0.2s', opacity: 0, animationFillMode: 'forwards' }}>
+            <div style={{ flex: 1, maxWidth: mid ? 420 : 580, animation: 'conniku-slideInRight 0.8s ease both' }}>
               <div style={{ position: 'relative', height: mid ? 460 : 580, animation: 'conniku-float 4s ease-in-out infinite' }}>
                 {/* Profile card */}
                 <div

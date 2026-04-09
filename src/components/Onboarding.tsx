@@ -5,6 +5,7 @@ import { BookOpen, MessageSquare, Target, Smile, Briefcase, Users, Sparkles, Hom
 
 interface Props {
   onComplete: () => void
+  onNavigate?: (path: string) => void
 }
 
 const STEP_CONFIG = [
@@ -17,13 +18,14 @@ const STEP_CONFIG = [
   { icon: Sparkles({ size: 36 }), color: '#2563eb', titleKey: 'onb.readyTitle', descKey: 'onb.readyDesc' },
 ]
 
-export default function Onboarding({ onComplete }: Props) {
+export default function Onboarding({ onComplete, onNavigate }: Props) {
   const { t } = useI18n()
   const [step, setStep] = useState(0)
 
-  const handleComplete = async () => {
+  const handleComplete = async (navigateTo?: string) => {
     try { await api.completeOnboarding() } catch {}
     onComplete()
+    if (navigateTo && onNavigate) onNavigate(navigateTo)
   }
 
   const current = STEP_CONFIG[step]
@@ -56,13 +58,18 @@ export default function Onboarding({ onComplete }: Props) {
               {t('onb.next')}
             </button>
           ) : (
-            <button className="btn btn-primary btn-sm btn-glow" onClick={handleComplete}>
-              {t('onb.start')}
-            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
+              <button className="btn btn-primary btn-sm btn-glow" onClick={() => handleComplete('/dashboard')}>
+                Crear mi primera asignatura
+              </button>
+              <button className="btn btn-secondary btn-sm" onClick={() => handleComplete()}>
+                {t('onb.start')}
+              </button>
+            </div>
           )}
         </div>
 
-        <button className="onb-skip" onClick={handleComplete}>{t('onb.skipTour')}</button>
+        <button className="onb-skip" onClick={() => handleComplete()}>{t('onb.skipTour')}</button>
       </div>
     </div>
   )
