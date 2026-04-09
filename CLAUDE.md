@@ -85,6 +85,7 @@ Before EVERY action, Claude MUST complete these checks silently. If any check fa
 
 ## Error Log
 <!-- YYYY-MM-DD | Que paso | Como evitarlo -->
+- 2026-04-09 | Inventé un RUT personal de ejemplo (12.345.678-9) en una respuesta de texto | NUNCA inventar datos — ni en ejemplos, ni en comentarios, ni en código. Si un dato es desconocido, dejarlo vacío y pedir el dato real a Cristian.
 
 ## General Rules
 - Keep commits atomic and descriptive
