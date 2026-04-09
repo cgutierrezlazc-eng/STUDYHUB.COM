@@ -21,7 +21,6 @@ from database import init_db, get_db, User, gen_id, DATA_DIR
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
-from ai_engine import AIEngine as ClaudeEngine
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -169,8 +168,7 @@ COVERS_DIR = DATA_DIR / "uploads" / "covers"
 COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
 doc_processor = DocumentProcessor()
-ai_engine = AIEngine()       # Gemini — study chat, quizzes, guides, user support
-claude_engine = ClaudeEngine()  # Claude — admin support, originality detection
+ai_engine = AIEngine()  # Gemini — all AI features (chat, quizzes, guides, support)
 
 
 @app.get("/uploads/covers/{filename}")
@@ -750,9 +748,9 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
     messages.append({"role": "user", "content": req.message})
 
     try:
-        response = claude_engine._call_claude_chat(system, messages)
+        response = ai_engine._call_gemini_chat(system, messages)
     except Exception:
-        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo o revisa que la API key de Anthropic este configurada."
+        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo."
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
@@ -1025,7 +1023,7 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
         all_text = ai_engine._get_all_text(project_id)
 
         user_prompt = f"Contenido de la clase grabada:\n{all_text[:15000]}\n\nGenera notas estructuradas, resumen y flashcards."
-        result_text = claude_engine._call_claude(system, user_prompt)
+        result_text = ai_engine._call_gemini(system, user_prompt)
 
         start_idx = result_text.find('{')
         end_idx = result_text.rfind('}') + 1
@@ -1161,7 +1159,7 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
     prompt = f"Material del curso:\n{all_text[:15000]}\n\nGenera plan de emergencia para {hours_available} horas."
 
     try:
-        result_text = claude_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
+        result_text = ai_engine._call_gemini(system, prompt)
         import json as json_mod
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
@@ -1405,7 +1403,7 @@ def generate_study_plan(project_id: str, user: User = Depends(get_current_user),
     user_prompt = f"""Material del curso:\n{all_text[:8000]}\n\nTiempo total estudiado: {total_time // 60} minutos.\nGenera un plan de estudio de 7 días para este material."""
 
     try:
-        result_text = claude_engine._call_claude(system, user_prompt, model="claude-haiku-4-5-20251001")
+        result_text = ai_engine._call_gemini(system, user_prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         if start >= 0 and end > start:
@@ -1476,7 +1474,7 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
 
     system = TRANSLATE_PROMPT.format(source_hint=source_hint, target_name=target_name)
 
-    result = claude_engine._call_claude(system, req.text, model="claude-haiku-4-5-20251001")
+    result = ai_engine._call_gemini(system, req.text)
     return {"translated": result.strip(), "targetLanguage": req.target_language}
 
 
