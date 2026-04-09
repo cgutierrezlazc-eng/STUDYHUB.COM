@@ -99,55 +99,82 @@ def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str
     thread.start()
 
 
-def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = "") -> str:
-    """Generate branded HTML email template."""
+def _email_template(title: str, body: str, cta_text: str = "", cta_url: str = "", sender: str = "noreply") -> str:
+    """Generate branded HTML email template with professional signature.
+    sender: 'noreply' | 'contacto' | 'ceo' — adjusts signature block.
+    """
+    LOGO_URL = f"{FRONTEND_URL}/logo.png"
     cta_html = ""
     if cta_text and cta_url:
-        cta_html = f'''<div style="text-align:center;margin:24px 0">
-            <a href="{cta_url}" style="background:#2563EB;color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">{cta_text}</a>
+        cta_html = f'''<div style="text-align:center;margin:28px 0 8px">
+            <a href="{cta_url}" style="background:linear-gradient(135deg,#2563EB,#4f8cff);color:#fff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;letter-spacing:0.3px">{cta_text}</a>
         </div>'''
 
+    # Sender-specific signature
+    sig_map = {
+        "ceo": {"name": "Cristian Gutierrez", "role": "CEO & Founder", "email": CEO_EMAIL},
+        "contacto": {"name": "Equipo de Soporte", "role": "Centro de Ayuda", "email": CONTACT_EMAIL},
+        "noreply": {"name": "Equipo Conniku", "role": "Plataforma de Desarrollo Universitario", "email": CONTACT_EMAIL},
+    }
+    sig = sig_map.get(sender, sig_map["noreply"])
+
     return f'''<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="margin:0;padding:0;background:#F5F3EF;font-family:Inter,-apple-system,sans-serif">
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#F5F3EF;font-family:'Segoe UI',Inter,-apple-system,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased">
 <div style="max-width:560px;margin:0 auto;padding:32px 16px">
-    <div style="text-align:center;margin-bottom:24px">
-        <img src="https://conniku.com/logo_original.png" alt="Conniku" width="40" height="40" style="border-radius:10px;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'" />
-        <span style="font-size:22px;font-weight:700;color:#1D2939;vertical-align:middle">conni<span style="color:#2D62C8">ku</span></span>
+    <!-- Header with logo -->
+    <div style="text-align:center;margin-bottom:28px">
+        <a href="{FRONTEND_URL}" style="text-decoration:none;display:inline-block">
+            <table cellpadding="0" cellspacing="0" border="0" style="margin:0 auto"><tr>
+                <td style="vertical-align:middle;padding-right:10px">
+                    <img src="{LOGO_URL}" alt="CK" width="38" height="38" style="border-radius:10px;display:block" />
+                </td>
+                <td style="vertical-align:middle">
+                    <span style="font-size:24px;font-weight:800;color:#1D2939;letter-spacing:-0.5px">conni<span style="color:#2D62C8">ku</span></span>
+                </td>
+            </tr></table>
+        </a>
     </div>
-    <div style="background:#fff;border-radius:12px;padding:32px;border:1px solid #E5E7EB">
-        <h2 style="margin:0 0 16px;font-size:18px;color:#1D2939">{title}</h2>
-        <div style="font-size:14px;line-height:1.7;color:#475467">{body}</div>
+    <!-- Main content card -->
+    <div style="background:#ffffff;border-radius:14px;padding:36px 32px;border:1px solid #E5E7EB;box-shadow:0 1px 3px rgba(0,0,0,0.04)">
+        <h2 style="margin:0 0 18px;font-size:20px;font-weight:700;color:#1D2939;line-height:1.3">{title}</h2>
+        <div style="font-size:14px;line-height:1.8;color:#475467">{body}</div>
         {cta_html}
     </div>
-    <!-- Professional Signature -->
-    <div style="margin-top:28px;padding:20px 24px;background:#fff;border-radius:10px;border:1px solid #E5E7EB">
-        <table cellpadding="0" cellspacing="0" border="0" style="width:100%">
-            <tr>
-                <td style="width:48px;vertical-align:top;padding-right:16px">
-                    <div style="width:44px;height:44px;border-radius:10px;background:#2D62C8;text-align:center">
-                        <img src="https://conniku.com/logo_original.png" alt="Conniku" width="44" height="44" style="border-radius:10px;display:block" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=&quot;color:#fff;font-weight:700;font-size:16px;line-height:44px;display:block&quot;>CK</span>'" />
-                    </div>
-                </td>
-                <td style="vertical-align:top">
-                    <p style="margin:0;font-size:14px;font-weight:700;color:#1D2939">Equipo Conniku</p>
-                    <p style="margin:2px 0 0;font-size:12px;color:#6B7280">Plataforma de Desarrollo Universitario</p>
-                    <div style="margin-top:8px;border-top:1px solid #E5E7EB;padding-top:8px">
-                        <p style="margin:0;font-size:11px;color:#98A2B3">
-                            <a href="https://conniku.com" style="color:#2D62C8;text-decoration:none;font-weight:600">conniku.com</a>
-                            &nbsp;&middot;&nbsp;
-                            <a href="mailto:{CEO_EMAIL}" style="color:#2D62C8;text-decoration:none">{CEO_EMAIL}</a>
-                        </p>
-                        <p style="margin:4px 0 0;font-size:10px;color:#D1D5DB;letter-spacing:0.3px">
-                            Cursos &middot; Comunidad &middot; Bolsa de Trabajo &middot; Tutorias
-                        </p>
-                    </div>
-                </td>
-            </tr>
-        </table>
+    <!-- Professional signature -->
+    <div style="margin-top:28px;padding:20px 24px;background:#ffffff;border-radius:12px;border:1px solid #E5E7EB">
+        <table cellpadding="0" cellspacing="0" border="0" style="width:100%"><tr>
+            <td style="width:50px;vertical-align:top;padding-right:16px">
+                <div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#2D62C8,#4f8cff);text-align:center;overflow:hidden">
+                    <img src="{LOGO_URL}" alt="CK" width="46" height="46" style="border-radius:12px;display:block" />
+                </div>
+            </td>
+            <td style="vertical-align:top">
+                <p style="margin:0;font-size:14px;font-weight:700;color:#1D2939">{sig["name"]}</p>
+                <p style="margin:2px 0 0;font-size:12px;color:#6B7280">{sig["role"]}</p>
+                <div style="margin-top:10px;border-top:1px solid #E5E7EB;padding-top:10px">
+                    <p style="margin:0;font-size:11px;color:#98A2B3">
+                        <a href="{FRONTEND_URL}" style="color:#2D62C8;text-decoration:none;font-weight:600">conniku.com</a>
+                        &nbsp;&middot;&nbsp;
+                        <a href="mailto:{sig["email"]}" style="color:#2D62C8;text-decoration:none">{sig["email"]}</a>
+                    </p>
+                    <p style="margin:5px 0 0;font-size:10px;color:#B0B7C3;letter-spacing:0.3px">
+                        Estudio con IA &middot; Comunidades &middot; Bolsa de Trabajo &middot; Tutorias
+                    </p>
+                </div>
+            </td>
+        </tr></table>
     </div>
-    <div style="text-align:center;margin-top:16px;font-size:10px;color:#D1D5DB">
-        <p style="margin:0">&copy; {datetime.utcnow().year} Conniku. Todos los derechos reservados.</p>
+    <!-- Footer -->
+    <div style="text-align:center;margin-top:20px;padding:0 16px">
+        <p style="margin:0 0 6px;font-size:10px;color:#B0B7C3">&copy; {datetime.utcnow().year} Conniku SpA. Todos los derechos reservados.</p>
+        <p style="margin:0;font-size:10px;color:#D1D5DB">
+            <a href="{FRONTEND_URL}/terms" style="color:#B0B7C3;text-decoration:none">Terminos</a>
+            &nbsp;&middot;&nbsp;
+            <a href="{FRONTEND_URL}/privacy" style="color:#B0B7C3;text-decoration:none">Privacidad</a>
+            &nbsp;&middot;&nbsp;
+            <a href="mailto:{CONTACT_EMAIL}" style="color:#B0B7C3;text-decoration:none">Soporte</a>
+        </p>
     </div>
 </div></body></html>'''
 
@@ -216,7 +243,7 @@ def send_ceo_weekly_report(report_data: dict):
     <h3>📊 Engagement</h3>
     <p>Posts: {eng.get('wallPosts', 0)} | Mensajes: {eng.get('messages', 0)} | Estudio: {eng.get('studyHours', 0)}h</p>
     """
-    html = _email_template("Reporte Semanal CEO", body, "Ver Dashboard", f"{FRONTEND_URL}/admin")
+    html = _email_template("Reporte Semanal CEO", body, "Ver Dashboard", f"{FRONTEND_URL}/admin", sender="ceo")
     _send_email_async(CEO_EMAIL, f"Conniku — Reporte Semanal {report_data.get('period', '')}", html, reply_to=CEO_EMAIL, email_type="ceo_report", from_account="ceo")
 
 
@@ -456,7 +483,7 @@ def ceo_send_email(
 
     body_html = data.body.replace("\n", "<br>")
     full_body = f"<p>{body_html}</p>"
-    html = _email_template(data.subject, full_body, data.cta_text, data.cta_url)
+    html = _email_template(data.subject, full_body, data.cta_text, data.cta_url, sender=account)
     _send_email_async(data.to_email, data.subject, html, reply_to=reply_to, email_type="manual", from_account=account)
 
     return {"status": "queued", "message": f"Email enviado a {data.to_email} desde {account}@conniku.com"}
@@ -532,7 +559,7 @@ def ceo_broadcast_email(
     for u in users:
         if u.email:
             full_body = f"<p>Hola {u.first_name},</p><p>{body_html}</p>"
-            html = _email_template(subject, full_body, cta_text, cta_url)
+            html = _email_template(subject, full_body, cta_text, cta_url, sender="ceo")
             _send_email_async(u.email, subject, html, reply_to=CEO_EMAIL, email_type="broadcast", from_account="ceo")
             count += 1
 
@@ -562,7 +589,7 @@ def send_contact_message(data: ContactMessage):
     <hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0">
     <p>{data.message.replace(chr(10), '<br>')}</p>
     """
-    html = _email_template(f"Nuevo mensaje: {data.subject}", body)
+    html = _email_template(f"Nuevo mensaje: {data.subject}", body, sender="contacto")
     _send_email_async(CONTACT_EMAIL, f"[Conniku Contacto] {data.subject} — {data.name}", html, reply_to=data.email, email_type="contact", from_account="contacto")
 
     return {"status": "sent", "message": "Mensaje enviado. Te responderemos a la brevedad."}
@@ -585,7 +612,7 @@ def send_contact_from_profile(data: dict, user: User = Depends(get_current_user)
     <hr style="border:none;border-top:1px solid #E5E7EB;margin:16px 0">
     <p>{message.replace(chr(10), '<br>')}</p>
     """
-    html = _email_template(f"Mensaje de @{user.username}: {subject}", body)
+    html = _email_template(f"Mensaje de @{user.username}: {subject}", body, sender="contacto")
     _send_email_async(CONTACT_EMAIL, f"[Conniku] {subject} — @{user.username}", html, reply_to=user.email, email_type="contact", from_account="contacto")
 
     return {"status": "sent", "message": "Mensaje enviado al equipo de Conniku."}

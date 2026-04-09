@@ -160,7 +160,7 @@ def _notify_ceo_payment(event_type: str, user, amount: float = 0, currency: str 
         {f'<p><strong>Detalle:</strong> {details}</p>' if details else ''}
         <p style="color:#6B7280;font-size:12px">Evento recibido: {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}</p>
         """
-        html = _email_template(f"{emoji} Pago: {event_type}", body, "Ver Dashboard", f"{FRONTEND_URL}/ceo")
+        html = _email_template(f"{emoji} Pago: {event_type}", body, "Ver Dashboard", f"{FRONTEND_URL}/ceo", sender="ceo")
         _send_email_async(CEO_EMAIL, f"{emoji} Stripe: {event_type} — {user_info}", html, email_type="payment_webhook")
     except Exception as e:
         print(f"[CEO Payment Notify Error] {e}")

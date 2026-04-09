@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Manual de Usuario — Conniku</title>
+<style>
+  :root {
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --dark: #1D2939;
+    --gray: #475467;
+    --light-gray: #F9FAFB;
+    --border: #E5E7EB;
+    --green: #10B981;
+    --purple: #8B5CF6;
+    --orange: #F59E0B;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Inter, -apple-system, sans-serif;
+    color: var(--dark);
+    line-height: 1.7;
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Print styles */
+  @media print {
+    .sidebar { display: none !important; }
+    .main { margin-left: 0 !important; }
+    .header { position: static !important; }
+    .tip, .warning, .example { break-inside: avoid; }
+  }
+
+  /* Sidebar navigation */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0;
+    width: 280px; background: var(--light-gray);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; padding: 24px 0; z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 0 24px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+  .sidebar-logo h2 {
+    font-size: 20px; font-weight: 800; color: var(--dark);
+  }
+  .sidebar-logo h2 span { color: var(--blue); }
+  .sidebar-logo p { font-size: 11px; color: var(--gray); margin-top: 2px; }
+  .sidebar a {
+    display: block; padding: 8px 24px;
+    color: var(--gray); text-decoration: none;
+    font-size: 13px; transition: all 0.15s;
+    border-left: 3px solid transparent;
+  }
+  .sidebar a:hover { color: var(--blue); background: var(--blue-light); border-left-color: var(--blue); }
+  .sidebar .section-title {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #98A2B3;
+    padding: 16px 24px 6px; display: block;
+  }
+
+  /* Main content */
+  .main {
+    margin-left: 280px; padding: 0;
+    max-width: 800px;
+  }
+  .header {
+    background: linear-gradient(135deg, #2D62C8, #4f8cff);
+    color: #fff; padding: 60px 48px;
+  }
+  .header h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  .header p { font-size: 16px; opacity: 0.9; }
+  .header .version { font-size: 12px; opacity: 0.6; margin-top: 12px; }
+
+  .content { padding: 40px 48px; }
+
+  h2 {
+    font-size: 24px; font-weight: 700; color: var(--dark);
+    margin: 48px 0 16px; padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  h2:first-of-type { border-top: none; margin-top: 0; }
+  h3 {
+    font-size: 18px; font-weight: 600; color: var(--dark);
+    margin: 32px 0 12px;
+  }
+  h4 {
+    font-size: 15px; font-weight: 600; color: var(--gray);
+    margin: 20px 0 8px;
+  }
+  p { margin-bottom: 12px; color: var(--gray); font-size: 14px; }
+  ul, ol { margin: 8px 0 16px 20px; color: var(--gray); font-size: 14px; }
+  li { margin-bottom: 6px; }
+
+  .tip, .warning, .example {
+    border-radius: 10px; padding: 16px 20px;
+    margin: 16px 0; font-size: 13px;
+  }
+  .tip { background: #ECFDF5; border-left: 4px solid var(--green); }
+  .tip strong { color: #065F46; }
+  .warning { background: #FFFBEB; border-left: 4px solid var(--orange); }
+  .warning strong { color: #92400E; }
+  .example { background: var(--blue-light); border-left: 4px solid var(--blue); }
+  .example strong { color: #1E40AF; }
+
+  .step-box {
+    display: flex; gap: 14px; margin: 12px 0;
+    padding: 14px 18px; background: var(--light-gray);
+    border-radius: 10px; align-items: flex-start;
+  }
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--blue); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; flex-shrink: 0;
+  }
+  .step-text { flex: 1; }
+  .step-text strong { color: var(--dark); }
+  .step-text p { margin: 4px 0 0; font-size: 13px; }
+
+  .feature-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; margin: 16px 0;
+  }
+  .feature-card {
+    padding: 16px; border-radius: 10px;
+    border: 1px solid var(--border); background: #fff;
+  }
+  .feature-card h4 { margin: 0 0 4px; font-size: 14px; color: var(--dark); }
+  .feature-card p { font-size: 12px; margin: 0; }
+
+  .shortcut-table {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+    font-size: 13px;
+  }
+  .shortcut-table th {
+    text-align: left; padding: 10px 12px;
+    background: var(--light-gray); color: var(--dark);
+    font-weight: 600; border-bottom: 2px solid var(--border);
+  }
+  .shortcut-table td {
+    padding: 10px 12px; border-bottom: 1px solid var(--border);
+    color: var(--gray);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; }
+    .header { padding: 40px 24px; }
+    .content { padding: 24px; }
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2>conni<span>ku</span></h2>
+    <p>Manual de Usuario v1.0</p>
+  </div>
+  <span class="section-title">Inicio</span>
+  <a href="#bienvenida">Bienvenida</a>
+  <a href="#registro">Registro e Inicio de Sesion</a>
+  <a href="#navegacion">Navegacion General</a>
+  <span class="section-title">Estudio</span>
+  <a href="#proyectos">Proyectos y Documentos</a>
+  <a href="#chat-ia">Chat IA (Estudio)</a>
+  <a href="#rutas">Rutas de Estudio</a>
+  <a href="#quizzes">Quizzes y Flashcards</a>
+  <a href="#salas">Salas de Estudio</a>
+  <a href="#cursos">Cursos y Certificados</a>
+  <a href="#biblioteca">Biblioteca Digital</a>
+  <a href="#calendario">Calendario</a>
+  <span class="section-title">Social</span>
+  <a href="#feed">Feed Social</a>
+  <a href="#comunidades">Comunidades</a>
+  <a href="#mensajes">Mensajes</a>
+  <a href="#amigos">Amigos</a>
+  <a href="#gamificacion">Gamificacion</a>
+  <a href="#eventos">Eventos</a>
+  <span class="section-title">Carrera</span>
+  <a href="#perfil-cv">Perfil y CV</a>
+  <a href="#bolsa-trabajo">Bolsa de Trabajo</a>
+  <a href="#tutorias">Tutorias y Mentorias</a>
+  <a href="#marketplace">Marketplace</a>
+  <span class="section-title">Cuenta</span>
+  <a href="#suscripciones">Planes y Suscripciones</a>
+  <a href="#configuracion">Configuracion</a>
+  <a href="#soporte">Soporte y Contacto</a>
+  <a href="#faq">Preguntas Frecuentes</a>
+</nav>
+
+<!-- Main -->
+<div class="main">
+  <div class="header">
+    <h1>Manual de Usuario</h1>
+    <p>Todo lo que necesitas saber para aprovechar Conniku al maximo</p>
+    <div class="version">Version 1.0 — Abril 2026 | conniku.com</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ============================================ -->
+    <h2 id="bienvenida">Bienvenida a Conniku</h2>
+    <p>Conniku es la plataforma educativa disenada especialmente para estudiantes universitarios en Chile. Combina herramientas de estudio potenciadas por Inteligencia Artificial, una red social academica, desarrollo profesional y gamificacion en un solo lugar.</p>
+
+    <h3>Que puedes hacer en Conniku?</h3>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4>Estudiar con IA</h4>
+        <p>Sube tus documentos y la IA genera guias, quizzes, flashcards y planes de estudio personalizados.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Conectar</h4>
+        <p>Feed social, comunidades por carrera, mensajes directos y eventos de estudio.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Crecer Profesionalmente</h4>
+        <p>CV profesional, bolsa de trabajo, tutorias y certificados.</p>
+      </div>
+      <div class="feature-card">
+        <h4>Gamificar tu Estudio</h4>
+        <p>Gana XP, desbloquea insignias, compite en ligas semanales y completa desafios diarios.</p>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="registro">Registro e Inicio de Sesion</h2>
+
+    <h3>Crear tu cuenta</h3>
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Ingresa a conniku.com</strong>
+        <p>Haz clic en "Registrarse" en la pagina de inicio.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Completa tus datos</strong>
+        <p>Nombre, apellido, email universitario, contrasena, universidad y carrera.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Elige tu nombre de usuario</strong>
+        <p>Tu @username sera tu identidad en la plataforma. Ejemplo: @maria.ing</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <strong>Verifica tu email</strong>
+        <p>Te enviaremos un codigo de verificacion a tu correo. Ingresalo para activar tu cuenta.</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>Tip:</strong> Tambien puedes registrarte con tu cuenta de Google para un acceso mas rapido.
+    </div>
+
+    <h3>Iniciar sesion</h3>
+    <p>Ingresa con tu email y contrasena, o usa Google Sign-In. Si olvidaste tu contrasena, haz clic en "Olvide mi contrasena" y sigue las instrucciones por email.</p>
+
+    <!-- ============================================ -->
+    <h2 id="navegacion">Navegacion General</h2>
+    <p>La plataforma tiene 3 areas principales:</p>
+
+    <table class="shortcut-table">
+      <tr><th>Area</th><th>Descripcion</th></tr>
+      <tr><td><strong>Barra lateral (izquierda)</strong></td><td>Menu principal con todas las secciones: Estudio, Social, Carrera, Admin</td></tr>
+      <tr><td><strong>Contenido central</strong></td><td>Donde se muestra la pagina activa (feed, proyecto, comunidad, etc.)</td></tr>
+      <tr><td><strong>Panel derecho</strong></td><td>Informacion contextual, usuarios en linea, accesos rapidos</td></tr>
+    </table>
+
+    <h4>Navegacion movil</h4>
+    <p>En celular, la barra lateral se convierte en un menu inferior con 5 iconos:</p>
+    <ul>
+      <li><strong>Inicio</strong> — Dashboard principal</li>
+      <li><strong>Estudio</strong> — Proyectos y herramientas IA</li>
+      <li><strong>Chat</strong> — Mensajes directos</li>
+      <li><strong>Perfil</strong> — Tu perfil y configuracion</li>
+      <li><strong>Mas</strong> — Todas las demas secciones</li>
+    </ul>
+
+    <div class="tip">
+      <strong>Tip:</strong> Conniku funciona como PWA (Progressive Web App). Desde Chrome en tu celular, abre conniku.com > menu (3 puntos) > "Agregar a pantalla de inicio" para tenerla como app nativa.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="proyectos">Proyectos y Documentos</h2>
+    <p>Los proyectos son el corazon de tu estudio en Conniku. Cada proyecto es un espacio para una asignatura o tema especifico.</p>
+
+    <h3>Crear un proyecto</h3>
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Ve a Dashboard > Nuevo Proyecto</strong>
+        <p>Dale un nombre descriptivo (ej: "Calculo II — Segundo Semestre").</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Sube tus documentos</strong>
+        <p>Arrastra PDFs, archivos Word o PowerPoint. La IA procesara el contenido automaticamente.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Agrega videos (opcional)</strong>
+        <p>Pega un link de YouTube y Conniku transcribira y resumira el video.</p>
+      </div>
+    </div>
+
+    <h3>Que puedes hacer con un proyecto?</h3>
+    <ul>
+      <li><strong>Chat IA:</strong> Preguntale a la IA sobre tu materia basandose en tus documentos</li>
+      <li><strong>Guia de estudio:</strong> Genera una guia completa automaticamente</li>
+      <li><strong>Quizzes:</strong> Crea evaluaciones de opcion multiple (facil, medio, dificil)</li>
+      <li><strong>Flashcards:</strong> Tarjetas de memorizacion generadas por IA</li>
+      <li><strong>Plan de estudio:</strong> Cronograma personalizado para preparar tu examen</li>
+      <li><strong>Resumen:</strong> Obtiene un resumen descargable en Word o PDF</li>
+      <li><strong>Mapa conceptual:</strong> Visualiza las relaciones entre conceptos</li>
+    </ul>
+
+    <div class="example">
+      <strong>Ejemplo:</strong> Maria sube su PPT de "Anatomia — Sistema Nervioso". Luego le pregunta a la IA: "Explicame la diferencia entre el sistema simpatico y parasimpatico con un ejemplo". La IA responde citando las diapositivas exactas.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="chat-ia">Chat IA (Estudio)</h2>
+    <p>El Chat IA es tu tutor personal. Cuando abres un proyecto, puedes chatear con la IA y esta responderia basandose en los documentos que subiste.</p>
+
+    <h3>Modos disponibles</h3>
+    <table class="shortcut-table">
+      <tr><th>Modo</th><th>Descripcion</th></tr>
+      <tr><td><strong>Normal</strong></td><td>La IA responde directamente a tus preguntas</td></tr>
+      <tr><td><strong>Socratico</strong></td><td>La IA te guia con preguntas para que descubras la respuesta por ti mismo</td></tr>
+    </table>
+
+    <h3>Niveles de comunicacion</h3>
+    <ul>
+      <li><strong>Principiante:</strong> Explicaciones simples, analogias, muchos ejemplos</li>
+      <li><strong>Intermedio:</strong> Balance entre teoria y practica</li>
+      <li><strong>Avanzado:</strong> Terminologia tecnica, conexiones interdisciplinarias, casos especiales</li>
+    </ul>
+
+    <h3>Study Buddy</h3>
+    <p>Fuera de un proyecto especifico, puedes usar el Study Buddy para consultas rapidas sobre cualquier tema academico. Accedelo desde el icono de estrella flotante.</p>
+
+    <div class="tip">
+      <strong>Tip:</strong> Puedes exportar la conversacion completa a Word o PDF desde el menu del chat.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="rutas">Rutas de Estudio (Study Paths)</h2>
+    <p>Las Rutas de Estudio son el metodo guiado de Conniku para dominar una materia paso a paso.</p>
+
+    <h3>Las 5 fases</h3>
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Documentos</strong>
+        <p>Sube y revisa tu material de estudio.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Guia de Estudio</strong>
+        <p>La IA genera una guia completa con conceptos clave, formulas y ejemplos.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Flashcards</strong>
+        <p>Memoriza conceptos clave con tarjetas de volteo 3D.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <strong>Quiz</strong>
+        <p>Evalua tu comprension con preguntas de opcion multiple.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">5</div>
+      <div class="step-text">
+        <strong>Plan de Estudio</strong>
+        <p>Obtiene un cronograma personalizado para repasar antes del examen.</p>
+      </div>
+    </div>
+
+    <div class="example">
+      <strong>Modo Maraton:</strong> Activa el modo maraton para recorrer las 5 fases de corrido en una sola sesion. Ideal para el dia antes del examen.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="quizzes">Quizzes y Flashcards</h2>
+
+    <h3>Quizzes</h3>
+    <p>Genera evaluaciones automaticas desde tus documentos o elige quizzes predefinidos.</p>
+    <ul>
+      <li>3 niveles de dificultad: Facil, Medio, Dificil</li>
+      <li>La IA detecta tus temas debiles y enfoca las preguntas ahi</li>
+      <li>Cada pregunta incluye explicacion de la respuesta correcta</li>
+      <li>Historial completo de tus resultados con grafico de mejora</li>
+    </ul>
+
+    <h3>Flashcards</h3>
+    <p>Crea mazos de tarjetas de memorizacion con efecto 3D:</p>
+    <ul>
+      <li>Generadas automaticamente por IA desde tus documentos</li>
+      <li>Tambien puedes crear mazos manuales</li>
+      <li>Voltea las tarjetas tocando o haciendo clic</li>
+      <li>Marca como "Sabia" o "No sabia" para trackear tu progreso</li>
+    </ul>
+
+    <!-- ============================================ -->
+    <h2 id="salas">Salas de Estudio</h2>
+    <p>Estudia en grupo en tiempo real con tus companeros.</p>
+
+    <h3>Como funciona</h3>
+    <div class="step-box">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <strong>Crea o unete a una sala</strong>
+        <p>Define el tema, descripcion y maximo de participantes.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <strong>Estudia con el Timer Pomodoro</strong>
+        <p>25 minutos de estudio concentrado + 5 minutos de descanso. El timer es compartido.</p>
+      </div>
+    </div>
+    <div class="step-box">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <strong>Chatea con tu grupo</strong>
+        <p>Discute dudas, comparte recursos y motivense mutuamente.</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <strong>Tip:</strong> Las estadisticas de estudio se guardan automaticamente. Puedes ver cuantas horas has estudiado en grupo en tu historial.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="cursos">Cursos y Certificados</h2>
+    <p>Cursos estructurados con lecciones, ejercicios y evaluaciones.</p>
+
+    <h3>Inscribete en un curso</h3>
+    <ol>
+      <li>Ve a <strong>Cursos</strong> en el menu lateral</li>
+      <li>Explora por categoria o busca por nombre</li>
+      <li>Haz clic en "Inscribirme" para comenzar</li>
+    </ol>
+
+    <h3>Progreso</h3>
+    <ul>
+      <li>Completa lecciones marcandolas como finalizadas</li>
+      <li>Resuelve ejercicios (nunca se repiten, siempre son nuevos)</li>
+      <li>Aprueba el quiz final del curso</li>
+      <li>Al completar, obtendras un <strong>certificado descargable</strong></li>
+    </ul>
+
+    <div class="example">
+      <strong>Ejemplo:</strong> Juan se inscribe en "Introduccion a Python". Completa 8 lecciones, resuelve 15 ejercicios unicos y aprueba el quiz final con 85%. Descarga su certificado y lo agrega a su CV de Conniku.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="biblioteca">Biblioteca Digital</h2>
+    <p>Accede a una coleccion de libros academicos gratuitos organizados por categoria.</p>
+    <ul>
+      <li>Busca por titulo, autor o categoria</li>
+      <li>Filtra por carrera o area de estudio</li>
+      <li>Descarga libros directamente</li>
+      <li>Valora los libros para ayudar a otros estudiantes</li>
+    </ul>
+
+    <!-- ============================================ -->
+    <h2 id="calendario">Calendario</h2>
+    <p>Organiza tu vida academica con el calendario integrado.</p>
+
+    <h3>Tipos de eventos</h3>
+    <table class="shortcut-table">
+      <tr><th>Tipo</th><th>Ejemplo</th></tr>
+      <tr><td>Tarea</td><td>"Entregar informe de Quimica"</td></tr>
+      <tr><td>Examen</td><td>"Prueba 2 — Estadistica"</td></tr>
+      <tr><td>Deadline</td><td>"Cierre inscripcion beca"</td></tr>
+      <tr><td>Sesion de estudio</td><td>"Repaso grupal Calculo"</td></tr>
+    </table>
+
+    <h3>Vistas</h3>
+    <ul>
+      <li><strong>Mes:</strong> Cuadricula mensual con puntos de colores por evento</li>
+      <li><strong>Lista:</strong> Listado cronologico de proximos eventos</li>
+    </ul>
+
+    <div class="tip">
+      <strong>Tip:</strong> Haz clic en un dia del calendario para crear un evento rapido con la fecha pre-seleccionada.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="feed">Feed Social</h2>
+    <p>Comparte contenido academico, preguntas, logros y conecta con otros estudiantes.</p>
+
+    <h3>Publicar</h3>
+    <ul>
+      <li>Escribe textos con formato</li>
+      <li>Crea encuestas para consultar opiniones</li>
+      <li>Comparte logros y certificados</li>
+      <li>Usa hashtags para categorizar (#calculo, #udec, #psu)</li>
+    </ul>
+
+    <h3>Ordenamiento</h3>
+    <table class="shortcut-table">
+      <tr><th>Modo</th><th>Descripcion</th></tr>
+      <tr><td><strong>Para ti</strong></td><td>Algoritmo inteligente que prioriza contenido relevante para ti</td></tr>
+      <tr><td><strong>Recientes</strong></td><td>Publicaciones mas nuevas primero</td></tr>
+      <tr><td><strong>Populares</strong></td><td>Publicaciones con mas interacciones</td></tr>
+    </table>
+
+    <h3>Reacciones disponibles</h3>
+    <p>Me gusta, Me encanta, Util, Brillante, Chistoso, Pensativo</p>
+
+    <h3>Tendencias</h3>
+    <p>En la seccion de tendencias veras las publicaciones mas populares de tu carrera en las ultimas 72 horas.</p>
+
+    <!-- ============================================ -->
+    <h2 id="comunidades">Comunidades</h2>
+    <p>Espacios tematicos para grupos de estudio, carreras, universidades y mas.</p>
+
+    <h3>Tipos de comunidad</h3>
+    <ul>
+      <li><strong>Por materia:</strong> "Calculo I — USACH"</li>
+      <li><strong>Por carrera:</strong> "Ingenieria Civil Informatica"</li>
+      <li><strong>Por universidad:</strong> "Universidad de Chile"</li>
+      <li><strong>Grupos de estudio:</strong> "Grupo Tesis 2026"</li>
+      <li><strong>Hobbies:</strong> "Fotografia Universitaria"</li>
+      <li><strong>General:</strong> Temas de interes general</li>
+    </ul>
+
+    <h3>Roles</h3>
+    <table class="shortcut-table">
+      <tr><th>Rol</th><th>Permisos</th></tr>
+      <tr><td>Miembro</td><td>Publicar, comentar, reaccionar</td></tr>
+      <tr><td>Moderador</td><td>+ Fijar posts, eliminar contenido, moderar</td></tr>
+      <tr><td>Admin</td><td>+ Gestionar miembros, editar comunidad, asignar roles</td></tr>
+    </table>
+
+    <!-- ============================================ -->
+    <h2 id="mensajes">Mensajes</h2>
+    <p>Sistema de mensajeria directa con privacidad integrada.</p>
+
+    <h3>Pestanas</h3>
+    <ul>
+      <li><strong>Chats:</strong> Conversaciones activas</li>
+      <li><strong>Amigos:</strong> Mensajes de amigos</li>
+      <li><strong>Grupos:</strong> Chats grupales de estudio</li>
+      <li><strong>Solicitudes:</strong> Mensajes de personas que no son tus amigos</li>
+    </ul>
+
+    <h3>Solicitudes de mensaje</h3>
+    <p>Si alguien que no es tu amigo te escribe, el mensaje llega como "solicitud". Puedes:</p>
+    <ul>
+      <li><strong>Aceptar:</strong> Permite la conversacion (no crea amistad automatica)</li>
+      <li><strong>Rechazar:</strong> Elimina la solicitud</li>
+    </ul>
+
+    <div class="warning">
+      <strong>Importante:</strong> Aceptar una solicitud de mensaje NO los hace amigos. Para ser amigos, debes enviar una solicitud de amistad por separado.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="amigos">Amigos</h2>
+    <p>Conecta con otros estudiantes de tu universidad o carrera.</p>
+    <ul>
+      <li><strong>Buscar:</strong> Encuentra estudiantes por nombre, username, universidad o carrera</li>
+      <li><strong>Solicitudes:</strong> Envia y recibe solicitudes de amistad</li>
+      <li><strong>Sugerencias:</strong> Conniku te sugiere personas que podrias conocer</li>
+      <li><strong>Bloqueo:</strong> Bloquea usuarios que no quieras que te contacten</li>
+    </ul>
+
+    <!-- ============================================ -->
+    <h2 id="gamificacion">Gamificacion</h2>
+    <p>Convierte tu estudio en un juego con recompensas reales.</p>
+
+    <h3>Sistema de XP</h3>
+    <p>Gana puntos de experiencia por cada accion:</p>
+    <ul>
+      <li>Completar sesion de estudio: +10 XP</li>
+      <li>Resolver quiz: +15 XP</li>
+      <li>Publicar en el feed: +5 XP</li>
+      <li>Completar desafio diario: +20 XP</li>
+    </ul>
+
+    <h3>Insignias (15+)</h3>
+    <p>Desbloquea insignias por logros especificos:</p>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <h4>Racha de Fuego</h4>
+        <p>Estudia 7 dias seguidos</p>
+      </div>
+      <div class="feature-card">
+        <h4>Maestro Quiz</h4>
+        <p>Aprueba 50 quizzes</p>
+      </div>
+      <div class="feature-card">
+        <h4>Lider Social</h4>
+        <p>Obtiene 100 reacciones en tus posts</p>
+      </div>
+      <div class="feature-card">
+        <h4>Maraton de Estudio</h4>
+        <p>Estudia 5+ horas en un dia</p>
+      </div>
+    </div>
+
+    <h3>Liga Semanal</h3>
+    <p>Cada semana compites contra otros estudiantes por XP. Los mejores 3 suben a la liga siguiente. Los ultimos 3 bajan.</p>
+
+    <h3>Desafios Diarios</h3>
+    <p>3 desafios nuevos cada dia. Completalos todos para obtener bonus XP.</p>
+
+    <!-- ============================================ -->
+    <h2 id="eventos">Eventos</h2>
+    <p>Crea y descubre eventos de estudio, tutorias y actividades sociales.</p>
+    <ul>
+      <li><strong>Sesiones de estudio:</strong> Repasos grupales</li>
+      <li><strong>Preparacion examen:</strong> Estudio intensivo pre-prueba</li>
+      <li><strong>Tutorias:</strong> Sesiones con tutores</li>
+      <li><strong>Social:</strong> Actividades extracurriculares</li>
+    </ul>
+    <p>Cada evento puede tener un link de reunion (Zoom, Google Meet, etc.) y sistema RSVP.</p>
+
+    <!-- ============================================ -->
+    <h2 id="perfil-cv">Perfil y CV</h2>
+
+    <h3>Perfil publico</h3>
+    <p>Tu perfil muestra:</p>
+    <ul>
+      <li>Foto de perfil y portada personalizada por area</li>
+      <li>Universidad y carrera</li>
+      <li>Insignias y nivel</li>
+      <li>Publicaciones en tu muro</li>
+      <li>Amigos en comun</li>
+      <li>Ultima conexion</li>
+    </ul>
+
+    <h3>CV Profesional</h3>
+    <p>Construye tu curriculum vitae directamente en Conniku:</p>
+    <ul>
+      <li><strong>Experiencia laboral</strong> — cargos, empresas, fechas</li>
+      <li><strong>Educacion</strong> — carrera, universidad, ano</li>
+      <li><strong>Habilidades</strong> — con endorsements de otros usuarios</li>
+      <li><strong>Certificados</strong> — los que obtengas en cursos se agregan automaticamente</li>
+      <li><strong>Idiomas</strong> — nivel de dominio</li>
+    </ul>
+
+    <h4>Visibilidad del CV</h4>
+    <table class="shortcut-table">
+      <tr><th>Opcion</th><th>Quien puede verlo</th></tr>
+      <tr><td>Publico</td><td>Cualquier usuario de Conniku</td></tr>
+      <tr><td>Solo reclutadores</td><td>Empresas y reclutadores verificados</td></tr>
+      <tr><td>Privado</td><td>Solo tu</td></tr>
+    </table>
+
+    <div class="tip">
+      <strong>Tip:</strong> Descarga tu CV en formato profesional PDF listo para enviar a empleadores.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="bolsa-trabajo">Bolsa de Trabajo</h2>
+    <p>Busca oportunidades laborales sin salir de Conniku.</p>
+
+    <h3>Para estudiantes</h3>
+    <ul>
+      <li>Busca ofertas por area, tipo de contrato, ubicacion</li>
+      <li><strong>Quick Apply:</strong> Postula con un clic usando los datos de tu CV</li>
+      <li>Indicador de compatibilidad (Alta / Media / Baja)</li>
+      <li>Seguimiento de postulaciones en tiempo real</li>
+    </ul>
+
+    <h3>Para reclutadores</h3>
+    <ul>
+      <li>Publica ofertas laborales</li>
+      <li>Busca candidatos por carrera, habilidades, universidad</li>
+      <li>Revisa postulaciones y gestiona el proceso</li>
+    </ul>
+
+    <!-- ============================================ -->
+    <h2 id="tutorias">Tutorias y Mentorias</h2>
+
+    <h3>Tutorias</h3>
+    <p>Encuentra tutores para clases particulares:</p>
+    <ul>
+      <li>Directorio con filtros: materia, precio, horarios, valoraciones</li>
+      <li>Reserva de clases con pago integrado</li>
+      <li>Chat privado con tu tutor</li>
+      <li>Evaluaciones y resenas post-clase</li>
+    </ul>
+
+    <h3>Mentorias</h3>
+    <p>Conecta con mentores para guia profesional y academica:</p>
+    <ul>
+      <li>Busca mentores por area de experiencia</li>
+      <li>Envio solicitudes de mentoria</li>
+      <li>Seguimiento de la relacion mentor-mentee</li>
+    </ul>
+
+    <div class="example">
+      <strong>Ejemplo:</strong> Sofia busca un tutor de Estadistica. Filtra por "precio menor a $15.000/hr" y "rating 4.5+". Reserva una clase, paga en linea y se conecta por videollamada. Despues le deja una resena de 5 estrellas.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="marketplace">Marketplace</h2>
+    <p>Comparte y descubre apuntes, resumenes y material de estudio.</p>
+    <ul>
+      <li>Sube tus apuntes para ayudar a otros</li>
+      <li>Descarga material de otras carreras y universidades</li>
+      <li>Sistema de valoracion (1-5 estrellas)</li>
+      <li>Busqueda por universidad, carrera o materia</li>
+    </ul>
+
+    <!-- ============================================ -->
+    <h2 id="suscripciones">Planes y Suscripciones</h2>
+
+    <table class="shortcut-table">
+      <tr><th>Caracteristica</th><th>Free</th><th>Pro</th><th>Max</th></tr>
+      <tr><td>Chat IA (consultas/dia)</td><td>Limitado</td><td>Ampliado</td><td>Ilimitado</td></tr>
+      <tr><td>Generacion de quizzes</td><td>Basico</td><td>Completo</td><td>Completo</td></tr>
+      <tr><td>Study Paths</td><td>1 activo</td><td>Ilimitados</td><td>Ilimitados</td></tr>
+      <tr><td>Marketplace</td><td>Descargas limitadas</td><td>Ilimitado</td><td>Ilimitado</td></tr>
+      <tr><td>Soporte prioritario</td><td>No</td><td>Si</td><td>Si</td></tr>
+    </table>
+
+    <h3>Metodos de pago</h3>
+    <ul>
+      <li><strong>Mercado Pago</strong> — Tarjeta de debito/credito chilena</li>
+      <li><strong>PayPal</strong> — Para pagos internacionales</li>
+      <li><strong>Tarjeta directa</strong> — Visa, Mastercard</li>
+    </ul>
+
+    <div class="tip">
+      <strong>Tip:</strong> El plan se puede cambiar en cualquier momento desde Configuracion > Suscripcion. Los upgrades se prorratean.
+    </div>
+
+    <!-- ============================================ -->
+    <h2 id="configuracion">Configuracion</h2>
+    <p>Personaliza tu experiencia desde tu perfil:</p>
+
+    <table class="shortcut-table">
+      <tr><th>Seccion</th><th>Opciones</th></tr>
+      <tr><td>Perfil</td><td>Nombre, foto, bio, universidad, carrera</td></tr>
+      <tr><td>Academico</td><td>Ano de ingreso, semestre, materias</td></tr>
+      <tr><td>Apariencia</td><td>Tema oscuro/claro, color de acento</td></tr>
+      <tr><td>Notificaciones</td><td>Email, push, tipos de alertas</td></tr>
+      <tr><td>Seguridad</td><td>Cambiar contrasena, cerrar sesion</td></tr>
+      <tr><td>Email</td><td>Cambiar correo, verificacion</td></tr>
+      <tr><td>CV</td><td>Experiencia, educacion, habilidades</td></tr>
+    </table>
+
+    <!-- ============================================ -->
+    <h2 id="soporte">Soporte y Contacto</h2>
+
+    <h3>Chat de soporte (Konni)</h3>
+    <p>Haz clic en el icono de chat azul en la esquina inferior derecha. Konni es nuestra IA de soporte que conoce toda la plataforma y te puede ayudar con:</p>
+    <ul>
+      <li>Como usar cada funcion</li>
+      <li>Problemas tecnicos</li>
+      <li>Preguntas sobre planes</li>
+      <li>Informacion sobre Conniku SpA</li>
+    </ul>
+
+    <h3>Contacto directo</h3>
+    <table class="shortcut-table">
+      <tr><th>Canal</th><th>Email</th><th>Para que</th></tr>
+      <tr><td>Soporte</td><td>contacto@conniku.com</td><td>Problemas tecnicos, bugs, consultas</td></tr>
+      <tr><td>CEO</td><td>ceo@conniku.com</td><td>Sugerencias, alianzas, feedback directo</td></tr>
+    </table>
+
+    <h3>Formulario de contacto</h3>
+    <p>Tambien puedes enviar mensajes desde tu perfil > "Contactar a Conniku" o desde la pagina de inicio.</p>
+
+    <!-- ============================================ -->
+    <h2 id="faq">Preguntas Frecuentes</h2>
+
+    <h3>Es gratis?</h3>
+    <p>Si. El plan Free te da acceso a la mayoria de funciones con limites de uso diario en la IA. Para uso ilimitado, puedes actualizar a Pro o Max.</p>
+
+    <h3>Funciona en celular?</h3>
+    <p>Si. Conniku es una Progressive Web App (PWA). Abre conniku.com en Chrome y agregala a tu pantalla de inicio. Funciona como una app nativa.</p>
+
+    <h3>Mis documentos son privados?</h3>
+    <p>Si. Los documentos que subes a tus proyectos son privados y solo tu puedes acceder a ellos. Solo el contenido que publiques en el feed o comunidades es visible para otros.</p>
+
+    <h3>Puedo usar Conniku sin ser de Chile?</h3>
+    <p>Conniku esta enfocada en estudiantes chilenos, pero cualquier persona puede registrarse. Algunas funciones como la bolsa de trabajo estan centradas en Chile.</p>
+
+    <h3>Como reporto un bug?</h3>
+    <p>Ve a tu perfil > "Sugerencias" o escribe directamente a contacto@conniku.com. Incluye capturas de pantalla si es posible.</p>
+
+    <h3>Puedo ser tutor en Conniku?</h3>
+    <p>Si. Ve a la seccion de Tutorias y postula como tutor. Necesitaras completar tu perfil y ser aprobado por el equipo.</p>
+
+    <h3>Como descargo mi certificado?</h3>
+    <p>Ve a Cursos > Mis Certificados. Haz clic en "Descargar" para obtener tu certificado en formato imprimible.</p>
+
+    <h3>Puedo eliminar mi cuenta?</h3>
+    <p>Si. Ve a Configuracion > Seguridad > "Eliminar cuenta". Este proceso es irreversible.</p>
+
+    <div style="margin-top:60px;padding:32px;background:linear-gradient(135deg,#2D62C8,#4f8cff);border-radius:14px;text-align:center;color:#fff">
+      <h2 style="color:#fff;border:none;margin:0 0 8px;font-size:22px">Necesitas mas ayuda?</h2>
+      <p style="color:rgba(255,255,255,0.9);margin:0 0 20px;font-size:15px">Nuestro equipo esta disponible para ayudarte</p>
+      <a href="mailto:contacto@conniku.com" style="display:inline-block;background:#fff;color:#2563EB;padding:12px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px">Contactar Soporte</a>
+    </div>
+
+    <div style="text-align:center;margin-top:40px;padding:20px;color:#B0B7C3;font-size:11px">
+      <p>&copy; 2026 Conniku SpA. Todos los derechos reservados.</p>
+      <p>conniku.com | contacto@conniku.com</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

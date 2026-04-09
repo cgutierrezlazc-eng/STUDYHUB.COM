@@ -104,6 +104,19 @@ class AIEngine:
         )
         return response.content[0].text
 
+    def _call_claude_chat(self, system: str, messages: list, model: str = "claude-haiku-4-5-20251001") -> str:
+        """Call Claude with full conversation history."""
+        if not self.client:
+            return "⚠️ API key no configurada. Configura tu ANTHROPIC_API_KEY en ~/.conniku/config.json"
+
+        response = self.client.messages.create(
+            model=model,
+            max_tokens=2048,
+            system=system,
+            messages=messages,
+        )
+        return response.content[0].text
+
     def chat(self, project_id: str, message: str, language: str = "es", gender: str = "unspecified", language_skill: str = "intermediate", socratic: bool = False) -> str:
         context = self._get_context(project_id, message)
 

@@ -377,7 +377,7 @@ async def _process_payment(payment_id: str, db: Session):
         <p><strong>Proveedor:</strong> Mercado Pago</p>
         <p style="color:#6B7280;font-size:12px">{datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}</p>
         """
-        html = _email_template("💰 Nuevo pago — Mercado Pago", ceo_body, "Ver Dashboard", f"{FRONTEND_URL}/ceo")
+        html = _email_template("💰 Nuevo pago — Mercado Pago", ceo_body, "Ver Dashboard", f"{FRONTEND_URL}/ceo", sender="ceo")
         _send_email_async(CEO_EMAIL, f"💰 Pago: {user.first_name} — ${amount:,.0f} {currency}", html, email_type="payment_webhook")
 
         print(f"[MP] Payment approved: user={user_id} plan={plan_key} amount={amount} {currency}")
