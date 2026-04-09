@@ -62,6 +62,30 @@ Before EVERY action, Claude MUST complete these checks silently. If any check fa
 - You feel uncertain but are about to present something as fact
 - You're adding code that goes beyond what was explicitly requested
 
+## Workflow Protocol (MANDATORY)
+
+### Planificar antes de ejecutar
+- Tareas no-triviales: usar Plan Mode ANTES de escribir codigo
+- Cuando el plan este solido, preguntar a Cristian si proceder con ejecucion
+- No escribir codigo sin plan aprobado en tareas que toquen mas de 2 archivos
+
+### Comunicacion
+- Despues de cada instruccion: hacer preguntas con OPCIONES SELECCIONABLES
+- Si la instruccion es vaga: preguntar hasta que sea concreta
+- Un mensaje = un objetivo claro
+
+### Contexto
+- Usar /compact despues de completar cada tarea confirmada
+- No tocar nada que no haya sido explicitamente solicitado
+- Lo que funciona NO SE TOCA
+
+### Errores
+- Cada error se registra abajo con fecha y prevencion
+- No repetir un error documentado
+
+## Error Log
+<!-- YYYY-MM-DD | Que paso | Como evitarlo -->
+
 ## General Rules
 - Keep commits atomic and descriptive
 - Do not add features not explicitly requested
