@@ -43,7 +43,9 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Decode keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/conniku-release.keystore
+        run: |
+          printf '%s' '${{ secrets.KEYSTORE_BASE64 }}' | base64 -d > android/conniku-release.keystore
+          echo "Keystore size: $(wc -c < android/conniku-release.keystore) bytes"
 
       - name: Make gradlew executable
         run: chmod +x android/gradlew
