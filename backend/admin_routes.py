@@ -171,6 +171,112 @@ def delete_user(user_id: str, admin: User = Depends(require_admin), db: Session 
     return {"deleted": True, "username": username}
 
 
+# ─── Purge Demo Data ──────────────────────────────────────────
+
+KEEP_EMAILS = {
+    "ceo@conniku.com",          # CEO
+    "vanesa",                    # partial match
+    "jose leiva", "joseleiva",   # partial match
+    "margarita",                 # partial match
+    "jennifer",                  # partial match
+}
+
+def _should_keep(user) -> bool:
+    """Check if user should be kept during purge."""
+    if user.role == "owner":
+        return True
+    email = (user.email or "").lower()
+    fname = (user.first_name or "").lower()
+    lname = (user.last_name or "").lower()
+    full = f"{fname} {lname}"
+    for k in KEEP_EMAILS:
+        if k in email or k in fname or k in lname or k in full:
+            return True
+    return False
+
+
+@router.post("/purge-demo-data")
+def purge_demo_data(admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Delete ALL users except CEO, Vanesa, Jose Leiva, Margarita, Jennifer. Owner only."""
+    if admin.role != "owner":
+        raise HTTPException(403, "Solo el propietario puede purgar datos")
+
+    from database import (
+        WallPost, PostLike, PostComment, Friendship,
+        ConversationParticipant, Message, UserCourseProgress,
+        StudentCV, PushSubscription, UserExerciseHistory,
+    )
+    from hr_routes import Employee as HREmployee, EmployeeDocument as HREmployeeDocument, PayrollRecord as HRPayrollRecord
+
+    all_users = db.query(User).all()
+    deleted = []
+    kept = []
+
+    for user in all_users:
+        if _should_keep(user):
+            kept.append({"id": user.id, "email": user.email, "name": f"{user.first_name} {user.last_name}"})
+            continue
+
+        uid = user.id
+        # Clean related data
+        try:
+            db.query(PostLike).filter(PostLike.user_id == uid).delete()
+            db.query(PostComment).filter(PostComment.user_id == uid).delete()
+            db.query(WallPost).filter((WallPost.author_id == uid) | (WallPost.wall_owner_id == uid)).delete(synchronize_session=False)
+            db.query(Friendship).filter((Friendship.user_id == uid) | (Friendship.friend_id == uid)).delete(synchronize_session=False)
+            db.query(ConversationParticipant).filter(ConversationParticipant.user_id == uid).delete()
+            db.query(Message).filter(Message.sender_id == uid).delete()
+            db.query(UserCourseProgress).filter(UserCourseProgress.user_id == uid).delete()
+            db.query(StudentCV).filter(StudentCV.user_id == uid).delete()
+            db.query(PushSubscription).filter(PushSubscription.user_id == uid).delete()
+            db.query(UserExerciseHistory).filter(UserExerciseHistory.user_id == uid).delete()
+        except Exception:
+            pass
+
+        deleted.append({"id": uid, "email": user.email, "name": f"{user.first_name} {user.last_name}"})
+        db.delete(user)
+
+    # Also clean orphan HR employees not linked to kept users
+    kept_ids = {u["id"] for u in kept}
+    all_hr = db.query(HREmployee).all()
+    deleted_employees = []
+    for emp in all_hr:
+        # Check if employee name matches kept list
+        fname = (emp.first_name or "").lower()
+        lname = (emp.last_name or "").lower()
+        full = f"{fname} {lname}"
+        keep_emp = emp.user_id in kept_ids
+        if not keep_emp:
+            for k in KEEP_EMAILS:
+                if k in fname or k in lname or k in full:
+                    keep_emp = True
+                    break
+        if not keep_emp:
+            db.query(HREmployeeDocument).filter(HREmployeeDocument.employee_id == emp.id).delete()
+            db.query(HRPayrollRecord).filter(HRPayrollRecord.employee_id == emp.id).delete()
+            deleted_employees.append(f"{emp.first_name} {emp.last_name}")
+            db.delete(emp)
+
+    # Clean moderation logs for deleted users
+    try:
+        db.query(ModerationLog).filter(
+            ModerationLog.user_id.in_([d["id"] for d in deleted])
+        ).delete(synchronize_session=False)
+    except Exception:
+        pass
+
+    db.commit()
+
+    return {
+        "purged": True,
+        "deleted_users": len(deleted),
+        "deleted_employees": len(deleted_employees),
+        "kept_users": kept,
+        "deleted_list": deleted,
+        "deleted_employee_names": deleted_employees,
+    }
+
+
 # ─── Flagged Messages ───────────────────────────────────────────
 
 @router.get("/messages/flagged")
