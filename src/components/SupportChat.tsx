@@ -71,6 +71,8 @@ function renderMarkdown(text: string): string {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+  // Headers ## → bold (strip # prefix)
+  s = s.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   s = s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
   s = s.replace(/^\d+\. (.+)$/gm, '&bull;&nbsp;$1')
