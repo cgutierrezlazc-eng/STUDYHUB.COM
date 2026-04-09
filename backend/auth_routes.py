@@ -527,7 +527,7 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
                     db.commit()
     except Exception as e:
         print(f"[Auto-friend CEO] Error: {e}")
-        # Non-critical, don't fail registration
+        db.rollback()
 
     # Send verification email
     try:
@@ -588,7 +588,7 @@ Estamos felices de tenerte aqu\u00ed. Conniku es tu plataforma para estudiar, co
         msg = Message(
             id=_gen_id(),
             conversation_id=conv.id,
-            sender_id=None,  # System message
+            sender_id=user.id,  # Changed from None to user.id to prevent IntegrityError
             content=welcome_content,
             message_type="system",
         )
@@ -596,7 +596,7 @@ Estamos felices de tenerte aqu\u00ed. Conniku es tu plataforma para estudiar, co
         db.commit()
     except Exception as e:
         logger.warning(f"Welcome message failed: {e}")
-        pass
+        db.rollback()
 
     token = create_access_token(user.id)
     try:
