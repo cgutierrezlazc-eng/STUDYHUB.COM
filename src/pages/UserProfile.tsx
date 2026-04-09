@@ -70,7 +70,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'skills' | 'portfolio' | 'publications' | 'servicios' | 'tutorias'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
@@ -149,6 +149,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [studentClassFilter, setStudentClassFilter] = useState<'upcoming' | 'past' | 'all'>('all')
   const [mutualFriends, setMutualFriends] = useState<any[]>([])
   const [showMutualList, setShowMutualList] = useState(false)
+  const [skills, setSkills] = useState<any[]>([])
+  const [skillsLoading, setSkillsLoading] = useState(false)
+  const [newSkillName, setNewSkillName] = useState('')
+  const [projects, setProjects] = useState<any[]>([])
+  const [projectsLoading, setProjectsLoading] = useState(false)
+  const [publications, setPublications] = useState<any[]>([])
+  const [publicationsLoading, setPublicationsLoading] = useState(false)
+  const [showAddProject, setShowAddProject] = useState(false)
+  const [showAddPublication, setShowAddPublication] = useState(false)
+  const [newProject, setNewProject] = useState({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
+  const [newPublication, setNewPublication] = useState({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '', doi: '' })
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -196,6 +207,22 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setCompletedCourses(data || [])
     } catch (err) { console.error('Failed to load courses:', err) }
     finally { setCoursesLoading(false) }
+  }
+
+  const loadSkills = async () => {
+    setSkillsLoading(true)
+    try { const data = await api.getUserSkills(userId); setSkills(data) } catch {}
+    setSkillsLoading(false)
+  }
+  const loadProjects = async () => {
+    setProjectsLoading(true)
+    try { const data = await api.getUserProjects(userId); setProjects(data) } catch {}
+    setProjectsLoading(false)
+  }
+  const loadPublications = async () => {
+    setPublicationsLoading(true)
+    try { const data = await api.getUserPublications(userId); setPublications(data) } catch {}
+    setPublicationsLoading(false)
   }
 
   const loadProfile = async () => {
@@ -769,6 +796,25 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
+      {/* Stats bar */}
+      {profile && (
+        <div style={{ display: 'flex', gap: 0, background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius)', marginBottom: 2, overflow: 'hidden' }}>
+          {[
+            { label: 'Posts', value: posts.length, icon: '📝' },
+            { label: 'Amigos', value: profile.friendsCount || 0, icon: '👥' },
+            { label: 'Cursos', value: profile.coursesCompleted || 0, icon: '🎓' },
+            { label: 'Skills', value: skills.length, icon: '⚡' },
+            { label: 'Días', value: profile.studyDays || 0, icon: '📅' },
+          ].map((stat, i) => (
+            <div key={i} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: i < 4 ? '1px solid var(--border-subtle)' : 'none', cursor: 'default' }}>
+              <div style={{ fontSize: 16 }}>{stat.icon}</div>
+              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{stat.value.toLocaleString()}</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Profile Tabs — outside header card, LinkedIn style */}
       <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
         <button className={`fb-tab ${activeTab === 'wall' ? 'active' : ''}`} onClick={() => setActiveTab('wall')}>
@@ -785,6 +831,15 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </button>
         <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
           {t('userprofile.tabCourses')}
+        </button>
+        <button className={`fb-tab ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => { setActiveTab('skills'); loadSkills() }}>
+          ⚡ Habilidades
+        </button>
+        <button className={`fb-tab ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => { setActiveTab('portfolio'); loadProjects() }}>
+          🗂 Portfolio
+        </button>
+        <button className={`fb-tab ${activeTab === 'publications' ? 'active' : ''}`} onClick={() => { setActiveTab('publications'); loadPublications() }}>
+          📚 Publicaciones
         </button>
         <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
           {t('userprofile.tabCV')}
@@ -1424,6 +1479,258 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   })}
                 </div>
               </>
+            )}
+          </div>
+        )}
+
+        {/* ─── Skills Tab ─── */}
+        {activeTab === 'skills' && (
+          <div className="card" style={{ padding: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <h3 style={{ margin: 0, fontSize: 18 }}>⚡ Habilidades &amp; Competencias</h3>
+              {isOwn && (
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    value={newSkillName}
+                    onChange={e => setNewSkillName(e.target.value)}
+                    onKeyDown={async e => {
+                      if (e.key === 'Enter' && newSkillName.trim()) {
+                        try {
+                          const s = await api.addSkill(userId, newSkillName.trim())
+                          setSkills(prev => [...prev, { ...s, endorsedByMe: false }])
+                          setNewSkillName('')
+                        } catch {}
+                      }
+                    }}
+                    placeholder="Agregar habilidad... (Enter)"
+                    style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)', borderRadius: 20, padding: '6px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', width: 200 }}
+                  />
+                </div>
+              )}
+            </div>
+            {skillsLoading ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {[...Array(8)].map((_, i) => <div key={i} style={{ height: 36, width: 120, borderRadius: 20, background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+              </div>
+            ) : skills.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
+                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin habilidades aún</div>
+                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus skills para que otros puedan respaldarte</div>}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {skills.map((skill: any) => (
+                  <div key={skill.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: skill.endorsedByMe ? 'rgba(45,98,200,0.12)' : 'var(--bg-hover)', border: `1px solid ${skill.endorsedByMe ? 'var(--accent)' : 'var(--border-subtle)'}`, borderRadius: 24, padding: '8px 16px', transition: 'all 0.2s' }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{skill.skillName}</span>
+                    {skill.endorsementCount > 0 && (
+                      <span style={{ background: 'var(--accent)', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>{skill.endorsementCount}</span>
+                    )}
+                    {!isOwn && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await api.endorseSkill(skill.id)
+                            setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, endorsedByMe: res.endorsed, endorsementCount: s.endorsementCount + (res.endorsed ? 1 : -1) } : s))
+                          } catch {}
+                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: 0, color: skill.endorsedByMe ? 'var(--accent)' : 'var(--text-muted)' }}
+                        title={skill.endorsedByMe ? 'Quitar respaldo' : 'Respaldar'}
+                      >
+                        👍
+                      </button>
+                    )}
+                    {isOwn && (
+                      <button
+                        onClick={async () => {
+                          try { await api.removeSkill(skill.id); setSkills(prev => prev.filter(s => s.id !== skill.id)) } catch {}
+                        }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)', padding: 0 }}
+                      >✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Portfolio Tab ─── */}
+        {activeTab === 'portfolio' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 18 }}>🗂 Portfolio de Proyectos</h3>
+              {isOwn && (
+                <button className="btn btn-primary btn-sm" onClick={() => setShowAddProject(true)}>+ Agregar Proyecto</button>
+              )}
+            </div>
+
+            {showAddProject && isOwn && (
+              <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--accent)' }}>
+                <h4 style={{ margin: '0 0 16px 0' }}>Nuevo Proyecto</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <input className="form-input" placeholder="Título del proyecto *" value={newProject.title} onChange={e => setNewProject(p => ({ ...p, title: e.target.value }))} />
+                  <input className="form-input" placeholder="URL del proyecto" value={newProject.projectUrl} onChange={e => setNewProject(p => ({ ...p, projectUrl: e.target.value }))} />
+                </div>
+                <textarea className="form-input" rows={3} placeholder="Descripción..." value={newProject.description} onChange={e => setNewProject(p => ({ ...p, description: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <input className="form-input" placeholder="Tecnologías (ej: React, Python)" value={newProject.techStack} onChange={e => setNewProject(p => ({ ...p, techStack: e.target.value }))} />
+                  <select className="form-input" value={newProject.category} onChange={e => setNewProject(p => ({ ...p, category: e.target.value }))}>
+                    <option value="academic">Académico</option>
+                    <option value="personal">Personal</option>
+                    <option value="work">Laboral</option>
+                  </select>
+                  <input className="form-input" type="number" placeholder="Año" value={newProject.year} onChange={e => setNewProject(p => ({ ...p, year: parseInt(e.target.value) || new Date().getFullYear() }))} />
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowAddProject(false)}>Cancelar</button>
+                  <button className="btn btn-primary btn-sm" onClick={async () => {
+                    if (!newProject.title.trim()) return
+                    try {
+                      const tech = newProject.techStack.split(',').map(s => s.trim()).filter(Boolean)
+                      const res = await api.addPortfolioProject(userId, { ...newProject, techStack: tech })
+                      setProjects(prev => [{ ...res, techStack: tech, description: newProject.description, projectUrl: newProject.projectUrl, category: newProject.category, year: newProject.year }, ...prev])
+                      setShowAddProject(false)
+                      setNewProject({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
+                    } catch {}
+                  }}>Guardar</button>
+                </div>
+              </div>
+            )}
+
+            {projectsLoading ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                {[...Array(3)].map((_, i) => <div key={i} style={{ height: 200, borderRadius: 'var(--radius)', background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🗂</div>
+                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin proyectos aún</div>
+                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus proyectos académicos y personales</div>}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+                {projects.map((proj: any) => (
+                  <div key={proj.id} className="card" style={{ padding: 0, overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'none'; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
+                    <div style={{ height: 120, background: proj.imageUrl ? `url(${proj.imageUrl}) center/cover` : 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {!proj.imageUrl && <span style={{ fontSize: 40 }}>🗂</span>}
+                    </div>
+                    <div style={{ padding: '14px 16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{proj.title}</h4>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-hover)', borderRadius: 10, padding: '2px 8px' }}>{proj.year || ''}</span>
+                      </div>
+                      {proj.description && <p style={{ margin: '0 0 10px 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{proj.description}</p>}
+                      {proj.techStack && proj.techStack.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
+                          {proj.techStack.map((tech: string, i: number) => (
+                            <span key={i} style={{ fontSize: 11, background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', borderRadius: 8, padding: '2px 8px', fontWeight: 500 }}>{tech}</span>
+                          ))}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>
+                          {proj.category === 'academic' ? '🎓 Académico' : proj.category === 'work' ? '💼 Laboral' : '⚙️ Personal'}
+                        </span>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {proj.projectUrl && <a href={proj.projectUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Ver proyecto →</a>}
+                          {isOwn && (
+                            <button onClick={async () => { try { await api.deletePortfolioProject(proj.id); setProjects(prev => prev.filter(p => p.id !== proj.id)) } catch {} }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>🗑</button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Publications Tab ─── */}
+        {activeTab === 'publications' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 18 }}>📚 Publicaciones &amp; Investigaciones</h3>
+              {isOwn && (
+                <button className="btn btn-primary btn-sm" onClick={() => setShowAddPublication(true)}>+ Agregar</button>
+              )}
+            </div>
+
+            {showAddPublication && isOwn && (
+              <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--accent)' }}>
+                <h4 style={{ margin: '0 0 16px 0' }}>Nueva Publicación</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <select className="form-input" value={newPublication.type} onChange={e => setNewPublication(p => ({ ...p, type: e.target.value }))}>
+                    <option value="paper">Artículo / Paper</option>
+                    <option value="book">Libro</option>
+                    <option value="thesis">Tesis</option>
+                    <option value="research">Investigación</option>
+                    <option value="article">Artículo de divulgación</option>
+                  </select>
+                  <input className="form-input" placeholder="Año de publicación" type="number" value={newPublication.year} onChange={e => setNewPublication(p => ({ ...p, year: parseInt(e.target.value) || new Date().getFullYear() }))} />
+                </div>
+                <input className="form-input" placeholder="Título *" value={newPublication.title} onChange={e => setNewPublication(p => ({ ...p, title: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
+                <textarea className="form-input" rows={2} placeholder="Resumen o descripción..." value={newPublication.description} onChange={e => setNewPublication(p => ({ ...p, description: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+                  <input className="form-input" placeholder="Institución / Editorial" value={newPublication.institution} onChange={e => setNewPublication(p => ({ ...p, institution: e.target.value }))} />
+                  <input className="form-input" placeholder="URL o DOI" value={newPublication.url} onChange={e => setNewPublication(p => ({ ...p, url: e.target.value }))} />
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowAddPublication(false)}>Cancelar</button>
+                  <button className="btn btn-primary btn-sm" onClick={async () => {
+                    if (!newPublication.title.trim()) return
+                    try {
+                      const res = await api.addPublication(userId, newPublication)
+                      setPublications(prev => [{ ...res, ...newPublication }, ...prev])
+                      setShowAddPublication(false)
+                      setNewPublication({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '', doi: '' })
+                    } catch {}
+                  }}>Guardar</button>
+                </div>
+              </div>
+            )}
+
+            {publicationsLoading ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {[...Array(3)].map((_, i) => <div key={i} style={{ height: 80, borderRadius: 'var(--radius)', background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
+              </div>
+            ) : publications.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
+                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin publicaciones aún</div>
+                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus libros, papers, tesis e investigaciones</div>}
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {publications.map((pub: any) => {
+                  const typeLabel: Record<string, string> = { book: '📗 Libro', paper: '📄 Paper', thesis: '🎓 Tesis', research: '🔬 Investigación', article: '✍️ Artículo' }
+                  const typeColor: Record<string, string> = { book: '#16a34a', paper: '#2563eb', thesis: '#7c3aed', research: '#dc2626', article: '#d97706' }
+                  return (
+                    <div key={pub.id} className="card" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: typeColor[pub.type] || '#6b7280', background: `${typeColor[pub.type] || '#6b7280'}20`, borderRadius: 8, padding: '2px 10px' }}>
+                            {typeLabel[pub.type] || pub.type}
+                          </span>
+                          {pub.year && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{pub.year}</span>}
+                        </div>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: 15, fontWeight: 600 }}>{pub.title}</h4>
+                        {pub.institution && <p style={{ margin: '0 0 4px 0', fontSize: 13, color: 'var(--text-secondary)' }}>🏛️ {pub.institution}</p>}
+                        {pub.description && <p style={{ margin: '0 0 6px 0', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.4 }}>{pub.description}</p>}
+                        {pub.url && <a href={pub.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--accent)', textDecoration: 'none' }}>🔗 Ver publicación</a>}
+                      </div>
+                      {isOwn && (
+                        <button onClick={async () => { try { await api.deletePublication(pub.id); setPublications(prev => prev.filter(p => p.id !== pub.id)) } catch {} }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18, padding: '0 4px', flexShrink: 0 }}>🗑</button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             )}
           </div>
         )}

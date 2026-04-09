@@ -1816,3 +1816,85 @@ def delete_friend_list(
         db.delete(fl)
         db.commit()
     return {"status": "deleted"}
+
+
+# ─── Projects (Portfolio) ─────────────────────────────────
+@router.get("/users/{user_id}/projects")
+def get_projects(user_id: str, db: Session = Depends(get_db)):
+    from database import UserProject
+    import json
+    projects = db.query(UserProject).filter(UserProject.user_id == user_id).order_by(UserProject.order_index, desc(UserProject.created_at)).all()
+    return [{"id": p.id, "title": p.title, "description": p.description,
+             "imageUrl": p.image_url, "projectUrl": p.project_url,
+             "techStack": json.loads(p.tech_stack or "[]"),
+             "category": p.category, "year": p.year,
+             "createdAt": p.created_at.isoformat() if p.created_at else ""} for p in projects]
+
+@router.post("/users/{user_id}/projects")
+def add_project(user_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserProject
+    import json
+    if user.id != user_id:
+        raise HTTPException(403, "Solo puedes agregar proyectos a tu perfil")
+    p = UserProject(
+        id=gen_id(), user_id=user.id,
+        title=data.get("title","")[:200],
+        description=data.get("description",""),
+        image_url=data.get("imageUrl",""),
+        project_url=data.get("projectUrl",""),
+        tech_stack=json.dumps(data.get("techStack",[])),
+        category=data.get("category","personal"),
+        year=data.get("year"),
+        order_index=data.get("orderIndex",0)
+    )
+    db.add(p); db.commit(); db.refresh(p)
+    return {"id": p.id, "title": p.title, "techStack": json.loads(p.tech_stack or "[]")}
+
+@router.delete("/projects/{project_id}")
+def delete_project(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserProject
+    p = db.query(UserProject).filter(UserProject.id == project_id, UserProject.user_id == user.id).first()
+    if not p:
+        raise HTTPException(404, "Proyecto no encontrado")
+    db.delete(p); db.commit()
+    return {"deleted": True}
+
+# ─── Publications ──────────────────────────────────────────
+@router.get("/users/{user_id}/publications")
+def get_publications(user_id: str, db: Session = Depends(get_db)):
+    from database import UserPublication
+    import json
+    pubs = db.query(UserPublication).filter(UserPublication.user_id == user_id).order_by(desc(UserPublication.year), desc(UserPublication.created_at)).all()
+    return [{"id": p.id, "type": p.pub_type, "title": p.title, "description": p.description,
+             "year": p.year, "url": p.url, "institution": p.institution,
+             "authors": json.loads(p.authors or "[]"), "doi": p.doi,
+             "createdAt": p.created_at.isoformat() if p.created_at else ""} for p in pubs]
+
+@router.post("/users/{user_id}/publications")
+def add_publication(user_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserPublication
+    import json
+    if user.id != user_id:
+        raise HTTPException(403, "Solo puedes agregar publicaciones a tu perfil")
+    p = UserPublication(
+        id=gen_id(), user_id=user.id,
+        pub_type=data.get("type","paper"),
+        title=data.get("title","")[:300],
+        description=data.get("description",""),
+        year=data.get("year"),
+        url=data.get("url",""),
+        institution=data.get("institution",""),
+        authors=json.dumps(data.get("authors",[])),
+        doi=data.get("doi","")
+    )
+    db.add(p); db.commit(); db.refresh(p)
+    return {"id": p.id, "title": p.title, "type": p.pub_type}
+
+@router.delete("/publications/{pub_id}")
+def delete_publication(pub_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    from database import UserPublication
+    p = db.query(UserPublication).filter(UserPublication.id == pub_id, UserPublication.user_id == user.id).first()
+    if not p:
+        raise HTTPException(404, "Publicación no encontrada")
+    db.delete(p); db.commit()
+    return {"deleted": True}

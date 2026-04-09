@@ -1035,6 +1035,35 @@ class SkillEndorsement(Base):
     __table_args__ = (UniqueConstraint("skill_id", "endorser_id", name="uq_skill_endorsement"),)
 
 
+class UserProject(Base):
+    __tablename__ = "user_projects"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text, default="")
+    image_url = Column(String(500), default="")
+    project_url = Column(String(500), default="")
+    tech_stack = Column(Text, default="[]")   # JSON array of strings
+    category = Column(String(50), default="personal")  # academic / personal / work
+    year = Column(Integer, nullable=True)
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class UserPublication(Base):
+    __tablename__ = "user_publications"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    pub_type = Column(String(30), default="paper")  # book / paper / research / thesis / article
+    title = Column(String(300), nullable=False)
+    description = Column(Text, default="")
+    year = Column(Integer, nullable=True)
+    url = Column(String(500), default="")
+    institution = Column(String(200), default="")
+    authors = Column(Text, default="[]")   # JSON array
+    doi = Column(String(200), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 # ─── Post Bookmarks ───────────────────────────────────────
 
 class PostBookmark(Base):

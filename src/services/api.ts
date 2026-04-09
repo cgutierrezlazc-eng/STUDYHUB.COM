@@ -839,6 +839,16 @@ export const api = {
   getUserSkills: (userId: string) => request(`/social/users/${userId}/skills`),
   endorseSkill: (skillId: string) =>
     request(`/social/skills/${skillId}/endorse`, { method: 'POST' }),
+  getUserProjects: (userId: string) => request(`/social/users/${userId}/projects`),
+  addPortfolioProject: (userId: string, data: object) =>
+    request(`/social/users/${userId}/projects`, { method: 'POST', body: JSON.stringify(data) }),
+  deletePortfolioProject: (projectId: string) =>
+    request(`/social/projects/${projectId}`, { method: 'DELETE' }),
+  getUserPublications: (userId: string) => request(`/social/users/${userId}/publications`),
+  addPublication: (userId: string, data: object) =>
+    request(`/social/users/${userId}/publications`, { method: 'POST', body: JSON.stringify(data) }),
+  deletePublication: (pubId: string) =>
+    request(`/social/publications/${pubId}`, { method: 'DELETE' }),
 
   // ─── Bookmarks ────────────────────────────────────────────
   toggleBookmark: (postId: string) =>

@@ -6,7 +6,7 @@ import { LanguageSkill } from '../types'
 import MilestonePopup from '../components/MilestonePopup'
 import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationCap, Users, Pencil, Lock, Settings, ClipboardList } from '../components/Icons'
 
-type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv'
+type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv' | 'projects' | 'publications'
 
 export default function Profile() {
   const { user, updateProfile, logout } = useAuth()
@@ -40,6 +40,12 @@ export default function Profile() {
   const [confirmPw, setConfirmPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
+  const [projects, setProjects] = useState<any[]>([])
+  const [publications, setPublications] = useState<any[]>([])
+  const [projectsLoaded, setProjectsLoaded] = useState(false)
+  const [publicationsLoaded, setPublicationsLoaded] = useState(false)
+  const [newProj, setNewProj] = useState({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
+  const [newPub, setNewPub] = useState({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '' })
 
   if (!user) return null
 
@@ -129,6 +135,8 @@ export default function Profile() {
     { id: 'profile', label: t('profile.sectionProfile'), icon: Users({ size: 16 }) },
     { id: 'academic', label: t('profile.sectionAcademic'), icon: GraduationCap({ size: 16 }) },
     { id: 'cv', label: t('profile.sectionCV'), icon: ClipboardList({ size: 16 }) },
+    { id: 'projects' as Section, label: 'Proyectos', icon: <span>🗂</span> },
+    { id: 'publications' as Section, label: 'Publicaciones', icon: <span>📚</span> },
     { id: 'appearance', label: t('profile.sectionAppearance'), icon: Settings({ size: 16 }) },
     { id: 'notifications', label: t('profile.sectionNotifications'), icon: Bell({ size: 16 }) },
     { id: 'security', label: t('profile.sectionSecurity'), icon: Lock({ size: 16 }) },
@@ -438,6 +446,147 @@ export default function Profile() {
                 >
                   {t('profile.goToProfessionalProfile')}
                 </button>
+              </div>
+            )}
+
+            {/* ─── Proyectos ─── */}
+            {activeSection === 'projects' && (
+              <div className="pf-section">
+                <div className="pf-section-header">
+                  <h3>🗂 Proyectos &amp; Portfolio</h3>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+                  Muestra tus proyectos académicos, personales y laborales en tu perfil público.
+                </p>
+                <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius)', padding: 16, marginBottom: 20 }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: 14 }}>Agregar proyecto</h4>
+                  <div className="pf-fields-grid" style={{ marginBottom: 10 }}>
+                    <div className="pf-field">
+                      <label>Título *</label>
+                      <input className="form-input" value={newProj.title} onChange={e => setNewProj(p => ({ ...p, title: e.target.value }))} />
+                    </div>
+                    <div className="pf-field">
+                      <label>URL del proyecto</label>
+                      <input className="form-input" value={newProj.projectUrl} onChange={e => setNewProj(p => ({ ...p, projectUrl: e.target.value }))} />
+                    </div>
+                    <div className="pf-field">
+                      <label>Tecnologías (separadas por coma)</label>
+                      <input className="form-input" value={newProj.techStack} onChange={e => setNewProj(p => ({ ...p, techStack: e.target.value }))} placeholder="React, Python, Node..." />
+                    </div>
+                    <div className="pf-field">
+                      <label>Categoría</label>
+                      <select className="form-input" value={newProj.category} onChange={e => setNewProj(p => ({ ...p, category: e.target.value }))}>
+                        <option value="academic">Académico</option>
+                        <option value="personal">Personal</option>
+                        <option value="work">Laboral</option>
+                      </select>
+                    </div>
+                    <div className="pf-field" style={{ gridColumn: '1/-1' }}>
+                      <label>Descripción</label>
+                      <textarea className="form-input" rows={2} value={newProj.description} onChange={e => setNewProj(p => ({ ...p, description: e.target.value }))} />
+                    </div>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={async () => {
+                    if (!newProj.title.trim() || !user) return
+                    try {
+                      const tech = newProj.techStack.split(',').map(s => s.trim()).filter(Boolean)
+                      const res = await api.addPortfolioProject(user.id, { ...newProj, techStack: tech })
+                      setProjects(prev => [{ ...res, techStack: tech, description: newProj.description, projectUrl: newProj.projectUrl, category: newProj.category, year: newProj.year }, ...prev])
+                      setNewProj({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
+                    } catch {}
+                  }}>Agregar Proyecto</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {projects.map((p: any) => (
+                    <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{p.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.category} · {p.year}</div>
+                      </div>
+                      <button onClick={async () => { try { await api.deletePortfolioProject(p.id); setProjects(prev => prev.filter(x => x.id !== p.id)) } catch {} }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 18 }}>🗑</button>
+                    </div>
+                  ))}
+                  {projects.length === 0 && !projectsLoaded && (
+                    <button className="btn btn-secondary btn-sm" onClick={async () => {
+                      if (!user) return
+                      try { const data = await api.getUserProjects(user.id); setProjects(data); setProjectsLoaded(true) } catch {}
+                    }}>Cargar mis proyectos</button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ─── Publicaciones ─── */}
+            {activeSection === 'publications' && (
+              <div className="pf-section">
+                <div className="pf-section-header">
+                  <h3>📚 Publicaciones &amp; Investigaciones</h3>
+                </div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>
+                  Libros, papers, tesis, investigaciones y artículos de tu autoría.
+                </p>
+                <div style={{ background: 'var(--bg-hover)', borderRadius: 'var(--radius)', padding: 16, marginBottom: 20 }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: 14 }}>Agregar publicación</h4>
+                  <div className="pf-fields-grid" style={{ marginBottom: 10 }}>
+                    <div className="pf-field">
+                      <label>Tipo</label>
+                      <select className="form-input" value={newPub.type} onChange={e => setNewPub(p => ({ ...p, type: e.target.value }))}>
+                        <option value="paper">Artículo / Paper</option>
+                        <option value="book">Libro</option>
+                        <option value="thesis">Tesis</option>
+                        <option value="research">Investigación</option>
+                        <option value="article">Artículo de divulgación</option>
+                      </select>
+                    </div>
+                    <div className="pf-field">
+                      <label>Año</label>
+                      <input className="form-input" type="number" value={newPub.year} onChange={e => setNewPub(p => ({ ...p, year: parseInt(e.target.value) || new Date().getFullYear() }))} />
+                    </div>
+                    <div className="pf-field" style={{ gridColumn: '1/-1' }}>
+                      <label>Título *</label>
+                      <input className="form-input" value={newPub.title} onChange={e => setNewPub(p => ({ ...p, title: e.target.value }))} />
+                    </div>
+                    <div className="pf-field">
+                      <label>Institución / Editorial</label>
+                      <input className="form-input" value={newPub.institution} onChange={e => setNewPub(p => ({ ...p, institution: e.target.value }))} />
+                    </div>
+                    <div className="pf-field">
+                      <label>URL o DOI</label>
+                      <input className="form-input" value={newPub.url} onChange={e => setNewPub(p => ({ ...p, url: e.target.value }))} />
+                    </div>
+                    <div className="pf-field" style={{ gridColumn: '1/-1' }}>
+                      <label>Resumen</label>
+                      <textarea className="form-input" rows={2} value={newPub.description} onChange={e => setNewPub(p => ({ ...p, description: e.target.value }))} />
+                    </div>
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={async () => {
+                    if (!newPub.title.trim() || !user) return
+                    try {
+                      const res = await api.addPublication(user.id, newPub)
+                      setPublications(prev => [{ ...res, ...newPub }, ...prev])
+                      setNewPub({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '' })
+                    } catch {}
+                  }}>Agregar Publicación</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {publications.map((p: any) => (
+                    <div key={p.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 10, padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14 }}>{p.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{p.type} · {p.year}{p.institution ? ` · ${p.institution}` : ''}</div>
+                      </div>
+                      <button onClick={async () => { try { await api.deletePublication(p.id); setPublications(prev => prev.filter(x => x.id !== p.id)) } catch {} }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 18 }}>🗑</button>
+                    </div>
+                  ))}
+                  {publications.length === 0 && !publicationsLoaded && (
+                    <button className="btn btn-secondary btn-sm" onClick={async () => {
+                      if (!user) return
+                      try { const data = await api.getUserPublications(user.id); setPublications(data); setPublicationsLoaded(true) } catch {}
+                    }}>Cargar mis publicaciones</button>
+                  )}
+                </div>
               </div>
             )}
 
