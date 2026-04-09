@@ -22,8 +22,8 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
     api.getCommunitySuggestions().then(data => setCommunities((data || []).slice(0, 3))).catch(() => {})
   }, [])
 
-  // Don't show on messages, profile settings, admin
-  if (['/messages', '/profile', '/admin'].some(p => currentPath.startsWith(p))) return null
+  // Don't show on messages, profile settings, admin, or feed (feed has its own sidebar)
+  if (['/messages', '/profile', '/admin', '/feed'].some(p => currentPath.startsWith(p))) return null
 
   return (
     <aside className="right-panel">
@@ -57,8 +57,8 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Friend Suggestions */}
-      {suggestions.length > 0 && (
+      {/* Friend Suggestions — only on social routes */}
+      {suggestions.length > 0 && ['/feed', '/friends', '/communities', '/social'].some(p => currentPath.startsWith(p)) && (
         <div className="rp-widget">
           <h4 className="rp-widget-title">{t('rightpanel.suggestedPeople')}</h4>
           {suggestions.map(s => (

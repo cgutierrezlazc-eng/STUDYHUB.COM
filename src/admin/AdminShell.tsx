@@ -22,11 +22,11 @@ export default function AdminShell({ title, children }: Props) {
     }
   }, [title, isPopup])
 
-  if (!user || (user.role !== 'owner' && user.role !== 'admin')) {
+  if (!user || (user.role !== 'owner' && user.role !== 'admin' && user.role !== 'employee')) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
         <h2>Acceso Restringido</h2>
-        <p>Inicia sesión como CEO o administrador.</p>
+        <p>Inicia sesión como CEO, administrador o con tu cuenta de empleado.</p>
       </div>
     )
   }

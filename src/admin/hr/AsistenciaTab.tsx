@@ -103,14 +103,16 @@ function StatusBadge({ status }: { status: AttendanceStatus }) {
 
 // ─── Helper: generate demo data ─────────────────────────────────
 
-function generateDemoData() {
-  const demoEmployees = [
-    { id: '1', name: 'Maria Gonzalez', position: 'Desarrolladora Senior', exempt: false },
-    { id: '2', name: 'Carlos Munoz', position: 'Disenador UX', exempt: false },
-    { id: '3', name: 'Andrea Silva', position: 'Gerente Comercial', exempt: true },
-    { id: '4', name: 'Felipe Rojas', position: 'Analista de Datos', exempt: false },
-    { id: '5', name: 'Javiera Torres', position: 'Ejecutiva de Cuentas', exempt: false },
-  ]
+const DEFAULT_EMPLOYEES = [
+  { id: '1', name: 'Maria Gonzalez', position: 'Desarrolladora Senior', exempt: false },
+  { id: '2', name: 'Carlos Munoz', position: 'Disenador UX', exempt: false },
+  { id: '3', name: 'Andrea Silva', position: 'Gerente Comercial', exempt: true },
+  { id: '4', name: 'Felipe Rojas', position: 'Analista de Datos', exempt: false },
+  { id: '5', name: 'Javiera Torres', position: 'Ejecutiva de Cuentas', exempt: false },
+]
+
+function generateDemoData(employeeList?: { id: string; name: string; position: string; exempt: boolean }[]) {
+  const demoEmployees = employeeList && employeeList.length > 0 ? employeeList : DEFAULT_EMPLOYEES
 
   const today = new Date()
   const records: AttendanceRecord[] = []
@@ -211,6 +213,7 @@ export default function AsistenciaTab() {
   const [clockEntry, setClockEntry] = useState<string | null>(null)
   const [todayHours, setTodayHours] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [selectedWorker, setSelectedWorker] = useState('')
 
   // Filters
   const [filterEmployee, setFilterEmployee] = useState('')
@@ -225,13 +228,34 @@ export default function AsistenciaTab() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
 
-  // Demo data
-  const [demoData] = useState(() => generateDemoData())
+  // Demo data — auto-loads real employees from API
+  const [demoData, setDemoData] = useState(() => generateDemoData())
   const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>(() => {
     const map: Record<string, boolean> = {}
     demoData.demoEmployees.forEach(e => { map[e.id] = e.exempt })
     return map
   })
+
+  // ─── Auto-load employees from API ───
+  useEffect(() => {
+    api.getEmployees()
+      .then((data: any) => {
+        const emps: Employee[] = Array.isArray(data) ? data : []
+        if (emps.length === 0) return
+        const mapped = emps.map(e => ({
+          id: e.id,
+          name: `${e.firstName} ${e.lastName}`,
+          position: e.position || 'Sin cargo',
+          exempt: false,
+        }))
+        const newData = generateDemoData(mapped)
+        setDemoData(newData)
+        const map: Record<string, boolean> = {}
+        newData.demoEmployees.forEach(emp => { map[emp.id] = emp.exempt })
+        setArt22Exemptions(map)
+      })
+      .catch(() => {})
+  }, [])
 
   // ─── Live clock ───
   useEffect(() => {
@@ -435,6 +459,30 @@ export default function AsistenciaTab() {
               {currentTime.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
 
+            {/* Worker Selector — employees select their name (CEO excluded) */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>
+                Selecciona tu nombre
+              </label>
+              <select
+                value={selectedWorker}
+                onChange={e => setSelectedWorker(e.target.value)}
+                style={{
+                  width: '100%', maxWidth: 320, padding: '10px 14px', borderRadius: 10,
+                  border: '1px solid var(--border)', background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)', fontSize: 14, cursor: 'pointer',
+                  textAlign: 'center', margin: '0 auto', display: 'block',
+                }}
+              >
+                <option value="">-- Seleccionar trabajador --</option>
+                {demoData.demoEmployees.map(emp => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} — {emp.position}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Status */}
             <div style={{
               padding: '12px 20px', borderRadius: 12, marginBottom: 24, display: 'inline-flex',
@@ -443,9 +491,9 @@ export default function AsistenciaTab() {
               color: clockStatus === 'working' ? '#22c55e' : 'var(--text-muted)',
             }}>
               {clockStatus === 'working' ? (
-                <><CheckCircle size={16} /> Trabajando desde las {clockEntry}</>
+                <><CheckCircle size={16} /> {demoData.demoEmployees.find(e => e.id === selectedWorker)?.name || 'Trabajador'} — Trabajando desde las {clockEntry}</>
               ) : (
-                <><Clock size={16} /> Sin marcar entrada</>
+                <><Clock size={16} /> {selectedWorker ? 'Listo para marcar entrada' : 'Selecciona tu nombre arriba'}</>
               )}
             </div>
 
@@ -453,11 +501,11 @@ export default function AsistenciaTab() {
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
               <button
                 onClick={handleClockIn}
-                disabled={clockStatus === 'working'}
+                disabled={clockStatus === 'working' || !selectedWorker}
                 style={{
                   ...btnPrimary,
                   padding: '14px 28px', fontSize: 15,
-                  opacity: clockStatus === 'working' ? 0.5 : 1,
+                  opacity: (clockStatus === 'working' || !selectedWorker) ? 0.5 : 1,
                   background: '#22c55e',
                 }}
               >
