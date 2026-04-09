@@ -7,6 +7,24 @@ interface Message {
   content: string
 }
 
+function renderMarkdown(text: string): string {
+  let s = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+  // Bold
+  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+  // Italic (single asterisk, not double)
+  s = s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
+  // Numbered list → bullet character
+  s = s.replace(/^\d+\. (.+)$/gm, '&bull;&nbsp;$1')
+  // Dash/asterisk bullet → bullet character
+  s = s.replace(/^[-*] (.+)$/gm, '&bull;&nbsp;$1')
+  // Newlines → <br>
+  s = s.replace(/\n/g, '<br/>')
+  return s
+}
+
 export default function SupportChat() {
   const { user } = useAuth()
   const isAdmin = user?.role === 'owner'
@@ -155,9 +173,10 @@ export default function SupportChat() {
             fontSize: 13,
             lineHeight: 1.5,
             wordBreak: 'break-word',
-            whiteSpace: 'pre-wrap',
           }}>
-            {msg.content}
+            {msg.role === 'assistant'
+              ? <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+              : msg.content}
           </div>
         ))}
         {loading && (
