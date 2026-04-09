@@ -208,6 +208,8 @@ export default function AsistenciaTab() {
   const [todayHours, setTodayHours] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [selectedWorker, setSelectedWorker] = useState('')
+  const [clockLoading, setClockLoading] = useState(false)
+  const [clockError, setClockError] = useState<string | null>(null)
 
   // Filters
   const [filterEmployee, setFilterEmployee] = useState('')
@@ -222,34 +224,78 @@ export default function AsistenciaTab() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
 
-  // Demo data — auto-loads real employees from API
-  const [demoData, setDemoData] = useState(() => generateDemoData())
-  const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>(() => {
-    const map: Record<string, boolean> = {}
-    demoData.demoEmployees.forEach(e => { map[e.id] = e.exempt })
-    return map
-  })
+  // Real data from API
+  const [employees, setEmployees] = useState<Employee[]>([])
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
+  const [overtimeRecords, setOvertimeRecords] = useState<OvertimeRecord[]>([])
+  const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>({})
 
-  // ─── Auto-load employees from API ───
+  // ─── Helper: API records → frontend shape ───
+  const mapApiRecord = useMemo(() => (r: any): AttendanceRecord => {
+    const emp = employees.find(e => e.id === r.employee_id)
+    return {
+      id: r.id,
+      employeeId: r.employee_id,
+      employeeName: emp ? `${emp.firstName} ${emp.lastName}` : r.employee_id,
+      date: r.date,
+      entryTime: r.entry_time ?? null,
+      exitTime: r.exit_time ?? null,
+      totalHours: r.total_hours ?? 0,
+      overtimeHours: r.overtime_hours ?? 0,
+      status: r.status as AttendanceStatus,
+      isArt22Exempt: art22Exemptions[r.employee_id] ?? false,
+    }
+  }, [employees, art22Exemptions])
+
+  // ─── Load employees + today status on mount ───
   useEffect(() => {
     api.getEmployees()
       .then((data: any) => {
         const emps: Employee[] = Array.isArray(data) ? data : []
-        if (emps.length === 0) return
-        const mapped = emps.map(e => ({
-          id: e.id,
-          name: `${e.firstName} ${e.lastName}`,
-          position: e.position || 'Sin cargo',
-          exempt: false,
-        }))
-        const newData = generateDemoData(mapped)
-        setDemoData(newData)
+        setEmployees(emps)
         const map: Record<string, boolean> = {}
-        newData.demoEmployees.forEach(emp => { map[emp.id] = emp.exempt })
+        emps.forEach(e => { map[e.id] = e.isArt22Exempt ?? false })
         setArt22Exemptions(map)
       })
       .catch(() => {})
+
+    api.getTodayAttendance()
+      .then((data: any) => {
+        if (data?.record?.entry_time && !data.record.exit_time) {
+          setClockEntry(data.record.entry_time)
+          setClockStatus('working')
+        }
+      })
+      .catch(() => {})
   }, [])
+
+  // ─── Load monthly attendance when month or employees change ───
+  useEffect(() => {
+    const [year, month] = selectedMonth.split('-').map(Number)
+    api.getMonthlyAttendance(year, month)
+      .then((data: any) => {
+        const records: AttendanceRecord[] = (Array.isArray(data) ? data : []).map(mapApiRecord)
+        setAttendanceRecords(records)
+        const ot: OvertimeRecord[] = records
+          .filter(r => r.overtimeHours > 0)
+          .map(r => {
+            const emp = employees.find(e => e.id === r.employeeId)
+            const hourlyRate = (emp?.grossSalary ?? 800000) / (45 * 4.33)
+            return {
+              id: `ot-${r.id}`,
+              employeeId: r.employeeId,
+              employeeName: r.employeeName,
+              date: r.date,
+              hours: r.overtimeHours,
+              rate: hourlyRate,
+              amount: Math.round(r.overtimeHours * hourlyRate * 1.5),
+              pactoExpiry: null,
+            }
+          })
+        setOvertimeRecords(ot)
+      })
+      .catch(() => {})
+  }, [selectedMonth, mapApiRecord])
 
   // ─── Live clock ───
   useEffect(() => {
@@ -270,46 +316,73 @@ export default function AsistenciaTab() {
     return () => clearInterval(interval)
   }, [clockStatus, clockEntry])
 
-  // ─── Clock actions ───
-  const handleClockIn = () => {
-    const now = new Date()
-    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
-    setClockEntry(timeStr)
-    setClockStatus('working')
-    setTodayHours(0)
+  // ─── Reload monthly attendance helper ───
+  const reloadMonth = async () => {
+    const [year, month] = selectedMonth.split('-').map(Number)
+    try {
+      const data: any = await api.getMonthlyAttendance(year, month)
+      const records: AttendanceRecord[] = (Array.isArray(data) ? data : []).map(mapApiRecord)
+      setAttendanceRecords(records)
+    } catch {}
   }
 
-  const handleClockOut = () => {
-    if (clockEntry) {
-      const [h, m] = clockEntry.split(':').map(Number)
-      const entry = new Date()
-      entry.setHours(h, m, 0, 0)
-      const diff = (Date.now() - entry.getTime()) / (1000 * 60 * 60)
-      setTodayHours(Math.round(Math.max(0, diff - 0.5) * 100) / 100) // subtract 30min lunch (Art. 34)
+  // ─── Clock In ───
+  const handleClockIn = async () => {
+    setClockLoading(true)
+    setClockError(null)
+    try {
+      const res: any = await api.clockIn()
+      setClockEntry(res.entry_time)
+      setClockStatus('working')
+      setTodayHours(0)
+      await reloadMonth()
+    } catch (err: any) {
+      setClockError(err.message || 'Error al registrar entrada')
+    } finally {
+      setClockLoading(false)
     }
-    setClockStatus('off')
-    setClockEntry(null)
+  }
+
+  // ─── Clock Out ───
+  const handleClockOut = async () => {
+    setClockLoading(true)
+    setClockError(null)
+    try {
+      const res: any = await api.clockOut()
+      setTodayHours(res.total_hours ?? 0)
+      setClockStatus('off')
+      setClockEntry(null)
+      await reloadMonth()
+    } catch (err: any) {
+      setClockError(err.message || 'Error al registrar salida')
+    } finally {
+      setClockLoading(false)
+    }
   }
 
   // ─── Filtered attendance records ───
   const filteredRecords = useMemo(() => {
-    return demoData.records.filter(r => {
+    return attendanceRecords.filter(r => {
       if (filterEmployee && r.employeeId !== filterEmployee) return false
       if (filterStatus && r.status !== filterStatus) return false
       if (r.date < filterDateFrom || r.date > filterDateTo) return false
       return true
     }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName))
-  }, [demoData.records, filterEmployee, filterStatus, filterDateFrom, filterDateTo])
+  }, [attendanceRecords, filterEmployee, filterStatus, filterDateFrom, filterDateTo])
 
   // ─── Monthly summaries ───
   const monthlySummaries = useMemo((): MonthlySummary[] => {
     const [year, month] = selectedMonth.split('-').map(Number)
-    const monthRecords = demoData.records.filter(r => {
+    const monthRecords = attendanceRecords.filter(r => {
       const d = new Date(r.date)
       return d.getFullYear() === year && d.getMonth() + 1 === month
     })
+    const demoEmployees = employees.map(e => ({
+      id: e.id,
+      name: `${e.firstName} ${e.lastName}`,
+    }))
 
-    return demoData.demoEmployees.map(emp => {
+    return demoEmployees.map(emp => {
       const empRecords = monthRecords.filter(r => r.employeeId === emp.id)
       const daysWorked = empRecords.filter(r => r.status === 'presente').length
       const daysAbsent = empRecords.filter(r => r.status === 'ausente').length
@@ -318,7 +391,6 @@ export default function AsistenciaTab() {
       const weeksInMonth = 4.33
       const weeklyAvgHours = daysWorked > 0 ? Math.round((totalHours / weeksInMonth) * 100) / 100 : 0
       const isExempt = art22Exemptions[emp.id] || false
-
       return {
         employeeId: emp.id,
         employeeName: emp.name,
@@ -331,7 +403,7 @@ export default function AsistenciaTab() {
         isArt22Exempt: isExempt,
       }
     })
-  }, [demoData, selectedMonth, art22Exemptions])
+  }, [attendanceRecords, selectedMonth, art22Exemptions, employees])
 
   // ─── Weekly hours for chart ───
   const weeklyChartData = useMemo(() => {
@@ -342,22 +414,22 @@ export default function AsistenciaTab() {
     startOfWeek.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
 
     return days.map((name, idx) => {
-      const date = new Date(startOfWeek)
-      date.setDate(date.getDate() + idx)
-      const dateStr = date.toISOString().split('T')[0]
-      const dayRecords = demoData.records.filter(r => r.date === dateStr && r.status === 'presente')
+      const d = new Date(startOfWeek)
+      d.setDate(d.getDate() + idx)
+      const dateStr = d.toISOString().split('T')[0]
+      const dayRecords = attendanceRecords.filter(r => r.date === dateStr && r.status === 'presente')
       const totalHours = dayRecords.reduce((sum, r) => sum + r.totalHours, 0)
       const avgHours = dayRecords.length > 0 ? totalHours / dayRecords.length : 0
       return { name, avgHours: Math.round(avgHours * 10) / 10, totalHours: Math.round(totalHours * 10) / 10 }
     })
-  }, [demoData.records])
+  }, [attendanceRecords])
 
   // ─── Stats ───
   const todayStr = new Date().toISOString().split('T')[0]
-  const todayRecords = demoData.records.filter(r => r.date === todayStr)
+  const todayRecords = attendanceRecords.filter(r => r.date === todayStr)
   const presentToday = todayRecords.filter(r => r.status === 'presente').length
   const absentToday = todayRecords.filter(r => r.status === 'ausente').length
-  const totalOvertime = demoData.overtimeRecords.reduce((s, r) => s + r.hours, 0)
+  const totalOvertime = overtimeRecords.reduce((s, r) => s + r.hours, 0)
 
   // ─── Access check ───
   if (user?.role !== 'owner') {
@@ -409,7 +481,7 @@ export default function AsistenciaTab() {
         <StatCard icon={UserCheck} label="Presentes Hoy" value={presentToday} color="#22c55e" subtitle="Trabajadores activos" />
         <StatCard icon={UserX} label="Ausentes Hoy" value={absentToday} color="#ef4444" subtitle="Sin justificacion" />
         <StatCard icon={Timer} label="Horas Extra (Mes)" value={`${Math.round(totalOvertime * 10) / 10}h`} color="#f59e0b" subtitle={`Max ${CHILE_LABOR.HORAS_EXTRA.maxDiarias}h/dia (Art. 30)`} />
-        <StatCard icon={Users} label="Total Empleados" value={demoData.demoEmployees.length} color="#3b82f6" subtitle="Dotacion registrada" />
+        <StatCard icon={Users} label="Total Empleados" value={employees.length} color="#3b82f6" subtitle="Dotacion registrada" />
       </div>
 
       {/* ─── Tab Navigation ─── */}
@@ -469,9 +541,9 @@ export default function AsistenciaTab() {
                 }}
               >
                 <option value="">-- Seleccionar trabajador --</option>
-                {demoData.demoEmployees.map(emp => (
+                {employees.map(emp => (
                   <option key={emp.id} value={emp.id}>
-                    {emp.name} — {emp.position}
+                    {emp.firstName} {emp.lastName} — {emp.position}
                   </option>
                 ))}
               </select>
@@ -485,39 +557,47 @@ export default function AsistenciaTab() {
               color: clockStatus === 'working' ? '#22c55e' : 'var(--text-muted)',
             }}>
               {clockStatus === 'working' ? (
-                <><CheckCircle size={16} /> {demoData.demoEmployees.find(e => e.id === selectedWorker)?.name || 'Trabajador'} — Trabajando desde las {clockEntry}</>
+                <><CheckCircle size={16} /> {(() => { const e = employees.find(x => x.id === selectedWorker); return e ? `${e.firstName} ${e.lastName}` : 'Trabajador' })()} — Trabajando desde las {clockEntry}</>
               ) : (
                 <><Clock size={16} /> {selectedWorker ? 'Listo para marcar entrada' : 'Selecciona tu nombre arriba'}</>
               )}
             </div>
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 12 }}>
               <button
                 onClick={handleClockIn}
-                disabled={clockStatus === 'working' || !selectedWorker}
+                disabled={clockStatus === 'working' || !selectedWorker || clockLoading}
                 style={{
                   ...btnPrimary,
                   padding: '14px 28px', fontSize: 15,
-                  opacity: (clockStatus === 'working' || !selectedWorker) ? 0.5 : 1,
+                  opacity: (clockStatus === 'working' || !selectedWorker || clockLoading) ? 0.5 : 1,
                   background: '#22c55e',
                 }}
               >
-                <LogIn size={18} /> Marcar Entrada
+                <LogIn size={18} /> {clockLoading ? 'Registrando...' : 'Marcar Entrada'}
               </button>
               <button
                 onClick={handleClockOut}
-                disabled={clockStatus !== 'working'}
+                disabled={clockStatus !== 'working' || clockLoading}
                 style={{
                   ...btnPrimary,
                   padding: '14px 28px', fontSize: 15,
-                  opacity: clockStatus !== 'working' ? 0.5 : 1,
+                  opacity: (clockStatus !== 'working' || clockLoading) ? 0.5 : 1,
                   background: '#ef4444',
                 }}
               >
-                <LogOut size={18} /> Marcar Salida
+                <LogOut size={18} /> {clockLoading ? 'Registrando...' : 'Marcar Salida'}
               </button>
             </div>
+            {clockError && (
+              <div style={{
+                margin: '0 auto 16px', maxWidth: 400, padding: '10px 16px', borderRadius: 8,
+                background: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 13, textAlign: 'center',
+              }}>
+                {clockError}
+              </div>
+            )}
 
             {/* Today hours */}
             {todayHours > 0 && (
@@ -562,8 +642,8 @@ export default function AsistenciaTab() {
                   style={{ ...selectStyle, fontSize: 12, padding: '6px 10px' }}
                 >
                   <option value="">Todos los empleados</option>
-                  {demoData.demoEmployees.map(e => (
-                    <option key={e.id} value={e.id}>{e.name}</option>
+                  {employees.map(e => (
+                    <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
                   ))}
                 </select>
               </div>
@@ -807,7 +887,7 @@ export default function AsistenciaTab() {
             <StatCard
               icon={Briefcase}
               label="Costo Total H. Extra"
-              value={`$${fmt(demoData.overtimeRecords.reduce((s, r) => s + r.amount, 0))}`}
+              value={`$${fmt(overtimeRecords.reduce((s, r) => s + r.amount, 0))}`}
               color="#22c55e"
               subtitle="Valor bruto estimado"
             />
@@ -841,7 +921,7 @@ export default function AsistenciaTab() {
                 </tr>
               </thead>
               <tbody>
-                {demoData.overtimeRecords
+                {overtimeRecords
                   .sort((a, b) => b.date.localeCompare(a.date))
                   .slice(0, 50)
                   .map(r => {
@@ -888,7 +968,7 @@ export default function AsistenciaTab() {
                       </tr>
                     )
                   })}
-                {demoData.overtimeRecords.length === 0 && (
+                {overtimeRecords.length === 0 && (
                   <tr>
                     <td colSpan={7} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
                       No hay registros de horas extra en el periodo

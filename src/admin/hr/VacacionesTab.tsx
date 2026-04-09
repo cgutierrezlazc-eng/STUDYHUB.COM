@@ -131,13 +131,6 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-// ─── Mock Data ───────────────────────────────────────────────────
-
-// Datos reales vienen de la API — sin datos demo
-const MOCK_EMPLOYEES: Employee[] = []
-const MOCK_REQUESTS: LeaveRequest[] = []
-const MOCK_DAYS_USED: Record<string, number> = {}
-
 // ═════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═════════════════════════════════════════════════════════════════
@@ -146,8 +139,9 @@ export default function VacacionesTab() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState<SubTab>('saldos')
   const [employees, setEmployees] = useState<Employee[]>([])
-  const [requests, setRequests] = useState<LeaveRequest[]>(MOCK_REQUESTS)
+  const [requests, setRequests] = useState<LeaveRequest[]>([])
   const [loading, setLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [showNewRequest, setShowNewRequest] = useState(false)
   const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth())
@@ -168,25 +162,50 @@ export default function VacacionesTab() {
     reason: '',
   })
 
-  // ─── Load employees ───
+  // ─── Load employees + requests ───
   useEffect(() => {
     const load = async () => {
       setLoading(true)
       try {
-        const data = await api.getEmployees()
-        if (data && data.length > 0) {
-          setEmployees(data)
-        } else {
-          // Usar datos demo si no hay empleados en el backend
-          setEmployees(MOCK_EMPLOYEES)
-        }
+        const [empsData, reqsData] = await Promise.all([
+          api.getEmployees(),
+          api.getLeaveRequests(),
+        ])
+        setEmployees(Array.isArray(empsData) ? empsData : [])
+        setRequests(_mapApiRequests(Array.isArray(reqsData) ? reqsData : []))
       } catch {
-        setEmployees(MOCK_EMPLOYEES)
+        setEmployees([])
+        setRequests([])
       }
       setLoading(false)
     }
     load()
   }, [])
+
+  // ─── Helper: map API leave request → frontend shape ───
+  const _mapApiRequests = (data: any[]): LeaveRequest[] =>
+    data.map((r: any) => ({
+      id: r.id,
+      employeeId: r.employee_id,
+      employeeName: r.employee_name || r.employee_id,
+      type: r.leave_type as LeaveType,
+      startDate: r.start_date,
+      endDate: r.end_date,
+      days: r.days,
+      status: r.status as LeaveStatus,
+      reason: r.reason || '',
+      createdAt: r.created_at?.split('T')[0] || '',
+      reviewedBy: r.reviewed_by ?? undefined,
+      reviewedAt: r.reviewed_at ?? undefined,
+    }))
+
+  // ─── Reload requests ───
+  const reloadRequests = async () => {
+    try {
+      const data = await api.getLeaveRequests()
+      setRequests(_mapApiRequests(Array.isArray(data) ? data : []))
+    } catch {}
+  }
 
   // ─── Access check ───
   if (user?.role !== 'owner') {
@@ -199,7 +218,8 @@ export default function VacacionesTab() {
     )
   }
 
-  // ─── Computed: vacation balances ───
+  // ─── Computed: vacation balances (from real requests) ───
+  const currentYear = new Date().getFullYear()
   const balances = employees
     .filter(e => e.status === 'active')
     .map(emp => {
@@ -208,9 +228,16 @@ export default function VacacionesTab() {
       const baseDays = CHILE_LABOR.FERIADO.diasBase
       const progressiveDays = calcProgressiveDays(years)
       const totalEntitled = baseDays + progressiveDays
-      const daysUsed = MOCK_DAYS_USED[emp.id] || 0
-      const daysAvailable = eligible ? totalEntitled - daysUsed : 0
-      // Art. 69: Acumulacion maxima de 2 periodos
+      // Días usados = suma de solicitudes de vacaciones aprobadas del año en curso
+      const daysUsed = requests
+        .filter(r =>
+          r.employeeId === emp.id &&
+          r.type === 'vacaciones' &&
+          r.status === 'aprobada' &&
+          r.startDate?.startsWith(String(currentYear))
+        )
+        .reduce((sum, r) => sum + r.days, 0)
+      const daysAvailable = eligible ? Math.max(0, totalEntitled - daysUsed) : 0
       const maxAccumulation = totalEntitled * CHILE_LABOR.FERIADO.acumulacionMax
       const hasAccumulationAlert = daysAvailable >= maxAccumulation
 
@@ -238,62 +265,73 @@ export default function VacacionesTab() {
 
   // ─── Handlers ───
 
-  const handleApprove = (id: string) => {
-    setRequests(prev => prev.map(r =>
-      r.id === id ? { ...r, status: 'aprobada' as LeaveStatus, reviewedBy: 'CEO', reviewedAt: new Date().toISOString().split('T')[0] } : r
-    ))
+  const handleApprove = async (id: string) => {
+    setActionLoading(true)
+    try {
+      await api.approveLeaveRequest(id)
+      await reloadRequests()
+    } catch (err: any) {
+      alert(err.message || 'Error al aprobar solicitud')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
-  const handleReject = (id: string) => {
-    setRequests(prev => prev.map(r =>
-      r.id === id ? { ...r, status: 'rechazada' as LeaveStatus, reviewedBy: 'CEO', reviewedAt: new Date().toISOString().split('T')[0] } : r
-    ))
+  const handleReject = async (id: string) => {
+    const reason = window.prompt('Motivo del rechazo (opcional):') ?? ''
+    setActionLoading(true)
+    try {
+      await api.rejectLeaveRequest(id, reason)
+      await reloadRequests()
+    } catch (err: any) {
+      alert(err.message || 'Error al rechazar solicitud')
+    } finally {
+      setActionLoading(false)
+    }
   }
 
-  const handleCreateRequest = () => {
+  const handleCreateRequest = async () => {
     if (!newRequest.employeeId || !newRequest.startDate || !newRequest.endDate) return
     const emp = employees.find(e => e.id === newRequest.employeeId)
     if (!emp) return
 
     const days = countWorkingDays(newRequest.startDate, newRequest.endDate)
 
-    // Validacion Art. 70: Si es vacaciones, al menos una fraccion >= 10 dias
+    // Validacion Art. 70
     if (newRequest.type === 'vacaciones' && policy.requireMinConsecutiveDays && days < 10) {
       const balance = balances.find(b => b.employee.id === newRequest.employeeId)
       if (balance && balance.daysUsed === 0) {
-        // Primera solicitud del periodo debe ser >= 10 dias
         alert('Art. 70 CT: La primera fraccion de vacaciones debe ser de al menos 10 dias habiles consecutivos.')
         return
       }
     }
-
-    // Validacion permiso legal: exactamente 5 dias
     if (newRequest.type === 'permiso_legal' && days !== 5) {
       alert('Ley 21.247: El permiso legal por fallecimiento es de exactamente 5 dias habiles.')
       return
     }
-
-    // Validacion paternidad: exactamente 5 dias
     if (newRequest.type === 'paternidad' && days !== 5) {
       alert('Art. 195 CT: El permiso de paternidad es de exactamente 5 dias habiles.')
       return
     }
 
-    const request: LeaveRequest = {
-      id: `lr-${Date.now()}`,
-      employeeId: newRequest.employeeId,
-      employeeName: `${emp.firstName} ${emp.lastName}`,
-      type: newRequest.type,
-      startDate: newRequest.startDate,
-      endDate: newRequest.endDate,
-      days,
-      status: 'pendiente',
-      reason: newRequest.reason,
-      createdAt: new Date().toISOString().split('T')[0],
+    setActionLoading(true)
+    try {
+      await api.createLeaveRequest({
+        employee_id: newRequest.employeeId,
+        leave_type: newRequest.type,
+        start_date: newRequest.startDate,
+        end_date: newRequest.endDate,
+        days,
+        reason: newRequest.reason,
+      })
+      await reloadRequests()
+      setShowNewRequest(false)
+      setNewRequest({ employeeId: '', type: 'vacaciones', startDate: '', endDate: '', reason: '' })
+    } catch (err: any) {
+      alert(err.message || 'Error al crear solicitud')
+    } finally {
+      setActionLoading(false)
     }
-    setRequests(prev => [request, ...prev])
-    setShowNewRequest(false)
-    setNewRequest({ employeeId: '', type: 'vacaciones', startDate: '', endDate: '', reason: '' })
   }
 
   // ─── Calendar helpers ───

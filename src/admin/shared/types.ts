@@ -32,6 +32,8 @@ export interface Employee {
   bankAccountType: string
   bankAccountNumber: string
   status: string
+  profilePictureUrl?: string | null
+  isArt22Exempt?: boolean
   createdAt: string
 }
 

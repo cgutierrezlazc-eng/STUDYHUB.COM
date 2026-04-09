@@ -4,10 +4,11 @@ Handles employees, documents, payroll, operational expenses, and reports.
 All monetary values are in CLP unless otherwise noted.
 """
 import hashlib
+import json
 import os
 import time
 import httpx
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, List
 
@@ -85,6 +86,8 @@ class Employee(Base):
 
     # Status
     status = Column(String(20), default="active")  # active/inactive/terminated/on_leave
+    profile_picture_url = Column(Text, nullable=True)
+    is_art22_exempt = Column(Boolean, default=False)  # Art. 22 CT: sin control de jornada
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -191,6 +194,100 @@ class OperationalExpense(Base):
     __table_args__ = (
         Index("ix_expense_period", "period_year", "period_month"),
     )
+
+
+class EmployeeFesSignature(Base):
+    __tablename__ = "hr_fes_signatures"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_type = Column(String(100), nullable=False)
+    signer_email = Column(String(255), nullable=False)
+    signer_name = Column(String(255), nullable=False)
+    signer_rut = Column(String(20), nullable=False)
+    timestamp = Column(String(50), nullable=False)
+    ip_address = Column(String(50), nullable=False)
+    document_hash = Column(String(128), nullable=False)
+    verification_code = Column(String(50), nullable=False)
+    status = Column(String(20), default="pending")  # pending/signed
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class EmployeeERCRecord(Base):
+    __tablename__ = "hr_erc_records"
+    
+    id = Column(String(16), primary_key=True, default=gen_id)
+    employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    record_type = Column(String(50), nullable=False, index=True)  # discipline, coaching, conversations, acknowledgements, reviews, chat
+    data_payload = Column(Text, nullable=False)  # JSON payload
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LegalObligationStatus(Base):
+    __tablename__ = "hr_legal_obligations"
+
+    id = Column(String(50), primary_key=True)  # e.g., 'reglamento_interno'
+    status = Column(String(20), default="pendiente")
+    notes = Column(Text, default="")
+    completed_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AttendanceRecord(Base):
+    __tablename__ = "hr_attendance_records"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    date = Column(String(10), nullable=False)          # YYYY-MM-DD
+    entry_time = Column(String(5), nullable=True)       # HH:MM
+    exit_time = Column(String(5), nullable=True)        # HH:MM
+    total_hours = Column(Float, default=0.0)
+    overtime_hours = Column(Float, default=0.0)
+    status = Column(String(20), default="presente")     # presente/ausente/permiso/licencia/vacaciones/feriado
+    is_late = Column(Boolean, default=False)
+    late_minutes = Column(Integer, default=0)
+    notes = Column(Text, default="")
+    recorded_by = Column(String(20), default="employee")  # employee/admin
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_attendance_employee_date", "employee_id", "date"),
+    )
+
+
+class LeaveRequest(Base):
+    __tablename__ = "hr_leave_requests"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    leave_type = Column(String(30), nullable=False)     # vacaciones/permiso_legal/paternidad/licencia_medica/permiso_sin_goce/dia_administrativo
+    start_date = Column(String(10), nullable=False)     # YYYY-MM-DD
+    end_date = Column(String(10), nullable=False)       # YYYY-MM-DD
+    days = Column(Integer, nullable=False)
+    status = Column(String(20), default="pendiente")    # pendiente/aprobada/rechazada
+    reason = Column(Text, default="")
+    reviewed_by = Column(String(100), nullable=True)
+    reviewed_at = Column(String(10), nullable=True)
+    reject_reason = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        Index("ix_leave_employee_status", "employee_id", "status"),
+    )
+
+
+class EmployeeWarning(Base):
+    __tablename__ = "hr_employee_warnings"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
+    warning_type = Column(String(20), nullable=False)   # coaching/w1_verbal/w2_written/termination
+    incident_type = Column(String(20), nullable=False)  # missed_clockin/tardiness
+    incident_count = Column(Integer, nullable=False)
+    period_days = Column(Integer, nullable=False)       # 30 or 60
+    notes = Column(Text, default="")
+    issued_at = Column(DateTime, default=datetime.utcnow)
 
 
 # Create tables
@@ -410,6 +507,8 @@ class EmployeeCreate(BaseModel):
     bank_account_type: str = ""
     bank_account_number: str = ""
     user_id: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    is_art22_exempt: bool = False
 
 
 class EmployeeUpdate(BaseModel):
@@ -442,12 +541,39 @@ class EmployeeUpdate(BaseModel):
     bank_account_number: Optional[str] = None
     status: Optional[str] = None
     user_id: Optional[str] = None
+    profile_picture_url: Optional[str] = None
+    is_art22_exempt: Optional[bool] = None
 
 
 class PayrollCalculateRequest(BaseModel):
     period_month: int = Field(ge=1, le=12)
     period_year: int = Field(ge=2020, le=2100)
     overrides: Optional[dict] = None  # employee_id -> {overtime_hours, bonuses, voluntary_deductions, other_deductions}
+
+
+class ErcRecordCreate(BaseModel):
+    record_type: str
+    data_payload: str
+
+class FesSignatureCreate(BaseModel):
+    document_type: str
+    signer_email: str
+    signer_name: str
+    signer_rut: str
+    timestamp: str
+    ip_address: str
+    document_hash: str
+    verification_code: str
+    status: str = "pending"
+
+class LegalObligationSaveItem(BaseModel):
+    id: str
+    status: str
+    notes: Optional[str] = ""
+    completed_at: Optional[str] = None
+
+class LegalObligationSave(BaseModel):
+    statuses: List[LegalObligationSaveItem]
 
 
 class ExpenseCreate(BaseModel):
@@ -527,6 +653,8 @@ def _employee_to_dict(emp: Employee) -> dict:
         "bank_account_type": emp.bank_account_type,
         "bank_account_number": emp.bank_account_number,
         "status": emp.status,
+        "profile_picture_url": emp.profile_picture_url,
+        "is_art22_exempt": emp.is_art22_exempt,
         "created_at": emp.created_at.isoformat() if emp.created_at else None,
         "updated_at": emp.updated_at.isoformat() if emp.updated_at else None,
     }
@@ -844,6 +972,7 @@ def create_employee(
         bank_account_type=data.bank_account_type,
         bank_account_number=data.bank_account_number,
         status="active",
+        profile_picture_url=data.profile_picture_url,
     )
     db.add(emp)
     db.commit()
@@ -930,6 +1059,42 @@ def update_employee(
     return {"employee": _employee_to_dict(emp)}
 
 
+@router.post("/employees/{employee_id}/avatar")
+async def upload_employee_avatar(
+    employee_id: str,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+        
+    import os, uuid
+    from database import DATA_DIR
+    covers_dir = DATA_DIR / "uploads" / "covers"
+    covers_dir.mkdir(parents=True, exist_ok=True)
+    
+    ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".jpg"
+    if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
+        raise HTTPException(400, "Formato de imagen no permitido. Usa JPG o PNG.")
+        
+    filename = f"avatar_{employee_id}_{uuid.uuid4().hex[:8]}{ext}"
+    file_path = covers_dir / filename
+    
+    with open(file_path, "wb") as f:
+        f.write(await file.read())
+        
+    url = f"/uploads/covers/{filename}"
+    emp.profile_picture_url = url
+    emp.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(emp)
+    
+    return {"employee": _employee_to_dict(emp)}
+
+
 @router.delete("/employees/{employee_id}")
 def delete_employee(
     employee_id: str,
@@ -947,6 +1112,240 @@ def delete_employee(
     emp.updated_at = datetime.utcnow()
     db.commit()
     return {"message": "Empleado desvinculado", "employee_id": employee_id}
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  EMPLOYEE ERC RECORDS
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/erc/all")
+def get_all_erc(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    records = db.query(EmployeeERCRecord).all()
+    
+    result = {"coaching": [], "discipline": [], "conversations": [], "acknowledgements": [], "performance": []}
+    for rec in records:
+        if rec.record_type in result:
+            payload = json.loads(rec.data_payload)
+            payload["id"] = rec.id
+            result[rec.record_type].append(payload)
+            
+    return {"records": result}
+
+@router.get("/employees/{employee_id}/erc")
+def get_employee_erc(
+    employee_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    records = db.query(EmployeeERCRecord).filter(EmployeeERCRecord.employee_id == employee_id).all()
+    
+    result = {"coaching": [], "discipline": [], "conversations": [], "acknowledgements": [], "performance": []}
+    for rec in records:
+        if rec.record_type in result:
+            payload = json.loads(rec.data_payload)
+            payload["id"] = rec.id
+            result[rec.record_type].append(payload)
+            
+    return {"records": result}
+
+@router.post("/employees/{employee_id}/erc")
+def create_employee_erc(
+    employee_id: str,
+    data: ErcRecordCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    try:
+        json.loads(data.data_payload)
+    except:
+        raise HTTPException(400, "Invalid JSON payload")
+
+    new_record = EmployeeERCRecord(
+        employee_id=employee_id,
+        record_type=data.record_type,
+        data_payload=data.data_payload
+    )
+    db.add(new_record)
+    db.commit()
+    db.refresh(new_record)
+    
+    ret_payload = json.loads(new_record.data_payload)
+    ret_payload["id"] = new_record.id
+    
+    return {"message": "ERC Record saved", "record": ret_payload}
+
+@router.delete("/employees/{employee_id}/erc/{record_id}")
+def delete_employee_erc(
+    employee_id: str,
+    record_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    rec = db.query(EmployeeERCRecord).filter(
+        EmployeeERCRecord.employee_id == employee_id,
+        EmployeeERCRecord.id == record_id
+    ).first()
+    if not rec:
+        raise HTTPException(404, "Record not found")
+        
+    db.delete(rec)
+    db.commit()
+    return {"message": "Record deleted"}
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  EMPLOYEE FES SIGNATURES
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/fes/all")
+def get_all_fes(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    signatures = db.query(EmployeeFesSignature).all()
+    
+    result = []
+    for sig in signatures:
+        result.append({
+            "id": sig.id,
+            "employeeId": sig.employee_id,  # Include employee_id for easy grouping in frontend
+            "document_type": sig.document_type,
+            "signer_email": sig.signer_email,
+            "signer_name": sig.signer_name,
+            "signer_rut": sig.signer_rut,
+            "timestamp": sig.timestamp,
+            "ip_address": sig.ip_address,
+            "document_hash": sig.document_hash,
+            "verification_code": sig.verification_code,
+            "status": sig.status,
+            "created_at": sig.created_at.isoformat() if sig.created_at else None
+        })
+    return {"signatures": result}
+
+@router.get("/employees/{employee_id}/fes")
+def get_employee_fes(
+    employee_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    signatures = db.query(EmployeeFesSignature).filter(EmployeeFesSignature.employee_id == employee_id).all()
+    
+    result = []
+    for sig in signatures:
+        result.append({
+            "id": sig.id,
+            "document_type": sig.document_type,
+            "signer_email": sig.signer_email,
+            "signer_name": sig.signer_name,
+            "signer_rut": sig.signer_rut,
+            "timestamp": sig.timestamp,
+            "ip_address": sig.ip_address,
+            "document_hash": sig.document_hash,
+            "verification_code": sig.verification_code,
+            "status": sig.status,
+            "created_at": sig.created_at.isoformat() if sig.created_at else None
+        })
+    return {"signatures": result}
+
+@router.post("/employees/{employee_id}/fes")
+def create_employee_fes(
+    employee_id: str,
+    data: FesSignatureCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    new_sig = EmployeeFesSignature(
+        employee_id=employee_id,
+        document_type=data.document_type,
+        signer_email=data.signer_email,
+        signer_name=data.signer_name,
+        signer_rut=data.signer_rut,
+        timestamp=data.timestamp,
+        ip_address=data.ip_address,
+        document_hash=data.document_hash,
+        verification_code=data.verification_code,
+        status=data.status
+    )
+    db.add(new_sig)
+    db.commit()
+    db.refresh(new_sig)
+    
+    return {"message": "FES Signature saved", "id": new_sig.id}
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  LEGAL OBLIGATIONS STATUS
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/legal-obligations")
+def get_legal_obligations(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    statuses = db.query(LegalObligationStatus).all()
+    result = {}
+    for st in statuses:
+        result[st.id] = {
+            "status": st.status,
+            "notes": st.notes,
+            "completed_at": st.completed_at.isoformat() if st.completed_at else None
+        }
+    return {"statuses": result}
+
+@router.post("/legal-obligations")
+def save_legal_obligations(
+    data: LegalObligationSave,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _require_hr_access(user)
+    
+    for item in data.statuses:
+        status_rec = db.query(LegalObligationStatus).filter(LegalObligationStatus.id == item.id).first()
+        comp_date = None
+        if item.completed_at:
+            try:
+                comp_date = datetime.fromisoformat(item.completed_at.replace("Z", "+00:00"))
+            except Exception:
+                pass
+                
+        if status_rec:
+            status_rec.status = item.status
+            status_rec.notes = item.notes
+            status_rec.completed_at = comp_date
+            status_rec.updated_at = datetime.utcnow()
+        else:
+            new_rec = LegalObligationStatus(
+                id=item.id,
+                status=item.status,
+                notes=item.notes or "",
+                completed_at=comp_date
+            )
+            db.add(new_rec)
+            
+    db.commit()
+    return {"message": "Legal obligations updated"}
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -1736,4 +2135,720 @@ def tax_summary(
         },
         "total_company_cost": round(annual_employer_cost + total_expenses),
         "monthly_breakdown": monthly,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  ATTENDANCE & WARNING SYSTEM
+#  Art. 22, 30-34 Código del Trabajo — Control de Jornada
+# ═══════════════════════════════════════════════════════════════════
+
+WORK_START_TIME = "09:00"       # HH:MM — hora de inicio de jornada
+LATE_THRESHOLD_MIN = 10         # minutos de tolerancia antes de marcar como tarde
+
+WARNING_PROGRESSION = ["coaching", "w1_verbal", "w2_written", "termination"]
+WARNING_LABELS = {
+    "coaching":    "Coaching",
+    "w1_verbal":   "Warning Verbal (W1)",
+    "w2_written":  "Warning Escrito (W2)",
+    "termination": "Aviso de Terminación",
+}
+
+# ─── Helpers internos ───────────────────────────────────────────────
+
+def _minutes_from_hhmm(t: str) -> int:
+    """Convierte 'HH:MM' a minutos desde medianoche."""
+    h, m = t.split(":")
+    return int(h) * 60 + int(m)
+
+
+def _is_late(entry_time: str) -> tuple[bool, int]:
+    """Retorna (es_tarde, minutos_de_atraso) dado el entry_time HH:MM."""
+    threshold = _minutes_from_hhmm(WORK_START_TIME) + LATE_THRESHOLD_MIN
+    entry_min = _minutes_from_hhmm(entry_time)
+    late_min = max(0, entry_min - _minutes_from_hhmm(WORK_START_TIME))
+    return entry_min > threshold, late_min
+
+
+def _next_warning_level(employee_id: str, db: Session) -> str:
+    count = db.query(EmployeeWarning).filter(
+        EmployeeWarning.employee_id == employee_id
+    ).count()
+    if count >= len(WARNING_PROGRESSION):
+        return "termination"
+    return WARNING_PROGRESSION[count]
+
+
+def _count_incidents(employee_id: str, incident_type: str, days: int, db: Session) -> int:
+    since = datetime.utcnow() - timedelta(days=days)
+    if incident_type == "missed_clockin":
+        return db.query(AttendanceRecord).filter(
+            AttendanceRecord.employee_id == employee_id,
+            AttendanceRecord.status == "ausente",
+            AttendanceRecord.created_at >= since,
+        ).count()
+    elif incident_type == "tardiness":
+        return db.query(AttendanceRecord).filter(
+            AttendanceRecord.employee_id == employee_id,
+            AttendanceRecord.is_late == True,
+            AttendanceRecord.created_at >= since,
+        ).count()
+    return 0
+
+
+def _check_and_issue_warning(employee_id: str, incident_type: str, db: Session):
+    """Revisa umbrales y emite amonestación automática si corresponde."""
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        return
+    # Art. 22 exento → no aplica amonestación por tardanza
+    if getattr(emp, "is_art22_exempt", False) and incident_type == "tardiness":
+        return
+
+    count_30 = _count_incidents(employee_id, incident_type, 30, db)
+    count_60 = _count_incidents(employee_id, incident_type, 60, db)
+
+    triggered = False
+    period_days = 30
+    incident_count = count_30
+
+    if count_30 >= 6:
+        triggered = True
+        period_days = 30
+        incident_count = count_30
+    elif count_60 >= 12:
+        triggered = True
+        period_days = 60
+        incident_count = count_60
+
+    if not triggered:
+        return
+
+    # Evitar duplicar la misma amonestación para el mismo conteo
+    last = db.query(EmployeeWarning).filter(
+        EmployeeWarning.employee_id == employee_id,
+        EmployeeWarning.incident_type == incident_type,
+    ).order_by(EmployeeWarning.issued_at.desc()).first()
+
+    if last and last.incident_count == incident_count and last.period_days == period_days:
+        return
+
+    warning_type = _next_warning_level(employee_id, db)
+    warning = EmployeeWarning(
+        employee_id=employee_id,
+        warning_type=warning_type,
+        incident_type=incident_type,
+        incident_count=incident_count,
+        period_days=period_days,
+    )
+    db.add(warning)
+    db.commit()
+    _send_warning_emails(emp, warning_type, incident_type, incident_count, period_days)
+
+
+def _send_warning_emails(emp, warning_type: str, incident_type: str, count: int, period: int):
+    try:
+        from notifications import _send_email_async, _email_template, CEO_EMAIL
+    except Exception:
+        return
+
+    incident_label = (
+        "ausencias sin registrar asistencia" if incident_type == "missed_clockin"
+        else "llegadas tarde"
+    )
+    warning_label = WARNING_LABELS.get(warning_type, warning_type)
+
+    if warning_type == "coaching":
+        subject_emp = "RRHH Conniku — Coaching: Registro de Asistencia"
+        body_emp = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Este es un mensaje de <strong>Coaching</strong> de parte de RRHH Conniku.</p>
+<p>Hemos registrado <strong>{count} {incident_label}</strong> en los últimos <strong>{period} días</strong>,
+lo que supera el límite permitido según tu contrato de trabajo.</p>
+<p>El registro de asistencia (Clock In / Clock Out) es <strong>obligatorio</strong>.
+El incumplimiento reiterado puede derivar en medidas disciplinarias:</p>
+<ul>
+  <li>✅ <strong>Coaching</strong> — etapa actual</li>
+  <li>⚠️ Warning Verbal (W1)</li>
+  <li>🔴 Warning Escrito (W2)</li>
+  <li>❌ Terminación de Contrato</li>
+</ul>
+<p>Si tienes dificultades con el sistema, comunícalo a RRHH de inmediato.</p>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+
+    elif warning_type == "w1_verbal":
+        subject_emp = "RRHH Conniku — Warning Verbal (W1): Registro de Asistencia"
+        body_emp = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Esta comunicación corresponde a un <strong>Warning Verbal (W1)</strong>.</p>
+<p>A pesar del Coaching previo, se han registrado <strong>{count} {incident_label}</strong>
+en los últimos <strong>{period} días</strong>.</p>
+<p>De continuar este comportamiento, recibirás un <strong>Warning Escrito (W2)</strong> y,
+de persistir, se evaluará la <strong>terminación de tu contrato</strong>.</p>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+
+    elif warning_type == "w2_written":
+        subject_emp = "RRHH Conniku — Warning Escrito (W2): Registro de Asistencia"
+        body_emp = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Esta es una <strong>amonestación formal escrita (W2)</strong>, registrada en tu carpeta de personal.</p>
+<p>Se han registrado <strong>{count} {incident_label}</strong> en los últimos <strong>{period} días</strong>,
+pese a los avisos previos (Coaching y Warning Verbal).</p>
+<p>⚠️ <strong>AVISO FINAL:</strong> De continuar con este comportamiento, la empresa procederá a la
+<strong>terminación de tu contrato</strong> conforme al Art. 160 N°7 del Código del Trabajo
+(incumplimiento grave de las obligaciones laborales).</p>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+
+    else:  # termination
+        subject_emp = "RRHH Conniku — Aviso Formal por Incumplimiento Reiterado"
+        body_emp = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Pese a los avisos previos (Coaching, W1, W2), se han registrado
+<strong>{count} {incident_label}</strong> en los últimos <strong>{period} días</strong>.</p>
+<p>🔴 La empresa está evaluando la <strong>terminación de contrato</strong> conforme al
+Art. 160 N°7 del Código del Trabajo. Se le contactará formalmente para el proceso correspondiente.</p>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+
+    subject_ceo = f"[RRHH] {warning_label} — {emp.first_name} {emp.last_name} ({emp.rut})"
+    body_ceo = f"""<p>Cristian,</p>
+<p>Se emitió automáticamente un <strong>{warning_label}</strong>:</p>
+<ul>
+  <li><strong>Trabajador:</strong> {emp.first_name} {emp.last_name} — {emp.rut}</li>
+  <li><strong>Cargo:</strong> {emp.position}</li>
+  <li><strong>Motivo:</strong> {count} {incident_label} en {period} días</li>
+  <li><strong>Nivel:</strong> {warning_label}</li>
+</ul>
+<p>Puedes revisar el historial en el panel RRHH → pestaña Asistencia.</p>"""
+
+    emp_html = _email_template(f"RRHH — {warning_label}", body_emp)
+    ceo_html = _email_template(subject_ceo, body_ceo, sender="ceo")
+    _send_email_async(emp.email, subject_emp, emp_html, from_account="noreply")
+    _send_email_async(CEO_EMAIL, subject_ceo, ceo_html, from_account="ceo")
+
+
+# ─── Pydantic schemas ────────────────────────────────────────────────
+
+class AttendanceAdminCreate(BaseModel):
+    employee_id: str
+    date: str                               # YYYY-MM-DD
+    entry_time: Optional[str] = None        # HH:MM
+    exit_time: Optional[str] = None         # HH:MM
+    status: str = "presente"
+    notes: str = ""
+
+
+class LeaveRequestCreate(BaseModel):
+    employee_id: str
+    leave_type: str
+    start_date: str
+    end_date: str
+    days: int
+    reason: str = ""
+
+
+class LeaveReviewBody(BaseModel):
+    reject_reason: Optional[str] = None
+
+
+# ─── Attendance endpoints ────────────────────────────────────────────
+
+@router.post("/hr/attendance/checkin")
+def attendance_checkin(
+    employee_id: Optional[str] = None,
+    notes: str = "",
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Clock In — puede ejecutarlo el empleado (sin employee_id) o el admin (con employee_id)."""
+    today = date.today().isoformat()
+
+    if employee_id:
+        # Admin registra por otro empleado
+        emp = db.query(Employee).filter(Employee.id == employee_id).first()
+        if not emp:
+            raise HTTPException(status_code=404, detail="Empleado no encontrado")
+        recorded_by = "admin"
+    else:
+        # Empleado registra su propio Clock In
+        emp = db.query(Employee).filter(Employee.user_id == user.id).first()
+        if not emp:
+            raise HTTPException(status_code=404, detail="No tienes un perfil de empleado vinculado")
+        employee_id = emp.id
+        recorded_by = "employee"
+
+    # Verificar si ya hay un registro de hoy
+    existing = db.query(AttendanceRecord).filter(
+        AttendanceRecord.employee_id == employee_id,
+        AttendanceRecord.date == today,
+    ).first()
+
+    if existing and existing.entry_time:
+        raise HTTPException(status_code=400, detail=f"Ya registraste entrada hoy a las {existing.entry_time}")
+
+    now_time = datetime.now().strftime("%H:%M")
+    late, late_min = _is_late(now_time)
+
+    if existing:
+        existing.entry_time = now_time
+        existing.status = "presente"
+        existing.is_late = late
+        existing.late_minutes = late_min
+        existing.recorded_by = recorded_by
+        existing.notes = notes
+        record = existing
+    else:
+        record = AttendanceRecord(
+            employee_id=employee_id,
+            date=today,
+            entry_time=now_time,
+            status="presente",
+            is_late=late,
+            late_minutes=late_min,
+            recorded_by=recorded_by,
+            notes=notes,
+        )
+        db.add(record)
+
+    db.commit()
+    db.refresh(record)
+
+    # Revisar amonestación por tardanza
+    if late:
+        _check_and_issue_warning(employee_id, "tardiness", db)
+
+    return {
+        "ok": True,
+        "entry_time": now_time,
+        "is_late": late,
+        "late_minutes": late_min,
+        "employee_name": f"{emp.first_name} {emp.last_name}",
+    }
+
+
+@router.post("/hr/attendance/checkout")
+def attendance_checkout(
+    employee_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Clock Out — empleado o admin."""
+    today = date.today().isoformat()
+
+    if employee_id:
+        emp = db.query(Employee).filter(Employee.id == employee_id).first()
+        if not emp:
+            raise HTTPException(status_code=404, detail="Empleado no encontrado")
+    else:
+        emp = db.query(Employee).filter(Employee.user_id == user.id).first()
+        if not emp:
+            raise HTTPException(status_code=404, detail="No tienes un perfil de empleado vinculado")
+        employee_id = emp.id
+
+    record = db.query(AttendanceRecord).filter(
+        AttendanceRecord.employee_id == employee_id,
+        AttendanceRecord.date == today,
+    ).first()
+
+    if not record or not record.entry_time:
+        raise HTTPException(status_code=400, detail="No hay Clock In registrado para hoy")
+    if record.exit_time:
+        raise HTTPException(status_code=400, detail=f"Ya registraste salida hoy a las {record.exit_time}")
+
+    now_time = datetime.now().strftime("%H:%M")
+    entry_min = _minutes_from_hhmm(record.entry_time)
+    exit_min = _minutes_from_hhmm(now_time)
+    total_hours = round(max(0, exit_min - entry_min) / 60, 2)
+
+    # Horas extra: sobre 9h (8h trabajo + 1h colación, Art. 34 CT)
+    overtime = round(max(0, total_hours - 9), 2)
+
+    record.exit_time = now_time
+    record.total_hours = total_hours
+    record.overtime_hours = overtime
+    db.commit()
+
+    return {
+        "ok": True,
+        "exit_time": now_time,
+        "total_hours": total_hours,
+        "overtime_hours": overtime,
+        "employee_name": f"{emp.first_name} {emp.last_name}",
+    }
+
+
+@router.get("/hr/attendance/today")
+def get_today_attendance(
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Estado de asistencia de hoy para el empleado logueado."""
+    today = date.today().isoformat()
+    emp = db.query(Employee).filter(Employee.user_id == user.id).first()
+    if not emp:
+        return {"has_employee": False}
+
+    record = db.query(AttendanceRecord).filter(
+        AttendanceRecord.employee_id == emp.id,
+        AttendanceRecord.date == today,
+    ).first()
+
+    return {
+        "has_employee": True,
+        "employee_id": emp.id,
+        "employee_name": f"{emp.first_name} {emp.last_name}",
+        "is_art22_exempt": emp.is_art22_exempt,
+        "record": _attendance_to_dict(record) if record else None,
+    }
+
+
+@router.get("/hr/attendance/monthly/{year}/{month}")
+def get_monthly_attendance(
+    year: int,
+    month: int,
+    employee_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Obtiene registros de asistencia de un mes. Admin: todos los empleados o uno específico."""
+    month_str = f"{year}-{str(month).zfill(2)}"
+
+    query = db.query(AttendanceRecord).filter(
+        AttendanceRecord.date.startswith(month_str)
+    )
+    if employee_id:
+        query = query.filter(AttendanceRecord.employee_id == employee_id)
+
+    records = query.order_by(AttendanceRecord.date, AttendanceRecord.employee_id).all()
+    return [_attendance_to_dict(r) for r in records]
+
+
+@router.post("/hr/attendance/record")
+def admin_record_attendance(
+    data: AttendanceAdminCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    """Admin crea o actualiza manualmente un registro de asistencia."""
+    emp = db.query(Employee).filter(Employee.id == data.employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    existing = db.query(AttendanceRecord).filter(
+        AttendanceRecord.employee_id == data.employee_id,
+        AttendanceRecord.date == data.date,
+    ).first()
+
+    late = False
+    late_min = 0
+    total_hours = 0.0
+    overtime = 0.0
+
+    if data.entry_time:
+        late, late_min = _is_late(data.entry_time)
+    if data.entry_time and data.exit_time:
+        entry_m = _minutes_from_hhmm(data.entry_time)
+        exit_m = _minutes_from_hhmm(data.exit_time)
+        total_hours = round(max(0, exit_m - entry_m) / 60, 2)
+        overtime = round(max(0, total_hours - 9), 2)
+
+    if existing:
+        existing.entry_time = data.entry_time
+        existing.exit_time = data.exit_time
+        existing.status = data.status
+        existing.is_late = late
+        existing.late_minutes = late_min
+        existing.total_hours = total_hours
+        existing.overtime_hours = overtime
+        existing.recorded_by = "admin"
+        existing.notes = data.notes
+        record = existing
+    else:
+        record = AttendanceRecord(
+            employee_id=data.employee_id,
+            date=data.date,
+            entry_time=data.entry_time,
+            exit_time=data.exit_time,
+            status=data.status,
+            is_late=late,
+            late_minutes=late_min,
+            total_hours=total_hours,
+            overtime_hours=overtime,
+            recorded_by="admin",
+            notes=data.notes,
+        )
+        db.add(record)
+
+    db.commit()
+    db.refresh(record)
+
+    # Si el admin marca como ausente, revisar amonestación
+    if data.status == "ausente":
+        _check_and_issue_warning(data.employee_id, "missed_clockin", db)
+
+    return _attendance_to_dict(record)
+
+
+@router.get("/hr/warnings/{employee_id}")
+def get_employee_warnings(
+    employee_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    warnings = db.query(EmployeeWarning).filter(
+        EmployeeWarning.employee_id == employee_id
+    ).order_by(EmployeeWarning.issued_at.desc()).all()
+    return [_warning_to_dict(w) for w in warnings]
+
+
+# ─── Leave endpoints ──────────────────────────────────────────────────
+
+@router.get("/hr/leave/requests")
+def get_all_leave_requests(
+    status: Optional[str] = None,
+    employee_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    query = db.query(LeaveRequest)
+    if status:
+        query = query.filter(LeaveRequest.status == status)
+    if employee_id:
+        query = query.filter(LeaveRequest.employee_id == employee_id)
+    requests = query.order_by(LeaveRequest.created_at.desc()).all()
+
+    result = []
+    for r in requests:
+        emp = db.query(Employee).filter(Employee.id == r.employee_id).first()
+        d = _leave_to_dict(r)
+        d["employee_name"] = f"{emp.first_name} {emp.last_name}" if emp else "—"
+        result.append(d)
+    return result
+
+
+@router.get("/hr/leave/balance/{employee_id}")
+def get_leave_balance(
+    employee_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Calcular días con derecho (Art. 67 CT)
+    try:
+        hire = date.fromisoformat(emp.hire_date)
+        years_service = (date.today() - hire).days / 365.25
+    except Exception:
+        years_service = 0
+
+    eligible = years_service >= 1
+    base_days = 15  # Art. 67: 15 días hábiles base
+    # Art. 68: días progresivos — 1 día adicional por cada 3 años de servicio sobre 10 años
+    progressive = max(0, int((years_service - 10) / 3)) if years_service > 10 else 0
+    entitled = base_days + progressive if eligible else 0
+
+    # Días usados este año (solicitudes aprobadas tipo vacaciones)
+    current_year = date.today().year
+    used_result = db.query(func.sum(LeaveRequest.days)).filter(
+        LeaveRequest.employee_id == employee_id,
+        LeaveRequest.leave_type == "vacaciones",
+        LeaveRequest.status == "aprobada",
+        LeaveRequest.start_date >= f"{current_year}-01-01",
+        LeaveRequest.start_date <= f"{current_year}-12-31",
+    ).scalar() or 0
+
+    available = max(0, entitled - int(used_result))
+    # Art. 69: acumulación máx. 2 períodos
+    max_accumulation = entitled * 2
+
+    return {
+        "employee_id": employee_id,
+        "eligible": eligible,
+        "years_service": round(years_service, 1),
+        "entitled_days": entitled,
+        "used_days": int(used_result),
+        "available_days": available,
+        "max_accumulation": max_accumulation,
+        "progressive_days": progressive,
+    }
+
+
+@router.post("/hr/leave/request")
+def create_leave_request(
+    data: LeaveRequestCreate,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    emp = db.query(Employee).filter(Employee.id == data.employee_id).first()
+    if not emp:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Verificar que no haya solicitud pendiente superpuesta
+    overlap = db.query(LeaveRequest).filter(
+        LeaveRequest.employee_id == data.employee_id,
+        LeaveRequest.status == "pendiente",
+        LeaveRequest.start_date <= data.end_date,
+        LeaveRequest.end_date >= data.start_date,
+    ).first()
+    if overlap:
+        raise HTTPException(status_code=400, detail="Ya existe una solicitud pendiente en ese período")
+
+    req = LeaveRequest(
+        employee_id=data.employee_id,
+        leave_type=data.leave_type,
+        start_date=data.start_date,
+        end_date=data.end_date,
+        days=data.days,
+        reason=data.reason,
+    )
+    db.add(req)
+    db.commit()
+    db.refresh(req)
+
+    d = _leave_to_dict(req)
+    d["employee_name"] = f"{emp.first_name} {emp.last_name}"
+    return d
+
+
+@router.put("/hr/leave/requests/{request_id}/approve")
+def approve_leave_request(
+    request_id: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    req = db.query(LeaveRequest).filter(LeaveRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    if req.status != "pendiente":
+        raise HTTPException(status_code=400, detail=f"La solicitud ya está {req.status}")
+
+    emp = db.query(Employee).filter(Employee.id == req.employee_id).first()
+
+    req.status = "aprobada"
+    req.reviewed_by = f"{user.first_name} {user.last_name}"
+    req.reviewed_at = date.today().isoformat()
+    db.commit()
+
+    # Email al empleado
+    _send_leave_email(emp, req, approved=True)
+
+    d = _leave_to_dict(req)
+    d["employee_name"] = f"{emp.first_name} {emp.last_name}" if emp else "—"
+    return d
+
+
+@router.put("/hr/leave/requests/{request_id}/reject")
+def reject_leave_request(
+    request_id: str,
+    body: LeaveReviewBody,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    req = db.query(LeaveRequest).filter(LeaveRequest.id == request_id).first()
+    if not req:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+    if req.status != "pendiente":
+        raise HTTPException(status_code=400, detail=f"La solicitud ya está {req.status}")
+
+    emp = db.query(Employee).filter(Employee.id == req.employee_id).first()
+
+    req.status = "rechazada"
+    req.reviewed_by = f"{user.first_name} {user.last_name}"
+    req.reviewed_at = date.today().isoformat()
+    req.reject_reason = body.reject_reason or ""
+    db.commit()
+
+    _send_leave_email(emp, req, approved=False)
+
+    d = _leave_to_dict(req)
+    d["employee_name"] = f"{emp.first_name} {emp.last_name}" if emp else "—"
+    return d
+
+
+def _send_leave_email(emp, req: LeaveRequest, approved: bool):
+    try:
+        from notifications import _send_email_async, _email_template
+    except Exception:
+        return
+
+    leave_labels = {
+        "vacaciones": "Vacaciones Anuales",
+        "permiso_legal": "Permiso Legal (5 días)",
+        "paternidad": "Permiso Paternidad",
+        "licencia_medica": "Licencia Médica",
+        "permiso_sin_goce": "Permiso sin Goce de Sueldo",
+        "dia_administrativo": "Día Administrativo",
+    }
+    leave_label = leave_labels.get(req.leave_type, req.leave_type)
+
+    if approved:
+        subject = f"Conniku RRHH — Solicitud de {leave_label} Aprobada"
+        body = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Tu solicitud de <strong>{leave_label}</strong> ha sido <span style="color:#16a34a"><strong>aprobada</strong></span>.</p>
+<ul>
+  <li><strong>Período:</strong> {req.start_date} al {req.end_date}</li>
+  <li><strong>Días:</strong> {req.days}</li>
+</ul>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+    else:
+        subject = f"Conniku RRHH — Solicitud de {leave_label} Rechazada"
+        reason_text = f"<p><strong>Motivo:</strong> {req.reject_reason}</p>" if req.reject_reason else ""
+        body = f"""<p>Estimado/a <strong>{emp.first_name} {emp.last_name}</strong>,</p>
+<p>Tu solicitud de <strong>{leave_label}</strong> ha sido <span style="color:#dc2626"><strong>rechazada</strong></span>.</p>
+<ul>
+  <li><strong>Período solicitado:</strong> {req.start_date} al {req.end_date}</li>
+</ul>
+{reason_text}
+<p>Si tienes dudas, comunícate con RRHH.</p>
+<p>Atentamente,<br>Equipo RRHH — Conniku</p>"""
+
+    html = _email_template(f"RRHH — {leave_label}", body)
+    _send_email_async(emp.email, subject, html, from_account="noreply")
+
+
+# ─── Serializers ─────────────────────────────────────────────────────
+
+def _attendance_to_dict(r: AttendanceRecord) -> dict:
+    return {
+        "id": r.id,
+        "employee_id": r.employee_id,
+        "date": r.date,
+        "entry_time": r.entry_time,
+        "exit_time": r.exit_time,
+        "total_hours": r.total_hours,
+        "overtime_hours": r.overtime_hours,
+        "status": r.status,
+        "is_late": r.is_late,
+        "late_minutes": r.late_minutes,
+        "notes": r.notes,
+        "recorded_by": r.recorded_by,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
+
+
+def _leave_to_dict(r: LeaveRequest) -> dict:
+    return {
+        "id": r.id,
+        "employee_id": r.employee_id,
+        "leave_type": r.leave_type,
+        "start_date": r.start_date,
+        "end_date": r.end_date,
+        "days": r.days,
+        "status": r.status,
+        "reason": r.reason,
+        "reviewed_by": r.reviewed_by,
+        "reviewed_at": r.reviewed_at,
+        "reject_reason": r.reject_reason,
+        "created_at": r.created_at.isoformat() if r.created_at else None,
+    }
+
+
+def _warning_to_dict(w: EmployeeWarning) -> dict:
+    return {
+        "id": w.id,
+        "employee_id": w.employee_id,
+        "warning_type": w.warning_type,
+        "warning_label": WARNING_LABELS.get(w.warning_type, w.warning_type),
+        "incident_type": w.incident_type,
+        "incident_count": w.incident_count,
+        "period_days": w.period_days,
+        "notes": w.notes,
+        "issued_at": w.issued_at.isoformat() if w.issued_at else None,
     }

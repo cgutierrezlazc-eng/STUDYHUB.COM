@@ -1042,6 +1042,20 @@ export const api = {
     }
     return request(`/hr/employees/${id}`, { method: 'PUT', body: JSON.stringify(snake) })
   },
+  uploadEmployeeAvatar: async (id: string, file: File) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/hr/employees/${id}/avatar`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) throw new Error(`Upload Error: ${res.status}`);
+    return res.json();
+  },
   deleteEmployee: (id: string) => request(`/hr/employees/${id}`, { method: 'DELETE' }),
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
   uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
@@ -1056,6 +1070,62 @@ export const api = {
   updateExpense: (id: string, data: any) => request(`/hr/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteExpense: (id: string) => request(`/hr/expenses/${id}`, { method: 'DELETE' }),
   getExpenseSummary: (year: number) => request(`/hr/expenses/summary/${year}`),
+  
+  // ─── ERC & FES & Legal (Added) ────────────────────────────
+  getAllErcRecords: () => request('/hr/erc/all'),
+  getEmployeeErcRecords: (employeeId: string) => request(`/hr/employees/${employeeId}/erc`),
+  saveErcRecord: (employeeId: string, recordType: string, payload: any) => 
+    request(`/hr/employees/${employeeId}/erc`, { 
+      method: 'POST', 
+      body: JSON.stringify({ record_type: recordType, data_payload: JSON.stringify(payload) }) 
+    }),
+  deleteErcRecord: (employeeId: string, recordId: string) => 
+    request(`/hr/employees/${employeeId}/erc/${recordId}`, { method: 'DELETE' }),
+
+  getAllFesSignatures: () => request('/hr/fes/all'),
+  getEmployeeFesSignatures: (employeeId: string) => request(`/hr/employees/${employeeId}/fes`),
+  saveFesSignature: (employeeId: string, data: any) => 
+    request(`/hr/employees/${employeeId}/fes`, { method: 'POST', body: JSON.stringify(data) }),
+
+  getLegalObligations: () => request('/hr/legal-obligations'),
+  saveLegalObligations: (statuses: any[]) =>
+    request('/hr/legal-obligations', { method: 'POST', body: JSON.stringify({ statuses }) }),
+
+  // ─── Asistencia ────────────────────────────────────────────────
+  clockIn: (employeeId?: string, notes?: string) =>
+    request('/hr/attendance/checkin', {
+      method: 'POST',
+      body: JSON.stringify({ employee_id: employeeId ?? null, notes: notes ?? '' }),
+    }),
+  clockOut: (employeeId?: string) =>
+    request('/hr/attendance/checkout', {
+      method: 'POST',
+      body: JSON.stringify({ employee_id: employeeId ?? null }),
+    }),
+  getTodayAttendance: () => request('/hr/attendance/today'),
+  getMonthlyAttendance: (year: number, month: number, employeeId?: string) =>
+    request(`/hr/attendance/monthly/${year}/${month}${employeeId ? `?employee_id=${employeeId}` : ''}`),
+  adminRecordAttendance: (data: any) =>
+    request('/hr/attendance/record', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ─── Vacaciones / Permisos ────────────────────────────────────
+  getLeaveRequests: (params?: string) =>
+    request(`/hr/leave/requests${params ? `?${params}` : ''}`),
+  getLeaveBalance: (employeeId: string) =>
+    request(`/hr/leave/balance/${employeeId}`),
+  createLeaveRequest: (data: any) =>
+    request('/hr/leave/request', { method: 'POST', body: JSON.stringify(data) }),
+  approveLeaveRequest: (id: string) =>
+    request(`/hr/leave/requests/${id}/approve`, { method: 'PUT', body: JSON.stringify({}) }),
+  rejectLeaveRequest: (id: string, reason?: string) =>
+    request(`/hr/leave/requests/${id}/reject`, {
+      method: 'PUT',
+      body: JSON.stringify({ reject_reason: reason ?? '' }),
+    }),
+
+  // ─── Amonestaciones ───────────────────────────────────────────
+  getEmployeeWarnings: (employeeId: string) =>
+    request(`/hr/warnings/${employeeId}`),
 
   // ─── Tutores / Prestadores Externos ────────────────────────
   applyAsTutor: (data: any) => request('/tutors/apply', { method: 'POST', body: JSON.stringify(data) }),
