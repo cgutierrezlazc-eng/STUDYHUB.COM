@@ -94,6 +94,74 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
 
   return (
     <div className="home-dash page-enter">
+
+      {/* ─── Primeros pasos (only for new users with 0 subjects) ─── */}
+      {!loading && projects.length === 0 && (
+        <div style={{
+          background: 'linear-gradient(135deg, rgba(37,99,235,0.04) 0%, rgba(124,58,237,0.04) 100%)',
+          border: '1px solid var(--border-subtle)',
+          borderRadius: 16, padding: '20px 24px', marginBottom: 24,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+            {Sparkles({ size: 16, color: 'var(--accent)' })}
+            <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>
+              ¡Bienvenido/a! Empieza en 3 pasos
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {[
+              {
+                num: '1', title: 'Crea tu primera asignatura',
+                desc: 'Organiza tus apuntes y documentos por materia',
+                action: () => onNavigate('/dashboard'),
+                cta: 'Crear asignatura',
+                color: 'var(--accent-blue)',
+              },
+              {
+                num: '2', title: 'Conecta con compañeros',
+                desc: 'Encuentra estudiantes de tu universidad y carrera',
+                action: () => onNavigate('/friends'),
+                cta: 'Buscar compañeros',
+                color: 'var(--accent-green)',
+              },
+              {
+                num: '3', title: 'Únete a una comunidad',
+                desc: 'Grupos de estudio por materia, con recursos compartidos',
+                action: () => onNavigate('/communities'),
+                cta: 'Ver comunidades',
+                color: 'var(--accent-purple)',
+              },
+            ].map(step => (
+              <div key={step.num} style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                background: 'var(--bg-card)', borderRadius: 10,
+                padding: '12px 16px', border: '1px solid var(--border-subtle)',
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  background: step.color + '18', color: step.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, fontWeight: 700,
+                }}>{step.num}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{step.title}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{step.desc}</div>
+                </div>
+                <button
+                  onClick={step.action}
+                  style={{
+                    border: 'none', borderRadius: 8, cursor: 'pointer',
+                    padding: '7px 14px', fontSize: 12, fontWeight: 600,
+                    background: step.color + '14', color: step.color,
+                    flexShrink: 0, whiteSpace: 'nowrap',
+                  }}
+                >{step.cta}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Greeting */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
@@ -293,7 +361,17 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
               })
             ) : (
               <div style={{ padding: '8px 0', textAlign: 'center' }}>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{t('dash.addFirstSubject')}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>{t('dash.addFirstSubject')}</div>
+                <button
+                  onClick={() => onNavigate('/dashboard')}
+                  style={{
+                    border: 'none', borderRadius: 8, cursor: 'pointer',
+                    padding: '7px 16px', fontSize: 12, fontWeight: 600,
+                    background: 'var(--accent)', color: '#fff',
+                  }}
+                >
+                  {Plus({ size: 12 })} Nueva asignatura
+                </button>
               </div>
             )}
           </div>
