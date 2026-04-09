@@ -63,7 +63,7 @@ Responde en {'español' if lang == 'es' else 'English'}."""
     prompt = f"Material del curso:\n{all_text[:15000]}{weak_info}\n\nPredice qué saldrá en el examen."
 
     try:
-        result_text = ai_engine._call_claude(system, prompt)
+        result_text = ai_engine._call_gemini(system, prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         result = json.loads(result_text[start:end])

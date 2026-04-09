@@ -55,7 +55,7 @@ Responde en {'español' if lang == 'es' else 'English' if lang == 'en' else lang
     prompt = f"Genera una prueba diagnóstica para la materia universitaria: {subject_name}. Duración del curso: {duration_weeks} semanas."
 
     try:
-        result_text = ai_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
+        result_text = ai_engine._call_gemini(system, prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         result = json.loads(result_text[start:end]) if start >= 0 else {"topics": [], "questions": []}
@@ -228,7 +228,7 @@ Genera 10 preguntas. Responde en {'español' if lang == 'es' else 'English'}."""
     prompt = f"Material del curso:\n{all_text[:12000]}\n\nGenera el Quiz #{sq.quiz_number}."
 
     try:
-        result_text = ai_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
+        result_text = ai_engine._call_gemini(system, prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         result = json.loads(result_text[start:end])

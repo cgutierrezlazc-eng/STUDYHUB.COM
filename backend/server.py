@@ -1191,32 +1191,30 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
     system = MATH_SCAN_PROMPT.format(lang=lang_name)
 
     try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        import google.generativeai as genai_vision
 
         # Detect image type from base64 header
-        media_type = "image/jpeg"
+        mime_type = "image/jpeg"
         if req.image_base64.startswith("data:"):
             parts = req.image_base64.split(",", 1)
-            if "png" in parts[0]: media_type = "image/png"
-            elif "webp" in parts[0]: media_type = "image/webp"
+            if "png" in parts[0]: mime_type = "image/png"
+            elif "webp" in parts[0]: mime_type = "image/webp"
             image_data = parts[1] if len(parts) > 1 else req.image_base64
         else:
             image_data = req.image_base64
 
-        response = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=4096,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_data}},
-                    {"type": "text", "text": "Resuelve este problema paso a paso."}
-                ]
-            }],
-            system=system,
+        model = genai_vision.GenerativeModel(
+            model_name="gemini-2.0-flash",
+            system_instruction=system,
         )
-        result = response.content[0].text
+        response = model.generate_content(
+            [
+                {"mime_type": mime_type, "data": base64.b64decode(image_data)},
+                "Resuelve este problema paso a paso.",
+            ],
+            generation_config=genai_vision.types.GenerationConfig(max_output_tokens=4096, temperature=0.3),
+        )
+        result = response.text
         return {"solution": result, "success": True}
     except Exception as e:
         return {"solution": f"Error al procesar la imagen: {str(e)}", "success": False}

@@ -211,7 +211,7 @@ Responde en {'español' if lang == 'es' else 'English' if lang == 'en' else lang
 Sé conciso pero completo. Máximo 200 palabras."""
 
     try:
-        summary = ai_engine._call_claude(system, f"Resultados encontrados:\n{snippets}", model="claude-haiku-4-5-20251001")
+        summary = ai_engine._call_gemini(system, f"Resultados encontrados:\n{snippets}")
         return {"summary": summary.strip()}
     except Exception:
         return {"summary": "No se pudo generar el resumen."}

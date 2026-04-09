@@ -535,7 +535,7 @@ Formato JSON:
 Genera exactamente {course.lesson_count} lecciones y {min(course.lesson_count, 5)} preguntas de quiz."""
 
     try:
-        result_text = ai._call_claude(system, prompt, model="claude-sonnet-4-20250514")
+        result_text = ai._call_gemini(system, prompt)
         # Parse JSON
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
@@ -862,7 +862,7 @@ Formato JSON (responde SOLO con el JSON):
 }}"""
 
     try:
-        result_text = ai._call_claude(system, prompt, model="claude-sonnet-4-20250514")
+        result_text = ai._call_gemini(system, prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         if start >= 0 and end > start:
