@@ -6,7 +6,7 @@ import {
 import { Employee } from '../shared/types'
 import { api } from '../../services/api'
 import { CHILE_LABOR, validateSalary, calculateTax } from '../shared/ChileLaborConstants'
-import { AFP_OPTIONS, HEALTH_OPTIONS, CONTRACT_TYPES, DEPARTMENTS } from '../shared/constants'
+import { AFP_OPTIONS, HEALTH_OPTIONS, CONTRACT_TYPES, DEPARTMENTS, COMPANY } from '../shared/constants'
 import { btnPrimary, btnSecondary, btnSmall } from '../shared/styles'
 
 // ─── Contract Form Types & Constants ────────────────────────────
@@ -333,12 +333,12 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
   const [activeTab, setActiveTab] = useState<'empresa' | 'trabajador' | 'contrato' | 'jornada' | 'remuneracion' | 'previsional' | 'clausulas' | 'preview'>('empresa')
 
   const [form, setForm] = useState<ContractFormData>({
-    companyName: 'Conniku SpA',
-    companyRut: '',
-    companyAddress: '',
-    companyCity: 'Santiago',
-    companyGiro: 'Servicios tecnologicos y plataformas educativas',
-    repName: '',
+    companyName: COMPANY.name,
+    companyRut: COMPANY.rut,
+    companyAddress: COMPANY.address,
+    companyCity: COMPANY.city,
+    companyGiro: COMPANY.giro,
+    repName: COMPANY.repName,
     repRut: '',
     firstName: employee.firstName,
     lastName: employee.lastName,
@@ -479,7 +479,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div style={fieldStyle}><label style={labelStyle}>Razon Social</label><input style={inputStyle} value={form.companyName} onChange={e => u('companyName', e.target.value)} /></div>
-                <div style={fieldStyle}><label style={labelStyle}>RUT Empresa</label><input style={inputStyle} value={form.companyRut} onChange={e => u('companyRut', e.target.value)} placeholder="77.XXX.XXX-X" /></div>
+                <div style={fieldStyle}><label style={labelStyle}>RUT Empresa</label><input style={inputStyle} value={form.companyRut} onChange={e => u('companyRut', e.target.value)} placeholder="78.395.702-7" /></div>
                 <div style={fieldStyle}><label style={labelStyle}>Giro / Actividad Economica</label><input style={inputStyle} value={form.companyGiro} onChange={e => u('companyGiro', e.target.value)} /></div>
                 <div style={fieldStyle}><label style={labelStyle}>Ciudad</label><input style={inputStyle} value={form.companyCity} onChange={e => u('companyCity', e.target.value)} /></div>
                 <div style={{ ...fieldStyle, gridColumn: 'span 2' }}><label style={labelStyle}>Direccion Empresa</label><input style={inputStyle} value={form.companyAddress} onChange={e => u('companyAddress', e.target.value)} /></div>

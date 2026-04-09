@@ -4,6 +4,7 @@ import {
 } from 'lucide-react'
 import { Employee } from '../shared/types'
 import { CHILE_LABOR } from '../shared/ChileLaborConstants'
+import { COMPANY } from '../shared/constants'
 import { api } from '../../services/api'
 import { useAuth } from '../../services/auth'
 import { btnPrimary, btnSecondary, fmt } from '../shared/styles'
@@ -75,13 +76,13 @@ function generateFiniquitoHTML(
 <title>Finiquito - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: ${COMPANY.rut}<br/>${COMPANY.cityHeader}</div>
 <h1>Finiquito de Contrato de Trabajo</h1>
 <p class="legal-ref" style="text-align: center; margin-bottom: 24pt;">Conforme al Articulo 177 del Codigo del Trabajo</p>
 
 <div class="clause">
 <h2>PRIMERO: Partes</h2>
-<p>En Santiago, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT 77.XXX.XXX-X, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
+<p>En ${COMPANY.city}, a ${dateStr}, entre <strong>CONNIKU SpA</strong>, RUT ${COMPANY.rut}, representada legalmente para estos efectos, en adelante "el Empleador"; y don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, de nacionalidad ${emp.nationality}, domiciliado(a) en ${emp.address}, en adelante "el Trabajador", se celebra el presente finiquito de contrato de trabajo.</p>
 </div>
 
 <div class="clause">
@@ -137,7 +138,7 @@ ${result.recargo > 0 ? `<tr><td>Recargo legal (${result.recargoPercent}% — Art
     <div class="sig-line">
       <strong>EL EMPLEADOR</strong><br/>
       CONNIKU SpA<br/>
-      RUT: 77.XXX.XXX-X
+      RUT: ${COMPANY.rut}
     </div>
   </div>
   <div class="sig-block">
@@ -188,7 +189,7 @@ function generateCartaDespidoHTML(
 <title>Carta de Despido - ${emp.firstName} ${emp.lastName}</title>
 <style>${DOC_STYLES}</style>
 </head><body>
-<div class="header-info">CONNIKU SpA<br/>RUT: 77.XXX.XXX-X<br/>Santiago, Chile</div>
+<div class="header-info">CONNIKU SpA<br/>RUT: ${COMPANY.rut}<br/>${COMPANY.cityHeader}</div>
 
 <p style="text-align: right;">Santiago, ${dateStr}</p>
 
@@ -253,7 +254,7 @@ ${causal === 'art161' ? `
   <div class="sig-line">
     <strong>CONNIKU SpA</strong><br/>
     Representante Legal<br/>
-    RUT: 77.XXX.XXX-X
+    RUT: ${COMPANY.rut}
   </div>
 </div>
 
