@@ -1226,8 +1226,26 @@ class ConferenceParticipant(Base):
 
 # ─── Init ────────────────────────────────────────────────────────
 
+def _ensure_columns():
+    """Add missing columns to existing tables (lightweight auto-migration)."""
+    from sqlalchemy import text as _t, inspect as _inspect
+    insp = _inspect(engine)
+    migrations = [
+        ("cv_profiles", "visibility", "VARCHAR(20) DEFAULT 'public'"),
+    ]
+    with engine.begin() as conn:
+        for table, col, col_type in migrations:
+            if table not in insp.get_table_names():
+                continue
+            existing = [c["name"] for c in insp.get_columns(table)]
+            if col not in existing:
+                conn.execute(_t(f'ALTER TABLE {table} ADD COLUMN {col} {col_type}'))
+                print(f"Migration: added {table}.{col}")
+
+
 def init_db():
     Base.metadata.create_all(engine)
+    _ensure_columns()
     # Create owner account if not exists and OWNER_PASSWORD env var is set
     owner_password = os.environ.get("OWNER_PASSWORD")
     if not owner_password:
