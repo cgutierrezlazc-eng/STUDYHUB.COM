@@ -1200,12 +1200,33 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                     <audio controls src={msg.documentPath} style={{ height: 32, maxWidth: 220 }} />
                                   </div>
                                 ) : isVideo && msg.documentPath ? (
-                                  <div className="wa-audio-msg">
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                     <video controls src={
                                       msg.documentPath.startsWith('/uploads/')
                                         ? `${import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'}${msg.documentPath}`
                                         : msg.documentPath
                                     } style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, display: 'block' }} />
+                                    {/* Expiry notice */}
+                                    {(() => {
+                                      const sentAt = new Date(msg.createdAt).getTime()
+                                      const expiresAt = sentAt + 72 * 3600 * 1000
+                                      const remaining = expiresAt - Date.now()
+                                      if (remaining <= 0) {
+                                        return (
+                                          <div style={{ fontSize: 10, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                            ⚠️ Video expirado del servidor
+                                          </div>
+                                        )
+                                      }
+                                      const hoursLeft = Math.floor(remaining / 3600000)
+                                      const minsLeft = Math.floor((remaining % 3600000) / 60000)
+                                      const label = hoursLeft > 0 ? `${hoursLeft}h ${minsLeft}m` : `${minsLeft}m`
+                                      return (
+                                        <div style={{ fontSize: 10, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                          🕐 Expira en {label}
+                                        </div>
+                                      )
+                                    })()}
                                   </div>
                                 ) : (
                                   renderMessageContent(msg.content)
@@ -1334,15 +1355,26 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
                 {/* Video preview before sending */}
                 {videoPreview && (
-                  <div className="wa-photo-preview" style={{ flexDirection: 'column', gap: 12 }}>
+                  <div className="wa-photo-preview" style={{ flexDirection: 'column', gap: 10 }}>
                     <video src={videoPreview} controls style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }} />
                     <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
                       Duración: {videoRecordingTime}s
                     </div>
+                    {/* ⚠️ Advertencia TTL */}
+                    <div style={{
+                      background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.4)',
+                      borderRadius: 8, padding: '8px 12px', display: 'flex', gap: 8, alignItems: 'flex-start',
+                    }}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+                      <span style={{ fontSize: 12, color: '#92400e', lineHeight: 1.4 }}>
+                        Los videos se eliminan automáticamente del servidor a las <strong>72 horas</strong> de ser enviados.
+                        Descarga el video si quieres conservarlo.
+                      </span>
+                    </div>
                     <div className="wa-photo-preview-actions">
                       <button className="btn btn-secondary btn-sm" onClick={cancelVideoRecording}>Cancelar</button>
                       <button className="btn btn-primary btn-sm" onClick={sendVideoMessage} disabled={sendingVideo}>
-                        {sendingVideo ? 'Enviando...' : 'Enviar video'}
+                        {sendingVideo ? 'Enviando...' : '🎥 Enviar video'}
                       </button>
                     </div>
                   </div>

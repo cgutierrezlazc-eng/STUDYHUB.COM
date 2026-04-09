@@ -4,6 +4,8 @@ import uuid
 import shutil
 import logging
 import traceback
+import asyncio
+import time
 from pathlib import Path
 from typing import Optional
 
@@ -171,6 +173,41 @@ COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
 VIDEOS_DIR = DATA_DIR / "uploads" / "videos"
 VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
+
+VIDEO_TTL_SECONDS = 72 * 3600  # 72 horas
+
+
+async def _cleanup_expired_videos():
+    """Elimina archivos de video con más de 72 horas en el disco persistente."""
+    now = time.time()
+    deleted = 0
+    try:
+        for f in VIDEOS_DIR.iterdir():
+            if f.is_file() and f.suffix.lower() in ('.webm', '.mp4', '.ogg', '.mov'):
+                age = now - f.stat().st_mtime
+                if age > VIDEO_TTL_SECONDS:
+                    f.unlink(missing_ok=True)
+                    deleted += 1
+        if deleted:
+            logger.info(f"[cleanup] {deleted} video(s) expirado(s) eliminados de {VIDEOS_DIR}")
+    except Exception as e:
+        logger.error(f"[cleanup] Error al limpiar videos: {e}")
+
+
+async def _video_cleanup_loop():
+    """Loop de limpieza: ejecuta cada 6 horas."""
+    while True:
+        await asyncio.sleep(6 * 3600)
+        await _cleanup_expired_videos()
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Limpieza inicial al arrancar + lanza loop periódico."""
+    await _cleanup_expired_videos()
+    asyncio.create_task(_video_cleanup_loop())
+    logger.info("[startup] Video cleanup scheduler iniciado (cada 6h, TTL=72h)")
+
 
 doc_processor = DocumentProcessor()
 ai_engine = AIEngine()  # Gemini — all AI features (chat, quizzes, guides, support)
