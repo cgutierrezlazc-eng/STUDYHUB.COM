@@ -14,7 +14,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
     },
-    dedupe: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },
   optimizeDeps: {
     include: [
@@ -23,6 +23,7 @@ export default defineConfig({
       'react-dom/client',
       'react/jsx-runtime',
       'react/jsx-dev-runtime',
+      'react-router',
       'react-router-dom',
       'lucide-react',
       '@capacitor/app',
@@ -35,7 +36,7 @@ export default defineConfig({
       '@capacitor/splash-screen',
       '@capacitor/status-bar',
     ],
-    // noDiscovery removed — too aggressive, breaks lazy-loaded pages
+    force: true,
   },
   server: {
     port: 5173,
