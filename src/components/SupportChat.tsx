@@ -93,6 +93,12 @@ export default function SupportChat() {
   const [messages, setMessages]     = useState<Message[]>([])
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
+  const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set())
+
+  const LONG_THRESHOLD = 420 // chars — collapse messages longer than this
+  const toggleExpand = (i: number) => setExpandedMsgs(prev => {
+    const next = new Set(prev); next.has(i) ? next.delete(i) : next.add(i); return next
+  })
 
   // Admin navigation
   const [adminCat, setAdminCat]     = useState<Category | null>(null)  // null = grid, set = subcats
@@ -353,22 +359,53 @@ export default function SupportChat() {
         flex: 1, overflow: 'auto', padding: 12,
         display: 'flex', flexDirection: 'column', gap: 8,
       }}>
-        {messages.map((msg, i) => (
-          <div key={i} style={{
-            alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-            maxWidth: '85%', padding: '10px 14px',
-            borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-            background: msg.role === 'user'
-              ? (isAdmin ? '#7C3AED' : 'var(--accent)')
-              : 'var(--bg-secondary)',
-            color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
-            fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word',
-          }}>
-            {msg.role === 'assistant'
-              ? <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
-              : msg.content}
-          </div>
-        ))}
+        {messages.map((msg, i) => {
+          const isLong = msg.role === 'assistant' && msg.content.length > LONG_THRESHOLD
+          const isExpanded = expandedMsgs.has(i)
+          return (
+            <React.Fragment key={i}>
+              <div style={{
+                alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                maxWidth: '85%', padding: '10px 14px',
+                borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                background: msg.role === 'user'
+                  ? (isAdmin ? '#7C3AED' : 'var(--accent)')
+                  : 'var(--bg-secondary)',
+                color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
+                fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word',
+                position: 'relative',
+                maxHeight: isLong && !isExpanded ? '8.5em' : undefined,
+                overflow: isLong && !isExpanded ? 'hidden' : undefined,
+              }}>
+                {msg.role === 'assistant'
+                  ? <span dangerouslySetInnerHTML={{ __html: renderMarkdown(msg.content) }} />
+                  : msg.content}
+                {isLong && !isExpanded && (
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: 36,
+                    background: 'linear-gradient(transparent, var(--bg-secondary))',
+                    borderRadius: '0 0 14px 4px',
+                  }} />
+                )}
+              </div>
+              {isLong && (
+                <button
+                  onClick={() => toggleExpand(i)}
+                  style={{
+                    alignSelf: 'flex-start', background: 'none', border: 'none',
+                    cursor: 'pointer', color: 'var(--text-muted)',
+                    fontSize: 11, padding: '0 4px 4px', fontFamily: 'inherit',
+                    display: 'flex', alignItems: 'center', gap: 3,
+                  }}
+                >
+                  {isExpanded
+                    ? <><span>▲</span> Ver menos</>
+                    : <><span>▼</span> Ver respuesta completa</>}
+                </button>
+              )}
+            </React.Fragment>
+          )
+        })}
         {loading && (
           <div style={{
             alignSelf: 'flex-start', padding: '10px 14px',
