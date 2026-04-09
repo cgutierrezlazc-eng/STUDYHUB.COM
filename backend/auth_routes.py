@@ -558,6 +558,7 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
             type="direct",
             name="Bienvenida Conniku",
             description="Mensaje de bienvenida",
+            created_by=user.id,
         )
         db.add(conv)
         db.flush()
