@@ -130,12 +130,17 @@ class WebSocketService {
   /**
    * Send a chat message via WebSocket.
    */
-  sendMessage(conversationId: string, content: string, messageType: string = 'text'): void {
+  sendMessage(conversationId: string, content: string, messageType: string = 'text', replyTo?: { id: string; content: string; senderName: string }): void {
     this.send({
       type: 'message',
       conversation_id: conversationId,
       content,
-      message_type: messageType
+      message_type: messageType,
+      ...(replyTo ? {
+        reply_to_id: replyTo.id,
+        reply_to_content: replyTo.content,
+        reply_to_sender_name: replyTo.senderName,
+      } : {}),
     })
   }
 

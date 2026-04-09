@@ -205,6 +205,9 @@ class Message(Base):
     flag_reason = Column(String(500), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     edited_at = Column(DateTime, nullable=True)
+    reply_to_id = Column(String(16), nullable=True)
+    reply_to_content = Column(Text, nullable=True)
+    reply_to_sender_name = Column(String(255), nullable=True)
 
     conversation = relationship("Conversation", back_populates="messages")
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
@@ -1232,6 +1235,9 @@ def _ensure_columns():
     insp = _inspect(engine)
     migrations = [
         ("cv_profiles", "visibility", "VARCHAR(20) DEFAULT 'public'"),
+        ("messages", "reply_to_id", "VARCHAR(16)"),
+        ("messages", "reply_to_content", "TEXT"),
+        ("messages", "reply_to_sender_name", "VARCHAR(255)"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:

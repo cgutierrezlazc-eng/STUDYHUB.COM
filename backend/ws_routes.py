@@ -215,6 +215,7 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
     conv_id = data.get("conversation_id")
     content = data.get("content", "").strip()
     message_type = data.get("message_type", "text")
+    reply_to_id = data.get("reply_to_id")
 
     if not conv_id or not content:
         await websocket.send_json({"type": "error", "message": "Missing conversation_id or content"})
@@ -242,6 +243,16 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
         except Exception:
             pass
 
+        # Look up reply_to message if provided
+        reply_to_content = None
+        reply_to_sender_name = None
+        if reply_to_id:
+            ref_msg = db.query(Message).filter(Message.id == reply_to_id).first()
+            if ref_msg:
+                reply_to_content = ref_msg.content[:200] if not ref_msg.is_deleted else "[Mensaje eliminado]"
+                ref_sender = db.query(User).filter(User.id == ref_msg.sender_id).first()
+                reply_to_sender_name = ref_sender.first_name if ref_sender else "Usuario"
+
         # Create message in DB
         msg = Message(
             id=gen_id(),
@@ -250,7 +261,10 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
             content=content,
             message_type=message_type,
             is_flagged=flagged,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            reply_to_id=reply_to_id if reply_to_id else None,
+            reply_to_content=reply_to_content,
+            reply_to_sender_name=reply_to_sender_name,
         )
         db.add(msg)
 
@@ -278,6 +292,9 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
             "isFlagged": flagged,
             "createdAt": msg.created_at.isoformat(),
             "isEdited": False,
+            "replyToId": reply_to_id,
+            "replyToContent": reply_to_content,
+            "replyToSenderName": reply_to_sender_name,
         }
 
         # Send confirmation to sender

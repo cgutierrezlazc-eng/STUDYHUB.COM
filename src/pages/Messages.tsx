@@ -49,6 +49,15 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const photoInputRef = useRef<HTMLInputElement>(null)
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevConvRef = useRef<string | null>(null)
+  const [replyTo, setReplyTo] = useState<{ id: string; content: string; senderName: string } | null>(null)
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [msgSearch, setMsgSearch] = useState('')
+  const [showMsgSearch, setShowMsgSearch] = useState(false)
+  const [isAtBottom, setIsAtBottom] = useState(true)
+  const [newMessagesCount, setNewMessagesCount] = useState(0)
+  const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const textareaRef2 = useRef<HTMLTextAreaElement>(null)
 
   // ─── WebSocket Setup ──────────────────────────────────────────
   useEffect(() => {
@@ -86,9 +95,16 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             isFlagged: data.message.isFlagged || false,
             isDeleted: false,
             createdAt: data.message.createdAt,
+            replyToId: data.message.replyToId,
+            replyToContent: data.message.replyToContent,
+            replyToSenderName: data.message.replyToSenderName,
           }
           return [...prev, msg]
         })
+        // Count new messages when not scrolled to bottom
+        if (!isAtBottom) {
+          setNewMessagesCount(prev => prev + 1)
+        }
       }
       // Refresh conversation list for last message preview
       loadConversations()
@@ -115,6 +131,9 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             isFlagged: data.message.isFlagged || false,
             isDeleted: false,
             createdAt: data.message.createdAt,
+            replyToId: data.message.replyToId,
+            replyToContent: data.message.replyToContent,
+            replyToSenderName: data.message.replyToSenderName,
           }
           return [...prev, msg]
         })
@@ -200,8 +219,24 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   }, [activeConv])
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    if (isAtBottom) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, isAtBottom])
+
+  // Track scroll position for scroll-to-bottom button
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container
+      const atBottom = scrollHeight - scrollTop - clientHeight < 80
+      setIsAtBottom(atBottom)
+      if (atBottom) setNewMessagesCount(0)
+    }
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const loadConversations = async () => {
     try {
@@ -231,18 +266,19 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     if (!newMsg.trim() || !activeConv || sending) return
     const content = newMsg.trim()
     setNewMsg('')
+    if (textareaRef2.current) { textareaRef2.current.style.height = '36px' }
 
     // Send typing stop
     wsService.sendStopTyping(activeConv)
 
     if (wsService.connected) {
       // Real-time path: send via WebSocket
-      wsService.sendMessage(activeConv, content)
+      wsService.sendMessage(activeConv, content, 'text', replyTo || undefined)
     } else {
       // Fallback: send via REST API
       setSending(true)
       try {
-        await api.sendMessage(activeConv, { content })
+        await api.sendMessage(activeConv, { content, reply_to_id: replyTo?.id })
         await loadMessages(activeConv)
         await loadConversations()
       } catch (err: any) {
@@ -251,6 +287,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       }
       setSending(false)
     }
+    setReplyTo(null)
   }
 
   // Typing indicator handler
@@ -472,8 +509,71 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       )
     : friendsWithChatStatus
 
-  // Online indicator (placeholder — shows recently active)
-  const isOnline = (_userId: string) => Math.random() > 0.5
+  // Online indicator — uses actual WS online users set
+  const isOnline = (userId: string) => onlineUsers.has(userId)
+
+  // ─── Emoji list ────────────────────────────────────────────────
+  const EMOJIS = ['😊','😂','❤️','👍','🔥','✨','🎉','😍','🤔','😭','💪','📚','✅','🙏','😅','👏','🥰','😎','🤩','💡','📝','🎯','⭐','🚀','💯']
+
+  const insertEmoji = (emoji: string) => {
+    setNewMsg(prev => prev + emoji)
+    setShowEmojiPicker(false)
+    textareaRef2.current?.focus()
+  }
+
+  // ─── Textarea auto-resize ──────────────────────────────────────
+  const autoResizeTextarea = (el: HTMLTextAreaElement) => {
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+  }
+
+  // ─── Date separator helper ─────────────────────────────────────
+  const formatDateSeparator = (iso: string) => {
+    const d = new Date(iso)
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
+    if (d.toDateString() === today.toDateString()) return 'Hoy'
+    if (d.toDateString() === yesterday.toDateString()) return 'Ayer'
+    return d.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })
+  }
+
+  // ─── Link detection helper ─────────────────────────────────────
+  const renderMessageContent = (content: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    const parts = content.split(urlRegex)
+    return parts.map((part, i) =>
+      urlRegex.test(part) ? (
+        <a key={i} href={part} target="_blank" rel="noopener noreferrer"
+           style={{ color: 'var(--accent)', textDecoration: 'underline', wordBreak: 'break-all' }}>
+          {part}
+        </a>
+      ) : part
+    )
+  }
+
+  // ─── Message grouping logic ────────────────────────────────────
+  const getIsGrouped = (msgs: ConversationMessage[], index: number): boolean => {
+    if (index === 0) return false
+    const curr = msgs[index]
+    const prev = msgs[index - 1]
+    if (prev.messageType === 'system' || curr.messageType === 'system') return false
+    if (prev.sender?.id !== curr.sender?.id) return false
+    const timeDiff = new Date(curr.createdAt).getTime() - new Date(prev.createdAt).getTime()
+    return timeDiff < 5 * 60 * 1000
+  }
+
+  const getDateChanged = (msgs: ConversationMessage[], index: number): boolean => {
+    if (index === 0) return true
+    const curr = new Date(msgs[index].createdAt).toDateString()
+    const prev = new Date(msgs[index - 1].createdAt).toDateString()
+    return curr !== prev
+  }
+
+  // ─── Message search filter ─────────────────────────────────────
+  const filteredMessages = msgSearch
+    ? messages.filter(m => m.content.toLowerCase().includes(msgSearch.toLowerCase()))
+    : messages
 
   const formatTime = (iso: string) => {
     const d = new Date(iso)
@@ -822,7 +922,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
           </div>
 
           {/* Right: Chat pane */}
-          <div className="msg-chat">
+          <div className="msg-chat" style={{ position: 'relative' }}>
             {activeConversation ? (
               <>
                 {/* WhatsApp-style header with avatar */}
@@ -847,6 +947,22 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   <div className="wa-header-actions">
                     <button className="wa-icon-btn" title={t('msg.voiceCall')} disabled>{Mic({ size: 16 })}</button>
                     <button className="wa-icon-btn" title={t('msg.videoCall')} disabled>{Video({ size: 16 })}</button>
+                    {showMsgSearch ? (
+                      <input
+                        autoFocus
+                        value={msgSearch}
+                        onChange={e => setMsgSearch(e.target.value)}
+                        placeholder="Buscar en la conversación..."
+                        style={{
+                          padding: '6px 10px', borderRadius: 20, border: '1px solid var(--border-color)',
+                          background: 'var(--bg-secondary)', fontSize: 13, outline: 'none', width: 180,
+                        }}
+                        onKeyDown={e => e.key === 'Escape' && (setShowMsgSearch(false), setMsgSearch(''))}
+                      />
+                    ) : null}
+                    <button className="wa-icon-btn" onClick={() => { setShowMsgSearch(s => !s); setMsgSearch('') }} title="Buscar">
+                      {SearchIcon({ size: 16 })}
+                    </button>
                     <div style={{ position: 'relative' }}>
                       <button className="wa-icon-btn" onClick={() => setShowContactMenu(!showContactMenu)}>{MoreVertical({ size: 16 })}</button>
                       {showContactMenu && (
@@ -870,91 +986,147 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   </div>
                 </div>
 
-                <div className="msg-messages wa-messages">
-                  {messages.map(msg => {
+                <div className="msg-messages wa-messages" ref={messagesContainerRef} style={{ position: 'relative', overflowY: 'auto', flex: 1 }}>
+                  {filteredMessages.map((msg, index) => {
                     const isMine = msg.sender?.id === user?.id
+                    const isGrouped = getIsGrouped(filteredMessages, index)
+                    const showDateSep = getDateChanged(filteredMessages, index)
                     const isAudio = msg.documentName?.endsWith('.webm') || msg.content === '🎤 Mensaje de voz'
                     const isPhoto = msg.documentName?.match(/\.(jpg|jpeg|png|gif)$/i) || msg.content === '📷 Foto'
                     return (
-                      <div
-                        key={msg.id}
-                        className={`msg-bubble wa-bubble ${isMine ? 'mine' : ''} ${msg.messageType === 'system' ? 'system' : ''}`}
-                      >
-                        {msg.messageType === 'system' ? (
-                          <div className="msg-system">{msg.content}</div>
-                        ) : (
-                          <>
-                            {!isMine && activeConversation.type === 'group_study' && (
-                              <div className="msg-sender wa-sender">{msg.sender?.firstName}</div>
-                            )}
-                            <div className="msg-content">
-                              {msg.isDeleted ? (
-                                <em className="msg-deleted">{msg.content}</em>
-                              ) : isPhoto && msg.documentPath ? (
-                                <div className="wa-photo-msg">
-                                  <img src={msg.documentPath} alt="" />
-                                </div>
-                              ) : isAudio && msg.documentPath ? (
-                                <div className="wa-audio-msg">
-                                  <span>{Mic({ size: 14 })}</span>
-                                  <audio controls src={msg.documentPath} style={{ height: 32, maxWidth: 220 }} />
-                                </div>
-                              ) : (
-                                <>
-                                  {msg.content}
-                                  {msg.messageType === 'document' && msg.documentName && (
-                                    <div className="msg-document">{Paperclip({ size: 12 })} {msg.documentName}</div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                            {!msg.isDeleted && msg.content && !isMine && (
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation()
-                                  const btn = e.currentTarget
-                                  if (btn.dataset.translated) {
-                                    btn.textContent = 'Aa'
-                                    btn.title = t('msg.translate')
-                                    const original = btn.dataset.original || ''
-                                    const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
-                                    if (contentEl) contentEl.textContent = original
-                                    delete btn.dataset.translated
-                                  } else {
-                                    btn.textContent = '...'
-                                    try {
-                                      const result = await api.translateText(msg.content, user?.language || 'es')
-                                      const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
-                                      if (contentEl) {
-                                        btn.dataset.original = contentEl.textContent || ''
-                                        contentEl.textContent = result.translated
-                                      }
-                                      btn.textContent = 'Aa'
-                                      btn.title = t('msg.viewOriginal')
-                                      btn.dataset.translated = 'true'
-                                    } catch {
-                                      btn.textContent = 'Aa'
-                                    }
-                                  }
-                                }}
-                                title={t('msg.translate')}
-                                style={{
-                                  background: 'none', border: 'none', cursor: 'pointer',
-                                  fontSize: 11, padding: '2px 4px', opacity: 0.5,
-                                  position: 'absolute', bottom: 2, right: 2,
-                                }}
-                              >{Globe({ size: 11 })}</button>
-                            )}
-                            <div className="msg-meta wa-meta">
-                              <span>{formatTime(msg.createdAt)}</span>
-                              {isMine && <span className="wa-check">✓✓</span>}
-                              {isMine && !msg.isDeleted && (
-                                <button className="msg-delete-btn" onClick={() => deleteMsg(msg.id)}>{Trash2({ size: 14 })}</button>
-                              )}
-                            </div>
-                          </>
+                      <React.Fragment key={msg.id}>
+                        {/* Date separator */}
+                        {showDateSep && (
+                          <div style={{
+                            textAlign: 'center', padding: '8px 0', margin: '4px 0',
+                            fontSize: 11, color: 'var(--text-muted)', fontWeight: 600,
+                            display: 'flex', alignItems: 'center', gap: 8,
+                          }}>
+                            <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                            {formatDateSeparator(msg.createdAt)}
+                            <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                          </div>
                         )}
-                      </div>
+                        <div
+                          className={`msg-bubble wa-bubble ${isMine ? 'mine' : ''} ${msg.messageType === 'system' ? 'system' : ''}`}
+                          style={{ marginTop: isGrouped ? 2 : 8, position: 'relative' }}
+                          onMouseEnter={() => setHoveredMsgId(msg.id)}
+                          onMouseLeave={() => setHoveredMsgId(null)}
+                        >
+                          {msg.messageType === 'system' ? (
+                            <div className="msg-system">{msg.content}</div>
+                          ) : (
+                            <>
+                              {/* Hover action toolbar */}
+                              {hoveredMsgId === msg.id && !msg.isDeleted && (
+                                <div style={{
+                                  position: 'absolute', [isMine ? 'left' : 'right']: '100%',
+                                  top: 0, display: 'flex', gap: 4, padding: '0 4px',
+                                  background: 'var(--bg-card)', borderRadius: 8,
+                                  border: '1px solid var(--border-subtle)',
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                  zIndex: 10, marginRight: isMine ? 0 : 4, marginLeft: isMine ? 4 : 0,
+                                }}>
+                                  <button
+                                    onClick={() => setReplyTo({ id: msg.id, content: msg.content, senderName: msg.sender?.firstName || '' })}
+                                    title="Responder"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', fontSize: 14, color: 'var(--text-muted)' }}
+                                  >↩</button>
+                                  <button
+                                    onClick={() => navigator.clipboard?.writeText(msg.content)}
+                                    title="Copiar"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', fontSize: 14, color: 'var(--text-muted)' }}
+                                  >⧉</button>
+                                  {isMine && (
+                                    <button
+                                      onClick={() => deleteMsg(msg.id)}
+                                      title="Eliminar"
+                                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px', fontSize: 14, color: 'var(--accent-red, #ef4444)' }}
+                                    >🗑</button>
+                                  )}
+                                </div>
+                              )}
+                              {/* Sender name for groups (only first in group) */}
+                              {!isMine && activeConversation?.type === 'group_study' && !isGrouped && (
+                                <div className="msg-sender wa-sender">{msg.sender?.firstName}</div>
+                              )}
+                              {/* Reply quote */}
+                              {msg.replyToContent && (
+                                <div style={{
+                                  background: 'rgba(0,0,0,0.06)', borderLeft: '3px solid var(--accent)',
+                                  borderRadius: '4px 0 0 4px', padding: '4px 8px',
+                                  marginBottom: 4, fontSize: 12, lineHeight: 1.3,
+                                }}>
+                                  <div style={{ fontWeight: 700, color: 'var(--accent)', fontSize: 11, marginBottom: 2 }}>
+                                    {msg.replyToSenderName}
+                                  </div>
+                                  <div style={{ color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220 }}>
+                                    {msg.replyToContent}
+                                  </div>
+                                </div>
+                              )}
+                              <div className="msg-content">
+                                {msg.isDeleted ? (
+                                  <em className="msg-deleted">{msg.content}</em>
+                                ) : isPhoto && msg.documentPath ? (
+                                  <div className="wa-photo-msg">
+                                    <img src={msg.documentPath} alt="" />
+                                  </div>
+                                ) : isAudio && msg.documentPath ? (
+                                  <div className="wa-audio-msg">
+                                    <span>🎤</span>
+                                    <audio controls src={msg.documentPath} style={{ height: 32, maxWidth: 220 }} />
+                                  </div>
+                                ) : (
+                                  renderMessageContent(msg.content)
+                                )}
+                              </div>
+                              {/* Translate button */}
+                              {!msg.isDeleted && msg.content && !isMine && (
+                                <button
+                                  onClick={async (e) => {
+                                    e.stopPropagation()
+                                    const btn = e.currentTarget
+                                    if (btn.dataset.translated) {
+                                      btn.textContent = 'Aa'
+                                      btn.title = t('msg.translate')
+                                      const original = btn.dataset.original || ''
+                                      const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
+                                      if (contentEl) contentEl.textContent = original
+                                      delete btn.dataset.translated
+                                    } else {
+                                      btn.textContent = '...'
+                                      try {
+                                        const result = await api.translateText(msg.content, user?.language || 'es')
+                                        const contentEl = btn.parentElement?.querySelector('.msg-content') as HTMLElement
+                                        if (contentEl) {
+                                          btn.dataset.original = contentEl.textContent || ''
+                                          contentEl.textContent = result.translated
+                                        }
+                                        btn.textContent = 'Aa'
+                                        btn.title = t('msg.viewOriginal')
+                                        btn.dataset.translated = 'true'
+                                      } catch {
+                                        btn.textContent = 'Aa'
+                                      }
+                                    }
+                                  }}
+                                  title={t('msg.translate')}
+                                  style={{
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    fontSize: 11, padding: '2px 4px', opacity: 0.5,
+                                    position: 'absolute', bottom: 2, right: 2,
+                                  }}
+                                >🌐</button>
+                              )}
+                              <div className="msg-meta wa-meta">
+                                <span>{formatTime(msg.createdAt)}</span>
+                                {isMine && <span className="wa-check">✓✓</span>}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </React.Fragment>
                     )
                   })}
                   <div ref={messagesEndRef} />
@@ -973,6 +1145,29 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     </div>
                   )}
                 </div>
+                {/* Scroll-to-bottom button */}
+                {!isAtBottom && (
+                  <button
+                    onClick={() => {
+                      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+                      setIsAtBottom(true)
+                      setNewMessagesCount(0)
+                    }}
+                    style={{
+                      position: 'absolute', bottom: 80, right: 16, zIndex: 10,
+                      background: 'var(--accent)', color: '#fff',
+                      border: 'none', borderRadius: '50%', width: 40, height: 40,
+                      cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 16,
+                    }}
+                    title="Ir al final"
+                  >
+                    {newMessagesCount > 0 ? (
+                      <span style={{ fontSize: 11, fontWeight: 700 }}>{newMessagesCount}</span>
+                    ) : '↓'}
+                  </button>
+                )}
 
                 {/* Message request banner */}
                 {activeConversation.type === 'message_request' && (
@@ -1031,24 +1226,73 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     </div>
                   ) : (
                     <>
+                      {/* Reply preview */}
+                      {replyTo && (
+                        <div style={{
+                          padding: '8px 12px', background: 'var(--bg-secondary)',
+                          borderTop: '1px solid var(--border-subtle)',
+                          display: 'flex', alignItems: 'center', gap: 8,
+                        }}>
+                          <div style={{ flex: 1, borderLeft: '3px solid var(--accent)', paddingLeft: 8 }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', marginBottom: 2 }}>
+                              Respondiendo a {replyTo.senderName}
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>
+                              {replyTo.content}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setReplyTo(null)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--text-muted)', fontSize: 18, lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      )}
+                      {/* Emoji picker */}
+                      {showEmojiPicker && (
+                        <div style={{
+                          position: 'absolute', bottom: '100%', left: 8, zIndex: 100,
+                          background: 'var(--bg-card)', borderRadius: 12, padding: 12,
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                          border: '1px solid var(--border-subtle)',
+                          display: 'flex', flexWrap: 'wrap', gap: 6, width: 280,
+                        }}>
+                          {EMOJIS.map(emoji => (
+                            <button key={emoji} onClick={() => insertEmoji(emoji)}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, padding: '2px 4px', borderRadius: 6, transition: 'background 0.1s' }}
+                              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+                            >{emoji}</button>
+                          ))}
+                        </div>
+                      )}
                       <div className="wa-actions-group">
                         <button className="wa-icon-btn" onClick={() => photoInputRef.current?.click()} title={t('msg.sendPhotoTooltip')}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
                         </button>
-                        <button className="wa-icon-btn" title={t('msg.attachFile')} disabled>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
-                        </button>
+                        <button className="wa-icon-btn" onClick={() => setShowEmojiPicker(v => !v)} title="Emoji" style={{ fontSize: 18 }}>😊</button>
                         <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title={t('msg.voiceMessage')}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
                       </div>
-                      <input
+                      <textarea
+                        ref={textareaRef2}
                         value={newMsg}
-                        onChange={e => { setNewMsg(e.target.value); handleTyping() }}
-                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                        rows={1}
+                        onChange={e => {
+                          setNewMsg(e.target.value)
+                          handleTyping()
+                          autoResizeTextarea(e.target)
+                        }}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSend()
+                          }
+                        }}
                         placeholder={t('msg.typePlaceholder')}
                         disabled={sending}
                         className="wa-text-input"
+                        style={{ resize: 'none', overflowY: 'hidden', minHeight: 36, maxHeight: 120 }}
                       />
                       <button className="wa-send-btn" onClick={handleSend} disabled={sending || !newMsg.trim()} title={t('msg.send')}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>

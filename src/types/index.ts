@@ -187,6 +187,9 @@ export interface ConversationMessage {
   isFlagged: boolean;
   createdAt: string;
   editedAt?: string;
+  replyToId?: string;
+  replyToContent?: string;
+  replyToSenderName?: string;
 }
 
 export interface ConversationFolder {

@@ -41,6 +41,7 @@ class SendMessageRequest(BaseModel):
     message_type: str = "text"  # text | document
     document_name: Optional[str] = None
     document_path: Optional[str] = None
+    reply_to_id: Optional[str] = None
 
 
 class EditMessageRequest(BaseModel):
@@ -94,6 +95,9 @@ def message_to_dict(msg: Message, db: Session) -> dict:
         "isFlagged": msg.is_flagged,
         "createdAt": msg.created_at.isoformat() if msg.created_at else "",
         "editedAt": msg.edited_at.isoformat() if msg.edited_at else None,
+        "replyToId": getattr(msg, 'reply_to_id', None),
+        "replyToContent": getattr(msg, 'reply_to_content', None),
+        "replyToSenderName": getattr(msg, 'reply_to_sender_name', None),
     }
 
 
@@ -447,6 +451,15 @@ def send_message(
             )
         user.storage_used_bytes = current_used + attachment_size
 
+    reply_to_content = None
+    reply_to_sender_name = None
+    if req.reply_to_id:
+        reply_to_msg = db.query(Message).filter(Message.id == req.reply_to_id).first()
+        if reply_to_msg:
+            reply_to_content = reply_to_msg.content[:200] if not reply_to_msg.is_deleted else "[Mensaje eliminado]"
+            reply_to_sender = db.query(User).filter(User.id == reply_to_msg.sender_id).first()
+            reply_to_sender_name = f"{reply_to_sender.first_name}" if reply_to_sender else "Usuario"
+
     msg = Message(
         id=gen_id(),
         conversation_id=conv_id,
@@ -457,6 +470,9 @@ def send_message(
         document_path=req.document_path,
         is_flagged=moderation.get("flagged", False),
         flag_reason=moderation.get("flag_reason"),
+        reply_to_id=req.reply_to_id if req.reply_to_id else None,
+        reply_to_content=reply_to_content,
+        reply_to_sender_name=reply_to_sender_name,
     )
     db.add(msg)
 

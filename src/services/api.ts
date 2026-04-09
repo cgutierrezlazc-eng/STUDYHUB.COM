@@ -300,7 +300,7 @@ export const api = {
   getMessages: (convId: string, before?: string) =>
     request(`/messaging/conversations/${convId}/messages${before ? `?before=${before}` : ''}`),
 
-  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string }) =>
+  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string; reply_to_id?: string }) =>
     request(`/messaging/conversations/${convId}/messages`, { method: 'POST', body: JSON.stringify(data) }),
 
   editMessage: (convId: string, msgId: string, content: string) =>
