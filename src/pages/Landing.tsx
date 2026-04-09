@@ -636,7 +636,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
               fontSize: compact ? 32 : mid ? 42 : 54, fontWeight: 800,
               color: vars.textPrimary, lineHeight: 1.08, letterSpacing: '-0.04em', margin: 0,
             }}>
-              {t('landing.heroTitle1')}<span style={{ color: vars.accent, position: 'relative', display: 'inline-block' }}>{t('landing.heroHighlight')}<span style={{ position: 'absolute', bottom: -2, left: 0, width: '100%', height: 4, borderRadius: 2, background: 'linear-gradient(90deg, #2D62C8, #4A7FE0)', opacity: 0.5 }} /></span>{t('landing.heroTitle2')}
+              {t('landing.heroTitle1')}<span style={{ color: vars.accent }}>{t('landing.heroHighlight')}</span>{t('landing.heroTitle2')}
             </h1>
             <p style={{
               fontSize: compact ? 14 : 16, color: vars.textMuted, lineHeight: 1.7,
