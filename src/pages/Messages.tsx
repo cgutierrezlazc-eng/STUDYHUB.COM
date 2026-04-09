@@ -58,6 +58,16 @@ export default function Messages({ conversationId, onNavigate }: Props) {
   const [hoveredMsgId, setHoveredMsgId] = useState<string | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const textareaRef2 = useRef<HTMLTextAreaElement>(null)
+  // Video recording state
+  const [isRecordingVideo, setIsRecordingVideo] = useState(false)
+  const [videoPreview, setVideoPreview] = useState<string | null>(null)
+  const [videoBlob, setVideoBlob] = useState<Blob | null>(null)
+  const [videoRecordingTime, setVideoRecordingTime] = useState(0)
+  const [sendingVideo, setSendingVideo] = useState(false)
+  const videoMediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const videoChunksRef = useRef<Blob[]>([])
+  const videoTimerRef = useRef<number | null>(null)
+  const videoInputRef = useRef<HTMLInputElement>(null)
 
   // ─── WebSocket Setup ──────────────────────────────────────────
   useEffect(() => {
@@ -98,6 +108,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             replyToId: data.message.replyToId,
             replyToContent: data.message.replyToContent,
             replyToSenderName: data.message.replyToSenderName,
+            moderationStatus: data.message.moderationStatus || 'approved',
           }
           return [...prev, msg]
         })
@@ -134,6 +145,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
             replyToId: data.message.replyToId,
             replyToContent: data.message.replyToContent,
             replyToSenderName: data.message.replyToSenderName,
+            moderationStatus: data.message.moderationStatus || 'approved',
           }
           return [...prev, msg]
         })
@@ -176,6 +188,19 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       loadConversations()
     })
 
+    // Moderation events
+    const unsubApproved = wsService.on('message_approved', (data) => {
+      setMessages(prev => prev.map(m =>
+        m.id === data.message_id ? { ...m, moderationStatus: 'approved' as const } : m
+      ))
+    })
+
+    const unsubRejected = wsService.on('message_rejected', (data) => {
+      setMessages(prev => prev.map(m =>
+        m.id === data.message_id ? { ...m, moderationStatus: 'rejected' as const } : m
+      ))
+    })
+
     return () => {
       unsubConnection()
       unsubNewMsg()
@@ -185,6 +210,8 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       unsubOnline()
       unsubOffline()
       unsubConvUpdate()
+      unsubApproved()
+      unsubRejected()
       if (pollRef.current) clearInterval(pollRef.current)
     }
   }, [activeConv])
@@ -377,6 +404,97 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     }
     audioChunksRef.current = []
     setIsRecordingAudio(false)
+  }
+
+  // ─── Jitsi Video Call ──────────────────────────────────────────
+  const startVideoCall = () => {
+    if (!activeConversation) return
+    const roomName = `conniku-${activeConversation.id.slice(0, 8)}-${Date.now().toString(36)}`
+    const jitsiUrl = `https://meet.jit.si/${roomName}`
+
+    // Send system message with join link
+    const callMsg = `Videollamada iniciada\nUnirse: ${jitsiUrl}`
+    if (wsService.connected) {
+      wsService.sendMessage(activeConv!, callMsg)
+    } else {
+      api.sendMessage(activeConv!, { content: callMsg }).catch(() => {})
+    }
+
+    // Open Jitsi in new window
+    window.open(jitsiUrl, '_blank', 'width=1024,height=768,noopener,noreferrer')
+  }
+
+  // ─── Video Recording ───────────────────────────────────────────
+  const startVideoRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      const recorder = new MediaRecorder(stream, { mimeType: 'video/webm' })
+      videoChunksRef.current = []
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) videoChunksRef.current.push(e.data)
+      }
+      recorder.onstop = () => {
+        stream.getTracks().forEach(t => t.stop())
+        if (videoTimerRef.current) clearInterval(videoTimerRef.current)
+        const blob = new Blob(videoChunksRef.current, { type: 'video/webm' })
+        setVideoBlob(blob)
+        const url = URL.createObjectURL(blob)
+        setVideoPreview(url)
+      }
+      // Max 30 seconds
+      recorder.start(500)
+      videoMediaRecorderRef.current = recorder
+      setIsRecordingVideo(true)
+      setVideoRecordingTime(0)
+      videoTimerRef.current = window.setInterval(() => {
+        setVideoRecordingTime(p => {
+          if (p >= 29) {
+            stopVideoRecording()
+            return 30
+          }
+          return p + 1
+        })
+      }, 1000)
+    } catch {
+      alert('No se pudo acceder a la cámara')
+    }
+  }
+
+  const stopVideoRecording = () => {
+    if (videoMediaRecorderRef.current?.state !== 'inactive') {
+      videoMediaRecorderRef.current?.stop()
+    }
+    setIsRecordingVideo(false)
+    if (videoTimerRef.current) clearInterval(videoTimerRef.current)
+  }
+
+  const cancelVideoRecording = () => {
+    stopVideoRecording()
+    setVideoPreview(null)
+    setVideoBlob(null)
+    videoChunksRef.current = []
+  }
+
+  const sendVideoMessage = async () => {
+    if (!videoBlob || !activeConv) return
+    setSendingVideo(true)
+    try {
+      const result = await api.uploadVideoMessage(videoBlob)
+      await api.sendMessage(activeConv, {
+        content: 'Video',
+        message_type: 'document',
+        document_name: 'video.webm',
+        document_path: result.url,
+      })
+      setVideoPreview(null)
+      setVideoBlob(null)
+      videoChunksRef.current = []
+      await loadMessages(activeConv)
+      await loadConversations()
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar el video')
+    }
+    setSendingVideo(false)
   }
 
   const handleSearch = async (q: string) => {
@@ -946,7 +1064,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                   </div>
                   <div className="wa-header-actions">
                     <button className="wa-icon-btn" title={t('msg.voiceCall')} disabled>{Mic({ size: 16 })}</button>
-                    <button className="wa-icon-btn" title={t('msg.videoCall')} disabled>{Video({ size: 16 })}</button>
+                    <button className="wa-icon-btn" title="Videollamada (Jitsi)" onClick={startVideoCall}>{Video({ size: 16 })}</button>
                     {showMsgSearch ? (
                       <input
                         autoFocus
@@ -991,8 +1109,12 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                     const isMine = msg.sender?.id === user?.id
                     const isGrouped = getIsGrouped(filteredMessages, index)
                     const showDateSep = getDateChanged(filteredMessages, index)
-                    const isAudio = msg.documentName?.endsWith('.webm') || msg.content === '🎤 Mensaje de voz'
+                    const isAudio = (msg.documentName?.endsWith('.webm') && !msg.documentName?.match(/video/i)) || msg.content === '🎤 Mensaje de voz'
                     const isPhoto = msg.documentName?.match(/\.(jpg|jpeg|png|gif)$/i) || msg.content === '📷 Foto'
+                    const isVideo = msg.documentName?.match(/\.(webm|mp4|ogg)$/i) && msg.content !== '🎤 Mensaje de voz' || msg.content === 'Video'
+                    // Don't show pending/rejected messages to non-senders
+                    if (msg.moderationStatus === 'pending' && !isMine) return null
+                    if (msg.moderationStatus === 'rejected' && !isMine) return null
                     return (
                       <React.Fragment key={msg.id}>
                         {/* Date separator */}
@@ -1077,6 +1199,14 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                                     <span>🎤</span>
                                     <audio controls src={msg.documentPath} style={{ height: 32, maxWidth: 220 }} />
                                   </div>
+                                ) : isVideo && msg.documentPath ? (
+                                  <div className="wa-audio-msg">
+                                    <video controls src={
+                                      msg.documentPath.startsWith('/uploads/')
+                                        ? `${import.meta.env.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'}${msg.documentPath}`
+                                        : msg.documentPath
+                                    } style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, display: 'block' }} />
+                                  </div>
                                 ) : (
                                   renderMessageContent(msg.content)
                                 )}
@@ -1122,6 +1252,12 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                               <div className="msg-meta wa-meta">
                                 <span>{formatTime(msg.createdAt)}</span>
                                 {isMine && <span className="wa-check">✓✓</span>}
+                                {msg.moderationStatus === 'pending' && (
+                                  <span style={{ fontSize: 10, color: '#f59e0b', fontWeight: 600 }}>En revisión</span>
+                                )}
+                                {msg.moderationStatus === 'rejected' && (
+                                  <span style={{ fontSize: 10, color: '#ef4444', fontWeight: 600 }}>Rechazado</span>
+                                )}
                               </div>
                             </>
                           )}
@@ -1193,6 +1329,38 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         </button>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Video preview before sending */}
+                {videoPreview && (
+                  <div className="wa-photo-preview" style={{ flexDirection: 'column', gap: 12 }}>
+                    <video src={videoPreview} controls style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8 }} />
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>
+                      Duración: {videoRecordingTime}s
+                    </div>
+                    <div className="wa-photo-preview-actions">
+                      <button className="btn btn-secondary btn-sm" onClick={cancelVideoRecording}>Cancelar</button>
+                      <button className="btn btn-primary btn-sm" onClick={sendVideoMessage} disabled={sendingVideo}>
+                        {sendingVideo ? 'Enviando...' : 'Enviar video'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Video recording overlay */}
+                {isRecordingVideo && (
+                  <div className="wa-recording-bar">
+                    <button className="wa-icon-btn wa-cancel-rec" onClick={cancelVideoRecording} title="Cancelar">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <div className="recording-indicator" style={{ flex: 1 }}>
+                      <span className="recording-dot" style={{ background: '#3b82f6' }} />
+                      <span style={{ fontWeight: 600 }}>🎥 {formatRecTime(videoRecordingTime)} / 0:30</span>
+                    </div>
+                    <button className="wa-icon-btn wa-send-rec" onClick={stopVideoRecording} title="Detener y previsualizar">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+                    </button>
                   </div>
                 )}
 
@@ -1273,6 +1441,7 @@ export default function Messages({ conversationId, onNavigate }: Props) {
                         <button className="wa-icon-btn wa-mic-btn" onClick={startAudioRecording} title={t('msg.voiceMessage')}>
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
                         </button>
+                        <button className="wa-icon-btn" onClick={startVideoRecording} title="Grabar video" style={{ fontSize: 16 }}>🎥</button>
                       </div>
                       <textarea
                         ref={textareaRef2}

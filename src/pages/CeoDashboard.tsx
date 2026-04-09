@@ -17,7 +17,7 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [compliance, setComplianceStatus] = useState<any>(null)
   const [f129, setF129] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'push' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications' | 'email'>('overview')
+  const [tab, setTab] = useState<'overview' | 'push' | 'financial' | 'f129' | 'fraud' | 'compliance' | 'certifications' | 'email' | 'moderation'>('overview')
   const [progressData, setProgressData] = useState<any>(null)
   const [certSearch, setCertSearch] = useState('')
   const [certLoading, setCertLoading] = useState(false)
@@ -48,6 +48,11 @@ export default function CeoDashboard({ onNavigate }: Props) {
   const [broadcastSending, setBroadcastSending] = useState(false)
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set())
   const [deletingEmail, setDeletingEmail] = useState(false)
+  // Moderation queue state
+  const [modQueue, setModQueue] = useState<any[]>([])
+  const [modStats, setModStats] = useState<any>(null)
+  const [modFilter, setModFilter] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending')
+  const [modLoading, setModLoading] = useState(false)
   // Payment providers managed via Mercado Pago + PayPal (no Stripe)
 
   useEffect(() => {
@@ -87,6 +92,21 @@ export default function CeoDashboard({ onNavigate }: Props) {
       setEmailStats(stats)
     } catch (e: any) { console.error('Email load error:', e) }
     setEmailLoading(false)
+  }
+
+  const loadModeration = async (status = 'pending') => {
+    setModLoading(true)
+    try {
+      const [queue, stats] = await Promise.all([
+        api.getModerationQueue(status),
+        api.getModerationStats(),
+      ])
+      setModQueue(queue)
+      setModStats(stats)
+    } catch (err) {
+      console.error('Failed to load moderation queue:', err)
+    }
+    setModLoading(false)
   }
 
   const handleSendEmail = async () => {
@@ -238,9 +258,9 @@ export default function CeoDashboard({ onNavigate }: Props) {
           <button className="tab" style={{ background: '#10B981', color: '#fff', border: '1px solid #10B981', fontWeight: 600 }} onClick={() => onNavigate('/ceo/mail')}>
             {Inbox({ size: 14 })} {t('ceo.contactMail')}
           </button>
-          {(['overview', 'push', 'certifications', 'financial', 'f129', 'fraud', 'compliance'] as const).map(tb => (
-            <button key={tb} className={`tab ${tab === tb ? 'active' : ''}`} onClick={() => { setTab(tb); if (tb === 'f129' && !f129) loadF129(); if (tb === 'certifications' && !progressData) loadProgressOverview(); }}>
-              {tb === 'overview' ? <>{BarChart3({ size: 14 })} {t('ceo.tabOverview')}</> : tb === 'push' ? <>{Megaphone({ size: 14 })} {t('ceo.tabPush')}</> : tb === 'certifications' ? <>{GraduationCap({ size: 14 })} {t('ceo.tabCertifications')}</> : tb === 'financial' ? <>{Gem({ size: 14 })} {t('ceo.tabFinancial')}</> : tb === 'f129' ? <>{ClipboardList({ size: 14 })} {t('ceo.tabF129')}</> : tb === 'fraud' ? <>{Shield({ size: 14 })} {t('ceo.tabFraud')}</> : <>{CheckCircle({ size: 14 })} {t('ceo.tabCompliance')}</>}
+          {(['overview', 'push', 'certifications', 'financial', 'f129', 'fraud', 'compliance', 'moderation'] as const).map(tb => (
+            <button key={tb} className={`tab ${tab === tb ? 'active' : ''}`} onClick={() => { setTab(tb as any); if (tb === 'f129' && !f129) loadF129(); if (tb === 'certifications' && !progressData) loadProgressOverview(); if (tb === 'moderation') loadModeration(modFilter); }}>
+              {tb === 'overview' ? <>{BarChart3({ size: 14 })} {t('ceo.tabOverview')}</> : tb === 'push' ? <>{Megaphone({ size: 14 })} {t('ceo.tabPush')}</> : tb === 'certifications' ? <>{GraduationCap({ size: 14 })} {t('ceo.tabCertifications')}</> : tb === 'financial' ? <>{Gem({ size: 14 })} {t('ceo.tabFinancial')}</> : tb === 'f129' ? <>{ClipboardList({ size: 14 })} {t('ceo.tabF129')}</> : tb === 'fraud' ? <>{Shield({ size: 14 })} {t('ceo.tabFraud')}</> : tb === 'moderation' ? <>{Shield({ size: 14 })} Moderación {modStats?.pending > 0 ? <span style={{background:'#ef4444',color:'#fff',borderRadius:10,padding:'0 6px',fontSize:10,marginLeft:4}}>{modStats.pending}</span> : null}</> : <>{CheckCircle({ size: 14 })} {t('ceo.tabCompliance')}</>}
             </button>
           ))}
         </div>
@@ -724,6 +744,115 @@ export default function CeoDashboard({ onNavigate }: Props) {
                   <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={loadProgressOverview}>
                     {t('ceo.loadData')}
                   </button>
+                </div>
+              )}
+            </div>
+          )}
+
+                    {/* MODERATION TAB */}
+          {tab === 'moderation' && (
+            <div>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                <strong style={{ fontSize: 16 }}>Cola de Moderación</strong>
+                {modStats && (
+                  <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+                    {(['pending', 'approved', 'rejected', 'all'] as const).map(f => (
+                      <button
+                        key={f}
+                        className={`btn btn-sm ${modFilter === f ? 'btn-primary' : 'btn-secondary'}`}
+                        onClick={() => { setModFilter(f); loadModeration(f) }}
+                      >
+                        {f === 'pending' ? `Pendiente (${modStats.pending})` :
+                         f === 'approved' ? `Aprobado (${modStats.approved})` :
+                         f === 'rejected' ? `Rechazado (${modStats.rejected})` : 'Todos'}
+                      </button>
+                    ))}
+                    <button className="btn btn-secondary btn-sm" onClick={() => loadModeration(modFilter)}>Refrescar</button>
+                  </div>
+                )}
+              </div>
+
+              {modLoading ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Cargando...</div>
+              ) : modQueue.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                  <div style={{ fontWeight: 700 }}>Sin elementos pendientes</div>
+                  <div style={{ fontSize: 13, marginTop: 4 }}>Todo el contenido está revisado.</div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {modQueue.map(item => (
+                    <div key={item.id} style={{
+                      background: 'var(--bg-card)', borderRadius: 12, padding: 16,
+                      border: `1.5px solid ${item.status === 'pending' ? '#f59e0b' : item.status === 'approved' ? '#10b981' : '#ef4444'}`,
+                    }}>
+                      <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 8, flexWrap: 'wrap' }}>
+                            <span style={{
+                              background: item.category === 'adult' ? '#ef4444' : item.category === 'hate' ? '#7c3aed' : item.category === 'violence' ? '#dc2626' : '#f59e0b',
+                              color: '#fff', borderRadius: 6, padding: '2px 8px', fontSize: 11, fontWeight: 700,
+                            }}>{item.category?.toUpperCase()}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                              @{item.senderUsername} · {new Date(item.createdAt).toLocaleDateString('es-CL')}
+                            </span>
+                            <span style={{
+                              marginLeft: 'auto', fontSize: 11, fontWeight: 700,
+                              color: item.status === 'pending' ? '#f59e0b' : item.status === 'approved' ? '#10b981' : '#ef4444',
+                            }}>{item.status === 'pending' ? 'PENDIENTE' : item.status === 'approved' ? 'APROBADO' : 'RECHAZADO'}</span>
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+                            <strong>Razón automática:</strong> {item.autoReason || 'Sin razón'}
+                          </div>
+                          {/* Content preview */}
+                          <div style={{
+                            background: 'var(--bg-secondary)', borderRadius: 8, padding: 12,
+                            fontSize: 13, maxHeight: 200, overflowY: 'auto',
+                            border: '1px solid var(--border-subtle)',
+                          }}>
+                            {item.originalContent?.startsWith('data:image') ? (
+                              <img src={item.originalContent} alt="Contenido flaggeado" style={{ maxWidth: '100%', maxHeight: 180, borderRadius: 6 }} />
+                            ) : item.originalContent?.startsWith('data:video') ? (
+                              <video src={item.originalContent} controls style={{ maxWidth: '100%', maxHeight: 180 }} />
+                            ) : (
+                              <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.originalContent}</span>
+                            )}
+                          </div>
+                          {item.ceoNote && (
+                            <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                              Nota CEO: {item.ceoNote}
+                            </div>
+                          )}
+                        </div>
+                        {item.status === 'pending' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 140 }}>
+                            <button
+                              className="btn btn-sm"
+                              style={{ background: '#10b981', color: '#fff', border: 'none', fontWeight: 700 }}
+                              onClick={async () => {
+                                try {
+                                  await api.approveModerationItem(item.id)
+                                  loadModeration(modFilter)
+                                } catch (e) { alert('Error al aprobar') }
+                              }}
+                            >Aprobar</button>
+                            <button
+                              className="btn btn-sm"
+                              style={{ background: '#ef4444', color: '#fff', border: 'none', fontWeight: 700 }}
+                              onClick={async () => {
+                                const note = prompt('Razón del rechazo (opcional):') || undefined
+                                try {
+                                  await api.rejectModerationItem(item.id, note)
+                                  loadModeration(modFilter)
+                                } catch (e) { alert('Error al rechazar') }
+                              }}
+                            >Rechazar</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

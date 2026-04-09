@@ -58,6 +58,7 @@ from ws_routes import router as ws_router
 from hr_routes import router as hr_router
 from tutor_routes import router as tutor_router
 from ai_workflow_routes import router as ai_workflow_router
+from moderation_queue_routes import router as moderation_queue_router
 from migrations import migrate
 from prompts import (
     AUDIO_TO_NOTES_PROMPT,
@@ -148,6 +149,7 @@ app.include_router(ws_router)
 app.include_router(hr_router)
 app.include_router(tutor_router)
 app.include_router(ai_workflow_router)
+app.include_router(moderation_queue_router)
 
 
 @app.post("/admin/seed-ceo-profile")
@@ -167,6 +169,9 @@ PROJECTS_DIR.mkdir(exist_ok=True)
 COVERS_DIR = DATA_DIR / "uploads" / "covers"
 COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
+VIDEOS_DIR = DATA_DIR / "uploads" / "videos"
+VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
+
 doc_processor = DocumentProcessor()
 ai_engine = AIEngine()  # Gemini — all AI features (chat, quizzes, guides, support)
 
@@ -178,6 +183,48 @@ async def serve_cover_photo(filename: str):
     if not file_path.exists():
         raise HTTPException(404, "Imagen no encontrada")
     return FileResponse(str(file_path))
+
+
+@app.get("/uploads/videos/{filename}")
+async def serve_video_message(filename: str):
+    """Serve uploaded video message files."""
+    file_path = VIDEOS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Video no encontrado")
+    return FileResponse(str(file_path), media_type="video/webm")
+
+
+@app.post("/uploads/videos")
+async def upload_video_message_file(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+):
+    """Upload a video message file. Max 50MB."""
+    MAX_SIZE = 50 * 1024 * 1024  # 50 MB
+
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(413, "El video no puede superar 50 MB")
+
+    # Validate mime type
+    if not (file.content_type or "").startswith("video/"):
+        raise HTTPException(400, "Solo se permiten archivos de video")
+
+    # Generate unique filename
+    ext = "webm"
+    if file.filename and "." in file.filename:
+        ext = file.filename.rsplit(".", 1)[-1].lower()
+        if ext not in ("webm", "mp4", "ogg"):
+            ext = "webm"
+
+    filename = f"{uuid.uuid4().hex}.{ext}"
+    file_path = VIDEOS_DIR / filename
+
+    with open(file_path, "wb") as f:
+        f.write(content)
+
+    return {"url": f"/uploads/videos/{filename}", "filename": filename}
+
 
 # ─── Chat rate limiting (tier-aware) ───────────────────────────
 # In-memory tracker: { user_id: [datetime, datetime, ...] }

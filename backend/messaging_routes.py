@@ -9,12 +9,16 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_, desc, func
 
+import logging
 from database import (
     get_db, User, Conversation, ConversationParticipant,
-    Message, ConversationFolder, ConversationFolderItem, Friendship, gen_id
+    Message, ConversationFolder, ConversationFolderItem, Friendship, gen_id,
+    ModerationQueueItem
 )
 from middleware import get_current_user
-from moderation import check_content
+from moderation import check_content, moderate_image
+
+logger = logging.getLogger(__name__)
 try:
     from notifications import notify_new_message
 except ImportError:
@@ -98,6 +102,7 @@ def message_to_dict(msg: Message, db: Session) -> dict:
         "replyToId": getattr(msg, 'reply_to_id', None),
         "replyToContent": getattr(msg, 'reply_to_content', None),
         "replyToSenderName": getattr(msg, 'reply_to_sender_name', None),
+        "moderationStatus": getattr(msg, 'moderation_status', 'approved') or 'approved',
     }
 
 
@@ -409,6 +414,19 @@ def get_messages(
     messages = query.order_by(desc(Message.created_at)).limit(limit).all()
     messages.reverse()  # Oldest first
 
+    # Filter messages based on moderation status
+    def should_show(m: Message) -> bool:
+        status = getattr(m, 'moderation_status', 'approved') or 'approved'
+        if status == 'rejected':
+            # Only show rejected to sender as "rechazado"
+            return m.sender_id == user.id
+        if status == 'pending':
+            # Only show pending to sender
+            return m.sender_id == user.id
+        return True
+
+    messages = [m for m in messages if should_show(m)]
+
     # Update last_read
     part.last_read_at = datetime.utcnow()
     db.commit()
@@ -431,10 +449,20 @@ def send_message(
     if not part:
         raise HTTPException(403, "No tienes acceso a esta conversación")
 
-    # Content moderation
+    # Enhanced moderation check
     moderation = check_content(req.content)
-    if not moderation["allowed"]:
-        raise HTTPException(400, f"Contenido no permitido: {moderation['reason']}")
+    if not moderation["allowed"] and not moderation.get("requires_review"):
+        raise HTTPException(400, moderation.get("reason", "Contenido no permitido"))
+
+    requires_review = moderation.get("requires_review", False)
+
+    # Image/video moderation
+    if req.document_path and req.document_path.startswith("data:image"):
+        img_mod = moderate_image(req.document_path)
+        if not img_mod["allowed"] and not img_mod.get("requires_review"):
+            raise HTTPException(400, "Imagen no permitida: " + img_mod.get("reason", "Contenido inapropiado"))
+        if img_mod.get("requires_review"):
+            requires_review = True
 
     # Track storage for document/photo/audio attachments (base64 data URLs)
     if req.document_path and req.document_path.startswith("data:"):
@@ -473,6 +501,7 @@ def send_message(
         reply_to_id=req.reply_to_id if req.reply_to_id else None,
         reply_to_content=reply_to_content,
         reply_to_sender_name=reply_to_sender_name,
+        moderation_status="pending" if requires_review else "approved",
     )
     db.add(msg)
 
@@ -486,6 +515,24 @@ def send_message(
 
     db.commit()
     db.refresh(msg)
+
+    # Moderation queue: if content requires review, add to queue and notify CEO
+    if requires_review:
+        queue_item = ModerationQueueItem(
+            id=gen_id(),
+            content_type="image" if req.document_path else "message",
+            original_content=req.document_path or req.content,
+            sender_id=user.id,
+            context_id=conv_id,
+            category=moderation.get("category", "review"),
+            auto_reason=moderation.get("reason", ""),
+            status="pending",
+            message_id=msg.id,
+        )
+        db.add(queue_item)
+        db.commit()
+        _notify_ceo_moderation(db, queue_item, user)
+        return {**message_to_dict(msg, db), "moderationStatus": "pending", "_pending": True}
 
     # Notify other participants via email
     if notify_new_message and conv:
@@ -736,3 +783,27 @@ def add_to_folder(folder_id: str, req: MoveFolderRequest, user: User = Depends(g
         ))
         db.commit()
     return {"added": True}
+
+
+# ─── Moderation Helpers ──────────────────────────────────────────
+
+def _notify_ceo_moderation(db, queue_item: "ModerationQueueItem", sender):
+    """Send email notification to CEO about flagged content."""
+    try:
+        from notifications import _send_email_async
+        content_preview = queue_item.original_content[:500] if queue_item.original_content else ""
+        if content_preview.startswith("data:"):
+            content_preview = "[Archivo multimedia — ver en CEO Dashboard]"
+        html = f"""
+        <h2>Contenido Flaggeado — Revisión Requerida</h2>
+        <p><strong>Usuario:</strong> {sender.first_name} {sender.last_name} (@{sender.username})</p>
+        <p><strong>Categoría:</strong> {queue_item.category}</p>
+        <p><strong>Razón:</strong> {queue_item.auto_reason}</p>
+        <p><strong>Contenido:</strong></p>
+        <blockquote style="background:#f5f5f5;padding:12px;border-left:4px solid #e53e3e;">{content_preview}</blockquote>
+        <p><a href="https://conniku.com/ceo" style="background:#e53e3e;color:#fff;padding:10px 20px;text-decoration:none;border-radius:6px;">
+        Revisar en CEO Dashboard</a></p>
+        """
+        _send_email_async("ceo@conniku.com", "Conniku — Contenido flaggeado para revisión", html, from_account="ceo")
+    except Exception as e:
+        logger.warning(f"[moderation] Failed to notify CEO: {e}")

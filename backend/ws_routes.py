@@ -8,9 +8,9 @@ from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
 from sqlalchemy.orm import Session
 
-from database import get_db, ConversationParticipant, Message, Conversation, User, gen_id
+from database import get_db, ConversationParticipant, Message, Conversation, User, gen_id, ModerationQueueItem
 from websocket_manager import manager
-from moderation import check_content
+from moderation import check_content, moderate_image
 
 logger = logging.getLogger(__name__)
 
@@ -234,9 +234,21 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
 
         # Content moderation
         flagged = False
+        requires_review = False
         try:
             moderation = check_content(content)
-            if not moderation.get("allowed", True):
+            requires_review = moderation.get("requires_review", False)
+
+            # Image moderation for WebSocket messages
+            if message_type == "document" and data.get("document_path", "").startswith("data:image"):
+                img_mod = moderate_image(data.get("document_path", ""))
+                if not img_mod["allowed"] and not img_mod.get("requires_review"):
+                    await websocket.send_json({"type": "error", "message": "Imagen no permitida: " + img_mod.get("reason", "")})
+                    return
+                if img_mod.get("requires_review"):
+                    requires_review = True
+
+            if not moderation.get("allowed", True) and not requires_review:
                 await websocket.send_json({"type": "error", "message": moderation.get("reason", "Contenido no permitido.")})
                 return
             flagged = moderation.get("flagged", False)
@@ -265,6 +277,7 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
             reply_to_id=reply_to_id if reply_to_id else None,
             reply_to_content=reply_to_content,
             reply_to_sender_name=reply_to_sender_name,
+            moderation_status="pending" if requires_review else "approved",
         )
         db.add(msg)
 
@@ -295,7 +308,37 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
             "replyToId": reply_to_id,
             "replyToContent": reply_to_content,
             "replyToSenderName": reply_to_sender_name,
+            "moderationStatus": "approved",
         }
+
+        # Handle moderation review queue
+        if requires_review:
+            from messaging_routes import _notify_ceo_moderation
+            queue_item = ModerationQueueItem(
+                id=gen_id(),
+                content_type="message",
+                original_content=content,
+                sender_id=user_id,
+                context_id=conv_id,
+                category=moderation.get("category", "review"),
+                auto_reason=moderation.get("reason", ""),
+                status="pending",
+                message_id=msg.id,
+            )
+            db.add(queue_item)
+            db.commit()
+            try:
+                _notify_ceo_moderation(db, queue_item, sender)
+            except Exception:
+                pass
+            # Notify sender only (pending)
+            await websocket.send_json({
+                "type": "message_sent",
+                "conversation_id": conv_id,
+                "message": {**message_data, "moderationStatus": "pending"},
+                "_pending": True,
+            })
+            return  # Don't broadcast to others yet
 
         # Send confirmation to sender
         await websocket.send_json({

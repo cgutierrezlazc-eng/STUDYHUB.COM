@@ -209,6 +209,40 @@ def migrate():
             """))
             logger.info("Created friend_list_members table.")
 
+    # Add moderation_status to messages table
+    if inspector.has_table("messages"):
+        existing_msg_columns = {col["name"] for col in inspector.get_columns("messages")}
+        if "moderation_status" not in existing_msg_columns:
+            with engine.begin() as conn:
+                try:
+                    conn.execute(text(
+                        "ALTER TABLE messages ADD COLUMN moderation_status VARCHAR(20) DEFAULT 'approved'"
+                    ))
+                    logger.info("Added column messages.moderation_status")
+                except Exception as e:
+                    logger.debug(f"Column messages.moderation_status skipped: {e}")
+
+    # Create moderation_queue table if it doesn't exist
+    if not inspector.has_table("moderation_queue"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE moderation_queue (
+                    id VARCHAR(16) PRIMARY KEY,
+                    content_type VARCHAR(20) NOT NULL,
+                    original_content TEXT NOT NULL,
+                    sender_id VARCHAR(16),
+                    context_id VARCHAR(16),
+                    category VARCHAR(50) DEFAULT 'unknown',
+                    auto_reason TEXT,
+                    status VARCHAR(20) DEFAULT 'pending',
+                    ceo_note TEXT,
+                    message_id VARCHAR(16),
+                    created_at TIMESTAMP,
+                    reviewed_at TIMESTAMP
+                )
+            """))
+            logger.info("Created moderation_queue table.")
+
     logger.info("Migrations complete.")
 
 

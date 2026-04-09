@@ -1242,6 +1242,37 @@ export const api = {
   broadcastPush: (title: string, body: string, url?: string) =>
     request('/push/broadcast', { method: 'POST', body: JSON.stringify({ title, body, url: url || '/' }) }),
 
+  // ─── CEO Moderation Queue ──────────────────────────────────
+  getModerationQueue: async (status = 'pending'): Promise<any[]> => {
+    return request(`/ceo/moderation/queue?status=${status}`)
+  },
+  getModerationStats: async (): Promise<any> => {
+    return request('/ceo/moderation/stats')
+  },
+  approveModerationItem: async (itemId: string): Promise<any> => {
+    return request(`/ceo/moderation/${itemId}/approve`, { method: 'POST' })
+  },
+  rejectModerationItem: async (itemId: string, note?: string): Promise<any> => {
+    return request(`/ceo/moderation/${itemId}/reject`, {
+      method: 'POST',
+      body: note ? JSON.stringify({ note }) : undefined,
+    })
+  },
+  uploadVideoMessage: async (blob: Blob): Promise<{ url: string }> => {
+    const token = getToken()
+    const formData = new FormData()
+    formData.append('file', blob, 'video.webm')
+    const headers: Record<string, string> = {}
+    if (token) headers['Authorization'] = `Bearer ${token}`
+    const res = await fetch(`${API_BASE}/uploads/videos`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    })
+    if (!res.ok) throw new Error(`Upload Error: ${res.status}`)
+    return res.json()
+  },
+
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
 };

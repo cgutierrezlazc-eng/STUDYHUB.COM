@@ -203,6 +203,7 @@ class Message(Base):
     is_deleted = Column(Boolean, default=False)
     is_flagged = Column(Boolean, default=False)
     flag_reason = Column(String(500), nullable=True)
+    moderation_status = Column(String(20), default="approved")  # approved | pending | rejected
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     edited_at = Column(DateTime, nullable=True)
     reply_to_id = Column(String(16), nullable=True)
@@ -237,6 +238,25 @@ class ConversationFolderItem(Base):
     __table_args__ = (
         UniqueConstraint("folder_id", "conversation_id", name="uq_folder_conv"),
     )
+
+
+class ModerationQueueItem(Base):
+    __tablename__ = "moderation_queue"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    content_type = Column(String(20), nullable=False)  # message | post | image | video
+    original_content = Column(Text, nullable=False)    # full text or base64 data
+    sender_id = Column(String(16), ForeignKey("users.id"), nullable=True)
+    context_id = Column(String(16), nullable=True)     # conversation_id or post_id
+    category = Column(String(50), default="unknown")   # adult | hate | violence | politics | religion | review
+    auto_reason = Column(Text, nullable=True)          # reason from automated check
+    status = Column(String(20), default="pending")     # pending | approved | rejected
+    ceo_note = Column(Text, nullable=True)
+    message_id = Column(String(16), nullable=True)     # linked message if applicable
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    reviewed_at = Column(DateTime, nullable=True)
+
+    sender = relationship("User", foreign_keys=[sender_id])
 
 
 # ─── Content Moderation Log ─────────────────────────────────────

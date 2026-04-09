@@ -190,6 +190,7 @@ export interface ConversationMessage {
   replyToId?: string;
   replyToContent?: string;
   replyToSenderName?: string;
+  moderationStatus?: 'approved' | 'pending' | 'rejected';
 }
 
 export interface ConversationFolder {
