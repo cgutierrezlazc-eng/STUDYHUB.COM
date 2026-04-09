@@ -159,6 +159,39 @@ class AIEngine:
         except Exception as e:
             return f"⚠️ Error al comunicarse con Gemini: {str(e)}"
 
+    def _call_gemini_chat(self, system: str, messages: list, model: str = None) -> str:
+        """Call Gemini with full conversation history (for support chatbot)."""
+        if not self.api_available:
+            return "API key no configurada. Configura tu GEMINI_API_KEY."
+
+        if model is None:
+            model = self.model_main
+
+        try:
+            gemini_model = genai.GenerativeModel(
+                model_name=model,
+                system_instruction=system,
+            )
+
+            # Convert messages to Gemini format (alternating user/model)
+            gemini_history = []
+            for msg in messages[:-1]:  # All except last
+                role = "user" if msg["role"] == "user" else "model"
+                gemini_history.append({"role": role, "parts": [msg["content"]]})
+
+            chat = gemini_model.start_chat(history=gemini_history)
+            last_msg = messages[-1]["content"] if messages else ""
+            response = chat.send_message(
+                last_msg,
+                generation_config=genai.types.GenerationConfig(
+                    max_output_tokens=2048,
+                    temperature=0.7,
+                ),
+            )
+            return response.text
+        except Exception as e:
+            return f"Lo siento, tuve un problema al responder. Puedes escribir a contacto@conniku.com. (Error: {str(e)[:80]})"
+
     def _call_gemini_json(self, system: str, user_message: str, model: str = None) -> str:
         """Call Gemini requesting JSON output."""
         if not self.api_available:

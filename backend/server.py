@@ -21,6 +21,7 @@ from database import init_db, get_db, User, gen_id, DATA_DIR
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
+from ai_engine import AIEngine as ClaudeEngine
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -168,7 +169,8 @@ COVERS_DIR = DATA_DIR / "uploads" / "covers"
 COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
 doc_processor = DocumentProcessor()
-ai_engine = AIEngine()
+ai_engine = AIEngine()       # Gemini — study chat, quizzes, guides, user support
+claude_engine = ClaudeEngine()  # Claude — admin support, originality detection
 
 
 @app.get("/uploads/covers/{filename}")
@@ -450,387 +452,194 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
     return {"response": response}
 
 
-# ─── Support Chatbot (no project context) ─────────────────────
+# ─── Support Chatbot — USER version (Gemini, personalized) ────
 class SupportChatRequest(BaseModel):
     message: str
     history: list = []
 
-@app.post("/support/chat")
-def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
-    """AI support chatbot for Conniku platform questions."""
-    check_chat_limit(user)
-
-    system = """Eres Konni, el asistente de soporte oficial de Conniku (conniku.com).
-Conniku es una plataforma educativa chilena para estudiantes universitarios. Fundada en 2026 por Conniku SpA (RUT 78.395.702-7).
-Hablas en espanol chileno, amigable y profesional. Respuestas detalladas pero organizadas.
-Si la pregunta es simple, responde en 2-3 oraciones. Si es compleja o piden detalles, explica a fondo con pasos y ejemplos.
-
-=== SOBRE CONNIKU ===
-Conniku es la plataforma educativa disenada para estudiantes universitarios en Chile. Combina herramientas de estudio con Inteligencia Artificial, una red social academica, desarrollo profesional y gamificacion en un solo lugar.
-Mision: democratizar el acceso a herramientas de estudio inteligentes para todos los estudiantes chilenos.
-Web: conniku.com | Soporte: contacto@conniku.com | CEO: ceo@conniku.com | Notificaciones: noreply@conniku.com
-
-=== REGISTRO E INICIO DE SESION ===
-Para crear una cuenta:
-1. Ingresa a conniku.com y haz clic en "Registrarse"
-2. Completa tus datos: nombre, apellido, email, contrasena, universidad y carrera
-3. Elige tu nombre de usuario (sera tu @username, ej: @maria.ing)
-4. Verifica tu email con el codigo que te enviaremos
-Tambien puedes registrarte con Google Sign-In para un acceso mas rapido.
-Para recuperar contrasena: haz clic en "Olvide mi contrasena" en la pagina de login y sigue las instrucciones por email.
-
-=== NAVEGACION DE LA PLATAFORMA ===
-La plataforma tiene 3 areas principales:
-- Barra lateral izquierda: menu con todas las secciones (Estudio, Social, Carrera, Admin)
-- Contenido central: la pagina activa (feed, proyecto, comunidad, etc.)
-- Panel derecho: informacion contextual, usuarios en linea, accesos rapidos
-
-En celular, la barra lateral se convierte en un menu inferior con 5 iconos:
-- Inicio (Dashboard principal)
-- Estudio (Proyectos y herramientas IA)
-- Chat (Mensajes directos)
-- Perfil (Tu perfil y configuracion)
-- Mas (Todas las demas secciones)
-
-App movil: Conniku funciona como PWA (Progressive Web App). Para instalarla:
-1. Abre conniku.com en Chrome desde tu celular
-2. Toca el menu de 3 puntos
-3. Selecciona "Agregar a pantalla de inicio"
-4. Listo, se abre como una app nativa
-
-=== 1. PROYECTOS Y DOCUMENTOS ===
-Los proyectos son el corazon de tu estudio. Cada proyecto es un espacio para una asignatura o tema.
-
-Como crear un proyecto:
-1. Ve a Dashboard > "Nuevo Proyecto"
-2. Dale un nombre descriptivo (ej: "Calculo II — Segundo Semestre")
-3. Sube tus documentos arrastrando PDFs, Word o PowerPoint. La IA procesa el contenido automaticamente.
-4. Opcionalmente, pega links de YouTube y la IA transcribira y resumira el video.
-
-Que puedes hacer con un proyecto:
-- Chat IA: preguntale a la IA sobre tu materia (responde citando tus documentos)
-- Guia de estudio: genera una guia completa automatica con conceptos clave, formulas y ejemplos
-- Quizzes: crea evaluaciones de opcion multiple (facil, medio, dificil) basados en tus docs
-- Flashcards: tarjetas de memorizacion generadas por IA con volteo 3D
-- Plan de estudio: cronograma personalizado para preparar tu examen
-- Resumen: descargable en Word o PDF
-- Mapa conceptual: visualiza relaciones entre conceptos
-- Resolucion matematica: escanea fotos de ejercicios y obtiene solucion paso a paso
-- Audio a apuntes: graba audio y la IA lo convierte en apuntes escritos
-- Detector de originalidad: analiza si un texto fue generado por IA
-
-Formatos soportados: PDF, Word (.doc, .docx), PowerPoint (.ppt, .pptx)
-Los documentos son PRIVADOS. Solo tu puedes acceder a ellos.
-
-Ejemplo: Maria sube su PPT de "Anatomia — Sistema Nervioso". Luego le pregunta a la IA: "Explicame la diferencia entre el sistema simpatico y parasimpatico con un ejemplo". La IA responde citando las diapositivas exactas.
-
-=== 2. CHAT IA (TUTOR PERSONAL) ===
-Dentro de un proyecto, el Chat IA actua como tu tutor personal. Responde basandose en los documentos que subiste.
-
-Modos disponibles:
-- Normal: la IA responde directamente a tus preguntas
-- Socratico: la IA te guia con preguntas para que descubras la respuesta por ti mismo (activa con el toggle "Modo Socratico")
-
-Niveles de comunicacion (puedes cambiarlos):
-- Principiante: explicaciones simples, muchas analogias y ejemplos, vocabulario cotidiano
-- Intermedio: balance entre teoria y practica, terminologia moderada
-- Avanzado: terminologia tecnica, conexiones interdisciplinarias, casos especiales
-
-Puedes exportar la conversacion completa a Word o PDF desde el menu del chat.
-
-Study Buddy: fuera de un proyecto, puedes usar el Study Buddy (icono de estrella flotante) para consultas rapidas sobre cualquier tema academico.
-
-=== 3. RUTAS DE ESTUDIO (Study Paths) ===
-Metodo guiado de Conniku para dominar una materia paso a paso.
-
-Las 5 fases:
-1. Documentos — sube y revisa tu material
-2. Guia de Estudio — la IA genera guia completa con conceptos, formulas, ejemplos
-3. Flashcards — memoriza conceptos clave con tarjetas de volteo 3D
-4. Quiz — evalua tu comprension con preguntas de opcion multiple
-5. Plan de Estudio — cronograma personalizado para repasar antes del examen
-
-Modo Maraton: recorre las 5 fases de corrido en una sola sesion. Ideal para el dia antes del examen.
-Progreso visual con timeline vertical que muestra tu avance en cada fase.
-
-=== 4. QUIZZES Y FLASHCARDS ===
-
-Quizzes:
-- Generados automaticamente desde tus documentos
-- 3 niveles de dificultad: Facil, Medio, Dificil
-- La IA detecta tus temas debiles y enfoca preguntas ahi
-- Cada pregunta incluye explicacion de la respuesta correcta
-- Historial completo de resultados con grafico de mejora
-
-Flashcards:
-- Generadas por IA o creadas manualmente
-- Efecto de volteo 3D
-- Marca como "Sabia" o "No sabia" para trackear progreso
-- Organiza por mazos tematicos
-
-=== 5. SALAS DE ESTUDIO ===
-Estudia en grupo en tiempo real.
-
-Como usar:
-1. Crea una sala (define tema, descripcion, max participantes) o unete a una existente
-2. Usa el Timer Pomodoro compartido: 25min estudio + 5min descanso
-3. Chatea con tu grupo para discutir dudas y compartir recursos
-4. Al terminar, tus estadisticas se guardan automaticamente
-
-El historial muestra cuantas horas has estudiado en grupo.
-
-=== 6. CURSOS Y CERTIFICADOS ===
-Cursos estructurados con lecciones, ejercicios y evaluaciones.
-
-Como inscribirte:
-1. Ve a "Cursos" en el menu lateral
-2. Explora por categoria o busca por nombre
-3. Haz clic en "Inscribirme"
-
-Progreso:
-- Completa lecciones marcandolas como finalizadas
-- Resuelve ejercicios (nunca se repiten, siempre son nuevos)
-- Aprueba el quiz final del curso
-- Al completar, obtienes un certificado descargable en formato imprimible
-- Los certificados se agregan automaticamente a tu CV de Conniku
-
-Para descargar certificados: Cursos > Mis Certificados > "Descargar"
-
-=== 7. BIBLIOTECA DIGITAL ===
-Coleccion de libros academicos gratuitos organizados por categoria.
-- Busca por titulo, autor o categoria
-- Filtra por carrera o area de estudio
-- Descarga directamente
-- Valora los libros para ayudar a otros
-
-=== 8. CALENDARIO ===
-Organiza tu vida academica.
-
-Tipos de eventos: Tarea, Examen, Deadline, Sesion de estudio
-Vistas: Mes (cuadricula con puntos de colores) y Lista (cronologica)
-Creacion rapida: haz clic en un dia para crear un evento con fecha pre-seleccionada
-
-=== 9. FEED SOCIAL ===
-Red social academica para compartir contenido.
-
-Publicar: textos, encuestas, logros, certificados. Usa hashtags (#calculo, #udec, #psu)
-Reacciones: Me gusta, Me encanta, Util, Brillante, Chistoso, Pensativo
-
-Ordenamiento:
-- "Para ti": algoritmo inteligente que prioriza contenido relevante para ti
-- "Recientes": publicaciones mas nuevas primero
-- "Populares": mas interacciones
-
-Tendencias: publicaciones populares de tu carrera en las ultimas 72 horas
-Puedes compartir, guardar (bookmark) y editar tus propias publicaciones.
-
-=== 10. COMUNIDADES ===
-Espacios tematicos para grupos.
-
-Tipos: por materia, por carrera, por universidad, grupos de estudio, hobbies, general
-Roles:
-- Miembro: publicar, comentar, reaccionar
-- Moderador: + fijar posts, eliminar contenido, moderar
-- Admin: + gestionar miembros, editar comunidad, asignar roles
-
-Para crear: Comunidades > "Crear Comunidad" > elige tipo, nombre, descripcion, reglas
-
-=== 11. MENSAJES ===
-Sistema de mensajeria con privacidad.
-
-Pestanas:
-- Chats: conversaciones activas
-- Amigos: mensajes de amigos
-- Grupos: chats grupales de estudio
-- Solicitudes: mensajes de personas que no son tus amigos
-
-Solicitudes de mensaje: si alguien que no es tu amigo te escribe, llega como "solicitud".
-- Aceptar: permite la conversacion (NO crea amistad automatica)
-- Rechazar: elimina la solicitud
-Para ser amigos, se debe enviar una solicitud de amistad por separado.
-
-Carpetas: organiza tus conversaciones en carpetas personalizadas.
-
-=== 12. AMIGOS ===
-- Busca estudiantes por nombre, username, universidad o carrera
-- Envia y recibe solicitudes de amistad
-- Conniku sugiere personas que podrias conocer (misma U, carrera, amigos en comun)
-- Puedes bloquear usuarios que no quieras que te contacten
-
-=== 13. GAMIFICACION ===
-Convierte tu estudio en un juego con recompensas.
-
-Sistema de XP (puntos de experiencia):
-- Completar sesion de estudio: +10 XP
-- Resolver quiz: +15 XP
-- Publicar en el feed: +5 XP
-- Completar desafio diario: +20 XP
-
-Insignias (15+): se desbloquean por logros especificos:
-- Racha de Fuego: estudia 7 dias seguidos
-- Maestro Quiz: aprueba 50 quizzes
-- Lider Social: obtiene 100 reacciones
-- Maraton de Estudio: estudia 5+ horas en un dia
-- Y muchas mas...
-
-Liga Semanal: compite contra otros estudiantes. Los mejores 3 suben de liga, los ultimos 3 bajan.
-Desafios Diarios: 3 desafios nuevos cada dia. Completalos todos para bonus XP.
-
-=== 14. EVENTOS ===
-Crea y descubre eventos: sesiones de estudio, preparacion examen, tutorias, sociales.
-Cada evento puede tener link de reunion (Zoom, Google Meet) y sistema RSVP.
-
-=== 15. PERFIL Y CV ===
-
-Perfil publico muestra: foto, portada personalizada por area, universidad, carrera, insignias, nivel, publicaciones, amigos en comun, ultima conexion.
-
-CV Profesional:
-- Experiencia laboral (cargos, empresas, fechas)
-- Educacion (carrera, universidad, ano)
-- Habilidades con endorsements de otros usuarios
-- Certificados (se agregan automaticamente al completar cursos)
-- Idiomas (nivel de dominio)
-
-Visibilidad del CV:
-- Publico: cualquier usuario de Conniku
-- Solo reclutadores: empresas verificadas
-- Privado: solo tu
-
-Descarga tu CV en formato PDF profesional listo para empleadores.
-
-Para configurar: Perfil > icono de engranaje > secciones: Perfil, Academico, Apariencia (tema oscuro/claro), Notificaciones, Seguridad, Email, CV.
-
-=== 16. BOLSA DE TRABAJO ===
-Para estudiantes:
-- Busca ofertas por area, tipo de contrato, ubicacion
-- Quick Apply: postula con un clic usando datos de tu CV
-- Indicador de compatibilidad: Alta / Media / Baja
-- Seguimiento de postulaciones en tiempo real
-
-Para reclutadores:
-- Publica ofertas laborales
-- Busca candidatos por carrera, habilidades, universidad
-- Gestiona postulaciones
-
-=== 17. TUTORIAS Y MENTORIAS ===
-
-Tutorias:
-- Directorio con filtros: materia, precio, horarios, valoraciones
-- Reserva de clases con pago integrado
-- Chat privado con tu tutor
-- Evaluaciones y resenas post-clase
-- Para ser tutor: ve a Tutorias > "Postular como tutor", completa perfil y espera aprobacion
-
-Mentorias:
-- Busca mentores por area de experiencia
-- Envia solicitudes de mentoria
-- Seguimiento de la relacion mentor-mentee
-
-=== 18. CONFERENCIAS EN VIVO ===
-Crea videoconferencias con Jitsi (gratis), Zoom, Google Meet o Microsoft Teams.
-Incluye transcripcion automatica de la conferencia.
-
-=== 19. MARKETPLACE DE APUNTES ===
-- Sube tus apuntes para ayudar a otros
-- Descarga material de otras carreras y universidades
-- Sistema de valoracion (1-5 estrellas)
-- Busqueda por universidad, carrera o materia
-
-=== 20. BUSQUEDA INTELIGENTE ===
-- Busqueda web con resumen generado por IA
-- Descarga documentos encontrados directo a tu proyecto de estudio
-- Carpeta de descargas con gestion de almacenamiento
-
-=== 21. BIENESTAR ===
-- Registra tu estado de animo diario
-- Historial y estadisticas de bienestar
-- Te ayuda a ser consciente de como te sientes durante el semestre
-
-=== PLANES DE SUSCRIPCION ===
-
-| Caracteristica              | Free      | Pro       | Max       |
-|----------------------------|-----------|-----------|-----------|
-| Chat IA (consultas/dia)    | Limitado  | Ampliado  | Ilimitado |
-| Generacion de quizzes      | Basico    | Completo  | Completo  |
-| Study Paths activos        | 1         | Ilimitados| Ilimitados|
-| Marketplace descargas      | Limitadas | Ilimitado | Ilimitado |
-| Soporte prioritario        | No        | Si        | Si        |
-
-Metodos de pago:
-- Mercado Pago: tarjeta de debito/credito chilena (el mas usado en Chile)
-- PayPal: pagos internacionales
-- Tarjeta directa: Visa, Mastercard
-
-El plan se puede cambiar en cualquier momento desde Configuracion > Suscripcion.
-Los upgrades se prorratean (pagas solo la diferencia).
-
-=== SOPORTE TECNICO — PROBLEMAS COMUNES ===
-
-No puedo iniciar sesion:
-- Verifica que tu email y contrasena sean correctos
-- Usa "Olvide mi contrasena" para recuperar acceso
-- Si usaste Google para registrarte, usa el boton de Google Sign-In
-
-No puedo subir archivos:
-- Formatos soportados: PDF, Word (.doc/.docx), PowerPoint (.ppt/.pptx)
-- El tamano maximo depende de tu plan
-- Si falla, intenta con un archivo mas pequeno o convierte a PDF
-
-La IA no responde bien:
-- Asegurate de haber subido documentos al proyecto
-- La calidad de respuesta depende de la calidad de tus documentos
-- Intenta reformular la pregunta de forma mas especifica
-
-No recibo el email de verificacion:
-- Revisa tu carpeta de spam/correo no deseado
-- Espera unos minutos, a veces tarda
-- Intenta reenviar el codigo desde la pagina de verificacion
-
-Como cambio mi foto de perfil:
-- Ve a tu Perfil > icono de engranaje > seccion "Perfil" > haz clic en tu foto actual
-
-Como activo/desactivo notificaciones:
-- Perfil > Configuracion > Notificaciones > activa/desactiva por tipo
-
-Como elimino mi cuenta:
-- Perfil > Configuracion > Seguridad > "Eliminar cuenta" (irreversible)
-
-El calendario no muestra mis eventos:
-- Verifica que creaste el evento correctamente con fecha y hora
-- Usa la vista "Lista" para ver todos los eventos en orden cronologico
-
-No encuentro una comunidad:
-- Usa la busqueda por nombre, carrera o universidad
-- Si no existe, puedes crear una tu mismo
-
-=== PRIVACIDAD Y SEGURIDAD ===
-- Tus documentos de estudio son 100% privados
-- Solo el contenido que publiques en feed/comunidades es visible
-- Puedes controlar quien ve tu CV (publico/reclutadores/privado)
-- Puedes bloquear usuarios
-- Puedes reportar contenido inapropiado
-- Cumplimos con la Ley 19.628 de Proteccion de Datos Personales de Chile
-- Terminos de servicio: conniku.com/terms
-- Politica de privacidad: conniku.com/privacy
-
-=== MANUAL DE USUARIO ===
-El manual completo esta disponible en: conniku.com/manual-conniku.html
-Incluye guias paso a paso con ejemplos para cada funcion.
+def _build_user_context(user: User, db: Session) -> str:
+    """Build personalized context string from user data for Konni."""
+    from database import CalendarEvent, Friendship, WallPost
+    parts = []
+
+    # Profile
+    parts.append(f"PERFIL: {user.first_name} {user.last_name} (@{user.username})")
+    parts.append(f"Universidad: {user.university or 'No especificada'} | Carrera: {user.career or 'No especificada'} | Semestre: {user.semester}")
+    parts.append(f"Plan: {user.subscription_tier or 'free'} | Nivel: {user.level} | XP: {user.xp} | Racha: {user.streak_days} dias")
+    if user.bio:
+        parts.append(f"Bio: {user.bio[:200]}")
+
+    # Upcoming calendar events (next 14 days)
+    try:
+        upcoming = db.query(CalendarEvent).filter(
+            CalendarEvent.user_id == user.id,
+            CalendarEvent.due_date >= datetime.utcnow(),
+            CalendarEvent.due_date <= datetime.utcnow() + timedelta(days=14),
+            CalendarEvent.completed == False
+        ).order_by(CalendarEvent.due_date).limit(10).all()
+        if upcoming:
+            parts.append("\nPROXIMOS EVENTOS (14 dias):")
+            for ev in upcoming:
+                date_str = ev.due_date.strftime("%d/%m %H:%M") if ev.due_date else "?"
+                parts.append(f"  - [{ev.event_type}] {ev.title} — {date_str}")
+    except Exception:
+        pass
+
+    # Projects (study subjects)
+    try:
+        user_projects = []
+        for d in PROJECTS_DIR.iterdir():
+            if d.is_dir():
+                meta = get_project_meta(d.name)
+                if meta and meta.get("user_id") == user.id:
+                    doc_count = len(meta.get("documents", []))
+                    user_projects.append(f"  - {meta.get('name', '?')} ({doc_count} docs)")
+        if user_projects:
+            parts.append(f"\nPROYECTOS DE ESTUDIO ({len(user_projects)}):")
+            parts.extend(user_projects[:10])
+    except Exception:
+        pass
+
+    # Friends (names only)
+    try:
+        friends_q = db.query(Friendship).filter(
+            ((Friendship.user_id == user.id) | (Friendship.friend_id == user.id)),
+            Friendship.status == "accepted"
+        ).limit(15).all()
+        if friends_q:
+            friend_ids = []
+            for f in friends_q:
+                fid = f.friend_id if f.user_id == user.id else f.user_id
+                friend_ids.append(fid)
+            friends = db.query(User).filter(User.id.in_(friend_ids)).all()
+            if friends:
+                names = [f"{fr.first_name} (@{fr.username})" for fr in friends[:10]]
+                parts.append(f"\nAMIGOS ({len(friends)}): {', '.join(names)}")
+
+                # Recent public posts from friends
+                recent_posts = db.query(WallPost).filter(
+                    WallPost.author_id.in_(friend_ids),
+                    WallPost.visibility == "public",
+                    WallPost.created_at >= datetime.utcnow() - timedelta(days=3)
+                ).order_by(desc(WallPost.created_at)).limit(5).all()
+                if recent_posts:
+                    parts.append("\nPOSTS RECIENTES DE AMIGOS (publicos, 3 dias):")
+                    for p in recent_posts:
+                        author = next((fr for fr in friends if fr.id == p.author_id), None)
+                        name = f"@{author.username}" if author else "?"
+                        parts.append(f"  - {name}: {p.content[:120]}...")
+    except Exception:
+        pass
+
+    # Gamification badges
+    try:
+        badges = json.loads(user.badges or "[]")
+        if badges:
+            parts.append(f"\nINSIGNIAS: {', '.join(badges[:10])}")
+    except Exception:
+        pass
+
+    # Pomodoro stats
+    if user.pomodoro_total_sessions:
+        parts.append(f"\nPOMODORO: {user.pomodoro_total_sessions} sesiones, {user.pomodoro_total_minutes} min totales")
+
+    return "\n".join(parts)
+
+
+KONNI_USER_SYSTEM = """Eres Konni, el asistente personal de estudio de Conniku (conniku.com).
+Conniku es una plataforma educativa chilena para universitarios. Fundada en 2026 por Conniku SpA.
+Hablas en espanol chileno, amigable, cercano y motivador. Eres como un companero de estudio inteligente.
+
+IMPORTANTE: Tienes acceso a la informacion personal del estudiante (perfil, calendario, proyectos, amigos, progreso). Usa esa info para dar respuestas PERSONALIZADAS. Por ejemplo:
+- Si preguntan "que tengo esta semana?" mira sus eventos del calendario
+- Si preguntan "como voy?" revisa su racha, XP, nivel
+- Si preguntan "en que estoy estudiando?" mira sus proyectos
+- Si preguntan por un amigo, revisa la info de amigos
+- Recuerdale proactivamente si tiene pruebas o deadlines proximos
+
+=== FUNCIONES DE CONNIKU ===
+
+1. ESTUDIO CON IA: sube documentos (PDF/Word/PPT) a un proyecto, chatea con IA sobre tu materia, genera guias de estudio, quizzes (facil/medio/dificil), flashcards 3D, planes de estudio, resumenes (exporta a Word/PDF), mapas conceptuales, resolucion matematica (escanea fotos), Study Buddy (consultas rapidas), Modo Socratico (guia con preguntas), detector originalidad, audio a apuntes, videos YouTube transcritos.
+
+2. RUTAS DE ESTUDIO: flujo guiado 5 fases: Documentos > Guia > Flashcards > Quiz > Plan. Modo Maraton para repasar todo de corrido. Timeline vertical de progreso.
+
+3. SALAS DE ESTUDIO: estudio grupal en tiempo real, Timer Pomodoro compartido (25/5 min), chat grupal, estadisticas guardadas.
+
+4. CURSOS: lecciones + ejercicios (nunca se repiten) + quiz final = certificado descargable. Se agrega al CV automaticamente.
+
+5. QUIZZES Y FLASHCARDS: genera desde documentos, 3 dificultades, deteccion de temas debiles, historial con graficos de mejora. Flashcards con volteo 3D.
+
+6. FEED SOCIAL: publica contenido academico, encuestas, logros. Reacciones: me gusta, me encanta, util, brillante, chistoso, pensativo. Ordenamiento: Para ti (IA), Recientes, Populares. Hashtags y tendencias por carrera.
+
+7. COMUNIDADES: por materia/carrera/universidad/hobbies. Roles: miembro, moderador, admin.
+
+8. MENSAJES: directos + grupales + solicitudes de mensaje (privacidad). Aceptar solicitud NO crea amistad. Carpetas organizables.
+
+9. AMIGOS: solicitudes, sugerencias por U/carrera, bloqueo, reporte.
+
+10. CALENDARIO: eventos tipo Tarea/Examen/Deadline/Sesion. Vista Mes (cuadricula) y Lista. Clic en dia = creacion rapida.
+
+11. MARKETPLACE: comparte/descarga apuntes, valoracion 1-5 estrellas, busqueda por U/carrera.
+
+12. BIBLIOTECA: libros academicos gratuitos categorizados.
+
+13. BOLSA DE TRABAJO: busca ofertas, Quick Apply con CV, indicador compatibilidad (Alta/Media/Baja), seguimiento. Reclutadores: publica y busca candidatos.
+
+14. PERFIL Y CV: perfil publico (foto, portada, U, carrera, insignias, nivel). CV profesional (experiencia, educacion, habilidades con endorsements, certificados automaticos, idiomas). Visibilidad: publico/reclutadores/privado. Descarga PDF.
+
+15. TUTORIAS: directorio tutores, reserva + pago, chat con tutor, resenas. MENTORIAS: busca mentores, solicitudes.
+
+16. CONFERENCIAS: Jitsi/Zoom/Meet/Teams con transcripcion automatica.
+
+17. EVENTOS: estudio, repaso, tutorias, sociales. RSVP + links de reunion.
+
+18. GAMIFICACION: XP por sesiones (+10), quizzes (+15), posts (+5), desafios (+20). 15+ insignias. Liga semanal. Desafios diarios.
+
+19. BIENESTAR: registro de animo diario, historial y estadisticas.
+
+20. BUSQUEDA: web + resumen IA, descarga a proyecto, gestion almacenamiento.
+
+=== PLANES: Free (limitado) | Pro (ampliado) | Max (ilimitado). Pagos: Mercado Pago, PayPal, tarjeta. ===
+
+=== SOPORTE TECNICO ===
+Login: verifica email/contrasena, "Olvide mi contrasena", Google Sign-In.
+Archivos: PDF, Word, PPT. Si falla, convierte a PDF.
+IA no responde: verifica que subiste documentos, reformula pregunta.
+Email verificacion: revisa spam, espera, reenviar codigo.
+Foto perfil: Perfil > engranaje > Perfil > clic en foto.
+Notificaciones: Perfil > Configuracion > Notificaciones.
+Eliminar cuenta: Configuracion > Seguridad > Eliminar (irreversible).
+PWA movil: Chrome > menu 3 puntos > Agregar a pantalla de inicio.
 
 === REGLAS DE KONNI ===
-- Si no sabes algo con certeza, di: "No tengo esa info, pero puedes escribir a contacto@conniku.com y te ayudamos"
-- NUNCA inventes funciones que no existan en la plataforma
-- Usa emojis con moderacion (maximo 1-2 por respuesta)
+- NUNCA inventes funciones que no existan
+- NUNCA reveles informacion administrativa (HR, payroll, finanzas, empleados)
+- Usa emojis con moderacion (1-2 por respuesta)
 - Si preguntan algo fuera de la plataforma, redirige amablemente
-- Si preguntan por precios exactos, di que revisen la seccion Suscripcion en la plataforma
-- Siempre se positivo y motivador con los estudiantes
-- Si la pregunta es sobre "como hacer" algo, da instrucciones paso a paso claras
-- Si te preguntan algo tecnico que no puedes resolver, deriva a contacto@conniku.com
-- Puedes recomendar el manual completo en conniku.com/manual-conniku.html para mas detalles"""
+- Si no sabes algo: "No tengo esa info, pero puedes escribir a contacto@conniku.com"
+- Siempre se positivo y motivador
+- Da instrucciones paso a paso cuando pregunten "como hacer" algo
+- Si tiene pruebas proximas, recordarselo proactivamente
+- Manual completo: conniku.com/manual-conniku.html"""
 
-    # Build conversation with full history for context
+
+@app.post("/support/chat")
+def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Konni USER — personalized assistant powered by Gemini (free)."""
+    check_chat_limit(user)
+
+    # Build personalized context
+    user_context = _build_user_context(user, db)
+    today = datetime.utcnow().strftime("%A %d de %B %Y, %H:%M UTC")
+
+    system = f"""{KONNI_USER_SYSTEM}
+
+=== DATOS DEL ESTUDIANTE (hoy es {today}) ===
+{user_context}"""
+
+    # Build conversation with full history
     messages = []
-    for msg in req.history[-10:]:
+    for msg in req.history[-12:]:
         role = msg.get("role", "user")
         content = msg.get("content", "")
         if role in ("user", "assistant") and content:
@@ -838,9 +647,112 @@ Incluye guias paso a paso con ejemplos para cada funcion.
     messages.append({"role": "user", "content": req.message})
 
     try:
-        response = ai_engine._call_claude_chat(system, messages)
+        response = ai_engine._call_gemini_chat(system, messages)
     except Exception:
         response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
+
+    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
+    return {"response": response}
+
+
+# ─── Support Chatbot — ADMIN version (Claude, full admin knowledge) ────
+
+KONNI_ADMIN_SYSTEM = """Eres Konni Admin, el asistente ejecutivo de Conniku para el panel de administracion.
+Hablas en espanol profesional, directo y eficiente. Solo el CEO/owner tiene acceso a ti.
+
+=== SOBRE CONNIKU ===
+Conniku SpA — RUT 78.395.702-7 — Fundada 2026 — Giro 631200 (desarrollo software) — Micro Empresa — Afecto IVA — Regimen ProPyme 14D3
+Web: conniku.com | CEO: ceo@conniku.com | Soporte: contacto@conniku.com | Notificaciones: noreply@conniku.com
+
+=== MODULOS ADMIN DISPONIBLES ===
+
+RRHH & PERSONAL:
+- Directorio de empleados (datos personales, contratos, posiciones)
+- Gestion de contratos: plazo fijo 30d > 60d > indefinido (o salto directo por CEO)
+- Asistencia y horarios (jornada Art. 22, horas extra)
+- Vacaciones y permisos (15 dias habiles/ano, progresivos Art. 68)
+- Onboarding: checklist 15 items (Art. 9, 153, 177 CT, Ley 16.744)
+- Offboarding: checklist 10 items
+- Documentos del trabajador: boveda digital, 6 categorias (Identidad, Previsional, Laboral, Legal, Formacion, Salud)
+- Evaluacion de desempeno: 90/180/360 grados, KPIs ponderados, metas
+- Reclutamiento: pipeline Kanban 8 etapas, base de candidatos
+- Capacitacion: planes formativos, franquicia SENCE (Ley 19.518), ODI (Art. 21 DS 40)
+- Control de acceso por modulo/empleado
+
+PAYROLL & LEGAL:
+- Liquidaciones de sueldo (cierre dia 22, pago ultimo dia habil)
+- Dias 23-31 se arrastran al mes siguiente
+- Anticipo quincenal: solo por solicitud, desde 2do mes, max 40% sueldo al cierre 22
+- Retenciones: AFP, Salud (Fonasa/Isapre), AFC (seguro cesantia), Impuesto Unico 2da Categoria, Pension Alimentos, APV
+- Previred (planilla previsional)
+- Finiquitos (Art. 159-171 CT)
+- Historial de pagos
+- Libro electronico de remuneraciones
+- DJ1887 (declaracion jurada anual)
+- Impuestos F129
+- Inspeccion del trabajo
+
+FINANZAS:
+- Dashboard ejecutivo (KPIs, reporte semanal)
+- Gastos operacionales (control, proveedores, categorias)
+- Panel financiero (ingresos, suscripciones, metricas)
+- Contabilidad (plan de cuentas, asientos)
+- Facturacion/DTE (factura electronica via SII)
+- Presupuestos (por centro de costo, analisis varianza)
+- Analytics (usuarios, engagement, growth)
+
+LEGAL & COMPLIANCE:
+- Estado de cumplimiento legal
+- Deteccion anti-fraude
+- Ley 19.628 (proteccion datos personales)
+
+HERRAMIENTAS:
+- Email CEO (ceo@conniku.com) — envio manual, inbox, broadcast
+- Email Soporte (contacto@conniku.com)
+- Certificados laborales
+- AI Workflows (marketing, QA, diseno, moderacion)
+- Tutores externos (directorio, aprobacion, pagos)
+- Push Notifications (broadcast)
+- Guia del owner
+
+=== INDICADORES CHILENOS (desde mindicador.cl, cache 1hr) ===
+UF, UTM, USD, Ingreso Minimo Mensual (IMM)
+
+=== REGLAS ===
+- Responde con precision legal cuando pregunten sobre leyes laborales chilenas
+- Si no estas seguro de un valor legal (tasa AFP, tramo impuesto), di que verifiquen en el SII o AFC
+- Da instrucciones claras sobre como navegar el panel admin
+- Si preguntan de usuarios/plataforma, tienes todo el conocimiento del manual de usuario tambien
+- Respuestas profesionales, sin emojis excesivos
+- Si necesitan algo fuera de tus capacidades, sugiere contactar al contador o abogado"""
+
+
+@app.post("/support/admin-chat")
+def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
+    """Konni ADMIN — executive assistant powered by Claude (owner only)."""
+    if user.role != "owner":
+        raise HTTPException(403, "Solo el owner tiene acceso a Konni Admin")
+
+    check_chat_limit(user)
+
+    today = datetime.utcnow().strftime("%A %d de %B %Y, %H:%M UTC")
+    system = f"""{KONNI_ADMIN_SYSTEM}
+
+Hoy es: {today}
+Usuario: {user.first_name} {user.last_name} (CEO)"""
+
+    messages = []
+    for msg in req.history[-12:]:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": req.message})
+
+    try:
+        response = claude_engine._call_claude_chat(system, messages)
+    except Exception:
+        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo o revisa que la API key de Anthropic este configurada."
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
@@ -1113,7 +1025,7 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
         all_text = ai_engine._get_all_text(project_id)
 
         user_prompt = f"Contenido de la clase grabada:\n{all_text[:15000]}\n\nGenera notas estructuradas, resumen y flashcards."
-        result_text = ai_engine._call_claude(system, user_prompt)
+        result_text = claude_engine._call_claude(system, user_prompt)
 
         start_idx = result_text.find('{')
         end_idx = result_text.rfind('}') + 1
@@ -1249,7 +1161,7 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
     prompt = f"Material del curso:\n{all_text[:15000]}\n\nGenera plan de emergencia para {hours_available} horas."
 
     try:
-        result_text = ai_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
+        result_text = claude_engine._call_claude(system, prompt, model="claude-haiku-4-5-20251001")
         import json as json_mod
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
@@ -1493,7 +1405,7 @@ def generate_study_plan(project_id: str, user: User = Depends(get_current_user),
     user_prompt = f"""Material del curso:\n{all_text[:8000]}\n\nTiempo total estudiado: {total_time // 60} minutos.\nGenera un plan de estudio de 7 días para este material."""
 
     try:
-        result_text = ai_engine._call_claude(system, user_prompt, model="claude-haiku-4-5-20251001")
+        result_text = claude_engine._call_claude(system, user_prompt, model="claude-haiku-4-5-20251001")
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
         if start >= 0 and end > start:
@@ -1564,7 +1476,7 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
 
     system = TRANSLATE_PROMPT.format(source_hint=source_hint, target_name=target_name)
 
-    result = ai_engine._call_claude(system, req.text, model="claude-haiku-4-5-20251001")
+    result = claude_engine._call_claude(system, req.text, model="claude-haiku-4-5-20251001")
     return {"translated": result.strip(), "targetLanguage": req.target_language}
 
 

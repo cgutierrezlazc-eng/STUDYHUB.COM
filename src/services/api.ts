@@ -134,6 +134,8 @@ export const api = {
   // ─── Support Chat ──────────────────────────────────────────
   supportChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
+  supportAdminChat: (message: string, history: { role: string; content: string }[] = []) =>
+    request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
 
   // ─── Chat ──────────────────────────────────────────────────
   chat: async (projectId: string, message: string, language: string = 'es', gender: string = 'unspecified', languageSkill: string = 'intermediate', socratic: boolean = false) => {

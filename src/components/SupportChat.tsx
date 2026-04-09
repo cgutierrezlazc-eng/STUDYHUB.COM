@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { api } from '../services/api'
+import { useAuth } from '../services/auth'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -7,14 +8,24 @@ interface Message {
 }
 
 export default function SupportChat() {
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'owner'
+
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hola! Soy Konni, tu asistente de soporte. En que te puedo ayudar?' }
+    { role: 'assistant', content: isAdmin
+      ? 'Hola! Soy Konni Admin, tu asistente ejecutivo. Puedo ayudarte con HR, payroll, finanzas, legal y todo lo del panel de administracion.'
+      : 'Hola! Soy Konni, tu asistente personal de estudio. En que te puedo ayudar?' }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const messagesRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Theme colors based on role
+  const theme = isAdmin
+    ? { gradient: 'linear-gradient(135deg, #7C3AED, #A78BFA)', shadow: 'rgba(124,58,237,0.4)', shadowHover: 'rgba(124,58,237,0.5)', btnFill: 'rgba(167,139,250,0.2)' }
+    : { gradient: 'linear-gradient(135deg, #2D62C8, #4f8cff)', shadow: 'rgba(45,98,200,0.4)', shadowHover: 'rgba(45,98,200,0.5)', btnFill: 'rgba(255,255,255,0.2)' }
 
   useEffect(() => {
     if (messagesRef.current) {
@@ -26,6 +37,16 @@ export default function SupportChat() {
     if (open && inputRef.current) inputRef.current.focus()
   }, [open])
 
+  // Reset welcome message when role changes
+  useEffect(() => {
+    setMessages([{
+      role: 'assistant',
+      content: isAdmin
+        ? 'Hola! Soy Konni Admin, tu asistente ejecutivo. Puedo ayudarte con HR, payroll, finanzas, legal y todo lo del panel de administracion.'
+        : 'Hola! Soy Konni, tu asistente personal de estudio. En que te puedo ayudar?'
+    }])
+  }, [isAdmin])
+
   const send = async () => {
     const msg = input.trim()
     if (!msg || loading) return
@@ -35,7 +56,8 @@ export default function SupportChat() {
     setLoading(true)
 
     try {
-      const res = await api.supportChat(msg, newMessages.slice(-10))
+      const chatFn = isAdmin ? api.supportAdminChat : api.supportChat
+      const res = await chatFn(msg, newMessages.slice(-12))
       setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Ups, algo salio mal. Intenta de nuevo o escribe a contacto@conniku.com.' }])
@@ -51,17 +73,17 @@ export default function SupportChat() {
         style={{
           position: 'fixed', bottom: 24, right: 24, zIndex: 9990,
           width: 56, height: 56, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #2D62C8, #4f8cff)',
+          background: theme.gradient,
           border: 'none', cursor: 'pointer',
-          boxShadow: '0 4px 16px rgba(45,98,200,0.4)',
+          boxShadow: `0 4px 16px ${theme.shadow}`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'transform 0.2s, box-shadow 0.2s',
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(45,98,200,0.5)' }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(45,98,200,0.4)' }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = `0 6px 24px ${theme.shadowHover}` }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 4px 16px ${theme.shadow}` }}
       >
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="rgba(255,255,255,0.2)" />
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill={theme.btnFill} />
         </svg>
       </button>
     )
@@ -81,7 +103,7 @@ export default function SupportChat() {
       {/* Header */}
       <div style={{
         padding: '14px 16px',
-        background: 'linear-gradient(135deg, #2D62C8, #4f8cff)',
+        background: theme.gradient,
         color: '#fff',
         display: 'flex', alignItems: 'center', gap: 10,
       }}>
@@ -91,11 +113,21 @@ export default function SupportChat() {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 18,
         }}>
-          <svg width="20" height="20" viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
+          {isAdmin ? (
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+            </svg>
+          ) : (
+            <svg width="20" height="20" viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" /></svg>
+          )}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>Konni — Soporte</div>
-          <div style={{ fontSize: 11, opacity: 0.8 }}>Asistente IA de Conniku</div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>
+            {isAdmin ? 'Konni Admin' : 'Konni — Soporte'}
+          </div>
+          <div style={{ fontSize: 11, opacity: 0.8 }}>
+            {isAdmin ? 'Asistente Ejecutivo' : 'Asistente IA de Conniku'}
+          </div>
         </div>
         <button onClick={() => setOpen(false)} style={{
           background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer',
@@ -116,11 +148,14 @@ export default function SupportChat() {
             maxWidth: '85%',
             padding: '10px 14px',
             borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-            background: msg.role === 'user' ? 'var(--accent)' : 'var(--bg-secondary)',
+            background: msg.role === 'user'
+              ? (isAdmin ? '#7C3AED' : 'var(--accent)')
+              : 'var(--bg-secondary)',
             color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
             fontSize: 13,
             lineHeight: 1.5,
             wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
           }}>
             {msg.content}
           </div>
@@ -151,7 +186,7 @@ export default function SupportChat() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && send()}
-          placeholder="Escribe tu pregunta..."
+          placeholder={isAdmin ? 'Pregunta sobre admin, HR, finanzas...' : 'Escribe tu pregunta...'}
           style={{
             flex: 1, padding: '10px 14px',
             borderRadius: 12, border: '1px solid var(--border)',
@@ -163,7 +198,9 @@ export default function SupportChat() {
         />
         <button onClick={send} disabled={loading || !input.trim()} style={{
           padding: '10px 14px', borderRadius: 12, border: 'none',
-          background: input.trim() ? 'var(--accent)' : 'var(--bg-tertiary)',
+          background: input.trim()
+            ? (isAdmin ? '#7C3AED' : 'var(--accent)')
+            : 'var(--bg-tertiary)',
           color: input.trim() ? '#fff' : 'var(--text-muted)',
           cursor: input.trim() ? 'pointer' : 'default',
           fontWeight: 600, fontSize: 13, fontFamily: 'inherit',
