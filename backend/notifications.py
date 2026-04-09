@@ -18,49 +18,60 @@ from middleware import get_current_user
 
 router = APIRouter(prefix="/email", tags=["email"])
 
-# Email config — 3 accounts:
+# Email config — 3 accounts (Zoho Mail):
 #   noreply@conniku.com  → all automated notifications
 #   contacto@conniku.com → contact forms, support, suggestions
 #   ceo@conniku.com      → CEO reports, payment alerts, financial metrics
+#
+# IMPORTANT: Zoho requires that the authenticated user matches the From address.
+# Each account needs its own password. Set per-account passwords in env vars:
+#   SMTP_PASS_NOREPLY, SMTP_PASS_CONTACTO, SMTP_PASS_CEO
+# If only SMTP_PASS is set, it's used as fallback for all accounts.
 SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_PASS = os.environ.get("SMTP_PASS", "")
+SMTP_PASS_FALLBACK = os.environ.get("SMTP_PASS", "")
 # Per-account config
 NOREPLY_EMAIL = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "contacto@conniku.com")
 CEO_EMAIL = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
-# Defaults (backward compat)
+# Per-account passwords (fall back to shared SMTP_PASS if not set)
+SMTP_PASS_NOREPLY = os.environ.get("SMTP_PASS_NOREPLY", SMTP_PASS_FALLBACK)
+SMTP_PASS_CONTACTO = os.environ.get("SMTP_PASS_CONTACTO", SMTP_PASS_FALLBACK)
+SMTP_PASS_CEO = os.environ.get("SMTP_PASS_CEO", SMTP_PASS_FALLBACK)
+# Legacy aliases
+SMTP_PASS = SMTP_PASS_FALLBACK  # backward compat for other files that import it
 SMTP_USER = os.environ.get("SMTP_USER", NOREPLY_EMAIL)
 SMTP_FROM = os.environ.get("SMTP_FROM", NOREPLY_EMAIL)
 REPLY_TO = os.environ.get("SMTP_REPLY_TO", CONTACT_EMAIL)
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://conniku.com")
 
+# Account registry: maps account key → (email, password, display name)
+def _get_account_config(from_account: str = None):
+    """Return (email, password, sender_name) for the given account."""
+    if from_account == "ceo":
+        return CEO_EMAIL, SMTP_PASS_CEO, "Conniku CEO"
+    elif from_account == "contacto":
+        return CONTACT_EMAIL, SMTP_PASS_CONTACTO, "Conniku Soporte"
+    else:  # noreply (default)
+        return NOREPLY_EMAIL, SMTP_PASS_NOREPLY, "Conniku"
+
 
 def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str = None, email_type: str = "notification", from_account: str = None):
     """Send email in background thread and log it.
     from_account: 'noreply' (default), 'contacto', or 'ceo'
+
+    Zoho requires that the SMTP login user matches the From address.
+    Each account authenticates with its own password.
     """
-    # Determine which account to send from
-    if from_account == "ceo":
-        send_from = CEO_EMAIL
-        send_user = CEO_EMAIL
-        sender_name = "Conniku CEO"
-    elif from_account == "contacto":
-        send_from = CONTACT_EMAIL
-        send_user = CONTACT_EMAIL
-        sender_name = "Conniku Soporte"
-    else:
-        send_from = NOREPLY_EMAIL
-        send_user = NOREPLY_EMAIL
-        sender_name = "Conniku"
+    send_from, account_pass, sender_name = _get_account_config(from_account)
 
     def _send():
         status = "sent"
         error_msg = None
-        if not SMTP_PASS:
-            print(f"[Email] SMTP not configured. Would send to {to_email}: {subject}")
+        if not account_pass:
+            print(f"[Email] SMTP password not configured for {send_from}. Would send to {to_email}: {subject}")
             status = "failed"
-            error_msg = "SMTP not configured"
+            error_msg = f"SMTP password not configured for {send_from}"
         else:
             try:
                 msg = MIMEMultipart("alternative")
@@ -72,11 +83,11 @@ def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str
 
                 with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
                     server.starttls()
-                    server.login(send_user, SMTP_PASS)
+                    server.login(send_from, account_pass)
                     server.sendmail(send_from, to_email, msg.as_string())
                 print(f"[Email] Sent from {send_from} to {to_email}: {subject}")
             except Exception as e:
-                print(f"[Email Error] {e}")
+                print(f"[Email Error] from={send_from} to={to_email}: {e}")
                 status = "failed"
                 error_msg = str(e)
 

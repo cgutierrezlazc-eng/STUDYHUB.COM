@@ -10,11 +10,7 @@ import os
 import random
 import string
 import logging
-import smtplib
-import threading
 from datetime import datetime, timedelta
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from typing import Optional, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
@@ -97,89 +93,19 @@ def _validate_rut(rut: str) -> bool:
 
 
 # ─── CEO Email Alert ─────────────────────────────────────────────
-
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.zoho.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_PASS = os.environ.get("SMTP_PASS", "")
-CEO_EMAIL_ADDR = os.environ.get("CEO_EMAIL", "ceo@conniku.com")
-NOREPLY_EMAIL = os.environ.get("NOREPLY_EMAIL", "noreply@conniku.com")
-
-
-def _build_ceo_email_html(subject: str, body: str) -> str:
-    """Build branded HTML email for CEO alerts."""
-    return f"""\
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f4f4f7;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f7;padding:24px 0;">
-    <tr><td align="center">
-      <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
-        <!-- Header -->
-        <tr>
-          <td style="background:#2563EB;padding:18px 24px;">
-            <span style="color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">CONNIKU</span>
-            <span style="color:#93c5fd;font-size:13px;margin-left:10px;">Alerta CEO</span>
-          </td>
-        </tr>
-        <!-- Body -->
-        <tr>
-          <td style="padding:28px 24px;">
-            <h2 style="margin:0 0 16px;color:#1e293b;font-size:18px;">{subject}</h2>
-            <div style="color:#334155;font-size:14px;line-height:1.6;">{body}</div>
-          </td>
-        </tr>
-        <!-- Footer -->
-        <tr>
-          <td style="background:#f8fafc;padding:14px 24px;border-top:1px solid #e2e8f0;">
-            <span style="color:#94a3b8;font-size:11px;">Este es un mensaje automatico del sistema Conniku. No responder.</span>
-          </td>
-        </tr>
-      </table>
-    </td></tr>
-  </table>
-</body>
-</html>"""
+# Uses centralized email system from notifications.py
 
 
 def send_ceo_alert(subject: str, body: str):
-    """Send an HTML email alert to the CEO (owner) in a background thread.
-    Silently skips if SMTP is not configured or no owner found."""
-
-    if not SMTP_PASS:
-        logger.debug("CEO alert skipped: SMTP not configured")
-        return
-
-    def _send():
-        try:
-            db = SessionLocal()
-            try:
-                owner = db.query(User).filter(User.role == "owner").first()
-                if not owner or not owner.email:
-                    logger.debug("CEO alert skipped: no owner user found")
-                    return
-                ceo_email = owner.email
-            finally:
-                db.close()
-
-            html = _build_ceo_email_html(subject, body)
-
-            msg = MIMEMultipart("alternative")
-            msg["From"] = f"Conniku CEO <{CEO_EMAIL_ADDR}>"
-            msg["To"] = ceo_email
-            msg["Subject"] = f"[Conniku CEO] {subject}"
-            msg.attach(MIMEText(html, "html", "utf-8"))
-
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-                server.starttls()
-                server.login(CEO_EMAIL_ADDR, SMTP_PASS)
-                server.sendmail(CEO_EMAIL_ADDR, ceo_email, msg.as_string())
-
-            logger.info(f"CEO alert sent: {subject}")
-        except Exception:
-            logger.warning(f"CEO alert failed: {subject}", exc_info=True)
-
-    threading.Thread(target=_send, daemon=True).start()
+    """Send an HTML email alert to the CEO using centralized email system.
+    Silently skips if SMTP is not configured."""
+    try:
+        from notifications import _send_email_async, _email_template, CEO_EMAIL
+        html = _email_template(f"Alerta CEO: {subject}", body)
+        _send_email_async(CEO_EMAIL, f"[Conniku CEO] {subject}", html, email_type="ceo_alert", from_account="ceo")
+        logger.info(f"CEO alert queued: {subject}")
+    except Exception:
+        logger.warning(f"CEO alert failed: {subject}", exc_info=True)
 
 
 # ═══════════════════════════════════════════════════════════════════

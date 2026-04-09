@@ -1278,7 +1278,7 @@ def submit_suggestion(req: SuggestionRequest, user: User = Depends(get_current_u
             </table>
         """
         html = _email_template(f"Sugerencia: {req.subject}", body)
-        _send_email_async("contacto@conniku.com", f"[{type_label}] {req.subject} — {user.first_name}", html, reply_to=user.email, from_account="ceo")
+        _send_email_async("contacto@conniku.com", f"[{type_label}] {req.subject} — {user.first_name}", html, reply_to=user.email, from_account="contacto")
     except Exception:
         pass
     return {"sent": True}
