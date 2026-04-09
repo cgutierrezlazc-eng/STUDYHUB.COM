@@ -220,6 +220,106 @@ def send_ceo_weekly_report(report_data: dict):
     _send_email_async(CEO_EMAIL, f"Conniku — Reporte Semanal {report_data.get('period', '')}", html, reply_to=CEO_EMAIL, email_type="ceo_report", from_account="ceo")
 
 
+# ─── FISCAL DEADLINE ALERTS ──────────────────────────────────
+# Sends email alerts to CEO and Contacto 2 days before fiscal deadlines
+
+FISCAL_DEADLINES = [
+    {"key": "f29", "name": "Formulario 29 — IVA Mensual", "dayOfMonth": 12, "frequency": "mensual", "url": "https://www.sii.cl/servicios_online/1080-1082.html"},
+    {"key": "previred", "name": "Previred — Cotizaciones", "dayOfMonth": 13, "frequency": "mensual", "url": "https://www.previred.com/"},
+    {"key": "remuneraciones", "name": "Pago Remuneraciones", "dayOfMonth": 30, "frequency": "mensual", "url": "https://www.bancoestado.cl/"},
+    {"key": "f22", "name": "Formulario 22 — Renta Anual", "dayOfMonth": 30, "month": 4, "frequency": "anual", "url": "https://www.sii.cl/servicios_online/1080-1083.html"},
+    {"key": "dj1887", "name": "DJ 1887 — Declaracion Jurada Sueldos", "dayOfMonth": 28, "month": 3, "frequency": "anual", "url": "https://www.sii.cl/servicios_online/1080-1399.html"},
+    {"key": "patente_1", "name": "Patente Municipal — 1er Semestre", "dayOfMonth": 31, "month": 1, "frequency": "semestral", "url": "https://www.municipalidadantofagasta.cl/"},
+    {"key": "patente_2", "name": "Patente Municipal — 2do Semestre", "dayOfMonth": 31, "month": 7, "frequency": "semestral", "url": "https://www.municipalidadantofagasta.cl/"},
+]
+
+ALERT_DAYS_BEFORE = 2
+
+
+def check_and_send_fiscal_alerts():
+    """Check all fiscal deadlines and send alerts if due within ALERT_DAYS_BEFORE days.
+    Should be called daily (e.g., via cron or startup check).
+    """
+    today = date.today()
+    alerts_sent = []
+
+    for dl in FISCAL_DEADLINES:
+        next_date = _get_next_deadline_date(dl, today)
+        if not next_date:
+            continue
+
+        days_until = (next_date - today).days
+
+        if 0 <= days_until <= ALERT_DAYS_BEFORE:
+            _send_fiscal_alert_email(dl, next_date, days_until)
+            alerts_sent.append({"deadline": dl["name"], "date": str(next_date), "days_until": days_until})
+
+    return alerts_sent
+
+
+def _get_next_deadline_date(dl: dict, today: date) -> date:
+    """Calculate the next occurrence of a fiscal deadline."""
+    try:
+        if dl["frequency"] == "mensual":
+            candidate = date(today.year, today.month, min(dl["dayOfMonth"], 28))
+            if candidate < today:
+                m = today.month + 1
+                y = today.year
+                if m > 12:
+                    m = 1
+                    y += 1
+                candidate = date(y, m, min(dl["dayOfMonth"], 28))
+            return candidate
+        elif dl["frequency"] == "anual":
+            candidate = date(today.year, dl.get("month", 1), min(dl["dayOfMonth"], 28))
+            if candidate < today:
+                candidate = date(today.year + 1, dl.get("month", 1), min(dl["dayOfMonth"], 28))
+            return candidate
+        elif dl["frequency"] == "semestral":
+            candidate = date(today.year, dl.get("month", 1), min(dl["dayOfMonth"], 28))
+            if candidate < today:
+                candidate = date(today.year + 1, dl.get("month", 1), min(dl["dayOfMonth"], 28))
+            return candidate
+    except ValueError:
+        return None
+    return None
+
+
+def _send_fiscal_alert_email(dl: dict, deadline_date: date, days_until: int):
+    """Send fiscal deadline alert to CEO and Contacto emails."""
+    urgency = "HOY" if days_until == 0 else f"en {days_until} dia{'s' if days_until > 1 else ''}"
+
+    body = f"""
+    <p><strong style="color:#ef4444;">⚠️ Alerta Fiscal — Vencimiento {urgency}</strong></p>
+    <p style="font-size:16px;font-weight:700;margin:16px 0">{dl['name']}</p>
+    <table style="width:100%;font-size:14px;border-collapse:collapse;">
+        <tr><td style="padding:8px 0;color:#6B7280">Fecha vencimiento:</td><td style="font-weight:600">{deadline_date.strftime('%d/%m/%Y')}</td></tr>
+        <tr><td style="padding:8px 0;color:#6B7280">Dias restantes:</td><td style="font-weight:600;color:{'#ef4444' if days_until <= 1 else '#f59e0b'}">{days_until}</td></tr>
+        <tr><td style="padding:8px 0;color:#6B7280">Empresa:</td><td>CONNIKU SPA — RUT 78.395.702-7</td></tr>
+    </table>
+    <p style="margin-top:16px;font-size:13px;color:#6B7280">
+        Recuerda revisar los datos en el Panel Financiero de Conniku antes de declarar.
+    </p>
+    """
+
+    subject = f"⚠️ Alerta Fiscal: {dl['name']} vence {urgency}"
+    html = _email_template(f"Alerta Fiscal — {dl['name']}", body, "Ir a Plataforma", dl.get("url", "https://www.sii.cl/"))
+
+    # Send to CEO
+    _send_email_async(CEO_EMAIL, subject, html, email_type="fiscal_alert", from_account="noreply")
+    # Send to Contacto
+    _send_email_async(CONTACT_EMAIL, subject, html, email_type="fiscal_alert", from_account="noreply")
+
+
+@router.post("/fiscal-alerts/check")
+async def trigger_fiscal_alert_check(current_user=Depends(get_current_user)):
+    """Manually trigger fiscal deadline check. Owner only."""
+    if current_user.role != "owner":
+        raise HTTPException(403, "Solo el owner puede activar alertas fiscales")
+    alerts = check_and_send_fiscal_alerts()
+    return {"alerts_sent": alerts, "checked_at": datetime.utcnow().isoformat()}
+
+
 # ─── CEO Email Management ─────────────────────────────────────
 
 class ComposeEmailRequest(BaseModel):

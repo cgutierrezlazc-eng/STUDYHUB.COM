@@ -178,6 +178,9 @@ export default function PersonalTab() {
         <StatCard icon={AlertTriangle} label="Inactivos" value={employees.filter((e: Employee) => e.status !== 'active').length} color="#ef4444" />
       </div>
 
+      {/* Semaforo Contratos y Documentos */}
+      <ContractAlertPanel employees={employees} />
+
       {/* Search + Add */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
         <div style={{ flex: 1, position: 'relative' }}>
@@ -268,7 +271,23 @@ function EmployeeList({ employees, searchTerm, selectedEmployee, setSelectedEmpl
             {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>{emp.firstName} {emp.lastName}</div>
+            <div style={{ fontWeight: 700, fontSize: 15, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {emp.firstName} {emp.lastName}
+              {(() => {
+                const contractStatus = getEmployeeContractStatus(emp)
+                if (!contractStatus || contractStatus.status === 'ok') return null
+                const colors = ALERT_COLORS[contractStatus.status]
+                return (
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                    background: colors.bg, color: colors.text, border: `1px solid ${colors.border}`,
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {contractStatus.label}
+                  </span>
+                )
+              })()}
+            </div>
             <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
               {emp.position} • {emp.department} • RUT: {emp.rut}
             </div>
@@ -1061,6 +1080,127 @@ function ContractClause({ title, content }: { title: string; content: string }) 
     <div style={{ marginBottom: 12 }}>
       <h4 style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', margin: '0 0 4px' }}>{title}</h4>
       <p style={{ fontSize: 12, margin: 0, color: 'var(--text-primary)', whiteSpace: 'pre-line' }}>{content}</p>
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// CONTRACT & DOCUMENT ALERT PANEL (Semaforo)
+// ═════════════════════════════════════════════════════════════════
+
+interface DocumentAlert {
+  employeeId: string
+  employeeName: string
+  type: 'contrato' | 'cedula' | 'pasaporte' | 'visa' | 'licencia_conducir' | 'certificado'
+  label: string
+  expirationDate: string | null
+  daysUntil: number
+  status: 'ok' | 'warning' | 'danger' | 'expired'
+}
+
+function getContractAlerts(employees: Employee[]): DocumentAlert[] {
+  const today = new Date()
+  const alerts: DocumentAlert[] = []
+
+  for (const emp of employees) {
+    if (emp.status !== 'active') continue
+    const name = `${emp.firstName} ${emp.lastName}`
+
+    // Contract expiration (plazo fijo)
+    if (emp.contractType === 'plazo_fijo' && emp.endDate) {
+      const endDate = new Date(emp.endDate)
+      const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+      let status: DocumentAlert['status'] = 'ok'
+      if (daysUntil < 0) status = 'expired'
+      else if (daysUntil <= 7) status = 'danger'
+      else if (daysUntil <= 15) status = 'warning'
+
+      alerts.push({
+        employeeId: emp.id,
+        employeeName: name,
+        type: 'contrato',
+        label: `Contrato plazo fijo vence ${emp.endDate}`,
+        expirationDate: emp.endDate,
+        daysUntil,
+        status,
+      })
+    }
+  }
+
+  // Sort: expired first, then danger, warning, ok
+  const order = { expired: 0, danger: 1, warning: 2, ok: 3 }
+  alerts.sort((a, b) => order[a.status] - order[b.status])
+  return alerts
+}
+
+function getEmployeeContractStatus(emp: Employee): { status: 'ok' | 'warning' | 'danger' | 'expired'; label: string } | null {
+  if (emp.contractType !== 'plazo_fijo' || !emp.endDate) return null
+  const today = new Date()
+  const endDate = new Date(emp.endDate)
+  const daysUntil = Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (daysUntil < 0) return { status: 'expired', label: `Contrato vencido hace ${Math.abs(daysUntil)}d` }
+  if (daysUntil <= 7) return { status: 'danger', label: `Contrato vence en ${daysUntil}d` }
+  if (daysUntil <= 15) return { status: 'warning', label: `Contrato vence en ${daysUntil}d` }
+  return { status: 'ok', label: `Plazo fijo — ${daysUntil}d restantes` }
+}
+
+const ALERT_COLORS = {
+  ok:      { bg: 'rgba(34,197,94,0.1)',  border: '#22c55e', text: '#16a34a' },
+  warning: { bg: 'rgba(245,158,11,0.1)', border: '#f59e0b', text: '#d97706' },
+  danger:  { bg: 'rgba(239,68,68,0.1)',  border: '#ef4444', text: '#dc2626' },
+  expired: { bg: 'rgba(127,29,29,0.15)', border: '#991b1b', text: '#991b1b' },
+}
+
+function ContractAlertPanel({ employees }: { employees: Employee[] }) {
+  const alerts = getContractAlerts(employees)
+  const urgentAlerts = alerts.filter(a => a.status !== 'ok')
+
+  if (urgentAlerts.length === 0 && employees.length > 0) {
+    return (
+      <div style={{
+        padding: '12px 16px', marginBottom: 20, borderRadius: 10,
+        background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)',
+        display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#16a34a',
+      }}>
+        <CheckCircle size={16} /> Todos los contratos y documentos estan al dia.
+      </div>
+    )
+  }
+
+  if (urgentAlerts.length === 0) return null
+
+  return (
+    <div className="card" style={{ padding: 16, marginBottom: 20, borderLeft: `4px solid ${ALERT_COLORS[urgentAlerts[0].status].border}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+        <AlertTriangle size={16} style={{ color: ALERT_COLORS[urgentAlerts[0].status].text }} />
+        <span style={{ fontWeight: 700, fontSize: 14 }}>
+          Alertas de Contratos y Documentos ({urgentAlerts.length})
+        </span>
+      </div>
+      <div style={{ display: 'grid', gap: 6 }}>
+        {urgentAlerts.map((alert, i) => {
+          const colors = ALERT_COLORS[alert.status]
+          return (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '8px 12px', borderRadius: 8, background: colors.bg, fontSize: 13,
+            }}>
+              <div>
+                <span style={{ fontWeight: 600 }}>{alert.employeeName}</span>
+                <span style={{ color: 'var(--text-muted)', marginLeft: 8 }}>{alert.label}</span>
+              </div>
+              <span style={{
+                padding: '2px 8px', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                background: colors.border, color: '#fff',
+              }}>
+                {alert.status === 'expired' ? 'VENCIDO' :
+                 alert.status === 'danger' ? 'URGENTE' : 'PROXIMO'}
+              </span>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -892,6 +892,10 @@ export const api = {
   checkExpiredSubscriptions: () =>
     request('/finance/check-expired-subscriptions', { method: 'POST' }),
 
+  // ─── Fiscal Alerts ───────────────────────────────────────
+  checkFiscalAlerts: () =>
+    request('/email/fiscal-alerts/check', { method: 'POST' }),
+
   // ─── F129 SII ─────────────────────────────────────────────
   generateF129: (month?: number, year?: number) => {
     const params = new URLSearchParams();

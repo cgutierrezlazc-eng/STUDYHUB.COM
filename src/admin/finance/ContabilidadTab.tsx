@@ -1,176 +1,106 @@
 import React, { useState, useMemo } from 'react'
-import { BookOpen, Plus, Search, Download, ArrowUpRight, ArrowDownRight, Filter, CheckCircle } from 'lucide-react'
+import { BookOpen, Download, Search, ArrowUpRight, ArrowDownRight, FileText, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../services/auth'
-import { btnPrimary, btnSecondary, btnSmall, thStyle, tdStyle, inputStyle, selectStyle, fmt } from '../shared/styles'
+import { btnSecondary, thStyle, tdStyle, inputStyle, selectStyle, fmt } from '../shared/styles'
+import {
+  loadTransactions, Transaction, ACCOUNT_CATEGORIES, COMPANY,
+  calculateFiscalSummary,
+} from '../shared/accountingData'
 
-// ─── Plan de Cuentas (simplificado para PYME/SpA) ────────────────
-const PLAN_CUENTAS = [
-  // Activos
-  { code: '1.1.01', name: 'Caja', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.1.02', name: 'Banco Estado CTA CTE', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.1.03', name: 'Banco Chile CTA CTE', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.1.04', name: 'Clientes por Cobrar', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.1.05', name: 'IVA Crédito Fiscal', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.1.06', name: 'PPM por Recuperar', type: 'activo', group: 'Activo Circulante' },
-  { code: '1.2.01', name: 'Equipos Computacionales', type: 'activo', group: 'Activo Fijo' },
-  { code: '1.2.02', name: 'Depreciación Acum. Equipos', type: 'activo', group: 'Activo Fijo' },
-  { code: '1.3.01', name: 'Licencias Software', type: 'activo', group: 'Activo Intangible' },
-  // Pasivos
-  { code: '2.1.01', name: 'Proveedores por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.02', name: 'IVA Débito Fiscal', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.03', name: 'Retenciones por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.04', name: 'Remuneraciones por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.05', name: 'AFP por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.06', name: 'Salud por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  { code: '2.1.07', name: 'PPM por Pagar', type: 'pasivo', group: 'Pasivo Circulante' },
-  // Patrimonio
-  { code: '3.1.01', name: 'Capital Social', type: 'patrimonio', group: 'Patrimonio' },
-  { code: '3.1.02', name: 'Resultado del Ejercicio', type: 'patrimonio', group: 'Patrimonio' },
-  { code: '3.1.03', name: 'Resultados Acumulados', type: 'patrimonio', group: 'Patrimonio' },
-  // Ingresos
-  { code: '4.1.01', name: 'Ingresos por Suscripciones', type: 'ingreso', group: 'Ingresos Operacionales' },
-  { code: '4.1.02', name: 'Ingresos por Servicios', type: 'ingreso', group: 'Ingresos Operacionales' },
-  { code: '4.2.01', name: 'Otros Ingresos', type: 'ingreso', group: 'Ingresos No Operacionales' },
-  // Gastos
-  { code: '5.1.01', name: 'Remuneraciones', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.02', name: 'Leyes Sociales (AFP, Salud, AFC)', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.03', name: 'Hosting y Servidores', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.04', name: 'Licencias y Suscripciones', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.05', name: 'Marketing y Publicidad', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.06', name: 'Servicios Profesionales', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.07', name: 'Depreciación', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.1.08', name: 'Gastos Generales', type: 'gasto', group: 'Gastos Operacionales' },
-  { code: '5.2.01', name: 'Gastos Financieros', type: 'gasto', group: 'Gastos No Operacionales' },
-  { code: '5.2.02', name: 'Comisiones Bancarias', type: 'gasto', group: 'Gastos No Operacionales' },
-]
+// ═════════════════════════════════════════════════════════════════
+// CONTABILIDAD — Libro Compras/Ventas Electronico + Balance
+// Conniku SpA | RUT 78.395.702-7 | Regimen 14D N°3
+// Datos reales desde modulo de transacciones (GastosTab)
+// ═════════════════════════════════════════════════════════════════
 
-interface Asiento {
-  id: string
-  fecha: string
-  glosa: string
-  numero: number
-  lineas: { cuenta: string; debe: number; haber: number }[]
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+const DOC_TYPE_LABELS: Record<string, string> = {
+  factura: 'Factura',
+  factura_exenta: 'Factura Exenta',
+  boleta: 'Boleta',
+  boleta_honorarios: 'Boleta Honorarios',
+  invoice_internacional: 'Invoice Intl.',
+  recibo: 'Recibo',
+  comprobante_transferencia: 'Comp. Transferencia',
+  sin_documento: 'Sin Documento',
 }
 
-// Demo journal entries
-const DEMO_ASIENTOS: Asiento[] = [
-  {
-    id: '1', fecha: '2026-04-01', glosa: 'Pago remuneraciones marzo 2026', numero: 1001,
-    lineas: [
-      { cuenta: '5.1.01', debe: 3550000, haber: 0 },
-      { cuenta: '5.1.02', debe: 850000, haber: 0 },
-      { cuenta: '2.1.04', debe: 0, haber: 2800000 },
-      { cuenta: '2.1.05', debe: 0, haber: 420000 },
-      { cuenta: '2.1.06', debe: 0, haber: 250000 },
-      { cuenta: '2.1.03', debe: 0, haber: 930000 },
-    ],
-  },
-  {
-    id: '2', fecha: '2026-04-02', glosa: 'Ingreso suscripciones PRO — abril', numero: 1002,
-    lineas: [
-      { cuenta: '1.1.02', debe: 2380000, haber: 0 },
-      { cuenta: '2.1.02', debe: 0, haber: 380000 },
-      { cuenta: '4.1.01', debe: 0, haber: 2000000 },
-    ],
-  },
-  {
-    id: '3', fecha: '2026-04-05', glosa: 'Pago Vercel hosting mensual', numero: 1003,
-    lineas: [
-      { cuenta: '5.1.03', debe: 45000, haber: 0 },
-      { cuenta: '1.1.05', debe: 8550, haber: 0 },
-      { cuenta: '1.1.02', debe: 0, haber: 53550 },
-    ],
-  },
-  {
-    id: '4', fecha: '2026-04-07', glosa: 'Pago API Anthropic Claude', numero: 1004,
-    lineas: [
-      { cuenta: '5.1.04', debe: 120000, haber: 0 },
-      { cuenta: '1.1.05', debe: 22800, haber: 0 },
-      { cuenta: '1.1.03', debe: 0, haber: 142800 },
-    ],
-  },
-]
+function fmtCLP(n: number): string {
+  return '$' + Math.round(n).toLocaleString('es-CL')
+}
 
 export default function ContabilidadTab() {
   const { user } = useAuth()
-  const [activeView, setActiveView] = useState<'cuentas' | 'asientos' | 'mayor' | 'balance'>('cuentas')
-  const [searchCuenta, setSearchCuenta] = useState('')
-  const [filterType, setFilterType] = useState<string>('all')
-  const [asientos] = useState<Asiento[]>(DEMO_ASIENTOS)
-  const [selectedCuenta, setSelectedCuenta] = useState<string | null>(null)
+  const today = new Date()
+  const [activeView, setActiveView] = useState<'compras' | 'ventas' | 'resumen' | 'plan_cuentas'>('compras')
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear())
+  const [searchTerm, setSearchTerm] = useState('')
 
-  // Filter accounts
-  const filteredCuentas = useMemo(() => {
-    return PLAN_CUENTAS.filter(c => {
-      if (filterType !== 'all' && c.type !== filterType) return false
-      if (searchCuenta && !c.name.toLowerCase().includes(searchCuenta.toLowerCase()) && !c.code.includes(searchCuenta)) return false
-      return true
-    })
-  }, [searchCuenta, filterType])
+  // Load real transactions
+  const allTx = useMemo(() => loadTransactions(), [])
 
-  // Group accounts
-  const groupedCuentas = useMemo(() => {
-    const groups: Record<string, typeof PLAN_CUENTAS> = {}
-    filteredCuentas.forEach(c => {
-      if (!groups[c.group]) groups[c.group] = []
-      groups[c.group].push(c)
-    })
-    return groups
-  }, [filteredCuentas])
+  const periodTx = useMemo(() =>
+    allTx.filter(t => t.periodMonth === selectedMonth && t.periodYear === selectedYear),
+    [allTx, selectedMonth, selectedYear]
+  )
 
-  // Account balances from journal entries
-  const balances = useMemo(() => {
-    const b: Record<string, { debe: number; haber: number }> = {}
-    asientos.forEach(a => {
-      a.lineas.forEach(l => {
-        if (!b[l.cuenta]) b[l.cuenta] = { debe: 0, haber: 0 }
-        b[l.cuenta].debe += l.debe
-        b[l.cuenta].haber += l.haber
-      })
-    })
-    return b
-  }, [asientos])
+  // Libro Compras: egresos, costos, inversiones con documento fiscal
+  const libroCompras = useMemo(() =>
+    periodTx
+      .filter(t => t.type !== 'ingreso')
+      .filter(t => !searchTerm || t.description.toLowerCase().includes(searchTerm.toLowerCase()) || t.provider.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+    [periodTx, searchTerm]
+  )
 
-  // Libro Mayor for selected account
-  const libroMayor = useMemo(() => {
-    if (!selectedCuenta) return []
-    const entries: { fecha: string; glosa: string; debe: number; haber: number; saldo: number }[] = []
-    let saldo = 0
-    asientos
-      .filter(a => a.lineas.some(l => l.cuenta === selectedCuenta))
-      .sort((a, b) => a.fecha.localeCompare(b.fecha))
-      .forEach(a => {
-        a.lineas.filter(l => l.cuenta === selectedCuenta).forEach(l => {
-          saldo += l.debe - l.haber
-          entries.push({ fecha: a.fecha, glosa: a.glosa, debe: l.debe, haber: l.haber, saldo })
-        })
-      })
-    return entries
-  }, [selectedCuenta, asientos])
+  // Libro Ventas: ingresos con documento fiscal
+  const libroVentas = useMemo(() =>
+    periodTx
+      .filter(t => t.type === 'ingreso')
+      .filter(t => !searchTerm || t.description.toLowerCase().includes(searchTerm.toLowerCase()) || t.provider.toLowerCase().includes(searchTerm.toLowerCase()))
+      .sort((a, b) => a.date.localeCompare(b.date)),
+    [periodTx, searchTerm]
+  )
 
-  // Balance general
-  const balanceGeneral = useMemo(() => {
-    const totals = { activo: 0, pasivo: 0, patrimonio: 0, ingresos: 0, gastos: 0 }
-    PLAN_CUENTAS.forEach(c => {
-      const b = balances[c.code]
-      if (!b) return
-      const neto = b.debe - b.haber
-      if (c.type === 'activo') totals.activo += neto
-      else if (c.type === 'pasivo') totals.pasivo -= neto
-      else if (c.type === 'patrimonio') totals.patrimonio -= neto
-      else if (c.type === 'ingreso') totals.ingresos -= neto
-      else if (c.type === 'gasto') totals.gastos += neto
-    })
-    return totals
-  }, [balances])
+  // Fiscal summary
+  const summary = useMemo(
+    () => calculateFiscalSummary(selectedMonth, selectedYear),
+    [selectedMonth, selectedYear]
+  )
+
+  // CSV Export
+  const exportLibroCSV = (tipo: 'compras' | 'ventas') => {
+    const txs = tipo === 'compras' ? libroCompras : libroVentas
+    const BOM = '\uFEFF'
+    const headers = ['Fecha', 'Tipo Doc', 'N° Doc', 'RUT Proveedor', 'Proveedor', 'Descripcion', 'Neto', 'IVA', 'Total', 'Moneda', 'IVA Recuperable', 'Deducible']
+    const rows = txs.map(t => [
+      t.date,
+      DOC_TYPE_LABELS[t.documentType] || t.documentType,
+      t.documentNumber || '',
+      t.providerRut || '',
+      t.provider,
+      t.description,
+      Math.round(t.neto),
+      Math.round(t.iva),
+      Math.round(t.amountCLP),
+      t.currency,
+      t.ivaRecuperable ? 'Si' : 'No',
+      `${t.deductiblePercent}%`,
+    ])
+    const csv = BOM + [headers, ...rows].map(r => r.join(';')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `libro_${tipo}_${selectedYear}_${String(selectedMonth).padStart(2,'0')}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
 
   if (!user || (user.role !== 'owner' && user.role !== 'admin')) {
     return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Acceso restringido</div>
-  }
-
-  const typeColors: Record<string, string> = {
-    activo: '#3b82f6', pasivo: '#ef4444', patrimonio: '#8b5cf6',
-    ingreso: '#10b981', gasto: '#f59e0b',
   }
 
   return (
@@ -181,18 +111,34 @@ export default function ContabilidadTab() {
           <BookOpen size={26} /> Contabilidad
         </h1>
         <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: 13 }}>
-          Plan de cuentas, libro diario, libro mayor y balance — Normativa SII Chile
+          Libro Compras/Ventas Electronico — {COMPANY.razonSocial} — {COMPANY.regimen}
         </p>
+      </div>
+
+      {/* Period selector */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+        <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}
+          style={{ ...selectStyle, width: 140 }}>
+          {MONTHS.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+        </select>
+        <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}
+          style={{ ...selectStyle, width: 100 }}>
+          {[2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
+        </select>
+        <div style={{ flex: 1 }} />
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+          {periodTx.length} transacciones en periodo
+        </span>
       </div>
 
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 4, marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 8 }}>
-        {[
-          { id: 'cuentas' as const, label: 'Plan de Cuentas' },
-          { id: 'asientos' as const, label: 'Libro Diario' },
-          { id: 'mayor' as const, label: 'Libro Mayor' },
-          { id: 'balance' as const, label: 'Balance General' },
-        ].map(tab => (
+        {([
+          { id: 'compras' as const, label: 'Libro Compras', count: libroCompras.length },
+          { id: 'ventas' as const, label: 'Libro Ventas', count: libroVentas.length },
+          { id: 'resumen' as const, label: 'Resumen IVA' },
+          { id: 'plan_cuentas' as const, label: 'Plan de Cuentas' },
+        ]).map(tab => (
           <button key={tab.id} onClick={() => setActiveView(tab.id)} style={{
             padding: '8px 16px', borderRadius: '8px 8px 0 0', border: 'none',
             background: activeView === tab.id ? 'var(--accent)' : 'transparent',
@@ -200,307 +146,313 @@ export default function ContabilidadTab() {
             fontWeight: 600, fontSize: 13, cursor: 'pointer',
           }}>
             {tab.label}
+            {'count' in tab && tab.count !== undefined ? ` (${tab.count})` : ''}
           </button>
         ))}
       </div>
 
-      {/* ─── Plan de Cuentas ─── */}
-      {activeView === 'cuentas' && (
-        <>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, position: 'relative', minWidth: 200 }}>
-              <Search size={14} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-muted)' }} />
-              <input
-                placeholder="Buscar cuenta..."
-                value={searchCuenta}
-                onChange={e => setSearchCuenta(e.target.value)}
-                style={{ ...inputStyle, paddingLeft: 30 }}
-              />
-            </div>
-            <select value={filterType} onChange={e => setFilterType(e.target.value)} style={{ ...selectStyle, width: 160 }}>
-              <option value="all">Todas</option>
-              <option value="activo">Activos</option>
-              <option value="pasivo">Pasivos</option>
-              <option value="patrimonio">Patrimonio</option>
-              <option value="ingreso">Ingresos</option>
-              <option value="gasto">Gastos</option>
-            </select>
-          </div>
-
-          {Object.entries(groupedCuentas).map(([group, cuentas]) => (
-            <div key={group} style={{ marginBottom: 16 }}>
-              <div style={{
-                fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase',
-                letterSpacing: '0.05em', marginBottom: 8, padding: '4px 0',
-                borderBottom: '1px solid var(--border)',
-              }}>
-                {group} ({cuentas.length})
-              </div>
-              <div style={{ display: 'grid', gap: 4 }}>
-                {cuentas.map(c => {
-                  const b = balances[c.code]
-                  const saldo = b ? b.debe - b.haber : 0
-                  return (
-                    <div key={c.code} onClick={() => { setSelectedCuenta(c.code); setActiveView('mayor') }} style={{
-                      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-                      borderRadius: 10, background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-                      cursor: 'pointer', transition: 'background 0.15s',
-                    }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-                    >
-                      <span style={{
-                        fontFamily: 'monospace', fontSize: 11, fontWeight: 600,
-                        color: typeColors[c.type] || 'var(--text-muted)', minWidth: 50,
-                      }}>{c.code}</span>
-                      <span style={{ flex: 1, fontSize: 13 }}>{c.name}</span>
-                      <span style={{
-                        fontSize: 11, padding: '2px 8px', borderRadius: 6,
-                        background: `${typeColors[c.type]}15`, color: typeColors[c.type],
-                        fontWeight: 600, textTransform: 'capitalize',
-                      }}>{c.type}</span>
-                      {b && (
-                        <span style={{
-                          fontSize: 12, fontWeight: 700, minWidth: 100, textAlign: 'right',
-                          color: saldo >= 0 ? '#10b981' : '#ef4444',
-                        }}>
-                          ${fmt(Math.abs(saldo))}
-                        </span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          ))}
-        </>
+      {/* ─── LIBRO COMPRAS ─── */}
+      {activeView === 'compras' && (
+        <LibroTable
+          title="Libro de Compras"
+          transactions={libroCompras}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onExport={() => exportLibroCSV('compras')}
+          direction="compra"
+        />
       )}
 
-      {/* ─── Libro Diario ─── */}
-      {activeView === 'asientos' && (
-        <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{asientos.length} asientos registrados</span>
-            <button style={btnPrimary}><Plus size={14} /> Nuevo Asiento</button>
-          </div>
+      {/* ─── LIBRO VENTAS ─── */}
+      {activeView === 'ventas' && (
+        <LibroTable
+          title="Libro de Ventas"
+          transactions={libroVentas}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          onExport={() => exportLibroCSV('ventas')}
+          direction="venta"
+        />
+      )}
 
-          {asientos.map(a => {
-            const totalDebe = a.lineas.reduce((s, l) => s + l.debe, 0)
-            const totalHaber = a.lineas.reduce((s, l) => s + l.haber, 0)
-            const cuadra = totalDebe === totalHaber
-            return (
-              <div key={a.id} style={{
-                marginBottom: 12, borderRadius: 12, border: '1px solid var(--border)',
-                overflow: 'hidden', background: 'var(--bg-secondary)',
-              }}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                  borderBottom: '1px solid var(--border)',
-                }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>#{a.numero}</span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{a.fecha}</span>
-                  <span style={{ flex: 1, fontSize: 13, fontWeight: 600 }}>{a.glosa}</span>
-                  {cuadra
-                    ? <CheckCircle size={14} color="#10b981" />
-                    : <span style={{ color: '#ef4444', fontSize: 11, fontWeight: 600 }}>DESCUADRADO</span>
-                  }
-                </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ ...thStyle, textAlign: 'left' }}>Cuenta</th>
-                      <th style={{ ...thStyle, textAlign: 'left' }}>Nombre</th>
-                      <th style={{ ...thStyle, textAlign: 'right' }}>Debe</th>
-                      <th style={{ ...thStyle, textAlign: 'right' }}>Haber</th>
-                    </tr>
-                  </thead>
+      {/* ─── RESUMEN IVA ─── */}
+      {activeView === 'resumen' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>
+            Resumen IVA — {MONTHS[selectedMonth - 1]} {selectedYear}
+          </h2>
+
+          {periodTx.length === 0 ? (
+            <EmptyState message="Sin transacciones para este periodo. Ingresa datos en Gastos Operacionales." />
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 12, marginBottom: 20 }}>
+                <SummaryCard label="Ventas Netas" value={fmtCLP(summary.totalIngresos)} color="#22c55e" icon={<ArrowUpRight size={16} />} />
+                <SummaryCard label="IVA Debito Fiscal" value={fmtCLP(summary.ivaDebito)} color="#f59e0b" sub="IVA de ventas" />
+                <SummaryCard label="Compras Netas" value={fmtCLP(summary.totalEgresos)} color="#ef4444" icon={<ArrowDownRight size={16} />} />
+                <SummaryCard label="IVA Credito Fiscal" value={fmtCLP(summary.ivaCreditoRecuperable)} color="#3b82f6" sub="IVA recuperable de compras" />
+              </div>
+
+              {/* IVA Calculation Table */}
+              <div className="u-card" style={{ padding: 20, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 12px 0' }}>Determinacion IVA del Periodo</h3>
+                <table style={{ width: '100%', fontSize: 14, borderCollapse: 'collapse' }}>
                   <tbody>
-                    {a.lineas.map((l, i) => {
-                      const cuenta = PLAN_CUENTAS.find(c => c.code === l.cuenta)
-                      return (
-                        <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td style={{ ...tdStyle, fontFamily: 'monospace', fontSize: 11 }}>{l.cuenta}</td>
-                          <td style={tdStyle}>{cuenta?.name || l.cuenta}</td>
-                          <td style={{ ...tdStyle, textAlign: 'right', color: l.debe > 0 ? '#10b981' : 'var(--text-muted)' }}>
-                            {l.debe > 0 ? `$${fmt(l.debe)}` : ''}
-                          </td>
-                          <td style={{ ...tdStyle, textAlign: 'right', color: l.haber > 0 ? '#ef4444' : 'var(--text-muted)' }}>
-                            {l.haber > 0 ? `$${fmt(l.haber)}` : ''}
-                          </td>
-                        </tr>
-                      )
-                    })}
-                    <tr style={{ background: 'var(--bg-primary)' }}>
-                      <td colSpan={2} style={{ ...tdStyle, fontWeight: 700 }}>TOTALES</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: '#10b981' }}>${fmt(totalDebe)}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: '#ef4444' }}>${fmt(totalHaber)}</td>
+                    <tr>
+                      <td style={{ padding: '8px 0' }}>Total IVA Debito Fiscal (ventas)</td>
+                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{fmtCLP(summary.ivaDebito)}</td>
+                    </tr>
+                    <tr style={{ color: '#3b82f6' }}>
+                      <td style={{ padding: '8px 0' }}>(-) Total IVA Credito Fiscal (compras con factura)</td>
+                      <td style={{ textAlign: 'right' }}>-{fmtCLP(summary.ivaCreditoRecuperable)}</td>
+                    </tr>
+                    {summary.remanente > 0 && (
+                      <tr style={{ color: '#8b5cf6' }}>
+                        <td style={{ padding: '8px 0' }}>(-) Remanente CF periodo anterior</td>
+                        <td style={{ textAlign: 'right' }}>$0</td>
+                      </tr>
+                    )}
+                    <tr style={{
+                      borderTop: '2px solid var(--border)', fontWeight: 700, fontSize: 16,
+                      color: summary.ivaAPagar > 0 ? '#ef4444' : '#22c55e',
+                    }}>
+                      <td style={{ paddingTop: 12 }}>
+                        {summary.ivaAPagar > 0 ? 'IVA a Pagar al Fisco' : 'Remanente Credito Fiscal'}
+                      </td>
+                      <td style={{ textAlign: 'right', paddingTop: 12 }}>
+                        {summary.ivaAPagar > 0 ? fmtCLP(summary.ivaAPagar) : fmtCLP(summary.remanente)}
+                      </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-            )
-          })}
-        </>
-      )}
 
-      {/* ─── Libro Mayor ─── */}
-      {activeView === 'mayor' && (
-        <>
-          <div style={{ marginBottom: 16 }}>
-            <select
-              value={selectedCuenta || ''}
-              onChange={e => setSelectedCuenta(e.target.value || null)}
-              style={{ ...selectStyle, width: 400 }}
-            >
-              <option value="">— Seleccionar cuenta —</option>
-              {PLAN_CUENTAS.map(c => (
-                <option key={c.code} value={c.code}>{c.code} — {c.name}</option>
-              ))}
-            </select>
-          </div>
+              {/* PPM */}
+              <div className="u-card" style={{ padding: 20, marginBottom: 20 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 8px 0' }}>PPM — Pago Provisional Mensual</h3>
+                <div style={{ fontSize: 24, fontWeight: 700 }}>{fmtCLP(summary.ppm)}</div>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                  0,25% sobre ingresos brutos ({fmtCLP(summary.totalIngresos)}) — Tasa Micro Empresa ProPyme
+                </p>
+              </div>
 
-          {selectedCuenta && libroMayor.length > 0 ? (
-            <div style={{ borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+              {/* Total F29 */}
               <div style={{
-                padding: '12px 16px', background: 'var(--bg-secondary)',
-                borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 8,
+                padding: 20, borderRadius: 14,
+                background: summary.ivaAPagar + summary.ppm > 0 ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.08)',
+                border: `2px solid ${summary.ivaAPagar + summary.ppm > 0 ? '#ef4444' : '#22c55e'}`,
+                textAlign: 'center',
               }}>
-                <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--accent)' }}>{selectedCuenta}</span>
-                <span style={{ fontWeight: 600 }}>{PLAN_CUENTAS.find(c => c.code === selectedCuenta)?.name}</span>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 4 }}>Total a Declarar en F29</div>
+                <div style={{ fontSize: 28, fontWeight: 800, color: summary.ivaAPagar + summary.ppm > 0 ? '#ef4444' : '#22c55e' }}>
+                  {fmtCLP(summary.ivaAPagar + summary.ppm)}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                  IVA {fmtCLP(summary.ivaAPagar)} + PPM {fmtCLP(summary.ppm)}
+                </div>
               </div>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ background: 'var(--bg-secondary)' }}>
-                    <th style={{ ...thStyle, textAlign: 'left' }}>Fecha</th>
-                    <th style={{ ...thStyle, textAlign: 'left' }}>Glosa</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Debe</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Haber</th>
-                    <th style={{ ...thStyle, textAlign: 'right' }}>Saldo</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {libroMayor.map((e, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ ...tdStyle, fontSize: 11 }}>{e.fecha}</td>
-                      <td style={tdStyle}>{e.glosa}</td>
-                      <td style={{ ...tdStyle, textAlign: 'right', color: e.debe > 0 ? '#10b981' : 'var(--text-muted)' }}>
-                        {e.debe > 0 ? `$${fmt(e.debe)}` : ''}
-                      </td>
-                      <td style={{ ...tdStyle, textAlign: 'right', color: e.haber > 0 ? '#ef4444' : 'var(--text-muted)' }}>
-                        {e.haber > 0 ? `$${fmt(e.haber)}` : ''}
-                      </td>
-                      <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 700, color: e.saldo >= 0 ? '#10b981' : '#ef4444' }}>
-                        ${fmt(Math.abs(e.saldo))}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 14 }}>
-              <BookOpen size={48} style={{ marginBottom: 12 }} />
-              <p>Selecciona una cuenta para ver su libro mayor.</p>
-            </div>
+            </>
           )}
-        </>
+        </div>
       )}
 
-      {/* ─── Balance General ─── */}
-      {activeView === 'balance' && (
-        <>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <button style={btnSecondary}><Download size={14} /> Exportar Balance</button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            {/* Activos */}
-            <div style={{ borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden' }}>
-              <div style={{ padding: '14px 18px', background: 'rgba(59,130,246,0.08)', borderBottom: '1px solid var(--border)' }}>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#3b82f6' }}>ACTIVOS</h3>
-              </div>
-              <div style={{ padding: 16 }}>
-                {PLAN_CUENTAS.filter(c => c.type === 'activo').map(c => {
-                  const b = balances[c.code]
-                  if (!b) return null
-                  const saldo = b.debe - b.haber
-                  if (saldo === 0) return null
-                  return (
-                    <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13 }}>
-                      <span>{c.name}</span>
-                      <span style={{ fontWeight: 600, color: saldo >= 0 ? '#10b981' : '#ef4444' }}>${fmt(Math.abs(saldo))}</span>
-                    </div>
-                  )
-                })}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: 15, fontWeight: 800, color: '#3b82f6' }}>
-                  <span>Total Activos</span>
-                  <span>${fmt(balanceGeneral.activo)}</span>
-                </div>
-              </div>
-            </div>
+      {/* ─── PLAN DE CUENTAS (SII) ─── */}
+      {activeView === 'plan_cuentas' && (
+        <div>
+          <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Plan de Cuentas — Contabilidad Simplificada</h2>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
+            Regimen 14D N°3 ProPyme Transparente — base flujo de caja. Las categorias se alimentan automaticamente desde el modulo de transacciones.
+          </p>
 
-            {/* Pasivos + Patrimonio */}
-            <div>
-              <div style={{ borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden', marginBottom: 16 }}>
-                <div style={{ padding: '14px 18px', background: 'rgba(239,68,68,0.08)', borderBottom: '1px solid var(--border)' }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#ef4444' }}>PASIVOS</h3>
+          {/* Group by group */}
+          {['ingreso', 'costo_operacional', 'gasto_admin', 'gasto_ventas', 'remuneracion', 'prevision', 'inversion', 'impuesto'].map(groupKey => {
+            const cats = ACCOUNT_CATEGORIES.filter(c => c.group === groupKey)
+            if (cats.length === 0) return null
+
+            // Sum from transactions
+            const groupTotal = periodTx
+              .filter(t => cats.some(c => c.key === t.category))
+              .reduce((sum, t) => sum + t.amountCLP, 0)
+
+            return (
+              <div key={groupKey} style={{ marginBottom: 16 }}>
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: '10px 10px 0 0',
+                  borderBottom: '2px solid var(--border)',
+                }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-muted)' }}>
+                    {groupKey.replace(/_/g, ' ')}
+                  </span>
+                  <span style={{ fontSize: 13, fontWeight: 700 }}>{fmtCLP(groupTotal)}</span>
                 </div>
-                <div style={{ padding: 16 }}>
-                  {PLAN_CUENTAS.filter(c => c.type === 'pasivo').map(c => {
-                    const b = balances[c.code]
-                    if (!b) return null
-                    const saldo = b.haber - b.debe
-                    if (saldo === 0) return null
+                <div style={{ border: '1px solid var(--border)', borderTop: 0, borderRadius: '0 0 10px 10px', overflow: 'hidden' }}>
+                  {cats.map(cat => {
+                    const catTotal = periodTx
+                      .filter(t => t.category === cat.key)
+                      .reduce((sum, t) => sum + t.amountCLP, 0)
+                    const txCount = periodTx.filter(t => t.category === cat.key).length
+
                     return (
-                      <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13 }}>
-                        <span>{c.name}</span>
-                        <span style={{ fontWeight: 600 }}>${fmt(saldo)}</span>
+                      <div key={cat.key} style={{
+                        display: 'flex', alignItems: 'center', padding: '8px 14px',
+                        borderBottom: '1px solid var(--border-subtle, rgba(128,128,128,0.1))',
+                        fontSize: 13,
+                      }}>
+                        <span style={{ width: 24, textAlign: 'center' }}>{cat.icon}</span>
+                        <span style={{ flex: 1, marginLeft: 8 }}>{cat.label}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 12 }}>
+                          {cat.codigoSII}
+                        </span>
+                        {txCount > 0 && (
+                          <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 6, background: 'rgba(99,102,241,0.1)', color: '#6366f1', marginRight: 8 }}>
+                            {txCount} tx
+                          </span>
+                        )}
+                        <span style={{ fontWeight: 600, minWidth: 100, textAlign: 'right' }}>
+                          {catTotal > 0 ? fmtCLP(catTotal) : '—'}
+                        </span>
                       </div>
                     )
                   })}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: 15, fontWeight: 800, color: '#ef4444' }}>
-                    <span>Total Pasivos</span>
-                    <span>${fmt(balanceGeneral.pasivo)}</span>
-                  </div>
                 </div>
               </div>
-
-              <div style={{ borderRadius: 14, border: '1px solid var(--border)', overflow: 'hidden' }}>
-                <div style={{ padding: '14px 18px', background: 'rgba(139,92,246,0.08)', borderBottom: '1px solid var(--border)' }}>
-                  <h3 style={{ fontSize: 16, fontWeight: 700, margin: 0, color: '#8b5cf6' }}>PATRIMONIO</h3>
-                </div>
-                <div style={{ padding: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid var(--border)', fontSize: 13 }}>
-                    <span>Resultado del Ejercicio</span>
-                    <span style={{ fontWeight: 600, color: balanceGeneral.ingresos - balanceGeneral.gastos >= 0 ? '#10b981' : '#ef4444' }}>
-                      ${fmt(balanceGeneral.ingresos - balanceGeneral.gastos)}
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: 15, fontWeight: 800, color: '#8b5cf6' }}>
-                    <span>Total Patrimonio</span>
-                    <span>${fmt(balanceGeneral.patrimonio + balanceGeneral.ingresos - balanceGeneral.gastos)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Ecuación contable */}
-          <div style={{
-            marginTop: 20, padding: '16px 20px', borderRadius: 14,
-            background: 'var(--bg-secondary)', border: '1px solid var(--border)',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Ecuación Contable</div>
-            <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 16 }}>
-              <span style={{ color: '#3b82f6' }}>Activos ${fmt(balanceGeneral.activo)}</span>
-              <span style={{ color: 'var(--text-muted)' }}>=</span>
-              <span style={{ color: '#ef4444' }}>Pasivos ${fmt(balanceGeneral.pasivo)}</span>
-              <span style={{ color: 'var(--text-muted)' }}>+</span>
-              <span style={{ color: '#8b5cf6' }}>Patrimonio ${fmt(balanceGeneral.patrimonio + balanceGeneral.ingresos - balanceGeneral.gastos)}</span>
-            </div>
-          </div>
-        </>
+            )
+          })}
+        </div>
       )}
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// LIBRO TABLE — Shared component for Libro Compras/Ventas
+// ═════════════════════════════════════════════════════════════════
+
+function LibroTable({ title, transactions, searchTerm, setSearchTerm, onExport, direction }: {
+  title: string
+  transactions: Transaction[]
+  searchTerm: string
+  setSearchTerm: (v: string) => void
+  onExport: () => void
+  direction: 'compra' | 'venta'
+}) {
+  // Totals
+  const totals = useMemo(() => {
+    let neto = 0, iva = 0, total = 0
+    transactions.forEach(t => { neto += t.neto; iva += t.iva; total += t.amountCLP })
+    return { neto, iva, total }
+  }, [transactions])
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center' }}>
+        <div style={{ flex: 1, position: 'relative' }}>
+          <Search size={14} style={{ position: 'absolute', left: 10, top: 10, color: 'var(--text-muted)' }} />
+          <input
+            placeholder="Buscar proveedor o descripcion..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            style={{ ...inputStyle, paddingLeft: 32 }}
+          />
+        </div>
+        <button onClick={onExport} style={btnSecondary}>
+          <Download size={14} /> Exportar CSV
+        </button>
+      </div>
+
+      {transactions.length === 0 ? (
+        <EmptyState message={`Sin ${direction === 'compra' ? 'compras' : 'ventas'} registradas para este periodo.`} />
+      ) : (
+        <div style={{ borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-secondary)' }}>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>Fecha</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>Tipo Doc</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>N° Doc</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>RUT</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>{direction === 'compra' ? 'Proveedor' : 'Cliente'}</th>
+                  <th style={{ ...thStyle, textAlign: 'left' }}>Descripcion</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Neto</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>IVA</th>
+                  <th style={{ ...thStyle, textAlign: 'right' }}>Total</th>
+                  <th style={{ ...thStyle, textAlign: 'center' }}>CF</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactions.map(t => (
+                  <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                    <td style={{ ...tdStyle, fontSize: 11, whiteSpace: 'nowrap' }}>{t.date}</td>
+                    <td style={{ ...tdStyle, fontSize: 11 }}>{DOC_TYPE_LABELS[t.documentType] || t.documentType}</td>
+                    <td style={{ ...tdStyle, fontSize: 11, fontFamily: 'monospace' }}>{t.documentNumber || '—'}</td>
+                    <td style={{ ...tdStyle, fontSize: 11, fontFamily: 'monospace' }}>{t.providerRut || '—'}</td>
+                    <td style={tdStyle}>{t.provider}</td>
+                    <td style={{ ...tdStyle, maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.description}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{fmtCLP(t.neto)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', color: t.iva > 0 ? '#f59e0b' : 'var(--text-muted)' }}>
+                      {t.iva > 0 ? fmtCLP(t.iva) : '—'}
+                    </td>
+                    <td style={{ ...tdStyle, textAlign: 'right', fontWeight: 600, fontFamily: 'monospace' }}>{fmtCLP(t.amountCLP)}</td>
+                    <td style={{ ...tdStyle, textAlign: 'center' }}>
+                      {t.ivaRecuperable && t.iva > 0
+                        ? <CheckCircle size={14} color="#22c55e" />
+                        : <span style={{ color: 'var(--text-muted)' }}>—</span>
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr style={{ background: 'var(--bg-secondary)', fontWeight: 700 }}>
+                  <td colSpan={6} style={{ ...tdStyle, textAlign: 'right' }}>TOTALES</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{fmtCLP(totals.neto)}</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace', color: '#f59e0b' }}>{fmtCLP(totals.iva)}</td>
+                  <td style={{ ...tdStyle, textAlign: 'right', fontFamily: 'monospace' }}>{fmtCLP(totals.total)}</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Summary footer */}
+      {transactions.length > 0 && (
+        <div style={{ marginTop: 12, display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)' }}>
+          <span>{transactions.length} registros</span>
+          <span>Neto: {fmtCLP(totals.neto)}</span>
+          <span>IVA: {fmtCLP(totals.iva)}</span>
+          <span>Total: {fmtCLP(totals.total)}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ═════════════════════════════════════════════════════════════════
+// HELPER COMPONENTS
+// ═════════════════════════════════════════════════════════════════
+
+function SummaryCard({ label, value, color, sub, icon }: { label: string; value: string; color: string; sub?: string; icon?: React.ReactNode }) {
+  return (
+    <div style={{ padding: 16, borderRadius: 12, borderLeft: `4px solid ${color}`, background: 'var(--bg-secondary)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        {icon && <span style={{ color }}>{icon}</span>}
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{label}</span>
+      </div>
+      <div style={{ fontSize: 20, fontWeight: 700 }}>{value}</div>
+      {sub && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{sub}</div>}
+    </div>
+  )
+}
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 14 }}>
+      <FileText size={48} style={{ marginBottom: 12 }} />
+      <p style={{ fontSize: 14 }}>{message}</p>
     </div>
   )
 }
