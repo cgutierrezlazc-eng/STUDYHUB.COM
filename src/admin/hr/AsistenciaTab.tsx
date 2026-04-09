@@ -103,13 +103,7 @@ function StatusBadge({ status }: { status: AttendanceStatus }) {
 
 // ─── Helper: generate demo data ─────────────────────────────────
 
-const DEFAULT_EMPLOYEES = [
-  { id: '1', name: 'Maria Gonzalez', position: 'Desarrolladora Senior', exempt: false },
-  { id: '2', name: 'Carlos Munoz', position: 'Disenador UX', exempt: false },
-  { id: '3', name: 'Andrea Silva', position: 'Gerente Comercial', exempt: true },
-  { id: '4', name: 'Felipe Rojas', position: 'Analista de Datos', exempt: false },
-  { id: '5', name: 'Javiera Torres', position: 'Ejecutiva de Cuentas', exempt: false },
-]
+const DEFAULT_EMPLOYEES: { id: string; name: string; position: string; exempt: boolean }[] = []
 
 function generateDemoData(employeeList?: { id: string; name: string; position: string; exempt: boolean }[]) {
   const demoEmployees = employeeList && employeeList.length > 0 ? employeeList : DEFAULT_EMPLOYEES

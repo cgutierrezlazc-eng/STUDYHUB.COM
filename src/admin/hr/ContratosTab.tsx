@@ -338,7 +338,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
     companyAddress: '',
     companyCity: 'Santiago',
     companyGiro: 'Servicios tecnologicos y plataformas educativas',
-    repName: 'Cristian Garcia',
+    repName: '',
     repRut: '',
     firstName: employee.firstName,
     lastName: employee.lastName,

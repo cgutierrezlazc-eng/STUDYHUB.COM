@@ -2,24 +2,9 @@ import React, { useState } from 'react'
 import { Video, Link } from './Icons'
 
 const CONFERENCES = {
-  live: [
-    {
-      initials: 'AC', name: 'Alejandro Cuesta', role: 'CEO, TechVentures Latam',
-      title: 'Innovación y liderazgo en startups tecnológicas',
-      desc: '15 años liderando equipos de producto en Silicon Valley y Latinoamérica. Ex VP de Producto en Rappi.',
-      link: '#',
-    },
-  ],
-  upcoming: [
-    { initials: 'RM', name: 'Rodrigo Montoya', role: 'Gerente General, Deloitte Chile', title: 'De pasante a gerente: claves para acelerar tu carrera', desc: '20 años en consultoría estratégica. Mentor de jóvenes profesionales.', date: '10 ABR' },
-    { initials: 'CL', name: 'Carolina Lagos', role: 'Directora de IA, Microsoft Latam', title: 'Inteligencia artificial y el futuro del trabajo', desc: 'Experta en transformación digital. Liderazgo de equipos de IA en 12 países.', date: '17 ABR' },
-    { initials: 'MV', name: 'Martin Vargas', role: 'Fundador & CEO, EduStartup', title: 'Emprendimiento universitario: del aula al mercado', desc: 'Fundador de 3 startups exitosas. Inversionista ángel y mentor en Y Combinator.', date: '24 ABR' },
-    { initials: 'PF', name: 'Paula Fernández', role: 'Head of Talent, Google Latam', title: 'Marca personal y networking estratégico', desc: 'Ha reclutado a más de 500 profesionales para Big Tech.', date: '8 MAY' },
-  ],
-  recorded: [
-    { initials: 'JS', name: 'Javiera Silva', role: 'VP de RRHH, Falabella', title: 'Soft skills que las empresas buscan en 2026', desc: '28 de marzo, 2026 — 847 asistentes — 1h 23min' },
-    { initials: 'DA', name: 'Diego Araya', role: 'CTO, MercadoLibre Chile', title: 'Cómo conseguir tu primer trabajo en tecnología', desc: '14 de marzo, 2026 — 1,203 asistentes — 1h 45min' },
-  ],
+  live: [] as { initials: string; name: string; role: string; title: string; desc: string; link: string }[],
+  upcoming: [] as { initials: string; name: string; role: string; title: string; desc: string; date: string }[],
+  recorded: [] as { initials: string; name: string; role: string; title: string; desc: string }[],
 }
 
 export default function ConferencePanel() {

@@ -91,16 +91,9 @@ export default function LibroRemuneracionesTab() {
     })
   }, [selectedMonth, selectedYear])
 
-  // Demo data if no real records
+  // Datos reales de la API — sin fallback demo
   const demoEmployees: Employee[] = useMemo(() => {
-    if (employees.length > 0) return employees
-    return [
-      { id: '1', rut: '12.345.678-9', firstName: 'María', lastName: 'González', email: '', phone: '', address: '', birthDate: '', nationality: 'Chilena', maritalStatus: 'Soltera', emergencyContactName: '', emergencyContactPhone: '', position: 'Desarrolladora Full Stack', department: 'Tecnología', hireDate: '2024-03-01', endDate: null, contractType: 'indefinido', workSchedule: '45', weeklyHours: 45, grossSalary: 1800000, colacion: 80000, movilizacion: 60000, afp: 'Habitat', healthSystem: 'Fonasa', isapreName: null, isapreUf: null, afcActive: true, bankName: 'BancoEstado', bankAccountType: 'Vista', bankAccountNumber: '', status: 'active', createdAt: '' },
-      { id: '2', rut: '11.222.333-4', firstName: 'Carlos', lastName: 'Muñoz', email: '', phone: '', address: '', birthDate: '', nationality: 'Chilena', maritalStatus: 'Casado', emergencyContactName: '', emergencyContactPhone: '', position: 'Diseñador UX', department: 'Diseño', hireDate: '2024-06-15', endDate: null, contractType: 'indefinido', workSchedule: '45', weeklyHours: 45, grossSalary: 1400000, colacion: 70000, movilizacion: 50000, afp: 'Provida', healthSystem: 'Fonasa', isapreName: null, isapreUf: null, afcActive: true, bankName: 'Banco Chile', bankAccountType: 'Corriente', bankAccountNumber: '', status: 'active', createdAt: '' },
-      { id: '3', rut: '13.444.555-6', firstName: 'Ana', lastName: 'Rodríguez', email: '', phone: '', address: '', birthDate: '', nationality: 'Chilena', maritalStatus: 'Soltera', emergencyContactName: '', emergencyContactPhone: '', position: 'Community Manager', department: 'Marketing', hireDate: '2025-01-10', endDate: null, contractType: 'plazo_fijo', workSchedule: '45', weeklyHours: 45, grossSalary: 900000, colacion: 50000, movilizacion: 40000, afp: 'Capital', healthSystem: 'Fonasa', isapreName: null, isapreUf: null, afcActive: true, bankName: 'BancoEstado', bankAccountType: 'Vista', bankAccountNumber: '', status: 'active', createdAt: '' },
-      { id: '4', rut: '14.666.777-8', firstName: 'Pedro', lastName: 'Soto', email: '', phone: '', address: '', birthDate: '', nationality: 'Chilena', maritalStatus: 'Casado', emergencyContactName: '', emergencyContactPhone: '', position: 'Soporte Técnico', department: 'Operaciones', hireDate: '2025-02-01', endDate: null, contractType: 'indefinido', workSchedule: '45', weeklyHours: 45, grossSalary: 700000, colacion: 50000, movilizacion: 40000, afp: 'Modelo', healthSystem: 'Fonasa', isapreName: null, isapreUf: null, afcActive: true, bankName: 'Banco Santander', bankAccountType: 'Vista', bankAccountNumber: '', status: 'active', createdAt: '' },
-      { id: '5', rut: '15.888.999-0', firstName: 'Valentina', lastName: 'Torres', email: '', phone: '', address: '', birthDate: '', nationality: 'Chilena', maritalStatus: 'Soltera', emergencyContactName: '', emergencyContactPhone: '', position: 'Ejecutiva Comercial', department: 'Ventas', hireDate: '2025-03-01', endDate: null, contractType: 'plazo_fijo', workSchedule: '45', weeklyHours: 45, grossSalary: 650000, colacion: 50000, movilizacion: 40000, afp: 'Cuprum', healthSystem: 'Fonasa', isapreName: null, isapreUf: null, afcActive: true, bankName: 'Banco BCI', bankAccountType: 'Vista', bankAccountNumber: '', status: 'active', createdAt: '' },
-    ]
+    return employees
   }, [employees])
 
   // Calculate LRE rows from employee + payroll data

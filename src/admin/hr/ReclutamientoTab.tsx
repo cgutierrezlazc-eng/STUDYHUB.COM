@@ -86,84 +86,11 @@ const STATUS_LABELS: Record<VacancyStatus, string> = {
   en_pausa: 'En Pausa',
 }
 
-// ─── Seed Data ──────────────────────────────────────────────────
+// ─── Seed Data (vacío — datos reales vienen de la API) ─────────
 
 const today = new Date().toISOString().split('T')[0]
-
-const SEED_VACANCIES: Vacancy[] = [
-  {
-    id: 'v1', titulo: 'Desarrollador Full-Stack Senior', departamento: 'Tecnologia',
-    tipo: 'full_time', salarioMin: 2500000, salarioMax: 3500000,
-    descripcion: 'Buscamos un desarrollador Full-Stack con experiencia en React, TypeScript y Python/FastAPI para liderar proyectos de la plataforma Conniku.',
-    requisitos: '- 4+ años de experiencia en desarrollo web\n- React + TypeScript\n- Python + FastAPI o Django\n- Experiencia con PostgreSQL\n- Deseable: AWS o GCP',
-    fechaLimite: '2026-04-30', estado: 'abierta', createdAt: '2026-03-15',
-  },
-  {
-    id: 'v2', titulo: 'Diseñador UX/UI', departamento: 'Diseno',
-    tipo: 'full_time', salarioMin: 1800000, salarioMax: 2400000,
-    descripcion: 'Diseñador UX/UI para crear experiencias digitales excepcionales en nuestra plataforma educativa.',
-    requisitos: '- 3+ años en diseño UX/UI\n- Dominio de Figma\n- Portfolio demostrable\n- Conocimiento de design systems\n- Deseable: experiencia en EdTech',
-    fechaLimite: '2026-05-15', estado: 'abierta', createdAt: '2026-03-20',
-  },
-  {
-    id: 'v3', titulo: 'Practicante Marketing Digital', departamento: 'Marketing',
-    tipo: 'practica', salarioMin: 400000, salarioMax: 500000,
-    descripcion: 'Práctica profesional en el área de marketing digital, apoyando campañas y gestión de redes sociales.',
-    requisitos: '- Estudiante de Marketing, Publicidad o carrera afín\n- Manejo de redes sociales\n- Conocimientos básicos de Google Analytics\n- Proactivo y creativo',
-    fechaLimite: '2026-04-20', estado: 'abierta', createdAt: '2026-04-01',
-  },
-]
-
-const SEED_CANDIDATES: Candidate[] = [
-  {
-    id: 'c1', nombre: 'Catalina Muñoz Rojas', email: 'catalina.munoz@gmail.com', telefono: '+56 9 8765 4321',
-    cargoPostulado: 'Desarrollador Full-Stack Senior', vacancyId: 'v1', fuente: 'linkedin',
-    cvFileName: 'CV_CatalinaMunoz.pdf', notas: 'Excelente perfil técnico. 5 años en desarrollo web. Ex-MercadoLibre.',
-    rating: 5, stage: 'entrevista', stageEnteredDate: '2026-04-05',
-    entrevistaFecha: '2026-04-10', entrevistaHora: '10:00', entrevistador: 'Cristian González',
-    createdAt: '2026-03-18',
-  },
-  {
-    id: 'c2', nombre: 'Sebastián Araya Contreras', email: 'saraya.dev@gmail.com', telefono: '+56 9 7654 3210',
-    cargoPostulado: 'Desarrollador Full-Stack Senior', vacancyId: 'v1', fuente: 'portal_empleo',
-    cvFileName: 'CV_SebastianAraya.pdf', notas: 'Buen manejo de React pero le falta backend. Considerar para junior.',
-    rating: 3, stage: 'preseleccion', stageEnteredDate: '2026-04-03',
-    entrevistaFecha: null, entrevistaHora: null, entrevistador: '',
-    createdAt: '2026-03-20',
-  },
-  {
-    id: 'c3', nombre: 'Francisca Soto Vergara', email: 'fran.soto@outlook.com', telefono: '+56 9 6543 2109',
-    cargoPostulado: 'Diseñador UX/UI', vacancyId: 'v2', fuente: 'referido',
-    cvFileName: 'CV_FranciscaSoto.pdf', notas: 'Referida por equipo de diseño. Portfolio excelente, experiencia en Cornershop.',
-    rating: 4, stage: 'evaluacion', stageEnteredDate: '2026-04-06',
-    entrevistaFecha: '2026-04-08', entrevistaHora: '15:00', entrevistador: 'Cristian González',
-    createdAt: '2026-03-22',
-  },
-  {
-    id: 'c4', nombre: 'Diego Hernández Pizarro', email: 'dhernandez@gmail.com', telefono: '+56 9 5432 1098',
-    cargoPostulado: 'Desarrollador Full-Stack Senior', vacancyId: 'v1', fuente: 'linkedin',
-    cvFileName: null, notas: 'Postuló sin CV adjunto. Solicitado por email.',
-    rating: 2, stage: 'recibidos', stageEnteredDate: '2026-04-07',
-    entrevistaFecha: null, entrevistaHora: null, entrevistador: '',
-    createdAt: '2026-04-07',
-  },
-  {
-    id: 'c5', nombre: 'Valentina Campos Reyes', email: 'vale.campos@gmail.com', telefono: '+56 9 4321 0987',
-    cargoPostulado: 'Practicante Marketing Digital', vacancyId: 'v3', fuente: 'espontaneo',
-    cvFileName: 'CV_ValentinaCampos.pdf', notas: 'Estudiante de 4to año en la UDP. Muy motivada, buen manejo de redes.',
-    rating: 4, stage: 'oferta', stageEnteredDate: '2026-04-07',
-    entrevistaFecha: '2026-04-04', entrevistaHora: '11:00', entrevistador: 'Cristian González',
-    createdAt: '2026-03-25',
-  },
-  {
-    id: 'c6', nombre: 'Matías Fuentes Olivares', email: 'matias.fuentes@hotmail.com', telefono: '+56 9 3210 9876',
-    cargoPostulado: 'Diseñador UX/UI', vacancyId: 'v2', fuente: 'portal_empleo',
-    cvFileName: 'CV_MatiasFuentes.pdf', notas: 'Perfil interesante, 2 años de experiencia. Falta dominio de Figma avanzado.',
-    rating: 3, stage: 'descartado', stageEnteredDate: '2026-04-06',
-    entrevistaFecha: '2026-04-03', entrevistaHora: '14:00', entrevistador: 'Cristian González',
-    createdAt: '2026-03-23',
-  },
-]
+const SEED_VACANCIES: Vacancy[] = []
+const SEED_CANDIDATES: Candidate[] = []
 
 // ─── localStorage helpers ───────────────────────────────────────
 

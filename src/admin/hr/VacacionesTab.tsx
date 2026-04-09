@@ -133,80 +133,10 @@ function formatDate(dateStr: string): string {
 
 // ─── Mock Data ───────────────────────────────────────────────────
 
-const MOCK_EMPLOYEES: Employee[] = [
-  {
-    id: '1', rut: '12.345.678-9', firstName: 'Maria', lastName: 'Gonzalez',
-    email: 'maria@conniku.com', phone: '+56912345678', address: 'Av. Providencia 1234',
-    birthDate: '1990-03-15', nationality: 'Chilena', maritalStatus: 'Soltera',
-    emergencyContactName: 'Juan Gonzalez', emergencyContactPhone: '+56987654321',
-    position: 'Desarrolladora Full Stack', department: 'Tecnologia',
-    hireDate: '2020-03-01', endDate: null, contractType: 'indefinido',
-    workSchedule: 'Lunes a Viernes', weeklyHours: 45, grossSalary: 2500000,
-    colacion: 80000, movilizacion: 60000, afp: 'Habitat', healthSystem: 'Fonasa',
-    isapreName: null, isapreUf: null, afcActive: true, bankName: 'Banco Estado',
-    bankAccountType: 'Cuenta Vista', bankAccountNumber: '12345678', status: 'active',
-    createdAt: '2020-03-01',
-  },
-  {
-    id: '2', rut: '11.222.333-4', firstName: 'Carlos', lastName: 'Muñoz',
-    email: 'carlos@conniku.com', phone: '+56911223344', address: 'Las Condes 5678',
-    birthDate: '1985-07-20', nationality: 'Chileno', maritalStatus: 'Casado',
-    emergencyContactName: 'Ana Muñoz', emergencyContactPhone: '+56944556677',
-    position: 'Diseñador UX', department: 'Diseño',
-    hireDate: '2022-08-15', endDate: null, contractType: 'indefinido',
-    workSchedule: 'Lunes a Viernes', weeklyHours: 45, grossSalary: 1800000,
-    colacion: 70000, movilizacion: 50000, afp: 'Cuprum', healthSystem: 'Isapre',
-    isapreName: 'Colmena', isapreUf: 2.5, afcActive: true, bankName: 'Banco Chile',
-    bankAccountType: 'Cuenta Corriente', bankAccountNumber: '87654321', status: 'active',
-    createdAt: '2022-08-15',
-  },
-  {
-    id: '3', rut: '15.666.777-8', firstName: 'Laura', lastName: 'Soto',
-    email: 'laura@conniku.com', phone: '+56955667788', address: 'Ñuñoa 910',
-    birthDate: '1992-11-08', nationality: 'Chilena', maritalStatus: 'Soltera',
-    emergencyContactName: 'Pedro Soto', emergencyContactPhone: '+56999887766',
-    position: 'Project Manager', department: 'Operaciones',
-    hireDate: '2014-01-10', endDate: null, contractType: 'indefinido',
-    workSchedule: 'Lunes a Viernes', weeklyHours: 45, grossSalary: 3200000,
-    colacion: 90000, movilizacion: 70000, afp: 'ProVida', healthSystem: 'Fonasa',
-    isapreName: null, isapreUf: null, afcActive: true, bankName: 'Banco Santander',
-    bankAccountType: 'Cuenta Corriente', bankAccountNumber: '11223344', status: 'active',
-    createdAt: '2014-01-10',
-  },
-]
-
-const MOCK_REQUESTS: LeaveRequest[] = [
-  {
-    id: 'lr-1', employeeId: '1', employeeName: 'Maria Gonzalez', type: 'vacaciones',
-    startDate: '2026-04-20', endDate: '2026-05-02', days: 10, status: 'pendiente',
-    reason: 'Vacaciones programadas', createdAt: '2026-04-01',
-  },
-  {
-    id: 'lr-2', employeeId: '2', employeeName: 'Carlos Muñoz', type: 'permiso_legal',
-    startDate: '2026-03-10', endDate: '2026-03-14', days: 5, status: 'aprobada',
-    reason: 'Fallecimiento de padre', createdAt: '2026-03-09',
-    reviewedBy: 'CEO', reviewedAt: '2026-03-09',
-  },
-  {
-    id: 'lr-3', employeeId: '3', employeeName: 'Laura Soto', type: 'licencia_medica',
-    startDate: '2026-02-01', endDate: '2026-02-07', days: 5, status: 'aprobada',
-    reason: 'Licencia medica por diagnostico', createdAt: '2026-01-31',
-    reviewedBy: 'CEO', reviewedAt: '2026-01-31',
-  },
-  {
-    id: 'lr-4', employeeId: '1', employeeName: 'Maria Gonzalez', type: 'dia_administrativo',
-    startDate: '2026-01-15', endDate: '2026-01-15', days: 1, status: 'aprobada',
-    reason: 'Tramite personal', createdAt: '2026-01-10',
-    reviewedBy: 'CEO', reviewedAt: '2026-01-11',
-  },
-]
-
-// Mock data: dias ya usados este periodo por empleado
-const MOCK_DAYS_USED: Record<string, number> = {
-  '1': 5,
-  '2': 0,
-  '3': 12,
-}
+// Datos reales vienen de la API — sin datos demo
+const MOCK_EMPLOYEES: Employee[] = []
+const MOCK_REQUESTS: LeaveRequest[] = []
+const MOCK_DAYS_USED: Record<string, number> = {}
 
 // ═════════════════════════════════════════════════════════════════
 // MAIN COMPONENT

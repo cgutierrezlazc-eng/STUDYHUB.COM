@@ -700,17 +700,21 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — CTO',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como CTO — Director de Tecnologia, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
       { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. El Trabajador tendra disponibilidad para incidentes criticos fuera de horario.' },
       { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.800.000 (dos millones ochocientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
       { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad', content: 'El Trabajador se obliga a mantener estricta confidencialidad sobre la informacion tecnica, comercial y de usuarios de Conniku SpA. Esta obligacion subsiste incluso despues de terminado el contrato.' },
+      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
       { title: 'NOVENO: Propiedad Intelectual', content: 'Todo el codigo, disenos, algoritmos y propiedad intelectual creada por el Trabajador en el ejercicio de sus funciones sera propiedad exclusiva de Conniku SpA.' },
       { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
+      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
+      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
+      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
+      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
     ],
   },
   {
@@ -718,17 +722,21 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Head of Operations',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Head of Operations, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
       { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.' },
       { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.200.000 (dos millones doscientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
       { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad', content: 'El Trabajador se obliga a mantener estricta confidencialidad sobre la informacion administrativa, financiera, de RRHH y de usuarios de Conniku SpA.' },
+      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
       { title: 'NOVENO: Manejo de Datos Personales', content: 'El Trabajador tendra acceso a datos personales de empleados conforme a la Ley 19.628, comprometiendose a su tratamiento exclusivamente para fines laborales.' },
       { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
+      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
+      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
+      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
+      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
     ],
   },
   {
@@ -736,7 +744,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Community Manager',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Community Manager, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -745,8 +753,13 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
       { title: 'OCTAVO: Redes Sociales y Propiedad', content: 'Las cuentas de redes sociales creadas y gestionadas en nombre de Conniku SpA son propiedad exclusiva de la empresa. El Trabajador se compromete a traspasar accesos al terminar la relacion laboral.' },
       { title: 'NOVENO: Uso de Imagen', content: 'El Trabajador autoriza el uso de su imagen y voz en contenido de Conniku SpA para fines de marketing y comunidad, durante y despues de la relacion laboral.' },
-      { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      { title: 'DECIMO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
+      { title: 'UNDECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
+      { title: 'DUODECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
+      { title: 'DECIMOTERCERO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
+      { title: 'DECIMOCUARTO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
+      { title: 'DECIMOQUINTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
+      { title: 'DECIMOSEXTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
     ],
   },
   {
@@ -754,17 +767,21 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Customer Support Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Customer Support Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
       { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.' },
       { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.000.000 (un millon de pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
       { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad de Datos', content: 'El Trabajador tendra acceso a datos personales de usuarios conforme a la Ley 19.628 y se compromete a su tratamiento exclusivo para fines de soporte.' },
+      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
       { title: 'NOVENO: Protocolo de Atencion', content: 'El Trabajador se compromete a seguir los protocolos de atencion establecidos y mantener los estandares de calidad definidos en las metricas de soporte.' },
       { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
+      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
+      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
+      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
+      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
     ],
   },
   {
@@ -772,7 +789,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Marketing & Growth Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
+      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Gaete Lazcano, en adelante "el Empleador", con domicilio en Santiago, Chile.' },
       { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
       { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Marketing & Growth Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
       { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
@@ -781,8 +798,13 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
       { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
       { title: 'OCTAVO: Presupuesto de Marketing', content: 'El Trabajador gestionara el presupuesto de marketing asignado, debiendo reportar ROI y gastos mensualmente. Cualquier gasto que exceda el presupuesto requiere aprobacion previa del CEO.' },
       { title: 'NOVENO: Propiedad Intelectual', content: 'Todo material creativo, campanas, copy, y assets creados para Conniku SpA son propiedad exclusiva de la empresa.' },
-      { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      { title: 'DECIMO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
+      { title: 'UNDECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
+      { title: 'DUODECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
+      { title: 'DECIMOTERCERO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
+      { title: 'DECIMOCUARTO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
+      { title: 'DECIMOQUINTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
+      { title: 'DECIMOSEXTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
     ],
   },
 ]
@@ -931,7 +953,7 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     <div class="clause">
       <div class="clause-title">PRIMERO: ANTECEDENTES DEL EMPLEADOR</div>
       <div class="clause-content">
-        CONNIKU SpA, RUT [POR DEFINIR], representada legalmente por don <strong>Cristian Gaete Lazcano</strong>,
+        CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don <strong>Cristian Gaete Lazcano</strong>,
         en adelante "el Empleador", con domicilio en Santiago, Region Metropolitana, Chile.
       </div>
     </div>
@@ -1069,18 +1091,22 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     </div>
 
     <div class="clause">
-      <div class="clause-title">UNDECIMO: CONFIDENCIALIDAD</div>
+      <div class="clause-title">UNDECIMO: CONFIDENCIALIDAD Y TERMINACION INMEDIATA</div>
       <div class="clause-content">
-        El Trabajador se obliga a mantener estricta confidencialidad sobre toda informacion tecnica, comercial,
-        financiera, estrategica y de datos personales de usuarios a la que tenga acceso en el ejercicio de sus
-        funciones en Conniku SpA.
+        El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica,
+        comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga
+        acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a:
+        codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios,
+        estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda
+        considerarse como confidencial o propietaria de la empresa.
         <br><br>
-        Esta obligacion incluye, pero no se limita a: codigo fuente, algoritmos, bases de datos, planes de negocio,
-        informacion financiera, datos de usuarios, estrategias de marketing, y cualquier informacion que razonablemente
-        pueda considerarse como confidencial o propietaria de la empresa.
+        La violacion de esta clausula constituye <strong>CAUSAL DE TERMINACION INMEDIATA</strong> del contrato
+        conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato),
+        sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por
+        los danos y perjuicios causados.
         <br><br>
         Esta clausula de confidencialidad subsiste por un periodo de <strong>2 anos</strong> despues de terminada
-        la relacion laboral por cualquier causa, conforme a lo dispuesto en el articulo 1545 del Codigo Civil.
+        la relacion laboral.
       </div>
     </div>
 
@@ -1107,7 +1133,52 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     </div>
 
     <div class="clause">
-      <div class="clause-title">DECIMOCUARTO: REGLAMENTO INTERNO</div>
+      <div class="clause-title">DECIMOCUARTO: DISCIPLINA PROGRESIVA</div>
+      <div class="clause-content">
+        El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en:
+        (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion
+        del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada
+        electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar
+        sus descargos dentro de 3 dias habiles.
+      </div>
+    </div>
+
+    <div class="clause">
+      <div class="clause-title">DECIMOQUINTO: EVALUACION DE DESEMPENO</div>
+      <div class="clause-content">
+        El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract),
+        utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior
+        a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por
+        necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales
+        correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del
+        sistema de Firma Electronica Simple (FES).
+      </div>
+    </div>
+
+    <div class="clause">
+      <div class="clause-title">DECIMOSEXTO: FALTA DE PROBIDAD</div>
+      <div class="clause-content">
+        Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo,
+        toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad
+        cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a:
+        apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion
+        privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada
+        por el Empleador.
+      </div>
+    </div>
+
+    <div class="clause">
+      <div class="clause-title">DECIMOSEPTIMO: INCUMPLIMIENTO DE CONTRATO</div>
+      <div class="clause-content">
+        Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento
+        reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el
+        Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de
+        incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.
+      </div>
+    </div>
+
+    <div class="clause">
+      <div class="clause-title">DECIMOCTAVO: REGLAMENTO INTERNO</div>
       <div class="clause-content">
         El Trabajador declara haber recibido copia del Reglamento Interno de Orden, Higiene y Seguridad de Conniku SpA,
         comprometiendose a cumplir sus disposiciones. Asimismo, declara haber recibido la Obligacion de Informar (ODI)
@@ -1116,7 +1187,7 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     </div>
 
     <div class="clause">
-      <div class="clause-title">DECIMOQUINTO: CONTACTO DE EMERGENCIA</div>
+      <div class="clause-title">DECIMONOVENO: CONTACTO DE EMERGENCIA</div>
       <div class="clause-content">
         El Trabajador designa como contacto de emergencia a: <strong>${emp.emergencyContactName || '[NOMBRE]'}</strong>,
         telefono <strong>${emp.emergencyContactPhone || '[TELEFONO]'}</strong>.
@@ -1124,7 +1195,7 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     </div>
 
     <div class="clause">
-      <div class="clause-title">DECIMOSEXTO: DOCUMENTOS ANEXOS</div>
+      <div class="clause-title">VIGESIMO: DOCUMENTOS ANEXOS</div>
       <div class="clause-content">
         Forman parte integrante del presente contrato los siguientes documentos, los cuales el Trabajador declara
         haber recibido y comprendido:
@@ -1139,7 +1210,7 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     </div>
 
     <div class="clause">
-      <div class="clause-title">DECIMOSEPTIMO: LEGISLACION APLICABLE</div>
+      <div class="clause-title">VIGESIMO PRIMERO: LEGISLACION APLICABLE</div>
       <div class="clause-content">
         El presente contrato se rige por las disposiciones del <strong>Codigo del Trabajo de Chile</strong> y
         demas normativa laboral vigente. Para todos los efectos legales, las partes fijan domicilio en la
