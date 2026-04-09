@@ -1034,6 +1034,20 @@ export default function CeoMail({ onNavigate, defaultAccount = 'all' }: Props) {
           <button className="mail-header-btn" onClick={() => setShowBroadcast(true)}>
             <Megaphone size={14} /> {t('ceomail.broadcast')}
           </button>
+          <button className="mail-header-btn" onClick={async () => {
+              const dest = prompt('Email destino para prueba SMTP:', user?.email || '')
+              if (!dest) return
+              const acct = prompt('Cuenta a probar (ceo / contacto / noreply):', 'ceo')
+              if (!acct) return
+              try {
+                await (api as any).ceoTestEmail(dest, acct)
+                alert(`Prueba enviada a ${dest} desde ${acct}@conniku.com. Revisa tu bandeja en 1-2 min.`)
+              } catch (e: any) {
+                alert(`Error SMTP: ${e?.message || e}`)
+              }
+            }} title="Probar envío SMTP">
+            <CheckCircle size={14} /> Probar SMTP
+          </button>
           <button className="mail-header-btn" onClick={() => setShowSignatureSettings(true)} title={t('ceomail.settings')}>
             <Settings size={14} /> {t('ceomail.settings')}
           </button>

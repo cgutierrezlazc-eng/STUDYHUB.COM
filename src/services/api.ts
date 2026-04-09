@@ -968,6 +968,8 @@ export const api = {
     request(`/email/ceo/email/${emailId}`, { method: 'DELETE' }),
   ceoDeleteEmailsBulk: (ids: string[]) =>
     request('/email/ceo/emails/bulk', { method: 'DELETE', body: JSON.stringify({ ids }) }),
+  ceoTestEmail: (toEmail: string, account?: string) =>
+    request('/email/ceo/test-email', { method: 'POST', body: JSON.stringify({ to_email: toEmail, account: account || 'ceo' }) }),
 
   // ─── Document Download ────────────────────────────────────
   downloadProjectDocument: (projectId: string, docName: string) =>

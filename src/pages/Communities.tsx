@@ -83,7 +83,7 @@ export default function Communities({ onNavigate }: Props) {
             <h2>{Users({ size: 22 })} {t('communities.title')}</h2>
             <p>{t('communities.subtitle')}</p>
           </div>
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ {t('communities.create')}</button>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>{t('communities.create')}</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <button className={`tab ${tab === 'explore' ? 'active' : ''}`} onClick={() => setTab('explore')}>{t('communities.tabExplore')}</button>

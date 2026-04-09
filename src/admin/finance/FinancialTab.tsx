@@ -400,46 +400,48 @@ function downloadCSV(filename: string, content: string) {
 
 function exportReporteTributario(month: number, year: number) {
   const s = calculateFiscalSummary(month, year)
-  const rows = [
-    ['REPORTE TRIBUTARIO MENSUAL'],
-    [`Empresa;${COMPANY.razonSocial}`],
-    [`RUT;${COMPANY.rut}`],
-    [`Regimen;${COMPANY.regimen}`],
-    [`Periodo;${MONTHS[month - 1]} ${year}`],
-    [''],
-    ['CONCEPTO;MONTO CLP'],
-    [`Ingresos Netos;${Math.round(s.totalIngresos)}`],
-    [`IVA Debito Fiscal;${Math.round(s.ivaDebito)}`],
-    [`Total Egresos;${Math.round(s.totalEgresos)}`],
-    [`IVA Credito Fiscal Recuperable;${Math.round(s.ivaCreditoRecuperable)}`],
-    [`Total Gastos Deducibles;${Math.round(s.totalDeducible)}`],
-    [''],
-    ['DETERMINACION IVA'],
-    [`IVA Debito;${Math.round(s.ivaDebito)}`],
-    [`IVA Credito;${Math.round(s.ivaCreditoRecuperable)}`],
-    [`IVA a Pagar;${Math.round(s.ivaAPagar)}`],
-    [`Remanente CF;${Math.round(s.remanente)}`],
-    [''],
-    [`PPM (0.25%);${Math.round(s.ppm)}`],
-    [`Total F29;${Math.round(s.ivaAPagar + s.ppm)}`],
-    [''],
-    [`Resultado Tributario;${Math.round(s.resultadoTributario)}`],
+  const lines: string[] = [
+    'REPORTE TRIBUTARIO MENSUAL',
+    `Empresa;${COMPANY.razonSocial}`,
+    `RUT;${COMPANY.rut}`,
+    `Regimen;${COMPANY.regimen}`,
+    `Periodo;${MONTHS[month - 1]} ${year}`,
+    '',
+    'CONCEPTO;MONTO CLP',
+    `Ingresos Netos;${Math.round(s.totalIngresos)}`,
+    `IVA Debito Fiscal;${Math.round(s.ivaDebito)}`,
+    `Total Egresos;${Math.round(s.totalEgresos)}`,
+    `IVA Credito Fiscal Recuperable;${Math.round(s.ivaCreditoRecuperable)}`,
+    `Total Gastos Deducibles;${Math.round(s.totalDeducible)}`,
+    '',
+    'DETERMINACION IVA',
+    `IVA Debito;${Math.round(s.ivaDebito)}`,
+    `IVA Credito;${Math.round(s.ivaCreditoRecuperable)}`,
+    `IVA a Pagar;${Math.round(s.ivaAPagar)}`,
+    `Remanente CF;${Math.round(s.remanente)}`,
+    '',
+    `PPM (0.25%);${Math.round(s.ppm)}`,
+    `Total F29;${Math.round(s.ivaAPagar + s.ppm)}`,
+    '',
+    `Resultado Tributario;${Math.round(s.resultadoTributario)}`,
   ]
-  downloadCSV(`reporte_tributario_${year}_${String(month).padStart(2,'0')}.csv`, rows.join('\n'))
+  downloadCSV(`reporte_tributario_${year}_${String(month).padStart(2,'0')}.csv`, lines.join('\n'))
 }
 
 function exportLibroTransacciones(month: number, year: number) {
   const txs = loadTransactions().filter(t => t.periodMonth === month && t.periodYear === year)
-  const headers = ['Fecha;Tipo;Categoria;Descripcion;Proveedor;RUT Prov;Tipo Doc;N° Doc;Moneda;Monto Original;Tipo Cambio;Monto CLP;Neto;IVA;IVA Recuperable;Retencion;% Deducible;Monto Deducible;Metodo Pago;Recurrente']
-  const rows = txs.map(t => [
-    t.date, t.type, t.category, t.description, t.provider, t.providerRut || '',
-    t.documentType, t.documentNumber || '', t.currency, t.amountOriginal, t.exchangeRate,
-    Math.round(t.amountCLP), Math.round(t.neto), Math.round(t.iva),
-    t.ivaRecuperable ? 'Si' : 'No', Math.round(t.retencion),
-    t.deductiblePercent, Math.round(t.deductibleAmount), t.paymentMethod,
-    t.recurring ? 'Si' : 'No',
-  ].join(';'))
-  downloadCSV(`transacciones_${year}_${String(month).padStart(2,'0')}.csv`, [headers[0], ...rows].join('\n'))
+  const header = 'Fecha;Tipo;Categoria;Descripcion;Proveedor;RUT Prov;Tipo Doc;N° Doc;Moneda;Monto Original;Tipo Cambio;Monto CLP;Neto;IVA;IVA Recuperable;Retencion;% Deducible;Monto Deducible;Metodo Pago;Recurrente'
+  const dataRows: string[] = txs.map(t =>
+    [
+      t.date, t.type, t.category, t.description, t.provider, t.providerRut || '',
+      t.documentType, t.documentNumber || '', t.currency, t.amountOriginal, t.exchangeRate,
+      Math.round(t.amountCLP), Math.round(t.neto), Math.round(t.iva),
+      t.ivaRecuperable ? 'Si' : 'No', Math.round(t.retencion),
+      t.deductiblePercent, Math.round(t.deductibleAmount), t.paymentMethod,
+      t.recurring ? 'Si' : 'No',
+    ].join(';')
+  )
+  downloadCSV(`transacciones_${year}_${String(month).padStart(2,'0')}.csv`, [header, ...dataRows].join('\n'))
 }
 
 function exportReporteAnual(year: number) {

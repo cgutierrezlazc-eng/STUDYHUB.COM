@@ -108,7 +108,7 @@ export default function AdminPanel({ onNavigate }: Props) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" fill="rgba(37,99,235,0.15)"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1" fill="rgba(37,99,235,0.15)"/></svg>
           <h1 style={{ fontSize: 26, fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-            HR Manager & CEO
+            CEO
           </h1>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>

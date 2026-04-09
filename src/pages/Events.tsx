@@ -71,7 +71,7 @@ export default function Events({ onNavigate }: Props) {
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div><h2>{Calendar({ size: 20 })} {t('events.title')}</h2><p>{t('events.subtitle')}</p></div>
-          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>+ {t('events.create')}</button>
+          <button className="btn btn-primary" onClick={() => setShowCreate(true)}>{t('events.create')}</button>
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
           <button className={`tab ${tab === 'upcoming' ? 'active' : ''}`} onClick={() => setTab('upcoming')}>{t('events.tabUpcoming')}</button>
@@ -85,7 +85,7 @@ export default function Events({ onNavigate }: Props) {
             <div className="empty-state-icon">{Calendar({ size: 48 })}</div>
             <h3>{t('events.emptyTitle')}</h3>
             <p>{t('events.emptySubtitle')}</p>
-            <button className="btn btn-primary empty-state-cta" onClick={() => setShowCreate(true)}>+ {t('events.create')}</button>
+            <button className="btn btn-primary empty-state-cta" onClick={() => setShowCreate(true)}>{t('events.create')}</button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
