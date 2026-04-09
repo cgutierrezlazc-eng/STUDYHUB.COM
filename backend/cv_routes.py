@@ -72,8 +72,15 @@ class CVProfile(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
-# Create table
-Base.metadata.create_all(engine)
+# Create table (tolerant of pre-existing tables/constraints)
+try:
+    Base.metadata.create_all(engine)
+except Exception as _e:
+    for _t in Base.metadata.sorted_tables:
+        try:
+            _t.create(engine, checkfirst=True)
+        except Exception:
+            pass
 
 
 # ─── Pydantic schemas ──────────────────────────────────────────

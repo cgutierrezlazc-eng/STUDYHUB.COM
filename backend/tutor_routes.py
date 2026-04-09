@@ -448,8 +448,15 @@ TUTOR_CATEGORIES = [
 ]
 
 
-# Create tables
-Base.metadata.create_all(engine)
+# Create tables (tolerant of pre-existing tables/constraints)
+try:
+    Base.metadata.create_all(engine)
+except Exception as _e:
+    for _t in Base.metadata.sorted_tables:
+        try:
+            _t.create(engine, checkfirst=True)
+        except Exception:
+            pass
 
 
 # ═══════════════════════════════════════════════════════════════════

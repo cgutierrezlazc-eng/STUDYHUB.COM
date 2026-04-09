@@ -1341,7 +1341,17 @@ def _ensure_columns():
 
 
 def init_db():
-    Base.metadata.create_all(engine)
+    try:
+        Base.metadata.create_all(engine)
+    except Exception as e:
+        # Fallback: create each table individually so existing tables/constraints
+        # don't block new ones (e.g. DuplicateTable / DuplicateObject in Postgres)
+        print(f"[DB] create_all partial failure ({e.__class__.__name__}): {e!s:.120} — retrying per-table")
+        for table in Base.metadata.sorted_tables:
+            try:
+                table.create(engine, checkfirst=True)
+            except Exception as te:
+                print(f"[DB] Skipping {table.name}: {te!s:.80}")
     _ensure_columns()
     # Create owner account if not exists and OWNER_PASSWORD env var is set
     owner_password = os.environ.get("OWNER_PASSWORD")
