@@ -303,7 +303,7 @@ export default function App() {
             <Route path="/" element={user ? <HomeDashboard projects={projects} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
-            <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} />} />
+            <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} onNewProject={() => setShowNewProject(true)} />} />
             <Route path="/project/:id" element={<ProjectView projects={projects} onUpdate={handleUpdateProject} onDelete={handleDeleteProject} />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/suggestions" element={<Suggestions />} />

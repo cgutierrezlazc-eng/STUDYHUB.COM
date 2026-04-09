@@ -9,6 +9,7 @@ import { Flame, BookOpen, FileText, Clock, Star, Trophy, BarChart3, MessageSquar
 interface Props {
   projects: Project[]
   onNavigate: (path: string) => void
+  onNewProject?: () => void
 }
 
 function getGreetingIcon() {
@@ -27,7 +28,7 @@ function formatStudyTime(seconds: number): string {
   return `${hours}h ${mins}m`
 }
 
-export default function Dashboard({ projects, onNavigate }: Props) {
+export default function Dashboard({ projects, onNavigate, onNewProject }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [stats, setStats] = useState<any>(null)
@@ -108,6 +109,41 @@ export default function Dashboard({ projects, onNavigate }: Props) {
       </div>
 
       <div className="page-body">
+
+        {/* ─── Empty state: no subjects yet ─── */}
+        {projects.length === 0 && (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(37,99,235,0.06) 0%, rgba(124,58,237,0.06) 100%)',
+            border: '1.5px dashed var(--accent-blue)',
+            borderRadius: 16, padding: '28px 32px', marginBottom: 24,
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
+            <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Crea tu primera asignatura</div>
+            <div style={{ fontSize: 14, color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 440, margin: '0 auto 20px' }}>
+              Organiza apuntes, documentos y materiales de cada materia.
+              Conniku genera guías de estudio y quizzes automáticamente.
+            </div>
+            {onNewProject ? (
+              <button
+                onClick={onNewProject}
+                className="btn btn-primary"
+                style={{ padding: '10px 28px', fontSize: 14 }}
+              >
+                + Nueva asignatura
+              </button>
+            ) : (
+              <button
+                onClick={() => onNavigate('/dashboard')}
+                className="btn btn-primary"
+                style={{ padding: '10px 28px', fontSize: 14 }}
+              >
+                + Nueva asignatura
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Stats Grid */}
         <div className="stats-grid">
           <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
