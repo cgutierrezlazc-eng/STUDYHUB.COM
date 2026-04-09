@@ -43,6 +43,7 @@ export default function Feed({ onNavigate }: Props) {
   const [creatingList, setCreatingList] = useState(false)
   const visibilityRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [suggestedPeople, setSuggestedPeople] = useState<any[]>([])
   // Edit post state
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
@@ -448,6 +449,7 @@ export default function Feed({ onNavigate }: Props) {
                 </div>
                 <div style={{ flex: 1 }}>
                   <textarea
+                    ref={textareaRef}
                     value={newPostContent}
                     onChange={e => {
                       setNewPostContent(e.target.value)
@@ -727,15 +729,54 @@ export default function Feed({ onNavigate }: Props) {
                 ))}
               </div>
             ) : posts.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon" style={{ background: 'rgba(249,115,22,0.08)' }}>
-                  {Megaphone({ size: 28, color: 'var(--accent-orange)' })}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {/* Starter prompts */}
+                <div className="u-card" style={{ padding: 20 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
+                    🎉 ¡Sé el primero en publicar!
+                  </div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16, lineHeight: 1.5 }}>
+                    El feed se llena con tus compañeros. Por ahora, empieza tú.
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[
+                      '¡Hola a todos! Soy nuevo/a aquí 👋',
+                      '¿Alguien tiene apuntes de Cálculo I? Estoy buscando grupo de estudio',
+                      '¿Qué materia les parece más difícil este semestre? 📚',
+                    ].map((prompt, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setNewPostContent(prompt)
+                          setTimeout(() => {
+                            textareaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                            textareaRef.current?.focus()
+                          }, 100)
+                        }}
+                        style={{
+                          background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)',
+                          borderRadius: 10, padding: '10px 14px', cursor: 'pointer',
+                          textAlign: 'left', fontSize: 13, color: 'var(--text-secondary)',
+                          fontFamily: 'inherit', transition: 'background 0.15s',
+                          display: 'flex', alignItems: 'center', gap: 10,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg-secondary)')}
+                      >
+                        <span style={{ color: 'var(--accent)', fontSize: 16, flexShrink: 0 }}>✏️</span>
+                        {prompt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <div className="empty-state-title">{t('feed.emptyTitle')}</div>
-                <div className="empty-state-desc">{t('feed.emptyDesc')}</div>
-                <button className="empty-state-cta" onClick={() => onNavigate('/friends')}>
-                  {UsersIcon({ size: 14 })} {t('feed.searchClassmates')}
-                </button>
+                <div className="u-card" style={{ padding: 20, textAlign: 'center' }}>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    El feed mejora con más compañeros conectados
+                  </div>
+                  <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/friends')}>
+                    {UsersIcon({ size: 14 })} {t('feed.searchClassmates')}
+                  </button>
+                </div>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
