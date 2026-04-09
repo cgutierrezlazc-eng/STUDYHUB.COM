@@ -443,13 +443,13 @@ function exportLibroTransacciones(month: number, year: number) {
 }
 
 function exportReporteAnual(year: number) {
-  const rows = [
-    ['REPORTE ANUAL CONSOLIDADO'],
-    [`Empresa;${COMPANY.razonSocial}`],
-    [`RUT;${COMPANY.rut}`],
-    [`Ano;${year}`],
-    [''],
-    ['Mes;Ingresos;Egresos;IVA a Pagar;PPM;Gasto Deducible;Resultado'],
+  const rows: string[] = [
+    'REPORTE ANUAL CONSOLIDADO',
+    `Empresa;${COMPANY.razonSocial}`,
+    `RUT;${COMPANY.rut}`,
+    `Ano;${year}`,
+    '',
+    'Mes;Ingresos;Egresos;IVA a Pagar;PPM;Gasto Deducible;Resultado',
   ]
   let totalIng = 0, totalEgr = 0, totalIVA = 0, totalPPM = 0, totalDed = 0
   for (let m = 1; m <= 12; m++) {

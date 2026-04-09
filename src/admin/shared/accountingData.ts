@@ -347,6 +347,47 @@ export interface FiscalSummary {
   byCategory: Record<string, number>
 }
 
+// ─── Accepts transactions array directly (for API-backed components) ───
+export function calculateFiscalSummaryFromTxs(txs: Transaction[], month: number, year: number, remanentePrevio: number = 0): FiscalSummary {
+  let totalIngresos = 0, ivaDebito = 0
+  let totalEgresos = 0, ivaCreditoRecuperable = 0, totalDeducible = 0
+  const byGroup: Record<string, number> = {}
+  const byCategory: Record<string, number> = {}
+
+  for (const tx of txs) {
+    const cat = ACCOUNT_CATEGORIES.find(c => c.key === tx.category)
+    const group = cat?.group || 'otro'
+
+    if (tx.type === 'ingreso') {
+      totalIngresos += tx.neto
+      ivaDebito += tx.iva
+    } else {
+      totalEgresos += tx.amountCLP
+      if (tx.ivaRecuperable) ivaCreditoRecuperable += tx.iva
+      totalDeducible += tx.deductibleAmount
+    }
+
+    byGroup[group] = (byGroup[group] || 0) + tx.amountCLP
+    byCategory[tx.category] = (byCategory[tx.category] || 0) + tx.amountCLP
+  }
+
+  const ivaDiff = ivaDebito - ivaCreditoRecuperable - remanentePrevio
+  const ivaAPagar = Math.max(0, ivaDiff)
+  const remanente = Math.max(0, -ivaDiff)
+  const ppm = Math.round(totalIngresos * 0.0025)
+  const resultadoTributario = totalIngresos - totalDeducible
+
+  return {
+    period: `${year}-${String(month).padStart(2, '0')}`,
+    month, year,
+    totalIngresos, ivaDebito,
+    totalEgresos, ivaCreditoRecuperable, totalDeducible,
+    ivaAPagar, remanente,
+    resultadoTributario, ppm,
+    byGroup, byCategory,
+  }
+}
+
 export function calculateFiscalSummary(month: number, year: number, remanentePrevio: number = 0): FiscalSummary {
   const txs = getTransactionsByPeriod(month, year)
 

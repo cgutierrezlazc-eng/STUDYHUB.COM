@@ -88,8 +88,8 @@ export default function ContabilidadTab() {
       t.currency,
       t.ivaRecuperable ? 'Si' : 'No',
       `${t.deductiblePercent}%`,
-    ])
-    const csv = BOM + [headers, ...rows].map(r => r.join(';')).join('\n')
+    ].join(';'))
+    const csv = BOM + [headers.join(';'), ...rows].join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -300,7 +300,7 @@ export default function ContabilidadTab() {
                         fontSize: 13,
                       }}>
                         <span style={{ width: 24, textAlign: 'center' }}>{cat.icon}</span>
-                        <span style={{ flex: 1, marginLeft: 8 }}>{cat.label}</span>
+                        <span style={{ flex: 1, marginLeft: 8 }}>{cat.name}</span>
                         <span style={{ fontSize: 11, color: 'var(--text-muted)', marginRight: 12 }}>
                           {cat.codigoSII}
                         </span>

@@ -9,10 +9,92 @@ import {
   Transaction, TransactionType, DocumentType, PaymentMethod, Currency,
   ACCOUNT_CATEGORIES, KNOWN_RECURRING_EXPENSES, COMPANY,
   matchCategory, calculateIVA, generateTxId,
-  loadTransactions, saveTransaction, deleteTransaction,
-  calculateFiscalSummary,
+  calculateFiscalSummaryFromTxs,
   type AccountCategory,
 } from '../shared/accountingData'
+import { api } from '../../services/api'
+
+// ─── Map API expense → Transaction ──────────────────────────────
+function _mapApiExpense(e: any): Transaction {
+  const amountCLP = e.amount_clp || 0
+  const iva = e.iva_amount || 0
+  const neto = amountCLP - iva
+  const deductiblePercent = e.deductible_percent ?? 100
+  return {
+    id: e.id,
+    date: e.date || e.created_at?.split('T')[0] || '',
+    type: (e.tx_type || 'egreso') as TransactionType,
+    category: e.category || 'otro',
+    subcategory: e.subcategory || '',
+    description: e.description || '',
+    provider: e.provider_name || '',
+    providerRut: e.provider_rut || null,
+    documentType: (e.document_type || 'recibo') as DocumentType,
+    documentNumber: e.document_number || '',
+    currency: (e.currency || 'CLP') as Currency,
+    amountOriginal: e.amount_original ?? amountCLP,
+    exchangeRate: e.exchange_rate || 1,
+    amountCLP,
+    neto,
+    iva,
+    ivaRecuperable: e.iva_recuperable || false,
+    retencion: e.retencion || 0,
+    taxDeductible: e.tax_deductible ?? true,
+    deductiblePercent,
+    deductibleAmount: Math.round(neto * deductiblePercent / 100),
+    paymentMethod: (e.payment_method || 'transferencia') as PaymentMethod,
+    recurring: e.recurring || false,
+    recurringFrequency: e.recurring_frequency || null,
+    periodMonth: e.period_month,
+    periodYear: e.period_year,
+    notes: e.notes || '',
+    attachmentName: e.attachment_name || null,
+    createdAt: e.created_at || new Date().toISOString(),
+  }
+}
+
+// ─── Map Transaction → API expense payload ───────────────────────
+function _txToApiPayload(tx: Transaction) {
+  // Backend restricts doc_type; map to nearest valid value
+  const docTypeMap: Record<string, string> = {
+    factura: 'factura',
+    factura_exenta: 'factura',
+    boleta: 'boleta',
+    boleta_honorarios: 'boleta_honorarios',
+    invoice_internacional: 'recibo',
+    recibo: 'recibo',
+    comprobante_transferencia: 'recibo',
+    sin_documento: 'recibo',
+  }
+  return {
+    date: tx.date,
+    tx_type: tx.type,
+    category: tx.category,
+    subcategory: tx.subcategory,
+    description: tx.description,
+    amount_clp: tx.amountCLP,
+    amount_usd: tx.currency === 'USD' ? tx.amountOriginal : null,
+    exchange_rate: tx.currency === 'USD' ? tx.exchangeRate : null,
+    currency: tx.currency,
+    amount_original: tx.amountOriginal,
+    provider_name: tx.provider,
+    provider_rut: tx.providerRut,
+    document_number: tx.documentNumber,
+    document_type: docTypeMap[tx.documentType] || 'recibo',
+    tax_deductible: tx.taxDeductible,
+    iva_amount: tx.iva,
+    iva_recuperable: tx.ivaRecuperable,
+    retencion: tx.retencion,
+    deductible_percent: tx.deductiblePercent,
+    period_month: tx.periodMonth,
+    period_year: tx.periodYear,
+    recurring: tx.recurring,
+    recurring_frequency: tx.recurringFrequency,
+    payment_method: tx.paymentMethod,
+    notes: tx.notes,
+    attachment_name: tx.attachmentName,
+  }
+}
 
 // ═════════════════════════════════════════════════════════════════
 // CENTRAL TRANSACTION MODULE — "Base de Datos" de Contabilidad
@@ -54,6 +136,7 @@ export default function GastosTab() {
   const [month, setMonth] = useState(now.getMonth() + 1)
   const [year, setYear] = useState(now.getFullYear())
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(false)
   const [showAdd, setShowAdd] = useState(false)
   const [editingTx, setEditingTx] = useState<Transaction | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -63,9 +146,20 @@ export default function GastosTab() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [usdRate, setUsdRate] = useState<number>(950) // fallback
 
-  // Load transactions
-  const reload = () => setTransactions(loadTransactions())
-  useEffect(() => { reload() }, [])
+  // ─── Load transactions from API ───
+  const reload = async () => {
+    setLoading(true)
+    try {
+      const result: any = await api.getExpenses(`period_month=${month}&period_year=${year}&per_page=200`)
+      const expenses: Transaction[] = (result?.expenses || []).map(_mapApiExpense)
+      setTransactions(expenses)
+    } catch {
+      setTransactions([])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => { reload() }, [month, year])
 
   // Load USD rate from indicators
   useEffect(() => {
@@ -75,9 +169,9 @@ export default function GastosTab() {
       .catch(() => {})
   }, [])
 
-  // Filter & sort
+  // Filter & sort — API already filters by period; apply local filters on top
   const filtered = useMemo(() => {
-    let list = transactions.filter(t => t.periodMonth === month && t.periodYear === year)
+    let list = [...transactions]
     if (searchTerm) {
       const s = searchTerm.toLowerCase()
       list = list.filter(t => `${t.description} ${t.provider} ${t.category} ${t.notes}`.toLowerCase().includes(s))
@@ -95,13 +189,20 @@ export default function GastosTab() {
     return list
   }, [transactions, month, year, searchTerm, filterType, filterGroup, sortField, sortDir])
 
-  // Fiscal summary
-  const summary = useMemo(() => calculateFiscalSummary(month, year), [transactions, month, year])
+  // Fiscal summary — computed from in-memory transactions
+  const summary = useMemo(
+    () => calculateFiscalSummaryFromTxs(transactions.filter(t => t.periodMonth === month && t.periodYear === year), month, year),
+    [transactions, month, year]
+  )
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Eliminar esta transaccion?')) {
-      deleteTransaction(id)
-      reload()
+      try {
+        await api.deleteExpense(id)
+        await reload()
+      } catch {
+        alert('Error al eliminar la transaccion')
+      }
     }
   }
 
@@ -146,7 +247,7 @@ export default function GastosTab() {
         <button onClick={() => { setEditingTx(null); setShowAdd(true) }} style={btnPrimary}>
           <Plus size={14} /> Nueva Transaccion
         </button>
-        <button onClick={() => loadRecurring(month, year, usdRate, reload)} style={{ ...btnSecondary, fontSize: 12 }}>
+        <button onClick={() => loadRecurring(month, year, usdRate, reload, transactions)} style={{ ...btnSecondary, fontSize: 12 }}>
           <RefreshCw size={14} /> Cargar Recurrentes
         </button>
         <button onClick={() => exportCSV(filtered, month, year)} style={{ ...btnSecondary, fontSize: 12 }}>
@@ -191,7 +292,7 @@ export default function GastosTab() {
 
       {/* Transaction List */}
       {filtered.length === 0 ? (
-        <EmptyState month={MONTHS[month - 1]} year={year} onAdd={() => setShowAdd(true)} onLoadRecurring={() => loadRecurring(month, year, usdRate, reload)} />
+        <EmptyState month={MONTHS[month - 1]} year={year} onAdd={() => setShowAdd(true)} onLoadRecurring={() => loadRecurring(month, year, usdRate, reload, transactions)} />
       ) : (
         <div style={{ display: 'grid', gap: 6 }}>
           {filtered.map(tx => {
@@ -253,6 +354,12 @@ export default function GastosTab() {
       )}
 
       {/* Add/Edit Transaction Modal */}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted)', fontSize: 13 }}>
+          Cargando transacciones...
+        </div>
+      )}
+
       {showAdd && (
         <TransactionModal
           editing={editingTx}
@@ -260,7 +367,21 @@ export default function GastosTab() {
           year={year}
           usdRate={usdRate}
           onClose={() => { setShowAdd(false); setEditingTx(null) }}
-          onSave={(tx) => { saveTransaction(tx); reload(); setShowAdd(false); setEditingTx(null) }}
+          onSave={async (tx) => {
+            try {
+              const payload = _txToApiPayload(tx)
+              if (editingTx) {
+                await api.updateExpense(tx.id, payload)
+              } else {
+                await api.createExpense(payload)
+              }
+              await reload()
+            } catch {
+              alert('Error al guardar la transaccion')
+            }
+            setShowAdd(false)
+            setEditingTx(null)
+          }}
         />
       )}
     </div>
@@ -557,10 +678,10 @@ function TransactionModal({ editing, month, year, usdRate, onClose, onSave }: {
 // HELPERS
 // ═════════════════════════════════════════════════════════════════
 
-function loadRecurring(month: number, year: number, usdRate: number, reload: () => void) {
-  const existing = loadTransactions().filter(t => t.periodMonth === month && t.periodYear === year)
-
+async function loadRecurring(month: number, year: number, usdRate: number, reload: () => Promise<void>, existing: Transaction[]) {
   let added = 0
+  const promises: Promise<any>[] = []
+
   for (const re of KNOWN_RECURRING_EXPENSES) {
     if (re.estimatedAmount <= 0) continue
     if (re.frequency === 'anual' && month !== 1) continue
@@ -570,45 +691,44 @@ function loadRecurring(month: number, year: number, usdRate: number, reload: () 
     const cat = ACCOUNT_CATEGORIES.find(c => c.key === re.category)
     const amountCLP = re.currency === 'USD' ? Math.round(re.estimatedAmount * usdRate) : re.estimatedAmount
     const { neto, iva } = calculateIVA(amountCLP, re.hasIVA)
+    const deductiblePercent = cat?.defaultDeductible || 100
 
-    const tx: Transaction = {
-      id: generateTxId(),
+    const payload = {
       date: `${year}-${String(month).padStart(2, '0')}-01`,
-      type: 'egreso',
+      tx_type: 'egreso',
       category: re.category,
       subcategory: cat?.group || '',
       description: re.description,
-      provider: re.provider,
-      providerRut: null,
-      documentType: re.documentType,
-      documentNumber: '',
+      amount_clp: amountCLP,
+      amount_usd: re.currency === 'USD' ? re.estimatedAmount : null,
+      exchange_rate: re.currency === 'USD' ? usdRate : null,
       currency: re.currency,
-      amountOriginal: re.estimatedAmount,
-      exchangeRate: re.currency === 'USD' ? usdRate : 1,
-      amountCLP,
-      neto,
-      iva,
-      ivaRecuperable: re.hasIVA && re.documentType === 'factura',
+      amount_original: re.estimatedAmount,
+      provider_name: re.provider,
+      provider_rut: null,
+      document_number: '',
+      document_type: re.documentType === 'invoice_internacional' ? 'recibo' : (re.documentType as string),
+      tax_deductible: deductiblePercent > 0,
+      iva_amount: iva,
+      iva_recuperable: re.hasIVA && re.documentType === 'factura',
       retencion: 0,
-      taxDeductible: (cat?.defaultDeductible || 100) > 0,
-      deductiblePercent: cat?.defaultDeductible || 100,
-      deductibleAmount: Math.round(neto * (cat?.defaultDeductible || 100) / 100),
-      paymentMethod: re.currency === 'USD' ? 'pago_internacional' : 'transferencia',
+      deductible_percent: deductiblePercent,
+      period_month: month,
+      period_year: year,
       recurring: true,
-      recurringFrequency: re.frequency,
-      periodMonth: month,
-      periodYear: year,
+      recurring_frequency: re.frequency,
+      payment_method: re.currency === 'USD' ? 'pago_internacional' : 'transferencia',
       notes: re.notes,
-      attachmentName: null,
-      createdAt: new Date().toISOString(),
+      attachment_name: null,
     }
-    saveTransaction(tx)
+    promises.push(api.createExpense(payload).catch(() => null))
     added++
   }
 
   if (added > 0) {
+    await Promise.all(promises)
+    await reload()
     alert(`${added} gastos recurrentes cargados para ${month}/${year}`)
-    reload()
   } else {
     alert('Todos los gastos recurrentes ya estan cargados para este periodo')
   }

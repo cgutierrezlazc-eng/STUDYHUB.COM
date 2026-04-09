@@ -10,8 +10,6 @@ import {
   Search, Eye, Filter
 } from 'lucide-react'
 
-// TODO: Connect to backend when leave endpoints are implemented
-
 // ═════════════════════════════════════════════════════════════════
 // VACACIONES TAB — Gestion de Vacaciones y Permisos
 // Legislacion Chilena: Art. 67-73 Codigo del Trabajo

@@ -21,6 +21,35 @@ function StatCard({ icon: Icon, label, value, color }: { icon: any; label: strin
   )
 }
 
+// ─── Previred CSV download ───────────────────────────────────────
+function downloadPrevired(data: PreviredData, month: number, year: number, months: string[]) {
+  const lines: string[] = [
+    'RUT;NOMBRE;AFP;MONTO_AFP;SALUD;MONTO_SALUD;AFC_TRABAJADOR;AFC_EMPLEADOR;SIS;MUTUAL;RENTA_IMPONIBLE',
+  ]
+  for (const emp of data.employees) {
+    lines.push([
+      emp.rut,
+      emp.name,
+      emp.afp,
+      Math.round(emp.afpAmount),
+      emp.healthSystem,
+      Math.round(emp.healthAmount),
+      Math.round(emp.afcEmployee),
+      Math.round(emp.afcEmployer),
+      Math.round(emp.sis),
+      Math.round(emp.mutual),
+      Math.round(emp.taxableIncome),
+    ].join(';'))
+  }
+  const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `Previred_${months[month]}_${year}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 // ═════════════════════════════════════════════════════════════════
 // PREVIRED TAB
 // ═════════════════════════════════════════════════════════════════
@@ -149,8 +178,12 @@ export default function PreviredTab({ month: propMonth, year: propYear }: Previr
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-            <button style={btnPrimary}><Download size={16} /> Descargar Planilla Previred</button>
-            <button style={btnSecondary}><Globe size={16} /> Ir a Previred.com</button>
+            <button style={btnPrimary} onClick={() => downloadPrevired(data, selectedMonth, selectedYear, months)}>
+              <Download size={16} /> Descargar Planilla Previred
+            </button>
+            <button style={btnSecondary} onClick={() => window.open('https://previred.com', '_blank')}>
+              <Globe size={16} /> Ir a Previred.com
+            </button>
           </div>
 
           {/* Instructions */}

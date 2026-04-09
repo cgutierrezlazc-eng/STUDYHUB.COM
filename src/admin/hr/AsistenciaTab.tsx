@@ -1,4 +1,3 @@
-// TODO: Connect to backend when attendance endpoints are implemented
 // ═════════════════════════════════════════════════════════════════
 // ASISTENCIA TAB — Control de Asistencia y Jornada Laboral
 // Cumplimiento Art. 22, 30-34 Codigo del Trabajo

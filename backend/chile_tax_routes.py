@@ -115,7 +115,18 @@ def convert_usd_to_currency(amount_usd: float, currency: str, rates: dict) -> fl
 
 
 def calculate_net_revenue(amount_usd: float) -> dict:
-    """Calculate net revenue after Stripe fees, then Chilean tax on that net."""
+    """Calculate net revenue after Stripe fees, then Chilean tax on that net.
+    Returns all-zero dict when amount_usd is 0 — Stripe fixed fee only applies
+    per transaction, not as a standing deduction.
+    """
+    if amount_usd <= 0:
+        rates = get_exchange_rates()
+        return {
+            "grossUsd": 0, "stripeFeeUsd": 0, "netAfterStripeUsd": 0,
+            "netAfterStripClp": 0, "netoSinIvaClp": 0, "ivaClp": 0,
+            "gananciaNetaClp": 0, "clpRate": rates.get("CLP", 950),
+        }
+
     stripe_fee = round(amount_usd * STRIPE_FEE_RATE + STRIPE_FEE_FIXED_USD, 2)
     net_after_stripe = round(amount_usd - stripe_fee, 2)
 

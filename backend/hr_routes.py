@@ -167,24 +167,39 @@ class OperationalExpense(Base):
     __tablename__ = "hr_operational_expenses"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    category = Column(String(30), default="otro")  # suscripcion/arriendo/servicios/equipamiento/marketing/legal/contabilidad/otro
+    # Core accounting fields
+    category = Column(String(50), default="otro")
+    subcategory = Column(String(50), nullable=True)
     description = Column(Text, nullable=False)
     amount_clp = Column(Float, nullable=False)
     amount_usd = Column(Float, nullable=True)
     exchange_rate = Column(Float, nullable=True)
+    currency = Column(String(5), default="CLP")
+    amount_original = Column(Float, nullable=True)
 
+    # Document & provider
     provider_name = Column(String(255), default="")
-    provider_rut = Column(String(12), nullable=True)
+    provider_rut = Column(String(20), nullable=True)
     document_number = Column(String(50), default="")
-    document_type = Column(String(30), default="factura")  # factura/boleta/boleta_honorarios/recibo
+    document_type = Column(String(30), default="recibo")  # factura/boleta/boleta_honorarios/recibo
     tax_deductible = Column(Boolean, default=True)
     iva_amount = Column(Float, nullable=True)
+    iva_recuperable = Column(Boolean, default=False)
+    retencion = Column(Float, default=0)
+    deductible_percent = Column(Integer, default=100)
+
+    # Transaction metadata
+    date = Column(String(10), nullable=True)          # YYYY-MM-DD
+    tx_type = Column(String(20), default="egreso")     # egreso/ingreso/costo/inversion
+    payment_method = Column(String(30), nullable=True)
+    notes = Column(Text, nullable=True)
+    attachment_name = Column(String(255), nullable=True)
 
     period_month = Column(Integer, nullable=False)
     period_year = Column(Integer, nullable=False)
 
     recurring = Column(Boolean, default=False)
-    recurring_frequency = Column(String(20), nullable=True)  # monthly/yearly/quarterly
+    recurring_frequency = Column(String(20), nullable=True)
 
     file_path = Column(Text, nullable=True)
 
@@ -578,16 +593,27 @@ class LegalObligationSave(BaseModel):
 
 class ExpenseCreate(BaseModel):
     category: str = "otro"
+    subcategory: Optional[str] = None
     description: str
     amount_clp: float
     amount_usd: Optional[float] = None
     exchange_rate: Optional[float] = None
+    currency: str = "CLP"
+    amount_original: Optional[float] = None
     provider_name: str = ""
     provider_rut: Optional[str] = None
     document_number: str = ""
-    document_type: str = "factura"
+    document_type: str = "recibo"
     tax_deductible: bool = True
     iva_amount: Optional[float] = None
+    iva_recuperable: bool = False
+    retencion: float = 0
+    deductible_percent: int = 100
+    date: Optional[str] = None
+    tx_type: str = "egreso"
+    payment_method: Optional[str] = None
+    notes: Optional[str] = None
+    attachment_name: Optional[str] = None
     period_month: int
     period_year: int
     recurring: bool = False
@@ -597,16 +623,27 @@ class ExpenseCreate(BaseModel):
 
 class ExpenseUpdate(BaseModel):
     category: Optional[str] = None
+    subcategory: Optional[str] = None
     description: Optional[str] = None
     amount_clp: Optional[float] = None
     amount_usd: Optional[float] = None
     exchange_rate: Optional[float] = None
+    currency: Optional[str] = None
+    amount_original: Optional[float] = None
     provider_name: Optional[str] = None
     provider_rut: Optional[str] = None
     document_number: Optional[str] = None
     document_type: Optional[str] = None
     tax_deductible: Optional[bool] = None
     iva_amount: Optional[float] = None
+    iva_recuperable: Optional[bool] = None
+    retencion: Optional[float] = None
+    deductible_percent: Optional[int] = None
+    date: Optional[str] = None
+    tx_type: Optional[str] = None
+    payment_method: Optional[str] = None
+    notes: Optional[str] = None
+    attachment_name: Optional[str] = None
     period_month: Optional[int] = None
     period_year: Optional[int] = None
     recurring: Optional[bool] = None
@@ -712,16 +749,27 @@ def _expense_to_dict(exp: OperationalExpense) -> dict:
     return {
         "id": exp.id,
         "category": exp.category,
+        "subcategory": exp.subcategory,
         "description": exp.description,
         "amount_clp": exp.amount_clp,
         "amount_usd": exp.amount_usd,
         "exchange_rate": exp.exchange_rate,
+        "currency": exp.currency or "CLP",
+        "amount_original": exp.amount_original,
         "provider_name": exp.provider_name,
         "provider_rut": exp.provider_rut,
         "document_number": exp.document_number,
         "document_type": exp.document_type,
         "tax_deductible": exp.tax_deductible,
         "iva_amount": exp.iva_amount,
+        "iva_recuperable": exp.iva_recuperable or False,
+        "retencion": exp.retencion or 0,
+        "deductible_percent": exp.deductible_percent if exp.deductible_percent is not None else 100,
+        "date": exp.date,
+        "tx_type": exp.tx_type or "egreso",
+        "payment_method": exp.payment_method,
+        "notes": exp.notes,
+        "attachment_name": exp.attachment_name,
         "period_month": exp.period_month,
         "period_year": exp.period_year,
         "recurring": exp.recurring,
@@ -1753,10 +1801,6 @@ def get_previred_data(
 #  OPERATIONAL EXPENSES
 # ═══════════════════════════════════════════════════════════════════
 
-VALID_EXPENSE_CATEGORIES = {
-    "suscripcion", "arriendo", "servicios", "equipamiento",
-    "marketing", "legal", "contabilidad", "otro",
-}
 VALID_DOC_TYPES_EXPENSE = {"factura", "boleta", "boleta_honorarios", "recibo"}
 
 
@@ -1768,24 +1812,33 @@ def create_expense(
 ):
     _require_hr_access(user)
 
-    if data.category not in VALID_EXPENSE_CATEGORIES:
-        raise HTTPException(400, f"Categoria debe ser una de: {', '.join(VALID_EXPENSE_CATEGORIES)}")
     if data.document_type not in VALID_DOC_TYPES_EXPENSE:
-        raise HTTPException(400, f"Tipo de documento debe ser uno de: {', '.join(VALID_DOC_TYPES_EXPENSE)}")
+        data.document_type = "recibo"  # fallback instead of 400
 
     expense = OperationalExpense(
         id=gen_id(),
         category=data.category,
+        subcategory=data.subcategory,
         description=data.description,
         amount_clp=data.amount_clp,
         amount_usd=data.amount_usd,
         exchange_rate=data.exchange_rate,
+        currency=data.currency,
+        amount_original=data.amount_original,
         provider_name=data.provider_name,
         provider_rut=data.provider_rut,
         document_number=data.document_number,
         document_type=data.document_type,
         tax_deductible=data.tax_deductible,
         iva_amount=data.iva_amount,
+        iva_recuperable=data.iva_recuperable,
+        retencion=data.retencion,
+        deductible_percent=data.deductible_percent,
+        date=data.date,
+        tx_type=data.tx_type,
+        payment_method=data.payment_method,
+        notes=data.notes,
+        attachment_name=data.attachment_name,
         period_month=data.period_month,
         period_year=data.period_year,
         recurring=data.recurring,
@@ -1844,10 +1897,9 @@ def update_expense(
 
     updates = data.dict(exclude_unset=True)
 
-    if "category" in updates and updates["category"] not in VALID_EXPENSE_CATEGORIES:
-        raise HTTPException(400, f"Categoria debe ser una de: {', '.join(VALID_EXPENSE_CATEGORIES)}")
+    # Silently map unknown doc types to 'recibo' instead of rejecting
     if "document_type" in updates and updates["document_type"] not in VALID_DOC_TYPES_EXPENSE:
-        raise HTTPException(400, f"Tipo de documento debe ser uno de: {', '.join(VALID_DOC_TYPES_EXPENSE)}")
+        updates["document_type"] = "recibo"
 
     for key, value in updates.items():
         setattr(expense, key, value)
