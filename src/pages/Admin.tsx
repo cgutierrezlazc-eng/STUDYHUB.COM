@@ -180,7 +180,7 @@ export default function Admin() {
   return (
     <>
       <div className="page-header">
-        <h2>Panel de Administración {user?.role === 'owner' ? '— CEO/Owner' : ''}</h2>
+        <h2>Panel de Administración {user?.role === 'owner' ? '— CEO' : ''}</h2>
         <p>Gestión de usuarios, moderación y estadísticas</p>
         {user?.role === 'owner' && stats && (
           <div style={{ display: 'flex', gap: 16, marginTop: 8, fontSize: '0.85rem', color: 'var(--text-muted)' }}>

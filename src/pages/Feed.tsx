@@ -1097,8 +1097,8 @@ export default function Feed({ onNavigate }: Props) {
               </div>
             )}
 
-            {/* University News */}
-            {localStorage.getItem('conniku_university_news') !== 'false' && (
+            {/* University News — solo mostrar si hay noticias o está cargando */}
+            {localStorage.getItem('conniku_university_news') !== 'false' && (newsLoading || universityNews.length > 0) && (
               <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
                 {/* Header */}
                 <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border, #2a3038)' }}>
