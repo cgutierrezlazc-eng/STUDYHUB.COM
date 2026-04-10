@@ -62,6 +62,32 @@ function timeAgo(iso: string, t: (key: string) => string): string {
 const DAY_KEYS = ['dash.daySun', 'dash.dayMon', 'dash.dayTue', 'dash.dayWed', 'dash.dayThu', 'dash.dayFri', 'dash.daySat']
 const MONTH_KEYS = ['dash.monthJan', 'dash.monthFeb', 'dash.monthMar', 'dash.monthApr', 'dash.monthMay', 'dash.monthJun', 'dash.monthJul', 'dash.monthAug', 'dash.monthSep', 'dash.monthOct', 'dash.monthNov', 'dash.monthDec']
 
+function DailyQuoteBanner({ quote }: { quote: { quote: string; author: string } }) {
+  return (
+    <div style={{
+      marginBottom: 20, padding: '18px 24px',
+      background: 'var(--bg-card)',
+      border: '1px solid var(--border-subtle)',
+      borderLeft: '4px solid var(--accent)',
+      borderRadius: 12,
+      display: 'flex', gap: 14, alignItems: 'flex-start',
+    }}>
+      <div style={{
+        fontSize: 40, lineHeight: 1, color: 'var(--accent)',
+        opacity: 0.2, fontFamily: 'Georgia, serif', flexShrink: 0, marginTop: -6,
+      }}>"</div>
+      <div>
+        <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', fontStyle: 'italic' }}>
+          {quote.quote}
+        </div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8, fontWeight: 600 }}>
+          — {quote.author}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function HomeDashboard({ projects, onNavigate }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
@@ -114,6 +140,8 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
       </div>
     )
   }
+
+  const dailyQuote = getDailyQuote()
 
   return (
     <div className="home-dash page-enter">
@@ -251,34 +279,7 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
           </div>
         </div>
       ) : (
-        (() => {
-          const q = getDailyQuote()
-          return (
-            <div style={{
-              marginBottom: 20, padding: '18px 24px',
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-subtle)',
-              borderLeft: '4px solid var(--accent)',
-              borderRadius: 12,
-              display: 'flex', gap: 14, alignItems: 'flex-start',
-            }}>
-              <div style={{
-                fontSize: 40, lineHeight: 1, color: 'var(--accent)',
-                opacity: 0.2, fontFamily: 'Georgia, serif', flexShrink: 0, marginTop: -6,
-              }}>
-                "
-              </div>
-              <div>
-                <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', fontStyle: 'italic' }}>
-                  {q.quote}
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8, fontWeight: 600 }}>
-                  — {q.author}
-                </div>
-              </div>
-            </div>
-          )
-        })()
+        <DailyQuoteBanner quote={dailyQuote} />
       )}
 
       {/* Stats Grid */}
