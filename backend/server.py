@@ -1295,7 +1295,7 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
             image_data = req.image_base64
 
         model = genai_vision.GenerativeModel(
-            model_name="gemini-2.0-flash-lite",
+            model_name="gemini-1.5-flash",
             system_instruction=system,
         )
         response = model.generate_content(
