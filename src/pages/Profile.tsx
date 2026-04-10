@@ -20,6 +20,9 @@ export default function Profile() {
   const [newUsername, setNewUsername] = useState('')
   const [usernameError, setUsernameError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const coverFileRef = useRef<HTMLInputElement>(null)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [coverMsg, setCoverMsg] = useState('')
   const [form, setForm] = useState({ ...user! })
   const [cvVisibility, setCvVisibility] = useState<'public' | 'recruiters' | 'private'>((user as any).cvVisibility || 'private')
   const [cvData, setCvData] = useState({
@@ -100,6 +103,26 @@ export default function Profile() {
       updateProfile({ avatar: reader.result as string })
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverUploading(true)
+    setCoverMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await api.updateCoverPhoto(fd)
+      if (res.coverPhoto) updateProfile({ coverPhoto: res.coverPhoto } as any)
+      setCoverMsg('Foto de portada actualizada')
+      setTimeout(() => setCoverMsg(''), 3000)
+    } catch {
+      setCoverMsg('Error al subir la imagen. Intenta de nuevo.')
+    } finally {
+      setCoverUploading(false)
+      if (coverFileRef.current) coverFileRef.current.value = ''
+    }
   }
 
   const handleChangeUsername = async () => {
@@ -446,13 +469,31 @@ export default function Profile() {
               <div className="pf-section">
                 <h3>{t('profile.coverPhoto')}</h3>
                 <p className="pf-hint">{t('profile.coverPhotoHint')}</p>
+                <input
+                  ref={coverFileRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleCoverChange}
+                />
+                {(user as any).coverPhoto && (
+                  <div style={{ marginBottom: 12, borderRadius: 10, overflow: 'hidden', height: 80 }}>
+                    <img src={(user as any).coverPhoto} alt="portada" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                )}
                 <button
                   className="btn btn-secondary"
-                  style={{ marginBottom: 20 }}
-                  onClick={() => { window.location.href = '/my-profile' }}
+                  style={{ marginBottom: 8 }}
+                  disabled={coverUploading}
+                  onClick={() => coverFileRef.current?.click()}
                 >
-                  {Pencil({ size: 14 })} {t('profile.changeCover')}
+                  {Pencil({ size: 14 })} {coverUploading ? 'Subiendo...' : t('profile.changeCover')}
                 </button>
+                {coverMsg && (
+                  <p style={{ fontSize: 12, color: coverMsg.startsWith('Error') ? 'var(--accent-orange)' : 'var(--accent-green)', marginBottom: 12 }}>
+                    {coverMsg}
+                  </p>
+                )}
 
                 <div className="pf-divider" />
 
