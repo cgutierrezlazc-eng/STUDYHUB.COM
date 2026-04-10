@@ -35,7 +35,7 @@ def _build_client():
         return None
 
 
-def call_konni(system: str, messages: list) -> str:
+def call_konni(system: str, messages: list, db=None) -> str:
     """
     Call Claude Haiku for Konni chat.
 
@@ -43,6 +43,8 @@ def call_konni(system: str, messages: list) -> str:
         system:   Full system prompt (Konni persona + user/admin context).
         messages: List of {"role": "user"|"assistant", "content": str}.
                   Must already include the current user message as the last item.
+        db:       Optional SQLAlchemy session. When provided, Konni Admin tools
+                  (listar_empleados, obtener_payroll_mes, etc.) are enabled.
 
     Returns:
         str — Konni's reply, or a friendly error message.
@@ -83,6 +85,48 @@ def call_konni(system: str, messages: list) -> str:
 
     try:
         import anthropic
+        from konni_tools import KONNI_TOOLS, execute_tool
+
+        # ── Tool-use path (admin only, when db session is provided) ──────────
+        if db is not None:
+            response = client.messages.create(
+                model=KONNI_MODEL,
+                max_tokens=MAX_TOKENS,
+                system=system,
+                messages=cleaned,
+                tools=KONNI_TOOLS,
+            )
+
+            # Handle tool_use stop reason — run tool, send result, get final reply
+            if response.stop_reason == "tool_use":
+                tool_uses = [b for b in response.content if b.type == "tool_use"]
+                tool_results = []
+                for tu in tool_uses:
+                    result_json = execute_tool(tu.name, tu.input, db)
+                    tool_results.append({
+                        "type": "tool_result",
+                        "tool_use_id": tu.id,
+                        "content": result_json,
+                    })
+
+                # Append assistant turn (with tool_use blocks) + tool results
+                cleaned.append({"role": "assistant", "content": response.content})
+                cleaned.append({"role": "user", "content": tool_results})
+
+                # Get final text response from Claude
+                final = client.messages.create(
+                    model=KONNI_MODEL,
+                    max_tokens=MAX_TOKENS,
+                    system=system,
+                    messages=cleaned,
+                    tools=KONNI_TOOLS,
+                )
+                return final.content[0].text
+
+            # No tool call — return text directly
+            return response.content[0].text
+
+        # ── No-tool path (regular user chat) ─────────────────────────────────
         response = client.messages.create(
             model=KONNI_MODEL,
             max_tokens=MAX_TOKENS,

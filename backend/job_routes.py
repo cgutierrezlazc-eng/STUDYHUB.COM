@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 
 from database import (get_db, User, JobListing, JobApplication, UserCareerStatus,
-                      AcademicMilestone, WallPost, StudentCV, gen_id)
+                      AcademicMilestone, WallPost, StudentCV, KonniBroadcast, gen_id)
 from middleware import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -166,6 +166,7 @@ class JobListingRequest(BaseModel):
     application_deadline: Optional[str] = None
     contact_email: str = ""
     external_url: str = ""
+    konni_broadcast: bool = False
 
 
 def job_to_dict(j, poster=None, applied=False):
@@ -205,17 +206,34 @@ def create_job_listing(req: JobListingRequest, user: User = Depends(get_current_
         career_field=req.career_field, experience_level=req.experience_level,
         education_level=req.education_level, application_deadline=deadline,
         contact_email=req.contact_email, external_url=req.external_url,
+        konni_broadcast=req.konni_broadcast,
     )
     db.add(job)
     db.commit()
+
+    # If broadcast requested, create a KonniBroadcast record for every active user
+    if req.konni_broadcast:
+        user_ids = [u.id for u in db.query(User.id).filter(User.is_banned == False).all()]
+        db.bulk_insert_mappings(KonniBroadcast, [
+            {"id": gen_id(), "user_id": uid, "job_id": job.id}
+            for uid in user_ids
+        ])
+        db.commit()
+
     return job_to_dict(job, user)
 
 
 @router.get("/listings")
 def list_jobs(search: str = "", job_type: str = "", career_field: str = "",
-              is_remote: bool = False, page: int = 1,
+              is_remote: bool = False, page: int = 1, since: str = "",
               user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     q = db.query(JobListing).filter(JobListing.is_active == True)
+    if since:
+        try:
+            since_dt = datetime.fromisoformat(since.replace("Z", "+00:00"))
+            q = q.filter(JobListing.created_at > since_dt)
+        except ValueError:
+            pass
     if search:
         q = q.filter(or_(
             JobListing.job_title.ilike(f"%{search}%"),

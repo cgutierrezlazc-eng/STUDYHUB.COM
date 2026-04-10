@@ -722,7 +722,14 @@ TONO: cercano, directo, como un companero de universidad inteligente.
 PROHIBIDO: inventar funciones, revelar info de admin/HR/payroll/empleados/finanzas de Conniku.
 Si no sabes algo: "No tengo esa info, pero puedes escribir a contacto@conniku.com 👋"
 Si preguntan de pruebas proximas o deadlines del calendario del usuario, mencionaselo.
-Manual completo: conniku.com/manual-conniku.html"""
+Manual completo: conniku.com/manual-conniku.html
+
+=== ACCESOS DIRECTOS (NAVEGACION) ===
+Cuando sea util, incluye un boton con este formato exacto:
+  {{nav:/ruta|Texto del boton}}
+Ejemplos: {{nav:/courses|Ver mis cursos}} {{nav:/jobs|Ver ofertas}} {{nav:/calendar|Ver calendario}}
+Rutas: /courses /calendar /jobs /communities /profile /apuntes /quizzes
+Usa maximo 1 acceso directo por respuesta, solo si aporta."""
 
 
 @app.post("/support/chat")
@@ -748,10 +755,47 @@ def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    response = call_konni(system, messages)
+    response = call_konni(system, messages, db=db)
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
+
+
+@app.get("/support/konni-broadcasts")
+def get_konni_broadcasts(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return unread Konni broadcast messages for the current user."""
+    from database import KonniBroadcast, JobListing
+    rows = (db.query(KonniBroadcast)
+            .filter(KonniBroadcast.user_id == user.id, KonniBroadcast.is_read == False)
+            .order_by(KonniBroadcast.created_at.desc())
+            .limit(5).all())
+    result = []
+    for b in rows:
+        job = db.query(JobListing).filter(JobListing.id == b.job_id, JobListing.is_active == True).first()
+        if job:
+            result.append({
+                "broadcast_id": b.id,
+                "job_id": job.id,
+                "job_title": job.job_title,
+                "company_name": job.company_name,
+                "job_type": job.job_type,
+                "is_remote": job.is_remote,
+                "location": job.location or "",
+                "career_field": job.career_field or "",
+            })
+    return {"broadcasts": result}
+
+
+@app.post("/support/konni-broadcasts/read")
+def mark_broadcasts_read(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Mark all unread broadcasts as read for the current user."""
+    from database import KonniBroadcast
+    db.query(KonniBroadcast).filter(
+        KonniBroadcast.user_id == user.id,
+        KonniBroadcast.is_read == False,
+    ).update({"is_read": True})
+    db.commit()
+    return {"ok": True}
 
 
 # ─── Support Chatbot — ADMIN version (Claude, full admin knowledge) ────
@@ -824,11 +868,33 @@ UF, UTM, USD, Ingreso Minimo Mensual (IMM)
 - Si preguntan de usuarios/plataforma, tienes todo el conocimiento del manual de usuario tambien
 - Respuestas profesionales, sin emojis excesivos
 - LONGITUD: maximo 3-4 oraciones por mensaje. Si el tema es complejo, entrega lo mas importante primero y al final pregunta: "¿quieres que profundice en esto?" No envies todo de golpe.
-- Si necesitan algo fuera de tus capacidades, sugiere contactar al contador o abogado"""
+- Si necesitan algo fuera de tus capacidades, sugiere contactar al contador o abogado
+
+=== ACCESOS DIRECTOS (NAVEGACION) ===
+Cuando sea util, puedes incluir un boton de acceso directo usando este formato exacto:
+  {{nav:/ruta|Texto del boton}}
+
+Ejemplos:
+  {{nav:/admin-panel/hr/personal|Ver empleados}}
+  {{nav:/admin-panel/payroll/liquidaciones|Ver liquidaciones}}
+  {{nav:/admin-panel/finance/gastos|Ver gastos}}
+
+Rutas disponibles:
+  RRHH: /admin-panel/hr/personal | /admin-panel/hr/contratos | /admin-panel/hr/vacaciones
+        /admin-panel/hr/documentos | /admin-panel/hr/asistencia | /admin-panel/hr/onboarding
+        /admin-panel/hr/desempeno | /admin-panel/hr/reclutamiento | /admin-panel/hr/accesos
+  Payroll: /admin-panel/payroll/liquidaciones | /admin-panel/payroll/finiquitos
+           /admin-panel/payroll/historial | /admin-panel/payroll/previred | /admin-panel/payroll/dj1887
+  Finanzas: /admin-panel/finance/gastos | /admin-panel/finance/dashboard
+            /admin-panel/finance/facturacion | /admin-panel/finance/presupuestos | /admin-panel/finance/analytics
+  Legal: /admin-panel/legal/compliance | /admin-panel/legal/fraude
+  Tools: /admin-panel/tools/ai-workflows | /admin-panel/tools/certificaciones | /admin-panel/tools/push
+
+Usa maximo 1-2 accesos directos por respuesta, solo cuando sean claramente utiles."""
 
 
 @app.post("/support/admin-chat")
-def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
+def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Konni ADMIN — executive assistant powered by Claude (owner only)."""
     if user.role != "owner":
         raise HTTPException(403, "Solo el owner tiene acceso a Konni Admin")
@@ -849,7 +915,7 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    response = call_konni(system, messages)
+    response = call_konni(system, messages, db=db)
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}

@@ -715,10 +715,21 @@ class JobListing(Base):
     contact_email = Column(String(255), default="")
     external_url = Column(String(500), default="")  # External application link
     is_active = Column(Boolean, default=True)
+    konni_broadcast = Column(Boolean, default=False)  # send to all users via Konni on publish
     view_count = Column(Integer, default=0)
     application_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class KonniBroadcast(Base):
+    """Pending Konni chat messages for users — created when a recruiter broadcasts a job."""
+    __tablename__ = "konni_broadcasts"
+    id          = Column(String(16), primary_key=True, default=gen_id)
+    user_id     = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    job_id      = Column(String(16), ForeignKey("job_listings.id", ondelete="CASCADE"), nullable=False)
+    is_read     = Column(Boolean, default=False)
+    created_at  = Column(DateTime, default=datetime.utcnow)
 
 
 class JobApplication(Base):

@@ -174,6 +174,8 @@ export const api = {
     request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
   supportAdminChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
+  getKonniBroadcasts: () => request('/support/konni-broadcasts'),
+  markKonniBroadcastsRead: () => request('/support/konni-broadcasts/read', { method: 'POST' }),
 
   // ─── Chat ──────────────────────────────────────────────────
   chat: async (projectId: string, message: string, language: string = 'es', gender: string = 'unspecified', languageSkill: string = 'intermediate', socratic: boolean = false) => {
@@ -700,6 +702,8 @@ export const api = {
     if (page) params.set('page', String(page));
     return request(`/jobs/listings?${params}`);
   },
+  getRecentJobs: (since: string) =>
+    request(`/jobs/listings?since=${encodeURIComponent(since)}&page=1`),
   createJobListing: (data: any) =>
     request('/jobs/listings', { method: 'POST', body: JSON.stringify(data) }),
   getJobListing: (id: string) => request(`/jobs/listings/${id}`),

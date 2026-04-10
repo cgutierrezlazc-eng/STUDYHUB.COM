@@ -180,7 +180,7 @@ export default function Jobs({ onNavigate }: Props) {
     is_remote: false, salary_min: '', salary_max: '', salary_currency: 'USD',
     description: '', requirements: '', benefits: '', career_field: '',
     experience_level: 'entry', education_level: 'any', contact_email: '',
-    application_deadline: '',
+    application_deadline: '', konni_broadcast: false,
   })
 
   // CV Profile state
@@ -525,7 +525,7 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
         application_deadline: form.application_deadline ? new Date(form.application_deadline).toISOString() : null,
       })
       setShowPostForm(false)
-      setForm({ company_name: '', job_title: '', job_type: 'full_time', location: '', is_remote: false, salary_min: '', salary_max: '', salary_currency: 'USD', description: '', requirements: '', benefits: '', career_field: '', experience_level: 'entry', education_level: 'any', contact_email: '', application_deadline: '' })
+      setForm({ company_name: '', job_title: '', job_type: 'full_time', location: '', is_remote: false, salary_min: '', salary_max: '', salary_currency: 'USD', description: '', requirements: '', benefits: '', career_field: '', experience_level: 'entry', education_level: 'any', contact_email: '', application_deadline: '', konni_broadcast: false })
       alert(t('jobs.offerPublished'))
       loadJobs()
     } catch (err: any) {
@@ -1635,6 +1635,30 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
               <div className="auth-field"><label>{t('jobs.benefits')}</label>
                 <textarea value={form.benefits} onChange={e => setForm({...form, benefits: e.target.value})} placeholder={t('jobs.benefitsPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
+              {/* Konni broadcast option */}
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer',
+                padding: '12px 14px', borderRadius: 10, marginTop: 12,
+                border: `1.5px solid ${form.konni_broadcast ? '#2D62C8' : 'var(--border)'}`,
+                background: form.konni_broadcast ? 'rgba(45,98,200,0.06)' : 'var(--bg-secondary)',
+                transition: 'all 0.15s',
+              }}>
+                <input
+                  type="checkbox"
+                  checked={form.konni_broadcast}
+                  onChange={e => setForm({ ...form, konni_broadcast: e.target.checked })}
+                  style={{ marginTop: 2, accentColor: '#2D62C8', width: 16, height: 16, flexShrink: 0 }}
+                />
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 16 }}>💬</span> Enviar por Konni a todos los usuarios
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, lineHeight: 1.4 }}>
+                    Konni enviará un mensaje con esta oferta al chat de cada usuario. También quedará disponible en la base de conocimiento de Konni.
+                  </div>
+                </div>
+              </label>
+
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button className="btn btn-secondary" onClick={() => setShowPostForm(false)}>{t('jobs.cancel')}</button>
                 <button className="btn btn-primary" onClick={handlePostJob}>{t('jobs.publishOffer')}</button>

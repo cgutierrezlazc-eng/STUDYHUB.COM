@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../services/auth'
 
@@ -43,9 +44,14 @@ const ADMIN_CATS: Category[] = [
 
 const USER_CHIPS: Category[] = [
   { id: 'cursos', label: 'Cursos', emoji: '📚', subs: [
-    { id: 'mis-cursos',   label: 'Mis cursos',    message: '¿En qué cursos estoy inscrito actualmente?' },
+    { id: 'avance',       label: 'Mi avance',     message: '¿En qué cursos estoy y cuál es mi avance actual?' },
     { id: 'material',     label: 'Material',      message: '¿Cómo accedo al material de mis cursos?' },
-    { id: 'certificados', label: 'Certificados',  message: '¿Cómo obtengo mi certificado de un curso?' },
+    { id: 'certificados', label: 'Certificados',  message: '¿Qué certificados he obtenido?' },
+  ]},
+  { id: 'agenda', label: 'Agenda', emoji: '📅', subs: [
+    { id: 'semana',       label: 'Esta semana',   message: '¿Qué tengo programado esta semana?' },
+    { id: 'clases',       label: 'Próx. clases',  message: '¿Cuándo son mis próximas clases?' },
+    { id: 'eventos',      label: 'Eventos',       message: '¿Qué eventos o actividades hay próximamente?' },
   ]},
   { id: 'tareas', label: 'Tareas', emoji: '📝', subs: [
     { id: 'pendientes',   label: 'Pendientes',    message: '¿Qué tareas tengo pendientes?' },
@@ -53,37 +59,61 @@ const USER_CHIPS: Category[] = [
   ]},
   { id: 'quiz', label: 'Quiz', emoji: '🧠', subs: [
     { id: 'practicar',    label: 'Practicar',     message: 'Quiero hacer un quiz de práctica' },
-    { id: 'resultados',   label: 'Resultados',    message: 'Muéstrame mis resultados de quizzes anteriores' },
+    { id: 'resultados',   label: 'Mis resultados', message: '¿Cómo me ha ido en los quizzes anteriores?' },
+    { id: 'flashcards',   label: 'Flashcards',    message: '¿Cuántas flashcards tengo pendientes de repasar hoy?' },
+  ]},
+  { id: 'documentos', label: 'Documentos', emoji: '📄', subs: [
+    { id: 'mis-docs',     label: 'Mis archivos',  message: '¿Qué documentos he subido a la plataforma?' },
+    { id: 'apuntes',      label: 'Apuntes',       message: '¿Cómo organizo mis apuntes y materiales de estudio?' },
   ]},
   { id: 'tutor', label: 'Tutor IA', emoji: '💡', subs: [
     { id: 'explicar',     label: 'Explicar',      message: 'Necesito que me expliques un concepto' },
     { id: 'resumen',      label: 'Resumen',       message: 'Genera un resumen del material de mis cursos' },
-    { id: 'flashcards',   label: 'Flashcards',    message: 'Quiero repasar con flashcards' },
+    { id: 'plan',         label: 'Plan de estudio', message: '¿Puedes armarme un plan de estudio?' },
   ]},
-  { id: 'agenda', label: 'Agenda', emoji: '⏰', subs: [
-    { id: 'clases',       label: 'Próx. clases',  message: '¿Cuándo son mis próximas clases?' },
-    { id: 'eventos',      label: 'Eventos',       message: '¿Qué eventos o actividades hay próximamente?' },
+  { id: 'perfil', label: 'Mi Perfil', emoji: '👤', subs: [
+    { id: 'nivel',        label: 'Nivel y XP',    message: '¿Cuál es mi nivel, XP y racha actual?' },
+    { id: 'cv',           label: 'Mi CV',         message: '¿Cómo está mi perfil profesional y CV?' },
+    { id: 'suscripcion',  label: 'Suscripción',   message: '¿Cuál es mi plan activo y qué incluye?' },
+  ]},
+  { id: 'empleos', label: 'Empleos', emoji: '💼', subs: [
+    { id: 'ofertas',      label: 'Ver ofertas',       message: '¿Qué ofertas de trabajo hay disponibles ahora?' },
+    { id: 'postular',     label: 'Cómo postular',     message: '¿Cómo postulo a una oferta en Conniku?' },
+    { id: 'mis-apps',     label: 'Mis postulaciones', message: '¿A qué ofertas he postulado?' },
+    { id: 'perfil-lab',   label: 'Perfil laboral',    message: '¿Cómo está mi perfil laboral y qué puedo mejorar?' },
   ]},
 ]
 
 function renderMarkdown(text: string): string {
-  let s = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-  // Headers ## → bold (strip # prefix)
+  // Pass 1: extract nav directives → placeholders (must happen before HTML-escaping)
+  const navButtons: string[] = []
+  let s = text.replace(/\{\{nav:([^|]+)\|([^}]+)\}\}/g, (_m, path, label) => {
+    const btn = `<button class="konni-nav-btn" data-konni-nav="${path.trim()}" style="display:inline-flex;align-items:center;gap:5px;margin:4px 0;padding:6px 12px;border-radius:8px;border:1.5px solid #7C3AED;background:rgba(124,58,237,0.08);color:#7C3AED;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">→ ${label.trim()}</button>`
+    navButtons.push(btn)
+    return `\x00NAV${navButtons.length - 1}\x00`
+  })
+  // Pass 2: HTML-escape the rest
+  s = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Pass 3: markdown transforms
   s = s.replace(/^#{1,3} (.+)$/gm, '<strong>$1</strong>')
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   s = s.replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, '<em>$1</em>')
   s = s.replace(/^\d+\. (.+)$/gm, '&bull;&nbsp;$1')
   s = s.replace(/^[-*] (.+)$/gm, '&bull;&nbsp;$1')
   s = s.replace(/\n/g, '<br/>')
+  // Pass 4: restore nav buttons
+  s = s.replace(/\x00NAV(\d+)\x00/g, (_m, idx) => navButtons[Number(idx)])
   return s
 }
 
 export default function SupportChat() {
   const { user } = useAuth()
-  const isAdmin = user?.role === 'owner'
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // Konni Admin (purple) only when owner is inside /admin-panel/*
+  // Konni Blue (user) on all other pages, for everyone including owner
+  const isAdmin = user?.role === 'owner' && location.pathname.startsWith('/admin-panel')
 
   const theme = isAdmin
     ? { gradient: 'linear-gradient(135deg, #7C3AED, #A78BFA)', shadow: 'rgba(124,58,237,0.4)', shadowHover: 'rgba(124,58,237,0.5)', btnFill: 'rgba(167,139,250,0.2)', accent: '#7C3AED' }
@@ -94,11 +124,29 @@ export default function SupportChat() {
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set())
+  const [jobBadge, setJobBadge]     = useState(false)  // pulsing badge for new job alerts
+  const lastJobCheckRef             = useRef<string>(new Date().toISOString())
 
   const LONG_THRESHOLD = 420 // chars — collapse messages longer than this
   const toggleExpand = (i: number) => setExpandedMsgs(prev => {
     const next = new Set(prev); next.has(i) ? next.delete(i) : next.add(i); return next
   })
+
+  const playJobAlert = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(880, ctx.currentTime)
+      osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.12)
+      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.24)
+      gain.gain.setValueAtTime(0.25, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5)
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.5)
+    } catch {}
+  }
 
   // Admin navigation
   const [adminCat, setAdminCat]     = useState<Category | null>(null)  // null = grid, set = subcats
@@ -111,11 +159,12 @@ export default function SupportChat() {
   const inputRef    = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    // Reset state on role change
+    // Reset state when switching between admin panel and regular pages
     setMessages([])
     setAdminCat(null)
     setAdminChat(false)
     setChipCat(null)
+    setOpen(false)
     if (!isAdmin) {
       setMessages([{ role: 'assistant', content: 'Hola! Soy Konni, tu asistente personal de estudio. ¿En qué te puedo ayudar?' }])
     }
@@ -128,6 +177,46 @@ export default function SupportChat() {
   useEffect(() => {
     if (open && adminChat && inputRef.current) inputRef.current.focus()
   }, [open, adminChat])
+
+  // Poll for new job listings every 60s (user only)
+  useEffect(() => {
+    if (!user || isAdmin) return
+    const check = async () => {
+      try {
+        const res = await api.getRecentJobs(lastJobCheckRef.current)
+        lastJobCheckRef.current = new Date().toISOString()
+        if (res?.jobs?.length > 0) {
+          const j = res.jobs[0]
+          playJobAlert()
+          setJobBadge(true)
+          const nav = `{{nav:/jobs|Ver oferta}}`
+          const alertMsg = `🔔 **Nueva oferta laboral:** ${j.jobTitle} en **${j.companyName}**${j.isRemote ? ' · Remoto' : j.location ? ` · ${j.location}` : ''}${j.jobType ? ` · ${j.jobType}` : ''}. ${nav}`
+          setMessages(prev => [...prev, { role: 'assistant', content: alertMsg }])
+        }
+      } catch {}
+    }
+    const interval = setInterval(check, 60_000)
+    return () => clearInterval(interval)
+  }, [user, isAdmin])
+
+  // When chat opens: fetch pending Konni broadcasts → inject as messages + clear badge
+  useEffect(() => {
+    if (!open || isAdmin || !user) return
+    setJobBadge(false)
+    ;(async () => {
+      try {
+        const res = await api.getKonniBroadcasts()
+        if (res?.broadcasts?.length > 0) {
+          const newMsgs: Message[] = res.broadcasts.map((b: any) => ({
+            role: 'assistant' as const,
+            content: `🔔 **Nueva oferta laboral:** ${b.job_title} en **${b.company_name}**${b.is_remote ? ' · Remoto' : b.location ? ` · ${b.location}` : ''}${b.job_type ? ` · ${b.job_type}` : ''}. {{nav:/jobs|Ver oferta}}`,
+          }))
+          setMessages(prev => [...prev, ...newMsgs])
+          await api.markKonniBroadcastsRead()
+        }
+      } catch {}
+    })()
+  }, [open])
 
   const sendMessage = async (text: string) => {
     const msg = text.trim()
@@ -157,24 +246,33 @@ export default function SupportChat() {
   // ── Floating button ──────────────────────────────────────────────────────
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Abrir soporte"
-        style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 9990,
-          width: 56, height: 56, borderRadius: '50%',
-          background: theme.gradient, border: 'none', cursor: 'pointer',
-          boxShadow: `0 4px 16px ${theme.shadow}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = `0 6px 24px ${theme.shadowHover}` }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 4px 16px ${theme.shadow}` }}
-      >
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill={theme.btnFill} />
-        </svg>
-      </button>
+      <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9990 }}>
+        <button
+          onClick={() => setOpen(true)}
+          aria-label="Abrir soporte"
+          style={{
+            width: 56, height: 56, borderRadius: '50%',
+            background: theme.gradient, border: 'none', cursor: 'pointer',
+            boxShadow: `0 4px 16px ${theme.shadow}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = `0 6px 24px ${theme.shadowHover}` }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 4px 16px ${theme.shadow}` }}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill={theme.btnFill} />
+          </svg>
+        </button>
+        {jobBadge && (
+          <div style={{
+            position: 'absolute', top: 2, right: 2,
+            width: 14, height: 14, borderRadius: '50%',
+            background: '#EF4444', border: '2px solid var(--bg-primary)',
+            animation: 'pulse 1.2s infinite',
+          }} />
+        )}
+      </div>
     )
   }
 
@@ -355,10 +453,17 @@ export default function SupportChat() {
       {header}
 
       {/* Messages */}
-      <div ref={messagesRef} style={{
-        flex: 1, overflow: 'auto', padding: 12,
-        display: 'flex', flexDirection: 'column', gap: 8,
-      }}>
+      <div
+        ref={messagesRef}
+        onClick={(e) => {
+          const btn = (e.target as HTMLElement).closest('[data-konni-nav]') as HTMLElement | null
+          if (btn) { navigate(btn.dataset.konniNav!); setOpen(false) }
+        }}
+        style={{
+          flex: 1, overflow: 'auto', padding: 12,
+          display: 'flex', flexDirection: 'column', gap: 8,
+        }}
+      >
         {messages.map((msg, i) => {
           const isLong = msg.role === 'assistant' && msg.content.length > LONG_THRESHOLD
           const isExpanded = expandedMsgs.has(i)
@@ -421,71 +526,72 @@ export default function SupportChat() {
         )}
       </div>
 
-      {/* User: quick-action chips bar */}
+      {/* User: unified 4×2 chip grid + sub-chips */}
       {!isAdmin && (
-        <div style={{
-          borderTop: '1px solid var(--border)',
-          padding: '8px 10px',
-          display: 'flex', gap: 6, overflowX: 'auto', flexShrink: 0,
-          scrollbarWidth: 'none',
-        }}>
+        <div style={{ borderTop: '1px solid var(--border)', padding: '10px 12px', flexShrink: 0 }}>
           {!chipCat ? (
-            // Main chips
-            USER_CHIPS.map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setChipCat(cat)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  padding: '5px 11px', borderRadius: 16, whiteSpace: 'nowrap',
-                  border: '1.5px solid var(--border)',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-secondary)',
-                  fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                  fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--accent)'; b.style.color = 'var(--accent)' }}
-                onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text-secondary)' }}
-              >
-                <span>{cat.emoji}</span>{cat.label}
-              </button>
-            ))
-          ) : (
-            // Sub-chips
-            <>
-              <button
-                onClick={() => setChipCat(null)}
-                style={{
-                  display: 'flex', alignItems: 'center',
-                  padding: '5px 8px', borderRadius: 16, whiteSpace: 'nowrap',
-                  border: '1.5px solid var(--border)',
-                  background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
-                  fontSize: 12, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0,
-                }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
-              </button>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', flexShrink: 0, paddingRight: 2 }}>
-                {chipCat.emoji} {chipCat.label}:
-              </span>
-              {chipCat.subs.map(sub => (
+            // 4×2 grid — all 8 categories visible at once
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+              {USER_CHIPS.map(cat => (
                 <button
-                  key={sub.id}
-                  onClick={() => { setChipCat(null); sendMessage(sub.message) }}
+                  key={cat.id}
+                  onClick={() => setChipCat(cat)}
                   style={{
-                    padding: '5px 11px', borderRadius: 16, whiteSpace: 'nowrap',
-                    border: '1.5px solid var(--accent)',
-                    background: 'var(--bg-secondary)', color: 'var(--accent)',
-                    fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    fontFamily: 'inherit', flexShrink: 0, transition: 'all 0.15s',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
+                    padding: '8px 4px', borderRadius: 10,
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--bg-secondary)',
+                    cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s',
                   }}
-                  onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'var(--accent)'; b.style.color = '#fff' }}
-                  onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'var(--bg-secondary)'; b.style.color = 'var(--accent)' }}
+                  onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--accent)'; b.style.background = 'var(--bg-tertiary)' }}
+                  onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--border)'; b.style.background = 'var(--bg-secondary)' }}
                 >
-                  {sub.label}
+                  <span style={{ fontSize: 17 }}>{cat.emoji}</span>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</span>
                 </button>
               ))}
-            </>
+            </div>
+          ) : (
+            // Sub-chips — back button + wrapping pills
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+                <button
+                  onClick={() => setChipCat(null)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    padding: '3px 9px', borderRadius: 12,
+                    border: '1.5px solid var(--border)',
+                    background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
+                    fontSize: 11, cursor: 'pointer', fontFamily: 'inherit',
+                  }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  Volver
+                </button>
+                <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>
+                  {chipCat.emoji} {chipCat.label}
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {chipCat.subs.map(sub => (
+                  <button
+                    key={sub.id}
+                    onClick={() => { setChipCat(null); sendMessage(sub.message) }}
+                    style={{
+                      padding: '5px 12px', borderRadius: 16, whiteSpace: 'nowrap',
+                      border: '1.5px solid var(--accent)',
+                      background: 'var(--bg-secondary)', color: 'var(--accent)',
+                      fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                      fontFamily: 'inherit', transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'var(--accent)'; b.style.color = '#fff' }}
+                    onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = 'var(--bg-secondary)'; b.style.color = 'var(--accent)' }}
+                  >
+                    {sub.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       )}
