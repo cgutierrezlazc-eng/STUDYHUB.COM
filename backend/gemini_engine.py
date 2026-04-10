@@ -82,6 +82,18 @@ class AIEngine:
         except Exception:
             pass
 
+    def remove_document(self, project_id: str, doc_id: str):
+        """Remove all ChromaDB chunks for a document (prefix-matched by doc_id)."""
+        try:
+            collection = self.chroma_client.get_collection(name=f"project_{project_id}")
+            # Chunks are stored with IDs like "{doc_id}_chunk_0", "{doc_id}_chunk_1", etc.
+            existing = collection.get()
+            ids_to_delete = [cid for cid in (existing.get("ids") or []) if cid.startswith(f"{doc_id}_")]
+            if ids_to_delete:
+                collection.delete(ids=ids_to_delete)
+        except Exception:
+            pass
+
     def add_document(self, project_id: str, doc_id: str, filename: str, text: str):
         collection = self.chroma_client.get_or_create_collection(name=f"project_{project_id}")
 
