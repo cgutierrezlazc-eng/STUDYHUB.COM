@@ -409,11 +409,22 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     doc_id = uuid.uuid4().hex[:12]
     ai_engine.add_document(project_id, doc_id, file.filename, text)
 
+    _ext = Path(file.filename).suffix.lower().lstrip('.') if file.filename else ''
+    _type_map = {
+        'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx',
+        'xls': 'xlsx', 'xlsx': 'xlsx', 'ppt': 'pptx', 'pptx': 'pptx',
+        'txt': 'txt', 'csv': 'csv',
+        'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'gif': 'image',
+    }
+    doc_type = _type_map.get(_ext, 'other')
+
     meta.setdefault("documents", []).append({
         "id": doc_id,
         "name": file.filename,
         "path": str(file_path),
         "size": file_size,
+        "type": doc_type,
+        "uploadedAt": datetime.utcnow().isoformat() + "Z",
         "processed": True,
     })
     save_project_meta(project_id, meta)
