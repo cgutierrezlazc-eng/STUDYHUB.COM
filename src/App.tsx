@@ -64,6 +64,8 @@ const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
 const CertVerify = React.lazy(() => import('./pages/CertVerify'))
 const LandingProposals = React.lazy(() => import('./pages/LandingProposals'))
+const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'))
+const ClassRoom = React.lazy(() => import('./pages/ClassRoom'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -294,6 +296,8 @@ export default function App() {
   const conversationId = convMatch ? convMatch[1] : undefined
   const userMatch = location.pathname.match(/^\/user\/(.+)$/)
   const profileUserId = userMatch ? userMatch[1] : undefined
+  const classRoomMatch = location.pathname.match(/^\/class-room\/(.+)$/)
+  const classRoomId = classRoomMatch ? classRoomMatch[1] : undefined
 
   return (
     <div className={`app-layout ${showMobileUI ? 'mobile-layout' : ''} ${showTabletUI ? 'tablet-layout' : ''}`}>
@@ -342,6 +346,11 @@ export default function App() {
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
+            <Route path="/my-tutor" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/my-tutor/materias" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="materias" />} />
+            <Route path="/my-tutor/clases" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="clases" />} />
+            <Route path="/my-tutor/pagos" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="pagos" />} />
+            <Route path="/class-room/:classId" element={classRoomId ? <ClassRoom classId={classRoomId} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/biblioteca" element={<Biblioteca onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<Navigate to="/admin-panel" replace />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />

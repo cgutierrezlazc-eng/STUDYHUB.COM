@@ -1069,8 +1069,8 @@ export const api = {
   getTutorApplications: (params?: string) => request(`/tutors/admin/applications${params ? `?${params}` : ''}`),
   getAllTutors: (params?: string) => request(`/tutors/admin/all${params ? `?${params}` : ''}`),
   approveTutor: (id: string) => request(`/tutors/admin/${id}/approve`, { method: 'PUT' }),
-  rejectTutor: (id: string, data: any) => request(`/tutors/admin/${id}/reject`, { method: 'PUT', body: JSON.stringify(data) }),
-  suspendTutor: (id: string, data: any) => request(`/tutors/admin/${id}/suspend`, { method: 'PUT', body: JSON.stringify(data) }),
+  rejectTutor: (id: string, reason: string) => request(`/tutors/admin/${id}/reject?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
+  suspendTutor: (id: string, reason: string) => request(`/tutors/admin/${id}/suspend?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
   getTutorAdmin: (id: string) => request(`/tutors/admin/${id}`),
   createTutorClass: (data: any) => request('/tutors/classes', { method: 'POST', body: JSON.stringify(data) }),
   getTutorClasses: (params?: string) => request(`/tutors/classes${params ? `?${params}` : ''}`),
@@ -1122,6 +1122,16 @@ export const api = {
   getClassMessages: (classId: string, page?: number) => request(`/tutors/classes/${classId}/messages?page=${page || 1}`),
   sendClassMessage: (classId: string, message: string) => request(`/tutors/classes/${classId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }),
 
+  // ─── Tutor Subjects (Asignaturas) ────────────────────────
+  createTutorSubject: (data: any) => request('/tutors/subjects', { method: 'POST', body: JSON.stringify(data) }),
+  getMyTutorSubjects: () => request('/tutors/my-subjects'),
+  updateTutorSubject: (id: string, data: any) => request(`/tutors/subjects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTutorSubject: (id: string) => request(`/tutors/subjects/${id}`, { method: 'DELETE' }),
+  submitTutorSubjectForApproval: (id: string) => request(`/tutors/subjects/${id}/submit`, { method: 'POST' }),
+  getAdminSubjects: (params?: string) => request(`/tutors/admin/subjects${params ? `?${params}` : ''}`),
+  approveSubject: (id: string) => request(`/tutors/admin/subjects/${id}/approve`, { method: 'PUT' }),
+  rejectSubject: (id: string, reason: string) => request(`/tutors/admin/subjects/${id}/reject?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
+
   // ─── Admin Tutor Management ───────────────────────────────
   enforceRatings: () => request('/tutors/admin/enforce-ratings', { method: 'POST' }),
   applyAsOwnerTutor: () => request('/tutors/apply-as-owner', { method: 'POST' }),
@@ -1129,6 +1139,24 @@ export const api = {
   // ─── Push Broadcast ────────────────────────────────────────
   broadcastPush: (title: string, body: string, url?: string) =>
     request('/push/broadcast', { method: 'POST', body: JSON.stringify({ title, body, url: url || '/' }) }),
+
+  // ─── Executive Showcase (MAX plan) ─────────────────────────
+  getMyExecutiveShowcase: () => request('/auth/me/executive-showcase'),
+  updateMyExecutiveShowcase: (items: any[]) => request('/auth/me/executive-showcase', { method: 'PUT', body: JSON.stringify(items) }),
+  getUserExecutiveShowcase: (userId: string) => request(`/auth/users/${userId}/executive-showcase`),
+
+  // ─── Class Session / FASE 3 ──────────────────────────────
+  startClassSession: (classId: string) => request(`/tutors/classes/${classId}/start`, { method: 'PUT' }),
+  studentConfirmClass: (classId: string) => request(`/tutors/classes/${classId}/student-confirm`, { method: 'PUT' }),
+  objectToClass: (classId: string, reason: string, termsAccepted: boolean) =>
+    request(`/tutors/classes/${classId}/object`, { method: 'POST', body: JSON.stringify({ reason, terms_accepted: termsAccepted }) }),
+  getClassJitsiRoom: (classId: string) => request(`/tutors/classes/${classId}/jitsi-room`),
+
+  // ─── FASE 4: Post-class exam (3-attempt) + AI summary ────
+  getExamAttempts: (classId: string) => request(`/tutors/classes/${classId}/exam/attempts`),
+  submitExamAttempt: (classId: string, answers: Record<string, any>, timeSpentSeconds?: number) =>
+    request(`/tutors/classes/${classId}/exam/attempt`, { method: 'POST', body: JSON.stringify({ answers, time_spent_seconds: timeSpentSeconds || 0 }) }),
+  generateClassSummary: (classId: string) => request(`/tutors/classes/${classId}/generate-summary`, { method: 'POST' }),
 
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),

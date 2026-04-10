@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { ADMIN_MODULES, CATEGORY_LABELS } from './adminModules'
-import { useWindowManager } from './useWindowManager'
 import { getEmployeePermissions } from './shared/seedEmployees'
 interface Props {
   onNavigate: (path: string) => void
@@ -59,7 +58,6 @@ const CATEGORY_ORDER = ['hr', 'payroll', 'finance', 'legal', 'tools']
 export default function AdminPanel({ onNavigate }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
-  const { openModule, isOpen } = useWindowManager()
   const [search, setSearch] = useState('')
   const [expandedCat, setExpandedCat] = useState<string | null>(null)
 
@@ -101,7 +99,8 @@ export default function AdminPanel({ onNavigate }: Props) {
 
   const handleClick = (mod: typeof ADMIN_MODULES[0]) => {
     if (mod.status === 'coming-soon') return
-    openModule(mod.id)
+    // Navigate in-app (avoids browser popup blockers)
+    onNavigate(mod.route)
   }
 
   return (
@@ -167,7 +166,6 @@ export default function AdminPanel({ onNavigate }: Props) {
               gap: 14,
             }}>
               {cat.modules.map(mod => {
-                const open = isOpen(mod.id)
                 const comingSoon = mod.status === 'coming-soon'
 
                 return (
@@ -176,7 +174,7 @@ export default function AdminPanel({ onNavigate }: Props) {
                     onClick={() => handleClick(mod)}
                     style={{
                       background: comingSoon ? 'var(--bg-tertiary)' : 'var(--bg-secondary)',
-                      border: open ? '2px solid var(--accent)' : '1px solid var(--border)',
+                      border: '1px solid var(--border)',
                       borderRadius: 12,
                       padding: '16px 18px',
                       cursor: comingSoon ? 'default' : 'pointer',
@@ -220,15 +218,6 @@ export default function AdminPanel({ onNavigate }: Props) {
                             NUEVO
                           </span>
                         )}
-                        {open && (
-                          <span style={{
-                            fontSize: 9, fontWeight: 600, color: 'var(--accent)',
-                            background: 'rgba(99,102,241,0.1)',
-                            padding: '1px 6px', borderRadius: 4,
-                          }}>
-                            ABIERTO
-                          </span>
-                        )}
                       </div>
                       <p style={{
                         fontSize: 12, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4,
@@ -256,7 +245,7 @@ export default function AdminPanel({ onNavigate }: Props) {
         marginTop: 20, padding: '14px 18px', background: 'var(--bg-tertiary)',
         borderRadius: 10, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6,
       }}>
-        <strong>Tip:</strong> Cada módulo se abre en una ventana independiente que puedes mover a cualquier monitor.
+        <strong>Tip:</strong> Haz clic en cualquier módulo para acceder directamente.
         Los módulos marcados como <span style={{ color: 'var(--accent)', fontWeight: 600 }}>NUEVO</span> están
         en desarrollo y se habilitarán próximamente.
       </div>

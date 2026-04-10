@@ -97,12 +97,17 @@ class User(Base):
     cv_visibility = Column(String(20), default="private")  # public | recruiters | private
     cv_file_path = Column(String(500), default="")
 
+    # Executive Showcase (MAX plan only)
+    # JSON array of showcase items: [{id, type, title, description, url, date, tag}]
+    # type: article | book | talk | media | achievement | project | insight
+    executive_showcase = Column(Text, default="[]")
+
     email_verified = Column(Boolean, nullable=False, default=False)
     verification_code = Column(String(10), nullable=True)
     is_banned = Column(Boolean, nullable=False, default=False)
     ban_reason = Column(String(500), nullable=True)
     is_admin = Column(Boolean, nullable=False, default=False)
-    role = Column(String(20), nullable=False, default="user")  # user | admin | owner
+    role = Column(String(20), nullable=False, default="user")  # user | admin | owner | utp
     tos_accepted_at = Column(DateTime, nullable=True)
     onboarding_completed = Column(Boolean, nullable=False, default=False)
 

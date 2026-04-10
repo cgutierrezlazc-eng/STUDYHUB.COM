@@ -24,6 +24,9 @@ from sqlalchemy.orm import Session, relationship
 from database import Base, engine, get_db, User, gen_id, DATA_DIR, SessionLocal
 from middleware import get_current_user
 from push_routes import send_push_to_user
+from gemini_engine import AIEngine as _AIEngine
+
+_ai_engine = _AIEngine()
 
 logger = logging.getLogger("conniku.tutors")
 
@@ -44,10 +47,10 @@ TUTOR_UPLOADS_DIR.mkdir(exist_ok=True)
 # ─── Helpers ──────────────────────────────────────────────────
 
 def _require_admin_access(user: User):
-    """Only owner or admin can access admin tutor routes."""
+    """Only owner, admin, or utp can access admin tutor routes."""
     role = getattr(user, "role", "user") or "user"
-    if role not in ("owner", "admin"):
-        raise HTTPException(status_code=403, detail="Acceso restringido a owner/admin")
+    if role not in ("owner", "admin", "utp"):
+        raise HTTPException(status_code=403, detail="Acceso restringido a owner/admin/utp")
 
 
 def _generate_tutor_role_number(db: Session) -> str:
@@ -3497,4 +3500,884 @@ def apply_as_owner_tutor(
         "ok": True,
         "message": "Perfil de tutor gratuito creado y aprobado automaticamente",
         "tutor": _tutor_to_dict(profile, include_bank=True),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# TUTOR SUBJECTS (ASIGNATURAS)
+# Each subject must be approved by CEO/UTP before it can be used in a class.
+# ═══════════════════════════════════════════════════════════════════
+
+class TutorSubject(Base):
+    __tablename__ = "tutor_subjects"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    tutor_id = Column(String(16), ForeignKey("tutor_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
+
+    name = Column(String(255), nullable=False)
+    category = Column(String(100), default="")          # e.g. "Matemáticas", "Ingeniería"
+    level = Column(String(50), default="")              # e.g. "Básico", "Intermedio", "Avanzado"
+    description = Column(Text, default="")
+    learning_objectives = Column(Text, default="")      # What the student will learn
+    prerequisites = Column(Text, default="")            # What the student should know first
+    duration_hours = Column(Float, default=1.0)         # Typical session length
+    max_students = Column(Integer, default=5)           # Max students per session
+
+    # Materials (JSON list of {name, url_or_path, type})
+    materials_json = Column(Text, default="[]")
+
+    # Approval workflow
+    status = Column(String(20), default="draft")        # draft/pending_approval/approved/rejected
+    rejection_reason = Column(Text, nullable=True)
+    approved_by = Column(String(16), nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+
+    # Stats
+    total_classes = Column(Integer, default=0)
+    total_students = Column(Integer, default=0)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    tutor = relationship("TutorProfile", back_populates="subjects")
+
+
+# Register reverse relationship on TutorProfile
+TutorProfile.subjects = relationship("TutorSubject", back_populates="tutor", cascade="all, delete-orphan")
+
+# Create the table if it doesn't exist
+TutorSubject.__table__.create(bind=engine, checkfirst=True)
+
+
+class TutorSubjectCreate(BaseModel):
+    name: str = Field(..., min_length=2, max_length=255)
+    category: str = ""
+    level: str = ""
+    description: str = ""
+    learning_objectives: str = ""
+    prerequisites: str = ""
+    duration_hours: float = 1.0
+    max_students: int = 5
+    materials: list = []
+
+class TutorSubjectUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    level: Optional[str] = None
+    description: Optional[str] = None
+    learning_objectives: Optional[str] = None
+    prerequisites: Optional[str] = None
+    duration_hours: Optional[float] = None
+    max_students: Optional[int] = None
+    materials: Optional[list] = None
+
+
+def _subject_to_dict(s: TutorSubject) -> dict:
+    return {
+        "id": s.id,
+        "tutor_id": s.tutor_id,
+        "name": s.name,
+        "category": s.category,
+        "level": s.level,
+        "description": s.description,
+        "learning_objectives": s.learning_objectives,
+        "prerequisites": s.prerequisites,
+        "duration_hours": s.duration_hours,
+        "max_students": s.max_students,
+        "materials": json.loads(s.materials_json) if s.materials_json else [],
+        "status": s.status,
+        "rejection_reason": s.rejection_reason,
+        "approved_by": s.approved_by,
+        "approved_at": s.approved_at.isoformat() if s.approved_at else None,
+        "total_classes": s.total_classes,
+        "total_students": s.total_students,
+        "created_at": s.created_at.isoformat() if s.created_at else None,
+        "updated_at": s.updated_at.isoformat() if s.updated_at else None,
+    }
+
+
+# ─── Tutor CRUD ──────────────────────────────────────────────────
+
+@router.post("/subjects")
+def create_subject(
+    data: TutorSubjectCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor creates a new subject (saved as draft)."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(404, "No tienes un perfil de tutor")
+    if profile.status != "approved":
+        raise HTTPException(403, "Solo tutores aprobados pueden crear asignaturas")
+
+    subject = TutorSubject(
+        tutor_id=profile.id,
+        name=data.name,
+        category=data.category,
+        level=data.level,
+        description=data.description,
+        learning_objectives=data.learning_objectives,
+        prerequisites=data.prerequisites,
+        duration_hours=data.duration_hours,
+        max_students=max(1, min(data.max_students, 5)),
+        materials_json=json.dumps(data.materials),
+        status="draft",
+    )
+    db.add(subject)
+    db.commit()
+    db.refresh(subject)
+    return {"ok": True, "subject": _subject_to_dict(subject)}
+
+
+@router.get("/my-subjects")
+def get_my_subjects(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor lists all their subjects."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(404, "No tienes un perfil de tutor")
+
+    subjects = db.query(TutorSubject).filter(
+        TutorSubject.tutor_id == profile.id
+    ).order_by(desc(TutorSubject.created_at)).all()
+
+    return {"subjects": [_subject_to_dict(s) for s in subjects], "total": len(subjects)}
+
+
+@router.put("/subjects/{subject_id}")
+def update_subject(
+    subject_id: str,
+    data: TutorSubjectUpdate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor updates a subject (only allowed if draft or rejected)."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(404, "No tienes un perfil de tutor")
+
+    subject = db.query(TutorSubject).filter(
+        TutorSubject.id == subject_id, TutorSubject.tutor_id == profile.id
+    ).first()
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+    if subject.status not in ("draft", "rejected"):
+        raise HTTPException(400, f"No puedes editar una asignatura en estado '{subject.status}'")
+
+    if data.name is not None: subject.name = data.name
+    if data.category is not None: subject.category = data.category
+    if data.level is not None: subject.level = data.level
+    if data.description is not None: subject.description = data.description
+    if data.learning_objectives is not None: subject.learning_objectives = data.learning_objectives
+    if data.prerequisites is not None: subject.prerequisites = data.prerequisites
+    if data.duration_hours is not None: subject.duration_hours = data.duration_hours
+    if data.max_students is not None: subject.max_students = max(1, min(data.max_students, 5))
+    if data.materials is not None: subject.materials_json = json.dumps(data.materials)
+    subject.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(subject)
+    return {"ok": True, "subject": _subject_to_dict(subject)}
+
+
+@router.delete("/subjects/{subject_id}")
+def delete_subject(
+    subject_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor deletes a draft or rejected subject."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(404, "No tienes un perfil de tutor")
+
+    subject = db.query(TutorSubject).filter(
+        TutorSubject.id == subject_id, TutorSubject.tutor_id == profile.id
+    ).first()
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+    if subject.status not in ("draft", "rejected"):
+        raise HTTPException(400, "Solo puedes eliminar asignaturas en borrador o rechazadas")
+
+    db.delete(subject)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/subjects/{subject_id}/submit")
+def submit_subject_for_approval(
+    subject_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor submits a subject for CEO/UTP approval."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(404, "No tienes un perfil de tutor")
+
+    subject = db.query(TutorSubject).filter(
+        TutorSubject.id == subject_id, TutorSubject.tutor_id == profile.id
+    ).first()
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+    if subject.status not in ("draft", "rejected"):
+        raise HTTPException(400, f"Esta asignatura ya está en estado '{subject.status}'")
+    if not subject.description.strip():
+        raise HTTPException(400, "La asignatura debe tener una descripción antes de enviarse a revisión")
+
+    subject.status = "pending_approval"
+    subject.rejection_reason = None
+    subject.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(subject)
+
+    # Alert CEO
+    tutor_name = f"{user.first_name} {user.last_name}".strip()
+    send_ceo_alert(
+        f"Nueva asignatura para revisión: {subject.name}",
+        f"El tutor {tutor_name} ({profile.tutor_role_number}) envió la asignatura '{subject.name}' para aprobación.",
+    )
+
+    return {"ok": True, "subject": _subject_to_dict(subject)}
+
+
+# ─── Admin endpoints ──────────────────────────────────────────────
+
+@router.get("/admin/subjects")
+def list_subjects_admin(
+    status_filter: Optional[str] = Query(default=None, alias="status"),
+    search: Optional[str] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    per_page: int = Query(default=20, ge=1, le=100),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """CEO/UTP/Admin: list all subjects with optional filters."""
+    _require_admin_access(user)
+
+    query = db.query(TutorSubject)
+    if status_filter:
+        query = query.filter(TutorSubject.status == status_filter)
+    else:
+        query = query.filter(TutorSubject.status == "pending_approval")  # default: show pending
+
+    if search:
+        query = query.filter(
+            or_(
+                TutorSubject.name.ilike(f"%{search}%"),
+                TutorSubject.category.ilike(f"%{search}%"),
+                TutorSubject.description.ilike(f"%{search}%"),
+            )
+        )
+
+    total = query.count()
+    subjects = query.order_by(TutorSubject.created_at).offset((page - 1) * per_page).limit(per_page).all()
+
+    results = []
+    for s in subjects:
+        d = _subject_to_dict(s)
+        tutor = db.query(TutorProfile).filter(TutorProfile.id == s.tutor_id).first()
+        if tutor:
+            u = db.query(User).filter(User.id == tutor.user_id).first()
+            d["tutor_name"] = f"{u.first_name} {u.last_name}" if u else "Desconocido"
+            d["tutor_role_number"] = tutor.tutor_role_number
+        results.append(d)
+
+    return {"subjects": results, "total": total, "page": page, "per_page": per_page}
+
+
+@router.put("/admin/subjects/{subject_id}/approve")
+def approve_subject(
+    subject_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """CEO/UTP/Admin: approve a subject."""
+    _require_admin_access(user)
+
+    subject = db.query(TutorSubject).filter(TutorSubject.id == subject_id).first()
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+    if subject.status != "pending_approval":
+        raise HTTPException(400, f"No se puede aprobar una asignatura en estado '{subject.status}'")
+
+    subject.status = "approved"
+    subject.approved_by = user.id
+    subject.approved_at = datetime.utcnow()
+    subject.rejection_reason = None
+    subject.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(subject)
+
+    # Notify the tutor via push
+    tutor_profile = db.query(TutorProfile).filter(TutorProfile.id == subject.tutor_id).first()
+    if tutor_profile:
+        try:
+            send_push_to_user(tutor_profile.user_id, "✅ Asignatura aprobada", f"Tu asignatura '{subject.name}' fue aprobada. Ya puedes usarla en tus clases.", db)
+        except Exception:
+            pass
+
+    return {"ok": True, "subject": _subject_to_dict(subject)}
+
+
+@router.put("/admin/subjects/{subject_id}/reject")
+def reject_subject(
+    subject_id: str,
+    reason: str = Query(..., min_length=5),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """CEO/UTP/Admin: reject a subject with a reason."""
+    _require_admin_access(user)
+
+    subject = db.query(TutorSubject).filter(TutorSubject.id == subject_id).first()
+    if not subject:
+        raise HTTPException(404, "Asignatura no encontrada")
+    if subject.status != "pending_approval":
+        raise HTTPException(400, f"No se puede rechazar una asignatura en estado '{subject.status}'")
+
+    subject.status = "rejected"
+    subject.rejection_reason = reason
+    subject.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(subject)
+
+    # Notify the tutor
+    tutor_profile = db.query(TutorProfile).filter(TutorProfile.id == subject.tutor_id).first()
+    if tutor_profile:
+        try:
+            send_push_to_user(tutor_profile.user_id, "❌ Asignatura rechazada", f"Tu asignatura '{subject.name}' fue rechazada. Motivo: {reason[:100]}", db)
+        except Exception:
+            pass
+
+    return {"ok": True, "subject": _subject_to_dict(subject)}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CLASS OBJECTIONS (FASE 3)
+# Student can "Terminar Clase" or "Objetar Clase/Tutoría".
+# Objections trigger immediate alerts to tutor + CEO.
+# Resolution SLA: 7 business days.
+# ═══════════════════════════════════════════════════════════════════
+
+class ClassObjection(Base):
+    __tablename__ = "class_objections"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    class_id = Column(String(16), ForeignKey("tutor_classes.id", ondelete="CASCADE"), nullable=False, index=True)
+    student_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+
+    reason = Column(Text, nullable=False)               # 30–500 words
+    status = Column(String(20), default="pending")      # pending | resolved | dismissed
+    resolution = Column(Text, nullable=True)
+    resolved_by = Column(String(16), ForeignKey("users.id"), nullable=True)
+    resolved_at = Column(DateTime, nullable=True)
+
+    # Payment hold flag: True while objection is pending
+    payment_held = Column(Boolean, default=True)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("class_id", "student_id", name="uq_objection_per_student"),
+    )
+
+
+ClassObjection.__table__.create(bind=engine, checkfirst=True)
+
+
+class ClassObjectionCreate(BaseModel):
+    reason: str
+    terms_accepted: bool
+
+
+def _word_count(text: str) -> int:
+    return len(text.split())
+
+
+# ── Tutor starts the live session (clock in) ──────────────────────
+@router.put("/classes/{class_id}/start")
+def start_class_session(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor marks the class as started (in_progress). Unlocks Jitsi room for students."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Solo el tutor puede iniciar la clase")
+
+    if cls.status not in ("published", "confirmed"):
+        raise HTTPException(status_code=400, detail=f"No se puede iniciar una clase en estado '{cls.status}'")
+
+    cls.status = "in_progress"
+    db.commit()
+    db.refresh(cls)
+
+    return {"ok": True, "message": "Clase iniciada.", "class": _class_to_dict(cls)}
+
+
+# ── Student confirms class ended ("Terminar Clase") ───────────────
+@router.put("/classes/{class_id}/student-confirm")
+def student_confirm_class(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Student presses 'Terminar Clase'. Marks enrollment as confirmed by student.
+    If tutor has also confirmed, class moves to 'completed'.
+    """
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=403, detail="No estás inscrito en esta clase")
+
+    if enrollment.confirmed_by_student:
+        raise HTTPException(status_code=400, detail="Ya confirmaste que la clase terminó")
+
+    enrollment.confirmed_by_student = True
+    db.commit()
+
+    both_confirmed = bool(enrollment.confirmed_by_tutor)
+
+    # If tutor also confirmed → complete the class + trigger payment release
+    if both_confirmed:
+        cls.status = "completed"
+        db.commit()
+
+        # ── Payment release: move payment to "processing" ──
+        if enrollment.payment_id:
+            payment = db.query(TutorPayment).filter(TutorPayment.id == enrollment.payment_id).first()
+            if payment and payment.payment_status == "pending_boleta":
+                payment.payment_status = "processing"
+                db.commit()
+
+        # ── Alert CEO + tutor of completion + payment ready ──
+        tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+        tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+        tutor_name = (tutor_user.first_name + " " + tutor_user.last_name) if tutor_user else "Tutor"
+        send_ceo_alert(
+            f"✅ Clase completada — pago listo: {cls.title}",
+            f"<p><strong>Clase:</strong> {cls.title}</p>"
+            f"<p><strong>Tutor:</strong> {tutor_name}</p>"
+            f"<p><strong>Estudiante:</strong> {user.first_name} {user.last_name}</p>"
+            f"<p><strong>Estado:</strong> Ambas partes confirmaron. El pago puede liberarse al tutor una vez suba su boleta de honorarios.</p>",
+        )
+        if tutor_user:
+            try:
+                send_push_to_user(
+                    tutor_user.id,
+                    "✅ Clase confirmada",
+                    f"El estudiante confirmó la clase '{cls.title}'. Sube tu boleta para recibir el pago.",
+                    db,
+                )
+            except Exception:
+                pass
+
+    return {
+        "ok": True,
+        "message": "Confirmaste que la clase terminó. Podrás calificarla en breve.",
+        "both_confirmed": both_confirmed,
+    }
+
+
+# ── Student objects to a class ("Objetar Clase/Tutoría") ──────────
+@router.post("/classes/{class_id}/object")
+def object_to_class(
+    class_id: str,
+    data: ClassObjectionCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Student submits a formal objection. Sends immediate alerts to tutor + CEO.
+    Resolution SLA: 7 business days.
+    """
+    if not data.terms_accepted:
+        raise HTTPException(status_code=400, detail="Debes aceptar los términos y condiciones para enviar una objeción")
+
+    word_count = _word_count(data.reason.strip())
+    if word_count < 30:
+        raise HTTPException(status_code=400, detail=f"Tu explicación debe tener al menos 30 palabras (tienes {word_count})")
+    if word_count > 500:
+        raise HTTPException(status_code=400, detail=f"Tu explicación no puede superar las 500 palabras (tienes {word_count})")
+
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=403, detail="No estás inscrito en esta clase")
+
+    existing = db.query(ClassObjection).filter(
+        ClassObjection.class_id == class_id,
+        ClassObjection.student_id == user.id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ya enviaste una objeción para esta clase")
+
+    obj = ClassObjection(
+        class_id=class_id,
+        student_id=user.id,
+        reason=data.reason.strip(),
+        status="pending",
+        payment_held=True,
+    )
+    db.add(obj)
+
+    # Mark class as disputed
+    cls.status = "disputed"
+    db.commit()
+    db.refresh(obj)
+
+    # Immediate push alert to tutor
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    tutor_user = db.query(User).filter(User.id == tutor.user_id).first() if tutor else None
+    if tutor_user:
+        try:
+            send_push_to_user(
+                tutor_user.id,
+                "⚠️ Objeción recibida",
+                f"El estudiante {user.first_name} {user.last_name} objetó la clase '{cls.title}'. Revisa tu panel.",
+                db,
+            )
+        except Exception:
+            pass
+
+    # Immediate alert to CEO
+    student_reason_preview = data.reason[:300] + ("..." if len(data.reason) > 300 else "")
+    send_ceo_alert(
+        f"🚨 Objeción de clase: {user.first_name} {user.last_name} — {cls.title}",
+        f"""<p><strong>Estudiante:</strong> {user.first_name} {user.last_name} ({user.email})</p>
+<p><strong>Clase:</strong> {cls.title} (ID: {class_id})</p>
+<p><strong>Tutor:</strong> {(tutor_user.first_name + ' ' + tutor_user.last_name) if tutor_user else 'Desconocido'}</p>
+<p><strong>Motivo (extracto):</strong><br>{student_reason_preview}</p>
+<p><strong>Palabras:</strong> {word_count}</p>
+<p><strong>SLA de resolución:</strong> 7 días hábiles desde {datetime.utcnow().strftime('%d/%m/%Y %H:%M')} UTC</p>
+<p><strong>Estado de pago:</strong> RETENIDO hasta resolución</p>""",
+    )
+
+    return {
+        "ok": True,
+        "objection_id": obj.id,
+        "message": "Tu objeción ha sido registrada y enviada al equipo de Conniku. En un máximo de 7 días hábiles recibirás una resolución.",
+    }
+
+
+# ── Get Jitsi room info for a class ───────────────────────────────
+@router.get("/classes/{class_id}/jitsi-room")
+def get_jitsi_room(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Returns the Jitsi room name for an active class session."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = tutor and tutor.user_id == user.id
+    is_student = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first() is not None
+
+    if not is_tutor and not is_student:
+        role = getattr(user, "role", "user") or "user"
+        if role not in ("owner", "admin", "utp"):
+            raise HTTPException(status_code=403, detail="No tienes acceso a esta sala")
+
+    if cls.status not in ("in_progress", "confirmed", "published"):
+        raise HTTPException(status_code=400, detail=f"La clase no está activa (estado: {cls.status})")
+
+    room_name = f"conniku-{class_id}"
+    return {
+        "ok": True,
+        "room_name": room_name,
+        "jitsi_url": f"https://meet.jit.si/{room_name}",
+        "class_status": cls.status,
+        "is_tutor": is_tutor,
+        "class_title": cls.title,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FASE 4: POST-CLASS EXAM — 3-ATTEMPT SYSTEM
+# Students get 3 attempts max. Warning shown on attempt 3.
+# After 3 failed attempts: no refund guarantee.
+# ═══════════════════════════════════════════════════════════════════
+
+class TutorExamAttempt(Base):
+    __tablename__ = "tutor_exam_attempts"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    exam_id = Column(String(16), ForeignKey("tutor_exams.id", ondelete="CASCADE"), nullable=False, index=True)
+    student_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+
+    attempt_number = Column(Integer, nullable=False)         # 1, 2, 3
+    answers = Column(Text, default="{}")                     # JSON
+    score = Column(Float, default=0)                         # percentage 0-100
+    passed = Column(Boolean, default=False)
+    time_spent_seconds = Column(Integer, default=0)
+    submitted_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("exam_id", "student_id", "attempt_number", name="uq_exam_attempt_per_student"),
+    )
+
+
+TutorExamAttempt.__table__.create(bind=engine, checkfirst=True)
+
+
+MAX_EXAM_ATTEMPTS = 3
+
+
+class ExamAttemptRequest(BaseModel):
+    answers: dict
+    started_at: Optional[str] = None
+    time_spent_seconds: int = 0
+
+
+@router.post("/classes/{class_id}/exam/attempt")
+def submit_exam_attempt(
+    class_id: str,
+    data: ExamAttemptRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Student submits a post-class exam attempt. Max 3 attempts.
+    Warning is returned on attempt 3 (last attempt).
+    After 3 failed attempts: no refund guarantee (student is informed).
+    """
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        raise HTTPException(status_code=404, detail="No existe un examen para esta clase")
+
+    if not exam.is_enabled:
+        raise HTTPException(status_code=403, detail="El examen aún no está habilitado")
+
+    enrollment = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first()
+    if not enrollment:
+        raise HTTPException(status_code=403, detail="Debes estar inscrito para rendir el examen")
+
+    # Count existing attempts
+    existing_attempts = db.query(TutorExamAttempt).filter(
+        TutorExamAttempt.exam_id == exam.id,
+        TutorExamAttempt.student_id == user.id,
+    ).count()
+
+    if existing_attempts >= MAX_EXAM_ATTEMPTS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Has agotado los {MAX_EXAM_ATTEMPTS} intentos permitidos para este examen. La garantía de reembolso no aplica después del tercer intento fallido.",
+        )
+
+    attempt_number = existing_attempts + 1
+    is_last_attempt = attempt_number == MAX_EXAM_ATTEMPTS
+
+    # Auto-grade
+    questions = json.loads(exam.questions) if exam.questions else []
+    score, grading_details = _auto_grade_exam(questions, data.answers)
+    passed = score >= exam.passing_score
+
+    attempt = TutorExamAttempt(
+        exam_id=exam.id,
+        student_id=user.id,
+        attempt_number=attempt_number,
+        answers=json.dumps(data.answers),
+        score=score,
+        passed=passed,
+        time_spent_seconds=data.time_spent_seconds,
+    )
+    db.add(attempt)
+    db.commit()
+    db.refresh(attempt)
+
+    warning = None
+    if is_last_attempt and not passed:
+        warning = "Has usado tu último intento y no aprobaste. La garantía de reembolso ya no aplica para esta clase."
+
+    return {
+        "ok": True,
+        "attempt_number": attempt_number,
+        "attempts_used": attempt_number,
+        "attempts_remaining": MAX_EXAM_ATTEMPTS - attempt_number,
+        "is_last_attempt": is_last_attempt,
+        "result": {
+            "id": attempt.id,
+            "score": score,
+            "passed": passed,
+            "passing_score": exam.passing_score,
+            "time_spent_seconds": data.time_spent_seconds,
+            "grading_details": grading_details,
+        },
+        "warning": warning,
+        "message": "¡Aprobaste el examen! 🎉" if passed else f"No aprobaste. Puntaje: {score:.1f}% (mínimo: {exam.passing_score}%).",
+    }
+
+
+@router.get("/classes/{class_id}/exam/attempts")
+def get_exam_attempts(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get this student's attempts for the class exam."""
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    exam = db.query(TutorExam).filter(TutorExam.class_id == class_id).first()
+    if not exam:
+        return {"ok": True, "exam": None, "attempts": [], "attempts_used": 0, "can_attempt": False}
+
+    attempts = db.query(TutorExamAttempt).filter(
+        TutorExamAttempt.exam_id == exam.id,
+        TutorExamAttempt.student_id == user.id,
+    ).order_by(TutorExamAttempt.attempt_number).all()
+
+    attempts_used = len(attempts)
+    best_score = max((a.score for a in attempts), default=0)
+    any_passed = any(a.passed for a in attempts)
+
+    return {
+        "ok": True,
+        "exam": {
+            "id": exam.id,
+            "title": exam.title,
+            "description": exam.description,
+            "questions": json.loads(exam.questions) if exam.is_enabled else [],
+            "time_limit_minutes": exam.time_limit_minutes,
+            "passing_score": exam.passing_score,
+            "is_enabled": exam.is_enabled,
+        },
+        "attempts": [
+            {
+                "attempt_number": a.attempt_number,
+                "score": a.score,
+                "passed": a.passed,
+                "submitted_at": a.submitted_at.isoformat() if a.submitted_at else None,
+                "time_spent_seconds": a.time_spent_seconds,
+            }
+            for a in attempts
+        ],
+        "attempts_used": attempts_used,
+        "attempts_remaining": max(0, MAX_EXAM_ATTEMPTS - attempts_used),
+        "can_attempt": attempts_used < MAX_EXAM_ATTEMPTS and not any_passed and exam.is_enabled,
+        "best_score": best_score,
+        "passed": any_passed,
+        "max_attempts": MAX_EXAM_ATTEMPTS,
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FASE 4: AI CLASS SUMMARY (Post-class document for student)
+# Generates a structured summary from class chat messages using AI.
+# ═══════════════════════════════════════════════════════════════════
+
+@router.post("/classes/{class_id}/generate-summary")
+def generate_class_summary(
+    class_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Generates an AI-powered class summary from chat messages.
+    Available to enrolled students and the tutor after class ends.
+    """
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    is_tutor = tutor and tutor.user_id == user.id
+    is_student = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+    ).first() is not None
+
+    if not is_tutor and not is_student:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+
+    if cls.status not in ("completed", "in_progress"):
+        raise HTTPException(status_code=400, detail="Solo disponible para clases en curso o completadas")
+
+    # Fetch chat messages
+    messages_q = db.query(TutorClassMessage).filter(
+        TutorClassMessage.class_id == class_id,
+    ).order_by(TutorClassMessage.created_at).all()
+
+    if not messages_q:
+        return {
+            "ok": True,
+            "summary": "No hay mensajes de chat para generar un resumen de esta clase.",
+        }
+
+    # Build chat transcript
+    lines = []
+    for m in messages_q:
+        sender = db.query(User).filter(User.id == m.sender_id).first()
+        name = f"{sender.first_name} {sender.last_name}" if sender else "Usuario"
+        lines.append(f"{name}: {m.message}")
+
+    transcript = "\n".join(lines)
+
+    subject = cls.title or cls.subject or "clase"
+
+    system_prompt = """Eres un asistente académico experto. Tu tarea es generar un resumen estructurado y útil de una clase universitaria a partir del chat de la sesión.
+El resumen debe ser en español, claro y profesional. Incluye: temas tratados, conceptos clave, fórmulas o definiciones relevantes mencionadas, y puntos de acción o recomendaciones de estudio."""
+
+    user_prompt = f"""Genera un resumen estructurado de la siguiente clase: "{subject}"
+
+CHAT DE LA SESIÓN:
+{transcript[:6000]}
+
+Por favor estructura el resumen así:
+## Resumen de Clase: {subject}
+### Temas Tratados
+### Conceptos Clave
+### Fórmulas o Definiciones
+### Recomendaciones de Estudio
+"""
+
+    try:
+        summary = _ai_engine._call_gemini_chat(
+            system_prompt,
+            [{"role": "user", "content": user_prompt}],
+        )
+    except Exception as e:
+        logger.warning(f"AI summary failed for class {class_id}: {e}")
+        summary = f"## Resumen de Clase: {subject}\n\nNo se pudo generar el resumen automático. Mensajes de chat registrados: {len(messages_q)}."
+
+    return {
+        "ok": True,
+        "summary": summary,
+        "messages_count": len(messages_q),
+        "class_title": subject,
     }

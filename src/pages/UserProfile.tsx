@@ -6,6 +6,7 @@ import { formatPriceDisplay } from '../utils/currency'
 
 const API_BASE = getApiBase();
 import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
+import ExecutiveShowcase from '../components/ExecutiveShowcase'
 
 const COVER_TEMPLATES = [
   // General
@@ -70,7 +71,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias' | 'showcase'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
@@ -842,6 +843,15 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {GraduationCap({ size: 14 })} {t('userprofile.tabTutoring')}
           </button>
         )}
+        {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
+          <button
+            className={`fb-tab ${activeTab === 'showcase' ? 'active' : ''}`}
+            onClick={() => setActiveTab('showcase')}
+            style={activeTab === 'showcase' ? { borderColor: '#f59e0b', color: '#d97706', fontWeight: 700 } : {}}
+          >
+            ★ Showcase
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
@@ -904,6 +914,64 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   )}
                 </div>
               )}
+
+              {/* Showcase mini-card — MAX users */}
+              {((profile as any).subscriptionTier === 'max' || profile.role === 'owner' || isOwn) && (
+                <div
+                  className="card fb-info-card"
+                  onClick={() => setActiveTab('showcase')}
+                  style={{ cursor: 'pointer', border: '1.5px solid rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <h4 style={{ margin: 0, color: '#92400e', fontSize: 14 }}>★ Showcase Ejecutivo</h4>
+                    <span style={{ fontSize: 11, color: '#d97706', fontWeight: 600, background: 'rgba(217,119,6,0.1)', padding: '2px 8px', borderRadius: 10 }}>MAX</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
+                    {isOwn
+                      ? 'Tu perfil ejecutivo y portafolio profesional. Haz clic para editar.'
+                      : `Perfil ejecutivo de ${profile.firstName}.`}
+                  </p>
+                  <div style={{ marginTop: 8, fontSize: 11, color: '#d97706', fontWeight: 600 }}>
+                    Ver Showcase →
+                  </div>
+                </div>
+              )}
+
+              {/* Noticias de Educación Chile */}
+              <div className="card fb-info-card">
+                <h4 style={{ margin: '0 0 10px', fontSize: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>📰</span> Noticias de Educación
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { title: 'Proceso de Admisión DEMRE 2025', source: 'DEMRE', url: 'https://demre.cl', color: '#2D62C8' },
+                    { title: 'Becas y Créditos JUNAEB 2025', source: 'JUNAEB', url: 'https://junaeb.cl', color: '#059669' },
+                    { title: 'Calidad de la Educación Superior', source: 'CNA Chile', url: 'https://cnachile.cl', color: '#7c3aed' },
+                    { title: 'Noticias Ministerio de Educación', source: 'MINEDUC', url: 'https://mineduc.cl', color: '#d97706' },
+                  ].map((item, i) => (
+                    <a
+                      key={i}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'none', display: 'block', padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', transition: 'all 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = item.color; (e.currentTarget as HTMLElement).style.background = 'var(--bg-card)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)' }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{item.title}</div>
+                      <div style={{ fontSize: 11, color: item.color, fontWeight: 600, marginTop: 2 }}>{item.source}</div>
+                    </a>
+                  ))}
+                </div>
+                <a
+                  href="https://mineduc.cl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'block', textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 10, textDecoration: 'none' }}
+                >
+                  Más noticias →
+                </a>
+              </div>
 
               {/* Photos card */}
               {allPhotos.length > 0 && (
@@ -1443,6 +1511,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                     {t('userprofile.requestTutoring')}
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* Executive Showcase — MAX plan users */}
+            {((profile as any).subscriptionTier === 'max' || isOwn) && (
+              <div className="card fb-info-card">
+                <ExecutiveShowcase
+                  userId={profile.id}
+                  isOwner={!!isOwn}
+                  isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
+                />
               </div>
             )}
           </div>
@@ -2289,6 +2368,49 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
           </div>
         )}
+
+        {/* ─── Showcase Tab ─── */}
+        {activeTab === 'showcase' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Header banner */}
+            <div style={{
+              padding: '20px 24px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 12,
+            }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>★ Showcase Ejecutivo</h2>
+                <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.9 }}>
+                  {isOwn ? 'Tu portafolio profesional y presencia ejecutiva en Conniku' : `Portafolio profesional de ${profile.firstName} ${profile.lastName}`}
+                </p>
+              </div>
+              {!((profile as any).subscriptionTier === 'max' || profile.role === 'owner') && isOwn && (
+                <span style={{
+                  padding: '6px 16px', background: 'rgba(255,255,255,0.2)',
+                  borderRadius: 20, fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,255,255,0.4)',
+                }}>
+                  Plan MAX requerido
+                </span>
+              )}
+            </div>
+
+            {/* ExecutiveShowcase component — full width */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <ExecutiveShowcase
+                userId={profile.id}
+                isOwner={!!isOwn}
+                isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
+              />
+            </div>
+          </div>
+        )}
+
         </div>
       </div>
       </div>

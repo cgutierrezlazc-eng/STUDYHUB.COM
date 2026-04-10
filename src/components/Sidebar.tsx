@@ -30,6 +30,15 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [clockState, setClockState] = useState(getClockState)
   const [elapsed, setElapsed] = useState('')
+  const [tutorStatus, setTutorStatus] = useState<string | null>(null)
+
+  // Load tutor profile status only if user has mentoring enabled
+  useEffect(() => {
+    if (!user?.offersMentoring) return
+    api.getMyTutorProfile()
+      .then((d: any) => setTutorStatus(d?.status || null))
+      .catch(() => {})
+  }, [user?.id, user?.offersMentoring])
 
   // Live elapsed timer while clocked in
   useEffect(() => {
@@ -233,6 +242,38 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
           </div>
         )}
       </div>
+
+      {/* ─── Mi Tutoría (only for users with tutorProfile) ─── */}
+      {user?.offersMentoring && tutorStatus && (
+        <div className="sidebar-section">
+          <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('tutor')}>
+            <ChevronIcon open={openSections.tutor ?? true} />
+            <span>Mi Tutoría</span>
+            {tutorStatus === 'pending_review' && <span style={{ marginLeft: 'auto', fontSize: 10, background: '#f59e0b', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>Pendiente</span>}
+            {tutorStatus === 'appealing' && <span style={{ marginLeft: 'auto', fontSize: 10, background: '#8b5cf6', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>Apelación</span>}
+          </button>
+          {(openSections.tutor ?? true) && (
+            <div className="sidebar-section-items">
+              <button className={`nav-item ${currentPath === '/my-tutor' ? 'active' : ''}`} onClick={() => onNavigate('/my-tutor')}>
+                {Icons.bookOpen(IC.rooms)} Panel Tutor
+              </button>
+              {tutorStatus === 'approved' && (
+                <>
+                  <button className={`nav-item ${currentPath === '/my-tutor/materias' ? 'active' : ''}`} onClick={() => onNavigate('/my-tutor/materias')}>
+                    {Icons.bookOpen(IC.rooms)} Mis Materias
+                  </button>
+                  <button className={`nav-item ${currentPath === '/my-tutor/clases' ? 'active' : ''}`} onClick={() => onNavigate('/my-tutor/clases')}>
+                    {Icons.calendar(IC.calendar)} Mis Clases
+                  </button>
+                  <button className={`nav-item ${currentPath === '/my-tutor/pagos' ? 'active' : ''}`} onClick={() => onNavigate('/my-tutor/pagos')}>
+                    {Icons.diamond(IC.diamond)} Mis Pagos
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ─── Clock In / Out ─── */}
       <div style={{ padding: '12px 10px 10px', borderTop: '1px solid var(--border)', marginTop: 'auto' }}>
