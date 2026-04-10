@@ -24,6 +24,9 @@ interface Tutor {
   groupPrice?: number
   availability?: { day: string; slots: string[] }[]
   reviews?: { id: string; authorName: string; rating: number; comment: string; date: string }[]
+  verified?: boolean
+  username?: string
+  user_id?: string
 }
 
 interface TutorClass {
@@ -169,6 +172,11 @@ export default function TutorDirectory({ onNavigate }: Props) {
   const [selectedCategory, setSelectedCategory] = useState('Todas')
   const [classSearchQuery, setClassSearchQuery] = useState('')
 
+  // Ranking state
+  const [ranking, setRanking] = useState<any[]>([])
+  const [rankingLoading, setRankingLoading] = useState(false)
+  const [showRanking, setShowRanking] = useState(true)
+
   // Chat modal state
   const [chatClassId, setChatClassId] = useState<string | null>(null)
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([])
@@ -205,6 +213,14 @@ export default function TutorDirectory({ onNavigate }: Props) {
   useEffect(() => {
     fetchTutors()
   }, [fetchTutors])
+
+  useEffect(() => {
+    setRankingLoading(true)
+    api.getTutorRanking(5)
+      .then((data: any) => setRanking(data?.ranking || []))
+      .catch(() => {})
+      .finally(() => setRankingLoading(false))
+  }, [])
 
   // Fetch classes when switching to classes tab
   const fetchClasses = useCallback(async () => {
@@ -425,6 +441,56 @@ export default function TutorDirectory({ onNavigate }: Props) {
       {/* ─── Tutores Tab ─── */}
       {activeTab === 'tutores' && <>
 
+      {/* Ranking Leaderboard */}
+      {!rankingLoading && ranking.length > 0 && (
+        <div style={{ marginBottom: 22 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>🏆</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>Ranking de Tutores</span>
+            </div>
+            <button onClick={() => setShowRanking(v => !v)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)', fontWeight: 600 }}>
+              {showRanking ? 'Ocultar ▲' : 'Mostrar ▼'}
+            </button>
+          </div>
+          {showRanking && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+              {ranking.map((t: any, i: number) => {
+                const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣']
+                const medalColors = ['#f59e0b', '#94a3b8', '#d97706', '#64748b', '#64748b']
+                return (
+                  <div key={t.id || i}
+                    onClick={() => t.username ? onNavigate(`/tutor/${t.username}`) : undefined}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
+                      background: i === 0 ? 'linear-gradient(135deg, #fef3c7, #fde68a)' : 'var(--bg-secondary)',
+                      borderRadius: 10, border: `1px solid ${i === 0 ? '#f59e0b55' : 'var(--border-color)'}`,
+                      cursor: t.username ? 'pointer' : 'default',
+                      transition: 'box-shadow 0.15s',
+                    }}
+                    onMouseEnter={e => t.username && ((e.currentTarget as HTMLElement).style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)')}
+                    onMouseLeave={e => t.username && ((e.currentTarget as HTMLElement).style.boxShadow = 'none')}
+                  >
+                    <span style={{ fontSize: 20, lineHeight: 1 }}>{medals[i] || `${i + 1}`}</span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: i === 0 ? '#92400e' : 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {t.first_name} {t.last_name_initial}
+                        {t.verified && <span style={{ marginLeft: 4, fontSize: 10, color: '#22c55e', fontWeight: 700 }}>✓</span>}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: medalColors[i] }}>⭐ {(t.rating_average || 0).toFixed(1)}</span>
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{t.total_classes} clases</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div style={{
         background: 'var(--bg-secondary)', borderRadius: 14, padding: '18px 20px',
@@ -581,7 +647,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
                       <InitialsAvatar name={fullName} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2, flexWrap: 'wrap' }}>
                         <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {fullName}
                         </span>
@@ -591,6 +657,11 @@ export default function TutorDirectory({ onNavigate }: Props) {
                         }}>
                           {level.label}
                         </span>
+                        {(tutor as any).verified && (
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 20, background: 'rgba(34,197,94,0.12)', color: '#16a34a', border: '1px solid rgba(34,197,94,0.3)', whiteSpace: 'nowrap' }}>
+                            ✓ Verificado
+                          </span>
+                        )}
                       </div>
                       {tutor.title && (
                         <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -642,7 +713,20 @@ export default function TutorDirectory({ onNavigate }: Props) {
                   </div>
 
                   {/* Buttons */}
-                  <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {(tutor as any).username && (
+                      <button
+                        onClick={() => onNavigate(`/tutor/${(tutor as any).username}`)}
+                        style={{
+                          padding: '9px 14px', borderRadius: 10, fontSize: 12, fontWeight: 600,
+                          border: '1px solid #bfdbfe', background: '#eff6ff', color: '#1e40af',
+                          cursor: 'pointer', transition: 'background 0.15s',
+                        }}
+                        title="Ver página pública del tutor"
+                      >
+                        🌐
+                      </button>
+                    )}
                     <button
                       onClick={() => handleViewProfile(tutor)}
                       style={{
