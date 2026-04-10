@@ -415,7 +415,7 @@ export default function CVProfile({ onNavigate }: Props) {
           }).then(r => r.ok ? r.json() : null).catch(() => null),
           api.getMyCV().catch(() => null),
         ])
-        if (cvRes) hydrateCV(cvRes)
+        if (cvRes) hydrateCV(cvRes?.profile || cvRes)
         if (draft) {
           setCv(prev => ({
             ...prev,
@@ -432,6 +432,7 @@ export default function CVProfile({ onNavigate }: Props) {
   }
 
   function hydrateCV(raw: any) {
+    if (!raw) return
     setCv({
       headline: raw.headline || raw.cv_headline || '',
       summary: raw.summary || raw.cv_summary || '',
@@ -439,11 +440,11 @@ export default function CVProfile({ onNavigate }: Props) {
       email: raw.email || user?.email || '',
       phone: raw.phone || '',
       availableWorldwide: raw.available_worldwide ?? false,
-      openToOffers: raw.open_to_offers ?? raw.is_open_to_opportunities ?? false,
+      openToOffers: raw.open_to_offers ?? raw.open_to_work ?? raw.is_open_to_opportunities ?? false,
       experience: parseJsonField(raw.experience || raw.cv_experience, []),
       education: parseJsonField(raw.education, []),
       certifications: parseJsonField(raw.certifications || raw.cv_certifications, []),
-      skillGroups: parseJsonField(raw.skill_groups || raw.cv_skills, []),
+      skillGroups: parseJsonField(raw.skill_groups || raw.skills || raw.cv_skills, []),
       differentiators: parseJsonField(raw.differentiators, []),
       languages: parseJsonField(raw.languages || raw.cv_languages, []),
       links: parseJsonField(raw.links || raw.cv_portfolio, []),
@@ -469,18 +470,15 @@ export default function CVProfile({ onNavigate }: Props) {
         headline: cv.headline,
         summary: cv.summary,
         location: cv.location,
-        email: cv.email,
         phone: cv.phone,
         available_worldwide: cv.availableWorldwide,
-        open_to_offers: cv.openToOffers,
-        experience: JSON.stringify(cv.experience),
-        education: JSON.stringify(cv.education),
-        certifications: JSON.stringify(cv.certifications),
-        skill_groups: JSON.stringify(cv.skillGroups),
-        differentiators: JSON.stringify(cv.differentiators),
-        languages: JSON.stringify(cv.languages),
-        links: JSON.stringify(cv.links),
-        competencies: JSON.stringify(cv.competencies),
+        open_to_work: cv.openToOffers,       // nombre correcto en backend
+        experience: cv.experience,            // enviamos lista directa, no string
+        education: cv.education,
+        certifications: cv.certifications,
+        skills: cv.skillGroups,               // nombre correcto en backend
+        differentiators: cv.differentiators,
+        languages: cv.languages,
         visibility: cv.visibility,
       })
       setEditMode(false)
@@ -494,16 +492,20 @@ export default function CVProfile({ onNavigate }: Props) {
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    setUploadMsg('Procesando documento...')
+    // Reset input so same file can be re-uploaded
+    e.target.value = ''
+    setUploadMsg('⏳ Analizando CV con IA...')
     try {
       const res = await api.uploadCV(file)
-      if (res.draft) {
-        setCv(prev => ({
-          ...prev,
-          headline: res.draft.headline || prev.headline,
-          summary: res.draft.summary || prev.summary,
-        }))
-        setUploadMsg(res.message || 'Documento procesado. Revisa los campos.')
+      if (res.success === false && !res.draft) {
+        setUploadMsg(res.message || 'No se pudo extraer texto del archivo.')
+        return
+      }
+      // Use the full saved profile (preferred) or fall back to draft
+      const source = res.profile || res.draft
+      if (source) {
+        hydrateCV(source)
+        setUploadMsg(res.message || '✅ CV analizado. Revisa y ajusta los campos.')
         setEditMode(true)
       }
     } catch (err: any) {

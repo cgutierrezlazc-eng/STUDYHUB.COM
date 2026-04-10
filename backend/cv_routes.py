@@ -86,6 +86,7 @@ class CVUpdateRequest(BaseModel):
     website: Optional[str] = None
     linkedin_url: Optional[str] = None
     open_to_work: Optional[bool] = None
+    open_to_offers: Optional[bool] = None   # alias para open_to_work
     available_worldwide: Optional[bool] = None
     cover_image_url: Optional[str] = None
     is_public: Optional[bool] = None
@@ -93,9 +94,14 @@ class CVUpdateRequest(BaseModel):
     education: Optional[list] = None
     certifications: Optional[list] = None
     skills: Optional[list] = None
+    skill_groups: Optional[list] = None     # alias para skills
     languages: Optional[list] = None
     differentiators: Optional[list] = None
     visibility: Optional[str] = None
+    # Campos adicionales del frontend
+    email: Optional[str] = None             # email de contacto en el CV
+    links: Optional[list] = None            # enlaces externos (portfolio, github, etc.)
+    competencies: Optional[list] = None     # competencias clave / keywords
 
 
 # ─── Text extraction helpers ───────────────────────────────────
@@ -889,6 +895,7 @@ def _cv_profile_to_dict(cv: CVProfile, include_raw: bool = False) -> dict:
         "education": _safe_json(cv.education),
         "certifications": _safe_json(cv.certifications),
         "skills": _safe_json(cv.skills),
+        "skill_groups": _safe_json(cv.skills),   # alias para compatibilidad con frontend
         "languages": _safe_json(cv.languages),
         "differentiators": _safe_json(cv.differentiators),
         "created_at": cv.created_at.isoformat() if cv.created_at else None,
@@ -1002,11 +1009,26 @@ def update_my_cv(
         if val is not None:
             setattr(cv, field, val)
 
+    # Resolve aliases before saving
+    if data.open_to_offers is not None and data.open_to_work is None:
+        data.open_to_work = data.open_to_offers
+    if data.skill_groups is not None and data.skills is None:
+        data.skills = data.skill_groups
+
+    # Update boolean fields (after alias resolution)
+    # (already done above for open_to_work)
+
     # Update JSON fields (store as JSON string)
     json_fields = ["experience", "education", "certifications", "skills", "languages", "differentiators"]
     for field in json_fields:
         val = getattr(data, field, None)
         if val is not None:
+            # Accept both list and JSON string from frontend
+            if isinstance(val, str):
+                try:
+                    val = json.loads(val)
+                except Exception:
+                    pass
             setattr(cv, field, json.dumps(val, ensure_ascii=False))
 
     cv.updated_at = datetime.utcnow()
@@ -1101,6 +1123,10 @@ async def upload_cv(
 
     db.commit()
     db.refresh(cv)
+
+    # Normalize draft field names for frontend compatibility
+    draft["skill_groups"] = draft.get("skills", [])
+    draft["open_to_work"] = False
 
     return {
         "success": True,
