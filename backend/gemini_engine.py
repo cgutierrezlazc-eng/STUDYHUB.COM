@@ -1,5 +1,5 @@
 """
-AI Engine: handles RAG with ChromaDB + Google Gemini API for chat, study guides, quizzes, flashcards,
+AI Engine: handles RAG with ChromaDB + OpenAI GPT-4o Mini for chat, study guides, quizzes, flashcards,
 summaries, document analysis, concept maps, and visual explanations.
 """
 import os
@@ -8,25 +8,14 @@ from typing import Optional
 from pathlib import Path
 
 import chromadb
-import google.generativeai as genai
+from openai import OpenAI
 
 from database import DATA_DIR
 
-# Use API key from environment or config
-API_KEY = os.environ.get("GEMINI_API_KEY", "")
-
-# Try loading from config file if not in env
-CONFIG_FILE = DATA_DIR / "config.json"
-if not API_KEY and CONFIG_FILE.exists():
-    try:
-        config = json.loads(CONFIG_FILE.read_text())
-        API_KEY = config.get("gemini_api_key", "")
-    except Exception:
-        pass
-
-# Configure the SDK once at module level
-if API_KEY:
-    genai.configure(api_key=API_KEY)
+# OpenAI client — used for all AI generation (GPT-4o Mini)
+_OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
+gpt_client = OpenAI(api_key=_OPENAI_KEY) if _OPENAI_KEY else None
+GPT_MODEL = "gpt-4o-mini"
 
 # Language instruction mappings shared across methods
 LANG_INSTRUCTIONS = {
@@ -60,11 +49,7 @@ class AIEngine:
         self.chroma_client = chromadb.PersistentClient(path=chroma_path)
 
         # Primary model for chat and rich generation
-        self.model_main = "gemini-1.5-flash"
-        # Lighter model for quizzes, flashcards (faster, lower cost)
-        self.model_lite = "gemini-1.5-flash"
-
-        self.api_available = bool(API_KEY)
+        self.api_available = bool(_OPENAI_KEY)
 
     # ------------------------------------------------------------------ #
     #  ChromaDB / RAG helpers (identical to original)
@@ -144,90 +129,61 @@ class AIEngine:
         return ""
 
     # ------------------------------------------------------------------ #
-    #  Gemini API call helper
+    #  OpenAI GPT-4o Mini API helpers
     # ------------------------------------------------------------------ #
 
     def _call_gemini(self, system: str, user_message: str, model: str = None) -> str:
-        """Call Gemini with a system instruction and user message."""
-        if not self.api_available:
-            return "⚠️ API key no configurada. Configura tu GEMINI_API_KEY en ~/.conniku/config.json"
-
-        if model is None:
-            model = self.model_main
-
+        """Text generation via GPT-4o Mini (replaces Gemini)."""
+        if not gpt_client:
+            return "⚠️ OPENAI_API_KEY no configurada en el servidor."
         try:
-            gemini_model = genai.GenerativeModel(
-                model_name=model,
-                system_instruction=system,
+            resp = gpt_client.chat.completions.create(
+                model=GPT_MODEL,
+                max_tokens=4096,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user_message},
+                ],
             )
-            response = gemini_model.generate_content(
-                user_message,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=4096,
-                    temperature=0.7,
-                ),
-            )
-            return response.text
+            return resp.choices[0].message.content
         except Exception as e:
-            return f"⚠️ Error al comunicarse con Gemini: {str(e)}"
+            return f"⚠️ Error al comunicarse con el asistente: {str(e)}"
 
     def _call_gemini_chat(self, system: str, messages: list, model: str = None) -> str:
-        """Call Gemini with full conversation history (for support chatbot)."""
-        if not self.api_available:
-            return "API key no configurada. Configura tu GEMINI_API_KEY."
-
-        if model is None:
-            model = self.model_main
-
+        """Chat with history via GPT-4o Mini (replaces Gemini)."""
+        if not gpt_client:
+            return "Lo siento, el asistente no está disponible en este momento."
         try:
-            gemini_model = genai.GenerativeModel(
-                model_name=model,
-                system_instruction=system,
+            oai_messages = [{"role": "system", "content": system}] + [
+                {"role": m["role"], "content": m["content"]} for m in messages
+                if m.get("role") in ("user", "assistant") and m.get("content")
+            ]
+            resp = gpt_client.chat.completions.create(
+                model=GPT_MODEL,
+                max_tokens=2048,
+                messages=oai_messages,
             )
-
-            # Convert messages to Gemini format (alternating user/model)
-            gemini_history = []
-            for msg in messages[:-1]:  # All except last
-                role = "user" if msg["role"] == "user" else "model"
-                gemini_history.append({"role": role, "parts": [msg["content"]]})
-
-            chat = gemini_model.start_chat(history=gemini_history)
-            last_msg = messages[-1]["content"] if messages else ""
-            response = chat.send_message(
-                last_msg,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=2048,
-                    temperature=0.7,
-                ),
-            )
-            return response.text
+            return resp.choices[0].message.content
         except Exception as e:
-            return f"Lo siento, tuve un problema al responder. Puedes escribir a contacto@conniku.com. (Error: {str(e)[:80]})"
+            return f"Lo siento, tuve un problema al responder. (Error: {str(e)[:80]})"
 
     def _call_gemini_json(self, system: str, user_message: str, model: str = None) -> str:
-        """Call Gemini requesting JSON output."""
-        if not self.api_available:
-            return "⚠️ API key no configurada. Configura tu GEMINI_API_KEY en ~/.conniku/config.json"
-
-        if model is None:
-            model = self.model_lite
-
+        """JSON generation via GPT-4o Mini (replaces Gemini)."""
+        if not gpt_client:
+            return "{}"
         try:
-            gemini_model = genai.GenerativeModel(
-                model_name=model,
-                system_instruction=system,
+            resp = gpt_client.chat.completions.create(
+                model=GPT_MODEL,
+                max_tokens=8192,
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": system + "\nResponde ÚNICAMENTE con JSON válido, sin texto adicional."},
+                    {"role": "user", "content": user_message},
+                ],
             )
-            response = gemini_model.generate_content(
-                user_message,
-                generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=8192,
-                    temperature=0.4,
-                    response_mime_type="application/json",
-                ),
-            )
-            return response.text
+            return resp.choices[0].message.content
         except Exception as e:
-            return f"⚠️ Error al comunicarse con Gemini: {str(e)}"
+            return f"{{\"error\": \"{str(e)[:80]}\"}}"
 
     # ------------------------------------------------------------------ #
     #  Shared prompt helpers

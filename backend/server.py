@@ -1330,7 +1330,7 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
     system = MATH_SCAN_PROMPT.format(lang=lang_name)
 
     try:
-        import google.generativeai as genai_vision
+        from gemini_engine import gpt_client, GPT_MODEL
 
         # Detect image type from base64 header
         mime_type = "image/jpeg"
@@ -1342,18 +1342,21 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
         else:
             image_data = req.image_base64
 
-        model = genai_vision.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=system,
-        )
-        response = model.generate_content(
-            [
-                {"mime_type": mime_type, "data": base64.b64decode(image_data)},
-                "Resuelve este problema paso a paso.",
+        if not gpt_client:
+            return {"solution": "OPENAI_API_KEY no configurada en el servidor.", "success": False}
+
+        resp = gpt_client.chat.completions.create(
+            model=GPT_MODEL,
+            max_tokens=4096,
+            messages=[
+                {"role": "system", "content": system},
+                {"role": "user", "content": [
+                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_data}"}},
+                    {"type": "text", "text": "Resuelve este problema paso a paso."},
+                ]},
             ],
-            generation_config=genai_vision.types.GenerationConfig(max_output_tokens=4096, temperature=0.3),
         )
-        result = response.text
+        result = resp.choices[0].message.content
         return {"solution": result, "success": True}
     except Exception as e:
         return {"solution": f"Error al procesar la imagen: {str(e)}", "success": False}
