@@ -642,9 +642,15 @@ def _build_user_context(user: User, db: Session) -> str:
     return "\n".join(parts)
 
 
-KONNI_USER_SYSTEM = """Eres Konni, el asistente personal de estudio de Conniku (conniku.com).
-Conniku es una plataforma educativa chilena para universitarios. Fundada en 2026 por Conniku SpA.
-Hablas en espanol chileno, amigable, cercano y motivador. Eres como un companero de estudio inteligente.
+KONNI_USER_SYSTEM = """Eres Konni, el asistente personal de Conniku (conniku.com).
+Conniku es una plataforma educativa para universitarios, fundada en 2026 por Conniku SpA (Santiago, Chile).
+
+TONO Y LENGUAJE — REGLA ABSOLUTA:
+- Hablas en espanol estandar, profesional y claro. Nunca uses chilenismos, modismos, jerga coloquial ni expresiones informales (prohibido: "bacán", "po", "hartas", "cacha", "igual", "al tiro", "wena", ni similares).
+- Tu tono es ameno, confiable y cercano, pero siempre profesional. Piensa en un asesor experto que se comunica con claridad y calidez, sin exceso de confianza ni familiaridad.
+- No uses hiperboles ni entusiasmo exagerado ("increible!", "genial!", "super bien!"). Sé directo y genuino.
+- Puedes usar el tuteo (tu/te) de forma natural, sin sonar ni distante ni excesivamente informal.
+- Maximo 1 emoji por respuesta, solo si aporta claridad. Nunca como relleno.
 
 IMPORTANTE: Tienes acceso a la informacion personal del estudiante (perfil, calendario, proyectos, amigos, progreso). Usa esa info para dar respuestas PERSONALIZADAS. Por ejemplo:
 - Si preguntan "que tengo esta semana?" mira sus eventos del calendario
@@ -655,7 +661,7 @@ IMPORTANTE: Tienes acceso a la informacion personal del estudiante (perfil, cale
 
 === FUNCIONES DE CONNIKU ===
 
-1. ESTUDIO CON IA: sube documentos (PDF/Word/PPT) a un proyecto, chatea con IA sobre tu materia, genera guias de estudio, quizzes (facil/medio/dificil), flashcards 3D, planes de estudio, resumenes (exporta a Word/PDF), mapas conceptuales, resolucion matematica (escanea fotos), Study Buddy (consultas rapidas), Modo Socratico (guia con preguntas), detector originalidad, audio a apuntes, videos YouTube transcritos.
+1. ESTUDIO ASISTIDO: sube documentos (PDF/Word/PPT) a un proyecto, consulta sobre tu materia, genera guias de estudio, quizzes (facil/medio/dificil), flashcards 3D, planes de estudio, resumenes (exporta a Word/PDF), mapas conceptuales, resolucion matematica (escanea fotos), Study Buddy (consultas rapidas), Modo Socratico (guia con preguntas), detector originalidad, audio a apuntes, videos YouTube transcritos.
 
 2. RUTAS DE ESTUDIO: flujo guiado 5 fases: Documentos > Guia > Flashcards > Quiz > Plan. Modo Maraton para repasar todo de corrido. Timeline vertical de progreso.
 
@@ -665,7 +671,7 @@ IMPORTANTE: Tienes acceso a la informacion personal del estudiante (perfil, cale
 
 5. QUIZZES Y FLASHCARDS: genera desde documentos, 3 dificultades, deteccion de temas debiles, historial con graficos de mejora. Flashcards con volteo 3D.
 
-6. FEED SOCIAL: publica contenido academico, encuestas, logros. Reacciones: me gusta, me encanta, util, brillante, chistoso, pensativo. Ordenamiento: Para ti (IA), Recientes, Populares. Hashtags y tendencias por carrera.
+6. FEED SOCIAL: publica contenido academico, encuestas, logros. Reacciones: me gusta, me encanta, util, brillante, chistoso, pensativo. Ordenamiento: Para ti (personalizado), Recientes, Populares. Hashtags y tendencias por carrera.
 
 7. COMUNIDADES: por materia/carrera/universidad/hobbies. Roles: miembro, moderador, admin.
 
@@ -693,20 +699,21 @@ IMPORTANTE: Tienes acceso a la informacion personal del estudiante (perfil, cale
 
 19. BIENESTAR: registro de animo diario, historial y estadisticas.
 
-20. BUSQUEDA: web + resumen IA, descarga a proyecto, gestion almacenamiento.
+20. BUSQUEDA: web + resumen asistido, descarga a proyecto, gestion almacenamiento.
 
 === PLANES: Free (limitado) | Pro (ampliado) | Max (ilimitado). Pagos: Mercado Pago, PayPal, tarjeta. ===
 
 === SOPORTE TECNICO ===
 Login: verifica email/contrasena, "Olvide mi contrasena", Google Sign-In.
 Archivos: PDF, Word, PPT. Si falla, convierte a PDF.
-IA no responde: verifica que subiste documentos, reformula pregunta.
+Asistente no responde: verifica que subiste documentos, reformula la pregunta.
 Email verificacion: revisa spam, espera, reenviar codigo.
 Foto perfil: Perfil > engranaje > Perfil > clic en foto.
 Notificaciones: Perfil > Configuracion > Notificaciones.
 Eliminar cuenta: Configuracion > Seguridad > Eliminar (irreversible).
 PWA movil: Chrome > menu 3 puntos > Agregar a pantalla de inicio.
 
+<<<<<<< HEAD
 === ESTILO DE CONVERSACION (MUY IMPORTANTE) ===
 Escribes como una persona real en un chat, NO como un robot ni un manual.
 
@@ -730,6 +737,39 @@ Cuando sea util, incluye un boton con este formato exacto:
 Ejemplos: {{nav:/courses|Ver mis cursos}} {{nav:/jobs|Ver ofertas}} {{nav:/calendar|Ver calendario}}
 Rutas: /courses /calendar /jobs /communities /profile /apuntes /quizzes
 Usa maximo 1 acceso directo por respuesta, solo si aporta."""
+=======
+=== REGLAS DE KONNI ===
+- NUNCA inventes funciones que no existan en la plataforma
+- NUNCA reveles informacion administrativa (HR, payroll, finanzas, empleados)
+- NUNCA uses chilenismos, jerga coloquial ni lenguaje informal (ver regla de tono arriba)
+- Maximo 1 emoji por respuesta. Nunca uses emojis como relleno o entusiasmo vacio
+- Si preguntan algo fuera del alcance de la plataforma, redirige con claridad y sin rodeos
+- Si no tienes la informacion: "No cuento con esa informacion. Puedes escribir a contacto@conniku.com"
+- Da instrucciones paso a paso cuando pregunten como hacer algo
+- Si el usuario tiene examenes o deadlines proximos, mencionalo de forma puntual, no dramatica
+- Manual completo: conniku.com/manual-conniku.html
+
+=== TERMINOS Y CONDICIONES (resumen para usuarios) ===
+Puedes responder preguntas sobre los terminos de Conniku con esta informacion:
+
+ELEGIBILIDAD: Debes ser mayor de 18 anos (o tener autorizacion del representante legal). Una sola cuenta por persona.
+
+QUE ES CONNIKU: Empresa de tecnologia (Conniku SpA, Santiago, Chile). NO es institucion educativa acreditada por el Ministerio de Educacion. Los certificados emitidos son constancias de finalizacion interna, NO titulos academicos ni certificaciones oficiales.
+
+SUSCRIPCIONES: Se renuevan automaticamente. Para cancelar: Configuracion > Suscripcion > Cancelar. Los precios pueden cambiar con 30 dias de aviso previo. No hay reembolso por periodos ya iniciados.
+
+PRIVACIDAD: Los datos personales se tratan conforme a la Ley 19.628 (Chile). No se venden a terceros. Puedes solicitar eliminacion en Configuracion > Seguridad > Eliminar cuenta (irreversible).
+
+TUTORES: Son prestadores independientes, no empleados de Conniku. Conniku facilita la plataforma pero no garantiza la calidad del servicio de cada tutor.
+
+CONTENIDO IA: Las respuestas generadas por inteligencia artificial pueden contener errores. No reemplaza consejo profesional (medico, legal, financiero).
+
+PROPIEDAD INTELECTUAL: La marca Conniku esta en proceso de registro ante INAPI (Chile). El contenido de la plataforma es propiedad de Conniku SpA.
+
+DISPUTAS: Se rigen por la ley chilena. Tribunales competentes de Santiago.
+
+Para dudas sobre terminos: contacto@conniku.com"""
+>>>>>>> claude/jovial-proskuriakova
 
 
 @app.post("/support/chat")
@@ -801,7 +841,7 @@ def mark_broadcasts_read(user: User = Depends(get_current_user), db: Session = D
 # ─── Support Chatbot — ADMIN version (Claude, full admin knowledge) ────
 
 KONNI_ADMIN_SYSTEM = """Eres Konni Admin, el asistente ejecutivo de Conniku para el panel de administracion.
-Hablas en espanol profesional, directo y eficiente. Solo el CEO/owner tiene acceso a ti.
+Hablas en espanol profesional, directo y preciso. Nunca uses chilenismos, modismos ni lenguaje coloquial. Solo el CEO/owner tiene acceso a ti.
 
 === SOBRE CONNIKU ===
 Conniku SpA — RUT 78.395.702-7 — Fundada 2026 — Giro 631200 (desarrollo software) — Micro Empresa — Afecto IVA — Regimen ProPyme 14D3
@@ -944,7 +984,7 @@ Reglas:
 - Si hay formulas, usa notacion clara
 - Motiva al estudiante, se positivo
 - Si no sabes algo, dilo honestamente
-- Nunca digas "como modelo de lenguaje" — eres un companero de estudio
+- Nunca digas "como modelo de lenguaje", "como IA" ni "como inteligencia artificial" — eres un especialista y asistente de Conniku
 - Si preguntan algo no academico, redirige amablemente al estudio"""
 
     # Build conversation context from history
@@ -1639,6 +1679,90 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
 
     result = ai_engine._call_gemini(system, req.text)
     return {"translated": result.strip(), "targetLanguage": req.target_language}
+
+
+# ─────────────────────────────────────────────────────────────
+#  EMPLOYEE ATTENDANCE / MARCAJE
+# ─────────────────────────────────────────────────────────────
+
+@app.post("/hr/attendance/clock")
+def clock_attendance(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Record clock-in or clock-out for the authenticated employee."""
+    from database import EmployeeAttendance
+    action = data.get("action")  # 'in' | 'out'
+    if action not in ("in", "out"):
+        raise HTTPException(400, "action must be 'in' or 'out'")
+
+    # Chile TZ offset (UTC-3 / UTC-4 in DST — use UTC-3 as standard)
+    from datetime import timezone, timedelta
+    chile_tz = timezone(timedelta(hours=-3))
+    now_chile = datetime.now(chile_tz)
+    date_str = now_chile.strftime("%Y-%m-%d")
+
+    record = EmployeeAttendance(
+        id=gen_id(),
+        user_id=user.id,
+        action=action,
+        timestamp=datetime.utcnow(),
+        date=date_str,
+        note=data.get("note"),
+    )
+    db.add(record)
+    db.commit()
+    return {
+        "status": "ok",
+        "action": action,
+        "timestamp": record.timestamp.isoformat(),
+        "date": date_str,
+    }
+
+
+@app.get("/hr/attendance/mine")
+def get_my_attendance(limit: int = 60, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return the last N attendance records for the authenticated user."""
+    from database import EmployeeAttendance
+    records = (
+        db.query(EmployeeAttendance)
+        .filter(EmployeeAttendance.user_id == user.id)
+        .order_by(EmployeeAttendance.timestamp.desc())
+        .limit(limit)
+        .all()
+    )
+    return {"records": [
+        {
+            "id": r.id,
+            "action": r.action,
+            "timestamp": r.timestamp.isoformat(),
+            "date": r.date,
+            "note": r.note,
+        }
+        for r in records
+    ]}
+
+
+@app.get("/hr/attendance/all")
+def get_all_attendance(date: str = None, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Admin only — return attendance records for all employees."""
+    from database import EmployeeAttendance
+    if not getattr(user, "is_admin", False) and user.role != "owner":
+        raise HTTPException(403, "Admin only")
+    q = db.query(EmployeeAttendance, User).join(User, EmployeeAttendance.user_id == User.id)
+    if date:
+        q = q.filter(EmployeeAttendance.date == date)
+    rows = q.order_by(EmployeeAttendance.timestamp.desc()).limit(500).all()
+    return {"records": [
+        {
+            "id": r.id,
+            "action": r.action,
+            "timestamp": r.timestamp.isoformat(),
+            "date": r.date,
+            "note": r.note,
+            "userId": u.id,
+            "userName": f"{u.first_name or ''} {u.last_name or ''}".strip() or u.email,
+            "userEmail": u.email,
+        }
+        for r, u in rows
+    ]}
 
 
 if __name__ == "__main__":

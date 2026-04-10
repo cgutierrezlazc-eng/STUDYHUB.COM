@@ -97,12 +97,17 @@ class User(Base):
     cv_visibility = Column(String(20), default="private")  # public | recruiters | private
     cv_file_path = Column(String(500), default="")
 
+    # Executive Showcase (MAX plan only)
+    # JSON array of showcase items: [{id, type, title, description, url, date, tag}]
+    # type: article | book | talk | media | achievement | project | insight
+    executive_showcase = Column(Text, default="[]")
+
     email_verified = Column(Boolean, nullable=False, default=False)
     verification_code = Column(String(10), nullable=True)
     is_banned = Column(Boolean, nullable=False, default=False)
     ban_reason = Column(String(500), nullable=True)
     is_admin = Column(Boolean, nullable=False, default=False)
-    role = Column(String(20), nullable=False, default="user")  # user | admin | owner
+    role = Column(String(20), nullable=False, default="user")  # user | admin | owner | utp
     tos_accepted_at = Column(DateTime, nullable=True)
     onboarding_completed = Column(Boolean, nullable=False, default=False)
 
@@ -138,6 +143,10 @@ class User(Base):
 
     # Reward tracking (JSON array of granted rewards with dates)
     mood_data = Column(Text, default="[]")
+
+    # Student rating (given by tutors after sessions)
+    student_rating_sum = Column(Float, default=0)
+    student_rating_count = Column(Integer, default=0)
 
     # Password recovery
     reset_code = Column(String(10), nullable=True)
@@ -1247,6 +1256,19 @@ class ClassAttendance(Base):
     transcribed = Column(Boolean, default=False)
 
 
+# ─── Employee Attendance / Marcaje ────────────────────────
+
+class EmployeeAttendance(Base):
+    __tablename__ = "employee_attendance"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    action = Column(String(10), nullable=False)  # 'in' | 'out'
+    timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
+    date = Column(String(10), nullable=False)    # YYYY-MM-DD (Chile TZ)
+    note = Column(String(200), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 # ─── User Downloads (cloud storage) ───────────────────────
 
 class UserDownload(Base):
@@ -1337,9 +1359,17 @@ def _ensure_columns():
     insp = _inspect(engine)
     migrations = [
         ("cv_profiles", "visibility", "VARCHAR(20) DEFAULT 'public'"),
+<<<<<<< HEAD
         ("messages", "reply_to_id", "VARCHAR(16)"),
         ("messages", "reply_to_content", "TEXT"),
         ("messages", "reply_to_sender_name", "VARCHAR(255)"),
+=======
+        ("users", "student_rating_sum", "FLOAT DEFAULT 0"),
+        ("users", "student_rating_count", "INTEGER DEFAULT 0"),
+        ("tutor_class_enrollments", "tutor_rating_of_student", "INTEGER"),
+        ("tutor_class_enrollments", "tutor_review_of_student", "TEXT"),
+        ("tutor_class_enrollments", "tutor_rated_at", "DATETIME"),
+>>>>>>> claude/jovial-proskuriakova
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:

@@ -14,7 +14,7 @@ from collections import defaultdict
 
 import bcrypt
 
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, Body
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
@@ -324,6 +324,7 @@ def user_to_dict(user: User) -> dict:
         "coverType": getattr(user, 'cover_type', 'template') or "template",
         "studyStartDate": getattr(user, 'study_start_date', '') or "",
         "studyDays": _calc_study_days(getattr(user, 'study_start_date', '') or ""),
+        "executiveShowcase": _json.loads(getattr(user, 'executive_showcase', None) or "[]"),
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }
@@ -1576,3 +1577,50 @@ def delete_account(user: User = Depends(get_current_user), db: Session = Depends
     db.commit()
 
     return {"status": "deleted", "message": "Tu cuenta ha sido eliminada permanentemente."}
+
+
+# ─── Executive Showcase (MAX plan) ─────────────────────────────────────────────
+
+@router.get("/me/executive-showcase")
+def get_executive_showcase(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return the current user's executive showcase items."""
+    import json as _json
+    return {"items": _json.loads(getattr(user, 'executive_showcase', None) or "[]")}
+
+
+@router.put("/me/executive-showcase")
+def update_executive_showcase(
+    items: list = Body(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Replace the user's executive showcase items (MAX plan only)."""
+    import json as _json
+    tier = getattr(user, 'subscription_tier', 'free') or 'free'
+    if tier != 'max' and getattr(user, 'role', 'user') not in ('owner', 'admin'):
+        raise HTTPException(403, "El Showcase Ejecutivo requiere plan MAX")
+    if len(items) > 50:
+        raise HTTPException(400, "Máximo 50 items en el showcase")
+    # Validate structure
+    for item in items:
+        if not isinstance(item, dict) or not item.get('title'):
+            raise HTTPException(400, "Cada item debe tener al menos un título")
+    user.executive_showcase = _json.dumps(items)
+    db.commit()
+    return {"ok": True, "items": items}
+
+
+@router.get("/users/{user_id}/executive-showcase")
+def get_user_executive_showcase(
+    user_id: str,
+    db: Session = Depends(get_db),
+):
+    """Public endpoint: get another user's executive showcase (MAX users only)."""
+    import json as _json
+    target = db.query(User).filter(User.id == user_id).first()
+    if not target:
+        raise HTTPException(404, "Usuario no encontrado")
+    tier = getattr(target, 'subscription_tier', 'free') or 'free'
+    if tier != 'max' and getattr(target, 'role', 'user') not in ('owner', 'admin'):
+        return {"items": []}  # Non-MAX users have no showcase
+    return {"items": _json.loads(getattr(target, 'executive_showcase', None) or "[]")}
