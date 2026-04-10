@@ -1,9 +1,5 @@
 // Dynamic API base: production uses env var, dev uses localhost
 export function getApiBase(): string {
-  // Allow override via localStorage (for dev/testing)
-  const override = localStorage.getItem('conniku_api_base');
-  if (override) return override;
-
   // In production native builds, use the configured server URL
   const saved = localStorage.getItem('conniku_server_url');
   if (saved) return saved;
@@ -190,7 +186,7 @@ export const api = {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${title}.docx`; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
   exportSummaryPdf: async (projectId: string, summaryData: any, title: string = 'Resumen de Estudio') => {
@@ -204,7 +200,7 @@ export const api = {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${title}.pdf`; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
   exportChatPdf: async (projectId: string, messages: any[], title: string = 'Chat de Estudio') => {
@@ -218,7 +214,7 @@ export const api = {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url; a.download = `${title}.pdf`; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
   generateConceptMap: (projectId: string) =>
@@ -467,7 +463,7 @@ export const api = {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = `${title}.docx`; a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
 
   // ─── Video / YouTube ──────────────────────────────────────

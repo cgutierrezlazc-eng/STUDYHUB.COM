@@ -1009,21 +1009,18 @@ def update_my_cv(
         # Also sync is_public for backwards compatibility
         cv.is_public = data.visibility != "private"
 
-    # Update boolean fields
-    bool_fields = ["open_to_work", "available_worldwide", "is_public"]
-    for field in bool_fields:
-        val = getattr(data, field, None)
-        if val is not None:
-            setattr(cv, field, val)
-
-    # Resolve aliases before saving
+    # Resolver aliases ANTES del loop de actualización
     if data.open_to_offers is not None and data.open_to_work is None:
         data.open_to_work = data.open_to_offers
     if data.skill_groups is not None and data.skills is None:
         data.skills = data.skill_groups
 
     # Update boolean fields (after alias resolution)
-    # (already done above for open_to_work)
+    bool_fields = ["open_to_work", "available_worldwide", "is_public"]
+    for field in bool_fields:
+        val = getattr(data, field, None)
+        if val is not None:
+            setattr(cv, field, val)
 
     # Update JSON fields (store as JSON string)
     json_fields = ["experience", "education", "certifications", "skills", "languages", "differentiators"]

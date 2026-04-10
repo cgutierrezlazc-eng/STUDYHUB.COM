@@ -689,7 +689,6 @@ def _document_to_dict(doc: TutorDocument) -> dict:
         "tutor_id": doc.tutor_id,
         "document_type": doc.document_type,
         "name": doc.name,
-        "file_path": doc.file_path,
         "verified": doc.verified,
         "verified_at": doc.verified_at.isoformat() if doc.verified_at else None,
         "notes": doc.notes,
@@ -1014,13 +1013,28 @@ def list_tutor_applications(
 
     profiles = query.order_by(TutorProfile.created_at).all()
 
+    # Eager load users and document counts to avoid N+1 queries
+    app_user_ids = [p.user_id for p in profiles]
+    app_users = db.query(User).filter(User.id.in_(app_user_ids)).all()
+    app_user_map = {u.id: u for u in app_users}
+
+    app_profile_ids = [p.id for p in profiles]
+    from sqlalchemy import func as _func
+    doc_counts_rows = (
+        db.query(TutorDocument.tutor_id, _func.count(TutorDocument.id))
+        .filter(TutorDocument.tutor_id.in_(app_profile_ids))
+        .group_by(TutorDocument.tutor_id)
+        .all()
+    )
+    doc_count_map = {row[0]: row[1] for row in doc_counts_rows}
+
     results = []
     for p in profiles:
-        u = db.query(User).filter(User.id == p.user_id).first()
+        u = app_user_map.get(p.user_id)
         d = _tutor_to_dict(p, include_bank=True)
         d["user_name"] = f"{u.first_name} {u.last_name}" if u else "Desconocido"
         d["user_email"] = u.email if u else ""
-        d["documents_count"] = db.query(TutorDocument).filter(TutorDocument.tutor_id == p.id).count()
+        d["documents_count"] = doc_count_map.get(p.id, 0)
         results.append(d)
 
     return {"applications": results, "total": len(results)}
@@ -1555,12 +1569,21 @@ def list_available_classes(
     total = query.count()
     classes = query.order_by(TutorClass.scheduled_at).offset((page - 1) * per_page).limit(per_page).all()
 
+    # Eager load tutor profiles and users to avoid N+1 queries
+    tutor_ids = [c.tutor_id for c in classes]
+    profiles = db.query(TutorProfile).filter(TutorProfile.id.in_(tutor_ids)).all()
+    profile_map = {p.id: p for p in profiles}
+
+    user_ids = [p.user_id for p in profiles]
+    users = db.query(User).filter(User.id.in_(user_ids)).all()
+    user_map = {u.id: u for u in users}
+
     results = []
     for c in classes:
         d = _class_to_dict(c)
-        tutor = db.query(TutorProfile).filter(TutorProfile.id == c.tutor_id).first()
+        tutor = profile_map.get(c.tutor_id)
         if tutor:
-            tutor_user = db.query(User).filter(User.id == tutor.user_id).first()
+            tutor_user = user_map.get(tutor.user_id)
             d["tutor_name"] = f"{tutor_user.first_name} {tutor_user.last_name[0]}." if tutor_user and tutor_user.last_name else "Tutor"
             d["tutor_user_id"] = tutor.user_id
             d["tutor_role_number"] = tutor.tutor_role_number
@@ -1621,7 +1644,7 @@ def enroll_in_class(
 ):
     """Student enrolls in a class. Creates enrollment and payment records.
     MAX subscribers can apply 50% discount by passing apply_max_discount=true."""
-    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).with_for_update().first()
     if not cls:
         raise HTTPException(status_code=404, detail="Clase no encontrada")
 

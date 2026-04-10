@@ -97,7 +97,7 @@ export default function ForgotPassword({ onBack }: Props) {
                     autoFocus
                   />
                 </div>
-                {demoCode && (
+                {import.meta.env.DEV && demoCode && (
                   <p className="auth-verification-demo">
                     {t('forgot.demoCode')} <strong>{demoCode}</strong>
                   </p>

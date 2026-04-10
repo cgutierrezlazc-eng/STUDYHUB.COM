@@ -20,7 +20,7 @@ export default function TopBar({ onNavigate, onMenuToggle, showMenuButton }: Pro
     { label: t('topbar.people'), path: '/friends', icon: '👤' },
     { label: t('topbar.communities'), path: '/communities', icon: '🏘' },
     { label: t('topbar.jobs'), path: '/jobs', icon: '💼' },
-    { label: t('topbar.subjects'), path: '/subjects', icon: '📚' },
+    { label: t('topbar.subjects'), path: '/courses', icon: '📚' },
   ]
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')

@@ -136,7 +136,7 @@ export default function App() {
   // WebSocket connection management
   useEffect(() => {
     if (user) {
-      const token = localStorage.getItem('token')
+      const token = localStorage.getItem('conniku_token')
       if (token) wsService.connect(token)
     } else {
       wsService.disconnect()
@@ -324,6 +324,7 @@ export default function App() {
           currentPath={location.pathname}
           onNavigate={(path) => navigate(path)}
           onNewProject={() => setShowNewProject(true)}
+          onClose={showMobileUI || showTabletUI ? () => setSidebarOpen(false) : undefined}
           className={showMobileUI || showTabletUI ? (sidebarOpen ? 'open' : '') : ''}
         />
         <main className="main-content">

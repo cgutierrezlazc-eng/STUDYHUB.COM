@@ -11,6 +11,7 @@ interface Props {
   currentPath: string
   onNavigate: (path: string) => void
   onNewProject: () => void
+  onClose?: () => void
   className?: string
 }
 
@@ -24,7 +25,7 @@ function getClockState() {
   return { clockedIn: false, since: '' }
 }
 
-export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, className }: Props) {
+export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, onClose, className }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
@@ -114,6 +115,16 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   return (
     <nav className={`sidebar ${className || ''}`}>
+      {/* ─── Mobile close button (visible only on mobile/tablet via CSS) ─── */}
+      {onClose && (
+        <button
+          className="sidebar-close-btn"
+          onClick={onClose}
+          aria-label="Cerrar menú"
+        >
+          ×
+        </button>
+      )}
       {/* ─── Social ─── */}
       <div className="sidebar-section">
         <button className="sidebar-section-title sidebar-section-toggle" onClick={() => toggleSection('social')}>
@@ -184,6 +195,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             </button>
             <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
               {Icons.diploma(IC.courses)} Cursos
+            </button>
+            <button className={`nav-item ${isActive('/tutores') ? 'active' : ''}`} onClick={() => onNavigate('/tutores')}>
+              {Icons.tutors(IC.tutors)} Tutores
             </button>
           </div>
         )}

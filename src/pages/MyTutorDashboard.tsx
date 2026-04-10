@@ -157,10 +157,10 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
             Rellena tu postulación y el equipo la revisará en 48 horas hábiles.
           </p>
           <button
-            onClick={() => onNavigate('/tutores')}
+            onClick={() => onNavigate('/tutores?apply=true')}
             style={{ padding: '12px 28px', borderRadius: 12, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
           >
-            Ver directorio de tutores
+            Postularme como Tutor
           </button>
         </div>
       </div>
