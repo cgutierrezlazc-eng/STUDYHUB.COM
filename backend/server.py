@@ -279,7 +279,8 @@ class TranslateRequest(BaseModel):
     target_language: str = "es"
     source_language: str = ""  # auto-detect if empty
 
-ALLOWED_DOC_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.rtf'}
+ALLOWED_DOC_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.rtf',
+                          '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff'}
 
 
 # --- Project storage helpers ---

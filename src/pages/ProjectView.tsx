@@ -136,18 +136,25 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     }
     onUpdate(updated)
 
-    // Try to upload to backend for processing
+    // Upload to backend for processing
     for (const file of Array.from(files)) {
+      const doc = newDocs.find(d => d.name === file.name)
       try {
-        await api.uploadDocument(project.id, file)
-        // Mark as processed
-        const doc = newDocs.find(d => d.name === file.name)
-        if (doc) doc.processed = true
-      } catch {
-        // Backend not running yet, doc stored locally
+        const result = await api.uploadDocument(project.id, file)
+        if (doc) {
+          doc.processed = true
+          doc.id = result.id || doc.id
+        }
+      } catch (err: any) {
+        if (doc) {
+          doc.processed = false
+          doc.uploadError = err?.message || 'Error al subir'
+        }
+        const errMsg = err?.message || 'Error al subir el archivo'
+        alert(`No se pudo subir "${file.name}": ${errMsg}`)
       }
     }
-    onUpdate({ ...updated, documents: [...updated.documents] })
+    onUpdate({ ...updated, documents: updated.documents.map(d => ({ ...d })) })
 
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -542,8 +549,8 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                           : 'Sin fecha'}
                       </div>
                     </div>
-                    <span className={`doc-status ${doc.processed ? 'processed' : 'processing'}`}>
-                      {doc.processed ? 'Procesado' : 'Pendiente'}
+                    <span className={`doc-status ${doc.processed ? 'processed' : (doc as any).uploadError ? 'error' : 'processing'}`}>
+                      {doc.processed ? 'Procesado' : (doc as any).uploadError ? 'Error' : 'Pendiente'}
                     </span>
                     <button
                       className="btn btn-danger btn-sm"

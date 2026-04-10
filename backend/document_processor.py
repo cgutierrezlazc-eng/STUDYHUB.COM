@@ -20,6 +20,13 @@ class DocumentProcessor:
             '.txt': self._extract_txt,
             '.csv': self._extract_txt,
             '.md': self._extract_txt,
+            '.png': self._extract_image,
+            '.jpg': self._extract_image,
+            '.jpeg': self._extract_image,
+            '.gif': self._extract_image,
+            '.webp': self._extract_image,
+            '.bmp': self._extract_image,
+            '.tiff': self._extract_image,
         }
 
         extractor = extractors.get(ext, self._extract_txt)
@@ -94,3 +101,37 @@ class DocumentProcessor:
     def _extract_txt(self, path: str) -> str:
         with open(path, 'r', encoding='utf-8', errors='replace') as f:
             return f.read()
+
+    def _extract_image(self, path: str) -> str:
+        """Extract text from image via OpenAI Vision API, fallback to placeholder."""
+        import os, base64
+        from pathlib import Path as _Path
+        openai_key = os.environ.get("OPENAI_API_KEY", "")
+        if not openai_key:
+            return f"[Imagen adjunta: {_Path(path).name}]"
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=openai_key)
+            with open(path, "rb") as f:
+                b64 = base64.b64encode(f.read()).decode()
+            ext = _Path(path).suffix.lower().lstrip('.')
+            mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+                    "gif": "image/gif", "webp": "image/webp", "bmp": "image/bmp"}.get(ext, "image/jpeg")
+            resp = client.chat.completions.create(
+                model="gpt-4o-mini", max_tokens=1024,
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}},
+                        {"type": "text", "text": (
+                            "Extrae y transcribe todo el texto visible en esta imagen. "
+                            "Si es una foto de apuntes o diapositivas, copia el contenido textual completo. "
+                            "Si es un diagrama, describe su contenido. "
+                            "Si no hay texto, describe brevemente la imagen."
+                        )}
+                    ]
+                }]
+            )
+            return resp.choices[0].message.content or f"[Imagen: {_Path(path).name}]"
+        except Exception:
+            return f"[Imagen adjunta: {_Path(path).name}]"
