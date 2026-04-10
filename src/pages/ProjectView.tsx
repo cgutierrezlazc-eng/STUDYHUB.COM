@@ -83,6 +83,8 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [conceptMap, setConceptMap] = useState<any>(null)
   const [isGeneratingMap, setIsGeneratingMap] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
+  const [uploadingFileName, setUploadingFileName] = useState('')
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<number | null>(null)
@@ -136,11 +138,15 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     }
     onUpdate(updated)
 
-    // Upload to backend for processing
+    // Upload to backend for processing (XHR for progress tracking)
     for (const file of Array.from(files)) {
       const doc = newDocs.find(d => d.name === file.name)
+      setUploadingFileName(file.name)
+      setUploadProgress(0)
       try {
-        const result = await api.uploadDocument(project.id, file)
+        const result = await api.uploadDocumentWithProgress(project.id, file, (pct) => {
+          setUploadProgress(pct)
+        })
         if (doc) {
           doc.processed = true
           doc.id = result.id || doc.id
@@ -152,6 +158,9 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         }
         const errMsg = err?.message || 'Error al subir el archivo'
         alert(`No se pudo subir "${file.name}": ${errMsg}`)
+      } finally {
+        setUploadProgress(null)
+        setUploadingFileName('')
       }
     }
     onUpdate({ ...updated, documents: updated.documents.map(d => ({ ...d })) })
@@ -493,6 +502,37 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <h3>Arrastra archivos aquí o haz click para seleccionar</h3>
               <p>PDF, Word, Excel, PowerPoint, TXT, CSV, Imágenes</p>
             </div>
+
+            {uploadProgress !== null && (
+              <div style={{
+                marginTop: 12,
+                padding: '14px 18px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                borderRadius: 10,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '75%' }}>
+                    {uploadingFileName}
+                  </span>
+                  <span style={{ fontSize: 13, color: 'var(--accent)', fontWeight: 700, flexShrink: 0 }}>
+                    {uploadProgress}%
+                  </span>
+                </div>
+                <div style={{ height: 6, background: 'var(--bg-secondary)', borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${uploadProgress}%`,
+                    background: 'var(--accent)',
+                    borderRadius: 99,
+                    transition: 'width 0.25s ease',
+                  }} />
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+                  Conniku está procesando el archivo…
+                </div>
+              </div>
+            )}
 
             {project.documents.length > 0 && (
               <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
