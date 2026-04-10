@@ -1258,7 +1258,7 @@ def _ensure_columns():
         ("users", "student_rating_count", "INTEGER DEFAULT 0"),
         ("tutor_class_enrollments", "tutor_rating_of_student", "INTEGER"),
         ("tutor_class_enrollments", "tutor_review_of_student", "TEXT"),
-        ("tutor_class_enrollments", "tutor_rated_at", "DATETIME"),
+        ("tutor_class_enrollments", "tutor_rated_at", "TIMESTAMP"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
