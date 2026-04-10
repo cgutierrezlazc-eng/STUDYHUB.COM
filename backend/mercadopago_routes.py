@@ -31,7 +31,7 @@ MP_API = "https://api.mercadopago.com"
 PLANS = {
     "pro_monthly": {
         "title": "Conniku PRO — Mensual",
-        "price": 2990,
+        "price": 6490,
         "currency": "CLP",
         "tier": "pro",
         "frequency": 1,
@@ -40,7 +40,7 @@ PLANS = {
     },
     "pro_yearly": {
         "title": "Conniku PRO — Anual",
-        "price": 29900,
+        "price": 45990,
         "currency": "CLP",
         "tier": "pro",
         "frequency": 12,
@@ -49,7 +49,7 @@ PLANS = {
     },
     "max_monthly": {
         "title": "Conniku MAX — Mensual",
-        "price": 6990,
+        "price": 9990,
         "currency": "CLP",
         "tier": "max",
         "frequency": 1,
@@ -58,7 +58,7 @@ PLANS = {
     },
     "max_yearly": {
         "title": "Conniku MAX — Anual",
-        "price": 69900,
+        "price": 81990,
         "currency": "CLP",
         "tier": "max",
         "frequency": 12,
