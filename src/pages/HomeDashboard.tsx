@@ -431,57 +431,6 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Conniku JR Banner */}
-      <div style={{
-        marginTop: 28,
-        background: 'linear-gradient(135deg, #2563EB 0%, #7C3AED 50%, #EC4899 100%)',
-        borderRadius: 16,
-        padding: '28px 32px',
-        color: '#fff',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', top: -20, right: -20,
-          width: 120, height: 120, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-        }} />
-        <div style={{
-          position: 'absolute', bottom: -30, right: 60,
-          width: 80, height: 80, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.07)',
-        }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            background: 'rgba(255,255,255,0.2)', borderRadius: 20,
-            padding: '4px 12px', fontSize: 11, fontWeight: 700,
-            letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12,
-          }}>
-            {t('dash.comingSoon')}
-          </div>
-          <h3 style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 8 }}>
-            {t('dash.conniku.jrTitle')}
-          </h3>
-          <p style={{ fontSize: 14, opacity: 0.9, lineHeight: 1.5, maxWidth: 500, marginBottom: 16 }}>
-            {t('dash.conniku.jrDesc')}
-          </p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', fontSize: 12, opacity: 0.85 }}>
-            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              {t('dash.conniku.jrPaes')}
-            </span>
-            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              {t('dash.conniku.jrCommunity')}
-            </span>
-            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              {t('dash.conniku.jrSimulations')}
-            </span>
-            <span style={{ background: 'rgba(255,255,255,0.15)', padding: '4px 10px', borderRadius: 12 }}>
-              {t('dash.conniku.jrFree')}
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
