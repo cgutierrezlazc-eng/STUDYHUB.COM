@@ -33,8 +33,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
   const [selectedUni, setSelectedUni] = useState<University | null>(null)
   const uniInputRef = useRef<HTMLInputElement>(null)
 
-  const STEP_TITLES = [t('reg.step1'), t('reg.step2'), t('reg.step3'), t('reg.stepFinal')]
-  const STEP_SUBTITLES = [t('reg.subtitle1'), t('reg.subtitle2'), t('reg.subtitle3'), t('reg.subtitleFinal')]
+  const STEP_TITLES = [t('reg.step1'), t('reg.step2'), t('reg.step3'), t('reg.step4'), t('reg.stepFinal')]
+  const STEP_SUBTITLES = [t('reg.subtitle1'), t('reg.subtitle2'), t('reg.subtitle3'), t('reg.subtitle4'), t('reg.subtitleFinal')]
 
   const [form, setForm] = useState({
     email: '',
@@ -141,6 +141,8 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
       if (form.academicStatus === 'titulado' && !form.professionalTitle.trim()) { setError(t('err.enterProfTitle')); return false }
       if ((form.academicStatus === 'egresado' || form.academicStatus === 'titulado') && !form.graduationStatusYear) { setError(t('err.selectGradYear')); return false }
       if (form.academicStatus === 'titulado' && !form.titleYear) { setError(t('err.selectTitleYear')); return false }
+    }
+    if (step === 3) {
       if (form.mentoringServices.length > 0 && form.mentoringPriceType === 'paid' && !form.mentoringPricePerHour) { setError(t('err.enterMentoringPrice')); return false }
       if (!form.tosAccepted) { setError(t('err.acceptTOS')); return false }
     }
@@ -160,7 +162,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     } else if (result.verificationCode) {
       setExpectedCode(result.verificationCode)
       setVerificationSent(true)
-      setStep(3) // Go to verification step
+      setStep(4) // Go to verification step
     }
   }
 
@@ -269,7 +271,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
             ))}
           </div>
           <div className="auth-progress-bar">
-            <div className="auth-progress-fill" style={{ width: `${((step + 1) / 4) * 100}%` }} />
+            <div className="auth-progress-fill" style={{ width: `${((step + 1) / 5) * 100}%` }} />
           </div>
 
           <h2>{STEP_SUBTITLES[step]}</h2>
@@ -325,22 +327,6 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
               <div className="auth-row">
                 <div className="auth-field"><label>{t('reg.name')}</label><input placeholder={t('reg.name')} value={form.firstName} onChange={e => update('firstName', e.target.value)} autoFocus /></div>
                 <div className="auth-field"><label>{t('reg.lastName')}</label><input placeholder={t('reg.lastName')} value={form.lastName} onChange={e => update('lastName', e.target.value)} /></div>
-              </div>
-
-              {/* Username */}
-              <div className="auth-field">
-                <label>{t('reg.username')} <span className="auth-optional">({t('reg.usernameHint')})</span></label>
-                <div className="auth-username-wrap">
-                  <span className="auth-username-at">@</span>
-                  <input
-                    placeholder={t('reg.usernamePlaceholder')}
-                    value={form.username}
-                    onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))}
-                  />
-                  {checkingUsername && <span className="auth-username-status">...</span>}
-                  {!checkingUsername && usernameAvailable === true && <span className="auth-username-status" style={{ color: '#22c55e' }}>✓</span>}
-                  {!checkingUsername && usernameAvailable === false && <span className="auth-username-status" style={{ color: '#ef4444' }}>✗</span>}
-                </div>
               </div>
 
               {/* Gender */}
@@ -585,6 +571,11 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                 </div>
               )}
 
+            </>
+          )}
+
+          {step === 3 && (
+            <>
               {/* Tutoring options - for titulado or egresado */}
               {(form.academicStatus === 'titulado' || form.academicStatus === 'egresado') && (
                 <div className="auth-field" style={{ background: 'var(--bg-tertiary, rgba(45,98,200,0.04))', borderRadius: 12, padding: 16, border: '1px solid var(--border)' }}>
@@ -812,7 +803,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
             </>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <div className="auth-verification">
               <div className="auth-verification-icon">{Inbox({ size: 48 })}</div>
               <p>{t('reg.verificationSent')}</p>
@@ -842,10 +833,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
           {error && <div className="auth-error">{error}</div>}
 
-          {step < 3 && (
+          {step < 4 && (
             <div className="auth-actions">
               {step > 0 && <button className="btn-auth-secondary" onClick={handleBack}>{t('auth.back')}</button>}
-              {step < 2 ? (
+              {step < 3 ? (
                 <button className="btn-auth-primary" onClick={handleNext}>{t('auth.next')}</button>
               ) : (
                 <button className="btn-auth-primary" onClick={handleSubmit} disabled={isLoading}>
@@ -855,7 +846,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
             </div>
           )}
 
-          {step < 3 && (
+          {step < 4 && (
             <p className="auth-switch">
               {t('auth.hasAccount')}{' '}
               <button onClick={onSwitchToLogin}>{t('auth.loginLink')}</button>

@@ -17,7 +17,7 @@ import uvicorn
 
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
-from database import init_db, get_db, User, gen_id, DATA_DIR
+from database import init_db, get_db, User, gen_id, DATA_DIR, ChatUsage
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
@@ -179,40 +179,43 @@ async def serve_cover_photo(filename: str):
         raise HTTPException(404, "Imagen no encontrada")
     return FileResponse(str(file_path))
 
-# ─── Chat rate limiting (tier-aware) ───────────────────────────
-# In-memory tracker: { user_id: [datetime, datetime, ...] }
-_chat_timestamps: dict[str, list[datetime]] = {}
+# ─── Chat rate limiting (persistent, DB-backed) ─────────────────
 
+def check_chat_limit(user: User, db: Session = None):
+    """Persistent rate limiting via DB. Falls back to no-limit if DB unavailable."""
+    # Obtener límite según plan del usuario
+    plan = getattr(user, 'subscription_plan', 'free') or 'free'
+    limits = {'free': 20, 'pro': 100, 'max': 500}
+    limit = limits.get(plan, 20)
 
-def check_chat_limit(user: User):
-    """Raise 429 if user exceeds their tier's AI message limit."""
-    from middleware import get_tier, get_tier_limits
-    tier = get_tier(user)
-    limits = get_tier_limits(user)
+    if db is None:
+        return  # Si no hay DB disponible, permitir
 
-    # Max tier and owner/admin bypass limits
-    if tier == "max":
-        return
+    today = datetime.utcnow().strftime('%Y-%m-%d')
 
-    window_hours = limits.get("ai_window_hours", 6)
-    max_messages = limits.get("ai_messages_per_window", 20)
+    try:
+        usage = db.query(ChatUsage).filter(
+            ChatUsage.user_id == str(user.id),
+            ChatUsage.date == today
+        ).first()
 
-    now = datetime.utcnow()
-    cutoff = now - timedelta(hours=window_hours)
+        if usage is None:
+            usage = ChatUsage(user_id=str(user.id), date=today, count=0)
+            db.add(usage)
+            db.flush()
 
-    timestamps = _chat_timestamps.get(user.id, [])
-    # Prune old entries
-    timestamps = [t for t in timestamps if t > cutoff]
-    _chat_timestamps[user.id] = timestamps
+        if usage.count >= limit:
+            raise HTTPException(
+                status_code=429,
+                detail=f"Límite diario de mensajes alcanzado ({limit}). Actualiza tu plan para más."
+            )
 
-    if len(timestamps) >= max_messages:
-        tier_names = {"free": "Pro ($5/mes)", "pro": "Max ($13/mes)"}
-        upgrade_to = tier_names.get(tier, "tu plan")
-        raise HTTPException(
-            429,
-            f"Límite de {max_messages} mensajes cada {window_hours} horas alcanzado. "
-            f"Actualiza a {upgrade_to} para más mensajes."
-        )
+        usage.count += 1
+        db.commit()
+    except HTTPException:
+        raise
+    except Exception:
+        pass  # Si hay error de DB, no bloquear al usuario
 
 
 # --- Models ---
@@ -433,21 +436,18 @@ def upload_from_path(project_id: str, req: PathUploadRequest, user: User = Depen
 
 
 @app.post("/projects/{project_id}/chat")
-def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_user)):
+def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
 
     # Enforce chat limit for free/trial users
-    check_chat_limit(user)
+    check_chat_limit(user, db)
 
     response = ai_engine.chat(
         project_id, req.message, req.language, req.gender, req.language_skill,
         socratic=req.socratic
     )
-
-    # Record timestamp after successful response
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
 
     return {"response": response}
 
@@ -653,7 +653,7 @@ Para dudas sobre terminos: contacto@conniku.com"""
 @app.post("/support/chat")
 def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Konni USER — personalized assistant powered by Gemini (free)."""
-    check_chat_limit(user)
+    check_chat_limit(user, db)
 
     # Build personalized context
     user_context = _build_user_context(user, db)
@@ -678,7 +678,6 @@ def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)
     except Exception:
         response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
 
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
 
 
@@ -755,12 +754,12 @@ UF, UTM, USD, Ingreso Minimo Mensual (IMM)
 
 
 @app.post("/support/admin-chat")
-def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
+def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Konni ADMIN — executive assistant powered by Claude (owner only)."""
     if user.role != "owner":
         raise HTTPException(403, "Solo el owner tiene acceso a Konni Admin")
 
-    check_chat_limit(user)
+    check_chat_limit(user, db)
 
     today = datetime.utcnow().strftime("%A %d de %B %Y, %H:%M UTC")
     system = f"""{KONNI_ADMIN_SYSTEM}
@@ -781,7 +780,6 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
     except Exception:
         response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo."
 
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
 
 
@@ -838,9 +836,9 @@ DISPUTAS: Ley chilena. Tribunales ordinarios de Santiago de Chile.
 Para consultas sobre terminos: contacto@conniku.com"""
 
 @app.post("/ai/study-buddy")
-def study_buddy_chat(req: StudyBuddyRequest, user: User = Depends(get_current_user)):
+def study_buddy_chat(req: StudyBuddyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """AI Study Buddy — contextual study help using Gemini (free)."""
-    check_chat_limit(user)
+    check_chat_limit(user, db)
 
     context_info = f"\nContexto actual del estudiante: {req.context}" if req.context else ""
 
@@ -874,7 +872,6 @@ Reglas academicas:
     except Exception:
         response = "Lo siento, no pude procesar tu pregunta. Intenta de nuevo."
 
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
 
 
@@ -1346,11 +1343,11 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
 # ─── Summary generation & export ─────────────────────────────
 @app.post("/projects/{project_id}/summary")
 def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
-                     user: User = Depends(get_current_user)):
+                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user)
+    check_chat_limit(user, db)
 
     summary = ai_engine.generate_summary(project_id, user.language or "es", req.detail_level)
 
@@ -1369,7 +1366,6 @@ def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
         return FileResponse(file_path, media_type="application/pdf",
                             filename=f"{summary.get('title', 'Resumen')}.pdf")
 
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return summary
 
 
@@ -1429,13 +1425,12 @@ def export_chat_pdf(project_id: str, req: ExportPdfRequest,
 
 # ─── Concept map ─────────────────────────────────────────────
 @app.post("/projects/{project_id}/concept-map")
-def generate_concept_map(project_id: str, user: User = Depends(get_current_user)):
+def generate_concept_map(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user)
+    check_chat_limit(user, db)
     result = ai_engine.generate_concept_map(project_id, user.language or "es")
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return result
 
 
@@ -1445,13 +1440,12 @@ class VisualExplainRequest(BaseModel):
 
 @app.post("/projects/{project_id}/explain-visual")
 def explain_with_visuals(project_id: str, req: VisualExplainRequest,
-                         user: User = Depends(get_current_user)):
+                         user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user)
+    check_chat_limit(user, db)
     result = ai_engine.explain_with_visuals(project_id, req.topic, user.language or "es")
-    _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return result
 
 

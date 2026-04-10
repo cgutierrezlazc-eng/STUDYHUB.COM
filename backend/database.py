@@ -1246,6 +1246,17 @@ class ConferenceParticipant(Base):
     user = relationship("User", foreign_keys=[user_id])
 
 
+# ─── Chat Usage (persistent rate limiting) ───────────────────────
+
+class ChatUsage(Base):
+    __tablename__ = "chat_usage"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String, nullable=False, index=True)
+    date = Column(String, nullable=False)  # formato YYYY-MM-DD
+    count = Column(Integer, default=0)
+    __table_args__ = (UniqueConstraint('user_id', 'date', name='uq_chat_usage_user_date'),)
+
+
 # ─── Init ────────────────────────────────────────────────────────
 
 def _ensure_columns():
@@ -1253,9 +1264,66 @@ def _ensure_columns():
     from sqlalchemy import text as _t, inspect as _inspect
     insp = _inspect(engine)
     migrations = [
+        # cv_profiles
         ("cv_profiles", "visibility", "VARCHAR(20) DEFAULT 'public'"),
+        # users — i18n / language
+        ("users", "language_skill", "VARCHAR(20) DEFAULT 'intermediate'"),
+        ("users", "secondary_languages", "TEXT DEFAULT '[]'"),
+        ("users", "platform_language", "VARCHAR(5) DEFAULT 'es'"),
+        # users — academic tracking
+        ("users", "country_currency", "VARCHAR(5) DEFAULT 'CLP'"),
+        ("users", "study_start_date", "VARCHAR(10) DEFAULT ''"),
+        ("users", "is_senior_year", "BOOLEAN DEFAULT FALSE"),
+        ("users", "total_semesters", "INTEGER DEFAULT 8"),
+        ("users", "academic_status", "VARCHAR(20) DEFAULT 'estudiante'"),
+        ("users", "graduation_status_year", "INTEGER"),
+        ("users", "title_year", "INTEGER"),
+        # users — tutoring / profile
+        ("users", "offers_mentoring", "BOOLEAN DEFAULT FALSE"),
+        ("users", "mentoring_services", "TEXT DEFAULT '[]'"),
+        ("users", "mentoring_subjects", "TEXT DEFAULT '[]'"),
+        ("users", "mentoring_description", "TEXT DEFAULT ''"),
+        ("users", "mentoring_price_type", "VARCHAR(10) DEFAULT 'free'"),
+        ("users", "mentoring_price_per_hour", "FLOAT"),
+        ("users", "mentoring_currency", "VARCHAR(5) DEFAULT 'USD'"),
+        ("users", "professional_title", "VARCHAR(255) DEFAULT ''"),
+        ("users", "cover_photo", "VARCHAR(500) DEFAULT ''"),
+        ("users", "cover_type", "VARCHAR(20) DEFAULT 'template'"),
+        ("users", "provider", "VARCHAR(20) DEFAULT 'email'"),
+        # users — CV fields
+        ("users", "cv_headline", "VARCHAR(255) DEFAULT ''"),
+        ("users", "cv_summary", "TEXT DEFAULT ''"),
+        ("users", "cv_experience", "TEXT DEFAULT ''"),
+        ("users", "cv_skills", "TEXT DEFAULT ''"),
+        ("users", "cv_certifications", "TEXT DEFAULT ''"),
+        ("users", "cv_languages", "TEXT DEFAULT ''"),
+        ("users", "cv_portfolio", "TEXT DEFAULT ''"),
+        ("users", "cv_visibility", "VARCHAR(20) DEFAULT 'private'"),
+        ("users", "cv_file_path", "VARCHAR(500) DEFAULT ''"),
+        # users — executive showcase (MAX plan)
+        ("users", "executive_showcase", "TEXT DEFAULT '[]'"),
+        # users — subscription / payments
+        ("users", "paypal_subscription_id", "VARCHAR(255)"),
+        ("users", "storage_used_bytes", "FLOAT DEFAULT 0"),
+        ("users", "storage_limit_bytes", "FLOAT DEFAULT 524288000"),
+        ("users", "subscription_tier", "VARCHAR(10) DEFAULT 'free'"),
+        # users — referral program
+        ("users", "referral_code", "VARCHAR(12)"),
+        ("users", "referred_by", "VARCHAR(16)"),
+        ("users", "referral_count", "INTEGER DEFAULT 0"),
+        # users — study goals / pomodoro
+        ("users", "weekly_study_goal_hours", "FLOAT DEFAULT 10.0"),
+        ("users", "pomodoro_total_sessions", "INTEGER DEFAULT 0"),
+        ("users", "pomodoro_total_minutes", "INTEGER DEFAULT 0"),
+        # users — mood tracking
+        ("users", "mood_data", "TEXT DEFAULT '[]'"),
+        # users — password reset
+        ("users", "reset_code", "VARCHAR(10)"),
+        ("users", "reset_code_expires", "TIMESTAMP"),
+        # users — student rating (given by tutors)
         ("users", "student_rating_sum", "FLOAT DEFAULT 0"),
         ("users", "student_rating_count", "INTEGER DEFAULT 0"),
+        # tutor_class_enrollments — tutor rates student
         ("tutor_class_enrollments", "tutor_rating_of_student", "INTEGER"),
         ("tutor_class_enrollments", "tutor_review_of_student", "TEXT"),
         ("tutor_class_enrollments", "tutor_rated_at", "TIMESTAMP"),
