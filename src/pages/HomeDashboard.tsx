@@ -5,6 +5,29 @@ import { useI18n } from '../services/i18n'
 import { Project } from '../types'
 import { BookOpen, FileText, Clock, Star, Flame, Trophy, Calendar, MessageSquare, Users, BarChart3, Sun, CloudSun, Moon, Shield, ChevronRight, Plus, Sparkles } from '../components/Icons'
 
+const PHILOSOPHY_QUOTES = [
+  { quote: 'Educar la mente sin educar el corazón no es educación en absoluto.', author: 'Aristóteles' },
+  { quote: 'La mente no es un recipiente que se llena, sino un fuego que se enciende.', author: 'Plutarco' },
+  { quote: 'El aprendizaje nunca agota la mente.', author: 'Leonardo da Vinci' },
+  { quote: 'Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo.', author: 'Benjamín Franklin' },
+  { quote: 'Solo hay un bien: el conocimiento. Solo hay un mal: la ignorancia.', author: 'Sócrates' },
+  { quote: 'Una inversión en conocimiento paga el mejor interés.', author: 'Benjamín Franklin' },
+  { quote: 'La educación es el movimiento de la oscuridad a la luz.', author: 'Allan Bloom' },
+  { quote: 'El objetivo de la educación es la virtud y el deseo de convertirse en un buen ciudadano.', author: 'Platón' },
+  { quote: 'El conocimiento es la única cosa que nadie puede quitarte.', author: 'Nelson Mandela' },
+  { quote: 'Aprender sin pensar es inútil. Pensar sin aprender es peligroso.', author: 'Confucio' },
+  { quote: 'El aprendizaje es un tesoro que seguirá a su dueño a todas partes.', author: 'Proverbio chino' },
+  { quote: 'No hay enseñanza sin que el maestro también aprenda.', author: 'Paulo Freire' },
+  { quote: 'Toda la educación viene de dentro; tú no puedes obtenerla de nadie más.', author: 'Ralph Waldo Emerson' },
+  { quote: 'La raíz del aprendizaje es amarga, pero su fruto es dulce.', author: 'Aristóteles' },
+  { quote: 'El hombre sabio no da las respuestas correctas, hace las preguntas correctas.', author: 'Claude Lévi-Strauss' },
+]
+
+function getDailyQuote() {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+  return PHILOSOPHY_QUOTES[dayOfYear % PHILOSOPHY_QUOTES.length]
+}
+
 interface Props {
   projects: Project[]
   onNavigate: (path: string) => void
@@ -135,8 +158,8 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
         )}
       </div>
 
-      {/* Daily Summary */}
-      {dailySummary && (
+      {/* Daily Summary / Frase del día */}
+      {dailySummary ? (
         <div className="u-card-flat" style={{
           padding: '16px 20px', marginBottom: 20,
           borderLeft: `4px solid ${dailySummary.mood === 'positive' ? 'var(--accent-green)' : dailySummary.mood === 'alert' ? 'var(--accent-orange)' : 'var(--accent-blue)'}`,
@@ -159,6 +182,35 @@ export default function HomeDashboard({ projects, onNavigate }: Props) {
             </div>
           </div>
         </div>
+      ) : (
+        (() => {
+          const q = getDailyQuote()
+          return (
+            <div style={{
+              marginBottom: 20, padding: '18px 24px',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-subtle)',
+              borderLeft: '4px solid var(--accent)',
+              borderRadius: 12,
+              display: 'flex', gap: 14, alignItems: 'flex-start',
+            }}>
+              <div style={{
+                fontSize: 40, lineHeight: 1, color: 'var(--accent)',
+                opacity: 0.2, fontFamily: 'Georgia, serif', flexShrink: 0, marginTop: -6,
+              }}>
+                "
+              </div>
+              <div>
+                <div style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', fontStyle: 'italic' }}>
+                  {q.quote}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 8, fontWeight: 600 }}>
+                  — {q.author}
+                </div>
+              </div>
+            </div>
+          )
+        })()
       )}
 
       {/* Stats Grid */}
