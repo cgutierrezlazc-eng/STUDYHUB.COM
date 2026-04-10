@@ -21,6 +21,7 @@ from database import init_db, get_db, User, gen_id, DATA_DIR, ChatUsage
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
+import anthropic as anthropic_lib
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -93,6 +94,27 @@ if os.environ.get("ENVIRONMENT") == "production":
 # Logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("conniku")
+
+# ─── Claude client (Konni) ────────────────────────────────────────
+_ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+_claude_client = anthropic_lib.Anthropic(api_key=_ANTHROPIC_KEY) if _ANTHROPIC_KEY else None
+CLAUDE_MODEL = "claude-haiku-4-5-20251001"
+
+def _call_claude_chat(system: str, messages: list) -> str:
+    """Call Claude API for Konni chat. Returns plain text response."""
+    if not _claude_client:
+        return "Lo siento, el asistente no está disponible en este momento."
+    try:
+        resp = _claude_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=1024,
+            system=system,
+            messages=messages,
+        )
+        return resp.content[0].text
+    except Exception as e:
+        logger.error(f"Claude API error: {e}")
+        return f"Lo siento, tuve un problema al responder. Puedes escribir a contacto@conniku.com para soporte. (Error: {str(e)[:80]})"
 
 
 # Global exception handler: ensures 500 errors return JSON with CORS headers
@@ -651,7 +673,7 @@ Para dudas sobre terminos: contacto@conniku.com"""
 
 @app.post("/support/chat")
 def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Konni USER — personalized assistant powered by Gemini (free)."""
+    """Konni USER — personalized assistant powered by Claude."""
     check_chat_limit(user, db)
 
     # Build personalized context
@@ -672,11 +694,7 @@ def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    try:
-        response = ai_engine._call_gemini_chat(system, messages)
-    except Exception:
-        response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
-
+    response = _call_claude_chat(system, messages)
     return {"response": response}
 
 
@@ -774,11 +792,7 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    try:
-        response = ai_engine._call_gemini_chat(system, messages)
-    except Exception:
-        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo."
-
+    response = _call_claude_chat(system, messages)
     return {"response": response}
 
 
