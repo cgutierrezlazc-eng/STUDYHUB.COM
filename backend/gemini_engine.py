@@ -60,9 +60,9 @@ class AIEngine:
         self.chroma_client = chromadb.PersistentClient(path=chroma_path)
 
         # Primary model for chat and rich generation
-        self.model_main = "gemini-2.0-flash"
+        self.model_main = "gemini-2.0-flash-lite"
         # Lighter model for quizzes, flashcards (faster, lower cost)
-        self.model_lite = "gemini-2.0-flash-lite"
+        self.model_lite = "gemini-1.5-flash-8b"
 
         self.api_available = bool(API_KEY)
 
