@@ -523,14 +523,16 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <div className="doc-list" style={{ marginTop: 20 }}>
                 {project.documents.map(doc => (
                   <div key={doc.id} className="doc-item">
-                    <div className={`doc-icon ${doc.type}`}>
-                      {DOC_ICONS[doc.type] || '?'}
+                    <div className={`doc-icon ${doc.type || getFileType(doc.name)}`}>
+                      {DOC_ICONS[doc.type] || DOC_ICONS[getFileType(doc.name)] || 'DOC'}
                     </div>
                     <div className="doc-info">
                       <div className="doc-name">{doc.name}</div>
                       <div className="doc-meta">
                         {doc.size > 0 ? formatSize(doc.size) + ' • ' : ''}
-                        {new Date(doc.uploadedAt).toLocaleDateString('es')}
+                        {doc.uploadedAt && !isNaN(new Date(doc.uploadedAt).getTime())
+                          ? new Date(doc.uploadedAt).toLocaleDateString('es-CL')
+                          : 'Sin fecha'}
                       </div>
                     </div>
                     <span className={`doc-status ${doc.processed ? 'processed' : 'processing'}`}>
