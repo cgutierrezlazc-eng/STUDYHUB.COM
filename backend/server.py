@@ -1198,6 +1198,42 @@ def download_document(project_id: str, doc_name: str, user: User = Depends(get_c
     return FileResponse(str(file_path), filename=doc_name)
 
 
+@app.delete("/projects/{project_id}/documents/{doc_id}")
+def delete_document(project_id: str, doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Delete a document: removes file from disk, vectors from ChromaDB, and updates storage counter."""
+    meta = get_project_meta(project_id)
+    if meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+
+    docs = meta.get("documents", [])
+    doc = next((d for d in docs if d["id"] == doc_id), None)
+    if not doc:
+        raise HTTPException(404, "Documento no encontrado")
+
+    # 1. Delete physical file
+    file_path = Path(doc.get("path", ""))
+    if file_path.exists():
+        try:
+            file_path.unlink()
+        except Exception as e:
+            logger.warning(f"Could not delete file {file_path}: {e}")
+
+    # 2. Remove vectors from ChromaDB
+    ai_engine.remove_document(project_id, doc_id)
+
+    # 3. Decrement storage counter
+    file_size = doc.get("size", 0)
+    if file_size > 0:
+        user.storage_used_bytes = max(0, (user.storage_used_bytes or 0) - file_size)
+        db.commit()
+
+    # 4. Remove from metadata
+    meta["documents"] = [d for d in docs if d["id"] != doc_id]
+    save_project_meta(project_id, meta)
+
+    return {"status": "deleted", "id": doc_id}
+
+
 @app.post("/projects/{project_id}/attendance")
 def log_attendance(project_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Log class attendance for a subject."""

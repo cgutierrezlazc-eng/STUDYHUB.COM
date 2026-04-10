@@ -1019,6 +1019,10 @@ export const api = {
   downloadProjectDocument: (projectId: string, docName: string) =>
     request(`/projects/${projectId}/documents/${encodeURIComponent(docName)}/download`),
 
+  // ─── Document Delete ──────────────────────────────────────
+  deleteProjectDocument: (projectId: string, docId: string) =>
+    request(`/projects/${projectId}/documents/${docId}`, { method: 'DELETE' }),
+
   // ─── Attendance ───────────────────────────────────────────
   logAttendance: (projectId: string, data: { title?: string; duration_minutes?: number; recorded?: boolean; transcribed?: boolean }) =>
     request(`/projects/${projectId}/attendance`, { method: 'POST', body: JSON.stringify(data) }),

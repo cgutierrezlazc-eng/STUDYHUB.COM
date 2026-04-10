@@ -192,13 +192,20 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     }
   }
 
-  const handleDeleteDoc = (docId: string) => {
-    const updated = {
-      ...project,
-      documents: project.documents.filter(d => d.id !== docId),
-      updatedAt: new Date().toISOString(),
+  const handleDeleteDoc = async (docId: string) => {
+    if (!confirm('¿Eliminar este documento? Esta acción no se puede deshacer.')) return
+    try {
+      await api.deleteProjectDocument(project.id, docId)
+      const updated = {
+        ...project,
+        documents: project.documents.filter(d => d.id !== docId),
+        updatedAt: new Date().toISOString(),
+      }
+      onUpdate(updated)
+    } catch (err) {
+      console.error('Error al eliminar documento:', err)
+      alert('No se pudo eliminar el documento. Intenta de nuevo.')
     }
-    onUpdate(updated)
   }
 
   const handleSendMessage = async () => {
