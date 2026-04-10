@@ -9,7 +9,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>
   register: (data: any) => Promise<{ success: boolean; error?: string; verificationCode?: string }>
   logout: () => void
-  updateProfile: (data: Partial<User>) => void
+  updateProfile: (data: Partial<User>) => Promise<any>
   refreshUser: () => Promise<void>
 }
 
@@ -169,10 +169,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const updated = await api.updateMe(payload)
       setUser(updated)
       return updated
-    } catch {
-      // Fallback: update locally
-      setUser(prev => prev ? { ...prev, ...data } : null)
-      return null
+    } catch (err) {
+      // No actualizar estado local si el backend falló
+      throw err  // propagar para que el caller maneje el error
     }
   }
 

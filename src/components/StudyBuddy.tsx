@@ -47,6 +47,9 @@ export default function StudyBuddy({ context, projectId }: Props) {
   const { user } = useAuth()
   const [isApprovedTutor, setIsApprovedTutor] = useState(false)
   const [open, setOpen] = useState(false)
+  const [showTooltip, setShowTooltip] = useState(() => {
+    return !localStorage.getItem('konni_tooltip_seen')
+  })
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -109,6 +112,14 @@ export default function StudyBuddy({ context, projectId }: Props) {
     }
   }
 
+  const handleOpen = () => {
+    setOpen(true)
+    if (showTooltip) {
+      setShowTooltip(false)
+      localStorage.setItem('konni_tooltip_seen', '1')
+    }
+  }
+
   // ─── Sugerencias según rol ─────────────────────────────────────
   const suggestions = isApprovedTutor
     ? [
@@ -128,13 +139,24 @@ export default function StudyBuddy({ context, projectId }: Props) {
       {!open && (
         <button
           className="study-buddy-fab press-feedback"
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
           title={isApprovedTutor ? 'Konni Dorado — Asistente de tutorías' : 'Konni — Resuelve tus dudas'}
           style={isApprovedTutor ? {
             background: GOLD.fab,
             boxShadow: GOLD.ring,
           } : undefined}
         >
+          {showTooltip && (
+            <span style={{
+              position: 'absolute', right: '110%', top: '50%', transform: 'translateY(-50%)',
+              background: 'var(--bg-primary)', color: 'var(--text-primary)',
+              padding: '6px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+              whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              border: '1px solid var(--border)', pointerEvents: 'none',
+            }}>
+              {isApprovedTutor ? 'Konni — Asistente de tutorías' : 'Konni — Resuelve tus dudas'}
+            </span>
+          )}
           {isApprovedTutor
             ? <GoldSparkleIcon size={22} />
             : Sparkles({ size: 22, color: '#fff' })

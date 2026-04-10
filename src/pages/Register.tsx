@@ -829,7 +829,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                   autoFocus
                 />
               </div>
-              {expectedCode && (
+              {import.meta.env.DEV && expectedCode && (
                 <p className="auth-verification-demo">
                   Demo: {t('reg.yourCode')} <strong>{expectedCode}</strong>
                 </p>

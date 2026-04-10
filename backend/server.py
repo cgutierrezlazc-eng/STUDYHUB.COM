@@ -103,7 +103,7 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error(traceback.format_exc())
     return JSONResponse(
         status_code=500,
-        content={"detail": f"Internal server error: {str(exc)}"},
+        content={"detail": "Internal server error. Please try again later."},
     )
 
 
@@ -370,7 +370,9 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
         )
 
     docs_dir = get_project_docs_dir(project_id)
-    file_path = docs_dir / file.filename
+    from pathlib import Path as _Path
+    safe_name = _Path(file.filename).name  # extrae solo el basename, elimina path traversal
+    file_path = docs_dir / safe_name
 
     with open(file_path, "wb") as f:
         f.write(content)
@@ -1075,7 +1077,9 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
 
     # Save audio file
     docs_dir = get_project_docs_dir(project_id)
-    filename = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file.filename or 'recording.webm'}"
+    from pathlib import Path as _Path
+    safe_audio_name = _Path(file.filename or 'recording.webm').name  # extrae solo el basename, elimina path traversal
+    filename = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_audio_name}"
     file_path = docs_dir / filename
     content = await file.read()
     file_path.write_bytes(content)

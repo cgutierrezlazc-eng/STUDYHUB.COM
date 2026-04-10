@@ -382,6 +382,7 @@ export default function CVProfile({ onNavigate }: Props) {
   const [cv, setCv] = useState<CVData>({ ...EMPTY_CV })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [editMode, setEditMode] = useState(false)
   const [activeTab, setActiveTab] = useState('sobre')
   const [uploadMsg, setUploadMsg] = useState('')
@@ -408,22 +409,8 @@ export default function CVProfile({ onNavigate }: Props) {
         const res = await api.getUserCV(username!)
         if (res) hydrateCV(res)
       } else {
-        // Load from draft endpoint first, then overlay with stored CV
-        const [draft, cvRes] = await Promise.all([
-          fetch(`/api/cv/draft`, {
-            headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
-          }).then(r => r.ok ? r.json() : null).catch(() => null),
-          api.getMyCV().catch(() => null),
-        ])
+        const cvRes = await api.getMyCV().catch(() => null)
         if (cvRes) hydrateCV(cvRes?.profile || cvRes)
-        if (draft) {
-          setCv(prev => ({
-            ...prev,
-            headline: draft.headline || prev.headline,
-            summary: draft.summary || prev.summary,
-            visibility: draft.visibility || prev.visibility,
-          }))
-        }
       }
     } catch (e) {
       console.error('Error loading CV:', e)
@@ -464,6 +451,7 @@ export default function CVProfile({ onNavigate }: Props) {
 
   /* ── Save ── */
   async function handleSave() {
+    setSaveError(null)
     setSaving(true)
     try {
       await api.updateCV({
@@ -484,6 +472,7 @@ export default function CVProfile({ onNavigate }: Props) {
       setEditMode(false)
     } catch (e) {
       console.error('Error saving CV:', e)
+      setSaveError('Error al guardar. Intenta de nuevo.')
     }
     setSaving(false)
   }
@@ -708,6 +697,9 @@ export default function CVProfile({ onNavigate }: Props) {
             <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', gap: 8 }} className="cv-no-print">
               {editMode ? (
                 <>
+                  {saveError && (
+                    <p style={{ color: '#ef4444', fontSize: 12, margin: '4px 0' }}>{saveError}</p>
+                  )}
                   <button style={styles.btnPrimary} className="cv-btn" onClick={handleSave} disabled={saving}>
                     {Save({ style: { width: 16, height: 16 } })} {saving ? 'Guardando...' : 'Guardar'}
                   </button>
@@ -789,7 +781,7 @@ export default function CVProfile({ onNavigate }: Props) {
                 {Upload({ style: { width: 16, height: 16 } })} Subir CV
               </button>
               <button style={styles.btnSecondary} className="cv-btn" onClick={handleDownloadPDF}>
-                {Download({ style: { width: 16, height: 16 } })} Descargar CV PDF
+                {Download({ style: { width: 16, height: 16 } })} Imprimir / Guardar PDF
               </button>
               <button style={styles.btnSecondary} className="cv-btn" onClick={handleShare}>
                 {Share2({ style: { width: 16, height: 16 } })} Compartir

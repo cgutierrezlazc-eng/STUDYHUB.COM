@@ -242,6 +242,30 @@ body {
   scrollbar-color: var(--border) var(--bg-primary);
 }
 
+/* ─── Sidebar mobile close button ──────────────────────────── */
+.sidebar-close-btn {
+  display: none;
+}
+.device-mobile .sidebar-close-btn,
+.device-tablet .sidebar-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 10px 12px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.device-mobile .sidebar-close-btn:hover,
+.device-tablet .sidebar-close-btn:hover {
+  color: var(--text-primary);
+}
+
 /* Sidebar scrollbar */
 .sidebar::-webkit-scrollbar-thumb {
   background: rgba(128,128,128,0.25);

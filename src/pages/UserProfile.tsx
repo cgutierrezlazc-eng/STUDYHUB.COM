@@ -347,18 +347,18 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   // Exam timer effect
   useEffect(() => {
     if (!showExamModal || examResult || examLoading || !examData) return
-    if (examTimeLeft <= 0) {
-      handleSubmitExam()
-      return
-    }
     const timer = setInterval(() => {
       setExamTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(timer); return 0 }
+        if (prev <= 1) {
+          clearInterval(timer)
+          handleSubmitExam()
+          return 0
+        }
         return prev - 1
       })
     }, 1000)
     return () => clearInterval(timer)
-  }, [showExamModal, examResult, examLoading, examData, examTimeLeft])
+  }, [showExamModal, examResult, examLoading, examData]) // examTimeLeft removido — se usa prev en el callback
 
   // Schedule reminders for upcoming classes on load
   useEffect(() => {

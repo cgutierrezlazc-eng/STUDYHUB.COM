@@ -24,6 +24,7 @@ const moreMenuItems = [
   { icon: 'community', label: 'Comunidades', path: '/communities' },
   { icon: 'calendar', label: 'Calendario', path: '/calendar' },
   { icon: 'search', label: 'Búsqueda', path: '/search' },
+  { icon: 'user', label: 'Tutores', path: '/tutores' },
 ]
 
 export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
@@ -31,7 +32,7 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
 
   const items = [
     { icon: 'home', label: 'Inicio', path: '/' },
-    { icon: 'book', label: 'Estudio', path: '/quizzes' },
+    { icon: 'book', label: 'Estudio', path: '/dashboard' },
     { icon: 'chat', label: 'Chat', path: '/messages' },
     { icon: 'user', label: 'Perfil', path: '/my-profile' },
   ]

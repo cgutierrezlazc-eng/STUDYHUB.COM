@@ -106,13 +106,15 @@ function getLevelBadge(totalClasses: number): { label: string; color: string; bg
 }
 
 function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+  const uidRef = React.useRef<string>(Math.random().toString(36).slice(2))
+  const halfId = `half-${uidRef.current}`
   const stars = []
   for (let i = 1; i <= 5; i++) {
-    const fill = rating >= i ? '#f59e0b' : rating >= i - 0.5 ? 'url(#half)' : '#d1d5db'
+    const fill = rating >= i ? '#f59e0b' : rating >= i - 0.5 ? `url(#${halfId})` : '#d1d5db'
     stars.push(
       <svg key={i} width={size} height={size} viewBox="0 0 20 20">
         <defs>
-          <linearGradient id="half">
+          <linearGradient id={halfId}>
             <stop offset="50%" stopColor="#f59e0b" />
             <stop offset="50%" stopColor="#d1d5db" />
           </linearGradient>
