@@ -183,7 +183,7 @@ async def serve_cover_photo(filename: str):
 def check_chat_limit(user: User, db: Session = None):
     """Persistent rate limiting via DB. Falls back to no-limit if DB unavailable."""
     # Obtener límite según plan del usuario
-    plan = getattr(user, 'subscription_plan', 'free') or 'free'
+    plan = getattr(user, 'subscription_tier', 'free') or 'free'
     limits = {'free': 20, 'pro': 100, 'max': 500}
     limit = limits.get(plan, 20)
 
@@ -1281,7 +1281,7 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
             image_data = req.image_base64
 
         model = genai_vision.GenerativeModel(
-            model_name="gemini-2.0-flash",
+            model_name="gemini-2.0-flash-lite",
             system_instruction=system,
         )
         response = model.generate_content(
