@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db, User, PaymentLog, gen_id
 from middleware import get_current_user
+from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
 
 router = APIRouter(prefix="/payments/paypal", tags=["paypal"])
 
@@ -271,6 +272,207 @@ async def capture_order(order_id: str, db: Session = Depends(get_db), user=Depen
     return {"status": status}
 
 
+# ─── Create Class Order (PayPal) ──────────────────────────────
+
+@router.post("/create-class-order")
+async def create_class_order(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Create a PayPal order for enrolling in a tutor class."""
+    body = await request.json()
+    class_id = body.get("class_id", "")
+    apply_max_discount = bool(body.get("apply_max_discount", False))
+
+    if not class_id:
+        raise HTTPException(status_code=400, detail="class_id requerido")
+
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    if cls.status != "published":
+        raise HTTPException(status_code=400, detail="Esta clase no esta disponible para inscripcion")
+
+    if cls.current_students >= cls.max_students:
+        raise HTTPException(status_code=400, detail="No hay cupos disponibles")
+
+    # Verify no paid duplicate enrollment
+    existing = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+        TutorClassEnrollment.payment_status == "paid",
+    ).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Ya estas inscrito en esta clase")
+
+    # Calculate price with possible MAX discount
+    original_gross = cls.price_per_student
+    discount_type = ""
+    discount_amount = 0.0
+
+    if apply_max_discount:
+        user_tier = getattr(user, "subscription_tier", "free") or "free"
+        if user_tier != "max":
+            raise HTTPException(status_code=400, detail="Solo usuarios MAX pueden aplicar el descuento del 50%")
+        discount_amount = round(original_gross * 0.5)
+        discount_type = "max_subscriber"
+
+    gross = original_gross - discount_amount
+    commission = round(gross * CONNIKU_COMMISSION_RATE)
+    tutor_amount = gross - commission
+
+    # Convert CLP to USD (approximate: 1 USD ≈ 900 CLP)
+    gross_usd = round(gross / 900, 2)
+    if gross_usd < 0.01:
+        gross_usd = 0.01
+
+    # Get tutor profile
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.status != "approved":
+        raise HTTPException(status_code=400, detail="El tutor de esta clase no esta disponible")
+
+    # Create TutorPayment with payment_status pending
+    payment = TutorPayment(
+        id=gen_id(),
+        tutor_id=tutor.id,
+        enrollment_id=None,
+        gross_amount=original_gross,
+        conniku_commission=commission,
+        tutor_amount=tutor_amount,
+        discount_type=discount_type,
+        discount_amount=discount_amount,
+        payment_status="pending",
+        payment_method="paypal",
+    )
+    db.add(payment)
+    db.flush()
+
+    # Create TutorClassEnrollment with payment_status pending
+    enrollment = TutorClassEnrollment(
+        id=gen_id(),
+        class_id=class_id,
+        student_id=user.id,
+        payment_id=payment.id,
+        payment_status="pending",
+    )
+    db.add(enrollment)
+    db.flush()
+
+    # Link payment to enrollment
+    payment.enrollment_id = enrollment.id
+    db.commit()
+    db.refresh(enrollment)
+
+    token = await _get_access_token()
+
+    custom_id_data = json.dumps({
+        "type": "class_enrollment",
+        "enrollment_id": enrollment.id,
+        "class_id": class_id,
+        "user_id": user.id,
+    })
+
+    order_data = {
+        "intent": "CAPTURE",
+        "purchase_units": [
+            {
+                "reference_id": f"class_{class_id}_{user.id}",
+                "description": cls.title,
+                "amount": {
+                    "currency_code": "USD",
+                    "value": f"{gross_usd:.2f}",
+                },
+                "custom_id": custom_id_data,
+            }
+        ],
+        "payment_source": {
+            "paypal": {
+                "experience_context": {
+                    "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
+                    "brand_name": "Conniku",
+                    "locale": "es-CL",
+                    "landing_page": "LOGIN",
+                    "user_action": "PAY_NOW",
+                    "return_url": f"{FRONTEND_URL}/tutores?enrollment_status=paypal_approved&enrollment_id={enrollment.id}&order_id=ORDER_ID",
+                    "cancel_url": f"{FRONTEND_URL}/tutores?enrollment_status=cancelled",
+                }
+            }
+        },
+    }
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"{PAYPAL_API}/v2/checkout/orders",
+            headers=_pp_headers(token),
+            json=order_data,
+        )
+
+    if resp.status_code not in (200, 201):
+        print(f"[PayPal] Error creating class order: {resp.text}")
+        raise HTTPException(status_code=502, detail="Error al crear orden PayPal para clase")
+
+    order = resp.json()
+    approve_link = next(
+        (link["href"] for link in order.get("links", []) if link["rel"] == "payer-action"),
+        None,
+    )
+
+    print(f"[PayPal] Class order created: enrollment={enrollment.id} class={class_id} usd={gross_usd}")
+    return {
+        "approve_url": approve_link,
+        "order_id": order["id"],
+        "enrollment_id": enrollment.id,
+    }
+
+
+# ─── Capture Class Order (PayPal) ────────────────────────────
+
+@router.post("/capture-class-order/{order_id}")
+async def capture_class_order(order_id: str, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """Capture an approved PayPal order for a tutor class enrollment."""
+    token = await _get_access_token()
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"{PAYPAL_API}/v2/checkout/orders/{order_id}/capture",
+            headers=_pp_headers(token),
+        )
+
+    if resp.status_code not in (200, 201):
+        print(f"[PayPal] Class capture error: {resp.text}")
+        raise HTTPException(status_code=502, detail="Error al capturar pago PayPal para clase")
+
+    capture_data = resp.json()
+    status = capture_data.get("status", "")
+
+    if status == "COMPLETED":
+        purchase_unit = capture_data.get("purchase_units", [{}])[0]
+        custom_id = purchase_unit.get("payments", {}).get("captures", [{}])[0].get("custom_id", "{}")
+        try:
+            meta = json.loads(custom_id)
+        except Exception:
+            meta = {}
+
+        if meta.get("type") == "class_enrollment":
+            enrollment_id = meta.get("enrollment_id")
+            enrollment = db.query(TutorClassEnrollment).filter(TutorClassEnrollment.id == enrollment_id).first()
+            if enrollment and enrollment.payment_status != "paid":
+                enrollment.payment_status = "paid"
+                # Update TutorPayment
+                if enrollment.payment_id:
+                    tp = db.query(TutorPayment).filter(TutorPayment.id == enrollment.payment_id).first()
+                    if tp:
+                        tp.payment_status = "pending_boleta"
+                        tp.payment_reference = order_id
+                # Increment current_students
+                cls = db.query(TutorClass).filter(TutorClass.id == enrollment.class_id).first()
+                if cls:
+                    cls.current_students = (cls.current_students or 0) + 1
+                db.commit()
+                print(f"[PayPal] Class enrollment confirmed: enrollment={enrollment_id} order={order_id}")
+                return {"success": True, "enrollment_id": enrollment_id}
+
+    return {"success": False, "status": status}
+
+
 # ─── Create Subscription ──────────────────────────────────────
 
 @router.post("/create-subscription")
@@ -400,7 +602,25 @@ async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
             tier = meta.get("tier", "pro")
             plan_id = meta.get("plan_id", "pro_monthly")
 
-            if user_id:
+            # ── Class enrollment via webhook ──────────────────
+            if meta.get("type") == "class_enrollment":
+                enrollment_id = meta.get("enrollment_id")
+                if enrollment_id:
+                    enrollment = db.query(TutorClassEnrollment).filter(TutorClassEnrollment.id == enrollment_id).first()
+                    if enrollment and enrollment.payment_status != "paid":
+                        enrollment.payment_status = "paid"
+                        if enrollment.payment_id:
+                            tp = db.query(TutorPayment).filter(TutorPayment.id == enrollment.payment_id).first()
+                            if tp:
+                                tp.payment_status = "pending_boleta"
+                                tp.payment_reference = resource.get("id", "")
+                        cls = db.query(TutorClass).filter(TutorClass.id == enrollment.class_id).first()
+                        if cls:
+                            cls.current_students = (cls.current_students or 0) + 1
+                        db.commit()
+                        print(f"[PayPal Webhook] Class enrollment confirmed: {enrollment_id}")
+            # ── End class enrollment via webhook ──────────────
+            elif user_id:
                 user = db.query(User).filter(User.id == user_id).first()
                 if user:
                     plan = PLANS.get(plan_id, PLANS["pro_monthly"])
