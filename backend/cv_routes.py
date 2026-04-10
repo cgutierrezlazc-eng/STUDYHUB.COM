@@ -266,17 +266,22 @@ def parse_cv_sections_heuristic(text: str) -> dict:
     return result
 
 
-# ─── Gemini AI Parser ─────────────────────────────────────────
+# ─── GPT-4o Mini AI Parser ─────────────────────────────────────
 
 def parse_cv_with_gemini(raw_text: str) -> dict:
     """
-    Use Gemini API to parse raw CV text into structured JSON.
-    Falls back to heuristic parsing if Gemini is unavailable or fails.
+    Use GPT-4o Mini to parse raw CV text into structured JSON.
+    Falls back to heuristic parsing if OpenAI is unavailable or fails.
     """
     try:
-        import google.generativeai as genai
+        from gemini_engine import gpt_client, GPT_MODEL
 
-        api_key = os.environ.get("GEMINI_API_KEY", "")
+        if not gpt_client:
+            print("[CV] OPENAI_API_KEY no disponible, usando parser heurístico")
+            return parse_cv_sections_heuristic(raw_text)
+
+        # Dummy assignment to keep the existing flow below working
+        api_key = os.environ.get("OPENAI_API_KEY", "")
         if not api_key:
             config_file = DATA_DIR / "config.json"
             if config_file.exists():
@@ -287,10 +292,8 @@ def parse_cv_with_gemini(raw_text: str) -> dict:
                     pass
 
         if not api_key:
-            print("[CV] Gemini API key no disponible, usando parser heuristico")
+            print("[CV] OPENAI_API_KEY no disponible, usando parser heurístico")
             return parse_cv_sections_heuristic(raw_text)
-
-        genai.configure(api_key=api_key)
 
         system_prompt = """Eres un experto analizador de CVs/hojas de vida. Tu tarea es extraer informacion estructurada
 de texto crudo de un CV y devolverlo como JSON valido.
@@ -356,21 +359,17 @@ Reglas:
 - Identifica puntos diferenciadores: premios, publicaciones, logros destacados, voluntariado, etc.
 """
 
-        model = genai.GenerativeModel(
-            model_name="gemini-1.5-flash",
-            system_instruction=system_prompt,
+        resp = gpt_client.chat.completions.create(
+            model=GPT_MODEL,
+            max_tokens=8192,
+            response_format={"type": "json_object"},
+            messages=[
+                {"role": "system", "content": system_prompt + "\nResponde ÚNICAMENTE con JSON válido."},
+                {"role": "user", "content": f"Analiza este CV y extrae la información estructurada:\n\n{raw_text[:12000]}"},
+            ],
         )
 
-        response = model.generate_content(
-            f"Analiza este CV y extrae la informacion estructurada:\n\n{raw_text[:12000]}",
-            generation_config=genai.types.GenerationConfig(
-                max_output_tokens=8192,
-                temperature=0.3,
-                response_mime_type="application/json",
-            ),
-        )
-
-        parsed = json.loads(response.text)
+        parsed = json.loads(resp.choices[0].message.content)
 
         # Validate required keys exist
         required_keys = ["headline", "summary", "experience", "education", "skills"]
