@@ -1543,7 +1543,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               <div className="u-card" style={{ padding: 40, textAlign: 'center' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>{Brain({ size: 40 })}</div>
                 <p style={{ fontSize: 15, color: 'var(--text-secondary)' }}>
-                  Gemini está analizando tus documentos y creando un resumen inteligente...
+                  Conniku está analizando tus documentos y creando un resumen inteligente...
                 </p>
                 <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
                   Esto puede tomar unos segundos dependiendo de la cantidad de material.

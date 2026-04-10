@@ -189,7 +189,7 @@ COVERS_DIR = DATA_DIR / "uploads" / "covers"
 COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
 doc_processor = DocumentProcessor()
-ai_engine = AIEngine()  # Gemini — all AI features (chat, quizzes, guides, support)
+ai_engine = AIEngine()  # GPT-4o Mini — all AI features (chat, quizzes, guides, support)
 
 
 @app.get("/uploads/covers/{filename}")
@@ -485,7 +485,7 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
     return {"response": response}
 
 
-# ─── Support Chatbot — USER version (Gemini, personalized) ────
+# ─── Support Chatbot — USER version (Claude Haiku, personalized) ────
 class SupportChatRequest(BaseModel):
     message: str
     history: list = []
@@ -862,7 +862,7 @@ Para consultas sobre terminos: contacto@conniku.com"""
 
 @app.post("/ai/study-buddy")
 def study_buddy_chat(req: StudyBuddyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """AI Study Buddy — contextual study help using Gemini (free)."""
+    """AI Study Buddy — contextual study help using GPT-4o Mini (free)."""
     check_chat_limit(user, db)
 
     context_info = f"\nContexto actual del estudiante: {req.context}" if req.context else ""
@@ -902,7 +902,7 @@ Reglas academicas:
 
 @app.post("/ai/auto-tag")
 def auto_tag_content(req: dict = Body(...), user: User = Depends(get_current_user)):
-    """Auto-suggest tags for a post using Gemini (free)."""
+    """Auto-suggest tags for a post using GPT-4o Mini (free)."""
     text = req.get("text", "")
     if not text or len(text) < 10:
         return {"tags": []}
@@ -937,7 +937,7 @@ Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
 
 @app.get("/ai/daily-summary")
 def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Generate a personalized daily study summary using Gemini (free)."""
+    """Generate a personalized daily study summary using GPT-4o Mini (free)."""
     from database import WallPost, CalendarEvent, StudySession
     from sqlalchemy import func
 
@@ -1004,7 +1004,7 @@ class CVCoachRequest(BaseModel):
 
 @app.post("/ai/cv-coach")
 def cv_coach(req: CVCoachRequest, user: User = Depends(get_current_user)):
-    """AI CV Coach — review and improve a CV/resume using Gemini (free)."""
+    """AI CV Coach — review and improve a CV/resume using GPT-4o Mini (free)."""
     if len(req.cv_text) < 20:
         raise HTTPException(400, "El CV debe tener al menos 20 caracteres")
 
