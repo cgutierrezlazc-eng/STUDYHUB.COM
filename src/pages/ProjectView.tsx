@@ -486,7 +486,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         </div>
       </div>
 
-      <div className="page-body">
+      <div className={`page-body${tab === 'chat' ? ' page-body--chat' : ''}`}>
         {tab === 'docs' && (
           <>
             <input
@@ -675,19 +675,29 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         )}
 
         {tab === 'chat' && (
-          <div className="chat-container" style={{ height: 'calc(100vh - 240px)' }}>
-            {/* Chat toolbar */}
-            {messages.length > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '8px 12px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)' }}>
-                <button className="btn btn-secondary btn-xs" onClick={() => handleExportChatPdf()} title="Exportar todo el chat como PDF">
-                  {Download()} Exportar Chat PDF
-                </button>
+          <div className="chat-container">
+            {/* Header fijo */}
+            <div className="chat-header">
+              <div className="chat-header-avatar">C</div>
+              <div className="chat-header-info">
+                <div className="chat-header-name">Conniku · {project.name}</div>
+                <div className="chat-header-sub">
+                  {project.documents.length} {project.documents.length === 1 ? 'documento activo' : 'documentos activos'}
+                  {socraticMode && <span style={{ marginLeft: 6, color: 'var(--accent-blue)' }}>· Modo Socrático ON</span>}
+                </div>
               </div>
-            )}
+              {messages.length > 0 && (
+                <button className="btn btn-secondary btn-xs" onClick={() => handleExportChatPdf()} title="Exportar chat como PDF">
+                  {Download()} PDF
+                </button>
+              )}
+            </div>
+
+            {/* Mensajes con scroll interno */}
             <div className="chat-messages">
               {messages.length === 0 && (
-                <div className="empty-state">
-                  <div className="empty-state-icon">{MessageSquare({ size: 40 })}</div>
+                <div className="empty-state" style={{ flex: 1 }}>
+                  <div className="empty-state-icon">{MessageSquare({ size: 36 })}</div>
                   <h3>Chatea sobre tus documentos</h3>
                   <p>Hazme preguntas sobre el material de {project.name}</p>
                 </div>
@@ -696,35 +706,39 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 <div key={msg.id} className={`chat-message ${msg.role}`}>
                   {msg.content}
                   {msg.role === 'assistant' && !msg.content.startsWith('⚠️') && (
-                    <button
-                      className="btn btn-secondary btn-xs chat-export-btn"
-                      onClick={() => handleExportDocx(msg.content)}
-                      title="Descargar como Word"
-                    >
-                      {Download()} Word
-                    </button>
+                    <div>
+                      <button
+                        className="btn btn-secondary btn-xs chat-export-btn"
+                        onClick={() => handleExportDocx(msg.content)}
+                        title="Descargar como Word"
+                      >
+                        {Download()} Word
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}
               {isLoading && (
                 <div className="chat-message assistant">
-                  <div className="loading-dots">
-                    <span /><span /><span />
-                  </div>
+                  <div className="loading-dots"><span /><span /><span /></div>
                 </div>
               )}
               <div ref={chatEndRef} />
             </div>
+
+            {/* Input fijo al fondo */}
             <div className="chat-input-area">
-              <button
-                className={`btn btn-sm ${socraticMode ? 'btn-primary' : 'btn-secondary'}`}
-                onClick={() => setSocraticMode(!socraticMode)}
-                title={socraticMode ? 'Modo Socrático: ON (te guío con preguntas)' : 'Modo Socrático: OFF (respuestas directas)'}
-                style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
-              >
-                {Brain()} {socraticMode ? 'Socrático' : 'Directo'}
-              </button>
+              <div className="chat-input-toolbar">
                 <button
+                  className={`btn btn-xs ${socraticMode ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setSocraticMode(!socraticMode)}
+                  title={socraticMode ? 'Socrático ON — haz click para desactivar' : 'Directo — haz click para modo socrático'}
+                >
+                  {Brain()} {socraticMode ? 'Socrático' : 'Directo'}
+                </button>
+                <button
+                  className="btn btn-xs btn-secondary"
+                  title="Escanear problema con cámara"
                   onClick={() => {
                     const input = document.createElement('input')
                     input.type = 'file'
@@ -762,28 +776,28 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     }
                     input.click()
                   }}
-                  className="btn btn-sm btn-secondary"
-                  title="Escanear problema con cámara"
-                  style={{ fontSize: 11, padding: '4px 8px', whiteSpace: 'nowrap' }}
                 >
                   {Camera()} Escanear
                 </button>
-              <textarea
-                className="chat-input"
-                placeholder={`Pregunta algo sobre ${project.name}...`}
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSendMessage()
-                  }
-                }}
-                rows={1}
-              />
-              <button className="btn btn-primary" onClick={handleSendMessage} disabled={isLoading}>
-                Enviar
-              </button>
+              </div>
+              <div className="chat-input-row">
+                <textarea
+                  className="chat-input"
+                  placeholder={`Pregunta algo sobre ${project.name}...`}
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleSendMessage()
+                    }
+                  }}
+                  rows={1}
+                />
+                <button className="chat-send-btn" onClick={handleSendMessage} disabled={isLoading} title="Enviar (Enter)">
+                  ➤
+                </button>
+              </div>
             </div>
           </div>
         )}
