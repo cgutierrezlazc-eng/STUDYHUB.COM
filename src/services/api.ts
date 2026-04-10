@@ -1090,6 +1090,8 @@ export const api = {
   generateTutorPayslips: (year: number, month: number) => request(`/tutors/admin/payslips/generate/${year}/${month}`),
   getTutorDirectory: (params?: string) => request(`/tutors/directory${params ? `?${params}` : ''}`),
   getTutorPublicProfile: (id: string) => request(`/tutors/${id}/public`),
+  getTutorPublicByUsername: (username: string) => request(`/tutors/by-username/${username}`),
+  getTutorRanking: (limit?: number) => request(`/tutors/ranking${limit ? `?limit=${limit}` : ''}`),
   getTutorContract: () => request('/tutors/my-contract'),
   signTutorContract: () => request('/tutors/my-contract/sign', { method: 'POST' }),
 

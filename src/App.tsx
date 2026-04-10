@@ -66,6 +66,7 @@ const CertVerify = React.lazy(() => import('./pages/CertVerify'))
 const LandingProposals = React.lazy(() => import('./pages/LandingProposals'))
 const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'))
 const ClassRoom = React.lazy(() => import('./pages/ClassRoom'))
+const PublicTutorPage = React.lazy(() => import('./pages/PublicTutorPage'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -239,6 +240,14 @@ export default function App() {
         </Suspense>
       )
     }
+    if (location.pathname.startsWith('/tutor/')) {
+      const tutorUsername = location.pathname.split('/tutor/')[1]
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <PublicTutorPage username={tutorUsername} onNavigate={(path) => navigate(path)} />
+        </Suspense>
+      )
+    }
 
     const authSEO = authView === 'login' ? PAGE_SEO.login : authView === 'register' ? PAGE_SEO.register : PAGE_SEO.landing
     return (
@@ -298,6 +307,8 @@ export default function App() {
   const profileUserId = userMatch ? userMatch[1] : undefined
   const classRoomMatch = location.pathname.match(/^\/class-room\/(.+)$/)
   const classRoomId = classRoomMatch ? classRoomMatch[1] : undefined
+  const tutorPageMatch = location.pathname.match(/^\/tutor\/(.+)$/)
+  const tutorPageUsername = tutorPageMatch ? tutorPageMatch[1] : undefined
 
   return (
     <div className={`app-layout ${showMobileUI ? 'mobile-layout' : ''} ${showTabletUI ? 'tablet-layout' : ''}`}>
@@ -359,6 +370,7 @@ export default function App() {
             <Route path="/admin-panel/*" element={<AdminPanelRoutes onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
+            <Route path="/tutor/:username" element={tutorPageUsername ? <PublicTutorPage username={tutorPageUsername} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/terms" element={<TermsOfService onNavigate={(path) => navigate(path)} />} />
             <Route path="/privacy" element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />} />
             <Route path="/cert/:code" element={<CertVerify />} />

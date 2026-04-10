@@ -28,6 +28,8 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
   const [appealText, setAppealText] = useState('')
   const [appealSending, setAppealSending] = useState(false)
   const [appealSent, setAppealSent] = useState(false)
+  const [showQR, setShowQR] = useState(false)
+  const [urlCopied, setUrlCopied] = useState(false)
 
   // Subject creation form
   const [showSubjectForm, setShowSubjectForm] = useState(false)
@@ -251,6 +253,89 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
               ))}
             </div>
           )}
+
+          {/* Mi Página Pública */}
+          {isApproved && user?.username && (() => {
+            const publicUrl = `https://conniku.com/tutor/${user.username}`
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(publicUrl)}&color=1E293B&bgcolor=FFFFFF`
+            const handleCopy = () => {
+              navigator.clipboard.writeText(publicUrl).then(() => {
+                setUrlCopied(true)
+                setTimeout(() => setUrlCopied(false), 2000)
+              })
+            }
+            const handleShare = () => {
+              if (navigator.share) {
+                navigator.share({ title: `${user.firstName} ${user.lastName} — Tutor Conniku`, text: `¡Reserva clases conmigo en Conniku!`, url: publicUrl })
+              } else {
+                handleCopy()
+              }
+            }
+            return (
+              <div className="card" style={{ padding: 20, marginBottom: 16, border: '1.5px solid rgba(59,130,246,0.3)', background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 10 }}>
+                  <h4 style={{ margin: 0, fontSize: 14, color: '#1e40af' }}>🌐 Mi Página Pública</h4>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    <button
+                      onClick={handleShare}
+                      style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      📤 Compartir
+                    </button>
+                    <button
+                      onClick={() => setShowQR(v => !v)}
+                      style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#fff', color: '#1e40af', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      📱 QR
+                    </button>
+                    <button
+                      onClick={() => onNavigate(`/tutor/${user.username}`)}
+                      style={{ padding: '7px 14px', borderRadius: 8, border: '1px solid #93c5fd', background: '#fff', color: '#1e40af', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}
+                    >
+                      Ver página →
+                    </button>
+                  </div>
+                </div>
+
+                {/* URL display */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, background: '#fff', border: '1px solid #bfdbfe' }}>
+                  <span style={{ flex: 1, fontSize: 13, color: '#1e40af', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {publicUrl}
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: urlCopied ? '#22c55e' : '#dbeafe', color: urlCopied ? '#fff' : '#1e40af', fontWeight: 700, fontSize: 11, cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s' }}
+                  >
+                    {urlCopied ? '✓ Copiado' : 'Copiar'}
+                  </button>
+                </div>
+
+                {/* QR Code */}
+                {showQR && (
+                  <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+                    <div style={{ padding: 10, borderRadius: 10, background: '#fff', border: '1px solid #bfdbfe', display: 'inline-block' }}>
+                      <img src={qrUrl} alt="QR Code" width={128} height={128} style={{ display: 'block', borderRadius: 4 }} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 200 }}>
+                      <p style={{ margin: '0 0 10px', fontSize: 13, color: '#1e40af', fontWeight: 600 }}>Comparte este código QR con tus estudiantes</p>
+                      <p style={{ margin: '0 0 12px', fontSize: 12, color: '#64748b', lineHeight: 1.5 }}>Pueden escanearlo para llegar directo a tu página y reservar clases contigo.</p>
+                      <a
+                        href={`https://api.qrserver.com/v1/create-qr-code/?size=512x512&data=${encodeURIComponent(publicUrl)}&color=1E293B&bgcolor=FFFFFF&format=png`}
+                        download={`qr-tutor-${user.username}.png`}
+                        style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#2563eb', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer', textDecoration: 'none', display: 'inline-block' }}
+                      >
+                        ⬇ Descargar QR
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ marginTop: 10, fontSize: 11, color: '#64748b' }}>
+                  Esta es tu página pública. Los estudiantes pueden ver tu perfil, reservar clases y dejar reseñas sin necesitar cuenta en Conniku.
+                </div>
+              </div>
+            )
+          })()}
 
           {/* Profile details */}
           <div className="card" style={{ padding: 20 }}>

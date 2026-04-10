@@ -677,6 +677,9 @@ def _tutor_public_dict(t: TutorProfile, user: User) -> dict:
         "rating_average": t.rating_average,
         "total_classes": t.total_classes,
         "total_students": t.total_students,
+        "verified": t.verified_at is not None,
+        "username": user.username if user else None,
+        "user_id": user.id if user else None,
     }
 
 
@@ -2635,6 +2638,95 @@ def get_tutor_public_profile(
     result["upcoming_classes"] = [_class_to_dict(c) for c in upcoming]
 
     return result
+
+
+@router.get("/by-username/{username}")
+def get_tutor_public_by_username(
+    username: str,
+    db: Session = Depends(get_db),
+):
+    """Get a tutor's public profile by their username (for shareable URLs)."""
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado")
+
+    profile = db.query(TutorProfile).filter(
+        TutorProfile.user_id == user.id,
+        TutorProfile.status == "approved",
+    ).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="Tutor no encontrado o pendiente de aprobación")
+
+    result = _tutor_public_dict(profile, user)
+
+    # Include full name for public page
+    result["username"] = user.username
+    result["full_name"] = f"{user.first_name} {user.last_name}"
+    result["user_id"] = user.id
+    result["verified"] = profile.verified_at is not None
+
+    # Recent reviews
+    recent_reviews = (
+        db.query(TutorClassEnrollment, TutorClass, User)
+        .join(TutorClass, TutorClassEnrollment.class_id == TutorClass.id)
+        .join(User, TutorClassEnrollment.student_id == User.id)
+        .filter(
+            TutorClass.tutor_id == profile.id,
+            TutorClassEnrollment.rating.isnot(None),
+        )
+        .order_by(desc(TutorClassEnrollment.rated_at))
+        .limit(10)
+        .all()
+    )
+    result["reviews"] = [{
+        "rating": e.rating,
+        "comment": e.rating_comment,
+        "date": e.rated_at.isoformat() if e.rated_at else None,
+        "class_title": c.title,
+        "student_initials": ((s.first_name[0] if s.first_name else "") + (s.last_name[0] if s.last_name else "")).upper(),
+    } for e, c, s in recent_reviews]
+    result["reviews_count"] = len(result["reviews"])
+
+    # Upcoming classes
+    upcoming = db.query(TutorClass).filter(
+        TutorClass.tutor_id == profile.id,
+        TutorClass.status == "published",
+        TutorClass.scheduled_at > datetime.utcnow(),
+    ).order_by(TutorClass.scheduled_at).limit(6).all()
+    result["upcoming_classes"] = [_class_to_dict(c) for c in upcoming]
+
+    return result
+
+
+@router.get("/ranking")
+def get_tutor_ranking(
+    limit: int = 20,
+    category: str = "",
+    db: Session = Depends(get_db),
+):
+    """Public tutor ranking by rating and total classes."""
+    query = db.query(TutorProfile, User).join(
+        User, TutorProfile.user_id == User.id
+    ).filter(
+        TutorProfile.status == "approved",
+        TutorProfile.total_classes > 0,
+    )
+
+    tutors = query.order_by(
+        desc(TutorProfile.rating_average),
+        desc(TutorProfile.total_classes),
+    ).limit(limit).all()
+
+    result = []
+    for rank, (profile, user) in enumerate(tutors, start=1):
+        d = _tutor_public_dict(profile, user)
+        d["rank"] = rank
+        d["username"] = user.username
+        d["user_id"] = user.id
+        d["verified"] = profile.verified_at is not None
+        result.append(d)
+
+    return {"ranking": result, "total": len(result)}
 
 
 # ═══════════════════════════════════════════════════════════════════
