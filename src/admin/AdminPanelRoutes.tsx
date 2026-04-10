@@ -50,6 +50,7 @@ const CertificationsModule = lazy(() => import('./tools/CertificationsModule'))
 const TutoresExternosTab = lazy(() => import('./tools/TutoresExternosTab'))
 const PushNotificationsModule = lazy(() => import('./tools/PushNotificationsModule'))
 const OwnerGuideTab = lazy(() => import('./tools/OwnerGuideTab'))
+const BibliotecaDocumentos = lazy(() => import('./tools/BibliotecaDocumentos'))
 const AIWorkflowsModule = lazy(() => import('../pages/AIWorkflows'))
 
 function Loader() {
@@ -122,10 +123,11 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="tools/email-ceo" element={<Wrap title="Email CEO"><CeoEmailModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/email-contacto" element={<Wrap title="Email Contacto"><ContactoEmailModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/certificaciones" element={<Wrap title="Certificaciones"><CertificationsModule /></Wrap>} />
-        <Route path="tools/ai-workflows" element={<Wrap title="IA Workflows"><AIWorkflowsModule onNavigate={onNavigate} /></Wrap>} />
+        <Route path="tools/ai-workflows" element={<Wrap title="Workflows"><AIWorkflowsModule onNavigate={onNavigate} /></Wrap>} />
         <Route path="tools/tutores" element={<Wrap title="Tutores Externos"><TutoresExternosTab /></Wrap>} />
         <Route path="tools/push" element={<Wrap title="Push Notifications"><PushNotificationsModule /></Wrap>} />
         <Route path="tools/guia-owner" element={<Wrap title="Guía del Owner"><OwnerGuideTab /></Wrap>} />
+        <Route path="tools/biblioteca" element={<Wrap title="Biblioteca de Documentos"><BibliotecaDocumentos /></Wrap>} />
       </Routes>
     </Suspense>
   )

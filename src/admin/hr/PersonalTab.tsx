@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../services/auth'
-import { api, getApiBase } from '../../services/api'
+import { api } from '../../services/api'
 import { Employee } from '../shared/types'
 import { AFP_OPTIONS, HEALTH_OPTIONS, CONTRACT_TYPES, DEPARTMENTS, BANKS } from '../shared/constants'
 import { CHILE_LABOR } from '../shared/ChileLaborConstants'
@@ -167,131 +167,50 @@ const POSITION_HIERARCHY: Record<string, number> = {
 // ═══════════════════════════════════════════════════════════════════
 
 const KEYS = {
-  fes: 'fes',
-  discipline: 'discipline',
-  coaching: 'coaching',
-  conversations: 'conversations',
-  acknowledgements: 'acknowledgements',
-  reviews: 'reviews',
-  chat: 'chat',
+  fes: 'conniku_fes_signatures',
+  discipline: 'conniku_erc_disciplines',
+  coaching: 'conniku_erc_coaching',
+  conversations: 'conniku_erc_conversations',
+  acknowledgements: 'conniku_erc_acknowledgements',
+  reviews: 'conniku_erc_reviews',
+  chat: 'conniku_erc_chats',
 }
 
-class ERCStore {
-  data: Record<string, any[]> = {
-    fes: [], discipline: [], coaching: [], conversations: [], acknowledgements: [], reviews: [], chat: []
-  };
-
-  async loadAll() {
-    try {
-      const [ercRes, fesRes] = await Promise.all([
-        api.getAllErcRecords(),
-        api.getAllFesSignatures()
-      ]);
-      if (ercRes?.records) {
-        this.data.discipline = ercRes.records.discipline || [];
-        this.data.coaching = ercRes.records.coaching || [];
-        this.data.conversations = ercRes.records.conversations || [];
-        this.data.acknowledgements = ercRes.records.acknowledgements || [];
-        this.data.reviews = ercRes.records.performance || [];
-        this.data.chat = ercRes.records.chat || [];
-      }
-      if (fesRes?.signatures) {
-        this.data.fes = fesRes.signatures.map((s: any) => ({
-          documentType: s.document_type || s.documentType,
-          employeeId: s.employeeId || s.employee_id,
-          signerEmail: s.signer_email,
-          signerName: s.signer_name,
-          signerRut: s.signer_rut,
-          timestamp: s.timestamp,
-          ipAddress: s.ip_address,
-          documentHash: s.document_hash,
-          verificationCode: s.verification_code,
-          status: s.status,
-          id: s.id
-        }));
-      }
-    } catch (e) {
-      console.error('Failed to load ERC store', e);
-    }
-  }
-
-  get(key: string) { return this.data[key] || []; }
-  
-  getForEmp(key: string, empId: string) {
-    return this.get(key).filter((x: any) => x.employeeId === empId || x.empId === empId);
-  }
-
-  async add(key: string, empId: string, record: any) {
-    this.data[key] = [...this.data[key], record];
-    try {
-      if (key === 'fes') {
-        const payload = { 
-          document_type: record.documentType, 
-          signer_email: record.signerEmail,
-          signer_name: record.signerName,
-          signer_rut: record.signerRut,
-          timestamp: record.timestamp,
-          ip_address: record.ipAddress,
-          document_hash: record.documentHash,
-          verification_code: record.verificationCode,
-          status: record.status 
-        };
-        await api.saveFesSignature(empId, payload);
-      } else {
-        const recordType = key === 'reviews' ? 'performance' : key;
-        await api.saveErcRecord(empId, recordType, record);
-      }
-    } catch (e) { console.error(e) }
-  }
-
-  async update(key: string, empId: string, record: any) {
-     const arr = [...this.data[key]];
-     const idx = arr.findIndex((x:any) => x.id === record.id)
-     if (idx >= 0) arr[idx] = record
-     else arr.push(record)
-     this.data[key] = arr;
-     if (key === 'chat') {
-        await api.saveErcRecord(empId, 'chat', record);
-     } else if (key === 'fes') {
-       const payload = { 
-          document_type: record.documentType, 
-          signer_email: record.signerEmail,
-          signer_name: record.signerName,
-          signer_rut: record.signerRut,
-          timestamp: record.timestamp,
-          ip_address: record.ipAddress,
-          document_hash: record.documentHash,
-          verification_code: record.verificationCode,
-          status: record.status 
-        };
-       await api.saveFesSignature(empId, payload);
-     }
-  }
-  
-  set(key: string, arr: any[]) { this.data[key] = arr; }
+function lsGet<T>(key: string): T[] {
+  try { return JSON.parse(localStorage.getItem(key) || '[]') } catch { return [] }
 }
 
-export const globalErcStore = new ERCStore();
+function lsSet<T>(key: string, data: T[]) {
+  localStorage.setItem(key, JSON.stringify(data))
+}
 
-function lsGet<T>(key: string): T[] { return globalErcStore.get(key) as T[] }
-function lsSet<T>(key: string, data: T[]) { globalErcStore.set(key, data) }
 function lsAdd<T extends { id: string }>(key: string, item: T) {
-  const empId = (item as any).employeeId || (item as any).empId || 'unknown';
-  globalErcStore.add(key, empId, item);
+  const all = lsGet<T>(key)
+  all.push(item)
+  lsSet(key, all)
 }
+
 function lsUpdate<T extends { id: string }>(key: string, item: T) {
-  const empId = (item as any).employeeId || (item as any).empId || 'unknown';
-  globalErcStore.update(key, empId, item);
+  const all = lsGet<T>(key)
+  const idx = all.findIndex((x: any) => x.id === item.id)
+  if (idx >= 0) all[idx] = item; else all.push(item)
+  lsSet(key, all)
 }
-function lsGetForEmployee<T>(key: string, empId: string): T[] {
-  return globalErcStore.getForEmp(key, empId) as T[];
+
+function lsGetForEmployee<T extends { employeeId: string }>(key: string, empId: string): T[] {
+  return lsGet<T>(key).filter(x => x.employeeId === empId)
 }
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8) }
 
 // FES Helpers
-function loadSignatures(): FESSignature[] { return lsGet<FESSignature>(KEYS.fes) }
-function saveSignature(sig: FESSignature) { lsUpdate(KEYS.fes, sig as any) }
+function loadSignatures(): FESSignature[] { return lsGet(KEYS.fes) }
+function saveSignature(sig: FESSignature) {
+  const all = loadSignatures()
+  const idx = all.findIndex(s => s.documentType === sig.documentType && s.employeeId === sig.employeeId)
+  if (idx >= 0) all[idx] = sig; else all.push(sig)
+  lsSet(KEYS.fes, all)
+}
 function getSignature(employeeId: string, docType: string): FESSignature | null {
   return loadSignatures().find(s => s.employeeId === employeeId && s.documentType === docType) || null
 }
@@ -427,17 +346,7 @@ export default function PersonalTab() {
       .catch(() => setIndicatorsError('No se pudieron cargar indicadores.'))
   }, [])
 
-  const [storeLoaded, setStoreLoaded] = useState(false)
-  useEffect(() => { 
-    Promise.all([
-      loadEmployees(),
-      globalErcStore.loadAll()
-    ]).finally(() => setStoreLoaded(true)) 
-  }, [])
-  
-  if (!storeLoaded) {
-    return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>Cargando sistema ECDP...</div>
-  }
+  useEffect(() => { loadEmployees() }, [])
 
   if (user?.role !== 'owner') {
     return (
@@ -454,148 +363,79 @@ export default function PersonalTab() {
     `${e.firstName} ${e.lastName} ${e.rut} ${e.position}`.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // Group employees by hierarchy level for the chain of command
-  const getHierarchyLevel = (position: string) => {
-    const p = getPositionPriority(position)
-    if (p === 0) return 'ceo'
-    if (p <= 2) return 'director'
-    if (p <= 4) return 'manager'
-    return 'staff'
-  }
-
-  const hierarchyColors: Record<string, string> = {
-    ceo: '#f59e0b',
-    director: '#3b82f6',
-    manager: '#8b5cf6',
-    staff: '#6b7280',
-  }
-
-  const hierarchyLabels: Record<string, string> = {
-    ceo: 'CEO',
-    director: 'Directores',
-    manager: 'Managers',
-    staff: 'Equipo',
-  }
-
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 80px)', overflow: 'hidden' }}>
-      {/* ─── LEFT SIDEBAR: CHAIN OF COMMAND ─── */}
+      {/* ─── LEFT SIDEBAR: EMPLOYEE TREE ─── */}
       <div style={{
-        width: 290, minWidth: 290, borderRight: '1px solid var(--border)',
+        width: 280, minWidth: 280, borderRight: '1px solid var(--border)',
         background: 'var(--bg-secondary)', display: 'flex', flexDirection: 'column',
         overflow: 'hidden',
       }}>
         {/* Header */}
-        <div style={{ 
-          padding: '16px 14px 12px', 
-          borderBottom: '1px solid var(--border)',
-          background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(139,92,246,0.06))',
-        }}>
+        <div style={{ padding: '16px 14px 12px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <div style={{ 
-              width: 36, height: 36, borderRadius: 10, 
-              background: 'linear-gradient(135deg, #2563eb, #7c3aed)', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(37,99,235,0.3)',
-            }}>
-              <Activity size={18} color="#fff" />
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={16} color="#fff" />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 14, letterSpacing: '-0.02em' }}>ECDP</div>
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>Expediente de Colaboradores</div>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>ERC Conniku</div>
+              <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Electronic Record Card</div>
             </div>
           </div>
           <div style={{ position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
             <input
-              type="text" placeholder="Buscar colaborador..."
+              type="text" placeholder="Buscar empleado..."
               value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-              style={{ width: '100%', padding: '8px 10px 8px 30px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 12, outline: 'none' }}
+              style={{ width: '100%', padding: '7px 10px 7px 30px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 12 }}
             />
           </div>
         </div>
 
-        {/* Hierarchy Tree */}
+        {/* Tree */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '8px 6px' }}>
-          {['ceo', 'director', 'manager', 'staff'].map(level => {
-            const empsInLevel = filtered.filter(e => getHierarchyLevel(e.position) === level)
-            if (empsInLevel.length === 0) return null
-            const color = hierarchyColors[level]
-            const indent = level === 'ceo' ? 0 : level === 'director' ? 12 : level === 'manager' ? 24 : 36
+          {/* CEO node */}
+          <div style={{ padding: '6px 8px', marginBottom: 2, borderRadius: 8, fontSize: 10, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Organigrama
+          </div>
 
+          {filtered.map((emp, idx) => {
+            const isSelected = selectedEmployee?.id === emp.id
+            const priority = getPositionPriority(emp.position)
+            const indent = priority === 0 ? 0 : 16
             return (
-              <div key={level} style={{ marginBottom: 4 }}>
-                {/* Level label */}
-                <div style={{ 
-                  padding: '6px 8px', marginLeft: indent, marginBottom: 2, 
-                  fontSize: 9, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em',
-                  color, display: 'flex', alignItems: 'center', gap: 6,
+              <div
+                key={emp.id}
+                onClick={() => setSelectedEmployee(isSelected ? null : emp)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
+                  marginLeft: indent, borderRadius: 10, cursor: 'pointer',
+                  background: isSelected ? 'var(--accent)' : 'transparent',
+                  color: isSelected ? '#fff' : 'var(--text-primary)',
+                  transition: 'all 0.15s',
+                  marginBottom: 2,
+                }}
+              >
+                <div style={{
+                  width: 34, height: 34, borderRadius: '50%',
+                  background: isSelected ? 'rgba(255,255,255,0.2)' : 'var(--accent)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0,
                 }}>
-                  <div style={{ width: 14, height: 1, background: color, opacity: 0.4 }} />
-                  {hierarchyLabels[level]}
+                  {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
                 </div>
-
-                {empsInLevel.map(emp => {
-                  const isSelected = selectedEmployee?.id === emp.id
-                  const initials = emp.firstName.charAt(0) + emp.lastName.charAt(0)
-
-                  return (
-                    <div
-                      key={emp.id}
-                      onClick={() => setSelectedEmployee(isSelected ? null : emp)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px',
-                        marginLeft: indent, borderRadius: 10, cursor: 'pointer',
-                        background: isSelected ? 'linear-gradient(135deg, #2563eb, #3b82f6)' : 'transparent',
-                        color: isSelected ? '#fff' : 'var(--text-primary)',
-                        transition: 'all 0.2s ease',
-                        marginBottom: 2,
-                        border: isSelected ? 'none' : '1px solid transparent',
-                      }}
-                      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-tertiary)' }}
-                      onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLDivElement).style.background = 'transparent' }}
-                    >
-                      {/* Profile Photo / Avatar */}
-                      <div style={{
-                        width: 38, height: 38, borderRadius: '50%',
-                        background: isSelected ? 'rgba(255,255,255,0.2)' : `linear-gradient(135deg, ${color}40, ${color}20)`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: isSelected ? '#fff' : color, fontWeight: 700, fontSize: 13, flexShrink: 0,
-                        border: `2px solid ${isSelected ? 'rgba(255,255,255,0.3)' : color + '50'}`,
-                        boxShadow: isSelected ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-                        overflow: 'hidden',
-                      }}>
-                        {emp.profilePictureUrl ? (
-                          <img src={`${getApiBase()}${emp.profilePictureUrl}`} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          initials
-                        )}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {emp.firstName} {emp.lastName}
-                        </div>
-                        <div style={{ fontSize: 10, opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {emp.position}
-                        </div>
-                        <div style={{ fontSize: 9, opacity: 0.5, marginTop: 1 }}>
-                          {emp.department}
-                        </div>
-                      </div>
-                      {/* Status indicator */}
-                      <div style={{
-                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
-                        background: emp.status === 'active' ? '#22c55e' : '#ef4444',
-                        boxShadow: `0 0 6px ${emp.status === 'active' ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)'}`,
-                      }} />
-                    </div>
-                  )
-                })}
-
-                {/* Connecting line */}
-                {level !== 'staff' && empsInLevel.length > 0 && (
-                  <div style={{ marginLeft: indent + 19, width: 1, height: 8, background: color + '30' }} />
-                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {emp.firstName} {emp.lastName}
+                  </div>
+                  <div style={{ fontSize: 10, opacity: 0.7, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {emp.position}
+                  </div>
+                </div>
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                  background: emp.status === 'active' ? '#22c55e' : '#ef4444',
+                }} />
               </div>
             )
           })}
@@ -610,7 +450,7 @@ export default function PersonalTab() {
         {/* Add employee button */}
         <div style={{ padding: '10px 14px', borderTop: '1px solid var(--border)' }}>
           <button onClick={() => setShowAddEmployee(true)} style={{ ...btnPrimary, width: '100%', justifyContent: 'center', padding: '8px 12px', fontSize: 12 }}>
-            <UserPlus size={14} /> Agregar Colaborador
+            <UserPlus size={14} /> Agregar Empleado
           </button>
         </div>
       </div>
@@ -702,7 +542,7 @@ function ERCDashboard({ employees, indicators, indicatorsError, onSelectEmployee
       {/* Header */}
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Activity size={26} /> ECDP — Dashboard
+          <Activity size={26} /> Electronic Record Card
         </h1>
         <p style={{ color: 'var(--text-muted)', marginTop: 4, fontSize: 13 }}>
           Sistema de gestion de personal — Conniku SpA
@@ -850,235 +690,81 @@ function EmployeeFile({ employee, employees, indicators, onClose, onRefresh }: {
 
   useEffect(() => { setTab('record_cards') }, [employee.id])
 
-  // Calculate contract info
-  const contractLabel = CONTRACT_TYPES.find(c => c.value === employee.contractType)?.label || employee.contractType
-  const hireDate = new Date(employee.hireDate + 'T12:00:00')
-  const hireDateStr = hireDate.toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' })
-  const endDateStr = employee.endDate ? new Date(employee.endDate + 'T12:00:00').toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) : null
-  const daysSinceHire = Math.floor((Date.now() - hireDate.getTime()) / 86400000)
-  const initials = employee.firstName.charAt(0) + employee.lastName.charAt(0)
-  const posColor = getPositionPriority(employee.position) === 0 ? '#f59e0b' : getPositionPriority(employee.position) <= 2 ? '#3b82f6' : '#8b5cf6'
-
-  // Tab groups for "My Work / Perfil Laboral"
-  const MAIN_TABS: { id: EmpTab; label: string; icon: any }[] = [
-    { id: 'record_cards', label: 'Perfil Laboral', icon: BarChart3 },
+  const TABS: { id: EmpTab; label: string; icon: any }[] = [
+    { id: 'record_cards', label: 'Record Cards', icon: BarChart3 },
     { id: 'info', label: 'Informacion', icon: Info },
+    { id: 'job_description', label: 'Job Description', icon: Briefcase },
+    { id: 'expectation_memo', label: 'Expectation Memo', icon: Target },
     { id: 'contrato', label: 'Contrato', icon: FileSignature },
+    { id: 'discipline', label: 'Disciplina', icon: Flag },
+    { id: 'coaching', label: 'Coaching', icon: MessageSquare },
+    { id: 'conversations', label: 'Conversaciones', icon: BookOpen },
+    { id: 'acknowledgements', label: 'Reconocimientos', icon: Award },
+    { id: 'performance', label: 'Evaluacion', icon: TrendingUp },
     { id: 'docs', label: 'Documentos', icon: FolderOpen },
+    { id: 'chat', label: 'Consulta Rápida', icon: Zap },
     { id: 'liquidaciones', label: 'Liquidaciones', icon: DollarSign },
   ]
 
-  const WORK_TABS: { id: EmpTab; label: string; icon: any }[] = [
-    { id: 'conversations', label: 'Conversaciones', icon: BookOpen },
-    { id: 'acknowledgements', label: 'Reconocimientos', icon: Award },
-    { id: 'coaching', label: 'Coaching', icon: MessageSquare },
-    { id: 'discipline', label: 'Disciplina', icon: Flag },
-    { id: 'performance', label: 'Evaluacion', icon: TrendingUp },
-  ]
-
-  const EXTRA_TABS: { id: EmpTab; label: string; icon: any }[] = [
-    { id: 'job_description', label: 'Job Description', icon: Briefcase },
-    { id: 'expectation_memo', label: 'Expectation Memo', icon: Target },
-    { id: 'chat', label: 'Chat IA', icon: Zap },
-  ]
-
   return (
-    <div style={{ padding: 0 }}>
-      {/* ─── CREW FILE HEADER (Disney ERC Style) ─── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #1e3a5f 0%, #2c5282 40%, #2b6cb0 100%)',
-        padding: '24px 28px 20px',
-        color: '#fff',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Subtle pattern overlay */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05, background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)' }} />
-        
-        <div style={{ position: 'relative', display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-          {/* Profile Photo */}
-          <div style={{ position: 'relative' }}>
-            <div style={{
-              width: 100, height: 100, borderRadius: 16, flexShrink: 0,
-              background: `linear-gradient(135deg, ${posColor}60, ${posColor}30)`,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              border: '3px solid rgba(255,255,255,0.3)',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-              fontSize: 36, fontWeight: 700, color: '#fff',
-              letterSpacing: '-0.02em',
-              overflow: 'hidden',
-            }}>
-              {employee.profilePictureUrl ? (
-                <img src={`${getApiBase()}${employee.profilePictureUrl}`} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                initials
-              )}
-            </div>
-            {/* Upload Avatar Badge */}
-            <label style={{
-              position: 'absolute', bottom: -8, right: -8, width: 32, height: 32,
-              background: 'var(--accent)', borderRadius: '50%', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.3)', border: '2px solid rgba(255,255,255,0.2)'
-            }}>
-              <Upload size={14} />
-              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={async (e) => {
-                if (e.target.files && e.target.files[0]) {
-                  try {
-                    await api.uploadEmployeeAvatar(employee.id, e.target.files[0])
-                    onRefresh()
-                  } catch (err) { alert('Error al subir foto de perfil') }
-                }
-              }} />
-            </label>
-          </div>
-
-          {/* Employee Info */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
-              <h2 style={{ margin: 0, fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
-                {employee.firstName} {employee.lastName}
-              </h2>
-              <span style={{
-                padding: '3px 12px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                background: employee.status === 'active' ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)',
-                color: employee.status === 'active' ? '#86efac' : '#fca5a5',
-                border: `1px solid ${employee.status === 'active' ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
-              }}>
-                {employee.status === 'active' ? '● Activo' : '● Inactivo'}
-              </span>
-            </div>
-
-            <div style={{ fontSize: 14, opacity: 0.9, fontWeight: 500, marginBottom: 2 }}>
-              {employee.position}
-            </div>
-            <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 12 }}>
-              {employee.department} • RUT: {employee.rut}
-            </div>
-
-            {/* Contract Details Row */}
-            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 14px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.08em', opacity: 0.7, marginBottom: 2 }}>Fecha Ingreso</div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{hireDateStr}</div>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 14px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.08em', opacity: 0.7, marginBottom: 2 }}>Contrato</div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{contractLabel}</div>
-              </div>
-              {employee.contractType === 'plazo_fijo' && endDateStr && (
-                <div style={{ background: 'rgba(245,158,11,0.15)', borderRadius: 10, padding: '8px 14px', border: '1px solid rgba(245,158,11,0.25)' }}>
-                  <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.08em', opacity: 0.7, marginBottom: 2 }}>Termino Contrato</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: '#fbbf24' }}>{endDateStr}</div>
-                </div>
-              )}
-              <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '8px 14px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.1)' }}>
-                <div style={{ fontSize: 9, textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.08em', opacity: 0.7, marginBottom: 2 }}>Antiguedad</div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{daysSinceHire} dias</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── TAB SYSTEM: My Work / History / Direct Reports ─── */}
-      <div style={{ padding: '0 24px' }}>
-        {/* Primary tabs row */}
-        <div style={{ 
-          display: 'flex', gap: 2, paddingTop: 16, marginBottom: 0,
-          borderBottom: '2px solid var(--border)',
+    <div style={{ padding: 24 }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%', background: 'var(--accent)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: '#fff', fontWeight: 700, fontSize: 20,
         }}>
-          {MAIN_TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{
-              padding: '10px 16px', border: 'none', borderRadius: '8px 8px 0 0',
-              background: tab === t.id ? 'var(--bg-primary)' : 'transparent',
-              color: tab === t.id ? 'var(--accent)' : 'var(--text-muted)',
-              fontWeight: tab === t.id ? 700 : 500, fontSize: 12, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6,
-              borderBottom: tab === t.id ? '2px solid var(--accent)' : '2px solid transparent',
-              marginBottom: -2,
-              transition: 'all 0.15s',
-            }}>
-              <t.icon size={14} /> {t.label}
-            </button>
-          ))}
+          {employee.firstName.charAt(0)}{employee.lastName.charAt(0)}
         </div>
+        <div style={{ flex: 1 }}>
+          <h2 style={{ margin: 0, fontSize: 22 }}>{employee.firstName} {employee.lastName}</h2>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+            {employee.position} • {employee.department} • RUT: {employee.rut}
+          </div>
+        </div>
+        <span style={{
+          padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600,
+          background: employee.status === 'active' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
+          color: employee.status === 'active' ? '#22c55e' : '#ef4444',
+        }}>
+          {employee.status === 'active' ? 'Activo' : 'Inactivo'}
+        </span>
+      </div>
 
-        {/* Secondary "folder" tabs — Conversations, Acknowledgements, etc. */}
-        {tab === 'record_cards' && (
-          <div style={{  
-            display: 'flex', gap: 6, padding: '12px 0 8px',
-            borderBottom: '1px solid var(--border)',
+      {/* Tab bar — scrollable */}
+      <div style={{ display: 'flex', gap: 3, marginBottom: 20, overflowX: 'auto', paddingBottom: 4 }}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)} style={{
+            padding: '7px 12px', borderRadius: 8, border: 'none', whiteSpace: 'nowrap',
+            background: tab === t.id ? 'var(--accent)' : 'var(--bg-secondary)',
+            color: tab === t.id ? '#fff' : 'var(--text-secondary)',
+            fontWeight: 600, fontSize: 11, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
           }}>
-            <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', alignSelf: 'center', marginRight: 4 }}>
-              <FolderOpen size={13} style={{ verticalAlign: 'middle', marginRight: 4 }} />
-              Carpetas:
-            </span>
-            {WORK_TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{
-                padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                border: '1px solid var(--border)', cursor: 'pointer',
-                background: 'var(--bg-secondary)', color: 'var(--text-secondary)',
-                display: 'flex', alignItems: 'center', gap: 5,
-                transition: 'all 0.15s',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)' }}
-              >
-                <t.icon size={12} /> {t.label}
-              </button>
-            ))}
-            {EXTRA_TABS.map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)} style={{
-                padding: '5px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
-                border: '1px dashed var(--border)', cursor: 'pointer',
-                background: 'transparent', color: 'var(--text-muted)',
-                display: 'flex', alignItems: 'center', gap: 5,
-                transition: 'all 0.15s',
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--accent)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)' }}
-              >
-                <t.icon size={12} /> {t.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Back button when in a sub-folder */}
-        {['conversations','acknowledgements','coaching','discipline','performance','job_description','expectation_memo','chat'].includes(tab) && (
-          <div style={{ padding: '10px 0 6px' }}>
-            <button onClick={() => setTab('record_cards')} style={{
-              padding: '5px 14px', borderRadius: 6, border: '1px solid var(--border)',
-              background: 'var(--bg-secondary)', color: 'var(--text-muted)',
-              fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-            }}>
-              ← Volver a Perfil Laboral
-            </button>
-          </div>
-        )}
+            <t.icon size={13} /> {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* ─── TAB CONTENT ─── */}
-      <div style={{ padding: '16px 24px 24px' }}>
-        {tab === 'record_cards' && <RecordCardsView employee={employee} documents={documents} onTabChange={setTab} />}
-        {tab === 'info' && <InfoTab employee={employee} afpInfo={afpInfo} />}
-        {tab === 'job_description' && <JobDescriptionTab employee={employee} />}
-        {tab === 'expectation_memo' && <ExpectationMemoTab employee={employee} />}
-        {tab === 'contrato' && <ContratoTab employee={employee} afpRate={afpInfo?.rate || 10.58} />}
-        {tab === 'discipline' && <DisciplineTab employee={employee} />}
-        {tab === 'coaching' && <CoachingTab employee={employee} />}
-        {tab === 'conversations' && <ConversationsTab employee={employee} />}
-        {tab === 'acknowledgements' && <AcknowledgementsTab employee={employee} />}
-        {tab === 'performance' && <PerformanceReviewTab employee={employee} />}
-        {tab === 'docs' && <DocumentsTab employee={employee} documents={documents} />}
-        {tab === 'chat' && <EmployeeChatTab employee={employee} documents={documents} />}
-        {tab === 'liquidaciones' && (
-          <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-            <DollarSign size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
-            <p>Las liquidaciones se generan desde la pestana "Remuneraciones" del panel RRHH.</p>
-          </div>
-        )}
-      </div>
+      {/* Tab content */}
+      {tab === 'record_cards' && <RecordCardsView employee={employee} documents={documents} onTabChange={setTab} />}
+      {tab === 'info' && <InfoTab employee={employee} afpInfo={afpInfo} />}
+      {tab === 'job_description' && <JobDescriptionTab employee={employee} />}
+      {tab === 'expectation_memo' && <ExpectationMemoTab employee={employee} />}
+      {tab === 'contrato' && <ContratoTab employee={employee} afpRate={afpInfo?.rate || 10.58} />}
+      {tab === 'discipline' && <DisciplineTab employee={employee} />}
+      {tab === 'coaching' && <CoachingTab employee={employee} />}
+      {tab === 'conversations' && <ConversationsTab employee={employee} />}
+      {tab === 'acknowledgements' && <AcknowledgementsTab employee={employee} />}
+      {tab === 'performance' && <PerformanceReviewTab employee={employee} />}
+      {tab === 'docs' && <DocumentsTab employee={employee} documents={documents} />}
+      {tab === 'chat' && <EmployeeChatTab employee={employee} documents={documents} />}
+      {tab === 'liquidaciones' && (
+        <div style={{ padding: 30, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+          <DollarSign size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
+          <p>Las liquidaciones se generan desde la pestana "Remuneraciones" del panel RRHH.</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -1344,7 +1030,7 @@ function ContratoTab({ employee, afpRate }: { employee: Employee; afpRate: numbe
         <h3 style={{ textAlign: 'center', margin: '0 0 4px' }}>CONNIKU SpA</h3>
         <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>Contrato Individual de Trabajo</p>
 
-        <ContractClause title="PARTES" content={`Empleador: CONNIKU SpA, RUT 78.395.702-7, representada por Cristian Andrés Gutiérrez Lazcano.\nTrabajador: ${employee.firstName} ${employee.lastName}, RUT ${employee.rut}.`} />
+        <ContractClause title="PARTES" content={`Empleador: CONNIKU SpA, RUT 78.395.702-7, representada por Cristian Gaete Lazcano.\nTrabajador: ${employee.firstName} ${employee.lastName}, RUT ${employee.rut}.`} />
         <ContractClause title="CARGO" content={`${employee.position} — Departamento de ${employee.department}.`} />
         <ContractClause title="JORNADA" content={`${employee.weeklyHours} horas semanales, lunes a viernes, 09:00 a 18:00 con 1 hora de colacion.`} />
 
@@ -2041,7 +1727,7 @@ Documentos: ${documents.map(d => d.name || d.documentType).join(', ') || 'Sin do
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Zap size={18} style={{ color: 'var(--accent)' }} />
         <div>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>Chat IA — {employee.firstName}</div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Consulta — {employee.firstName}</div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Pregunta sobre sus documentos, evaluaciones, contrato, etc.</div>
         </div>
       </div>
@@ -2146,7 +1832,7 @@ function AddEmployeeModal({ onClose, onRefresh }: { onClose: () => void; onRefre
 
         <h4 style={{ fontSize: 12, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 8 }}>Datos Personales</h4>
         <div style={grid2}>
-          <F label="RUT" k="rut" required placeholder="XX.XXX.XXX-X" />
+          <F label="RUT" k="rut" required placeholder="12.345.678-9" />
           <F label="Nombre" k="firstName" required />
           <F label="Apellido" k="lastName" required />
           <F label="Email" k="email" type="email" />

@@ -11,7 +11,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'desempeno', label: 'Evaluación de Desempeño', description: 'Metas, KRAs y ciclos de evaluación', icon: 'star', category: 'hr', route: '/admin-panel/hr/desempeno', status: 'active', isNew: true },
   { id: 'reclutamiento', label: 'Reclutamiento', description: 'Pipeline de contratación y postulaciones', icon: 'target', category: 'hr', route: '/admin-panel/hr/reclutamiento', status: 'active', isNew: true },
   { id: 'capacitacion', label: 'Capacitación / SENCE', description: 'Registro de capacitaciones y franquicia SENCE', icon: 'book-open', category: 'hr', route: '/admin-panel/hr/capacitacion', status: 'active', isNew: true },
-  { id: 'accesos', label: 'Control de Accesos', description: 'Habilita/deshabilita módulos por trabajador', icon: 'shield', category: 'hr', route: '/admin-panel/hr/accesos', status: 'active', isNew: true },
+  { id: 'accesos', label: 'Control de Accesos', description: 'Habilita/deshabilita módulos por trabajador', icon: 'shield', category: 'hr', route: '/admin-panel/hr/accesos', status: 'active', isNew: true, ownerOnly: true },
 
   // ─── Payroll & Legal ──────────────────────────────────
   { id: 'liquidaciones', label: 'Liquidaciones', description: 'Cálculo y emisión de liquidaciones de sueldo', icon: 'banknote', category: 'payroll', route: '/admin-panel/payroll/liquidaciones', status: 'active' },
@@ -44,6 +44,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'tutores', label: 'Tutores Externos', description: 'Directorio y gestión de tutores contratados', icon: 'users', category: 'tools', route: '/admin-panel/tools/tutores', status: 'active' },
   { id: 'push-notifications', label: 'Push Notifications', description: 'Notificaciones push masivas a usuarios', icon: 'bell', category: 'tools', route: '/admin-panel/tools/push', status: 'active', isNew: true },
   { id: 'guia-owner', label: 'Guía del Owner', description: 'Guía legal y administrativa para el dueño', icon: 'book-open', category: 'tools', route: '/admin-panel/tools/guia-owner', status: 'active' },
+  { id: 'biblioteca', label: 'Biblioteca de Documentos', description: 'Repositorio legal completo — RIOHS, contratos, Ley Karin, reportes DT/SII/TGR', icon: 'archive', category: 'tools', route: '/admin-panel/tools/biblioteca', status: 'active', isNew: true, ownerOnly: true },
 ]
 
 export const CATEGORY_LABELS: Record<string, { label: string; description: string }> = {

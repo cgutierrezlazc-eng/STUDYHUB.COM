@@ -6,6 +6,7 @@ import { formatPriceDisplay } from '../utils/currency'
 
 const API_BASE = getApiBase();
 import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
+import ExecutiveShowcase from '../components/ExecutiveShowcase'
 
 const COVER_TEMPLATES = [
   // General
@@ -70,7 +71,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [commentText, setCommentText] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
-  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'skills' | 'portfolio' | 'publications' | 'servicios' | 'tutorias'>('wall')
+  const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias' | 'showcase'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
@@ -149,17 +150,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [studentClassFilter, setStudentClassFilter] = useState<'upcoming' | 'past' | 'all'>('all')
   const [mutualFriends, setMutualFriends] = useState<any[]>([])
   const [showMutualList, setShowMutualList] = useState(false)
-  const [skills, setSkills] = useState<any[]>([])
-  const [skillsLoading, setSkillsLoading] = useState(false)
-  const [newSkillName, setNewSkillName] = useState('')
-  const [projects, setProjects] = useState<any[]>([])
-  const [projectsLoading, setProjectsLoading] = useState(false)
-  const [publications, setPublications] = useState<any[]>([])
-  const [publicationsLoading, setPublicationsLoading] = useState(false)
-  const [showAddProject, setShowAddProject] = useState(false)
-  const [showAddPublication, setShowAddPublication] = useState(false)
-  const [newProject, setNewProject] = useState({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
-  const [newPublication, setNewPublication] = useState({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '', doi: '' })
+  const [showEditInfoModal, setShowEditInfoModal] = useState(false)
+  const [editInfoForm, setEditInfoForm] = useState({ career: '', university: '', semester: 1, academicStatus: 'estudiante', professionalTitle: '', bio: '' })
+  const [editInfoSaving, setEditInfoSaving] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -207,22 +200,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setCompletedCourses(data || [])
     } catch (err) { console.error('Failed to load courses:', err) }
     finally { setCoursesLoading(false) }
-  }
-
-  const loadSkills = async () => {
-    setSkillsLoading(true)
-    try { const data = await api.getUserSkills(userId); setSkills(data) } catch {}
-    setSkillsLoading(false)
-  }
-  const loadProjects = async () => {
-    setProjectsLoading(true)
-    try { const data = await api.getUserProjects(userId); setProjects(data) } catch {}
-    setProjectsLoading(false)
-  }
-  const loadPublications = async () => {
-    setPublicationsLoading(true)
-    try { const data = await api.getUserPublications(userId); setPublications(data) } catch {}
-    setPublicationsLoading(false)
   }
 
   const loadProfile = async () => {
@@ -610,6 +587,38 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     }
   }
 
+  const openEditInfoModal = () => {
+    setEditInfoForm({
+      career: profile.career || '',
+      university: profile.university || '',
+      semester: profile.semester || 1,
+      academicStatus: profile.academicStatus || 'estudiante',
+      professionalTitle: profile.professionalTitle || '',
+      bio: profile.bio || '',
+    })
+    setShowEditInfoModal(true)
+  }
+
+  const handleSaveInfo = async () => {
+    setEditInfoSaving(true)
+    try {
+      await updateProfile({
+        career: editInfoForm.career,
+        university: editInfoForm.university,
+        semester: Number(editInfoForm.semester),
+        academicStatus: editInfoForm.academicStatus,
+        professionalTitle: editInfoForm.professionalTitle,
+        bio: editInfoForm.bio,
+      } as any)
+      setProfile((prev: any) => ({ ...prev, ...editInfoForm }))
+      setShowEditInfoModal(false)
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar')
+    } finally {
+      setEditInfoSaving(false)
+    }
+  }
+
   if (loading) return <div className="page-body"><div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div></div>
   if (!profile) return <div className="page-body"><div className="empty-state"><h3>{t('userprofile.notFound')}</h3></div></div>
 
@@ -796,25 +805,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Stats bar */}
-      {profile && (
-        <div style={{ display: 'flex', gap: 0, background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius)', marginBottom: 2, overflow: 'hidden' }}>
-          {[
-            { label: 'Posts', value: posts.length, icon: '📝' },
-            { label: 'Amigos', value: profile.friendsCount || 0, icon: '👥' },
-            { label: 'Cursos', value: profile.coursesCompleted || 0, icon: '🎓' },
-            { label: 'Skills', value: skills.length, icon: '⚡' },
-            { label: 'Días', value: profile.studyDays || 0, icon: '📅' },
-          ].map((stat, i) => (
-            <div key={i} style={{ flex: 1, textAlign: 'center', padding: '10px 8px', borderRight: i < 4 ? '1px solid var(--border-subtle)' : 'none', cursor: 'default' }}>
-              <div style={{ fontSize: 16 }}>{stat.icon}</div>
-              <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)' }}>{stat.value.toLocaleString()}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Profile Tabs — outside header card, LinkedIn style */}
       <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
         <button className={`fb-tab ${activeTab === 'wall' ? 'active' : ''}`} onClick={() => setActiveTab('wall')}>
@@ -831,15 +821,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </button>
         <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
           {t('userprofile.tabCourses')}
-        </button>
-        <button className={`fb-tab ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => { setActiveTab('skills'); loadSkills() }}>
-          ⚡ Habilidades
-        </button>
-        <button className={`fb-tab ${activeTab === 'portfolio' ? 'active' : ''}`} onClick={() => { setActiveTab('portfolio'); loadProjects() }}>
-          🗂 Portfolio
-        </button>
-        <button className={`fb-tab ${activeTab === 'publications' ? 'active' : ''}`} onClick={() => { setActiveTab('publications'); loadPublications() }}>
-          📚 Publicaciones
         </button>
         <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
           {t('userprofile.tabCV')}
@@ -862,11 +843,169 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             {GraduationCap({ size: 14 })} {t('userprofile.tabTutoring')}
           </button>
         )}
+        {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
+          <button
+            className={`fb-tab ${activeTab === 'showcase' ? 'active' : ''}`}
+            onClick={() => setActiveTab('showcase')}
+            style={activeTab === 'showcase' ? { borderColor: '#f59e0b', color: '#d97706', fontWeight: 700 } : {}}
+          >
+            ★ Showcase
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}
       <div className="fb-profile-content">
-        <div>
+        <div className={activeTab === 'wall' ? "fb-wall-layout" : ""}>
+          {/* Right sidebar — Academic Info + Friends */}
+          {activeTab === 'wall' && (
+            <div className="fb-wall-sidebar">
+              <div className="card fb-info-card">
+                <h4>{t('userprofile.academicInfo')}</h4>
+                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{t('userprofile.studies')} <strong>{profile.career}</strong></span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{profile.university}</span></div>
+                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>{t('userprofile.semester')} {profile.semester}</span></div>
+                {profile.studyDays > 0 && (
+                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> {t('userprofile.daysStudying')}</span></div>
+                )}
+              </div>
+
+              {/* Tutoring card */}
+              {profile.offersMentoring && (
+                <div className="card fb-info-card">
+                  <h4>{t('userprofile.offersTutoring')}</h4>
+                  {profile.mentoringServices && profile.mentoringServices.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
+                      {profile.mentoringServices.map((s: string) => (
+                        <span key={s} style={{ padding: '3px 8px', background: 'rgba(45,98,200,0.1)', color: '#2D62C8', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                          {s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
+                    <div className="fb-info-item" style={{ flexWrap: 'wrap' }}>
+                      <span className="fb-info-icon">{BookOpen({ size: 14 })}</span>
+                      <span style={{ fontSize: 12 }}>{profile.mentoringSubjects.join(', ')}</span>
+                    </div>
+                  )}
+                  <div className="fb-info-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? 'Gratis' : 'Precio'}</span>
+                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                        {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${profile.mentoringPricePerHour || 0} USD/hora`}
+                      </span>
+                    </div>
+                    {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
+                      const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                      return prices.localText ? (
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 24 }}>≈ {prices.localText}/hora</span>
+                      ) : null
+                    })()}
+                  </div>
+                  {isOtherUser && user && profile.academicStatus !== 'estudiante' && (
+                    <button onClick={() => setShowTutoringModal(true)}
+                      style={{
+                        width: '100%', marginTop: 8, padding: '8px 12px', background: '#2D62C8', color: '#fff',
+                        border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
+                      }}>
+                      {t('userprofile.requestTutoring')}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Showcase mini-card — MAX users */}
+              {((profile as any).subscriptionTier === 'max' || profile.role === 'owner' || isOwn) && (
+                <div
+                  className="card fb-info-card"
+                  onClick={() => setActiveTab('showcase')}
+                  style={{ cursor: 'pointer', border: '1.5px solid rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                    <h4 style={{ margin: 0, color: '#92400e', fontSize: 14 }}>★ Showcase Ejecutivo</h4>
+                    <span style={{ fontSize: 11, color: '#d97706', fontWeight: 600, background: 'rgba(217,119,6,0.1)', padding: '2px 8px', borderRadius: 10 }}>MAX</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
+                    {isOwn
+                      ? 'Tu perfil ejecutivo y portafolio profesional. Haz clic para editar.'
+                      : `Perfil ejecutivo de ${profile.firstName}.`}
+                  </p>
+                  <div style={{ marginTop: 8, fontSize: 11, color: '#d97706', fontWeight: 600 }}>
+                    Ver Showcase →
+                  </div>
+                </div>
+              )}
+
+              {/* Noticias de Educación Chile */}
+              <div className="card fb-info-card">
+                <h4 style={{ margin: '0 0 10px', fontSize: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ fontSize: 16 }}>📰</span> Noticias de Educación
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    { title: 'Proceso de Admisión DEMRE 2025', source: 'DEMRE', url: 'https://demre.cl', color: '#2D62C8' },
+                    { title: 'Becas y Créditos JUNAEB 2025', source: 'JUNAEB', url: 'https://junaeb.cl', color: '#059669' },
+                    { title: 'Calidad de la Educación Superior', source: 'CNA Chile', url: 'https://cnachile.cl', color: '#7c3aed' },
+                    { title: 'Noticias Ministerio de Educación', source: 'MINEDUC', url: 'https://mineduc.cl', color: '#d97706' },
+                  ].map((item, i) => (
+                    <a
+                      key={i}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: 'none', display: 'block', padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', transition: 'all 0.15s' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = item.color; (e.currentTarget as HTMLElement).style.background = 'var(--bg-card)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)' }}
+                    >
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{item.title}</div>
+                      <div style={{ fontSize: 11, color: item.color, fontWeight: 600, marginTop: 2 }}>{item.source}</div>
+                    </a>
+                  ))}
+                </div>
+                <a
+                  href="https://mineduc.cl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: 'block', textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 10, textDecoration: 'none' }}
+                >
+                  Más noticias →
+                </a>
+              </div>
+
+              {/* Photos card */}
+              {allPhotos.length > 0 && (
+                <div className="card fb-info-card">
+                  <h4>{t('userprofile.photos')}</h4>
+                  <div className="fb-photos-mini-grid">
+                    {allPhotos.slice(0, 9).map((url, i) => (
+                      <div key={i} className="fb-photo-thumb" style={{ backgroundImage: `url(${url})` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Friends mini */}
+              {profile.friendCount > 0 && (
+                <div className="card fb-info-card">
+                  <h4>{t('userprofile.friends')} ({profile.friendCount})</h4>
+                  <div className="fb-photos-mini-grid">
+                    {friendsList.slice(0, 9).map(f => (
+                      <div key={f.id} style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => onNavigate(`/user/${f.id}`)}>
+                        <div style={{ width: '100%', aspectRatio: '1', borderRadius: 6, background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', overflow: 'hidden' }}>
+                          {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : `${f.firstName?.[0] || ''}${f.lastName?.[0] || ''}`}
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.firstName}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+            {/* Main wall — Presentación + Posts */}
+            <div className={activeTab === 'wall' ? "fb-wall-main" : ""}>
               {activeTab === 'wall' && (
                 <>
                   {/* Presentación card — LinkedIn "About" section */}
@@ -1212,58 +1351,177 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               )}
 
         {activeTab === 'about' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>ℹ️ Información</h3>
-            </div>
-            {/* Datos personales */}
-            <div className="card" style={{ padding: '20px 24px', marginBottom: 12 }}>
-              <h4 style={{ margin: '0 0 14px', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 600 }}>Datos Personales</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* Card 1: Información Personal */}
+            <div className="card fb-info-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h4 style={{ margin: 0 }}>{t('userprofile.personalInfo')}</h4>
+                {isOwn && (
+                  <button className="btn btn-secondary btn-sm" onClick={openEditInfoModal} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Pencil({ size: 14 })} Editar
+                  </button>
+                )}
+              </div>
               <div className="fb-about-grid">
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.fullName')}</span><span>{profile.firstName} {profile.lastName}</span></div>
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.user')}</span><span>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</span></div>
-                {profile.bio && <div className="fb-about-item" style={{ gridColumn: '1/-1' }}><span className="fb-about-label">{t('userprofile.bioLabel')}</span><span>{profile.bio}</span></div>}
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.fullName')}</span>
+                  <span style={{ fontWeight: 600 }}>{profile.firstName} {profile.lastName}</span>
+                </div>
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.user')}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>@{profile.username} <span style={{ opacity: 0.6 }}>#{String(profile.userNumber || 0).padStart(4, '0')}</span></span>
+                </div>
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.career')}</span>
+                  <span>{profile.career || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t('userprofile.notSpecified')}</span>}</span>
+                </div>
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.universityLabel')}</span>
+                  <span>{profile.university || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t('userprofile.notSpecified')}</span>}</span>
+                </div>
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.semesterLabel')}</span>
+                  <span>{t('userprofile.semester')} {profile.semester}</span>
+                </div>
+                {profile.academicStatus && profile.academicStatus !== 'estudiante' && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">{t('userprofile.academicStatusLabel')}</span>
+                    <span style={{ textTransform: 'capitalize', color: '#7c3aed', fontWeight: 600 }}>{profile.academicStatus}</span>
+                  </div>
+                )}
+                {profile.professionalTitle && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">{t('userprofile.titleLabel')}</span>
+                    <span style={{ fontWeight: 500 }}>{profile.professionalTitle}</span>
+                  </div>
+                )}
               </div>
             </div>
-            {/* Info académica */}
-            <div className="card" style={{ padding: '20px 24px', marginBottom: 12 }}>
-              <h4 style={{ margin: '0 0 14px', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 600 }}>🎓 Información Académica</h4>
+
+            {/* Card 2: Descripción / Bio */}
+            <div className="card fb-info-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <h4 style={{ margin: 0 }}>Descripción</h4>
+                {isOwn && !editingBio && (
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Pencil({ size: 14 })} {profile.bio ? 'Editar' : 'Agregar'}
+                  </button>
+                )}
+              </div>
+              {editingBio ? (
+                <div>
+                  <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={3} placeholder="Escribe sobre ti..." maxLength={300} />
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+                    <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>{t('userprofile.cancelBtn')}</button>
+                    <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>{t('userprofile.saveBtn')}</button>
+                  </div>
+                </div>
+              ) : (
+                <p style={{ color: profile.bio ? 'var(--text-secondary)' : 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, margin: 0, fontStyle: profile.bio ? 'normal' : 'italic' }}>
+                  {profile.bio || 'Sin descripción aún.'}
+                </p>
+              )}
+            </div>
+
+            {/* Card 3: Actividad & Conexiones */}
+            <div className="card fb-info-card">
+              <h4 style={{ marginTop: 0, marginBottom: 14 }}>Actividad</h4>
               <div className="fb-about-grid">
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.career')}</span><span>{profile.career || t('userprofile.notSpecified')}</span></div>
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.universityLabel')}</span><span>{profile.university || t('userprofile.notSpecified')}</span></div>
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.semesterLabel')}</span><span>{t('userprofile.semester')} {profile.semester}</span></div>
-                {profile.studyDays > 0 && <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.daysStudyingLabel')}</span><span style={{ fontWeight: 600, color: 'var(--accent)' }}>{profile.studyDays.toLocaleString()} días</span></div>}
-                <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.friendsLabel')}</span><span>{profile.friendCount} {t('userprofile.connections')}</span></div>
-                {profile.academicStatus && profile.academicStatus !== 'estudiante' && <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.academicStatusLabel')}</span><span style={{ textTransform: 'capitalize' }}>{profile.academicStatus}</span></div>}
-                {profile.professionalTitle && <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.titleLabel')}</span><span>{profile.professionalTitle}</span></div>}
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.friendsLabel')}</span>
+                  <span style={{ fontWeight: 600, color: '#2D62C8' }}>{profile.friendCount} {t('userprofile.connections')}</span>
+                </div>
+                {profile.studyDays > 0 && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">{t('userprofile.daysStudyingLabel')}</span>
+                    <span style={{ fontWeight: 600, color: '#059669' }}>{profile.studyDays.toLocaleString()} días</span>
+                  </div>
+                )}
               </div>
             </div>
-            {/* Tutoría (if offersMentoring) */}
+
+            {/* Card 4: Calificación como Estudiante */}
+            {(profile.studentRatingCount > 0 || isOwn) && (
+              <div className="card fb-info-card">
+                <h4 style={{ marginTop: 0, marginBottom: 14 }}>Calificación como Estudiante</h4>
+                {profile.studentRatingCount > 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[1,2,3,4,5].map(s => (
+                        <svg key={s} width="20" height="20" viewBox="0 0 24 24" fill={s <= Math.round(profile.studentRatingAvg || 0) ? '#f59e0b' : 'none'} stroke="#f59e0b" strokeWidth="2">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      ))}
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{(profile.studentRatingAvg || 0).toFixed(1)}</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 6 }}>({profile.studentRatingCount} {profile.studentRatingCount === 1 ? 'evaluación' : 'evaluaciones'} de tutores)</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, fontStyle: 'italic' }}>
+                    Aún no tienes evaluaciones de tutores. Aparecerán luego de completar sesiones de tutoría.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Card 5: Servicios de Tutoría */}
             {profile.offersMentoring && (
-              <div className="card" style={{ padding: '20px 24px', marginBottom: 12 }}>
-                <h4 style={{ margin: '0 0 14px', fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', fontWeight: 600 }}>📚 {t('userprofile.tutoringServices')}</h4>
+              <div className="card fb-info-card">
+                <h4 style={{ marginTop: 0, marginBottom: 14 }}>{t('userprofile.tutoringServices')}</h4>
                 <div className="fb-about-grid">
                   {profile.mentoringServices && profile.mentoringServices.length > 0 && (
-                    <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.servicesLabel')}</span><span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span></div>
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.servicesLabel')}</span>
+                      <span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span>
+                    </div>
                   )}
                   {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
-                    <div className="fb-about-item"><span className="fb-about-label">{t('userprofile.subjectsLabel')}</span><span>{profile.mentoringSubjects.join(', ')}</span></div>
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.subjectsLabel')}</span>
+                      <span>{profile.mentoringSubjects.join(', ')}</span>
+                    </div>
                   )}
                   {profile.mentoringDescription && (
-                    <div className="fb-about-item" style={{ gridColumn: '1/-1' }}><span className="fb-about-label">{t('userprofile.descriptionLabel')}</span><span>{profile.mentoringDescription}</span></div>
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.descriptionLabel')}</span>
+                      <span>{profile.mentoringDescription}</span>
+                    </div>
                   )}
                   <div className="fb-about-item">
                     <span className="fb-about-label">{t('userprofile.priceLabel')}</span>
-                    <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : 'var(--accent)' }}>
-                      {profile.mentoringPriceType === 'free' ? t('userprofile.freeVolunteer') : `$${profile.mentoringPricePerHour || 0} USD por hora`}
-                    </span>
+                    <div>
+                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                        {profile.mentoringPriceType === 'free' ? t('userprofile.freeVolunteer') : `$${profile.mentoringPricePerHour || 0} USD por hora`}
+                      </span>
+                      {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
+                        const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                        return prices.localText ? (
+                          <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>≈ {prices.localText} (conversión aprox.)</span>
+                        ) : null
+                      })()}
+                    </div>
                   </div>
                 </div>
                 {isOtherUser && user && (
-                  <button onClick={() => setShowTutoringModal(true)} style={{ marginTop: 14, padding: '10px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+                  <button onClick={() => setShowTutoringModal(true)}
+                    style={{ marginTop: 16, padding: '10px 20px', background: '#2D62C8', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
                     {t('userprofile.requestTutoring')}
                   </button>
                 )}
+              </div>
+            )}
+
+            {/* Executive Showcase — MAX plan users */}
+            {((profile as any).subscriptionTier === 'max' || isOwn) && (
+              <div className="card fb-info-card">
+                <ExecutiveShowcase
+                  userId={profile.id}
+                  isOwner={!!isOwn}
+                  isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
+                />
               </div>
             )}
           </div>
@@ -1271,9 +1529,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {activeTab === 'courses' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>🎓 Cursos completados <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>({completedCourses.length})</span></h3>
-            </div>
             {coursesLoading ? (
               <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
@@ -1345,531 +1600,177 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
         )}
 
-        {/* ─── Skills Tab ─── */}
-        {activeTab === 'skills' && (
-          <div className="card" style={{ padding: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>⚡ Habilidades &amp; Competencias</h3>
-              {isOwn && (
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <input
-                    value={newSkillName}
-                    onChange={e => setNewSkillName(e.target.value)}
-                    onKeyDown={async e => {
-                      if (e.key === 'Enter' && newSkillName.trim()) {
-                        try {
-                          const s = await api.addSkill(userId, newSkillName.trim())
-                          setSkills(prev => [...prev, { ...s, endorsedByMe: false }])
-                          setNewSkillName('')
-                        } catch {}
-                      }
-                    }}
-                    placeholder="Agregar habilidad... (Enter)"
-                    style={{ background: 'var(--bg-hover)', border: '1px solid var(--border)', borderRadius: 20, padding: '6px 14px', fontSize: 13, color: 'var(--text-primary)', outline: 'none', width: 200 }}
-                  />
-                </div>
-              )}
-            </div>
-            {skillsLoading ? (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {[...Array(8)].map((_, i) => <div key={i} style={{ height: 36, width: 120, borderRadius: 20, background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
-              </div>
-            ) : skills.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>⚡</div>
-                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin habilidades aún</div>
-                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus skills para que otros puedan respaldarte</div>}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {skills.map((skill: any) => (
-                  <div key={skill.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: skill.endorsedByMe ? 'rgba(45,98,200,0.12)' : 'var(--bg-hover)', border: `1px solid ${skill.endorsedByMe ? 'var(--accent)' : 'var(--border-subtle)'}`, borderRadius: 24, padding: '8px 16px', transition: 'all 0.2s' }}>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{skill.skillName}</span>
-                    {skill.endorsementCount > 0 && (
-                      <span style={{ background: 'var(--accent)', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 11, fontWeight: 600 }}>{skill.endorsementCount}</span>
-                    )}
-                    {!isOwn && (
-                      <button
-                        onClick={async () => {
-                          try {
-                            const res = await api.endorseSkill(skill.id)
-                            setSkills(prev => prev.map(s => s.id === skill.id ? { ...s, endorsedByMe: res.endorsed, endorsementCount: s.endorsementCount + (res.endorsed ? 1 : -1) } : s))
-                          } catch {}
-                        }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: 0, color: skill.endorsedByMe ? 'var(--accent)' : 'var(--text-muted)' }}
-                        title={skill.endorsedByMe ? 'Quitar respaldo' : 'Respaldar'}
-                      >
-                        👍
-                      </button>
-                    )}
-                    {isOwn && (
-                      <button
-                        onClick={async () => {
-                          try { await api.removeSkill(skill.id); setSkills(prev => prev.filter(s => s.id !== skill.id)) } catch {}
-                        }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)', padding: 0 }}
-                      >✕</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── Portfolio Tab ─── */}
-        {activeTab === 'portfolio' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>🗂 Portfolio de Proyectos</h3>
-              {isOwn && (
-                <button className="btn btn-primary btn-sm" onClick={() => setShowAddProject(true)}>+ Agregar Proyecto</button>
-              )}
-            </div>
-
-            {showAddProject && isOwn && (
-              <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--accent)' }}>
-                <h4 style={{ margin: '0 0 16px 0' }}>Nuevo Proyecto</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                  <input className="form-input" placeholder="Título del proyecto *" value={newProject.title} onChange={e => setNewProject(p => ({ ...p, title: e.target.value }))} />
-                  <input className="form-input" placeholder="URL del proyecto" value={newProject.projectUrl} onChange={e => setNewProject(p => ({ ...p, projectUrl: e.target.value }))} />
-                </div>
-                <textarea className="form-input" rows={3} placeholder="Descripción..." value={newProject.description} onChange={e => setNewProject(p => ({ ...p, description: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
-                  <input className="form-input" placeholder="Tecnologías (ej: React, Python)" value={newProject.techStack} onChange={e => setNewProject(p => ({ ...p, techStack: e.target.value }))} />
-                  <select className="form-input" value={newProject.category} onChange={e => setNewProject(p => ({ ...p, category: e.target.value }))}>
-                    <option value="academic">Académico</option>
-                    <option value="personal">Personal</option>
-                    <option value="work">Laboral</option>
-                  </select>
-                  <input className="form-input" type="number" placeholder="Año" value={newProject.year} onChange={e => setNewProject(p => ({ ...p, year: parseInt(e.target.value) || new Date().getFullYear() }))} />
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button className="btn btn-secondary btn-sm" onClick={() => setShowAddProject(false)}>Cancelar</button>
-                  <button className="btn btn-primary btn-sm" onClick={async () => {
-                    if (!newProject.title.trim()) return
-                    try {
-                      const tech = newProject.techStack.split(',').map(s => s.trim()).filter(Boolean)
-                      const res = await api.addPortfolioProject(userId, { ...newProject, techStack: tech })
-                      setProjects(prev => [{ ...res, techStack: tech, description: newProject.description, projectUrl: newProject.projectUrl, category: newProject.category, year: newProject.year }, ...prev])
-                      setShowAddProject(false)
-                      setNewProject({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
-                    } catch {}
-                  }}>Guardar</button>
-                </div>
-              </div>
-            )}
-
-            {projectsLoading ? (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                {[...Array(3)].map((_, i) => <div key={i} style={{ height: 200, borderRadius: 'var(--radius)', background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
-              </div>
-            ) : projects.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🗂</div>
-                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin proyectos aún</div>
-                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus proyectos académicos y personales</div>}
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-                {projects.map((proj: any) => (
-                  <div key={proj.id} className="card" style={{ padding: 0, overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = 'none'; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
-                    <div style={{ height: 120, background: proj.imageUrl ? `url(${proj.imageUrl}) center/cover` : 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {!proj.imageUrl && <span style={{ fontSize: 40 }}>🗂</span>}
-                    </div>
-                    <div style={{ padding: '14px 16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                        <h4 style={{ margin: 0, fontSize: 15, fontWeight: 600 }}>{proj.title}</h4>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-hover)', borderRadius: 10, padding: '2px 8px' }}>{proj.year || ''}</span>
-                      </div>
-                      {proj.description && <p style={{ margin: '0 0 10px 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.4, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>{proj.description}</p>}
-                      {proj.techStack && proj.techStack.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }}>
-                          {proj.techStack.map((tech: string, i: number) => (
-                            <span key={i} style={{ fontSize: 11, background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', borderRadius: 8, padding: '2px 8px', fontWeight: 500 }}>{tech}</span>
-                          ))}
-                        </div>
-                      )}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-                          {proj.category === 'academic' ? '🎓 Académico' : proj.category === 'work' ? '💼 Laboral' : '⚙️ Personal'}
-                        </span>
-                        <div style={{ display: 'flex', gap: 6 }}>
-                          {proj.projectUrl && <a href={proj.projectUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>Ver proyecto →</a>}
-                          {isOwn && (
-                            <button onClick={async () => { try { await api.deletePortfolioProject(proj.id); setProjects(prev => prev.filter(p => p.id !== proj.id)) } catch {} }}
-                              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)' }}>🗑</button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ─── Publications Tab ─── */}
-        {activeTab === 'publications' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>📚 Publicaciones &amp; Investigaciones</h3>
-              {isOwn && (
-                <button className="btn btn-primary btn-sm" onClick={() => setShowAddPublication(true)}>+ Agregar</button>
-              )}
-            </div>
-
-            {showAddPublication && isOwn && (
-              <div className="card" style={{ padding: 20, marginBottom: 16, border: '1px solid var(--accent)' }}>
-                <h4 style={{ margin: '0 0 16px 0' }}>Nueva Publicación</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                  <select className="form-input" value={newPublication.type} onChange={e => setNewPublication(p => ({ ...p, type: e.target.value }))}>
-                    <option value="paper">Artículo / Paper</option>
-                    <option value="book">Libro</option>
-                    <option value="thesis">Tesis</option>
-                    <option value="research">Investigación</option>
-                    <option value="article">Artículo de divulgación</option>
-                  </select>
-                  <input className="form-input" placeholder="Año de publicación" type="number" value={newPublication.year} onChange={e => setNewPublication(p => ({ ...p, year: parseInt(e.target.value) || new Date().getFullYear() }))} />
-                </div>
-                <input className="form-input" placeholder="Título *" value={newPublication.title} onChange={e => setNewPublication(p => ({ ...p, title: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
-                <textarea className="form-input" rows={2} placeholder="Resumen o descripción..." value={newPublication.description} onChange={e => setNewPublication(p => ({ ...p, description: e.target.value }))} style={{ marginBottom: 12, width: '100%', boxSizing: 'border-box' }} />
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                  <input className="form-input" placeholder="Institución / Editorial" value={newPublication.institution} onChange={e => setNewPublication(p => ({ ...p, institution: e.target.value }))} />
-                  <input className="form-input" placeholder="URL o DOI" value={newPublication.url} onChange={e => setNewPublication(p => ({ ...p, url: e.target.value }))} />
-                </div>
-                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                  <button className="btn btn-secondary btn-sm" onClick={() => setShowAddPublication(false)}>Cancelar</button>
-                  <button className="btn btn-primary btn-sm" onClick={async () => {
-                    if (!newPublication.title.trim()) return
-                    try {
-                      const res = await api.addPublication(userId, newPublication)
-                      setPublications(prev => [{ ...res, ...newPublication }, ...prev])
-                      setShowAddPublication(false)
-                      setNewPublication({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '', doi: '' })
-                    } catch {}
-                  }}>Guardar</button>
-                </div>
-              </div>
-            )}
-
-            {publicationsLoading ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[...Array(3)].map((_, i) => <div key={i} style={{ height: 80, borderRadius: 'var(--radius)', background: 'var(--bg-hover)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
-              </div>
-            ) : publications.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
-                <div style={{ fontSize: 15, marginBottom: 8 }}>Sin publicaciones aún</div>
-                {isOwn && <div style={{ fontSize: 13 }}>Agrega tus libros, papers, tesis e investigaciones</div>}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {publications.map((pub: any) => {
-                  const typeLabel: Record<string, string> = { book: '📗 Libro', paper: '📄 Paper', thesis: '🎓 Tesis', research: '🔬 Investigación', article: '✍️ Artículo' }
-                  const typeColor: Record<string, string> = { book: '#16a34a', paper: '#2563eb', thesis: '#7c3aed', research: '#dc2626', article: '#d97706' }
-                  return (
-                    <div key={pub.id} className="card" style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: typeColor[pub.type] || '#6b7280', background: `${typeColor[pub.type] || '#6b7280'}20`, borderRadius: 8, padding: '2px 10px' }}>
-                            {typeLabel[pub.type] || pub.type}
-                          </span>
-                          {pub.year && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{pub.year}</span>}
-                        </div>
-                        <h4 style={{ margin: '0 0 4px 0', fontSize: 15, fontWeight: 600 }}>{pub.title}</h4>
-                        {pub.institution && <p style={{ margin: '0 0 4px 0', fontSize: 13, color: 'var(--text-secondary)' }}>🏛️ {pub.institution}</p>}
-                        {pub.description && <p style={{ margin: '0 0 6px 0', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.4 }}>{pub.description}</p>}
-                        {pub.url && <a href={pub.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--accent)', textDecoration: 'none' }}>🔗 Ver publicación</a>}
-                      </div>
-                      {isOwn && (
-                        <button onClick={async () => { try { await api.deletePublication(pub.id); setPublications(prev => prev.filter(p => p.id !== pub.id)) } catch {} }}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18, padding: '0 4px', flexShrink: 0 }}>🗑</button>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
         {activeTab === 'cv' && (
           <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>📄 Curriculum Vitae</h3>
-              {cvData && (
-                <button
-                  onClick={() => window.print()}
-                  className="btn btn-secondary btn-sm"
-                  style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-                >
-                  🖨️ Imprimir / Descargar PDF
-                </button>
-              )}
-            </div>
-
             {cvLoading ? (
-              <div className="card" style={{ textAlign: 'center', padding: 40 }}>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                 <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>{t('userprofile.loadingCV')}</p>
               </div>
             ) : !cvData || (!cvData.headline && !cvData.aboutMe && (!cvData.skills || cvData.skills.length === 0) && (!cvData.experience || cvData.experience.length === 0)) ? (
-              <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📄</div>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{isOwn ? t('userprofile.noCVOwn') : t('userprofile.noCVOther')}</div>
-                {isOwn && <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Ve a Ajustes → CV para completar tu curriculum</div>}
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                  {isOwn ? t('userprofile.noCVOwn') : t('userprofile.noCVOther')}
+                </p>
               </div>
             ) : (
-              /* ─── CV Document ─── */
-              <div id="cv-print-document" className="card" style={{ padding: 0, overflow: 'hidden' }}>
-
-                {/* CV Header — Photo + Identity */}
-                <div style={{ padding: '32px 36px 24px', borderBottom: '2px solid var(--accent)', background: 'linear-gradient(135deg, rgba(45,98,200,0.08) 0%, transparent 60%)' }}>
-                  <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-                    {/* Profile photo */}
-                    <div style={{ width: 96, height: 96, borderRadius: 10, overflow: 'hidden', flexShrink: 0, border: '3px solid var(--accent)', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 32, fontWeight: 700 }}>
-                      {profile.avatar
-                        ? <img src={profile.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span>{initials}</span>
-                      }
-                    </div>
-                    {/* Name + headline + meta */}
-                    <div style={{ flex: 1 }}>
-                      <h1 style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700, color: 'var(--text-primary)' }}>
-                        {profile.firstName} {profile.lastName}
-                      </h1>
-                      {cvData.headline && (
-                        <div style={{ fontSize: 16, color: 'var(--accent-blue)', fontWeight: 500, marginBottom: 8 }}>{cvData.headline}</div>
-                      )}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 13, color: 'var(--text-secondary)' }}>
-                        {profile.career && <span>🎓 {profile.career}</span>}
-                        {profile.university && <span>🏛️ {profile.university}</span>}
-                        {profile.semester && <span>📅 Semestre {profile.semester}</span>}
-                        {profile.email && <span>✉️ {profile.email}</span>}
-                        {profile.phone && <span>📞 {profile.phone}</span>}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* CV Body — two columns */}
-                <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', minHeight: 400 }}>
-
-                  {/* ─── LEFT COLUMN ─── */}
-                  <div style={{ padding: '24px 20px', borderRight: '1px solid var(--border-subtle)', background: 'rgba(45,98,200,0.03)', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-                    {/* Skills */}
-                    {cvData.skills && cvData.skills.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          Habilidades
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                          {cvData.skills.map((s: string, i: number) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
-                              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-                              <span style={{ color: 'var(--text-primary)' }}>{s}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Tools */}
-                    {cvData.tools && cvData.tools.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: '#f59e0b', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #f59e0b' }}>
-                          Herramientas
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {cvData.tools.map((tool: string, i: number) => (
-                            <span key={i} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.2)' }}>{tool}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Languages */}
-                    {cvData.languagesSpoken && cvData.languagesSpoken.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: '#22c55e', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #22c55e' }}>
-                          Idiomas
-                        </div>
-                        {cvData.languagesSpoken.map((l: any, i: number) => (
-                          <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 13, marginBottom: 6 }}>
-                            <span style={{ color: 'var(--text-primary)' }}>{l.language}</span>
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-hover)', borderRadius: 8, padding: '2px 7px' }}>{l.level}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Interests */}
-                    {cvData.interests && cvData.interests.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--border)' }}>
-                          Intereses
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                          {cvData.interests.map((interest: string, i: number) => (
-                            <span key={i} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>• {interest}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ─── RIGHT COLUMN ─── */}
-                  <div style={{ padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-                    {/* About me */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Headline */}
+                {cvData.headline && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h3 style={{ margin: 0, fontSize: 18, color: 'var(--text-primary)' }}>{cvData.headline}</h3>
                     {cvData.aboutMe && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          Sobre mí
-                        </div>
-                        <p style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-secondary)', margin: 0 }}>{cvData.aboutMe}</p>
-                      </div>
+                      <p style={{ margin: '12px 0 0', fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)' }}>{cvData.aboutMe}</p>
                     )}
-
-                    {/* Experience */}
-                    {cvData.experience && cvData.experience.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          💼 Experiencia Laboral
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          {cvData.experience.map((exp: any, i: number) => (
-                            <div key={i} style={{ paddingLeft: 14, borderLeft: '3px solid rgba(45,98,200,0.3)' }}>
-                              <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{exp.title}</div>
-                              <div style={{ fontSize: 13, color: 'var(--accent-blue)', fontWeight: 500, marginTop: 2 }}>{exp.company}</div>
-                              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{exp.dates}</div>
-                              {exp.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5, marginBottom: 0 }}>{exp.description}</p>}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Education */}
-                    {cvData.education && cvData.education.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          🎓 Educación
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          {cvData.education.map((edu: any, i: number) => (
-                            <div key={i} style={{ paddingLeft: 14, borderLeft: '3px solid rgba(45,98,200,0.3)' }}>
-                              <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{edu.title || edu.institution}</div>
-                              {edu.institution && edu.title && <div style={{ fontSize: 13, color: 'var(--accent-blue)', marginTop: 2 }}>{edu.institution}</div>}
-                              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{edu.dates}</div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Projects / Portfolio */}
-                    {cvData.projectsPortfolio && cvData.projectsPortfolio.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          🗂 Proyectos Destacados
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                          {cvData.projectsPortfolio.map((proj: any, i: number) => (
-                            <div key={i} style={{ paddingLeft: 14, borderLeft: '3px solid rgba(45,98,200,0.3)' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                                <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{proj.title}</div>
-                                {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: 'var(--accent-blue)', textDecoration: 'none' }}>Ver →</a>}
-                              </div>
-                              {proj.role && <div style={{ fontSize: 12, color: 'var(--accent-blue)', fontWeight: 500, marginTop: 2 }}>{proj.role}</div>}
-                              {proj.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4, lineHeight: 1.5, marginBottom: 4 }}>{proj.description}</p>}
-                              {proj.tools && proj.tools.length > 0 && (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
-                                  {proj.tools.map((projTool: string, j: number) => (
-                                    <span key={j} style={{ fontSize: 11, padding: '2px 7px', borderRadius: 5, background: 'var(--bg-hover)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>{projTool}</span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Certifications */}
-                    {cvData.certifications && cvData.certifications.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--accent)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--accent)' }}>
-                          🏆 Certificaciones
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {cvData.certifications.map((cert: any, i: number) => (
-                            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }} />
-                              <div>
-                                <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{typeof cert === 'string' ? cert : cert.name || cert.title || cert}</span>
-                                {typeof cert === 'object' && cert.date && <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 8 }}>{cert.date}</span>}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Volunteering */}
-                    {cvData.volunteering && cvData.volunteering.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: '#ef4444', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid #ef4444' }}>
-                          ❤️ Voluntariado
-                        </div>
-                        {cvData.volunteering.map((v: any, i: number) => (
-                          <div key={i} style={{ paddingLeft: 14, borderLeft: '3px solid rgba(239,68,68,0.3)', marginBottom: 10 }}>
-                            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{v.role}</div>
-                            <div style={{ fontSize: 13, color: '#ef4444', marginTop: 2 }}>{v.org}</div>
-                            {v.dates && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{v.dates}</div>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Testimonials */}
-                    {cvData.testimonials && cvData.testimonials.length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, paddingBottom: 6, borderBottom: '2px solid var(--border)' }}>
-                          💬 Recomendaciones
-                        </div>
-                        {cvData.testimonials.map((testimonial: any, i: number) => (
-                          <div key={i} style={{ padding: '12px 14px', background: 'var(--bg-hover)', borderRadius: 8, borderLeft: '3px solid var(--accent)', marginBottom: 10 }}>
-                            <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-secondary)', margin: '0 0 6px', lineHeight: 1.5 }}>"{testimonial.text}"</p>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{testimonial.name}</span>
-                            {testimonial.role && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}> — {testimonial.role}</span>}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
                   </div>
-                </div>
+                )}
+
+                {/* Experience */}
+                {cvData.experience && cvData.experience.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Zap({ size: 16, color: '#2D62C8' })} {t('userprofile.experience')}
+                    </h4>
+                    {cvData.experience.map((exp: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.experience.length - 1 ? 16 : 0, paddingBottom: i < cvData.experience.length - 1 ? 16 : 0, borderBottom: i < cvData.experience.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{exp.title}</div>
+                        <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{exp.company}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{exp.dates}</div>
+                        {exp.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>{exp.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Projects / Portfolio */}
+                {cvData.projectsPortfolio && cvData.projectsPortfolio.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {BookOpen({ size: 16, color: '#2D62C8' })} {t('userprofile.projects')}
+                    </h4>
+                    {cvData.projectsPortfolio.map((proj: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, paddingBottom: i < cvData.projectsPortfolio.length - 1 ? 16 : 0, borderBottom: i < cvData.projectsPortfolio.length - 1 ? '1px solid var(--border-subtle)' : 'none' }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{proj.title}</div>
+                        {proj.role && <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{proj.role}</div>}
+                        {proj.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>{proj.description}</p>}
+                        {proj.tools && proj.tools.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                            {proj.tools.map((t: string, j: number) => (
+                              <span key={j} style={{ fontSize: 11, padding: '3px 8px', borderRadius: 6, background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)' }}>{t}</span>
+                            ))}
+                          </div>
+                        )}
+                        {proj.link && <a href={proj.link} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#2D62C8', marginTop: 6, display: 'inline-block' }}>{proj.link}</a>}
+                        {proj.impact && <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4, fontStyle: 'italic' }}>{proj.impact}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Skills & Tools */}
+                {((cvData.skills && cvData.skills.length > 0) || (cvData.tools && cvData.tools.length > 0)) && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    {cvData.skills && cvData.skills.length > 0 && (
+                      <>
+                        <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {CheckCircle({ size: 16, color: '#22c55e' })} {t('userprofile.skills')}
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: cvData.tools?.length ? 18 : 0 }}>
+                          {cvData.skills.map((s: string, i: number) => (
+                            <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'rgba(45,98,200,0.1)', color: '#2D62C8', fontWeight: 500, border: '1px solid rgba(45,98,200,0.2)' }}>{s}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {cvData.tools && cvData.tools.length > 0 && (
+                      <>
+                        <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          {Pencil({ size: 16, color: '#f59e0b' })} {t('userprofile.tools')}
+                        </h4>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                          {cvData.tools.map((t: string, i: number) => (
+                            <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', fontWeight: 500, border: '1px solid rgba(245,158,11,0.2)' }}>{t}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                {/* Languages */}
+                {cvData.languagesSpoken && cvData.languagesSpoken.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Globe({ size: 16, color: '#2D62C8' })} {t('userprofile.languages')}
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {cvData.languagesSpoken.map((l: any, i: number) => (
+                        <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--text-primary)' }}>{l.language}</span>
+                          <span style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '3px 10px', borderRadius: 12 }}>{l.level}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Volunteering */}
+                {cvData.volunteering && cvData.volunteering.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {Heart({ size: 16, color: '#ef4444' })} {t('userprofile.volunteering')}
+                    </h4>
+                    {cvData.volunteering.map((v: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.volunteering.length - 1 ? 12 : 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{v.role}</div>
+                        <div style={{ fontSize: 13, color: '#2D62C8', marginTop: 2 }}>{v.org}</div>
+                        {v.dates && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{v.dates}</div>}
+                        {v.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 6, lineHeight: 1.5 }}>{v.description}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Interests */}
+                {cvData.interests && cvData.interests.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 10px', fontSize: 15, color: 'var(--text-primary)' }}>{t('userprofile.interests')}</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {cvData.interests.map((interest: string, i: number) => (
+                        <span key={i} style={{ fontSize: 12, padding: '5px 12px', borderRadius: 20, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>{interest}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Testimonials */}
+                {cvData.testimonials && cvData.testimonials.length > 0 && (
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 14px', fontSize: 15, color: 'var(--text-primary)' }}>{t('userprofile.recommendations')}</h4>
+                    {cvData.testimonials.map((t: any, i: number) => (
+                      <div key={i} style={{ marginBottom: i < cvData.testimonials.length - 1 ? 14 : 0, padding: 14, background: 'var(--bg-secondary)', borderRadius: 10, borderLeft: '3px solid #2D62C8' }}>
+                        <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>"{t.text}"</p>
+                        <div style={{ marginTop: 8, fontSize: 12 }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{t.name}</span>
+                          {t.role && <span style={{ color: 'var(--text-muted)' }}> — {t.role}</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
         )}
 
         {activeTab === 'photos' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>🖼 {t('userprofile.photos')} {allPhotos.length > 0 && `(${allPhotos.length})`}</h3>
-            </div>
+          <div className="fb-photos-section">
+            <h3>{t('userprofile.photos')}</h3>
             {allPhotos.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>📷</div>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{t('userprofile.noPhotos')}</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Las fotos de las publicaciones aparecerán aquí</div>
+              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                <div className="empty-state-icon">{Camera({ size: 48 })}</div>
+                <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noPhotos')}</p>
               </div>
             ) : (
               <div className="fb-photos-grid">
@@ -1884,33 +1785,31 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         )}
 
         {activeTab === 'friends' && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: 18 }}>👥 {t('userprofile.friends')} <span style={{ fontSize: 14, color: 'var(--text-muted)', fontWeight: 400 }}>({profile.friendCount})</span></h3>
-              {isOwn && <button className="btn btn-secondary btn-sm" style={{ borderRadius: 20 }} onClick={() => onNavigate('/friends')}>{t('userprofile.findFriends')}</button>}
-            </div>
-            {friendsList.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-                <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>{t('userprofile.noFriends')}</div>
-                <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{isOwn ? 'Conecta con otros estudiantes en tu universidad' : 'Este usuario aún no tiene amigos en Conniku'}</div>
-              </div>
-            ) : (
-              <div className="friends-grid">
-                {friendsList.map(friend => (
-                  <div key={friend.id} className="friend-card card" onClick={() => onNavigate(`/user/${friend.id}`)}>
-                    <div className="friend-avatar">
-                      {friend.avatar ? <img src={friend.avatar} alt="" /> : <div className="friend-initials">{(friend.firstName?.[0] || '') + (friend.lastName?.[0] || '')}</div>}
-                    </div>
-                    <div className="friend-info">
-                      <h4>{friend.firstName} {friend.lastName}</h4>
-                      <span className="friend-username">@{friend.username}</span>
-                      <p className="friend-meta">{friend.career}</p>
-                    </div>
+          <div className="fb-friends-section">
+            <h3>{t('userprofile.friends')} ({profile.friendCount})</h3>
+            <div className="friends-grid">
+              {friendsList.map(friend => (
+                <div key={friend.id} className="friend-card card" onClick={() => onNavigate(`/user/${friend.id}`)}>
+                  <div className="friend-avatar">
+                    {friend.avatar ? (
+                      <img src={friend.avatar} alt="" />
+                    ) : (
+                      <div className="friend-initials">{(friend.firstName?.[0] || '') + (friend.lastName?.[0] || '')}</div>
+                    )}
                   </div>
-                ))}
-              </div>
-            )}
+                  <div className="friend-info">
+                    <h4>{friend.firstName} {friend.lastName}</h4>
+                    <span className="friend-username">@{friend.username}</span>
+                    <p className="friend-meta">{friend.career}</p>
+                  </div>
+                </div>
+              ))}
+              {friendsList.length === 0 && (
+                <div className="u-card" style={{ textAlign: 'center', padding: 40, gridColumn: '1 / -1' }}>
+                  <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noFriends')}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -2469,7 +2368,51 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
           </div>
         )}
+
+        {/* ─── Showcase Tab ─── */}
+        {activeTab === 'showcase' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Header banner */}
+            <div style={{
+              padding: '20px 24px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%)',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 12,
+            }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>★ Showcase Ejecutivo</h2>
+                <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.9 }}>
+                  {isOwn ? 'Tu portafolio profesional y presencia ejecutiva en Conniku' : `Portafolio profesional de ${profile.firstName} ${profile.lastName}`}
+                </p>
+              </div>
+              {!((profile as any).subscriptionTier === 'max' || profile.role === 'owner') && isOwn && (
+                <span style={{
+                  padding: '6px 16px', background: 'rgba(255,255,255,0.2)',
+                  borderRadius: 20, fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,255,255,0.4)',
+                }}>
+                  Plan MAX requerido
+                </span>
+              )}
+            </div>
+
+            {/* ExecutiveShowcase component — full width */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <ExecutiveShowcase
+                userId={profile.id}
+                isOwner={!!isOwn}
+                isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
+              />
+            </div>
+          </div>
+        )}
+
         </div>
+      </div>
       </div>
 
       {/* Booking Form Modal */}
@@ -2710,6 +2653,54 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               </div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Info Modal */}
+      {showEditInfoModal && (
+        <div className="modal-overlay" onClick={() => setShowEditInfoModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-header">
+              <h3>Editar Información</h3>
+              <button className="modal-close" onClick={() => setShowEditInfoModal(false)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 0 8px' }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Carrera</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.career} onChange={e => setEditInfoForm(f => ({ ...f, career: e.target.value }))} placeholder="Ej: Ingeniería Civil" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Universidad</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.university} onChange={e => setEditInfoForm(f => ({ ...f, university: e.target.value }))} placeholder="Ej: Universidad de Chile" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Semestre</label>
+                <input className="form-input" style={{ marginTop: 4 }} type="number" min={1} max={20} value={editInfoForm.semester} onChange={e => setEditInfoForm(f => ({ ...f, semester: Number(e.target.value) }))} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Estado académico</label>
+                <select className="form-input" style={{ marginTop: 4 }} value={editInfoForm.academicStatus} onChange={e => setEditInfoForm(f => ({ ...f, academicStatus: e.target.value }))}>
+                  <option value="estudiante">Estudiante</option>
+                  <option value="egresado">Egresado</option>
+                  <option value="titulado">Titulado</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Título profesional</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.professionalTitle} onChange={e => setEditInfoForm(f => ({ ...f, professionalTitle: e.target.value }))} placeholder="Ej: Ingeniero Civil Industrial" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Descripción</label>
+                <textarea className="form-input" style={{ marginTop: 4 }} rows={3} value={editInfoForm.bio} onChange={e => setEditInfoForm(f => ({ ...f, bio: e.target.value }))} placeholder="Cuéntanos sobre ti..." maxLength={300} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+              <button className="btn btn-secondary" onClick={() => setShowEditInfoModal(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleSaveInfo} disabled={editInfoSaving}>
+                {editInfoSaving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
           </div>
         </div>
       )}

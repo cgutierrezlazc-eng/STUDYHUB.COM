@@ -1066,7 +1066,7 @@ function DeleteAccountModal({ userName, onClose, onConfirmDelete }: {
                 <strong>Conniku PRO incluye:</strong>
                 <div style={{ marginTop: 6 }}>
                   • Proyectos ilimitados y almacenamiento ampliado<br/>
-                  • IA avanzada para estudio y tutoría<br/>
+                  • Asistente avanzado para estudio y tutoría<br/>
                   • Acceso a cursos exclusivos<br/>
                   • Soporte prioritario<br/>
                   • Sin publicidad
@@ -1105,7 +1105,7 @@ function DeleteAccountModal({ userName, onClose, onConfirmDelete }: {
               }}>
                 <strong>Conniku MAX incluye todo de PRO más:</strong>
                 <div style={{ marginTop: 6 }}>
-                  • IA sin límites (Claude + Gemini)<br/>
+                  • Acceso completo al asistente sin límites<br/>
                   • Generación ilimitada de guías, quizzes y flashcards<br/>
                   • Acceso a todos los cursos y certificaciones<br/>
                   • Mentoría prioritaria<br/>

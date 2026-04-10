@@ -207,8 +207,6 @@ export default function AsistenciaTab() {
   const [todayHours, setTodayHours] = useState(0)
   const [currentTime, setCurrentTime] = useState(new Date())
   const [selectedWorker, setSelectedWorker] = useState('')
-  const [clockLoading, setClockLoading] = useState(false)
-  const [clockError, setClockError] = useState<string | null>(null)
 
   // Filters
   const [filterEmployee, setFilterEmployee] = useState('')
@@ -223,78 +221,46 @@ export default function AsistenciaTab() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
 
-  // Real data from API
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>([])
-  const [overtimeRecords, setOvertimeRecords] = useState<OvertimeRecord[]>([])
-  const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>({})
+  // Real attendance records from backend
+  const [attendanceLogs, setAttendanceLogs] = useState<{ id: string; action: string; timestamp: string; date: string; userName: string; userEmail: string }[]>([])
+  const [todayDate] = useState(() => new Date().toISOString().split('T')[0])
 
-  // ─── Helper: API records → frontend shape ───
-  const mapApiRecord = useMemo(() => (r: any): AttendanceRecord => {
-    const emp = employees.find(e => e.id === r.employee_id)
-    return {
-      id: r.id,
-      employeeId: r.employee_id,
-      employeeName: emp ? `${emp.firstName} ${emp.lastName}` : r.employee_id,
-      date: r.date,
-      entryTime: r.entry_time ?? null,
-      exitTime: r.exit_time ?? null,
-      totalHours: r.total_hours ?? 0,
-      overtimeHours: r.overtime_hours ?? 0,
-      status: r.status as AttendanceStatus,
-      isArt22Exempt: art22Exemptions[r.employee_id] ?? false,
-    }
-  }, [employees, art22Exemptions])
+  const loadAttendanceLogs = () => {
+    api.getAllAttendance(todayDate)
+      .then((data: any) => setAttendanceLogs(data.records || []))
+      .catch(() => {})
+  }
 
-  // ─── Load employees + today status on mount ───
+  useEffect(() => { loadAttendanceLogs() }, [])
+
+  // Demo data — auto-loads real employees from API
+  const [demoData, setDemoData] = useState(() => generateDemoData())
+  const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>(() => {
+    const map: Record<string, boolean> = {}
+    demoData.demoEmployees.forEach(e => { map[e.id] = e.exempt })
+    return map
+  })
+
+  // ─── Auto-load employees from API ───
   useEffect(() => {
     api.getEmployees()
       .then((data: any) => {
         const emps: Employee[] = Array.isArray(data) ? data : []
-        setEmployees(emps)
+        if (emps.length === 0) return
+        const mapped = emps.map(e => ({
+          id: e.id,
+          name: `${e.firstName} ${e.lastName}`,
+          position: e.position || 'Sin cargo',
+          exempt: false,
+        }))
+        const newData = generateDemoData(mapped)
+        setDemoData(newData)
         const map: Record<string, boolean> = {}
-        emps.forEach(e => { map[e.id] = e.isArt22Exempt ?? false })
+        newData.demoEmployees.forEach(emp => { map[emp.id] = emp.exempt })
         setArt22Exemptions(map)
       })
       .catch(() => {})
-
-    api.getTodayAttendance()
-      .then((data: any) => {
-        if (data?.record?.entry_time && !data.record.exit_time) {
-          setClockEntry(data.record.entry_time)
-          setClockStatus('working')
-        }
-      })
-      .catch(() => {})
   }, [])
-
-  // ─── Load monthly attendance when month or employees change ───
-  useEffect(() => {
-    const [year, month] = selectedMonth.split('-').map(Number)
-    api.getMonthlyAttendance(year, month)
-      .then((data: any) => {
-        const records: AttendanceRecord[] = (Array.isArray(data) ? data : []).map(mapApiRecord)
-        setAttendanceRecords(records)
-        const ot: OvertimeRecord[] = records
-          .filter(r => r.overtimeHours > 0)
-          .map(r => {
-            const emp = employees.find(e => e.id === r.employeeId)
-            const hourlyRate = (emp?.grossSalary ?? 800000) / (45 * 4.33)
-            return {
-              id: `ot-${r.id}`,
-              employeeId: r.employeeId,
-              employeeName: r.employeeName,
-              date: r.date,
-              hours: r.overtimeHours,
-              rate: hourlyRate,
-              amount: Math.round(r.overtimeHours * hourlyRate * 1.5),
-              pactoExpiry: null,
-            }
-          })
-        setOvertimeRecords(ot)
-      })
-      .catch(() => {})
-  }, [selectedMonth, mapApiRecord])
 
   // ─── Live clock ───
   useEffect(() => {
@@ -315,73 +281,50 @@ export default function AsistenciaTab() {
     return () => clearInterval(interval)
   }, [clockStatus, clockEntry])
 
-  // ─── Reload monthly attendance helper ───
-  const reloadMonth = async () => {
-    const [year, month] = selectedMonth.split('-').map(Number)
-    try {
-      const data: any = await api.getMonthlyAttendance(year, month)
-      const records: AttendanceRecord[] = (Array.isArray(data) ? data : []).map(mapApiRecord)
-      setAttendanceRecords(records)
-    } catch {}
+  // ─── Clock actions ───
+  const handleClockIn = () => {
+    const now = new Date()
+    const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+    setClockEntry(timeStr)
+    setClockStatus('working')
+    setTodayHours(0)
+    // Persist to backend
+    api.clockAttendance('in').then(() => loadAttendanceLogs()).catch(() => {})
   }
 
-  // ─── Clock In ───
-  const handleClockIn = async () => {
-    setClockLoading(true)
-    setClockError(null)
-    try {
-      const res: any = await api.clockIn()
-      setClockEntry(res.entry_time)
-      setClockStatus('working')
-      setTodayHours(0)
-      await reloadMonth()
-    } catch (err: any) {
-      setClockError(err.message || 'Error al registrar entrada')
-    } finally {
-      setClockLoading(false)
+  const handleClockOut = () => {
+    if (clockEntry) {
+      const [h, m] = clockEntry.split(':').map(Number)
+      const entry = new Date()
+      entry.setHours(h, m, 0, 0)
+      const diff = (Date.now() - entry.getTime()) / (1000 * 60 * 60)
+      setTodayHours(Math.round(Math.max(0, diff - 0.5) * 100) / 100) // subtract 30min lunch (Art. 34)
     }
-  }
-
-  // ─── Clock Out ───
-  const handleClockOut = async () => {
-    setClockLoading(true)
-    setClockError(null)
-    try {
-      const res: any = await api.clockOut()
-      setTodayHours(res.total_hours ?? 0)
-      setClockStatus('off')
-      setClockEntry(null)
-      await reloadMonth()
-    } catch (err: any) {
-      setClockError(err.message || 'Error al registrar salida')
-    } finally {
-      setClockLoading(false)
-    }
+    setClockStatus('off')
+    setClockEntry(null)
+    // Persist to backend
+    api.clockAttendance('out').then(() => loadAttendanceLogs()).catch(() => {})
   }
 
   // ─── Filtered attendance records ───
   const filteredRecords = useMemo(() => {
-    return attendanceRecords.filter(r => {
+    return demoData.records.filter(r => {
       if (filterEmployee && r.employeeId !== filterEmployee) return false
       if (filterStatus && r.status !== filterStatus) return false
       if (r.date < filterDateFrom || r.date > filterDateTo) return false
       return true
     }).sort((a, b) => b.date.localeCompare(a.date) || a.employeeName.localeCompare(b.employeeName))
-  }, [attendanceRecords, filterEmployee, filterStatus, filterDateFrom, filterDateTo])
+  }, [demoData.records, filterEmployee, filterStatus, filterDateFrom, filterDateTo])
 
   // ─── Monthly summaries ───
   const monthlySummaries = useMemo((): MonthlySummary[] => {
     const [year, month] = selectedMonth.split('-').map(Number)
-    const monthRecords = attendanceRecords.filter(r => {
+    const monthRecords = demoData.records.filter(r => {
       const d = new Date(r.date)
       return d.getFullYear() === year && d.getMonth() + 1 === month
     })
-    const demoEmployees = employees.map(e => ({
-      id: e.id,
-      name: `${e.firstName} ${e.lastName}`,
-    }))
 
-    return demoEmployees.map(emp => {
+    return demoData.demoEmployees.map(emp => {
       const empRecords = monthRecords.filter(r => r.employeeId === emp.id)
       const daysWorked = empRecords.filter(r => r.status === 'presente').length
       const daysAbsent = empRecords.filter(r => r.status === 'ausente').length
@@ -390,6 +333,7 @@ export default function AsistenciaTab() {
       const weeksInMonth = 4.33
       const weeklyAvgHours = daysWorked > 0 ? Math.round((totalHours / weeksInMonth) * 100) / 100 : 0
       const isExempt = art22Exemptions[emp.id] || false
+
       return {
         employeeId: emp.id,
         employeeName: emp.name,
@@ -402,7 +346,7 @@ export default function AsistenciaTab() {
         isArt22Exempt: isExempt,
       }
     })
-  }, [attendanceRecords, selectedMonth, art22Exemptions, employees])
+  }, [demoData, selectedMonth, art22Exemptions])
 
   // ─── Weekly hours for chart ───
   const weeklyChartData = useMemo(() => {
@@ -413,22 +357,22 @@ export default function AsistenciaTab() {
     startOfWeek.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
 
     return days.map((name, idx) => {
-      const d = new Date(startOfWeek)
-      d.setDate(d.getDate() + idx)
-      const dateStr = d.toISOString().split('T')[0]
-      const dayRecords = attendanceRecords.filter(r => r.date === dateStr && r.status === 'presente')
+      const date = new Date(startOfWeek)
+      date.setDate(date.getDate() + idx)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayRecords = demoData.records.filter(r => r.date === dateStr && r.status === 'presente')
       const totalHours = dayRecords.reduce((sum, r) => sum + r.totalHours, 0)
       const avgHours = dayRecords.length > 0 ? totalHours / dayRecords.length : 0
       return { name, avgHours: Math.round(avgHours * 10) / 10, totalHours: Math.round(totalHours * 10) / 10 }
     })
-  }, [attendanceRecords])
+  }, [demoData.records])
 
   // ─── Stats ───
   const todayStr = new Date().toISOString().split('T')[0]
-  const todayRecords = attendanceRecords.filter(r => r.date === todayStr)
+  const todayRecords = demoData.records.filter(r => r.date === todayStr)
   const presentToday = todayRecords.filter(r => r.status === 'presente').length
   const absentToday = todayRecords.filter(r => r.status === 'ausente').length
-  const totalOvertime = overtimeRecords.reduce((s, r) => s + r.hours, 0)
+  const totalOvertime = demoData.overtimeRecords.reduce((s, r) => s + r.hours, 0)
 
   // ─── Access check ───
   if (user?.role !== 'owner') {
@@ -480,7 +424,7 @@ export default function AsistenciaTab() {
         <StatCard icon={UserCheck} label="Presentes Hoy" value={presentToday} color="#22c55e" subtitle="Trabajadores activos" />
         <StatCard icon={UserX} label="Ausentes Hoy" value={absentToday} color="#ef4444" subtitle="Sin justificacion" />
         <StatCard icon={Timer} label="Horas Extra (Mes)" value={`${Math.round(totalOvertime * 10) / 10}h`} color="#f59e0b" subtitle={`Max ${CHILE_LABOR.HORAS_EXTRA.maxDiarias}h/dia (Art. 30)`} />
-        <StatCard icon={Users} label="Total Empleados" value={employees.length} color="#3b82f6" subtitle="Dotacion registrada" />
+        <StatCard icon={Users} label="Total Empleados" value={demoData.demoEmployees.length} color="#3b82f6" subtitle="Dotacion registrada" />
       </div>
 
       {/* ─── Tab Navigation ─── */}
@@ -540,9 +484,9 @@ export default function AsistenciaTab() {
                 }}
               >
                 <option value="">-- Seleccionar trabajador --</option>
-                {employees.map(emp => (
+                {demoData.demoEmployees.map(emp => (
                   <option key={emp.id} value={emp.id}>
-                    {emp.firstName} {emp.lastName} — {emp.position}
+                    {emp.name} — {emp.position}
                   </option>
                 ))}
               </select>
@@ -556,47 +500,39 @@ export default function AsistenciaTab() {
               color: clockStatus === 'working' ? '#22c55e' : 'var(--text-muted)',
             }}>
               {clockStatus === 'working' ? (
-                <><CheckCircle size={16} /> {(() => { const e = employees.find(x => x.id === selectedWorker); return e ? `${e.firstName} ${e.lastName}` : 'Trabajador' })()} — Trabajando desde las {clockEntry}</>
+                <><CheckCircle size={16} /> {demoData.demoEmployees.find(e => e.id === selectedWorker)?.name || 'Trabajador'} — Trabajando desde las {clockEntry}</>
               ) : (
                 <><Clock size={16} /> {selectedWorker ? 'Listo para marcar entrada' : 'Selecciona tu nombre arriba'}</>
               )}
             </div>
 
             {/* Buttons */}
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 12 }}>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 24 }}>
               <button
                 onClick={handleClockIn}
-                disabled={clockStatus === 'working' || !selectedWorker || clockLoading}
+                disabled={clockStatus === 'working' || !selectedWorker}
                 style={{
                   ...btnPrimary,
                   padding: '14px 28px', fontSize: 15,
-                  opacity: (clockStatus === 'working' || !selectedWorker || clockLoading) ? 0.5 : 1,
+                  opacity: (clockStatus === 'working' || !selectedWorker) ? 0.5 : 1,
                   background: '#22c55e',
                 }}
               >
-                <LogIn size={18} /> {clockLoading ? 'Registrando...' : 'Marcar Entrada'}
+                <LogIn size={18} /> Marcar Entrada
               </button>
               <button
                 onClick={handleClockOut}
-                disabled={clockStatus !== 'working' || clockLoading}
+                disabled={clockStatus !== 'working'}
                 style={{
                   ...btnPrimary,
                   padding: '14px 28px', fontSize: 15,
-                  opacity: (clockStatus !== 'working' || clockLoading) ? 0.5 : 1,
+                  opacity: clockStatus !== 'working' ? 0.5 : 1,
                   background: '#ef4444',
                 }}
               >
-                <LogOut size={18} /> {clockLoading ? 'Registrando...' : 'Marcar Salida'}
+                <LogOut size={18} /> Marcar Salida
               </button>
             </div>
-            {clockError && (
-              <div style={{
-                margin: '0 auto 16px', maxWidth: 400, padding: '10px 16px', borderRadius: 8,
-                background: 'rgba(239,68,68,0.12)', color: '#ef4444', fontSize: 13, textAlign: 'center',
-              }}>
-                {clockError}
-              </div>
-            )}
 
             {/* Today hours */}
             {todayHours > 0 && (
@@ -624,6 +560,45 @@ export default function AsistenciaTab() {
               Art. 34 CT: Se descuenta automaticamente 30 min de colacion (no computable como jornada)
             </div>
           </div>
+
+          {/* ─── Historial de hoy (real records) ─── */}
+          {attendanceLogs.length > 0 && (
+            <div className="card" style={{ padding: 20, marginTop: 20, maxWidth: 700, margin: '20px auto 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <CheckCircle size={16} style={{ color: '#22c55e' }} />
+                <span style={{ fontWeight: 700, fontSize: 14 }}>Marcajes de Hoy — {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <button onClick={loadAttendanceLogs} style={{ marginLeft: 'auto', ...btnSmall, padding: '4px 10px' }}>Actualizar</button>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...thStyle, textAlign: 'left' }}>Trabajador</th>
+                    <th style={{ ...thStyle }}>Acción</th>
+                    <th style={{ ...thStyle }}>Hora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendanceLogs.map(r => (
+                    <tr key={r.id}>
+                      <td style={{ ...tdStyle }}>{r.userName || r.userEmail}</td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>
+                        <span style={{
+                          padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                          background: r.action === 'in' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)',
+                          color: r.action === 'in' ? '#16a34a' : '#dc2626',
+                        }}>
+                          {r.action === 'in' ? 'Entrada' : 'Salida'}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
+                        {new Date(r.timestamp + 'Z').toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 
@@ -641,8 +616,8 @@ export default function AsistenciaTab() {
                   style={{ ...selectStyle, fontSize: 12, padding: '6px 10px' }}
                 >
                   <option value="">Todos los empleados</option>
-                  {employees.map(e => (
-                    <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
+                  {demoData.demoEmployees.map(e => (
+                    <option key={e.id} value={e.id}>{e.name}</option>
                   ))}
                 </select>
               </div>
@@ -886,7 +861,7 @@ export default function AsistenciaTab() {
             <StatCard
               icon={Briefcase}
               label="Costo Total H. Extra"
-              value={`$${fmt(overtimeRecords.reduce((s, r) => s + r.amount, 0))}`}
+              value={`$${fmt(demoData.overtimeRecords.reduce((s, r) => s + r.amount, 0))}`}
               color="#22c55e"
               subtitle="Valor bruto estimado"
             />
@@ -920,7 +895,7 @@ export default function AsistenciaTab() {
                 </tr>
               </thead>
               <tbody>
-                {overtimeRecords
+                {demoData.overtimeRecords
                   .sort((a, b) => b.date.localeCompare(a.date))
                   .slice(0, 50)
                   .map(r => {
@@ -967,7 +942,7 @@ export default function AsistenciaTab() {
                       </tr>
                     )
                   })}
-                {overtimeRecords.length === 0 && (
+                {demoData.overtimeRecords.length === 0 && (
                   <tr>
                     <td colSpan={7} style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-muted)', padding: 40 }}>
                       No hay registros de horas extra en el periodo

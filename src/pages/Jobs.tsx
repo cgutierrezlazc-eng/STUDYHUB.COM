@@ -586,6 +586,17 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
         {/* Hidden file input */}
         <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" style={{ display: 'none' }} onChange={handleCVFileUpload} />
 
+        {/* ── CV completo banner ── */}
+        <div style={{ background: 'linear-gradient(135deg, rgba(45,98,200,0.08), rgba(91,141,239,0.05))', border: '1px solid rgba(45,98,200,0.2)', borderRadius: 12, padding: '12px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Mi CV Profesional</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Gestiona tu experiencia, educación, habilidades y más</div>
+          </div>
+          <button className="btn btn-primary" onClick={() => onNavigate('/cv')} style={{ whiteSpace: 'nowrap' }}>
+            {FileText({ size: 14 })} Editar CV completo →
+          </button>
+        </div>
+
         {/* ── Top Actions Bar ── */}
         <div style={{ ...cvStyles.section, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -1636,29 +1647,14 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
                 <textarea value={form.benefits} onChange={e => setForm({...form, benefits: e.target.value})} placeholder={t('jobs.benefitsPlaceholder')}
                   style={{ width: '100%', minHeight: 60, resize: 'vertical', padding: 12, border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontFamily: 'inherit' }} /></div>
               {/* Konni broadcast option */}
-              <label style={{
-                display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer',
-                padding: '12px 14px', borderRadius: 10, marginTop: 12,
-                border: `1.5px solid ${form.konni_broadcast ? '#2D62C8' : 'var(--border)'}`,
-                background: form.konni_broadcast ? 'rgba(45,98,200,0.06)' : 'var(--bg-secondary)',
-                transition: 'all 0.15s',
-              }}>
-                <input
-                  type="checkbox"
-                  checked={form.konni_broadcast}
-                  onChange={e => setForm({ ...form, konni_broadcast: e.target.checked })}
-                  style={{ marginTop: 2, accentColor: '#2D62C8', width: 16, height: 16, flexShrink: 0 }}
-                />
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-secondary)', cursor: 'pointer', marginTop: 8 }}>
+                <input type="checkbox" checked={form.konni_broadcast} onChange={e => setForm({...form, konni_broadcast: e.target.checked})}
+                  style={{ marginTop: 3, accentColor: 'var(--accent)', width: 16, height: 16, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 16 }}>💬</span> Enviar por Konni a todos los usuarios
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3, lineHeight: 1.4 }}>
-                    Konni enviará un mensaje con esta oferta al chat de cada usuario. También quedará disponible en la base de conocimiento de Konni.
-                  </div>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>💬 Enviar por Konni</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Todos los usuarios recibirán esta oferta como mensaje en su chat de Konni Soporte.</div>
                 </div>
               </label>
-
               <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
                 <button className="btn btn-secondary" onClick={() => setShowPostForm(false)}>{t('jobs.cancel')}</button>
                 <button className="btn btn-primary" onClick={handlePostJob}>{t('jobs.publishOffer')}</button>

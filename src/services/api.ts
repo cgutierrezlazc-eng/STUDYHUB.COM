@@ -38,44 +38,6 @@ async function request(endpoint: string, options?: RequestInit) {
   return res.json();
 }
 
-// ─── Payroll record mapper (snake_case → camelCase) ──────────────
-function _mapPayrollRecord(r: any) {
-  return {
-    id: r.id,
-    employeeId: r.employee_id,
-    employeeName: r.employee_name || '',
-    employeeRut: r.employee_rut || '',
-    employeePosition: r.employee_position || '',
-    employeeAfp: r.employee_afp || '',
-    employeeHealthSystem: r.employee_health_system || '',
-    periodMonth: r.period_month,
-    periodYear: r.period_year,
-    grossSalary: r.gross_salary,
-    gratificacion: r.gratificacion,
-    overtimeHours: r.overtime_hours,
-    overtimeAmount: r.overtime_amount,
-    bonuses: r.bonuses,
-    colacion: r.colacion,
-    movilizacion: r.movilizacion,
-    totalHaberesImponibles: r.total_haberes_imponibles,
-    totalHaberesNoImponibles: r.total_haberes_no_imponibles,
-    afpEmployee: r.afp_employee,
-    healthEmployee: r.health_employee,
-    afcEmployee: r.afc_employee,
-    taxAmount: r.tax_amount,
-    voluntaryDeductions: r.voluntary_deductions || 0,
-    otherDeductions: r.other_deductions || 0,
-    totalDeductions: r.total_deductions,
-    netSalary: r.net_salary,
-    afpEmployer: r.afp_employer,
-    afcEmployer: r.afc_employer,
-    mutualEmployer: r.mutual_employer,
-    totalEmployerCost: r.total_employer_cost,
-    status: r.status,
-    paidAt: r.paid_at || null,
-  }
-}
-
 export const api = {
   // ─── Auth ──────────────────────────────────────────────────
   register: (data: any) =>
@@ -176,6 +138,7 @@ export const api = {
     request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
   getKonniBroadcasts: () => request('/support/konni-broadcasts'),
   markKonniBroadcastsRead: () => request('/support/konni-broadcasts/read', { method: 'POST' }),
+  getRecentJobs: (since: string) => request(`/jobs/listings?since=${encodeURIComponent(since)}`),
 
   // ─── Chat ──────────────────────────────────────────────────
   chat: async (projectId: string, message: string, language: string = 'es', gender: string = 'unspecified', languageSkill: string = 'intermediate', socratic: boolean = false) => {
@@ -302,7 +265,7 @@ export const api = {
   getMessages: (convId: string, before?: string) =>
     request(`/messaging/conversations/${convId}/messages${before ? `?before=${before}` : ''}`),
 
-  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string; reply_to_id?: string }) =>
+  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string }) =>
     request(`/messaging/conversations/${convId}/messages`, { method: 'POST', body: JSON.stringify(data) }),
 
   editMessage: (convId: string, msgId: string, content: string) =>
@@ -611,8 +574,8 @@ export const api = {
     request(`/communities/${communityId}/members/${userId}/remove`, { method: 'POST' }),
   getCommunityPosts: (id: string, page?: number) =>
     request(`/communities/${id}/posts${page ? `?page=${page}` : ''}`),
-  createCommunityPost: (id: string, content: string, extras?: { image_url?: string; is_announcement?: boolean }) =>
-    request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, ...extras }) }),
+  createCommunityPost: (id: string, content: string, imageUrl?: string) =>
+    request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, image_url: imageUrl }) }),
   likeCommunityPost: (postId: string, reactionType?: string) =>
     request(`/communities/posts/${postId}/like`, { method: 'POST', body: JSON.stringify({ reaction_type: reactionType || 'like' }) }),
   getCommunityPostComments: (postId: string) =>
@@ -626,47 +589,6 @@ export const api = {
   reportCommunityPost: (postId: string, reason: string) =>
     request(`/communities/posts/${postId}/report`, { method: 'POST', body: JSON.stringify({ reason }) }),
   getCommunitySuggestions: () => request('/communities/suggestions'),
-
-  // Communities — Trending
-  getTrendingCommunities: (): Promise<any[]> =>
-    request('/communities/trending'),
-
-  // Communities — Resources
-  getCommunityResources: (communityId: string): Promise<any[]> =>
-    request(`/communities/${communityId}/resources`),
-  addCommunityResource: (communityId: string, data: { resource_type: string; title: string; url?: string; description?: string }): Promise<any> =>
-    request(`/communities/${communityId}/resources`, { method: 'POST', body: JSON.stringify(data) }),
-  deleteCommunityResource: (communityId: string, resourceId: string): Promise<any> =>
-    request(`/communities/${communityId}/resources/${resourceId}`, { method: 'DELETE' }),
-
-  // Communities — Events
-  getCommunityEvents: (communityId: string): Promise<any[]> =>
-    request(`/communities/${communityId}/events`),
-  createCommunityEvent: (communityId: string, data: { title: string; description?: string; event_date: string; location?: string; meet_url?: string }): Promise<any> =>
-    request(`/communities/${communityId}/events`, { method: 'POST', body: JSON.stringify(data) }),
-  rsvpCommunityEvent: (communityId: string, eventId: string, status: string): Promise<any> =>
-    request(`/communities/${communityId}/events/${eventId}/rsvp?status=${status}`, { method: 'POST' }),
-  deleteCommunityEvent: (communityId: string, eventId: string): Promise<any> =>
-    request(`/communities/${communityId}/events/${eventId}`, { method: 'DELETE' }),
-
-  // Communities — Cover upload
-  uploadCommunityCover: async (communityId: string, file: File): Promise<{ url: string }> => {
-    const formData = new FormData();
-    formData.append('file', file);
-    const token = localStorage.getItem('conniku_token');
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${getApiBase()}/communities/${communityId}/cover`, {
-      method: 'POST',
-      body: formData,
-      headers,
-    });
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      throw new Error((data as any).detail || `API Error: ${res.status}`);
-    }
-    return res.json();
-  },
 
   // ─── Polls ────────────────────────────────────────────────
   createPoll: (data: { question: string; options: string[]; is_anonymous?: boolean; expires_in_hours?: number; wall_post_id?: string }) =>
@@ -702,8 +624,6 @@ export const api = {
     if (page) params.set('page', String(page));
     return request(`/jobs/listings?${params}`);
   },
-  getRecentJobs: (since: string) =>
-    request(`/jobs/listings?since=${encodeURIComponent(since)}&page=1`),
   createJobListing: (data: any) =>
     request('/jobs/listings', { method: 'POST', body: JSON.stringify(data) }),
   getJobListing: (id: string) => request(`/jobs/listings/${id}`),
@@ -843,16 +763,6 @@ export const api = {
   getUserSkills: (userId: string) => request(`/social/users/${userId}/skills`),
   endorseSkill: (skillId: string) =>
     request(`/social/skills/${skillId}/endorse`, { method: 'POST' }),
-  getUserProjects: (userId: string) => request(`/social/users/${userId}/projects`),
-  addPortfolioProject: (userId: string, data: object) =>
-    request(`/social/users/${userId}/projects`, { method: 'POST', body: JSON.stringify(data) }),
-  deletePortfolioProject: (projectId: string) =>
-    request(`/social/projects/${projectId}`, { method: 'DELETE' }),
-  getUserPublications: (userId: string) => request(`/social/users/${userId}/publications`),
-  addPublication: (userId: string, data: object) =>
-    request(`/social/users/${userId}/publications`, { method: 'POST', body: JSON.stringify(data) }),
-  deletePublication: (pubId: string) =>
-    request(`/social/publications/${pubId}`, { method: 'DELETE' }),
 
   // ─── Bookmarks ────────────────────────────────────────────
   toggleBookmark: (postId: string) =>
@@ -1023,8 +933,6 @@ export const api = {
     request(`/email/ceo/email/${emailId}`, { method: 'DELETE' }),
   ceoDeleteEmailsBulk: (ids: string[]) =>
     request('/email/ceo/emails/bulk', { method: 'DELETE', body: JSON.stringify({ ids }) }),
-  ceoTestEmail: (toEmail: string, account?: string) =>
-    request('/email/ceo/test-email', { method: 'POST', body: JSON.stringify({ to_email: toEmail, account: account || 'ceo' }) }),
 
   // ─── Document Download ────────────────────────────────────
   downloadProjectDocument: (projectId: string, docName: string) =>
@@ -1137,33 +1045,12 @@ export const api = {
     }
     return request(`/hr/employees/${id}`, { method: 'PUT', body: JSON.stringify(snake) })
   },
-  uploadEmployeeAvatar: async (id: string, file: File) => {
-    const token = getToken();
-    const formData = new FormData();
-    formData.append('file', file);
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-    const res = await fetch(`${API_BASE}/hr/employees/${id}/avatar`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-    if (!res.ok) throw new Error(`Upload Error: ${res.status}`);
-    return res.json();
-  },
   deleteEmployee: (id: string) => request(`/hr/employees/${id}`, { method: 'DELETE' }),
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
   uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
   signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
-  calculatePayroll: (month: number, year: number, overrides?: Record<string, { overtimeHours?: number; bonuses?: number }>) =>
-    request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ period_month: month, period_year: year, overrides: overrides || {} }) })
-      .then((d: any) => ({ ...d, records: (d.records || []).map(_mapPayrollRecord) })),
-  getPayroll: async (year: number, month: number) => {
-    try {
-      const d: any = await request(`/hr/payroll/${year}/${month}`)
-      return (d.records || []).map(_mapPayrollRecord) as import('../admin/shared/types').PayrollRecord[]
-    } catch { return [] as import('../admin/shared/types').PayrollRecord[] }
-  },
+  calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
+  getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
   approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),
   markPayrollPaid: (id: string) => request(`/hr/payroll/${id}/mark-paid`, { method: 'PUT' }),
   getPrevired: (year: number, month: number) => request(`/hr/payroll/previred/${year}/${month}`),
@@ -1172,62 +1059,6 @@ export const api = {
   updateExpense: (id: string, data: any) => request(`/hr/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteExpense: (id: string) => request(`/hr/expenses/${id}`, { method: 'DELETE' }),
   getExpenseSummary: (year: number) => request(`/hr/expenses/summary/${year}`),
-  
-  // ─── ERC & FES & Legal (Added) ────────────────────────────
-  getAllErcRecords: () => request('/hr/erc/all'),
-  getEmployeeErcRecords: (employeeId: string) => request(`/hr/employees/${employeeId}/erc`),
-  saveErcRecord: (employeeId: string, recordType: string, payload: any) => 
-    request(`/hr/employees/${employeeId}/erc`, { 
-      method: 'POST', 
-      body: JSON.stringify({ record_type: recordType, data_payload: JSON.stringify(payload) }) 
-    }),
-  deleteErcRecord: (employeeId: string, recordId: string) => 
-    request(`/hr/employees/${employeeId}/erc/${recordId}`, { method: 'DELETE' }),
-
-  getAllFesSignatures: () => request('/hr/fes/all'),
-  getEmployeeFesSignatures: (employeeId: string) => request(`/hr/employees/${employeeId}/fes`),
-  saveFesSignature: (employeeId: string, data: any) => 
-    request(`/hr/employees/${employeeId}/fes`, { method: 'POST', body: JSON.stringify(data) }),
-
-  getLegalObligations: () => request('/hr/legal-obligations'),
-  saveLegalObligations: (statuses: any[]) =>
-    request('/hr/legal-obligations', { method: 'POST', body: JSON.stringify({ statuses }) }),
-
-  // ─── Asistencia ────────────────────────────────────────────────
-  clockIn: (employeeId?: string, notes?: string) =>
-    request('/hr/attendance/checkin', {
-      method: 'POST',
-      body: JSON.stringify({ employee_id: employeeId ?? null, notes: notes ?? '' }),
-    }),
-  clockOut: (employeeId?: string) =>
-    request('/hr/attendance/checkout', {
-      method: 'POST',
-      body: JSON.stringify({ employee_id: employeeId ?? null }),
-    }),
-  getTodayAttendance: () => request('/hr/attendance/today'),
-  getMonthlyAttendance: (year: number, month: number, employeeId?: string) =>
-    request(`/hr/attendance/monthly/${year}/${month}${employeeId ? `?employee_id=${employeeId}` : ''}`),
-  adminRecordAttendance: (data: any) =>
-    request('/hr/attendance/record', { method: 'POST', body: JSON.stringify(data) }),
-
-  // ─── Vacaciones / Permisos ────────────────────────────────────
-  getLeaveRequests: (params?: string) =>
-    request(`/hr/leave/requests${params ? `?${params}` : ''}`),
-  getLeaveBalance: (employeeId: string) =>
-    request(`/hr/leave/balance/${employeeId}`),
-  createLeaveRequest: (data: any) =>
-    request('/hr/leave/request', { method: 'POST', body: JSON.stringify(data) }),
-  approveLeaveRequest: (id: string) =>
-    request(`/hr/leave/requests/${id}/approve`, { method: 'PUT', body: JSON.stringify({}) }),
-  rejectLeaveRequest: (id: string, reason?: string) =>
-    request(`/hr/leave/requests/${id}/reject`, {
-      method: 'PUT',
-      body: JSON.stringify({ reject_reason: reason ?? '' }),
-    }),
-
-  // ─── Amonestaciones ───────────────────────────────────────────
-  getEmployeeWarnings: (employeeId: string) =>
-    request(`/hr/warnings/${employeeId}`),
 
   // ─── Tutores / Prestadores Externos ────────────────────────
   applyAsTutor: (data: any) => request('/tutors/apply', { method: 'POST', body: JSON.stringify(data) }),
@@ -1238,8 +1069,8 @@ export const api = {
   getTutorApplications: (params?: string) => request(`/tutors/admin/applications${params ? `?${params}` : ''}`),
   getAllTutors: (params?: string) => request(`/tutors/admin/all${params ? `?${params}` : ''}`),
   approveTutor: (id: string) => request(`/tutors/admin/${id}/approve`, { method: 'PUT' }),
-  rejectTutor: (id: string, data: any) => request(`/tutors/admin/${id}/reject`, { method: 'PUT', body: JSON.stringify(data) }),
-  suspendTutor: (id: string, data: any) => request(`/tutors/admin/${id}/suspend`, { method: 'PUT', body: JSON.stringify(data) }),
+  rejectTutor: (id: string, reason: string) => request(`/tutors/admin/${id}/reject?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
+  suspendTutor: (id: string, reason: string) => request(`/tutors/admin/${id}/suspend?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
   getTutorAdmin: (id: string) => request(`/tutors/admin/${id}`),
   createTutorClass: (data: any) => request('/tutors/classes', { method: 'POST', body: JSON.stringify(data) }),
   getTutorClasses: (params?: string) => request(`/tutors/classes${params ? `?${params}` : ''}`),
@@ -1247,6 +1078,8 @@ export const api = {
   enrollInClass: (id: string, data: any) => request(`/tutors/classes/${id}/enroll`, { method: 'POST', body: JSON.stringify(data) }),
   confirmClassCompletion: (id: string) => request(`/tutors/classes/${id}/confirm`, { method: 'PUT' }),
   rateTutorClass: (id: string, data: any) => request(`/tutors/classes/${id}/rate`, { method: 'POST', body: JSON.stringify(data) }),
+  rateStudentInClass: (classId: string, data: { rating: number; comment?: string }) => request(`/tutors/classes/${classId}/rate-student`, { method: 'POST', body: JSON.stringify(data) }),
+  getMyOwnClasses: () => request('/tutors/my-own-classes'),
   reportClassNoshow: (id: string, data: any) => request(`/tutors/classes/${id}/report-noshow`, { method: 'POST', body: JSON.stringify(data) }),
   getMyTutorPayments: (params?: string) => request(`/tutors/my-payments${params ? `?${params}` : ''}`),
   getMyTutorPayslips: (params?: string) => request(`/tutors/my-payslips${params ? `?${params}` : ''}`),
@@ -1289,6 +1122,16 @@ export const api = {
   getClassMessages: (classId: string, page?: number) => request(`/tutors/classes/${classId}/messages?page=${page || 1}`),
   sendClassMessage: (classId: string, message: string) => request(`/tutors/classes/${classId}/messages`, { method: 'POST', body: JSON.stringify({ message }) }),
 
+  // ─── Tutor Subjects (Asignaturas) ────────────────────────
+  createTutorSubject: (data: any) => request('/tutors/subjects', { method: 'POST', body: JSON.stringify(data) }),
+  getMyTutorSubjects: () => request('/tutors/my-subjects'),
+  updateTutorSubject: (id: string, data: any) => request(`/tutors/subjects/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTutorSubject: (id: string) => request(`/tutors/subjects/${id}`, { method: 'DELETE' }),
+  submitTutorSubjectForApproval: (id: string) => request(`/tutors/subjects/${id}/submit`, { method: 'POST' }),
+  getAdminSubjects: (params?: string) => request(`/tutors/admin/subjects${params ? `?${params}` : ''}`),
+  approveSubject: (id: string) => request(`/tutors/admin/subjects/${id}/approve`, { method: 'PUT' }),
+  rejectSubject: (id: string, reason: string) => request(`/tutors/admin/subjects/${id}/reject?reason=${encodeURIComponent(reason)}`, { method: 'PUT' }),
+
   // ─── Admin Tutor Management ───────────────────────────────
   enforceRatings: () => request('/tutors/admin/enforce-ratings', { method: 'POST' }),
   applyAsOwnerTutor: () => request('/tutors/apply-as-owner', { method: 'POST' }),
@@ -1297,39 +1140,34 @@ export const api = {
   broadcastPush: (title: string, body: string, url?: string) =>
     request('/push/broadcast', { method: 'POST', body: JSON.stringify({ title, body, url: url || '/' }) }),
 
-  // ─── CEO Moderation Queue ──────────────────────────────────
-  getModerationQueue: async (status = 'pending'): Promise<any[]> => {
-    return request(`/ceo/moderation/queue?status=${status}`)
-  },
-  getModerationStats: async (): Promise<any> => {
-    return request('/ceo/moderation/stats')
-  },
-  approveModerationItem: async (itemId: string): Promise<any> => {
-    return request(`/ceo/moderation/${itemId}/approve`, { method: 'POST' })
-  },
-  rejectModerationItem: async (itemId: string, note?: string): Promise<any> => {
-    return request(`/ceo/moderation/${itemId}/reject`, {
-      method: 'POST',
-      body: note ? JSON.stringify({ note }) : undefined,
-    })
-  },
-  uploadVideoMessage: async (blob: Blob): Promise<{ url: string }> => {
-    const token = getToken()
-    const formData = new FormData()
-    formData.append('file', blob, 'video.webm')
-    const headers: Record<string, string> = {}
-    if (token) headers['Authorization'] = `Bearer ${token}`
-    const res = await fetch(`${API_BASE}/uploads/videos`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    })
-    if (!res.ok) throw new Error(`Upload Error: ${res.status}`)
-    return res.json()
-  },
+  // ─── Executive Showcase (MAX plan) ─────────────────────────
+  getMyExecutiveShowcase: () => request('/auth/me/executive-showcase'),
+  updateMyExecutiveShowcase: (items: any[]) => request('/auth/me/executive-showcase', { method: 'PUT', body: JSON.stringify(items) }),
+  getUserExecutiveShowcase: (userId: string) => request(`/auth/users/${userId}/executive-showcase`),
+
+  // ─── Class Session / FASE 3 ──────────────────────────────
+  startClassSession: (classId: string) => request(`/tutors/classes/${classId}/start`, { method: 'PUT' }),
+  studentConfirmClass: (classId: string) => request(`/tutors/classes/${classId}/student-confirm`, { method: 'PUT' }),
+  objectToClass: (classId: string, reason: string, termsAccepted: boolean) =>
+    request(`/tutors/classes/${classId}/object`, { method: 'POST', body: JSON.stringify({ reason, terms_accepted: termsAccepted }) }),
+  getClassJitsiRoom: (classId: string) => request(`/tutors/classes/${classId}/jitsi-room`),
+
+  // ─── FASE 4: Post-class exam (3-attempt) + AI summary ────
+  getExamAttempts: (classId: string) => request(`/tutors/classes/${classId}/exam/attempts`),
+  submitExamAttempt: (classId: string, answers: Record<string, any>, timeSpentSeconds?: number) =>
+    request(`/tutors/classes/${classId}/exam/attempt`, { method: 'POST', body: JSON.stringify({ answers, time_spent_seconds: timeSpentSeconds || 0 }) }),
+  generateClassSummary: (classId: string) => request(`/tutors/classes/${classId}/generate-summary`, { method: 'POST' }),
 
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
+
+  // ─── Employee Attendance / Marcaje ─────────────────────────
+  clockAttendance: (action: 'in' | 'out', note?: string) =>
+    request('/hr/attendance/clock', { method: 'POST', body: JSON.stringify({ action, note }) }),
+  getMyAttendance: (limit?: number) =>
+    request(`/hr/attendance/mine${limit ? `?limit=${limit}` : ''}`),
+  getAllAttendance: (date?: string) =>
+    request(`/hr/attendance/all${date ? `?date=${date}` : ''}`),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

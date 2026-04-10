@@ -125,5 +125,6 @@ export interface AdminModule {
   route: string
   windowSize?: { width: number; height: number }
   isNew?: boolean
+  ownerOnly?: boolean
   status: 'active' | 'coming-soon'
 }

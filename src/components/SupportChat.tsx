@@ -2,40 +2,46 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../services/api'
 import { useAuth } from '../services/auth'
+import {
+  Users, DollarSign, TrendingUp, Scale, Settings,
+  BookOpen, Calendar, ClipboardList, Brain, FileText,
+  Lightbulb, User, Briefcase,
+} from './Icons'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
 }
 
+type IconFn = (p?: { size?: number; color?: string; style?: React.CSSProperties }) => React.ReactElement
 type SubCat = { id: string; label: string; message: string }
-type Category = { id: string; label: string; emoji: string; subs: SubCat[] }
+type Category = { id: string; label: string; icon: IconFn; subs: SubCat[] }
 
 const ADMIN_CATS: Category[] = [
-  { id: 'rrhh', label: 'RRHH', emoji: '👥', subs: [
+  { id: 'rrhh', label: 'RRHH', icon: Users, subs: [
     { id: 'contratos',    label: 'Contratos',     message: 'Necesito ayuda con contratos de trabajo' },
     { id: 'vacaciones',   label: 'Vacaciones',    message: 'Tengo una consulta sobre vacaciones y días libres' },
     { id: 'licencias',    label: 'Lic. médicas',  message: 'Necesito info sobre licencias médicas y permisos' },
     { id: 'finiquitos',   label: 'Finiquitos',    message: 'Quiero calcular o procesar un finiquito' },
     { id: 'incorporar',   label: 'Incorporar',    message: 'Quiero incorporar un nuevo trabajador a la empresa' },
   ]},
-  { id: 'payroll', label: 'Payroll', emoji: '💰', subs: [
+  { id: 'payroll', label: 'Payroll', icon: DollarSign, subs: [
     { id: 'liquidacion',  label: 'Liquidaciones', message: 'Ayúdame con las liquidaciones de sueldo del mes' },
     { id: 'anticipo',     label: 'Anticipos',     message: 'Necesito info sobre anticipos quincenales' },
     { id: 'afp',          label: 'AFP / Salud',   message: 'Tengo dudas sobre retenciones de AFP y salud previsional' },
     { id: 'cierre',       label: 'Cierre nómina', message: 'Quiero hacer el cierre de nómina del mes' },
   ]},
-  { id: 'finanzas', label: 'Finanzas', emoji: '📊', subs: [
+  { id: 'finanzas', label: 'Finanzas', icon: TrendingUp, subs: [
     { id: 'indicadores',  label: 'UF / UTM',      message: '¿Cuáles son los indicadores económicos actuales (UF, UTM, dólar)?' },
     { id: 'facturas',     label: 'Facturación',   message: 'Necesito ayuda con facturación o cobros' },
     { id: 'gastos',       label: 'Gastos',        message: 'Tengo consultas sobre gastos de la empresa' },
   ]},
-  { id: 'legal', label: 'Legal', emoji: '⚖️', subs: [
+  { id: 'legal', label: 'Legal', icon: Scale, subs: [
     { id: 'obligaciones', label: 'Obligaciones',  message: 'Muéstrame las obligaciones del empleador' },
     { id: 'normativa',    label: 'Normativa',     message: 'Tengo dudas sobre normativa laboral chilena' },
     { id: 'documentos',   label: 'Generar doc',   message: 'Necesito generar un documento legal (contrato, memo, carta)' },
   ]},
-  { id: 'sistema', label: 'Sistema', emoji: '🔧', subs: [
+  { id: 'sistema', label: 'Sistema', icon: Settings, subs: [
     { id: 'usuarios',     label: 'Usuarios',      message: 'Necesito gestionar usuarios de la plataforma' },
     { id: 'reportes',     label: 'Reportes',      message: 'Quiero generar un reporte de la plataforma' },
     { id: 'config',       label: 'Configuración', message: 'Tengo dudas sobre la configuración del sistema' },
@@ -43,40 +49,40 @@ const ADMIN_CATS: Category[] = [
 ]
 
 const USER_CHIPS: Category[] = [
-  { id: 'cursos', label: 'Cursos', emoji: '📚', subs: [
+  { id: 'cursos', label: 'Cursos', icon: BookOpen, subs: [
     { id: 'avance',       label: 'Mi avance',     message: '¿En qué cursos estoy y cuál es mi avance actual?' },
     { id: 'material',     label: 'Material',      message: '¿Cómo accedo al material de mis cursos?' },
     { id: 'certificados', label: 'Certificados',  message: '¿Qué certificados he obtenido?' },
   ]},
-  { id: 'agenda', label: 'Agenda', emoji: '📅', subs: [
+  { id: 'agenda', label: 'Agenda', icon: Calendar, subs: [
     { id: 'semana',       label: 'Esta semana',   message: '¿Qué tengo programado esta semana?' },
     { id: 'clases',       label: 'Próx. clases',  message: '¿Cuándo son mis próximas clases?' },
     { id: 'eventos',      label: 'Eventos',       message: '¿Qué eventos o actividades hay próximamente?' },
   ]},
-  { id: 'tareas', label: 'Tareas', emoji: '📝', subs: [
+  { id: 'tareas', label: 'Tareas', icon: ClipboardList, subs: [
     { id: 'pendientes',   label: 'Pendientes',    message: '¿Qué tareas tengo pendientes?' },
     { id: 'entregadas',   label: 'Entregadas',    message: 'Muéstrame mis tareas ya entregadas' },
   ]},
-  { id: 'quiz', label: 'Quiz', emoji: '🧠', subs: [
+  { id: 'quiz', label: 'Quiz', icon: Brain, subs: [
     { id: 'practicar',    label: 'Practicar',     message: 'Quiero hacer un quiz de práctica' },
     { id: 'resultados',   label: 'Mis resultados', message: '¿Cómo me ha ido en los quizzes anteriores?' },
     { id: 'flashcards',   label: 'Flashcards',    message: '¿Cuántas flashcards tengo pendientes de repasar hoy?' },
   ]},
-  { id: 'documentos', label: 'Documentos', emoji: '📄', subs: [
+  { id: 'documentos', label: 'Documentos', icon: FileText, subs: [
     { id: 'mis-docs',     label: 'Mis archivos',  message: '¿Qué documentos he subido a la plataforma?' },
     { id: 'apuntes',      label: 'Apuntes',       message: '¿Cómo organizo mis apuntes y materiales de estudio?' },
   ]},
-  { id: 'tutor', label: 'Tutor IA', emoji: '💡', subs: [
+  { id: 'tutor', label: 'Orientación', icon: Lightbulb, subs: [
     { id: 'explicar',     label: 'Explicar',      message: 'Necesito que me expliques un concepto' },
     { id: 'resumen',      label: 'Resumen',       message: 'Genera un resumen del material de mis cursos' },
     { id: 'plan',         label: 'Plan de estudio', message: '¿Puedes armarme un plan de estudio?' },
   ]},
-  { id: 'perfil', label: 'Mi Perfil', emoji: '👤', subs: [
+  { id: 'perfil', label: 'Mi Perfil', icon: User, subs: [
     { id: 'nivel',        label: 'Nivel y XP',    message: '¿Cuál es mi nivel, XP y racha actual?' },
     { id: 'cv',           label: 'Mi CV',         message: '¿Cómo está mi perfil profesional y CV?' },
     { id: 'suscripcion',  label: 'Suscripción',   message: '¿Cuál es mi plan activo y qué incluye?' },
   ]},
-  { id: 'empleos', label: 'Empleos', emoji: '💼', subs: [
+  { id: 'empleos', label: 'Empleos', icon: Briefcase, subs: [
     { id: 'ofertas',      label: 'Ver ofertas',       message: '¿Qué ofertas de trabajo hay disponibles ahora?' },
     { id: 'postular',     label: 'Cómo postular',     message: '¿Cómo postulo a una oferta en Conniku?' },
     { id: 'mis-apps',     label: 'Mis postulaciones', message: '¿A qué ofertas he postulado?' },
@@ -166,7 +172,7 @@ export default function SupportChat() {
     setChipCat(null)
     setOpen(false)
     if (!isAdmin) {
-      setMessages([{ role: 'assistant', content: 'Hola! Soy Konni, tu asistente personal de estudio. ¿En qué te puedo ayudar?' }])
+      setMessages([{ role: 'assistant', content: `Hola${user?.firstName ? `, ${user.firstName}` : ''}! Soy Konni, tu asistente personal de estudio. ¿En qué te puedo ayudar?` }])
     }
   }, [isAdmin])
 
@@ -299,7 +305,7 @@ export default function SupportChat() {
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, fontSize: 14 }}>{isAdmin ? 'Konni Admin' : 'Konni — Soporte'}</div>
-        <div style={{ fontSize: 11, opacity: 0.8 }}>{isAdmin ? 'Asistente Ejecutivo' : 'Asistente IA de Conniku'}</div>
+        <div style={{ fontSize: 11, opacity: 0.8 }}>{isAdmin ? 'Asistente Ejecutivo' : 'Especialista de Conniku'}</div>
       </div>
       {/* Admin: "Menú" button when in chat */}
       {isAdmin && adminChat && (
@@ -362,7 +368,7 @@ export default function SupportChat() {
                     onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = theme.accent; (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-tertiary)' }}
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg-secondary)' }}
                   >
-                    <span style={{ fontSize: 26 }}>{cat.emoji}</span>
+                    <span style={{ color: theme.accent, display: 'flex' }}>{cat.icon({ size: 22 })}</span>
                     <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>{cat.label}</span>
                   </button>
                 ))}
@@ -384,7 +390,7 @@ export default function SupportChat() {
                 Volver
               </button>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
-                <span style={{ fontSize: 22 }}>{adminCat.emoji}</span>
+                <span style={{ color: theme.accent, display: 'flex' }}>{adminCat.icon({ size: 20 })}</span>
                 <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{adminCat.label}</span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -417,7 +423,7 @@ export default function SupportChat() {
         {/* "Hablar con Konni" button */}
         <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
           <button
-            onClick={() => enterAdminChat('Hola! Soy Konni Admin, tu asistente ejecutivo. ¿En qué te puedo ayudar hoy?')}
+            onClick={() => enterAdminChat(`Hola${user?.firstName ? `, ${user.firstName}` : ''}! Soy Konni Admin, tu asistente ejecutivo. ¿En qué te puedo ayudar hoy?`)}
             style={{
               width: '100%', padding: '11px', borderRadius: 12,
               border: `1.5px solid ${theme.accent}`,
@@ -546,7 +552,7 @@ export default function SupportChat() {
                   onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--accent)'; b.style.background = 'var(--bg-tertiary)' }}
                   onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = 'var(--border)'; b.style.background = 'var(--bg-secondary)' }}
                 >
-                  <span style={{ fontSize: 17 }}>{cat.emoji}</span>
+                  <span style={{ color: 'var(--accent)', display: 'flex' }}>{cat.icon({ size: 16 })}</span>
                   <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-secondary)', textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</span>
                 </button>
               ))}
@@ -568,8 +574,9 @@ export default function SupportChat() {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
                   Volver
                 </button>
-                <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700 }}>
-                  {chipCat.emoji} {chipCat.label}
+                <span style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ color: 'var(--accent)', display: 'flex' }}>{chipCat.icon({ size: 14 })}</span>
+                  {chipCat.label}
                 </span>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>

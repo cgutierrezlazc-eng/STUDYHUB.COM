@@ -421,7 +421,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
             Flashcards
           </button>
           <button className={`tab ${tab === 'summary' ? 'active' : ''}`} onClick={() => setTab('summary')}>
-            Resumen IA
+            Resumen
           </button>
           <button className={`tab ${tab === 'live' ? 'active' : ''}`} onClick={() => setTab('live')}>
             Clases en Vivo
@@ -1371,7 +1371,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   className="btn btn-primary"
                   style={{ height: 42, padding: '0 24px', whiteSpace: 'nowrap' }}
                 >
-                  {isGeneratingSummary ? <>{Hourglass()} Generando...</> : <>{Sparkles()} Generar Resumen IA</>}
+                  {isGeneratingSummary ? <>{Hourglass()} Generando...</> : <>{Sparkles()} Generar Resumen</>}
                 </button>
                 <button
                   onClick={async () => {

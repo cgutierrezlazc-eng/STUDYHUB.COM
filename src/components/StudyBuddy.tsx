@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { api } from '../services/api'
+import { useAuth } from '../services/auth'
 import { Sparkles, Send, X, ChevronDown } from './Icons'
 
 interface Message {
@@ -13,6 +14,8 @@ interface Props {
 }
 
 export default function StudyBuddy({ context, projectId }: Props) {
+  const { user } = useAuth()
+  const isTutor = !!(user as any)?.offersMentoring
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
@@ -77,7 +80,8 @@ export default function StudyBuddy({ context, projectId }: Props) {
         <button
           className="study-buddy-fab press-feedback"
           onClick={() => setOpen(true)}
-          title="Study Buddy — Preguntale a la IA"
+          title={isTutor ? 'Konni — Asistente para tutores' : 'Konni — Resuelve tus dudas'}
+          style={isTutor ? { background: 'linear-gradient(135deg, #F59E0B, #D97706)', boxShadow: '0 4px 16px rgba(245,158,11,0.45)' } : undefined}
         >
           {Sparkles({ size: 22, color: '#fff' })}
         </button>
@@ -87,13 +91,13 @@ export default function StudyBuddy({ context, projectId }: Props) {
       {open && (
         <div className="study-buddy-panel">
           {/* Header */}
-          <div className="study-buddy-header">
+          <div className="study-buddy-header" style={isTutor ? { background: 'linear-gradient(135deg, #F59E0B, #D97706)' } : undefined}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div className="study-buddy-avatar">
                 {Sparkles({ size: 16, color: '#fff' })}
               </div>
               <div>
-                <div style={{ fontWeight: 600, fontSize: 14 }}>Study Buddy</div>
+                <div style={{ fontWeight: 600, fontSize: 14 }}>Konni{isTutor ? ' · Tutor' : ''}</div>
                 <div style={{ fontSize: 11, opacity: 0.8 }}>
                   {context || 'Preguntame lo que quieras'}
                 </div>
@@ -111,7 +115,7 @@ export default function StudyBuddy({ context, projectId }: Props) {
                 <div style={{ fontSize: 32, marginBottom: 8 }}>
                   {Sparkles({ size: 32, color: 'var(--accent)' })}
                 </div>
-                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>Hola! Soy tu Study Buddy</div>
+                <div style={{ fontWeight: 600, fontSize: 15, marginBottom: 4 }}>Hola{user?.firstName ? `, ${user.firstName}` : ''}! Soy tu Study Buddy</div>
                 <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>
                   Preguntame sobre cualquier tema de estudio y te ayudo.
                 </div>

@@ -212,12 +212,8 @@ class Message(Base):
     is_deleted = Column(Boolean, default=False)
     is_flagged = Column(Boolean, default=False)
     flag_reason = Column(String(500), nullable=True)
-    moderation_status = Column(String(20), default="approved")  # approved | pending | rejected
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     edited_at = Column(DateTime, nullable=True)
-    reply_to_id = Column(String(16), nullable=True)
-    reply_to_content = Column(Text, nullable=True)
-    reply_to_sender_name = Column(String(255), nullable=True)
 
     conversation = relationship("Conversation", back_populates="messages")
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
@@ -247,25 +243,6 @@ class ConversationFolderItem(Base):
     __table_args__ = (
         UniqueConstraint("folder_id", "conversation_id", name="uq_folder_conv"),
     )
-
-
-class ModerationQueueItem(Base):
-    __tablename__ = "moderation_queue"
-
-    id = Column(String(16), primary_key=True, default=gen_id)
-    content_type = Column(String(20), nullable=False)  # message | post | image | video
-    original_content = Column(Text, nullable=False)    # full text or base64 data
-    sender_id = Column(String(16), ForeignKey("users.id"), nullable=True)
-    context_id = Column(String(16), nullable=True)     # conversation_id or post_id
-    category = Column(String(50), default="unknown")   # adult | hate | violence | politics | religion | review
-    auto_reason = Column(Text, nullable=True)          # reason from automated check
-    status = Column(String(20), default="pending")     # pending | approved | rejected
-    ceo_note = Column(Text, nullable=True)
-    message_id = Column(String(16), nullable=True)     # linked message if applicable
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-    reviewed_at = Column(DateTime, nullable=True)
-
-    sender = relationship("User", foreign_keys=[sender_id])
 
 
 # ─── Content Moderation Log ─────────────────────────────────────
@@ -572,7 +549,6 @@ class CommunityPost(Base):
     content = Column(Text, nullable=False)
     image_url = Column(Text, nullable=True)
     is_pinned = Column(Boolean, default=False)
-    is_announcement = Column(Boolean, default=False)
     like_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -593,47 +569,6 @@ class CommunityPostComment(Base):
     author_id = Column(String(16), ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
-
-
-class CommunityResource(Base):
-    __tablename__ = "community_resources"
-    id = Column(String(16), primary_key=True, default=gen_id)
-    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
-    uploader_id = Column(String(16), ForeignKey("users.id"), nullable=False)
-    resource_type = Column(String(20), default="link")  # link | file | note
-    title = Column(String(255), nullable=False)
-    url = Column(Text, nullable=True)           # for links
-    description = Column(Text, default="")
-    download_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
-
-    uploader = relationship("User", foreign_keys=[uploader_id])
-
-
-class CommunityEvent(Base):
-    __tablename__ = "community_events"
-    id = Column(String(16), primary_key=True, default=gen_id)
-    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
-    creator_id = Column(String(16), ForeignKey("users.id"), nullable=False)
-    title = Column(String(255), nullable=False)
-    description = Column(Text, default="")
-    event_date = Column(DateTime, nullable=False)
-    location = Column(String(255), default="")  # can be "Online", room name, etc.
-    meet_url = Column(Text, nullable=True)       # optional Jitsi/Meet link
-    rsvp_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    creator = relationship("User", foreign_keys=[creator_id])
-
-
-class CommunityEventRSVP(Base):
-    __tablename__ = "community_event_rsvps"
-    id = Column(String(16), primary_key=True, default=gen_id)
-    event_id = Column(String(16), ForeignKey("community_events.id", ondelete="CASCADE"), nullable=False, index=True)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
-    status = Column(String(20), default="going")  # going | maybe | not_going
-    created_at = Column(DateTime, default=datetime.utcnow)
-    __table_args__ = (UniqueConstraint("event_id", "user_id", name="uq_event_rsvp"),)
 
 
 # ─── Polls / Encuestas ─────────────────────────────────────
@@ -724,21 +659,10 @@ class JobListing(Base):
     contact_email = Column(String(255), default="")
     external_url = Column(String(500), default="")  # External application link
     is_active = Column(Boolean, default=True)
-    konni_broadcast = Column(Boolean, default=False)  # send to all users via Konni on publish
     view_count = Column(Integer, default=0)
     application_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
-
-
-class KonniBroadcast(Base):
-    """Pending Konni chat messages for users — created when a recruiter broadcasts a job."""
-    __tablename__ = "konni_broadcasts"
-    id          = Column(String(16), primary_key=True, default=gen_id)
-    user_id     = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    job_id      = Column(String(16), ForeignKey("job_listings.id", ondelete="CASCADE"), nullable=False)
-    is_read     = Column(Boolean, default=False)
-    created_at  = Column(DateTime, default=datetime.utcnow)
 
 
 class JobApplication(Base):
@@ -1055,35 +979,6 @@ class SkillEndorsement(Base):
     __table_args__ = (UniqueConstraint("skill_id", "endorser_id", name="uq_skill_endorsement"),)
 
 
-class UserProject(Base):
-    __tablename__ = "user_projects"
-    id = Column(String(16), primary_key=True, default=gen_id)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
-    title = Column(String(200), nullable=False)
-    description = Column(Text, default="")
-    image_url = Column(String(500), default="")
-    project_url = Column(String(500), default="")
-    tech_stack = Column(Text, default="[]")   # JSON array of strings
-    category = Column(String(50), default="personal")  # academic / personal / work
-    year = Column(Integer, nullable=True)
-    order_index = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-class UserPublication(Base):
-    __tablename__ = "user_publications"
-    id = Column(String(16), primary_key=True, default=gen_id)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
-    pub_type = Column(String(30), default="paper")  # book / paper / research / thesis / article
-    title = Column(String(300), nullable=False)
-    description = Column(Text, default="")
-    year = Column(Integer, nullable=True)
-    url = Column(String(500), default="")
-    institution = Column(String(200), default="")
-    authors = Column(Text, default="[]")   # JSON array
-    doi = Column(String(200), default="")
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-
 # ─── Post Bookmarks ───────────────────────────────────────
 
 class PostBookmark(Base):
@@ -1359,17 +1254,11 @@ def _ensure_columns():
     insp = _inspect(engine)
     migrations = [
         ("cv_profiles", "visibility", "VARCHAR(20) DEFAULT 'public'"),
-<<<<<<< HEAD
-        ("messages", "reply_to_id", "VARCHAR(16)"),
-        ("messages", "reply_to_content", "TEXT"),
-        ("messages", "reply_to_sender_name", "VARCHAR(255)"),
-=======
         ("users", "student_rating_sum", "FLOAT DEFAULT 0"),
         ("users", "student_rating_count", "INTEGER DEFAULT 0"),
         ("tutor_class_enrollments", "tutor_rating_of_student", "INTEGER"),
         ("tutor_class_enrollments", "tutor_review_of_student", "TEXT"),
         ("tutor_class_enrollments", "tutor_rated_at", "DATETIME"),
->>>>>>> claude/jovial-proskuriakova
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
@@ -1382,17 +1271,7 @@ def _ensure_columns():
 
 
 def init_db():
-    try:
-        Base.metadata.create_all(engine)
-    except Exception as e:
-        # Fallback: create each table individually so existing tables/constraints
-        # don't block new ones (e.g. DuplicateTable / DuplicateObject in Postgres)
-        print(f"[DB] create_all partial failure ({e.__class__.__name__}): {e!s:.120} — retrying per-table")
-        for table in Base.metadata.sorted_tables:
-            try:
-                table.create(engine, checkfirst=True)
-            except Exception as te:
-                print(f"[DB] Skipping {table.name}: {te!s:.80}")
+    Base.metadata.create_all(engine)
     _ensure_columns()
     # Create owner account if not exists and OWNER_PASSWORD env var is set
     owner_password = os.environ.get("OWNER_PASSWORD")

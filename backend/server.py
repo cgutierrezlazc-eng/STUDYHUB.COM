@@ -4,8 +4,6 @@ import uuid
 import shutil
 import logging
 import traceback
-import asyncio
-import time
 from pathlib import Path
 from typing import Optional
 
@@ -23,7 +21,6 @@ from database import init_db, get_db, User, gen_id, DATA_DIR
 from middleware import get_current_user
 from document_processor import DocumentProcessor
 from gemini_engine import AIEngine
-from konni_engine import call_konni
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
 from admin_routes import router as admin_router
@@ -61,7 +58,6 @@ from ws_routes import router as ws_router
 from hr_routes import router as hr_router
 from tutor_routes import router as tutor_router
 from ai_workflow_routes import router as ai_workflow_router
-from moderation_queue_routes import router as moderation_queue_router
 from migrations import migrate
 from prompts import (
     AUDIO_TO_NOTES_PROMPT,
@@ -152,7 +148,6 @@ app.include_router(ws_router)
 app.include_router(hr_router)
 app.include_router(tutor_router)
 app.include_router(ai_workflow_router)
-app.include_router(moderation_queue_router)
 
 
 @app.post("/admin/seed-ceo-profile")
@@ -172,44 +167,6 @@ PROJECTS_DIR.mkdir(exist_ok=True)
 COVERS_DIR = DATA_DIR / "uploads" / "covers"
 COVERS_DIR.mkdir(parents=True, exist_ok=True)
 
-VIDEOS_DIR = DATA_DIR / "uploads" / "videos"
-VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
-
-VIDEO_TTL_SECONDS = 72 * 3600  # 72 horas
-
-
-async def _cleanup_expired_videos():
-    """Elimina archivos de video con más de 72 horas en el disco persistente."""
-    now = time.time()
-    deleted = 0
-    try:
-        for f in VIDEOS_DIR.iterdir():
-            if f.is_file() and f.suffix.lower() in ('.webm', '.mp4', '.ogg', '.mov'):
-                age = now - f.stat().st_mtime
-                if age > VIDEO_TTL_SECONDS:
-                    f.unlink(missing_ok=True)
-                    deleted += 1
-        if deleted:
-            logger.info(f"[cleanup] {deleted} video(s) expirado(s) eliminados de {VIDEOS_DIR}")
-    except Exception as e:
-        logger.error(f"[cleanup] Error al limpiar videos: {e}")
-
-
-async def _video_cleanup_loop():
-    """Loop de limpieza: ejecuta cada 6 horas."""
-    while True:
-        await asyncio.sleep(6 * 3600)
-        await _cleanup_expired_videos()
-
-
-@app.on_event("startup")
-async def startup_event():
-    """Limpieza inicial al arrancar + lanza loop periódico."""
-    await _cleanup_expired_videos()
-    asyncio.create_task(_video_cleanup_loop())
-    logger.info("[startup] Video cleanup scheduler iniciado (cada 6h, TTL=72h)")
-
-
 doc_processor = DocumentProcessor()
 ai_engine = AIEngine()  # Gemini — all AI features (chat, quizzes, guides, support)
 
@@ -221,61 +178,6 @@ async def serve_cover_photo(filename: str):
     if not file_path.exists():
         raise HTTPException(404, "Imagen no encontrada")
     return FileResponse(str(file_path))
-
-
-COMMUNITY_COVERS_DIR = DATA_DIR / "uploads" / "community_covers"
-COMMUNITY_COVERS_DIR.mkdir(parents=True, exist_ok=True)
-
-
-@app.get("/uploads/community_covers/{filename}")
-async def serve_community_cover(filename: str):
-    """Serve uploaded community cover image files."""
-    file_path = COMMUNITY_COVERS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(404, "Imagen no encontrada")
-    return FileResponse(str(file_path))
-
-
-@app.get("/uploads/videos/{filename}")
-async def serve_video_message(filename: str):
-    """Serve uploaded video message files."""
-    file_path = VIDEOS_DIR / filename
-    if not file_path.exists():
-        raise HTTPException(404, "Video no encontrado")
-    return FileResponse(str(file_path), media_type="video/webm")
-
-
-@app.post("/uploads/videos")
-async def upload_video_message_file(
-    file: UploadFile = File(...),
-    user: User = Depends(get_current_user),
-):
-    """Upload a video message file. Max 50MB."""
-    MAX_SIZE = 50 * 1024 * 1024  # 50 MB
-
-    content = await file.read()
-    if len(content) > MAX_SIZE:
-        raise HTTPException(413, "El video no puede superar 50 MB")
-
-    # Validate mime type
-    if not (file.content_type or "").startswith("video/"):
-        raise HTTPException(400, "Solo se permiten archivos de video")
-
-    # Generate unique filename
-    ext = "webm"
-    if file.filename and "." in file.filename:
-        ext = file.filename.rsplit(".", 1)[-1].lower()
-        if ext not in ("webm", "mp4", "ogg"):
-            ext = "webm"
-
-    filename = f"{uuid.uuid4().hex}.{ext}"
-    file_path = VIDEOS_DIR / filename
-
-    with open(file_path, "wb") as f:
-        f.write(content)
-
-    return {"url": f"/uploads/videos/{filename}", "filename": filename}
-
 
 # ─── Chat rate limiting (tier-aware) ───────────────────────────
 # In-memory tracker: { user_id: [datetime, datetime, ...] }
@@ -713,31 +615,6 @@ Notificaciones: Perfil > Configuracion > Notificaciones.
 Eliminar cuenta: Configuracion > Seguridad > Eliminar (irreversible).
 PWA movil: Chrome > menu 3 puntos > Agregar a pantalla de inicio.
 
-<<<<<<< HEAD
-=== ESTILO DE CONVERSACION (MUY IMPORTANTE) ===
-Escribes como una persona real en un chat, NO como un robot ni un manual.
-
-TONO: cercano, directo, como un companero de universidad inteligente.
-- MAXIMO 3 oraciones por respuesta. Si el tema necesita mas, da lo esencial primero y al final ofrece: "¿quieres que desarrolle mas esto?" NO escribas parrafos largos en un solo mensaje.
-- Nunca empieces con "Claro!", "Por supuesto!", "Entiendo tu consulta" ni frases de call center.
-- Usa lenguaje natural chileno: "po", "cachai", "dale", "ojo que", "mira" cuando sea natural.
-- 1 emoji maximo por respuesta, y solo si aporta. Nada de listas con emojis.
-- Si das pasos, maximo 4, numerados simplemente: "1. Haz esto, 2. Luego esto."
-- Nunca uses headers (##), negrita exagerada ni formato de documento.
-- Cuando el usuario comparte algo personal (estres, logro, problema), responde primero como persona, despues como asistente.
-
-PROHIBIDO: inventar funciones, revelar info de admin/HR/payroll/empleados/finanzas de Conniku.
-Si no sabes algo: "No tengo esa info, pero puedes escribir a contacto@conniku.com 👋"
-Si preguntan de pruebas proximas o deadlines del calendario del usuario, mencionaselo.
-Manual completo: conniku.com/manual-conniku.html
-
-=== ACCESOS DIRECTOS (NAVEGACION) ===
-Cuando sea util, incluye un boton con este formato exacto:
-  {{nav:/ruta|Texto del boton}}
-Ejemplos: {{nav:/courses|Ver mis cursos}} {{nav:/jobs|Ver ofertas}} {{nav:/calendar|Ver calendario}}
-Rutas: /courses /calendar /jobs /communities /profile /apuntes /quizzes
-Usa maximo 1 acceso directo por respuesta, solo si aporta."""
-=======
 === REGLAS DE KONNI ===
 - NUNCA inventes funciones que no existan en la plataforma
 - NUNCA reveles informacion administrativa (HR, payroll, finanzas, empleados)
@@ -769,12 +646,11 @@ PROPIEDAD INTELECTUAL: La marca Conniku esta en proceso de registro ante INAPI (
 DISPUTAS: Se rigen por la ley chilena. Tribunales competentes de Santiago.
 
 Para dudas sobre terminos: contacto@conniku.com"""
->>>>>>> claude/jovial-proskuriakova
 
 
 @app.post("/support/chat")
 def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Konni USER — personalized assistant powered by Claude Haiku."""
+    """Konni USER — personalized assistant powered by Gemini (free)."""
     check_chat_limit(user)
 
     # Build personalized context
@@ -795,47 +671,13 @@ def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user)
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    response = call_konni(system, messages, db=db)
+    try:
+        response = ai_engine._call_gemini_chat(system, messages)
+    except Exception:
+        response = "Lo siento, estoy teniendo problemas para responder. Puedes escribir a contacto@conniku.com para soporte directo."
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}
-
-
-@app.get("/support/konni-broadcasts")
-def get_konni_broadcasts(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Return unread Konni broadcast messages for the current user."""
-    from database import KonniBroadcast, JobListing
-    rows = (db.query(KonniBroadcast)
-            .filter(KonniBroadcast.user_id == user.id, KonniBroadcast.is_read == False)
-            .order_by(KonniBroadcast.created_at.desc())
-            .limit(5).all())
-    result = []
-    for b in rows:
-        job = db.query(JobListing).filter(JobListing.id == b.job_id, JobListing.is_active == True).first()
-        if job:
-            result.append({
-                "broadcast_id": b.id,
-                "job_id": job.id,
-                "job_title": job.job_title,
-                "company_name": job.company_name,
-                "job_type": job.job_type,
-                "is_remote": job.is_remote,
-                "location": job.location or "",
-                "career_field": job.career_field or "",
-            })
-    return {"broadcasts": result}
-
-
-@app.post("/support/konni-broadcasts/read")
-def mark_broadcasts_read(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Mark all unread broadcasts as read for the current user."""
-    from database import KonniBroadcast
-    db.query(KonniBroadcast).filter(
-        KonniBroadcast.user_id == user.id,
-        KonniBroadcast.is_read == False,
-    ).update({"is_read": True})
-    db.commit()
-    return {"ok": True}
 
 
 # ─── Support Chatbot — ADMIN version (Claude, full admin knowledge) ────
@@ -907,34 +749,11 @@ UF, UTM, USD, Ingreso Minimo Mensual (IMM)
 - Da instrucciones claras sobre como navegar el panel admin
 - Si preguntan de usuarios/plataforma, tienes todo el conocimiento del manual de usuario tambien
 - Respuestas profesionales, sin emojis excesivos
-- LONGITUD: maximo 3-4 oraciones por mensaje. Si el tema es complejo, entrega lo mas importante primero y al final pregunta: "¿quieres que profundice en esto?" No envies todo de golpe.
-- Si necesitan algo fuera de tus capacidades, sugiere contactar al contador o abogado
-
-=== ACCESOS DIRECTOS (NAVEGACION) ===
-Cuando sea util, puedes incluir un boton de acceso directo usando este formato exacto:
-  {{nav:/ruta|Texto del boton}}
-
-Ejemplos:
-  {{nav:/admin-panel/hr/personal|Ver empleados}}
-  {{nav:/admin-panel/payroll/liquidaciones|Ver liquidaciones}}
-  {{nav:/admin-panel/finance/gastos|Ver gastos}}
-
-Rutas disponibles:
-  RRHH: /admin-panel/hr/personal | /admin-panel/hr/contratos | /admin-panel/hr/vacaciones
-        /admin-panel/hr/documentos | /admin-panel/hr/asistencia | /admin-panel/hr/onboarding
-        /admin-panel/hr/desempeno | /admin-panel/hr/reclutamiento | /admin-panel/hr/accesos
-  Payroll: /admin-panel/payroll/liquidaciones | /admin-panel/payroll/finiquitos
-           /admin-panel/payroll/historial | /admin-panel/payroll/previred | /admin-panel/payroll/dj1887
-  Finanzas: /admin-panel/finance/gastos | /admin-panel/finance/dashboard
-            /admin-panel/finance/facturacion | /admin-panel/finance/presupuestos | /admin-panel/finance/analytics
-  Legal: /admin-panel/legal/compliance | /admin-panel/legal/fraude
-  Tools: /admin-panel/tools/ai-workflows | /admin-panel/tools/certificaciones | /admin-panel/tools/push
-
-Usa maximo 1-2 accesos directos por respuesta, solo cuando sean claramente utiles."""
+- Si necesitan algo fuera de tus capacidades, sugiere contactar al contador o abogado"""
 
 
 @app.post("/support/admin-chat")
-def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def support_admin_chat(req: SupportChatRequest, user: User = Depends(get_current_user)):
     """Konni ADMIN — executive assistant powered by Claude (owner only)."""
     if user.role != "owner":
         raise HTTPException(403, "Solo el owner tiene acceso a Konni Admin")
@@ -955,7 +774,10 @@ Usuario: {user.first_name} {user.last_name} (CEO)"""
             messages.append({"role": role, "content": content})
     messages.append({"role": "user", "content": req.message})
 
-    response = call_konni(system, messages, db=db)
+    try:
+        response = ai_engine._call_gemini_chat(system, messages)
+    except Exception:
+        response = "Lo siento, estoy teniendo problemas para responder. Intenta de nuevo."
 
     _chat_timestamps.setdefault(user.id, []).append(datetime.utcnow())
     return {"response": response}

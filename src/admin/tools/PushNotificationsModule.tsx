@@ -21,7 +21,7 @@ export default function PushNotificationsModule() {
   const [sending, setSending] = useState(false)
   const [sentHistory, setSentHistory] = useState<{ title: string; body: string; sentAt: string; count: number }[]>([
     { title: '🔄 Actualiza tu App Conniku', body: 'Hemos actualizado el logo oficial...', sentAt: '2026-04-07 14:30', count: 127 },
-    { title: '✨ Nuevo: Asistente de Estudio con IA', body: 'Prueba el nuevo chatbot...', sentAt: '2026-04-05 10:00', count: 98 },
+    { title: '✨ Nuevo: Asistente de Estudio Conniku', body: 'Prueba el nuevo asistente...', sentAt: '2026-04-05 10:00', count: 98 },
     { title: '📅 Hackathon Conniku 2026', body: 'Inscríbete al hackathon...', sentAt: '2026-04-01 09:00', count: 145 },
   ])
 

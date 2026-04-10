@@ -37,8 +37,17 @@ export default defineConfig({
       '@capacitor/status-bar',
     ],
     force: true,
+    holdUntilCrawlEnd: true,
   },
   server: {
     port: 5173,
+    hmr: { overlay: false },
+    // Prevent immutable caching of pre-bundled deps in dev.
+    // Without this, stale dep chunks (old ?v= hashes) get served from the
+    // browser's HTTP cache even after Vite re-optimizes, causing duplicate
+    // React instances and invalid hook call errors.
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+    },
   },
 })

@@ -2,6 +2,19 @@ export type Gender = 'male' | 'female' | 'unspecified';
 export type Language = 'es' | 'en' | 'pt' | 'fr' | 'de' | 'it' | 'zh' | 'ja' | 'ko' | 'ar' | 'ru' | 'hi' | 'tr' | 'nl' | 'pl' | 'sv' | 'da' | 'no' | 'fi' | 'el' | 'he' | 'th' | 'vi' | 'id' | 'ms' | 'tl' | 'uk' | 'cs' | 'ro' | 'hu' | 'ca' | 'hr' | 'bg' | 'sk' | 'sl' | 'lt' | 'lv' | 'et' | 'sw' | 'bn';
 export type LanguageSkill = 'beginner' | 'intermediate' | 'advanced';
 
+export type ShowcaseItemType = 'article' | 'book' | 'talk' | 'media' | 'achievement' | 'project' | 'insight'
+
+export interface ExecutiveShowcaseItem {
+  id: string
+  type: ShowcaseItemType
+  title: string
+  description?: string
+  url?: string
+  date?: string        // YYYY-MM-DD
+  tag?: string         // publisher, event name, media outlet, etc.
+  imageUrl?: string
+}
+
 export interface User {
   id: string;
   email: string;
@@ -36,7 +49,9 @@ export interface User {
   trialStartedAt?: string;
   subscriptionExpiresAt?: string;
   academicStatus?: 'estudiante' | 'egresado' | 'titulado';
+  subscriptionTier?: 'free' | 'pro' | 'max';
   offersMentoring?: boolean;
+  executiveShowcase?: ExecutiveShowcaseItem[];
   mentoringServices?: string[];
   mentoringSubjects?: string[];
   graduationStatusYear?: number;

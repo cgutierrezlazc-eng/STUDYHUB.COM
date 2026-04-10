@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../services/auth'
-import { X, Minimize2, Maximize2 } from 'lucide-react'
+import { X, ChevronLeft } from 'lucide-react'
 
 interface Props {
   title: string
@@ -14,6 +15,7 @@ interface Props {
  */
 export default function AdminShell({ title, children }: Props) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [isPopup] = useState(() => !!window.opener)
 
   useEffect(() => {
@@ -31,9 +33,32 @@ export default function AdminShell({ title, children }: Props) {
     )
   }
 
-  // If not a popup, render children directly (embedded in main app)
+  // If not a popup, render with back-nav header
   if (!isPopup) {
-    return <>{children}</>
+    return (
+      <div style={{ minHeight: '100%' }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, padding: '8px 24px',
+          borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)',
+          marginBottom: 0, position: 'sticky', top: 0, zIndex: 10,
+        }}>
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
+              border: '1px solid var(--border)', borderRadius: 8, background: 'none',
+              cursor: 'pointer', color: 'var(--text-muted)', fontSize: 13, fontWeight: 500,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+          >
+            <ChevronLeft size={15} /> Volver
+          </button>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</span>
+        </div>
+        {children}
+      </div>
+    )
   }
 
   // Popup mode: minimal shell

@@ -62,6 +62,10 @@ const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
+const CertVerify = React.lazy(() => import('./pages/CertVerify'))
+const LandingProposals = React.lazy(() => import('./pages/LandingProposals'))
+const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'))
+const ClassRoom = React.lazy(() => import('./pages/ClassRoom'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -221,6 +225,20 @@ export default function App() {
         </Suspense>
       )
     }
+    if (location.pathname.startsWith('/cert/')) {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <CertVerify />
+        </Suspense>
+      )
+    }
+    if (location.pathname === '/proposals') {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <LandingProposals />
+        </Suspense>
+      )
+    }
 
     const authSEO = authView === 'login' ? PAGE_SEO.login : authView === 'register' ? PAGE_SEO.register : PAGE_SEO.landing
     return (
@@ -278,6 +296,8 @@ export default function App() {
   const conversationId = convMatch ? convMatch[1] : undefined
   const userMatch = location.pathname.match(/^\/user\/(.+)$/)
   const profileUserId = userMatch ? userMatch[1] : undefined
+  const classRoomMatch = location.pathname.match(/^\/class-room\/(.+)$/)
+  const classRoomId = classRoomMatch ? classRoomMatch[1] : undefined
 
   return (
     <div className={`app-layout ${showMobileUI ? 'mobile-layout' : ''} ${showTabletUI ? 'tablet-layout' : ''}`}>
@@ -326,6 +346,11 @@ export default function App() {
             <Route path="/search" element={<Search onNavigate={(path) => navigate(path)} />} />
             <Route path="/conferences" element={<Conferences onNavigate={(path) => navigate(path)} />} />
             <Route path="/tutores" element={<TutorDirectory onNavigate={(path) => navigate(path)} />} />
+            <Route path="/my-tutor" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} />} />
+            <Route path="/my-tutor/materias" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="materias" />} />
+            <Route path="/my-tutor/clases" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="clases" />} />
+            <Route path="/my-tutor/pagos" element={<MyTutorDashboard onNavigate={(path) => navigate(path)} subPath="pagos" />} />
+            <Route path="/class-room/:classId" element={classRoomId ? <ClassRoom classId={classRoomId} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/biblioteca" element={<Biblioteca onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<Navigate to="/admin-panel" replace />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
@@ -336,6 +361,7 @@ export default function App() {
             <Route path="/cv/:username" element={<CVProfile onNavigate={(path) => navigate(path)} />} />
             <Route path="/terms" element={<TermsOfService onNavigate={(path) => navigate(path)} />} />
             <Route path="/privacy" element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />} />
+            <Route path="/cert/:code" element={<CertVerify />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
             <Route path="/checkout" element={<Checkout onNavigate={(path) => navigate(path)} />} />

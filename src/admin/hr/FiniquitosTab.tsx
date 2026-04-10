@@ -64,12 +64,15 @@ function generateFiniquitoHTML(
   result: any,
   causalLabel: string,
   pendingVacationDays: number,
-  avisoPrevio: boolean
+  avisoPrevio: boolean,
+  fechaTermino?: string
 ): string {
   const today = new Date()
   const dateStr = today.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
   const hireDate = new Date(emp.hireDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const terminationDate = dateStr
+  const terminationDate = fechaTermino
+    ? new Date(fechaTermino).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+    : dateStr
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -287,6 +290,10 @@ export default function FiniquitosTab() {
   const [avisoPrevio, setAvisoPrevio] = useState(true)
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [fechaTermino, setFechaTermino] = useState(new Date().toISOString().split('T')[0])
+  const [diasTrabajadosActual, setDiasTrabajadosActual] = useState(new Date().getDate())
+  const [payrollSource, setPayrollSource] = useState<'payroll' | 'employee' | 'manual'>('employee')
+  const [desvSource, setDesvSource] = useState(false)
 
   const CAUSALES = [
     { value: '159_1_mutuo', label: 'Art. 159 N\u00b01 \u2014 Mutuo acuerdo', indemnizacion: false, aviso: false, recargo: 0 },
@@ -337,8 +344,8 @@ export default function FiniquitosTab() {
     const gratificacionMensual = Math.min(lastSalary * 0.25, (500000 * 4.75) / 12)
     const gratificacionProp = gratificacionMensual * (monthsExtra / 12)
 
-    // Dias trabajados del mes (estimado 15 dias)
-    const diasTrabajados = dailySalary * 15
+    // Días trabajados del mes hasta fecha de término
+    const diasTrabajados = dailySalary * diasTrabajadosActual
 
     const totalBruto = indemnizacionAnos + indemnizacionAviso + recargo + vacaciones + gratificacionProp + diasTrabajados
 
@@ -357,21 +364,127 @@ export default function FiniquitosTab() {
     })
   }
 
+  // Causal mapping: PersonasHub desvinculación values → FiniquitosTab values
+  const CAUSAL_MAP: Record<string, string> = {
+    mutuo_acuerdo: '159_1_mutuo',
+    renuncia: '159_2_renuncia',
+    termino_plazo: '159_4_vencimiento',
+    caso_fortuito: '159_5_obra',
+    falta_probidad: '160_conducta',
+    acoso_laboral: '160_conducta',
+    vias_de_hecho: '160_conducta',
+    injurias: '160_conducta',
+    abandono: '160_conducta',
+    actos_contra: '160_conducta',
+    incumplimiento: '160_conducta',
+    necesidades_empresa: '161_necesidades',
+    desahucio: '161_desahucio',
+  }
+
+  function calcVacacionesPendientes(hireDate: string, termDate: Date, years: number): number {
+    // Art.67 CT: 15 días hábiles base, +1 día c/3 años sobre los 10 (beneficio progresivo)
+    const progressiveDays = years >= 10 ? Math.floor((years - 10) / 3) : 0
+    const totalVacDaysPerYear = 15 + progressiveDays
+    // Aniversario anterior a la fecha de término
+    const hire = new Date(hireDate)
+    const lastAnniv = new Date(hire)
+    lastAnniv.setFullYear(termDate.getFullYear())
+    if (lastAnniv > termDate) lastAnniv.setFullYear(termDate.getFullYear() - 1)
+    const daysSinceAnniv = (termDate.getTime() - lastAnniv.getTime()) / (24 * 60 * 60 * 1000)
+    return Math.max(0, Math.round((daysSinceAnniv / 365) * totalVacDaysPerYear))
+  }
+
+  // Auto-populate all fields when employee is selected
   useEffect(() => {
-    if (selectedEmp) {
-      const emp = employees.find(e => e.id === selectedEmp)
-      if (emp) {
-        setLastSalary(emp.grossSalary)
-        const hire = new Date(emp.hireDate)
-        const now = new Date()
-        const diffMs = now.getTime() - hire.getTime()
-        const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000))
-        const months = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
-        setYearsWorked(years)
-        setMonthsExtra(months)
+    if (!selectedEmp) return
+    const emp = employees.find(e => e.id === selectedEmp)
+    if (!emp) return
+
+    // ── 1. Cross-reference desvinculación data from PersonasHub ───────────
+    let resolvedFechaTermino = new Date().toISOString().split('T')[0]
+    try {
+      const desvRaw = localStorage.getItem(`conniku_desv_${selectedEmp}`)
+      if (desvRaw) {
+        const desv = JSON.parse(desvRaw)
+        if (desv.fechaTermino) {
+          resolvedFechaTermino = desv.fechaTermino
+          setFechaTermino(desv.fechaTermino)
+        }
+        if (desv.causal && CAUSAL_MAP[desv.causal]) {
+          setCausal(CAUSAL_MAP[desv.causal])
+          // Art.161: si no consta aviso dado, indemnización sustitutiva aplica
+          const needsAviso = desv.causal === 'necesidades_empresa' || desv.causal === 'desahucio'
+          setAvisoPrevio(needsAviso)
+        }
+        setDesvSource(true)
+      } else {
+        setDesvSource(false)
       }
+    } catch { setDesvSource(false) }
+
+    // ── 2. Años y meses de servicio ───────────────────────────────────────
+    const hire = new Date(emp.hireDate)
+    const termDate = new Date(resolvedFechaTermino)
+    const diffMs = termDate.getTime() - hire.getTime()
+    const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000))
+    const months = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
+    setYearsWorked(Math.max(0, years))
+    setMonthsExtra(Math.max(0, months))
+
+    // ── 3. Vacaciones proporcionales (Art.67 CT) ──────────────────────────
+    setPendingVacationDays(calcVacacionesPendientes(emp.hireDate, termDate, Math.max(0, years)))
+
+    // ── 4. Días trabajados del mes de término ────────────────────────────
+    setDiasTrabajadosActual(termDate.getDate())
+
+    // ── 5. Última remuneración: buscar en nómina real, fallback a contrato ─
+    setPayrollSource('employee')
+    setLastSalary(emp.grossSalary)
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() + 1
+
+    const applyPayrollRecord = (records: any) => {
+      const rec = Array.isArray(records) ? records.find((r: any) => r.employeeId === selectedEmp) : null
+      if (rec?.grossSalary && rec.grossSalary > 0) {
+        setLastSalary(rec.grossSalary)
+        setPayrollSource('payroll')
+        return true
+      }
+      return false
     }
-  }, [selectedEmp])
+
+    api.getPayroll(year, month)
+      .then((records: any) => {
+        if (!applyPayrollRecord(records)) {
+          // Try previous month
+          const prevMonth = month === 1 ? 12 : month - 1
+          const prevYear = month === 1 ? year - 1 : year
+          api.getPayroll(prevYear, prevMonth)
+            .then((prev: any) => applyPayrollRecord(prev))
+            .catch(() => {})
+        }
+      })
+      .catch(() => {})
+  }, [selectedEmp, employees])
+
+  // Recalculate service years + vacation + días when fechaTermino changes
+  useEffect(() => {
+    if (!selectedEmp) return
+    const emp = employees.find(e => e.id === selectedEmp)
+    if (!emp) return
+    const termDate = new Date(fechaTermino)
+    if (isNaN(termDate.getTime())) return
+
+    const hire = new Date(emp.hireDate)
+    const diffMs = termDate.getTime() - hire.getTime()
+    const years = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000))
+    const months = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
+    setYearsWorked(Math.max(0, years))
+    setMonthsExtra(Math.max(0, months))
+    setPendingVacationDays(calcVacacionesPendientes(emp.hireDate, termDate, Math.max(0, years)))
+    setDiasTrabajadosActual(termDate.getDate())
+  }, [fechaTermino])
 
   return (
     <div>
@@ -401,16 +514,68 @@ export default function FiniquitosTab() {
               {CAUSALES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
-          <FormField label="Ultima Remuneracion Mensual (CLP)" value={lastSalary} onChange={(v: string) => setLastSalary(Number(v))} type="number" />
-          <FormField label="Anos Trabajados" value={yearsWorked} onChange={(v: string) => setYearsWorked(Number(v))} type="number" />
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>
+              Fecha de Término <span style={{ color: '#ef4444' }}>*</span>
+            </label>
+            <input
+              type="date"
+              value={fechaTermino}
+              onChange={e => setFechaTermino(e.target.value)}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}
+            />
+            {desvSource && <p style={{ fontSize: 11, color: '#22c55e', margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>✓ Sincronizado desde Desvinculación (Personas)</p>}
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>
+              Última Remuneración Mensual (CLP)
+            </label>
+            <input
+              type="number"
+              value={lastSalary}
+              onChange={e => { setLastSalary(Number(e.target.value)); setPayrollSource('manual') }}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}
+            />
+            <p style={{ fontSize: 11, margin: '4px 0 0', color: payrollSource === 'payroll' ? '#22c55e' : payrollSource === 'manual' ? '#f59e0b' : 'var(--text-muted)' }}>
+              {payrollSource === 'payroll' ? '✓ Obtenido de última liquidación de nómina' : payrollSource === 'manual' ? '✎ Modificado manualmente' : '· Desde contrato del empleado (sin liquidación registrada)'}
+            </p>
+          </div>
+          <FormField label="Años Trabajados" value={yearsWorked} onChange={(v: string) => setYearsWorked(Number(v))} type="number" />
           <FormField label="Meses Adicionales" value={monthsExtra} onChange={(v: string) => setMonthsExtra(Number(v))} type="number" />
-          <FormField label="Dias de Vacaciones Pendientes" value={pendingVacationDays} onChange={(v: string) => setPendingVacationDays(Number(v))} type="number" />
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>
+              Días de Vacaciones Pendientes <span style={{ fontSize: 10, color: '#22c55e', fontWeight: 400 }}>(Art. 67 CT — calculado proporcional)</span>
+            </label>
+            <input
+              type="number"
+              value={pendingVacationDays}
+              onChange={e => setPendingVacationDays(Number(e.target.value))}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 4, color: 'var(--text-muted)' }}>
+              Días Trabajados del Mes en Curso
+            </label>
+            <input
+              type="number"
+              value={diasTrabajadosActual}
+              onChange={e => setDiasTrabajadosActual(Number(e.target.value))}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}
+            />
+            <p style={{ fontSize: 11, color: '#22c55e', margin: '4px 0 0' }}>✓ Calculado desde fecha de término</p>
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <input type="checkbox" checked={avisoPrevio} onChange={e => setAvisoPrevio(e.target.checked)} id="aviso" />
             <label htmlFor="aviso" style={{ fontSize: 13 }}>Incluir indemnizacion sustitutiva del aviso previo (no se dio aviso de 30 dias)</label>
           </div>
         </div>
 
+        {desvSource && (
+          <div style={{ marginTop: 16, padding: '10px 14px', background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 8, fontSize: 12, color: '#22c55e' }}>
+            ✓ <strong>Datos sincronizados automáticamente</strong> desde el proceso de Desvinculación en Personas — revise y ajuste si es necesario antes de calcular.
+          </div>
+        )}
         <button onClick={handleCalculate} style={{ ...btnPrimary, marginTop: 20 }}>
           <Calculator size={16} /> Calcular Finiquito
         </button>
@@ -438,7 +603,7 @@ export default function FiniquitosTab() {
               )}
               <tr><td>Vacaciones proporcionales ({pendingVacationDays} dias)</td><td style={{ textAlign: 'right' }}>${fmt(result.vacaciones)}</td></tr>
               <tr><td>Gratificacion proporcional</td><td style={{ textAlign: 'right' }}>${fmt(result.gratificacionProp)}</td></tr>
-              <tr><td>Dias trabajados del mes (est. 15 dias)</td><td style={{ textAlign: 'right' }}>${fmt(result.diasTrabajados)}</td></tr>
+              <tr><td>Días trabajados del mes ({diasTrabajadosActual} días — hasta {new Date(fechaTermino).toLocaleDateString('es-CL')})</td><td style={{ textAlign: 'right' }}>${fmt(result.diasTrabajados)}</td></tr>
               <tr style={{ borderTop: '3px solid var(--border)', fontSize: 18 }}>
                 <td style={{ fontWeight: 800, paddingTop: 12 }}>TOTAL FINIQUITO BRUTO</td>
                 <td style={{ textAlign: 'right', fontWeight: 800, color: '#ef4444', paddingTop: 12 }}>${fmt(result.totalBruto)}</td>
@@ -462,7 +627,7 @@ export default function FiniquitosTab() {
               onClick={() => {
                 const emp = employees.find(e => e.id === selectedEmp)
                 if (!emp || !result) return
-                openDoc(generateFiniquitoHTML(emp, result, result.causalLabel, pendingVacationDays, avisoPrevio))
+                openDoc(generateFiniquitoHTML(emp, result, result.causalLabel, pendingVacationDays, avisoPrevio, fechaTermino))
               }}
             ><Download size={16} /> Generar PDF Finiquito</button>
             <button
