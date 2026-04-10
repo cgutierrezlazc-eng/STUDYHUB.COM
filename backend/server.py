@@ -476,10 +476,11 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
     # Enforce chat limit for free/trial users
     check_chat_limit(user, db)
 
-    response = ai_engine.chat(
+    system, user_prompt = ai_engine.build_chat_prompt(
         project_id, req.message, req.language, req.gender, req.language_skill,
         socratic=req.socratic
     )
+    response = _call_claude_chat(system, [{"role": "user", "content": user_prompt}])
 
     return {"response": response}
 

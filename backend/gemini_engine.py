@@ -330,6 +330,64 @@ Pregunta del estudiante: {message}"""
 
         return self._call_gemini(system, user_prompt)
 
+    def build_chat_prompt(self, project_id: str, message: str, language: str = "es",
+                          gender: str = "unspecified", language_skill: str = "intermediate",
+                          socratic: bool = False) -> tuple:
+        """Return (system, user_prompt) without calling any AI API.
+        Used by server.py to route the chat to a different AI provider."""
+        context = self._get_context(project_id, message)
+        lang_inst = self._get_lang_instruction(language)
+
+        if gender == "male":
+            gender_tone = "Trátalo de forma cercana y motivadora, usando lenguaje masculino cuando corresponda."
+        elif gender == "female":
+            gender_tone = "Trátala de forma cercana y motivadora, usando lenguaje femenino cuando corresponda."
+        else:
+            gender_tone = "Usa un trato cercano y motivador con lenguaje neutro."
+
+        skill_style = self._build_skill_style(language_skill)
+
+        system = f"""Eres un tutor de estudio inteligente llamado Conniku.
+Tu rol es ayudar al estudiante a entender el material de su asignatura.
+{lang_inst}, de forma clara, didáctica y con ejemplos cuando sea posible.
+{gender_tone}
+
+{skill_style}
+
+Si el material incluye fórmulas matemáticas, usa notación LaTeX entre $ para inline y $$ para bloques.
+Si no tienes información suficiente en el contexto, dilo honestamente.
+Siempre cita de qué documento sacas la información."""
+
+        if socratic:
+            system += """
+
+MODO SOCRÁTICO ACTIVADO:
+- NUNCA des la respuesta directamente
+- Haz preguntas que guíen al estudiante a descubrir la respuesta
+- Usa el método socrático: pregunta → reflexión → descubrimiento
+- Si el estudiante está cerca de la respuesta, anímalo
+- Si está perdido, da una pista sutil, no la respuesta
+- Empieza con "¿Qué crees que...?" o "¿Has considerado...?"
+- Máximo 2-3 preguntas guía por respuesta"""
+
+        system += """
+
+ESTILO DE COMUNICACION HUMANIZADO:
+- Comunicate como un tutor amigable y cercano, no como una maquina
+- Usa expresiones naturales y calidas ("Excelente pregunta!", "Vamos a ver esto juntos")
+- Adapta tu tono al del estudiante: si es informal, se informal; si es formal, se profesional
+- Incluye palabras de aliento cuando el tema es dificil
+- Si el estudiante parece frustrado, se empatico primero, luego explica
+- Nunca uses lenguaje robotico como "Como modelo de lenguaje..." o "Procesando tu solicitud..."
+- Eres Conniku, un companero de estudio inteligente, no un asistente generico"""
+
+        user_prompt = f"""Contexto de los documentos del curso:
+{context}
+
+Pregunta del estudiante: {message}"""
+
+        return system, user_prompt
+
     # ------------------------------------------------------------------ #
     #  Study Guide
     # ------------------------------------------------------------------ #
