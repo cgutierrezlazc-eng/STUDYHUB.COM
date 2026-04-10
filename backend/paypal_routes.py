@@ -36,7 +36,7 @@ PAYPAL_API = (
 PLANS = {
     "pro_monthly": {
         "name": "Conniku PRO - Mensual",
-        "price": "3.99",
+        "price": "6.99",
         "currency": "USD",
         "tier": "pro",
         "interval_unit": "MONTH",
@@ -45,7 +45,7 @@ PLANS = {
     },
     "pro_yearly": {
         "name": "Conniku PRO - Anual",
-        "price": "39.99",
+        "price": "50.99",
         "currency": "USD",
         "tier": "pro",
         "interval_unit": "YEAR",
@@ -54,7 +54,7 @@ PLANS = {
     },
     "max_monthly": {
         "name": "Conniku MAX - Mensual",
-        "price": "7.99",
+        "price": "10.99",
         "currency": "USD",
         "tier": "max",
         "interval_unit": "MONTH",
@@ -63,7 +63,7 @@ PLANS = {
     },
     "max_yearly": {
         "name": "Conniku MAX - Anual",
-        "price": "79.99",
+        "price": "90.99",
         "currency": "USD",
         "tier": "max",
         "interval_unit": "YEAR",
