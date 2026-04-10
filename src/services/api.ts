@@ -178,6 +178,33 @@ export const api = {
     return res.json();
   },
 
+  uploadDocumentWithProgress: (
+    projectId: string,
+    file: File,
+    onProgress: (percent: number) => void
+  ): Promise<any> => new Promise((resolve, reject) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_BASE}/projects/${projectId}/documents`);
+    if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try { resolve(JSON.parse(xhr.responseText)); } catch { resolve({}); }
+      } else {
+        let msg = `Error ${xhr.status} al subir el archivo`;
+        try { const e = JSON.parse(xhr.responseText); if (e.detail || e.message) msg = e.detail || e.message; } catch {}
+        reject(new Error(msg));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Error de conexión al subir el archivo'));
+    xhr.send(formData);
+  }),
+
   uploadDocumentFromPath: (projectId: string, filePath: string) =>
     request(`/projects/${projectId}/documents/path`, {
       method: 'POST',
