@@ -3839,6 +3839,7 @@ body.touch-device select {
   box-shadow: 0 4px 16px rgba(37,99,235,0.35);
   z-index: 90;
   transition: all 0.2s ease;
+  overflow: visible;
 }
 .study-buddy-fab:hover {
   transform: scale(1.08);
