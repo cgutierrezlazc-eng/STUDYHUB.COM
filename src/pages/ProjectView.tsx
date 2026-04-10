@@ -496,8 +496,8 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     try {
                       const result = await api.uploadToStudy(project.id)
                       if (result.guide) setGuide(result.guide)
-                      if (result.quiz?.questions) {
-                        setQuizQuestions(result.quiz.questions)
+                      if (result.quiz?.questions?.length) {
+                        setQuizQuestions(result.quiz.questions || [])
                         setQuizCurrentIndex(0)
                         setQuizAnswers({})
                         setQuizSubmitted(false)
@@ -795,7 +795,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                       setIsGeneratingQuiz(true)
                       try {
                         const data = await api.generateQuiz(project.id)
-                        setQuizQuestions(data.questions)
+                        setQuizQuestions(data?.questions || [])
                         setQuizCurrentIndex(0)
                         setQuizAnswers({})
                         setQuizSubmitted(false)
@@ -962,7 +962,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         setIsGeneratingQuiz(true)
                         try {
                           const data = await api.generateQuiz(project.id)
-                          setQuizQuestions(data.questions)
+                          setQuizQuestions(data?.questions || [])
                         } catch (e) {
                           console.error('Error generating quiz:', e)
                         } finally {
