@@ -259,6 +259,28 @@ class ModerationLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ─── Moderation Queue (CEO review) ─────────────────────────────
+
+class ModerationQueueItem(Base):
+    __tablename__ = "moderation_queue"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    content_type = Column(String(20), nullable=False)   # "message" | "image"
+    original_content = Column(Text, nullable=False)
+    sender_id = Column(String(16), ForeignKey("users.id"), nullable=True)
+    context_id = Column(String(16), nullable=True)       # conversation_id
+    category = Column(String(50), nullable=True)
+    auto_reason = Column(Text, nullable=True)
+    status = Column(String(20), default="pending")       # pending | approved | rejected
+    message_id = Column(String(16), ForeignKey("messages.id"), nullable=True)
+    ceo_note = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    reviewed_at = Column(DateTime, nullable=True)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    message = relationship("Message", foreign_keys=[message_id])
+
+
 # ─── Friendships / Social ──────────────────────────────────────
 
 class Friendship(Base):
@@ -571,6 +593,44 @@ class CommunityPostComment(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ─── Community Resources / Events ──────────────────────────
+
+class CommunityResource(Base):
+    __tablename__ = "community_resources"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
+    uploader_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    resource_type = Column(String(30), default="link")  # link | file | video | doc
+    title = Column(String(255), nullable=False)
+    url = Column(Text, nullable=True)
+    description = Column(Text, default="")
+    download_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CommunityEvent(Base):
+    __tablename__ = "community_events"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    community_id = Column(String(16), ForeignKey("communities.id", ondelete="CASCADE"), nullable=False, index=True)
+    creator_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(Text, default="")
+    event_date = Column(DateTime, nullable=False)
+    location = Column(String(255), default="")
+    meet_url = Column(String(500), nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class CommunityEventRSVP(Base):
+    __tablename__ = "community_event_rsvps"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    event_id = Column(String(16), ForeignKey("community_events.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    status = Column(String(20), default="going")  # going | maybe | not_going
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("event_id", "user_id", name="uq_community_event_rsvp"),)
+
+
 # ─── Polls / Encuestas ─────────────────────────────────────
 
 class Poll(Base):
@@ -857,6 +917,18 @@ class EmailLog(Base):
     sent_at = Column(DateTime, default=datetime.utcnow)
     read_at = Column(DateTime, nullable=True)
     reply_to = Column(String(255), nullable=True)
+
+
+# ─── Konni Broadcast (job announcements to all users) ──────
+
+class KonniBroadcast(Base):
+    __tablename__ = "konni_broadcasts"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    job_id = Column(String(16), ForeignKey("job_listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    seen = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "job_id", name="uq_konni_broadcast"),)
 
 
 # ─── Recruiter Profiles ────────────────────────────────────
