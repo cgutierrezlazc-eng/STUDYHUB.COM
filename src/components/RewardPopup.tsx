@@ -41,7 +41,7 @@ export default function RewardPopup({ type, onClose }: Props) {
           </div>
           <p style={{ fontSize: 13, color: '#666', lineHeight: 1.6 }}>
             Has completado <strong>{type === 'pro' ? '3' : '6'} cursos</strong>. Como recompensa, tu cuenta ha sido actualizada a <strong>Plan {type === 'pro' ? 'Pro' : 'Max'}</strong> por 1 mes sin costo.
-            {type === 'pro' ? ' Disfruta de acceso ampliado a cursos y herramientas.' : ' Acceso total a toda la plataforma, cursos avanzados e IA.'}
+            {type === 'pro' ? ' Disfruta de acceso ampliado a cursos y herramientas.' : ' Acceso total a toda la plataforma, cursos avanzados y todas las funcionalidades.'}
           </p>
           <button className="btn btn-primary" onClick={onClose} style={{ marginTop: 16, padding: '10px 28px' }}>
             Continuar

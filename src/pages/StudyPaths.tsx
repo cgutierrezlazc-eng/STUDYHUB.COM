@@ -559,7 +559,7 @@ export default function StudyPaths({ projects, onNavigate }: Props) {
               {!guideContent ? (
                 <div>
                   <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                    Genera una gu\u00eda de estudio basada en tus documentos. La IA analizar\u00e1 el contenido y crear\u00e1 un resumen estructurado.
+                    Genera una guía de estudio basada en tus documentos. Conniku analizará el contenido y creará un resumen estructurado.
                   </p>
                   <button
                     style={{ ...S.btn, ...S.btnPrimary, ...(guideLoading ? S.btnDisabled : {}) }}
@@ -700,7 +700,7 @@ export default function StudyPaths({ projects, onNavigate }: Props) {
               {quizQuestions.length === 0 && !quizSubmitted ? (
                 <div>
                   <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 12 }}>
-                    Eval\u00faa tu conocimiento con un quiz de 10 preguntas generado por IA. Identificar\u00e1 tus temas d\u00e9biles.
+                    Evalúa tu conocimiento con un quiz de 10 preguntas. Conniku identificará tus temas débiles.
                   </p>
                   <button
                     style={{ ...S.btn, ...S.btnPrimary, ...(quizLoading ? S.btnDisabled : {}) }}

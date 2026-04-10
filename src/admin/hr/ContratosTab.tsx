@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import {
   FileText, Users, Building, Clock, DollarSign, Shield, PenTool,
-  Eye, X, AlertTriangle, ArrowRight, Download
+  Eye, X, AlertTriangle, ArrowRight, Download, Calculator
 } from 'lucide-react'
 import { Employee } from '../shared/types'
 import { api } from '../../services/api'
@@ -329,8 +329,8 @@ ${ipClause}
 }
 
 // ─── Contract Modal ─────────────────────────────────────────────
-function ContractModal({ employee, onClose }: { employee: Employee; onClose: () => void }) {
-  const [activeTab, setActiveTab] = useState<'empresa' | 'trabajador' | 'contrato' | 'jornada' | 'remuneracion' | 'previsional' | 'clausulas' | 'preview'>('empresa')
+export function ContractModal({ employee, onClose }: { employee: Employee; onClose: () => void }) {
+  const [activeTab, setActiveTab] = useState<'empresa' | 'trabajador' | 'contrato' | 'jornada' | 'remuneracion' | 'previsional' | 'liquidacion' | 'clausulas' | 'preview'>('empresa')
 
   const [form, setForm] = useState<ContractFormData>({
     companyName: 'Conniku SpA',
@@ -434,6 +434,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
     { id: 'jornada', label: 'Jornada', icon: <Clock size={14} /> },
     { id: 'remuneracion', label: 'Remuneracion', icon: <DollarSign size={14} /> },
     { id: 'previsional', label: 'Previsional', icon: <Shield size={14} /> },
+    { id: 'liquidacion', label: 'Liquidación', icon: <Calculator size={14} /> },
     { id: 'clausulas', label: 'Clausulas', icon: <PenTool size={14} /> },
     { id: 'preview', label: 'Vista Previa', icon: <Eye size={14} /> },
   ]
@@ -842,6 +843,168 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
             )
           })()}
 
+          {/* LIQUIDACIÓN PREVIEW */}
+          {activeTab === 'liquidacion' && (() => {
+            const gratMensual = CHILE_LABOR.GRATIFICACION.topeMensual
+            const afpRatePct = AFP_OPTIONS.find(a => a.value === form.afp)?.rate || 0
+            // Haberes imponibles = sueldo + gratificación
+            const totalImponible = form.grossSalary + gratMensual
+            // Cotizaciones
+            const afpAmt = Math.round(Math.min(totalImponible, CHILE_LABOR.TOPES.afpCLP) * afpRatePct / 100)
+            const saludAmt = form.healthSystem === 'isapre'
+              ? Math.round((form.isapreUf || 0) * CHILE_LABOR.UF.value)
+              : Math.round(Math.min(totalImponible, CHILE_LABOR.TOPES.saludCLP) * 0.07)
+            const afcEmpAmt = form.afcActive
+              ? Math.round(Math.min(totalImponible, CHILE_LABOR.TOPES.afcCLP) * (form.contractType === 'indefinido' ? CHILE_LABOR.AFC.employeeRate : 0))
+              : 0
+            const afcErAmt = form.afcActive
+              ? Math.round(Math.min(totalImponible, CHILE_LABOR.TOPES.afcCLP) * (form.contractType === 'indefinido' ? CHILE_LABOR.AFC.employerIndefinido : CHILE_LABOR.AFC.employerPlazoFijo))
+              : 0
+            const sisAmt = Math.round(totalImponible * CHILE_LABOR.SIS.rate)
+            const mutualAmt = Math.round(totalImponible * (CHILE_LABOR.MUTUAL.baseRate + CHILE_LABOR.MUTUAL.additionalRate))
+            // Base imponible impuesto = imponible - cotizaciones previsionales
+            const totalCotizaciones = afpAmt + saludAmt + afcEmpAmt
+            const baseImpuesto = Math.max(totalImponible - totalCotizaciones, 0)
+            const taxAmt = calculateTax(baseImpuesto)
+            // Otros descuentos
+            const pensionAmt = form.pensionAlimentos
+              ? (form.pensionAlimentosTipo === 'fijo' ? form.pensionAlimentosMonto : Math.round(form.grossSalary * form.pensionAlimentosPct / 100))
+              : 0
+            const apvAmt = form.apvActive ? form.apvMonthlyAmount : 0
+            const totalDescuentos = totalCotizaciones + taxAmt + pensionAmt + apvAmt
+            const haberesNoImponibles = form.colacion + form.movilizacion
+            const sueldoLiquido = totalImponible - totalDescuentos + haberesNoImponibles
+            const anticipoAmt = form.anticipoQuincenal ? Math.round(sueldoLiquido * form.anticipoPct / 100) : 0
+            const pagoFinalMes = sueldoLiquido - anticipoAmt
+            const costoTotalEmpleador = form.grossSalary + gratMensual + form.colacion + form.movilizacion + afcErAmt + sisAmt + mutualAmt
+
+            const row = (label: string, val: number, color?: string, indent?: boolean) => (
+              <tr key={label}>
+                <td style={{ padding: '6px 10px', fontSize: 13, paddingLeft: indent ? 24 : 10, color: 'var(--text-muted)' }}>{label}</td>
+                <td style={{ padding: '6px 10px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, fontSize: 13, color: color || 'var(--text-primary)' }}>
+                  {val >= 0 ? '' : '- '}${Math.abs(val).toLocaleString('es-CL')}
+                </td>
+              </tr>
+            )
+
+            return (
+              <div>
+                <div style={{ padding: '10px 14px', background: 'linear-gradient(135deg, rgba(34,197,94,0.12), rgba(16,185,129,0.08))', borderRadius: 8, marginBottom: 16, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  <strong style={{ color: 'var(--accent-green)' }}>Simulación de Liquidación de Sueldo</strong> — Art. 41-52 CT, DL 3.500, Ley 18.469, Ley 19.728.<br/>
+                  Esta liquidación se generará automáticamente y se enviará al correo del trabajador el <strong>último día hábil de cada mes</strong>.
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                  {/* Haberes */}
+                  <div>
+                    <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#22c55e', textTransform: 'uppercase', letterSpacing: 0.5 }}>HABERES</h4>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--bg-secondary)', borderRadius: 8, overflow: 'hidden' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(34,197,94,0.1)' }}>
+                          <th style={{ padding: '6px 10px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>Concepto</th>
+                          <th style={{ padding: '6px 10px', textAlign: 'right', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {row('Sueldo base', form.grossSalary)}
+                        {row(`Gratificación legal (Art.50 — tope ${gratMensual.toLocaleString('es-CL')})`, gratMensual)}
+                        <tr style={{ borderTop: '1px solid var(--border)' }}>
+                          <td style={{ padding: '6px 10px', fontSize: 12, fontWeight: 700 }}>Total Haberes Imponibles</td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 800, fontFamily: 'monospace', color: '#22c55e' }}>${totalImponible.toLocaleString('es-CL')}</td>
+                        </tr>
+                        {row('Colación (no imponible)', form.colacion, '#6b7280')}
+                        {row('Movilización (no imponible)', form.movilizacion, '#6b7280')}
+                        <tr>
+                          <td style={{ padding: '6px 10px', fontSize: 12, fontWeight: 700 }}>Total Bruto</td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 800, fontFamily: 'monospace' }}>${(totalImponible + haberesNoImponibles).toLocaleString('es-CL')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Descuentos */}
+                  <div>
+                    <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#ef4444', textTransform: 'uppercase', letterSpacing: 0.5 }}>DESCUENTOS</h4>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--bg-secondary)', borderRadius: 8, overflow: 'hidden' }}>
+                      <thead>
+                        <tr style={{ background: 'rgba(239,68,68,0.1)' }}>
+                          <th style={{ padding: '6px 10px', textAlign: 'left', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>Concepto</th>
+                          <th style={{ padding: '6px 10px', textAlign: 'right', fontSize: 11, color: 'var(--text-muted)', fontWeight: 700 }}>Monto</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {row(`AFP ${form.afp || '?'} (${afpRatePct}%)`, -afpAmt, '#ef4444')}
+                        {row(form.healthSystem === 'isapre' ? `Isapre ${form.isapreName || ''} (${form.isapreUf || 0} UF)` : 'Fonasa (7%)', -saludAmt, '#ef4444')}
+                        {form.afcActive && row('AFC Cesantía (empleado)', -afcEmpAmt, '#ef4444')}
+                        <tr style={{ borderTop: '1px solid var(--border)', background: 'rgba(239,68,68,0.04)' }}>
+                          <td style={{ padding: '5px 10px', fontSize: 11, color: 'var(--text-muted)' }}>Base Impuesto 2a Cat.</td>
+                          <td style={{ padding: '5px 10px', textAlign: 'right', fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>${baseImpuesto.toLocaleString('es-CL')}</td>
+                        </tr>
+                        {row(`Imp. 2a Categoría (Art.43 LIR)`, -taxAmt, '#ef4444')}
+                        {form.pensionAlimentos && row(`Pensión Alimentos (${form.pensionAlimentosBeneficiarios} benef.)`, -pensionAmt, '#f97316')}
+                        {form.apvActive && row(`APV Régimen ${form.apvRegime}`, -apvAmt, '#8b5cf6')}
+                        <tr style={{ borderTop: '2px solid var(--border)' }}>
+                          <td style={{ padding: '6px 10px', fontSize: 12, fontWeight: 700 }}>Total Descuentos</td>
+                          <td style={{ padding: '6px 10px', textAlign: 'right', fontWeight: 800, fontFamily: 'monospace', color: '#ef4444' }}>-${totalDescuentos.toLocaleString('es-CL')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Result */}
+                <div style={{ marginTop: 16, padding: '16px 20px', background: 'linear-gradient(135deg, #0f172a, #1e293b)', borderRadius: 12, color: '#fff' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: form.anticipoQuincenal ? 12 : 0 }}>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 4, textTransform: 'uppercase' }}>Total Bruto</div>
+                      <div style={{ fontSize: 18, fontWeight: 800 }}>${(totalImponible + haberesNoImponibles).toLocaleString('es-CL')}</div>
+                    </div>
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 4, textTransform: 'uppercase' }}>Total Descuentos</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: '#f87171' }}>-${totalDescuentos.toLocaleString('es-CL')}</div>
+                    </div>
+                    <div style={{ textAlign: 'center', background: 'rgba(34,197,94,0.2)', borderRadius: 8, padding: '8px 4px' }}>
+                      <div style={{ fontSize: 11, opacity: 0.7, marginBottom: 4, textTransform: 'uppercase' }}>💰 Sueldo Líquido</div>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: '#4ade80' }}>${sueldoLiquido.toLocaleString('es-CL')}</div>
+                    </div>
+                  </div>
+                  {form.anticipoQuincenal && (
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 12, display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                      <span style={{ opacity: 0.8 }}>Anticipo día 15 ({form.anticipoPct}%): <strong>-${anticipoAmt.toLocaleString('es-CL')}</strong></span>
+                      <span style={{ opacity: 0.8 }}>Pago final mes: <strong style={{ color: '#4ade80' }}>${pagoFinalMes.toLocaleString('es-CL')}</strong></span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Employer cost + email notice */}
+                <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  <div style={{ padding: 12, background: 'rgba(239,68,68,0.06)', borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)' }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', margin: '0 0 8px', textTransform: 'uppercase' }}>Costo Total Empleador / mes</p>
+                    <table style={{ width: '100%', fontSize: 12 }}>
+                      <tbody>
+                        <tr><td style={{ color: 'var(--text-muted)', paddingBottom: 2 }}>Sueldo bruto + gratificación</td><td style={{ textAlign: 'right', fontFamily: 'monospace' }}>${(form.grossSalary + gratMensual).toLocaleString('es-CL')}</td></tr>
+                        <tr><td style={{ color: 'var(--text-muted)', paddingBottom: 2 }}>Colación + movilización</td><td style={{ textAlign: 'right', fontFamily: 'monospace' }}>${(form.colacion + form.movilizacion).toLocaleString('es-CL')}</td></tr>
+                        <tr><td style={{ color: 'var(--text-muted)', paddingBottom: 2 }}>AFC empleador</td><td style={{ textAlign: 'right', fontFamily: 'monospace' }}>${afcErAmt.toLocaleString('es-CL')}</td></tr>
+                        <tr><td style={{ color: 'var(--text-muted)', paddingBottom: 2 }}>SIS + Mutual</td><td style={{ textAlign: 'right', fontFamily: 'monospace' }}>${(sisAmt + mutualAmt).toLocaleString('es-CL')}</td></tr>
+                        <tr style={{ borderTop: '1px solid var(--border)', fontWeight: 700 }}>
+                          <td style={{ paddingTop: 4 }}>TOTAL COSTO EMPRESA</td>
+                          <td style={{ textAlign: 'right', fontFamily: 'monospace', color: '#ef4444' }}>${costoTotalEmpleador.toLocaleString('es-CL')}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style={{ padding: 12, background: 'rgba(59,130,246,0.06)', borderRadius: 8, border: '1px solid rgba(59,130,246,0.2)' }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#3b82f6', margin: '0 0 8px', textTransform: 'uppercase' }}>📧 Envío Automático</p>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6, margin: 0 }}>
+                      La liquidación mensual será enviada automáticamente a <strong>{form.email || 'correo del trabajador'}</strong> el <strong>último día hábil de cada mes</strong>, conforme al ciclo de remuneraciones de CONNIKU (cierre día 22).<br/><br/>
+                      <span style={{ fontSize: 11, opacity: 0.8 }}>El trabajador también puede consultarla en su perfil de la plataforma en todo momento.</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* CLAUSULAS ADICIONALES */}
           {activeTab === 'clausulas' && (
             <div>
@@ -968,7 +1131,7 @@ function ContractModal({ employee, onClose }: { employee: Employee; onClose: () 
                 Completa todas las pestanas y revisa en "Vista Previa" antes de generar.
               </div>
               <button onClick={() => {
-                const tabOrder: ('empresa' | 'trabajador' | 'contrato' | 'jornada' | 'remuneracion' | 'previsional' | 'clausulas' | 'preview')[] = ['empresa', 'trabajador', 'contrato', 'jornada', 'remuneracion', 'previsional', 'clausulas', 'preview']
+                const tabOrder: ('empresa' | 'trabajador' | 'contrato' | 'jornada' | 'remuneracion' | 'previsional' | 'liquidacion' | 'clausulas' | 'preview')[] = ['empresa', 'trabajador', 'contrato', 'jornada', 'remuneracion', 'previsional', 'liquidacion', 'clausulas', 'preview']
                 const idx = tabOrder.indexOf(activeTab)
                 if (idx < tabOrder.length - 1) setActiveTab(tabOrder[idx + 1])
               }} style={btnPrimary}>

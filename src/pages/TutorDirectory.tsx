@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { api } from '../services/api'
+import { useAuth } from '../services/auth'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -51,6 +52,26 @@ interface ChatMessage {
   is_tutor: boolean
   message: string
   created_at: string
+}
+
+interface OwnClassStudent {
+  enrollment_id: string
+  student_id: string
+  student_name: string
+  student_avatar?: string
+  payment_status: string
+  tutor_rating_of_student: number | null
+  tutor_review_of_student: string | null
+}
+
+interface OwnClass {
+  id: string
+  title: string
+  status: string
+  scheduled_at: string | null
+  category: string
+  enrollments: OwnClassStudent[]
+  total_enrolled: number
 }
 
 const SUBJECT_AREAS = [
@@ -127,8 +148,19 @@ export default function TutorDirectory({ onNavigate }: Props) {
   const [bookingTutor, setBookingTutor] = useState<Tutor | null>(null)
   const [profileLoading, setProfileLoading] = useState(false)
 
+  const { user } = useAuth()
+  const isTutor = !!(user as any)?.offersMentoring
+
   // Tab state
-  const [activeTab, setActiveTab] = useState<'tutores' | 'clases'>('tutores')
+  const [activeTab, setActiveTab] = useState<'tutores' | 'clases' | 'mis-clases'>('tutores')
+
+  // Mis clases (tutor view) state
+  const [ownClasses, setOwnClasses] = useState<OwnClass[]>([])
+  const [ownClassesLoading, setOwnClassesLoading] = useState(false)
+  const [ratingModal, setRatingModal] = useState<{ classId: string; className: string; students: OwnClassStudent[] } | null>(null)
+  const [ratingValue, setRatingValue] = useState(5)
+  const [ratingComment, setRatingComment] = useState('')
+  const [ratingSaving, setRatingSaving] = useState(false)
 
   // Classes tab state
   const [classes, setClasses] = useState<TutorClass[]>([])
@@ -195,10 +227,37 @@ export default function TutorDirectory({ onNavigate }: Props) {
   }, [selectedCategory, classSearchQuery])
 
   useEffect(() => {
-    if (activeTab === 'clases') {
-      fetchClasses()
-    }
+    if (activeTab === 'clases') fetchClasses()
+    if (activeTab === 'mis-clases') fetchOwnClasses()
   }, [activeTab, fetchClasses])
+
+  const fetchOwnClasses = async () => {
+    setOwnClassesLoading(true)
+    try {
+      const data = await api.getMyOwnClasses()
+      setOwnClasses(data.classes || [])
+    } catch (err) {
+      console.error('Error loading own classes:', err)
+    } finally {
+      setOwnClassesLoading(false)
+    }
+  }
+
+  const handleRateStudent = async () => {
+    if (!ratingModal) return
+    setRatingSaving(true)
+    try {
+      await api.rateStudentInClass(ratingModal.classId, { rating: ratingValue, comment: ratingComment })
+      await fetchOwnClasses()
+      setRatingModal(null)
+      setRatingComment('')
+      setRatingValue(5)
+    } catch (err: any) {
+      alert(err.message || 'Error al calificar')
+    } finally {
+      setRatingSaving(false)
+    }
+  }
 
   // Chat functions
   const openChat = async (classId: string) => {
@@ -345,6 +404,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
         {([
           { key: 'tutores' as const, label: 'Tutores' },
           { key: 'clases' as const, label: 'Clases Disponibles' },
+          ...(isTutor ? [{ key: 'mis-clases' as const, label: 'Mis Clases' }] : []),
         ]).map(tab => (
           <button
             key={tab.key}
@@ -1269,6 +1329,112 @@ export default function TutorDirectory({ onNavigate }: Props) {
                   </button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Mis Clases Tab (tutor view) ─── */}
+      {activeTab === 'mis-clases' && (
+        <div>
+          {ownClassesLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}
+            </div>
+          ) : ownClasses.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--bg-secondary)', borderRadius: 14, border: '1px solid var(--border-color)' }}>
+              <p style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>No tienes clases creadas</p>
+              <p style={{ fontSize: 14, color: 'var(--text-tertiary)', margin: 0 }}>Crea tu primera clase para comenzar a tutorear</p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {ownClasses.map(cls => {
+                const isCompleted = cls.status === 'completed'
+                const paidStudents = cls.enrollments.filter(e => e.payment_status === 'paid')
+                const unrated = paidStudents.filter(e => !e.tutor_rating_of_student)
+                return (
+                  <div key={cls.id} style={{ background: 'var(--bg-secondary)', borderRadius: 14, border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                    <div style={{ height: 3, background: isCompleted ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #f59e0b, #d97706)' }} />
+                    <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                      <div style={{ flex: 1, minWidth: 200 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 4 }}>{cls.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                          {cls.scheduled_at && <span>{new Date(cls.scheduled_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+                          {cls.category && <span>{cls.category}</span>}
+                          <span>{cls.total_enrolled} inscrito{cls.total_enrolled !== 1 ? 's' : ''}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 12, padding: '4px 12px', borderRadius: 20, fontWeight: 600,
+                          background: isCompleted ? 'rgba(5,150,105,0.08)' : cls.status === 'published' ? 'rgba(245,158,11,0.08)' : 'var(--bg-tertiary)',
+                          color: isCompleted ? '#059669' : cls.status === 'published' ? '#d97706' : 'var(--text-muted)',
+                        }}>
+                          {isCompleted ? 'Completada' : cls.status === 'published' ? 'Publicada' : cls.status === 'cancelled' ? 'Cancelada' : cls.status}
+                        </span>
+                        {isCompleted && unrated.length > 0 && (
+                          <button
+                            onClick={() => { setRatingModal({ classId: cls.id, className: cls.title, students: paidStudents }); setRatingValue(5); setRatingComment('') }}
+                            style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', border: 'none', padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}
+                          >
+                            Calificar estudiante{unrated.length > 1 ? 's' : ''} ({unrated.length})
+                          </button>
+                        )}
+                        {isCompleted && unrated.length === 0 && paidStudents.length > 0 && (
+                          <span style={{ fontSize: 12, color: '#059669', fontWeight: 600 }}>✓ Calificado</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Rating Modal ─── */}
+      {ratingModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) setRatingModal(null) }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 420, boxShadow: '0 20px 60px rgba(0,0,0,0.25)' }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>Calificar estudiantes</h3>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--text-muted)' }}>{ratingModal.className}</p>
+
+            <div style={{ marginBottom: 18 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 10 }}>Calificación</label>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {[1,2,3,4,5].map(n => (
+                  <button key={n} onClick={() => setRatingValue(n)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, opacity: n <= ratingValue ? 1 : 0.25, transition: 'opacity 0.15s', padding: 2 }}>
+                    ★
+                  </button>
+                ))}
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', alignSelf: 'center', marginLeft: 6 }}>{ratingValue}/5</span>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 8 }}>Comentario (opcional)</label>
+              <textarea value={ratingComment} onChange={e => setRatingComment(e.target.value)}
+                placeholder="¿Cómo fue el desempeño del estudiante?"
+                rows={3}
+                style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 14, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' }}
+              />
+            </div>
+
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 18, padding: '10px 14px', background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+              Esta calificación aplica a todos los estudiantes pagados de la clase ({ratingModal.students.filter(s => s.payment_status === 'paid').length} estudiante{ratingModal.students.filter(s => s.payment_status === 'paid').length !== 1 ? 's' : ''}).
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={() => setRatingModal(null)}
+                style={{ flex: 1, padding: '11px 0', borderRadius: 10, fontSize: 14, fontWeight: 600, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button onClick={handleRateStudent} disabled={ratingSaving}
+                style={{ flex: 1, padding: '11px 0', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', cursor: ratingSaving ? 'not-allowed' : 'pointer', opacity: ratingSaving ? 0.7 : 1 }}>
+                {ratingSaving ? 'Guardando...' : 'Enviar calificación'}
+              </button>
             </div>
           </div>
         </div>

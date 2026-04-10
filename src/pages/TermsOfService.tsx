@@ -126,9 +126,9 @@ export default function TermsOfService({ onNavigate }: Props) {
       <ul style={styles.ul}>
         <li><strong>Free (Gratuito):</strong> Acceso a funcionalidades básicas de la plataforma sin costo.</li>
         <li><strong>Pro:</strong> $4.990 CLP mensuales. Incluye funcionalidades avanzadas de estudio,
-          generación de contenido con IA y acceso prioritario a nuevas herramientas.</li>
+          generación de contenido asistido y acceso prioritario a nuevas herramientas.</li>
         <li><strong>Max:</strong> $9.990 CLP mensuales. Incluye todas las funcionalidades Pro además de
-          acceso ilimitado a herramientas de IA, soporte prioritario y funcionalidades exclusivas.</li>
+          acceso ilimitado al asistente, soporte prioritario y funcionalidades exclusivas.</li>
       </ul>
       <p style={styles.p}>
         Los precios están expresados en pesos chilenos (CLP) e incluyen IVA cuando corresponda.
@@ -162,7 +162,7 @@ export default function TermsOfService({ onNavigate }: Props) {
         El usuario conserva la propiedad intelectual sobre los documentos, apuntes y materiales que
         suba a la plataforma. Al cargar contenido, el usuario otorga a Conniku una licencia limitada,
         no exclusiva y revocable para procesar dicho contenido con el fin de prestar el servicio
-        (por ejemplo, generar resúmenes con IA). Conniku no utilizará el contenido del usuario para
+        (por ejemplo, generar resúmenes asistidos). Conniku no utilizará el contenido del usuario para
         fines distintos a la prestación del servicio sin consentimiento previo.
       </p>
 

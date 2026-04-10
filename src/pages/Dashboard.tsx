@@ -297,7 +297,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
               <div style={{ fontSize: 56, marginBottom: 16, opacity: 0.6 }}>{BookOpen({ size: 56, color: 'var(--accent)' })}</div>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Crea tu primera asignatura</h3>
               <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
-                Sube tus apuntes y la IA generara guias de estudio, flashcards y quizzes automaticamente
+                Sube tus apuntes y Conniku generará guías de estudio, flashcards y quizzes automáticamente
               </p>
               <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
                 Ej: Calculo II, Anatomia, Derecho Civil

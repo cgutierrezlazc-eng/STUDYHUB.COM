@@ -702,7 +702,7 @@ function EmployeeFile({ employee, employees, indicators, onClose, onRefresh }: {
     { id: 'acknowledgements', label: 'Reconocimientos', icon: Award },
     { id: 'performance', label: 'Evaluacion', icon: TrendingUp },
     { id: 'docs', label: 'Documentos', icon: FolderOpen },
-    { id: 'chat', label: 'Chat IA', icon: Zap },
+    { id: 'chat', label: 'Consulta Rápida', icon: Zap },
     { id: 'liquidaciones', label: 'Liquidaciones', icon: DollarSign },
   ]
 
@@ -1727,7 +1727,7 @@ Documentos: ${documents.map(d => d.name || d.documentType).join(', ') || 'Sin do
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Zap size={18} style={{ color: 'var(--accent)' }} />
         <div>
-          <div style={{ fontWeight: 700, fontSize: 14 }}>Chat IA — {employee.firstName}</div>
+          <div style={{ fontWeight: 700, fontSize: 14 }}>Consulta — {employee.firstName}</div>
           <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Pregunta sobre sus documentos, evaluaciones, contrato, etc.</div>
         </div>
       </div>

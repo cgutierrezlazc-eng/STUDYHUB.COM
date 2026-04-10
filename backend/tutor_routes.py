@@ -249,10 +249,15 @@ class TutorClassEnrollment(Base):
     confirmed_by_tutor = Column(Boolean, default=False)
     auto_confirmed_at = Column(DateTime, nullable=True)  # 48h auto-confirm
 
-    # Rating
+    # Student rates tutor
     rating = Column(Integer, nullable=True)  # 1-5
     rating_comment = Column(Text, nullable=True)
     rated_at = Column(DateTime, nullable=True)
+
+    # Tutor rates student
+    tutor_rating_of_student = Column(Integer, nullable=True)  # 1-5
+    tutor_review_of_student = Column(Text, nullable=True)
+    tutor_rated_at = Column(DateTime, nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -1953,6 +1958,62 @@ def rate_class(
     return {"ok": True, "message": "Calificacion registrada"}
 
 
+class TutorRatesStudentRequest(BaseModel):
+    rating: int  # 1-5
+    comment: str = ""
+
+
+@router.post("/classes/{class_id}/rate-student")
+def rate_student(
+    class_id: str,
+    data: TutorRatesStudentRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Tutor rates a student after a completed class. One rating per student per class."""
+    if not (1 <= data.rating <= 5):
+        raise HTTPException(status_code=400, detail="Calificacion debe ser entre 1 y 5")
+
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(status_code=404, detail="Clase no encontrada")
+
+    if cls.status != "completed":
+        raise HTTPException(status_code=400, detail="Solo puedes calificar clases completadas")
+
+    # Verify caller is the tutor of this class
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.user_id != user.id:
+        raise HTTPException(status_code=403, detail="Solo el tutor puede calificar a los estudiantes")
+
+    # Get all enrollments for this class to rate (for simplicity, rate all paid students)
+    enrollments = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.payment_status == "paid",
+    ).all()
+
+    if not enrollments:
+        raise HTTPException(status_code=400, detail="No hay estudiantes pagados en esta clase")
+
+    updated = 0
+    for enrollment in enrollments:
+        if enrollment.tutor_rating_of_student is not None:
+            continue  # Already rated this student for this class
+        enrollment.tutor_rating_of_student = data.rating
+        enrollment.tutor_review_of_student = data.comment
+        enrollment.tutor_rated_at = datetime.utcnow()
+
+        # Update student's cumulative rating
+        student = db.query(User).filter(User.id == enrollment.student_id).first()
+        if student:
+            student.student_rating_sum = (getattr(student, 'student_rating_sum', 0) or 0) + data.rating
+            student.student_rating_count = (getattr(student, 'student_rating_count', 0) or 0) + 1
+        updated += 1
+
+    db.commit()
+    return {"ok": True, "rated": updated}
+
+
 # ═══════════════════════════════════════════════════════════════════
 #  TUTOR NO-SHOW: GUARANTEE REFUND
 # ═══════════════════════════════════════════════════════════════════
@@ -3250,6 +3311,50 @@ def get_my_enrolled_classes(
         })
 
     return {"enrolled_classes": results, "total": len(results)}
+
+
+@router.get("/my-own-classes")
+def get_my_own_classes(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Returns all classes created by the current tutor, with enrolled students."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        return {"classes": [], "total": 0}
+
+    classes = db.query(TutorClass).filter(
+        TutorClass.tutor_id == profile.id,
+    ).order_by(desc(TutorClass.scheduled_at)).all()
+
+    results = []
+    for cls in classes:
+        enrollments = db.query(TutorClassEnrollment).filter(
+            TutorClassEnrollment.class_id == cls.id,
+        ).all()
+        students = []
+        for e in enrollments:
+            student = db.query(User).filter(User.id == e.student_id).first()
+            students.append({
+                "enrollment_id": e.id,
+                "student_id": e.student_id,
+                "student_name": f"{student.first_name} {student.last_name}" if student else "Estudiante",
+                "student_avatar": getattr(student, "avatar", None),
+                "payment_status": e.payment_status,
+                "tutor_rating_of_student": e.tutor_rating_of_student,
+                "tutor_review_of_student": e.tutor_review_of_student,
+            })
+        results.append({
+            "id": cls.id,
+            "title": cls.title,
+            "status": cls.status,
+            "scheduled_at": cls.scheduled_at.isoformat() if cls.scheduled_at else None,
+            "category": cls.category,
+            "enrollments": students,
+            "total_enrolled": len(students),
+        })
+
+    return {"classes": results, "total": len(results)}
 
 
 # ═══════════════════════════════════════════════════════════════════

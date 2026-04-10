@@ -422,6 +422,8 @@ def get_user_profile(
             "professionalTitle": getattr(target, 'professional_title', '') or "",
             "coverPhoto": getattr(target, 'cover_photo', '') or "",
             "coverType": getattr(target, 'cover_type', 'template') or "template",
+            "studentRatingAvg": round(getattr(target, 'student_rating_sum', 0) / getattr(target, 'student_rating_count', 1), 2) if getattr(target, 'student_rating_count', 0) else None,
+            "studentRatingCount": getattr(target, 'student_rating_count', 0) or 0,
         }
 
     # Full profile for friends and own profile
@@ -460,6 +462,8 @@ def get_user_profile(
         "mentoringPricePerHour": getattr(target, 'mentoring_price_per_hour', None),
         "mentoringCurrency": getattr(target, 'mentoring_currency', 'USD') or "USD",
         "professionalTitle": getattr(target, 'professional_title', '') or "",
+        "studentRatingAvg": round(getattr(target, 'student_rating_sum', 0) / getattr(target, 'student_rating_count', 1), 2) if getattr(target, 'student_rating_count', 0) else None,
+        "studentRatingCount": getattr(target, 'student_rating_count', 0) or 0,
     }
 
 

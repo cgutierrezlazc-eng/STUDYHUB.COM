@@ -27,10 +27,10 @@ export default function AIWorkflows({ onNavigate }: Props) {
         color: '#fff',
       }}>
         <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800 }}>
-          IA Workflows — Automatizacion Inteligente
+          Workflows — Automatización Inteligente
         </h2>
         <p style={{ margin: 0, fontSize: 13, opacity: 0.85 }}>
-          Powered by Google Gemini (gratuito). Marketing, comunidad, QA y diseno asistidos por IA.
+          Marketing, comunidad, QA y diseño asistidos por el equipo de Conniku.
         </p>
       </div>
 
@@ -102,7 +102,7 @@ function LoadingDots() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 20, justifyContent: 'center' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%', maxWidth: 300 }}><div className="skeleton skeleton-text" style={{ width: '80%' }} /><div className="skeleton skeleton-text" style={{ width: '60%' }} /><div className="skeleton skeleton-text" style={{ width: '70%' }} /></div>
-      <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Generando con IA...</span>
+      <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Generando...</span>
     </div>
   )
 }
@@ -362,7 +362,7 @@ function CommunityTab() {
   return (
     <div>
       <div className="u-card" style={cardStyle}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Gestion de Comunidad con IA</h3>
+        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Gestión de Comunidad</h3>
         <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
           <button onClick={() => { setMode('moderate'); setResult(null) }} style={{
             ...btnPrimary,
@@ -683,7 +683,7 @@ function DesignTab() {
   return (
     <div>
       <div className="u-card" style={cardStyle}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Brief de Diseno con IA</h3>
+        <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>Brief de Diseño</h3>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>
             <label style={labelStyle}>Tipo de Diseno</label>

@@ -1,4 +1,3 @@
-// TODO: Connect to backend when attendance endpoints are implemented
 // ═════════════════════════════════════════════════════════════════
 // ASISTENCIA TAB — Control de Asistencia y Jornada Laboral
 // Cumplimiento Art. 22, 30-34 Codigo del Trabajo
@@ -222,6 +221,18 @@ export default function AsistenciaTab() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
   })
 
+  // Real attendance records from backend
+  const [attendanceLogs, setAttendanceLogs] = useState<{ id: string; action: string; timestamp: string; date: string; userName: string; userEmail: string }[]>([])
+  const [todayDate] = useState(() => new Date().toISOString().split('T')[0])
+
+  const loadAttendanceLogs = () => {
+    api.getAllAttendance(todayDate)
+      .then((data: any) => setAttendanceLogs(data.records || []))
+      .catch(() => {})
+  }
+
+  useEffect(() => { loadAttendanceLogs() }, [])
+
   // Demo data — auto-loads real employees from API
   const [demoData, setDemoData] = useState(() => generateDemoData())
   const [art22Exemptions, setArt22Exemptions] = useState<Record<string, boolean>>(() => {
@@ -277,6 +288,8 @@ export default function AsistenciaTab() {
     setClockEntry(timeStr)
     setClockStatus('working')
     setTodayHours(0)
+    // Persist to backend
+    api.clockAttendance('in').then(() => loadAttendanceLogs()).catch(() => {})
   }
 
   const handleClockOut = () => {
@@ -289,6 +302,8 @@ export default function AsistenciaTab() {
     }
     setClockStatus('off')
     setClockEntry(null)
+    // Persist to backend
+    api.clockAttendance('out').then(() => loadAttendanceLogs()).catch(() => {})
   }
 
   // ─── Filtered attendance records ───
@@ -545,6 +560,45 @@ export default function AsistenciaTab() {
               Art. 34 CT: Se descuenta automaticamente 30 min de colacion (no computable como jornada)
             </div>
           </div>
+
+          {/* ─── Historial de hoy (real records) ─── */}
+          {attendanceLogs.length > 0 && (
+            <div className="card" style={{ padding: 20, marginTop: 20, maxWidth: 700, margin: '20px auto 0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <CheckCircle size={16} style={{ color: '#22c55e' }} />
+                <span style={{ fontWeight: 700, fontSize: 14 }}>Marcajes de Hoy — {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+                <button onClick={loadAttendanceLogs} style={{ marginLeft: 'auto', ...btnSmall, padding: '4px 10px' }}>Actualizar</button>
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...thStyle, textAlign: 'left' }}>Trabajador</th>
+                    <th style={{ ...thStyle }}>Acción</th>
+                    <th style={{ ...thStyle }}>Hora</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendanceLogs.map(r => (
+                    <tr key={r.id}>
+                      <td style={{ ...tdStyle }}>{r.userName || r.userEmail}</td>
+                      <td style={{ ...tdStyle, textAlign: 'center' }}>
+                        <span style={{
+                          padding: '2px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700,
+                          background: r.action === 'in' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.12)',
+                          color: r.action === 'in' ? '#16a34a' : '#dc2626',
+                        }}>
+                          {r.action === 'in' ? 'Entrada' : 'Salida'}
+                        </span>
+                      </td>
+                      <td style={{ ...tdStyle, textAlign: 'center', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
+                        {new Date(r.timestamp + 'Z').toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
 

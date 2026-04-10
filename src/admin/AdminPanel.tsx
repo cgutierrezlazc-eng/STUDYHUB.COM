@@ -76,12 +76,15 @@ export default function AdminPanel({ onNavigate }: Props) {
   const isEmployee = user.role === 'employee'
   const employeePerms = isEmployee ? getEmployeePermissions(user.id) : null
 
+  const isOwner = user.role === 'owner'
+
   const allModules = isEmployee
     ? ADMIN_MODULES.filter(m => {
         if (m.status === 'coming-soon') return false
+        if (m.ownerOnly) return false
         return employeePerms?.moduleAccess[m.id] ?? false
       })
-    : ADMIN_MODULES
+    : ADMIN_MODULES.filter(m => !m.ownerOnly || isOwner)
 
   const filtered = search
     ? allModules.filter(m =>

@@ -14,14 +14,50 @@ interface Props {
   className?: string
 }
 
+// ── Clock In/Out state helpers ──────────────────────────────────
+const CLOCK_KEY = 'conniku_clock_state'
+function getClockState() {
+  try {
+    const raw = localStorage.getItem(CLOCK_KEY)
+    if (raw) return JSON.parse(raw) as { clockedIn: boolean; since: string }
+  } catch {}
+  return { clockedIn: false, since: '' }
+}
+
 export default function Sidebar({ projects, activeProjectId, currentPath, onNavigate, onNewProject, className }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
+  const [clockState, setClockState] = useState(getClockState)
+  const [elapsed, setElapsed] = useState('')
+
+  // Live elapsed timer while clocked in
+  useEffect(() => {
+    if (!clockState.clockedIn || !clockState.since) { setElapsed(''); return }
+    const update = () => {
+      const diffMs = Date.now() - new Date(clockState.since).getTime()
+      const h = Math.floor(diffMs / 3600000)
+      const m = Math.floor((diffMs % 3600000) / 60000)
+      const s = Math.floor((diffMs % 60000) / 1000)
+      setElapsed(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
+    }
+    update()
+    const iv = setInterval(update, 1000)
+    return () => clearInterval(iv)
+  }, [clockState])
+
+  const handleClock = async () => {
+    const action = clockState.clockedIn ? 'out' : 'in'
+    const next = { clockedIn: !clockState.clockedIn, since: new Date().toISOString() }
+    localStorage.setItem(CLOCK_KEY, JSON.stringify(next))
+    setClockState(next)
+    // Fire-and-forget: persist to backend (ignore errors so UI never blocks)
+    api.clockAttendance(action).catch(() => {})
+  }
 
   // Collapsible section state — auto-open section containing active route
   const socialPaths = ['/', '/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
-  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/quizzes', '/gamification', '/search', '/calendar', '/marketplace', '/jobs']
+  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/quizzes', '/gamification', '/search', '/calendar', '/marketplace', '/jobs', '/courses']
   const supportPaths = ['/profile', '/subscription', '/suggestions', '/admin', '/admin-panel']
 
   const isSocialActive = socialPaths.some(p => p === '/' ? (currentPath === '/' || currentPath === '/feed' || currentPath.startsWith('/user/')) : currentPath.startsWith(p))
@@ -137,6 +173,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             <button className={`nav-item ${isActive('/jobs') ? 'active' : ''}`} onClick={() => onNavigate('/jobs')}>
               {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
             </button>
+            <button className={`nav-item ${isActive('/courses') ? 'active' : ''}`} onClick={() => onNavigate('/courses')}>
+              {Icons.diploma(IC.courses)} Cursos
+            </button>
           </div>
         )}
       </div>
@@ -193,6 +232,59 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             )}
           </div>
         )}
+      </div>
+
+      {/* ─── Clock In / Out ─── */}
+      <div style={{ padding: '12px 10px 10px', borderTop: '1px solid var(--border)', marginTop: 'auto' }}>
+        <button
+          onClick={handleClock}
+          style={{
+            width: '100%',
+            padding: '10px 14px',
+            borderRadius: 12,
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontFamily: 'inherit',
+            fontWeight: 700,
+            fontSize: 13,
+            transition: 'all 0.2s',
+            background: clockState.clockedIn
+              ? 'linear-gradient(135deg, #166534, #15803d)'
+              : 'linear-gradient(135deg, #991b1b, #b91c1c)',
+            color: '#fff',
+            boxShadow: clockState.clockedIn
+              ? '0 2px 12px rgba(34,197,94,0.35)'
+              : '0 2px 12px rgba(239,68,68,0.35)',
+          }}
+        >
+          <span style={{
+            width: 10, height: 10, borderRadius: '50%',
+            background: clockState.clockedIn ? '#4ade80' : '#fca5a5',
+            boxShadow: clockState.clockedIn ? '0 0 8px #4ade80' : '0 0 8px #fca5a5',
+            flexShrink: 0,
+          }} />
+          <div style={{ flex: 1, textAlign: 'left' }}>
+            <div>{clockState.clockedIn ? 'Estás en Clock In' : 'Estás en Clock Out'}</div>
+            {clockState.clockedIn && elapsed && (
+              <div style={{ fontSize: 11, fontWeight: 400, opacity: 0.85, fontFamily: 'monospace', letterSpacing: 1 }}>{elapsed}</div>
+            )}
+            {clockState.clockedIn && (
+              <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.65 }}>Clic para registrar salida</div>
+            )}
+            {!clockState.clockedIn && clockState.since && (
+              <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.7 }}>
+                Último: {new Date(clockState.since).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+            )}
+            {!clockState.clockedIn && !clockState.since && (
+              <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.65 }}>Clic para registrar entrada</div>
+            )}
+          </div>
+          <span style={{ fontSize: 18 }}>{clockState.clockedIn ? '🟢' : '🔴'}</span>
+        </button>
       </div>
     </nav>
   )

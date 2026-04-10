@@ -149,6 +149,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [studentClassFilter, setStudentClassFilter] = useState<'upcoming' | 'past' | 'all'>('all')
   const [mutualFriends, setMutualFriends] = useState<any[]>([])
   const [showMutualList, setShowMutualList] = useState(false)
+  const [showEditInfoModal, setShowEditInfoModal] = useState(false)
+  const [editInfoForm, setEditInfoForm] = useState({ career: '', university: '', semester: 1, academicStatus: 'estudiante', professionalTitle: '', bio: '' })
+  const [editInfoSaving, setEditInfoSaving] = useState(false)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -580,6 +583,38 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setEditingBio(false)
     } catch (err: any) {
       alert(err.message || 'Error al guardar biografía')
+    }
+  }
+
+  const openEditInfoModal = () => {
+    setEditInfoForm({
+      career: profile.career || '',
+      university: profile.university || '',
+      semester: profile.semester || 1,
+      academicStatus: profile.academicStatus || 'estudiante',
+      professionalTitle: profile.professionalTitle || '',
+      bio: profile.bio || '',
+    })
+    setShowEditInfoModal(true)
+  }
+
+  const handleSaveInfo = async () => {
+    setEditInfoSaving(true)
+    try {
+      await updateProfile({
+        career: editInfoForm.career,
+        university: editInfoForm.university,
+        semester: Number(editInfoForm.semester),
+        academicStatus: editInfoForm.academicStatus,
+        professionalTitle: editInfoForm.professionalTitle,
+        bio: editInfoForm.bio,
+      } as any)
+      setProfile((prev: any) => ({ ...prev, ...editInfoForm }))
+      setShowEditInfoModal(false)
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar')
+    } finally {
+      setEditInfoSaving(false)
     }
   }
 
@@ -1248,110 +1283,168 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               )}
 
         {activeTab === 'about' && (
-          <div className="fb-about-section">
-            <div className="u-card" style={{ padding: 24 }}>
-              <h3 style={{ marginTop: 0 }}>{t('userprofile.personalInfo')}</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* Card 1: Información Personal */}
+            <div className="card fb-info-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                <h4 style={{ margin: 0 }}>{t('userprofile.personalInfo')}</h4>
+                {isOwn && (
+                  <button className="btn btn-secondary btn-sm" onClick={openEditInfoModal} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Pencil({ size: 14 })} Editar
+                  </button>
+                )}
+              </div>
               <div className="fb-about-grid">
                 <div className="fb-about-item">
                   <span className="fb-about-label">{t('userprofile.fullName')}</span>
-                  <span>{profile.firstName} {profile.lastName}</span>
+                  <span style={{ fontWeight: 600 }}>{profile.firstName} {profile.lastName}</span>
                 </div>
                 <div className="fb-about-item">
                   <span className="fb-about-label">{t('userprofile.user')}</span>
-                  <span>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</span>
+                  <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>@{profile.username} <span style={{ opacity: 0.6 }}>#{String(profile.userNumber || 0).padStart(4, '0')}</span></span>
                 </div>
                 <div className="fb-about-item">
                   <span className="fb-about-label">{t('userprofile.career')}</span>
-                  <span>{profile.career || t('userprofile.notSpecified')}</span>
+                  <span>{profile.career || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t('userprofile.notSpecified')}</span>}</span>
                 </div>
                 <div className="fb-about-item">
                   <span className="fb-about-label">{t('userprofile.universityLabel')}</span>
-                  <span>{profile.university || t('userprofile.notSpecified')}</span>
+                  <span>{profile.university || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>{t('userprofile.notSpecified')}</span>}</span>
                 </div>
                 <div className="fb-about-item">
                   <span className="fb-about-label">{t('userprofile.semesterLabel')}</span>
                   <span>{t('userprofile.semester')} {profile.semester}</span>
                 </div>
-                {profile.studyDays > 0 && (
-                  <div className="fb-about-item">
-                    <span className="fb-about-label">{t('userprofile.daysStudyingLabel')}</span>
-                    <span style={{ fontWeight: 600, color: '#2D62C8' }}>{profile.studyDays.toLocaleString()} días</span>
-                  </div>
-                )}
-                {profile.bio && (
-                  <div className="fb-about-item">
-                    <span className="fb-about-label">{t('userprofile.bioLabel')}</span>
-                    <span>{profile.bio}</span>
-                  </div>
-                )}
-                <div className="fb-about-item">
-                  <span className="fb-about-label">{t('userprofile.friendsLabel')}</span>
-                  <span>{profile.friendCount} {t('userprofile.connections')}</span>
-                </div>
                 {profile.academicStatus && profile.academicStatus !== 'estudiante' && (
                   <div className="fb-about-item">
                     <span className="fb-about-label">{t('userprofile.academicStatusLabel')}</span>
-                    <span style={{ textTransform: 'capitalize' }}>{profile.academicStatus}</span>
+                    <span style={{ textTransform: 'capitalize', color: '#7c3aed', fontWeight: 600 }}>{profile.academicStatus}</span>
                   </div>
                 )}
                 {profile.professionalTitle && (
                   <div className="fb-about-item">
                     <span className="fb-about-label">{t('userprofile.titleLabel')}</span>
-                    <span>{profile.professionalTitle}</span>
+                    <span style={{ fontWeight: 500 }}>{profile.professionalTitle}</span>
                   </div>
                 )}
               </div>
+            </div>
 
-              {/* Tutoring section in about */}
-              {profile.offersMentoring && (
-                <>
-                  <h3 style={{ marginTop: 24 }}>{t('userprofile.tutoringServices')}</h3>
-                  <div className="fb-about-grid">
-                    {profile.mentoringServices && profile.mentoringServices.length > 0 && (
-                      <div className="fb-about-item">
-                        <span className="fb-about-label">{t('userprofile.servicesLabel')}</span>
-                        <span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span>
-                      </div>
-                    )}
-                    {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
-                      <div className="fb-about-item">
-                        <span className="fb-about-label">{t('userprofile.subjectsLabel')}</span>
-                        <span>{profile.mentoringSubjects.join(', ')}</span>
-                      </div>
-                    )}
-                    {profile.mentoringDescription && (
-                      <div className="fb-about-item">
-                        <span className="fb-about-label">{t('userprofile.descriptionLabel')}</span>
-                        <span>{profile.mentoringDescription}</span>
-                      </div>
-                    )}
-                    <div className="fb-about-item">
-                      <span className="fb-about-label">{t('userprofile.priceLabel')}</span>
-                      <div>
-                        <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
-                          {profile.mentoringPriceType === 'free' ? t('userprofile.freeVolunteer') : `$${profile.mentoringPricePerHour || 0} USD por hora`}
-                        </span>
-                        {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
-                          const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
-                          return prices.localText ? (
-                            <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>≈ {prices.localText} (conversión aprox.)</span>
-                          ) : null
-                        })()}
-                      </div>
-                    </div>
+            {/* Card 2: Descripción / Bio */}
+            <div className="card fb-info-card">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <h4 style={{ margin: 0 }}>Descripción</h4>
+                {isOwn && !editingBio && (
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Pencil({ size: 14 })} {profile.bio ? 'Editar' : 'Agregar'}
+                  </button>
+                )}
+              </div>
+              {editingBio ? (
+                <div>
+                  <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={3} placeholder="Escribe sobre ti..." maxLength={300} />
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+                    <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>{t('userprofile.cancelBtn')}</button>
+                    <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>{t('userprofile.saveBtn')}</button>
                   </div>
-                  {isOtherUser && user && (
-                    <button onClick={() => setShowTutoringModal(true)}
-                      style={{
-                        marginTop: 12, padding: '10px 20px', background: '#2D62C8', color: '#fff',
-                        border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14,
-                      }}>
-                      {t('userprofile.requestTutoring')}
-                    </button>
-                  )}
-                </>
+                </div>
+              ) : (
+                <p style={{ color: profile.bio ? 'var(--text-secondary)' : 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, margin: 0, fontStyle: profile.bio ? 'normal' : 'italic' }}>
+                  {profile.bio || 'Sin descripción aún.'}
+                </p>
               )}
             </div>
+
+            {/* Card 3: Actividad & Conexiones */}
+            <div className="card fb-info-card">
+              <h4 style={{ marginTop: 0, marginBottom: 14 }}>Actividad</h4>
+              <div className="fb-about-grid">
+                <div className="fb-about-item">
+                  <span className="fb-about-label">{t('userprofile.friendsLabel')}</span>
+                  <span style={{ fontWeight: 600, color: '#2D62C8' }}>{profile.friendCount} {t('userprofile.connections')}</span>
+                </div>
+                {profile.studyDays > 0 && (
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">{t('userprofile.daysStudyingLabel')}</span>
+                    <span style={{ fontWeight: 600, color: '#059669' }}>{profile.studyDays.toLocaleString()} días</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 4: Calificación como Estudiante */}
+            {(profile.studentRatingCount > 0 || isOwn) && (
+              <div className="card fb-info-card">
+                <h4 style={{ marginTop: 0, marginBottom: 14 }}>Calificación como Estudiante</h4>
+                {profile.studentRatingCount > 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[1,2,3,4,5].map(s => (
+                        <svg key={s} width="20" height="20" viewBox="0 0 24 24" fill={s <= Math.round(profile.studentRatingAvg || 0) ? '#f59e0b' : 'none'} stroke="#f59e0b" strokeWidth="2">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                        </svg>
+                      ))}
+                    </div>
+                    <div>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{(profile.studentRatingAvg || 0).toFixed(1)}</span>
+                      <span style={{ fontSize: 13, color: 'var(--text-muted)', marginLeft: 6 }}>({profile.studentRatingCount} {profile.studentRatingCount === 1 ? 'evaluación' : 'evaluaciones'} de tutores)</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: 0, fontStyle: 'italic' }}>
+                    Aún no tienes evaluaciones de tutores. Aparecerán luego de completar sesiones de tutoría.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Card 5: Servicios de Tutoría */}
+            {profile.offersMentoring && (
+              <div className="card fb-info-card">
+                <h4 style={{ marginTop: 0, marginBottom: 14 }}>{t('userprofile.tutoringServices')}</h4>
+                <div className="fb-about-grid">
+                  {profile.mentoringServices && profile.mentoringServices.length > 0 && (
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.servicesLabel')}</span>
+                      <span>{profile.mentoringServices.map((s: string) => s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s).join(', ')}</span>
+                    </div>
+                  )}
+                  {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.subjectsLabel')}</span>
+                      <span>{profile.mentoringSubjects.join(', ')}</span>
+                    </div>
+                  )}
+                  {profile.mentoringDescription && (
+                    <div className="fb-about-item">
+                      <span className="fb-about-label">{t('userprofile.descriptionLabel')}</span>
+                      <span>{profile.mentoringDescription}</span>
+                    </div>
+                  )}
+                  <div className="fb-about-item">
+                    <span className="fb-about-label">{t('userprofile.priceLabel')}</span>
+                    <div>
+                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
+                        {profile.mentoringPriceType === 'free' ? t('userprofile.freeVolunteer') : `$${profile.mentoringPricePerHour || 0} USD por hora`}
+                      </span>
+                      {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
+                        const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
+                        return prices.localText ? (
+                          <span style={{ display: 'block', fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>≈ {prices.localText} (conversión aprox.)</span>
+                        ) : null
+                      })()}
+                    </div>
+                  </div>
+                </div>
+                {isOtherUser && user && (
+                  <button onClick={() => setShowTutoringModal(true)}
+                    style={{ marginTop: 16, padding: '10px 20px', background: '#2D62C8', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>
+                    {t('userprofile.requestTutoring')}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -2438,6 +2531,54 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               </div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Info Modal */}
+      {showEditInfoModal && (
+        <div className="modal-overlay" onClick={() => setShowEditInfoModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-header">
+              <h3>Editar Información</h3>
+              <button className="modal-close" onClick={() => setShowEditInfoModal(false)}>✕</button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14, padding: '4px 0 8px' }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Carrera</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.career} onChange={e => setEditInfoForm(f => ({ ...f, career: e.target.value }))} placeholder="Ej: Ingeniería Civil" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Universidad</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.university} onChange={e => setEditInfoForm(f => ({ ...f, university: e.target.value }))} placeholder="Ej: Universidad de Chile" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Semestre</label>
+                <input className="form-input" style={{ marginTop: 4 }} type="number" min={1} max={20} value={editInfoForm.semester} onChange={e => setEditInfoForm(f => ({ ...f, semester: Number(e.target.value) }))} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Estado académico</label>
+                <select className="form-input" style={{ marginTop: 4 }} value={editInfoForm.academicStatus} onChange={e => setEditInfoForm(f => ({ ...f, academicStatus: e.target.value }))}>
+                  <option value="estudiante">Estudiante</option>
+                  <option value="egresado">Egresado</option>
+                  <option value="titulado">Titulado</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Título profesional</label>
+                <input className="form-input" style={{ marginTop: 4 }} value={editInfoForm.professionalTitle} onChange={e => setEditInfoForm(f => ({ ...f, professionalTitle: e.target.value }))} placeholder="Ej: Ingeniero Civil Industrial" />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>Descripción</label>
+                <textarea className="form-input" style={{ marginTop: 4 }} rows={3} value={editInfoForm.bio} onChange={e => setEditInfoForm(f => ({ ...f, bio: e.target.value }))} placeholder="Cuéntanos sobre ti..." maxLength={300} />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 }}>
+              <button className="btn btn-secondary" onClick={() => setShowEditInfoModal(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleSaveInfo} disabled={editInfoSaving}>
+                {editInfoSaving ? 'Guardando...' : 'Guardar cambios'}
+              </button>
+            </div>
           </div>
         </div>
       )}

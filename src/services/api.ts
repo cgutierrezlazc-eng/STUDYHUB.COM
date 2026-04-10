@@ -136,6 +136,9 @@ export const api = {
     request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
   supportAdminChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
+  getKonniBroadcasts: () => request('/support/konni-broadcasts'),
+  markKonniBroadcastsRead: () => request('/support/konni-broadcasts/read', { method: 'POST' }),
+  getRecentJobs: (since: string) => request(`/jobs/listings?since=${encodeURIComponent(since)}`),
 
   // ─── Chat ──────────────────────────────────────────────────
   chat: async (projectId: string, message: string, language: string = 'es', gender: string = 'unspecified', languageSkill: string = 'intermediate', socratic: boolean = false) => {
@@ -1075,6 +1078,8 @@ export const api = {
   enrollInClass: (id: string, data: any) => request(`/tutors/classes/${id}/enroll`, { method: 'POST', body: JSON.stringify(data) }),
   confirmClassCompletion: (id: string) => request(`/tutors/classes/${id}/confirm`, { method: 'PUT' }),
   rateTutorClass: (id: string, data: any) => request(`/tutors/classes/${id}/rate`, { method: 'POST', body: JSON.stringify(data) }),
+  rateStudentInClass: (classId: string, data: { rating: number; comment?: string }) => request(`/tutors/classes/${classId}/rate-student`, { method: 'POST', body: JSON.stringify(data) }),
+  getMyOwnClasses: () => request('/tutors/my-own-classes'),
   reportClassNoshow: (id: string, data: any) => request(`/tutors/classes/${id}/report-noshow`, { method: 'POST', body: JSON.stringify(data) }),
   getMyTutorPayments: (params?: string) => request(`/tutors/my-payments${params ? `?${params}` : ''}`),
   getMyTutorPayslips: (params?: string) => request(`/tutors/my-payslips${params ? `?${params}` : ''}`),
@@ -1127,6 +1132,14 @@ export const api = {
 
   // ─── Health ────────────────────────────────────────────────
   health: () => request('/health'),
+
+  // ─── Employee Attendance / Marcaje ─────────────────────────
+  clockAttendance: (action: 'in' | 'out', note?: string) =>
+    request('/hr/attendance/clock', { method: 'POST', body: JSON.stringify({ action, note }) }),
+  getMyAttendance: (limit?: number) =>
+    request(`/hr/attendance/mine${limit ? `?limit=${limit}` : ''}`),
+  getAllAttendance: (date?: string) =>
+    request(`/hr/attendance/all${date ? `?date=${date}` : ''}`),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────
