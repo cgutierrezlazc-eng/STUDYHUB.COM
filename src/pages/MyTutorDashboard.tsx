@@ -31,6 +31,12 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
   const [showQR, setShowQR] = useState(false)
   const [urlCopied, setUrlCopied] = useState(false)
 
+  // Rating modal
+  const [ratingModal, setRatingModal] = useState<{ classId: string; className: string; unratedCount: number } | null>(null)
+  const [ratingValue, setRatingValue] = useState(5)
+  const [ratingComment, setRatingComment] = useState('')
+  const [ratingSaving, setRatingSaving] = useState(false)
+
   // Subject creation form
   const [showSubjectForm, setShowSubjectForm] = useState(false)
   const [subjectForm, setSubjectForm] = useState({ name: '', category: '', level: '', description: '', learning_objectives: '', prerequisites: '', duration_hours: 1, max_students: 3 })
@@ -109,6 +115,23 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
       alert(e?.message || 'Error al enviar apelación')
     } finally {
       setAppealSending(false)
+    }
+  }
+
+  const handleRateStudents = async () => {
+    if (!ratingModal) return
+    setRatingSaving(true)
+    try {
+      await api.rateStudentInClass(ratingModal.classId, { rating: ratingValue, comment: ratingComment })
+      setRatingModal(null)
+      setRatingComment('')
+      // Refresh classes to reflect updated ratings
+      const d: any = await api.getMyOwnClasses()
+      setClasses(Array.isArray(d) ? d : d?.classes || [])
+    } catch (err: any) {
+      alert(err.message || 'Error al calificar')
+    } finally {
+      setRatingSaving(false)
     }
   }
 
@@ -419,12 +442,15 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
                   in_progress: 'En curso', cancelled: 'Cancelada', disputed: 'Objetada',
                 }
                 const sc = statusColors[cls.status] || { bg: '#f59e0b22', color: '#f59e0b' }
+                const enrollments: any[] = cls.enrollments || []
+                const unrated = enrollments.filter((e: any) => e.payment_status === 'paid' && !e.tutor_rating_of_student)
+                const canRate = cls.status === 'completed' && unrated.length > 0
                 return (
                   <div key={cls.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>{cls.subject || cls.title || 'Clase'}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                        {fmtDate(cls.scheduled_at)} · {cls.enrolled_count || 0} estudiante{(cls.enrolled_count || 0) !== 1 ? 's' : ''}
+                        {fmtDate(cls.scheduled_at)} · {enrollments.length || cls.enrolled_count || 0} estudiante{(enrollments.length || cls.enrolled_count || 0) !== 1 ? 's' : ''}
                       </div>
                     </div>
                     <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: sc.bg, color: sc.color }}>
@@ -435,6 +461,13 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
                         onClick={() => onNavigate(`/class-room/${cls.id}`)}
                         style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: cls.status === 'in_progress' ? '#22c55e' : 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                         {cls.status === 'in_progress' ? '▶ Entrar a Sala' : '🚀 Iniciar / Entrar'}
+                      </button>
+                    )}
+                    {canRate && (
+                      <button
+                        onClick={() => { setRatingModal({ classId: cls.id, className: cls.title || cls.subject || 'Clase', unratedCount: unrated.length }); setRatingValue(5); setRatingComment('') }}
+                        style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                        ⭐ Calificar ({unrated.length})
                       </button>
                     )}
                   </div>
@@ -605,6 +638,47 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── Rating Modal ─── */}
+      {ratingModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget) setRatingModal(null) }}>
+          <div className="card" style={{ width: '100%', maxWidth: 440, padding: 28 }}>
+            <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>Calificar estudiantes</h3>
+            <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--text-muted)' }}>{ratingModal.className}</p>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+              {[1,2,3,4,5].map(n => (
+                <button key={n} onClick={() => setRatingValue(n)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 28, opacity: n <= ratingValue ? 1 : 0.25, transition: 'opacity 0.15s', padding: 2 }}>
+                  ⭐
+                </button>
+              ))}
+              <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', alignSelf: 'center', marginLeft: 6 }}>{ratingValue}/5</span>
+            </div>
+
+            <textarea value={ratingComment} onChange={e => setRatingComment(e.target.value)}
+              placeholder="Comentario opcional (solo visible internamente)"
+              rows={3}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, resize: 'vertical', marginBottom: 12, boxSizing: 'border-box' }} />
+
+            <p style={{ margin: '0 0 20px', fontSize: 12, color: 'var(--text-muted)' }}>
+              Esta calificación aplica a los {ratingModal.unratedCount} estudiante{ratingModal.unratedCount !== 1 ? 's' : ''} sin calificar de esta clase.
+            </p>
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <button onClick={() => setRatingModal(null)}
+                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+              <button onClick={handleRateStudents} disabled={ratingSaving}
+                style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 13, cursor: ratingSaving ? 'wait' : 'pointer', opacity: ratingSaving ? 0.7 : 1 }}>
+                {ratingSaving ? 'Guardando...' : 'Guardar Calificación'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
