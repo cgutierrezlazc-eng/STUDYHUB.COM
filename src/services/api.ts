@@ -14,8 +14,43 @@ export function getApiBase(): string {
 
 const API_BASE = getApiBase();
 
+const TOKEN_KEY = 'conniku_token';
+const REFRESH_TOKEN_KEY = 'conniku_refresh_token';
+
 function getToken(): string | null {
-  return localStorage.getItem('conniku_token');
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+// Flag to avoid concurrent refresh loops
+let _isRefreshing = false;
+let _refreshSubscribers: Array<(token: string | null) => void> = [];
+
+function _onRefreshed(token: string | null) {
+  _refreshSubscribers.forEach(cb => cb(token));
+  _refreshSubscribers = [];
+}
+
+async function _tryRefreshToken(): Promise<string | null> {
+  const refreshTok = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!refreshTok) return null;
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshTok }),
+    });
+    if (!res.ok) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      return null;
+    }
+    const data = await res.json();
+    const newToken = data.access_token as string;
+    localStorage.setItem(TOKEN_KEY, newToken);
+    return newToken;
+  } catch {
+    return null;
+  }
 }
 
 async function request(endpoint: string, options?: RequestInit) {
@@ -27,9 +62,43 @@ async function request(endpoint: string, options?: RequestInit) {
     headers,
     ...options,
   });
+
+  // On 401, attempt a single token refresh then retry
+  if (res.status === 401 && endpoint !== '/auth/refresh') {
+    let newToken: string | null = null;
+
+    if (_isRefreshing) {
+      // Queue until the ongoing refresh resolves
+      newToken = await new Promise<string | null>(resolve => {
+        _refreshSubscribers.push(resolve);
+      });
+    } else {
+      _isRefreshing = true;
+      newToken = await _tryRefreshToken();
+      _isRefreshing = false;
+      _onRefreshed(newToken);
+    }
+
+    if (newToken) {
+      const retryHeaders: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${newToken}` };
+      const retryRes = await fetch(`${API_BASE}${endpoint}`, { headers: retryHeaders, ...options });
+      if (!retryRes.ok) {
+        const errData = await retryRes.json().catch(() => ({}));
+        throw new Error((errData as any).detail || `API Error: ${retryRes.status}`);
+      }
+      return retryRes.json();
+    }
+
+    // Refresh failed — force logout by clearing tokens; callers will redirect to login
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    const errData = await res.json().catch(() => ({}));
+    throw new Error((errData as any).detail || 'Sesión expirada. Por favor inicia sesión nuevamente.');
+  }
+
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.detail || `API Error: ${res.status}`);
+    throw new Error((data as any).detail || `API Error: ${res.status}`);
   }
   return res.json();
 }

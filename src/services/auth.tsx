@@ -16,6 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null)
 
 const TOKEN_KEY = 'conniku_token'
+const REFRESH_TOKEN_KEY = 'conniku_refresh_token'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(data)
     } catch {
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(REFRESH_TOKEN_KEY)
       setUser(null)
     }
   }
@@ -44,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const data = await api.login(email, password)
       localStorage.setItem(TOKEN_KEY, data.token)
+      if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token)
       setUser(data.user)
       return { success: true }
     } catch (err: any) {
@@ -78,6 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Send Google credential to our backend for verification
             const data = await api.googleAuth(response.credential)
             localStorage.setItem(TOKEN_KEY, data.token)
+            if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token)
             setUser(data.user)
           } catch (err) {
             console.error('Google login error:', err)
@@ -121,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       const data = await api.register(payload)
       localStorage.setItem(TOKEN_KEY, data.token)
+      if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token)
       setUser(data.user)
       return { success: true, verificationCode: data.verificationCode }
     } catch (err: any) {
@@ -130,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(REFRESH_TOKEN_KEY)
     setUser(null)
   }
 

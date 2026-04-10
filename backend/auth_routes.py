@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 
 from database import get_db, User, UserSession, gen_id, DATA_DIR, TutoringRequest
-from middleware import create_access_token, get_current_user
+from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger(__name__)
@@ -600,12 +600,14 @@ Estamos felices de tenerte aqu\u00ed. Conniku es tu plataforma para estudiar, co
         db.rollback()
 
     token = create_access_token(user.id)
+    refresh_tok = create_refresh_token(user.id)
     try:
         _register_session(db, user.id, token, request)
     except Exception as e:
         logger.warning(f"Session tracking failed on register: {e}")
     return {
         "token": token,
+        "refresh_token": refresh_tok,
         "user": user_to_dict(user),
     }
 
@@ -631,11 +633,12 @@ def login(req: LoginRequest, request: Request = None, db: Session = Depends(get_
     db.commit()
 
     token = create_access_token(user.id)
+    refresh_tok = create_refresh_token(user.id)
     try:
         _register_session(db, user.id, token, request)
     except Exception as e:
         logger.warning(f"Session tracking failed on login: {e}")
-    return {"token": token, "user": user_to_dict(user)}
+    return {"token": token, "refresh_token": refresh_tok, "user": user_to_dict(user)}
 
 
 class GoogleAuthRequest(BaseModel):
@@ -725,11 +728,25 @@ def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = D
         db.refresh(user)
 
     token = create_access_token(user.id)
+    refresh_tok = create_refresh_token(user.id)
     try:
         _register_session(db, user.id, token, request)
     except Exception as e:
         logger.warning(f"Session tracking failed on google auth: {e}")
-    return {"token": token, "user": user_to_dict(user)}
+    return {"token": token, "refresh_token": refresh_tok, "user": user_to_dict(user)}
+
+
+@router.post("/refresh")
+def refresh_token(data: dict = Body(...)):
+    """Intercambia un refresh token válido por un nuevo access token."""
+    refresh_tok = data.get("refresh_token", "")
+    if not refresh_tok:
+        raise HTTPException(status_code=401, detail="Refresh token requerido")
+    user_id = decode_token(refresh_tok, token_type="refresh")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Refresh token inválido o expirado")
+    new_access_token = create_access_token(user_id)
+    return {"access_token": new_access_token, "token_type": "bearer"}
 
 
 @router.get("/sessions")
