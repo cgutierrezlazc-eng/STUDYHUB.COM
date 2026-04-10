@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db, User, PaymentLog, gen_id
 from middleware import get_current_user
+from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
 
 router = APIRouter(prefix="/payments/mp", tags=["mercadopago"])
 
@@ -224,6 +225,147 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
         raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}")
 
 
+# ─── Create Class Checkout ────────────────────────────────────
+
+@router.post("/create-class-checkout")
+async def create_mp_class_checkout(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Create a Mercado Pago Checkout Pro preference for enrolling in a tutor class."""
+    if not MP_ACCESS_TOKEN:
+        raise HTTPException(503, "Mercado Pago no configurado")
+
+    class_id = data.get("class_id", "")
+    apply_max_discount = bool(data.get("apply_max_discount", False))
+
+    if not class_id:
+        raise HTTPException(400, "class_id requerido")
+
+    cls = db.query(TutorClass).filter(TutorClass.id == class_id).first()
+    if not cls:
+        raise HTTPException(404, "Clase no encontrada")
+
+    if cls.status != "published":
+        raise HTTPException(400, "Esta clase no esta disponible para inscripcion")
+
+    if cls.current_students >= cls.max_students:
+        raise HTTPException(400, "No hay cupos disponibles")
+
+    # Verify no paid duplicate enrollment
+    existing = db.query(TutorClassEnrollment).filter(
+        TutorClassEnrollment.class_id == class_id,
+        TutorClassEnrollment.student_id == user.id,
+        TutorClassEnrollment.payment_status == "paid",
+    ).first()
+    if existing:
+        raise HTTPException(400, "Ya estas inscrito en esta clase")
+
+    # Calculate price with possible MAX discount
+    original_gross = cls.price_per_student
+    discount_type = ""
+    discount_amount = 0.0
+
+    if apply_max_discount:
+        user_tier = getattr(user, "subscription_tier", "free") or "free"
+        if user_tier != "max":
+            raise HTTPException(400, "Solo usuarios MAX pueden aplicar el descuento del 50%")
+        discount_amount = round(original_gross * 0.5)
+        discount_type = "max_subscriber"
+
+    gross = original_gross - discount_amount
+    commission = round(gross * CONNIKU_COMMISSION_RATE)
+    tutor_amount = gross - commission
+
+    # Get tutor profile
+    tutor = db.query(TutorProfile).filter(TutorProfile.id == cls.tutor_id).first()
+    if not tutor or tutor.status != "approved":
+        raise HTTPException(400, "El tutor de esta clase no esta disponible")
+
+    # Create TutorPayment with payment_status pending
+    payment = TutorPayment(
+        id=gen_id(),
+        tutor_id=tutor.id,
+        enrollment_id=None,
+        gross_amount=original_gross,
+        conniku_commission=commission,
+        tutor_amount=tutor_amount,
+        discount_type=discount_type,
+        discount_amount=discount_amount,
+        payment_status="pending",
+        payment_method="mercadopago",
+    )
+    db.add(payment)
+    db.flush()
+
+    # Create TutorClassEnrollment with payment_status pending
+    enrollment = TutorClassEnrollment(
+        id=gen_id(),
+        class_id=class_id,
+        student_id=user.id,
+        payment_id=payment.id,
+        payment_status="pending",
+    )
+    db.add(enrollment)
+    db.flush()
+
+    # Link payment to enrollment
+    payment.enrollment_id = enrollment.id
+    db.commit()
+    db.refresh(enrollment)
+
+    # Build MP preference
+    external_ref = json.dumps({
+        "type": "class_enrollment",
+        "enrollment_id": enrollment.id,
+        "class_id": class_id,
+        "user_id": user.id,
+    })
+
+    preference_data = {
+        "items": [{
+            "title": cls.title,
+            "description": f"Clase de {cls.category or 'tutoria'} — Conniku",
+            "quantity": 1,
+            "currency_id": "CLP",
+            "unit_price": int(gross),
+        }],
+        "payer": {
+            "email": user.email,
+            "name": user.first_name,
+            "surname": user.last_name or "",
+        },
+        "back_urls": {
+            "success": f"{FRONTEND_URL}/tutores?enrollment_status=success&enrollment_id={enrollment.id}",
+            "failure": f"{FRONTEND_URL}/tutores?enrollment_status=failed",
+            "pending": f"{FRONTEND_URL}/tutores?enrollment_status=pending",
+        },
+        "auto_return": "approved",
+        "external_reference": external_ref,
+        "notification_url": f"{BACKEND_URL}/payments/mp/webhook",
+        "statement_descriptor": "CONNIKU",
+    }
+
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{MP_API}/checkout/preferences",
+                headers=_mp_headers(),
+                json=preference_data,
+                timeout=30,
+            )
+            result = resp.json()
+
+            if resp.status_code not in (200, 201):
+                print(f"[MP Error] Class checkout {resp.status_code}: {result}")
+                raise HTTPException(resp.status_code, result.get("message", "Error de Mercado Pago"))
+
+            print(f"[MP] Class checkout created: enrollment={enrollment.id} class={class_id} gross={gross}")
+            return {
+                "init_point": result.get("init_point", ""),
+                "enrollment_id": enrollment.id,
+            }
+    except httpx.HTTPError as e:
+        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}")
+
+
 # ─── Webhook ──────────────────────────────────────────────────
 
 @router.post("/webhook")
@@ -318,6 +460,37 @@ async def _process_payment(payment_id: str, db: Session):
     user_id = ref.get("user_id", "")
     plan_key = ref.get("plan", "")
     tier = ref.get("tier", "pro")
+
+    # ── Class enrollment payment handling ──────────────────────
+    if ref.get("type") == "class_enrollment":
+        enrollment_id = ref.get("enrollment_id")
+        if not enrollment_id:
+            print(f"[MP] Class enrollment payment {payment_id}: no enrollment_id in ref")
+            return
+        enrollment = db.query(TutorClassEnrollment).filter(TutorClassEnrollment.id == enrollment_id).first()
+        if not enrollment:
+            print(f"[MP] Enrollment {enrollment_id} not found for payment {payment_id}")
+            return
+        if status == "approved" and enrollment.payment_status != "paid":
+            enrollment.payment_status = "paid"
+            # Update TutorPayment
+            if enrollment.payment_id:
+                tp = db.query(TutorPayment).filter(TutorPayment.id == enrollment.payment_id).first()
+                if tp:
+                    tp.payment_status = "pending_boleta"
+                    tp.payment_reference = str(payment_id)
+            # Increment current_students
+            cls = db.query(TutorClass).filter(TutorClass.id == enrollment.class_id).first()
+            if cls:
+                cls.current_students = (cls.current_students or 0) + 1
+            db.commit()
+            print(f"[MP] Class enrollment confirmed: enrollment={enrollment_id} payment={payment_id}")
+        elif status in ("rejected", "cancelled"):
+            enrollment.payment_status = "pending"
+            db.commit()
+            print(f"[MP] Class enrollment payment {status}: enrollment={enrollment_id}")
+        return
+    # ── End class enrollment handling ──────────────────────────
 
     if not user_id:
         # Try to find user by payer email

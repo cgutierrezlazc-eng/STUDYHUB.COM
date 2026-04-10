@@ -195,6 +195,11 @@ export default function TutorDirectory({ onNavigate }: Props) {
   const [bookingSubmitting, setBookingSubmitting] = useState(false)
   const [bookingSuccess, setBookingSuccess] = useState(false)
 
+  // Pago de clases existentes (tab Clases Disponibles)
+  const [paymentModal, setPaymentModal] = useState<{ class: TutorClass } | null>(null)
+  const [paymentProcessing, setPaymentProcessing] = useState(false)
+  const [enrollmentNotif, setEnrollmentNotif] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null)
+
   const fetchTutors = useCallback(async () => {
     setLoading(true)
     try {
@@ -314,6 +319,102 @@ export default function TutorDirectory({ onNavigate }: Props) {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [chatMessages])
 
+  // Manejo de redirects de pago (MP y PayPal)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const status = params.get('enrollment_status')
+    if (!status) return
+
+    // Limpiar params de URL inmediatamente
+    window.history.replaceState(null, '', window.location.pathname)
+
+    const enrollmentId = params.get('enrollment_id')
+    const orderId = params.get('order_id')
+
+    if (status === 'success' && enrollmentId) {
+      // MercadoPago aprobado — verificar estado
+      api.getEnrollmentStatus(enrollmentId)
+        .then((data: any) => {
+          if (data.payment_status === 'paid') {
+            setEnrollmentNotif({ type: 'success', message: 'Pago aprobado. Tu inscripcion fue confirmada.' })
+          } else {
+            setEnrollmentNotif({ type: 'info', message: 'Pago recibido, procesando confirmacion...' })
+          }
+        })
+        .catch(() => {
+          setEnrollmentNotif({ type: 'success', message: 'Pago aprobado por MercadoPago. Tu inscripcion sera confirmada pronto.' })
+        })
+    } else if (status === 'paypal_approved' && orderId && enrollmentId) {
+      // PayPal aprobado — capturar orden
+      setEnrollmentNotif({ type: 'info', message: 'Procesando pago con PayPal...' })
+      api.capturePaypalClassOrder(orderId)
+        .then((data: any) => {
+          if (data.success) {
+            setEnrollmentNotif({ type: 'success', message: 'Pago con PayPal confirmado. Tu inscripcion fue registrada.' })
+          } else {
+            setEnrollmentNotif({ type: 'error', message: 'No se pudo confirmar el pago con PayPal. Contacta a soporte.' })
+          }
+        })
+        .catch(() => {
+          setEnrollmentNotif({ type: 'error', message: 'Error al confirmar pago PayPal. Contacta a soporte.' })
+        })
+    } else if (status === 'failed') {
+      setEnrollmentNotif({ type: 'error', message: 'El pago no fue procesado. Intenta nuevamente.' })
+    } else if (status === 'cancelled') {
+      setEnrollmentNotif({ type: 'info', message: 'Pago cancelado. Puedes intentar nuevamente cuando quieras.' })
+    } else if (status === 'pending') {
+      setEnrollmentNotif({ type: 'info', message: 'Tu pago esta pendiente de confirmacion.' })
+    }
+  }, [])
+
+  // Handlers para pago de clases existentes
+  const handleEnrollFree = async (cls: TutorClass) => {
+    try {
+      await api.enrollInClass(cls.id, { apply_max_discount: false })
+      setEnrollmentNotif({ type: 'success', message: `Te inscribiste en "${cls.title}".` })
+      fetchClasses()
+    } catch (err: any) {
+      setEnrollmentNotif({ type: 'error', message: err.message || 'Error al inscribirse en la clase.' })
+    }
+  }
+
+  const handlePayWithMp = async (cls: TutorClass) => {
+    setPaymentProcessing(true)
+    try {
+      const data: any = await api.createMpClassCheckout(cls.id)
+      if (data.init_point) {
+        localStorage.setItem('conniku_enrollment_id', data.enrollment_id || '')
+        window.location.href = data.init_point
+      } else {
+        throw new Error('No se recibio URL de pago')
+      }
+    } catch (err: any) {
+      setPaymentModal(null)
+      setEnrollmentNotif({ type: 'error', message: err.message || 'Error al crear checkout de MercadoPago.' })
+    } finally {
+      setPaymentProcessing(false)
+    }
+  }
+
+  const handlePayWithPaypal = async (cls: TutorClass) => {
+    setPaymentProcessing(true)
+    try {
+      const data: any = await api.createPaypalClassOrder(cls.id)
+      if (data.approve_url) {
+        localStorage.setItem('conniku_enrollment_id', data.enrollment_id || '')
+        localStorage.setItem('conniku_paypal_order_id', data.order_id || '')
+        window.location.href = data.approve_url
+      } else {
+        throw new Error('No se recibio URL de aprobacion de PayPal')
+      }
+    } catch (err: any) {
+      setPaymentModal(null)
+      setEnrollmentNotif({ type: 'error', message: err.message || 'Error al crear orden de PayPal.' })
+    } finally {
+      setPaymentProcessing(false)
+    }
+  }
+
   // Format date in Spanish
   const formatClassDate = (dateStr: string) => {
     try {
@@ -398,6 +499,33 @@ export default function TutorDirectory({ onNavigate }: Props) {
 
   return (
     <div style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto' }}>
+
+      {/* ─── Notificacion de pago / inscripcion ─── */}
+      {enrollmentNotif && (
+        <div style={{
+          position: 'fixed', top: 20, right: 20, zIndex: 2000,
+          maxWidth: 400, padding: '14px 18px', borderRadius: 12,
+          background: enrollmentNotif.type === 'success' ? '#d1fae5'
+            : enrollmentNotif.type === 'error' ? '#fee2e2' : '#dbeafe',
+          color: enrollmentNotif.type === 'success' ? '#065f46'
+            : enrollmentNotif.type === 'error' ? '#991b1b' : '#1e3a8a',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          border: `1px solid ${enrollmentNotif.type === 'success' ? '#6ee7b7' : enrollmentNotif.type === 'error' ? '#fca5a5' : '#93c5fd'}`,
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>
+            {enrollmentNotif.type === 'success' ? '✓' : enrollmentNotif.type === 'error' ? '✗' : 'i'}
+          </span>
+          <span style={{ fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>{enrollmentNotif.message}</span>
+          <button
+            onClick={() => setEnrollmentNotif(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, opacity: 0.6, padding: 0, marginLeft: 'auto', flexShrink: 0, color: 'inherit' }}
+          >
+            x
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--text-primary)', margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -940,10 +1068,10 @@ export default function TutorDirectory({ onNavigate }: Props) {
                       )}
                     </div>
 
-                    {/* Price + Chat button */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 22, fontWeight: 700, color: '#d97706' }}>
-                        {formatPrice(cls.price)}
+                    {/* Price + Chat button + Inscribirse */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 20, fontWeight: 700, color: '#d97706', marginRight: 'auto' }}>
+                        {cls.price === 0 ? 'Gratis' : formatPrice(cls.price)}
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); openChat(cls.id) }}
@@ -952,7 +1080,7 @@ export default function TutorDirectory({ onNavigate }: Props) {
                           width: 36, height: 36, borderRadius: 10, border: '1.5px solid #f59e0b',
                           background: 'transparent', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          transition: 'background 0.15s',
+                          transition: 'background 0.15s', flexShrink: 0,
                         }}
                         onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,158,11,0.06)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
@@ -961,6 +1089,33 @@ export default function TutorDirectory({ onNavigate }: Props) {
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                         </svg>
                       </button>
+                      {!cls.is_enrolled && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (cls.price === 0) {
+                              handleEnrollFree(cls)
+                            } else {
+                              setPaymentModal({ class: cls })
+                            }
+                          }}
+                          style={{
+                            padding: '8px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+                            border: 'none', cursor: 'pointer', flexShrink: 0,
+                            background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                            color: '#fff', transition: 'opacity 0.15s',
+                          }}
+                          onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
+                          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                        >
+                          {cls.price === 0 ? 'Inscribirse' : 'Pagar'}
+                        </button>
+                      )}
+                      {cls.is_enrolled && (
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#059669', padding: '6px 12px', background: '#d1fae5', borderRadius: 8 }}>
+                          Inscrito
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1521,6 +1676,103 @@ export default function TutorDirectory({ onNavigate }: Props) {
                 style={{ flex: 1, padding: '11px 0', borderRadius: 10, fontSize: 14, fontWeight: 700, border: 'none', background: 'linear-gradient(135deg, #f59e0b, #d97706)', color: '#fff', cursor: ratingSaving ? 'not-allowed' : 'pointer', opacity: ratingSaving ? 0.7 : 1 }}>
                 {ratingSaving ? 'Guardando...' : 'Enviar calificación'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Modal de Pago de Clase ─── */}
+      {paymentModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 1500, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', background: 'rgba(0,0,0,0.55)', padding: 20,
+          }}
+          onClick={() => { if (!paymentProcessing) setPaymentModal(null) }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-primary)', borderRadius: 16, width: '100%', maxWidth: 420,
+              position: 'relative', overflow: 'hidden',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ height: 5, background: 'linear-gradient(90deg, #f59e0b, #d97706)' }} />
+            <div style={{ padding: '24px 28px' }}>
+              <button
+                onClick={() => { if (!paymentProcessing) setPaymentModal(null) }}
+                style={{
+                  position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: 8,
+                  background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                  cursor: paymentProcessing ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--text-secondary)', fontSize: 18, zIndex: 2,
+                }}
+              >x</button>
+
+              <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                Selecciona el metodo de pago
+              </h2>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 18px', lineHeight: 1.4 }}>
+                {paymentModal.class.title}
+              </p>
+
+              {/* Precio */}
+              <div style={{
+                padding: '12px 16px', borderRadius: 10, background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)', marginBottom: 20,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Precio de la clase</span>
+                <span style={{ fontSize: 18, fontWeight: 700, color: '#d97706' }}>
+                  {formatPrice(paymentModal.class.price)}
+                </span>
+              </div>
+
+              {/* Botones de pago */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button
+                  onClick={() => handlePayWithMp(paymentModal.class)}
+                  disabled={paymentProcessing}
+                  style={{
+                    width: '100%', padding: '13px 16px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                    border: 'none', cursor: paymentProcessing ? 'not-allowed' : 'pointer',
+                    background: paymentProcessing ? 'var(--border-color)' : 'linear-gradient(135deg, #009ee3, #0077b6)',
+                    color: paymentProcessing ? 'var(--text-tertiary)' : '#fff',
+                    transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    opacity: paymentProcessing ? 0.7 : 1,
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+                    <circle cx="20" cy="20" r="20" fill="#009ee3" />
+                    <text x="20" y="26" textAnchor="middle" fill="#fff" fontSize="14" fontWeight="bold">MP</text>
+                  </svg>
+                  {paymentProcessing ? 'Procesando...' : 'Pagar con MercadoPago (CLP)'}
+                </button>
+
+                <button
+                  onClick={() => handlePayWithPaypal(paymentModal.class)}
+                  disabled={paymentProcessing}
+                  style={{
+                    width: '100%', padding: '13px 16px', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                    border: '2px solid #003087', cursor: paymentProcessing ? 'not-allowed' : 'pointer',
+                    background: paymentProcessing ? 'var(--border-color)' : '#fff',
+                    color: paymentProcessing ? 'var(--text-tertiary)' : '#003087',
+                    transition: 'opacity 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                    opacity: paymentProcessing ? 0.7 : 1,
+                  }}
+                >
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M19.5 7.5C19.5 10.5 17.5 12 14.5 12H12.5L11 18H8L7.5 15H5.5L3.5 7.5H8.5C10.5 7.5 11 8.5 11 9.5C11 10 10.5 11 9.5 11.5C11 11.5 12 10.5 12 9C12 7.5 11 6.5 9 6.5H5L6 2H12C16 2 19.5 4 19.5 7.5Z" fill="#003087"/>
+                    <path d="M22 7C22 10 20 11.5 17 11.5H15L13.5 17.5H10.5L10 14.5H8.5L8 11.5H12.5C14.5 11.5 15.5 10.5 15.5 9C15.5 7.5 14.5 6.5 12.5 6.5H9L10 3H15C18.5 3 22 4.5 22 7Z" fill="#0070ba"/>
+                  </svg>
+                  {paymentProcessing ? 'Procesando...' : 'Pagar con PayPal (USD)'}
+                </button>
+              </div>
+
+              <p style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 14, textAlign: 'center' }}>
+                Pago seguro. Seras redirigido al proveedor de pago seleccionado.
+              </p>
             </div>
           </div>
         </div>

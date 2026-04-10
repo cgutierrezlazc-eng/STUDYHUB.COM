@@ -1866,6 +1866,23 @@ def retry_enrollment_payment(
     }
 
 
+@router.get("/enrollments/{enrollment_id}/status")
+def get_enrollment_status(
+    enrollment_id: str,
+    db: Session = Depends(get_db),
+):
+    """Obtener estado de pago de una inscripcion por su ID.
+    No requiere autenticacion adicional — el enrollment_id es suficientemente aleatorio."""
+    enrollment = db.query(TutorClassEnrollment).filter(TutorClassEnrollment.id == enrollment_id).first()
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Inscripcion no encontrada")
+    return {
+        "payment_status": enrollment.payment_status,
+        "class_id": enrollment.class_id,
+        "enrollment_id": enrollment.id,
+    }
+
+
 @router.put("/classes/{class_id}/confirm")
 def confirm_class_completed(
     class_id: str,

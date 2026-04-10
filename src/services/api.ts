@@ -890,6 +890,22 @@ export const api = {
   cancelPaypalSubscription: (subscription_id: string) =>
     request('/payments/paypal/cancel-subscription', { method: 'POST', body: JSON.stringify({ subscription_id }) }),
 
+  // ─── Tutor Class Payments ─────────────────────────────────
+  createMpClassCheckout: (classId: string, applyMaxDiscount?: boolean) =>
+    request('/payments/mp/create-class-checkout', {
+      method: 'POST',
+      body: JSON.stringify({ class_id: classId, apply_max_discount: applyMaxDiscount || false }),
+    }),
+  createPaypalClassOrder: (classId: string, applyMaxDiscount?: boolean) =>
+    request('/payments/paypal/create-class-order', {
+      method: 'POST',
+      body: JSON.stringify({ class_id: classId, apply_max_discount: applyMaxDiscount || false }),
+    }),
+  capturePaypalClassOrder: (orderId: string) =>
+    request(`/payments/paypal/capture-class-order/${orderId}`, { method: 'POST' }),
+  getEnrollmentStatus: (enrollmentId: string) =>
+    request(`/tutors/enrollments/${enrollmentId}/status`),
+
   // ─── Study Rooms ──────────────────────────────────────────
   createStudyRoom: (data: { name: string; description?: string; room_type?: string; subject?: string; max_participants?: number; pomodoro_work_min?: number; pomodoro_break_min?: number }) =>
     request('/study-rooms', { method: 'POST', body: JSON.stringify(data) }),
