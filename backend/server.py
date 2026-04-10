@@ -4,6 +4,7 @@ import uuid
 import shutil
 import logging
 import traceback
+import base64
 from pathlib import Path
 from typing import Optional
 
@@ -115,6 +116,59 @@ def _call_claude_chat(system: str, messages: list) -> str:
     except Exception as e:
         logger.error(f"Claude API error: {e}")
         return f"Lo siento, tuve un problema al responder. Puedes escribir a contacto@conniku.com para soporte. (Error: {str(e)[:80]})"
+
+
+# Supported image MIME types for Claude Vision API
+_VISION_MIME = {
+    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+    '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp',
+}
+
+def _get_project_images(project_id: str, meta: dict) -> list:
+    """Return list of (path, mime_type) for image docs in the project (max 5)."""
+    docs_dir = get_project_docs_dir(project_id)
+    images = []
+    for doc in meta.get("documents", []):
+        if doc.get("type") == "image":
+            name = doc.get("name", "")
+            ext = Path(name).suffix.lower()
+            mime = _VISION_MIME.get(ext)
+            if not mime:
+                continue  # Skip bmp/tiff — not supported by Claude Vision
+            p = docs_dir / name
+            if p.exists():
+                images.append((str(p), mime))
+    return images[:5]  # Limit to avoid token overflow
+
+def _call_claude_chat_with_images(system: str, user_prompt: str, image_files: list) -> str:
+    """Call Claude Vision API with text context + images embedded in the message."""
+    if not _claude_client:
+        return "Lo siento, el asistente no está disponible en este momento."
+    content = []
+    for img_path, mime in image_files:
+        try:
+            with open(img_path, 'rb') as f:
+                b64 = base64.b64encode(f.read()).decode()
+            content.append({
+                "type": "image",
+                "source": {"type": "base64", "media_type": mime, "data": b64},
+            })
+        except Exception as img_err:
+            logger.warning(f"No se pudo cargar imagen {img_path}: {img_err}")
+            continue
+    content.append({"type": "text", "text": user_prompt})
+    try:
+        resp = _claude_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=1024,
+            system=system,
+            messages=[{"role": "user", "content": content}],
+        )
+        return resp.content[0].text
+    except Exception as e:
+        logger.error(f"Claude Vision chat error: {e}")
+        # Fallback to text-only if Vision fails
+        return _call_claude_chat(system, [{"role": "user", "content": user_prompt}])
 
 
 # Global exception handler: ensures 500 errors return JSON with CORS headers
@@ -481,7 +535,13 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
         project_id, req.message, req.language, req.gender, req.language_skill,
         socratic=req.socratic
     )
-    response = _call_claude_chat(system, [{"role": "user", "content": user_prompt}])
+
+    # If the project has image documents, include them directly in the Vision call
+    image_files = _get_project_images(project_id, meta)
+    if image_files:
+        response = _call_claude_chat_with_images(system, user_prompt, image_files)
+    else:
+        response = _call_claude_chat(system, [{"role": "user", "content": user_prompt}])
 
     return {"response": response}
 
