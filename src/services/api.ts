@@ -170,7 +170,11 @@ export const api = {
       headers,
       body: formData,
     });
-    if (!res.ok) throw new Error(`Upload Error: ${res.status}`);
+    if (!res.ok) {
+      let msg = `Error ${res.status} al subir el archivo`;
+      try { const e = await res.json(); if (e.detail || e.message) msg = e.detail || e.message; } catch {}
+      throw new Error(msg);
+    }
     return res.json();
   },
 
