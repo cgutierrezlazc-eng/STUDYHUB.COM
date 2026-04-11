@@ -37,6 +37,131 @@ const ACCOUNT_TYPES = [
   { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
   { value: 'cuenta_rut', label: 'Cuenta RUT' },
 ]
+const POSITIONS_LIST = [
+  { value: 'gerente_general',      label: 'Gerente General / CEO' },
+  { value: 'gerente_tecnologia',   label: 'Gerente de Tecnología / CTO' },
+  { value: 'desarrollador_fullstack', label: 'Desarrollador/a Full Stack' },
+  { value: 'disenador_ux',         label: 'Diseñador/a UX/UI' },
+  { value: 'marketing_digital',    label: 'Responsable de Marketing Digital' },
+  { value: 'rrhh_analista',        label: 'Analista de RRHH / People & Culture' },
+  { value: 'ejecutivo_ventas',     label: 'Ejecutivo/a de Ventas' },
+  { value: 'soporte_cliente',      label: 'Ejecutivo/a de Soporte al Cliente' },
+  { value: 'contador',             label: 'Contador/a / Analista Financiero' },
+  { value: 'coordinador_proyectos',label: 'Coordinador/a de Proyectos' },
+  { value: 'otro',                 label: 'Otro (especificar)' },
+]
+const JOB_DESCRIPTIONS: Record<string, string> = {
+  gerente_general: `• Dirigir y representar legalmente a Conniku SpA ante organismos públicos, privados y reguladores.
+• Definir, comunicar y ejecutar la visión estratégica y objetivos corporativos de la empresa.
+• Supervisar y coordinar todas las áreas funcionales: Tecnología, Ventas, Marketing, Finanzas y RRHH.
+• Aprobar presupuestos anuales, estados financieros y planes de inversión.
+• Gestionar relaciones con inversores, clientes clave, alianzas estratégicas y proveedores principales.
+• Liderar procesos de fundraising, levantamiento de capital y expansión del negocio.
+• Asegurar el cumplimiento de todas las obligaciones legales, tributarias y laborales de la empresa.
+• Rendir cuentas periódicamente ante el directorio o junta de socios.
+• Tomar decisiones ejecutivas críticas orientadas al crecimiento sostenible de la empresa.
+• Fomentar la cultura organizacional, los valores y el bienestar de los colaboradores.
+• Reporta a: Directorio / Junta de Socios.`,
+
+  gerente_tecnologia: `• Definir y mantener la arquitectura tecnológica de la plataforma Conniku (frontend React/TypeScript, backend Python/FastAPI, nube Vercel/Render).
+• Liderar, contratar y desarrollar al equipo de ingeniería de software.
+• Establecer estándares de calidad de código: code reviews, CI/CD, testing automatizado.
+• Gestionar la hoja de ruta técnica (roadmap) alineada con los objetivos de negocio.
+• Garantizar la seguridad, escalabilidad y disponibilidad (99.9% uptime) de la plataforma.
+• Evaluar, seleccionar e integrar nuevas tecnologías y herramientas.
+• Gestionar infraestructura en la nube y relaciones con proveedores tecnológicos (Anthropic, Vercel, Render, etc.).
+• Coordinar sprints, planificación ágil y retrospectivas del equipo técnico.
+• Preparar informes técnicos y métricas de rendimiento para la gerencia general.
+• Reporta a: Gerente General / CEO.`,
+
+  desarrollador_fullstack: `• Desarrollar y mantener el frontend de la plataforma Conniku usando React 18, TypeScript y Vite.
+• Desarrollar y mantener el backend con Python, FastAPI y SQLAlchemy.
+• Implementar nuevas funcionalidades según el roadmap y requerimientos del producto.
+• Participar activamente en code reviews y definición de arquitectura técnica.
+• Corregir defectos (bugs), optimizar rendimiento y asegurar la calidad del código.
+• Colaborar con el equipo de diseño UX/UI para implementar interfaces de usuario.
+• Integrar APIs y servicios de terceros (pagos, email, notificaciones push, IA).
+• Documentar el código, APIs y procesos técnicos.
+• Asegurar la seguridad, escalabilidad y mantenibilidad del código producido.
+• Reporta a: Gerente de Tecnología / CTO.`,
+
+  disenador_ux: `• Diseñar interfaces de usuario para la plataforma Conniku (web y mobile) usando Figma u otras herramientas profesionales.
+• Crear wireframes, prototipos interactivos y flujos de usuario para nuevas funcionalidades.
+• Realizar investigación de usuarios (UX research), encuestas y pruebas de usabilidad.
+• Mantener y evolucionar el sistema de diseño (design system) y componentes reutilizables.
+• Colaborar con el equipo de desarrollo para asegurar fidelidad en la implementación del diseño.
+• Diseñar materiales gráficos para marketing digital, redes sociales y comunicación institucional.
+• Asegurar la accesibilidad (WCAG 2.1) y responsividad de todas las interfaces.
+• Participar en la definición del roadmap de producto y estrategia de experiencia de usuario.
+• Mantener actualizados los archivos de diseño y documentación visual de la empresa.
+• Reporta a: Gerente de Tecnología / CTO y/o Gerente General.`,
+
+  marketing_digital: `• Planificar, ejecutar y optimizar estrategias de marketing digital para Conniku.
+• Gestionar y hacer crecer la presencia en redes sociales (Instagram, LinkedIn, TikTok, X).
+• Crear y publicar contenido relevante, atractivo y alineado con la marca para el segmento estudiantil chileno.
+• Gestionar campañas de publicidad pagada (Google Ads, Meta Ads) optimizando el CPA y ROAS.
+• Ejecutar estrategias de SEO on-page y off-page para aumentar el tráfico orgánico.
+• Gestionar campañas de email marketing (Zoho Campaigns) con segmentación y A/B testing.
+• Analizar métricas de adquisición, retención y engagement usando Google Analytics y herramientas similares.
+• Colaborar con el equipo de ventas para generar y nutrir leads calificados.
+• Preparar reportes mensuales de performance de marketing con KPIs clave.
+• Reporta a: Gerente General / CEO.`,
+
+  rrhh_analista: `• Gestionar el ciclo completo del colaborador: reclutamiento, onboarding, desarrollo y offboarding.
+• Procesar remuneraciones mensuales, retenciones previsionales y documentación laboral según la normativa vigente.
+• Elaborar contratos de trabajo, finiquitos, cartas de amonestación y documentos legales conforme al Código del Trabajo.
+• Gestionar y mantener actualizada la plataforma ERC (Employee Records Center) de Conniku.
+• Coordinar procesos de onboarding para nuevos colaboradores, incluyendo inducción y entrega de materiales.
+• Administrar solicitudes de licencias médicas, vacaciones, permisos y ausentismo.
+• Asegurar el cumplimiento de la normativa laboral chilena: Dirección del Trabajo (DT), Previred, SII y Mutual de Seguridad.
+• Gestionar relaciones con organismos reguladores laborales y representar a la empresa en instancias de mediación.
+• Desarrollar iniciativas de clima laboral, bienestar y cultura organizacional.
+• Reporta a: Gerente General / CEO.`,
+
+  ejecutivo_ventas: `• Prospectar, contactar y captar nuevos clientes (instituciones educativas, universidades, empresas).
+• Gestionar el embudo de ventas completo en el CRM desde prospecto hasta cierre.
+• Realizar demostraciones de la plataforma Conniku a potenciales clientes de forma presencial y virtual.
+• Negociar condiciones comerciales, elaborar propuestas y cerrar contratos de servicio.
+• Mantener relaciones con clientes actuales, asegurar renovaciones y detectar oportunidades de upsell.
+• Alcanzar las cuotas mensuales y trimestrales de ventas establecidas por la gerencia.
+• Participar en eventos, ferias y encuentros del sector educativo chileno.
+• Reportar métricas de ventas y pipeline semanalmente a la gerencia.
+• Colaborar con el equipo de marketing en estrategias de generación de demanda.
+• Reporta a: Gerente General / CEO.`,
+
+  soporte_cliente: `• Atender y resolver consultas, incidencias y requerimientos de usuarios vía email, chat y teléfono dentro de los SLAs definidos.
+• Gestionar y dar seguimiento a tickets de soporte hasta su resolución completa.
+• Documentar bugs, mejoras y requerimientos funcionales para el equipo de tecnología.
+• Capacitar y acompañar a nuevos usuarios e instituciones en el uso de la plataforma Conniku.
+• Elaborar y mantener actualizados FAQs, guías de usuario y materiales de autoservicio.
+• Recopilar y sistematizar feedback de usuarios para el equipo de producto.
+• Colaborar con el equipo de onboarding en la incorporación de nuevas instituciones.
+• Identificar proactivamente usuarios en riesgo de churn y coordinar acciones de retención.
+• Mantener indicadores de satisfacción del cliente (NPS, CSAT) dentro de los objetivos establecidos.
+• Reporta a: Gerente General / CEO o Coordinador/a de Proyectos.`,
+
+  contador: `• Llevar la contabilidad completa de Conniku SpA conforme al Código Tributario y normativas del SII.
+• Preparar y presentar declaraciones mensuales de IVA (Formulario 29) y declaración anual de Renta (Formulario 22).
+• Controlar y registrar ingresos, egresos, flujo de caja y conciliaciones bancarias.
+• Elaborar estados financieros mensuales: balance general, estado de resultados y variación de capital.
+• Gestionar la emisión de facturas electrónicas (DTE) y documentos tributarios a través del SII.
+• Preparar y procesar la liquidación de sueldos, cotizaciones previsionales (AFP, Salud, AFC) y pago vía Previred.
+• Gestionar cuentas por pagar y por cobrar, asegurando la oportuna recuperación de créditos.
+• Coordinar y apoyar auditorías internas y externas.
+• Mantener actualizada y ordenada la documentación contable y tributaria de la empresa.
+• Reporta a: Gerente General / CEO.`,
+
+  coordinador_proyectos: `• Planificar, coordinar y supervisar proyectos internos de Conniku desde su inicio hasta el cierre.
+• Elaborar y mantener cronogramas de proyecto con hitos, entregables y responsables definidos.
+• Facilitar la comunicación y alineación entre equipos: tecnología, marketing, ventas y RRHH.
+• Aplicar metodologías ágiles (Scrum, Kanban) para gestión eficiente de proyectos.
+• Identificar, analizar y gestionar riesgos y obstáculos que puedan afectar el avance de los proyectos.
+• Preparar reportes periódicos de avance, estado de proyectos y KPIs para la gerencia.
+• Coordinar con proveedores, partners y clientes externos para el cumplimiento de acuerdos.
+• Asegurar que los proyectos se entreguen dentro del alcance, tiempo y presupuesto acordados.
+• Documentar procesos, lecciones aprendidas y mejores prácticas del equipo.
+• Reporta a: Gerente General / CEO.`,
+}
 // ─── Formateador RUT Chile ──────────────────────────────────────
 function formatRUT(raw: string): string {
   // Limpia todo excepto dígitos y K
@@ -174,7 +299,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── Generador de contrato HTML imprimible ───────────────────────
+// ─── Generador de contrato HTML imprimible (versión completa) ────
 function buildContractHTML(form: any, jobDescription: string): string {
   const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
   const contractLabel = CONTRACT_TYPES.find(c => c.value === form.contractType)?.label || form.contractType
@@ -194,49 +319,51 @@ function buildContractHTML(form: any, jobDescription: string): string {
   <title>Contrato Individual de Trabajo — ${form.firstName} ${form.lastName}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; background: #fff; padding: 40px 60px; line-height: 1.6; }
-    h1 { font-size: 16pt; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
-    .subtitle { text-align: center; font-size: 11pt; margin-bottom: 30px; color: #444; }
-    .section { margin-bottom: 18px; }
-    .section-title { font-weight: bold; text-transform: uppercase; font-size: 11pt; margin-bottom: 6px; border-bottom: 1px solid #000; padding-bottom: 3px; }
-    .clause { margin-bottom: 16px; }
-    .clause strong { font-weight: bold; }
-    table.data { width: 100%; border-collapse: collapse; margin: 10px 0; }
-    table.data td { padding: 5px 8px; border: 1px solid #ccc; font-size: 11pt; vertical-align: top; }
-    table.data td:first-child { font-weight: bold; width: 40%; background: #f9f9f9; }
-    .signatures { margin-top: 60px; display: flex; justify-content: space-between; gap: 40px; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000; background: #fff; padding: 36px 56px; line-height: 1.65; }
+    h1 { font-size: 15pt; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+    .subtitle { text-align: center; font-size: 10.5pt; margin-bottom: 6px; color: #333; }
+    .subtitle2 { text-align: center; font-size: 10pt; margin-bottom: 28px; color: #666; }
+    .clause { margin-bottom: 14px; text-align: justify; }
+    .clause-title { font-weight: bold; text-transform: uppercase; font-size: 10.5pt; margin-bottom: 5px; border-bottom: 1px solid #999; padding-bottom: 2px; margin-top: 18px; }
+    table.data { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
+    table.data td { padding: 5px 8px; border: 1px solid #bbb; font-size: 10.5pt; vertical-align: top; }
+    table.data td:first-child { font-weight: bold; width: 38%; background: #f7f7f7; }
+    .jd-box { background: #f5f5f5; border-left: 3px solid #555; padding: 8px 12px; margin: 6px 0 10px; font-size: 10.5pt; white-space: pre-wrap; line-height: 1.55; }
+    .info-box { background: #f0f4ff; border: 1px solid #c7d2fe; border-radius: 4px; padding: 8px 12px; margin: 6px 0; font-size: 10pt; }
+    .warn-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 4px; padding: 8px 12px; margin: 6px 0; font-size: 10pt; }
+    .signatures { margin-top: 50px; display: flex; justify-content: space-between; gap: 40px; }
     .sig-block { flex: 1; text-align: center; }
-    .sig-line { border-top: 1px solid #000; margin-bottom: 6px; margin-top: 60px; }
+    .sig-line { border-top: 1px solid #000; padding-top: 6px; margin-top: 55px; }
     .sig-name { font-weight: bold; font-size: 11pt; }
-    .sig-role { font-size: 10pt; color: #555; }
-    .sig-link { margin-top: 16px; font-size: 10pt; color: #555; }
-    .sig-link a { color: #1a56db; }
-    .footer-note { margin-top: 30px; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
-    .jd-box { background: #f5f5f5; border-left: 3px solid #333; padding: 10px 14px; margin: 8px 0; font-size: 11pt; white-space: pre-wrap; }
-    @media print { body { padding: 20px 40px; } }
+    .sig-role { font-size: 10pt; color: #444; }
+    .fea-block { margin-top: 22px; text-align: center; font-size: 10pt; color: #555; }
+    .fea-block a { color: #1a56db; }
+    .footer-note { margin-top: 28px; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 8px; text-align: center; }
+    @media print { body { padding: 18px 36px; } }
   </style>
 </head>
 <body>
+
   <h1>Contrato Individual de Trabajo</h1>
-  <p class="subtitle">Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</p>
+  <p class="subtitle">Conniku SpA · RUT 78.395.702-7</p>
+  <p class="subtitle2">Antofagasta, Región de Antofagasta, Chile · contacto@conniku.com · conniku.com</p>
 
   <div class="clause">
-    En Antofagasta, a ${today}, entre:
+    En Antofagasta, a ${today}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), representada por su Gerente General, y <strong>${form.firstName} ${form.lastName}</strong>, RUT ${form.rut} (en adelante «el Trabajador»), se suscribe el siguiente Contrato Individual de Trabajo, al amparo del Código del Trabajo de la República de Chile y demás normas legales vigentes.
   </div>
 
   <div class="section">
-    <div class="section-title">Empleador</div>
+    <div class="clause-title">Antecedentes de las Partes</div>
+    <strong>Empleador:</strong>
     <table class="data">
       <tr><td>Razón Social</td><td>Conniku SpA</td></tr>
       <tr><td>RUT</td><td>78.395.702-7</td></tr>
       <tr><td>Giro</td><td>Desarrollo y Comercialización de Software (631200)</td></tr>
       <tr><td>Domicilio</td><td>Antofagasta, Región de Antofagasta, Chile</td></tr>
+      <tr><td>Email</td><td>contacto@conniku.com</td></tr>
       <tr><td>Representante Legal</td><td>Gerente General — Conniku SpA</td></tr>
     </table>
-  </div>
-
-  <div class="section">
-    <div class="section-title">Trabajador</div>
+    <strong>Trabajador:</strong>
     <table class="data">
       <tr><td>Nombre Completo</td><td>${form.firstName} ${form.lastName}</td></tr>
       <tr><td>RUT</td><td>${form.rut}</td></tr>
@@ -248,88 +375,185 @@ function buildContractHTML(form: any, jobDescription: string): string {
     </table>
   </div>
 
-  <div class="clause"><strong>PRIMERO — NATURALEZA DE LOS SERVICIOS Y DESCRIPCIÓN DEL CARGO</strong></div>
+  <div class="clause-title">Primero — Naturaleza de los Servicios y Descripción del Cargo</div>
   <div class="clause">
-    El trabajador se desempeñará en el cargo de <strong>${form.position}</strong>, perteneciente al área de <strong>${form.department}</strong>.
-    Sus funciones principales son las siguientes:
+    El Trabajador se desempeñará en el cargo de <strong>${form.position}</strong>, perteneciente al área de <strong>${form.department}</strong> de Conniku SpA. Sus funciones, responsabilidades y atribuciones son las siguientes:
   </div>
   <div class="jd-box">${jobDescription || '(Sin descripción de cargo especificada)'}</div>
-
-  <div class="clause"><strong>SEGUNDO — LUGAR DE TRABAJO</strong></div>
   <div class="clause">
-    El trabajador prestará sus servicios en las dependencias de Conniku SpA, ubicadas en Antofagasta, Región de Antofagasta, o en el lugar que la empresa determine, incluyendo modalidad de teletrabajo cuando corresponda.
+    El Empleador podrá encomendar al Trabajador otras funciones afines a su cargo, sin que ello implique menoscabo ni disminución de la remuneración, en conformidad con el artículo 12 del Código del Trabajo.
   </div>
 
-  <div class="clause"><strong>TERCERO — DURACIÓN DEL CONTRATO</strong></div>
+  <div class="clause-title">Segundo — Lugar de Trabajo</div>
+  <div class="clause">
+    El Trabajador prestará sus servicios en las dependencias de Conniku SpA, ubicadas en Antofagasta, Región de Antofagasta, Chile, o en el lugar que la empresa determine según las necesidades del negocio. Las partes podrán acordar modalidad de teletrabajo conforme a la Ley 21.220 sobre Trabajo a Distancia y Teletrabajo, lo que deberá constar en anexo escrito suscrito por ambas partes.
+  </div>
+
+  <div class="clause-title">Tercero — Duración del Contrato</div>
   <div class="clause">${duracionClause}</div>
-
-  <div class="clause"><strong>CUARTO — JORNADA DE TRABAJO</strong></div>
-  <div class="clause">
-    La jornada de trabajo será de <strong>${form.weeklyHours} horas semanales</strong> — modalidad: <strong>${scheduleLabel}</strong>, distribuidas de lunes a viernes, en conformidad con el artículo 22 del Código del Trabajo. Los horarios específicos serán coordinados con el empleador.
+  <div class="info-box">
+    <strong>Art. 9 CT:</strong> El contrato deberá quedar firmado dentro de los 15 días corridos siguientes a la incorporación del Trabajador. Ante incumplimiento imputable al Empleador, el Trabajador podrá solicitar a la Inspección del Trabajo que requiera la firma correspondiente.
   </div>
 
-  <div class="clause"><strong>QUINTO — REMUNERACIÓN</strong></div>
-  <div class="clause">El trabajador percibirá la siguiente remuneración mensual:</div>
+  <div class="clause-title">Cuarto — Jornada de Trabajo</div>
+  <div class="clause">
+    La jornada de trabajo ordinaria será de <strong>${form.weeklyHours} horas semanales</strong> en modalidad <strong>${scheduleLabel}</strong>, distribuidas de lunes a viernes, en conformidad con el artículo 22 del Código del Trabajo. Los horarios de entrada, salida y colación serán coordinados con el Empleador y consignados en el Reglamento Interno de Orden, Higiene y Seguridad (RIOHS). El Empleador podrá modificar la distribución de la jornada conforme al artículo 12 del CT, con aviso previo de 30 días.
+  </div>
+
+  <div class="clause-title">Quinto — Horas Extraordinarias</div>
+  <div class="clause">
+    Las horas extraordinarias son aquellas que exceden la jornada ordinaria pactada. Solo se realizarán en situaciones temporales derivadas de necesidades o situaciones imprevistas de la empresa, de conformidad con los artículos 30 al 32 del Código del Trabajo. Deberán ser pactadas por escrito y el recargo mínimo será del 50% sobre el valor de la hora ordinaria. No se podrán pactar más de 2 horas extraordinarias por día. El registro y control de asistencia se llevará según lo establece el artículo 33 del CT.
+  </div>
+
+  <div class="clause-title">Sexto — Remuneración, Cotizaciones y Política de Pagos</div>
+  <div class="clause">El Trabajador percibirá la siguiente remuneración mensual bruta:</div>
   <table class="data">
-    <tr><td>Sueldo Base Bruto</td><td>${fmtMoney(Number(form.grossSalary))} (Art. 41 y 44 CT)</td></tr>
+    <tr><td>Sueldo Base Bruto</td><td><strong>${fmtMoney(Number(form.grossSalary))}</strong> mensuales (Art. 41 y 44 CT — no inferior al Ingreso Mínimo Mensual vigente)</td></tr>
     ${Number(form.colacion) > 0 ? `<tr><td>Asignación de Colación (no imponible)</td><td>${fmtMoney(Number(form.colacion))}</td></tr>` : ''}
     ${Number(form.movilizacion) > 0 ? `<tr><td>Asignación de Movilización (no imponible)</td><td>${fmtMoney(Number(form.movilizacion))}</td></tr>` : ''}
-    <tr><td>AFP</td><td>${afpLabel} (Ley 3.500)</td></tr>
-    <tr><td>Previsión de Salud</td><td>${healthLabel}</td></tr>
-    <tr><td>Seguro de Desempleo (AFC)</td><td>${form.afcActive ? 'Sí — Ley 19.728' : 'No aplica'}</td></tr>
+    <tr><td>AFP</td><td>${afpLabel} — cotización obligatoria (Ley 3.500)</td></tr>
+    <tr><td>Previsión de Salud</td><td>${healthLabel} — cotización legal 7% imponible</td></tr>
+    <tr><td>Seguro de Cesantía (AFC)</td><td>${form.afcActive ? 'Sí — cotización trabajador 0,6% + empleador 2,4% (Ley 19.728)' : 'No aplica'}</td></tr>
     <tr><td>Forma de Pago</td><td>${form.bankName} · ${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || ''} N° ${form.bankAccountNumber || '—'}</td></tr>
   </table>
-  <div class="clause" style="font-size:10pt; color:#555; margin-top:4px;">
-    El empleador retendrá y enterará las cotizaciones previsionales y de salud conforme a la legislación vigente.
-  </div>
-
-  <div class="clause"><strong>SEXTO — OBLIGACIONES DEL TRABAJADOR</strong></div>
   <div class="clause">
-    El trabajador se obliga a: (a) desempeñar sus funciones con eficiencia y dedicación; (b) respetar el Reglamento Interno de la empresa; (c) guardar absoluta reserva sobre información confidencial y datos de clientes; (d) no competir deslealmente durante la vigencia del contrato; (e) cuidar los bienes e infraestructura tecnológica de la empresa.
+    <strong>Cierre de mes:</strong> Las remuneraciones se calcularán considerando el cierre del período el <strong>día 22 de cada mes</strong>. Los días trabajados entre el 23 y el último día del mes se arrastrarán al período siguiente para efectos del cálculo. <strong>Fecha de pago:</strong> El pago se realizará el <strong>último día hábil de cada mes</strong>, mediante depósito en la cuenta bancaria indicada, conforme al artículo 55 del Código del Trabajo.
   </div>
-
-  <div class="clause"><strong>SÉPTIMO — PROPIEDAD INTELECTUAL</strong></div>
   <div class="clause">
-    Todos los desarrollos, creaciones, código fuente, diseños, algoritmos y productos generados por el trabajador en el ejercicio de sus funciones serán de propiedad exclusiva de Conniku SpA, en conformidad con la Ley 17.336 sobre Propiedad Intelectual.
+    <strong>Anticipo de remuneración (Art. 58 CT):</strong> El Trabajador podrá solicitar un anticipo de hasta el <strong>40% de su sueldo bruto</strong>, previa solicitud escrita al Empleador. Esta facultad estará disponible desde el segundo mes de contrato. El anticipo será descontado íntegramente en la liquidación del mes correspondiente.
   </div>
-
-  <div class="clause"><strong>OCTAVO — NORMAS ADICIONALES</strong></div>
   <div class="clause">
-    El presente contrato se rige por el Código del Trabajo de Chile y demás normas legales vigentes. Cualquier modificación deberá constar por escrito y ser suscrita por ambas partes. En caso de controversia, las partes se someten a la jurisdicción de los Juzgados de Letras del Trabajo de Antofagasta.
+    <strong>Cotizaciones previsionales:</strong> El Empleador enterará las cotizaciones obligatorias de AFP, Salud y AFC a través de la plataforma <strong>Previred</strong> (previred.com), dentro del plazo legal establecido (hasta el 10° día hábil del mes siguiente al devengo). El Trabajador recibirá copia de la liquidación de sueldo mensual debidamente firmada por el Empleador.
+  </div>
+  <div class="clause">
+    <strong>Descuentos legales (Art. 58 CT):</strong> Solo se podrán efectuar descuentos de la remuneración para el pago de cotizaciones previsionales, impuesto de segunda categoría, pensión alimenticia judicial, cuotas sindicales y demás obligaciones legales. Cualquier otro descuento requiere autorización escrita del Trabajador.
   </div>
 
-  <div class="clause" style="margin-top:24px;">
-    En prueba de conformidad, las partes firman el presente contrato en dos ejemplares del mismo tenor, en la ciudad de Antofagasta, a ${today}.
+  <div class="clause-title">Séptimo — Vacaciones y Feriado Anual</div>
+  <div class="clause">
+    El Trabajador tendrá derecho a un feriado anual pagado de <strong>15 días hábiles</strong>, después de cada año de servicio continuo, según lo establece el artículo 67 del Código del Trabajo. Los feriados progresivos se aplicarán conforme al artículo 68 del CT (un día adicional por cada 3 años de servicio con el mismo empleador, desde el décimo año). El feriado deberá hacerse efectivo dentro de los 6 meses siguientes al período en que se generó, pudiendo acumularse hasta 2 períodos de común acuerdo. No podrá compensarse en dinero, salvo en caso de término de contrato.
+  </div>
+
+  <div class="clause-title">Octavo — Licencias Médicas y Permisos</div>
+  <div class="clause">
+    El Trabajador tendrá derecho a licencia médica por enfermedad común, maternidad/paternidad y demás causas contempladas en la legislación vigente. Las licencias médicas deberán presentarse al Empleador dentro de 2 días hábiles de emitidas y ser tramitadas conforme al procedimiento COMPIN/FONASA/ISAPRE. Durante la vigencia de la licencia médica, el Trabajador percibirá subsidio según las normas del DFL N°44 de 1978. Los permisos sin goce de sueldo podrán acordarse por escrito entre ambas partes.
+  </div>
+
+  <div class="clause-title">Noveno — Prevención y Sanción del Acoso Laboral y Sexual</div>
+  <div class="clause">
+    Conniku SpA declara su compromiso con el respeto a la dignidad de todos sus colaboradores. Se prohíbe expresamente toda conducta de acoso laboral (Ley 21.643, modificatoria del Art. 2 CT) y de acoso sexual (Ley 20.005). Ante cualquier denuncia, el Empleador deberá iniciar el procedimiento de investigación interna dentro de 5 días, guardar confidencialidad, proteger al denunciante y adoptar las medidas correctivas que correspondan. Las sanciones para el infractor podrán incluir desde amonestación escrita hasta la aplicación del artículo 160 N°1 del CT (despido sin indemnización). El canal de denuncia confidencial es: <strong>contacto@conniku.com</strong>. El Trabajador podrá, adicionalmente, presentar denuncia ante la Inspección del Trabajo (www.dt.gob.cl / 600 450 4000).
+  </div>
+
+  <div class="clause-title">Décimo — Seguridad y Salud Ocupacional</div>
+  <div class="clause">
+    El Empleador cumplirá con las obligaciones de seguridad y prevención de riesgos laborales establecidas en la Ley 16.744 sobre Accidentes del Trabajo y Enfermedades Profesionales, el Decreto Supremo N°40 (Reglamento sobre Prevención de Riesgos) y demás normas del Instituto de Seguridad Laboral (ISL) o Mutual de Seguridad correspondiente. El Trabajador deberá cumplir las instrucciones de seguridad, usar los elementos de protección personal (EPP) provistos, y reportar cualquier condición de riesgo en forma inmediata. En caso de accidente del trabajo, el Empleador deberá informar a la Mutual de Seguridad dentro de las 24 horas.
+  </div>
+
+  <div class="clause-title">Undécimo — Obligaciones del Trabajador</div>
+  <div class="clause">
+    El Trabajador se obliga a:
+    (a) Desempeñar sus funciones con eficiencia, diligencia, honestidad y dedicación profesional;
+    (b) Respetar y cumplir el Reglamento Interno de Orden, Higiene y Seguridad (RIOHS) de la empresa;
+    (c) Guardar absoluta reserva y confidencialidad sobre información estratégica, técnica, comercial, financiera y de clientes de Conniku SpA, incluso con posterioridad al término del contrato;
+    (d) Reportar al Empleador cualquier situación de conflicto de interés en forma inmediata y transparente;
+    (e) Cuidar los bienes, equipos, sistemas e infraestructura tecnológica de la empresa;
+    (f) No divulgar, reproducir ni compartir sin autorización información de la empresa;
+    (g) Dar aviso oportuno de cualquier inasistencia y presentar los justificantes legales correspondientes;
+    (h) No realizar actividades remuneradas que sean incompatibles o competan directamente con el giro de Conniku SpA durante la vigencia del presente contrato;
+    (i) Cumplir con todas las disposiciones legales aplicables en el desempeño de sus funciones.
+  </div>
+
+  <div class="clause-title">Duodécimo — Propiedad Intelectual e Industrial</div>
+  <div class="clause">
+    Todo el software, código fuente, algoritmos, diseños, interfaces, documentación, bases de datos, procesos, metodologías, inventos, mejoras y creaciones intelectuales o industriales generados por el Trabajador en el ejercicio de sus funciones o con recursos de la empresa serán de propiedad exclusiva y permanente de <strong>Conniku SpA</strong>, en conformidad con la Ley 17.336 sobre Propiedad Intelectual y el artículo 19 N°25 de la Constitución Política de la República. El Trabajador cede desde ya, a título universal y gratuito, todos los derechos patrimoniales sobre dichas creaciones al Empleador. Esta cesión subsiste indefinidamente con posterioridad al término del contrato.
+  </div>
+
+  <div class="clause-title">Decimotercero — Confidencialidad y Protección de Datos Personales</div>
+  <div class="clause">
+    El Trabajador declara conocer y comprometerse a cumplir la Ley 19.628 sobre Protección de la Vida Privada (y su modificatoria Ley 21.096), el Reglamento General de Protección de Datos de la UE (GDPR — aplicable a operaciones internacionales) y la Política de Privacidad publicada en <strong>conniku.com/privacy</strong>. El Trabajador solo podrá acceder, tratar y utilizar datos personales de usuarios, clientes y colaboradores en la medida estrictamente necesaria para el cumplimiento de sus funciones. Queda prohibido transferir, copiar, exportar o divulgar datos personales sin autorización expresa del Empleador. El incumplimiento de esta cláusula podrá dar lugar a responsabilidad civil y penal, además de las consecuencias laborales aplicables.
+  </div>
+
+  <div class="clause-title">Decimocuarto — Uso de Tecnología, Sistemas y Redes Sociales</div>
+  <div class="clause">
+    Los equipos, sistemas, plataformas, correos electrónicos y cuentas corporativas provistas por el Empleador son de uso exclusivamente laboral. El Trabajador no deberá instalar software no autorizado, acceder a sistemas ajenos a sus funciones ni utilizar los recursos tecnológicos de la empresa para fines personales, ilícitos o contrarios a las políticas internas. Queda prohibido publicar información confidencial, crítica o denigratoria de Conniku SpA, sus productos, clientes o colaboradores en redes sociales u otros medios públicos, sin perjuicio del ejercicio legítimo del derecho a la libre expresión. El Empleador podrá monitorear el uso de los recursos tecnológicos corporativos en los términos autorizados por la legislación vigente, previa comunicación al Trabajador.
+  </div>
+
+  <div class="clause-title">Decimoquinto — No Competencia y Exclusividad</div>
+  <div class="clause">
+    Durante la vigencia del presente contrato, el Trabajador se compromete a no prestar servicios remunerados —ya sea como empleado, asesor, contratista o en cualquier otra calidad— a empresas que compitan directamente con el giro de Conniku SpA (plataformas de tecnología educativa, redes sociales estudiantiles o sistemas ERP/HRMS dirigidos al segmento educativo), salvo autorización escrita previa del Empleador. Esta restricción es razonable en su alcance y se sustenta en la necesidad de proteger el legítimo interés comercial de la empresa y la confidencialidad de su tecnología.
+  </div>
+
+  <div class="clause-title">Decimosexto — Término del Contrato</div>
+  <div class="clause">
+    El presente contrato podrá terminar por las causales establecidas en los artículos 159, 160 y 161 del Código del Trabajo:
+    (a) <strong>Mutuo acuerdo</strong> (Art. 159 N°1): las partes pueden convenir el término en cualquier momento, debiendo constar por escrito (finiquito);
+    (b) <strong>Renuncia voluntaria</strong> (Art. 159 N°2): el Trabajador deberá dar aviso con al menos 30 días de anticipación;
+    (c) <strong>Vencimiento del plazo</strong> (Art. 159 N°4): aplica para contratos a plazo fijo;
+    (d) <strong>Necesidades de la empresa</strong> (Art. 161): el Empleador deberá avisar con 30 días de anticipación o pagar indemnización sustitutiva, más la indemnización por años de servicio (Art. 163 CT);
+    (e) <strong>Despido disciplinario</strong> (Art. 160): no genera derecho a indemnización en los casos taxativos señalados por la ley.
+    En todos los casos, el Empleador suscribirá el finiquito correspondiente dentro de los plazos legales. Ante cualquier irregularidad, el Trabajador podrá concurrir a la Inspección del Trabajo de Antofagasta o interponer demanda ante el Juzgado de Letras del Trabajo.
+  </div>
+
+  <div class="clause-title">Decimoséptimo — Términos y Condiciones Generales</div>
+  <div class="clause">
+    Las partes declaran que el presente contrato recoge fielmente los acuerdos alcanzados y no existen otros pactos, verbales o escritos, que lo modifiquen, salvo los que puedan establecerse mediante anexos suscritos. Cualquier modificación al contrato deberá constar por escrito y ser firmada por ambas partes (Art. 11 CT). El Trabajador declara haber recibido copia del Reglamento Interno de Orden, Higiene y Seguridad (RIOHS) y del Código de Ética de la empresa, comprometiéndose a su cumplimiento. Las partes se obligan a comportarse de buena fe tanto en la ejecución como en la terminación de este contrato (Art. 1546 Código Civil). Los Términos y Condiciones de uso de la plataforma Conniku, publicados en <strong>conniku.com/terms</strong>, son parte integrante de las políticas de la empresa y el Trabajador declara haberlos leído y aceptado en lo que le aplica.
+  </div>
+
+  <div class="clause-title">Decimoctavo — Dirección del Trabajo e Información Legal</div>
+  <div class="info-box">
+    El Trabajador tiene derecho a obtener información, asesoría y presentar denuncias ante la <strong>Dirección del Trabajo</strong>:<br>
+    — Sitio web: <strong>www.dt.gob.cl</strong><br>
+    — Call center: <strong>600 450 4000</strong><br>
+    — Inspección Provincial del Trabajo de Antofagasta: Av. Argentina 2061, Antofagasta.<br>
+    El Empleador está obligado a pagar las cotizaciones previsionales a través de <strong>Previred (previred.com)</strong> antes del 10° día hábil del mes siguiente. El Trabajador puede verificar el cumplimiento de sus cotizaciones en la AFP correspondiente y en la Superintendencia de Pensiones (spensiones.cl).
+  </div>
+
+  <div class="clause-title">Decimonoveno — Resolución de Conflictos y Jurisdicción</div>
+  <div class="clause">
+    Ante cualquier controversia derivada del presente contrato, las partes procurarán resolverla directamente o mediante mediación ante la Inspección del Trabajo de Antofagasta. En caso de no arribar a acuerdo, la controversia será resuelta por los <strong>Juzgados de Letras del Trabajo de Antofagasta</strong>, conforme al procedimiento establecido en el Código del Trabajo (Arts. 420 y ss.). La ley aplicable es la legislación laboral de la República de Chile.
+  </div>
+
+  <div class="warn-box" style="margin-top:20px;">
+    <strong>Advertencia legal:</strong> Ambas partes declaran haber leído íntegramente el presente instrumento, comprendido su alcance y efectos jurídicos, y suscribirlo libre y voluntariamente, sin apremio ni coacción de ninguna especie. El trabajador tiene derecho a solicitar asesoría jurídica gratuita en la Corporación de Asistencia Judicial (www.cajantofagasta.cl).
+  </div>
+
+  <div class="clause" style="margin-top:22px; text-align:center;">
+    En prueba de conformidad con todo lo expresado, las partes firman el presente Contrato Individual de Trabajo en <strong>dos ejemplares del mismo tenor</strong>, quedando uno en poder de cada parte, en la ciudad de Antofagasta, a ${today}.
   </div>
 
   <div class="signatures">
     <div class="sig-block">
-      <div class="sig-line"></div>
-      <div class="sig-name">Conniku SpA</div>
-      <div class="sig-role">RUT 78.395.702-7 — Empleador</div>
-      <div class="sig-role">Representante Legal</div>
+      <div class="sig-line">
+        <div class="sig-name">Conniku SpA</div>
+        <div class="sig-role">RUT 78.395.702-7</div>
+        <div class="sig-role">Empleador — Representante Legal</div>
+        <div class="sig-role">Antofagasta, Chile</div>
+      </div>
     </div>
     <div class="sig-block">
-      <div class="sig-line"></div>
-      <div class="sig-name">${form.firstName} ${form.lastName}</div>
-      <div class="sig-role">RUT ${form.rut} — Trabajador</div>
-      <div class="sig-role">${form.position}</div>
+      <div class="sig-line">
+        <div class="sig-name">${form.firstName} ${form.lastName}</div>
+        <div class="sig-role">RUT ${form.rut}</div>
+        <div class="sig-role">Trabajador/a — ${form.position}</div>
+        <div class="sig-role">${form.address || 'Antofagasta, Chile'}</div>
+      </div>
     </div>
   </div>
 
-  <div class="sig-link" style="text-align:center; margin-top:28px;">
-    ✍️ <strong>Firma Electrónica Avanzada (FEA):</strong>
-    <a href="https://www.acepta.com" target="_blank">Acepta.com</a> ·
-    <a href="https://www.e-certchile.cl" target="_blank">E-CertChile</a> ·
-    <a href="https://www.signer.cl" target="_blank">Signer.cl</a> ·
+  <div class="fea-block">
+    ✍️ <strong>Firma Electrónica Avanzada (FEA) habilitada conforme a Ley 19.799:</strong><br>
+    <a href="https://www.acepta.com" target="_blank">Acepta.com</a> &nbsp;·&nbsp;
+    <a href="https://www.e-certchile.cl" target="_blank">E-CertChile</a> &nbsp;·&nbsp;
+    <a href="https://www.signer.cl" target="_blank">Signer.cl</a> &nbsp;·&nbsp;
     <a href="https://www.docusign.com" target="_blank">DocuSign</a>
-    <br><span style="font-size:9pt; color:#888;">Plataformas habilitadas para firma electrónica avanzada conforme a Ley 19.799 (Chile)</span>
   </div>
 
   <div class="footer-note">
-    Documento generado por Conniku SpA · conniku.com · contacto@conniku.com<br>
-    Este contrato debe quedar firmado dentro de los 15 días corridos desde el inicio de labores (Art. 9 Código del Trabajo).
+    Documento generado por Conniku SpA · RUT 78.395.702-7 · conniku.com · contacto@conniku.com<br>
+    Art. 9 CT: Este contrato debe quedar firmado dentro de los 15 días corridos desde el inicio de labores.<br>
+    Las cotizaciones se pagan vía Previred (previred.com) antes del 10° día hábil del mes siguiente.
   </div>
+
 </body>
 </html>`
 }
@@ -340,7 +564,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
     birthDate: '', nationality: 'Chilena', maritalStatus: 'soltero',
     emergencyContactName: '', emergencyContactPhone: '',
-    position: '', department: 'Tecnologia', hireDate: '',
+    positionKey: '', positionOther: '', department: 'Tecnologia', hireDate: '',
     contractType: 'plazo_fijo', endDate: '', workSchedule: 'full_time', weeklyHours: 45,
     grossSalary: IMM, colacion: 0, movilizacion: 0,
     afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
@@ -352,6 +576,9 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
+  // Derived: the actual position string for display / contract
+  const resolvedPosition = form.positionKey === 'otro' ? form.positionOther : (POSITIONS_LIST.find(p => p.value === form.positionKey)?.label || '')
+
   const F = (k: string) => (v: string) => setForm((p: any) => ({ ...p, [k]: v }))
 
   const validate = () => {
@@ -360,7 +587,8 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     if (!form.firstName.trim()) e.firstName = 'Obligatorio'
     if (!form.lastName.trim()) e.lastName = 'Obligatorio'
     if (!form.email.trim()) e.email = 'Obligatorio'
-    if (!form.position.trim()) e.position = 'Obligatorio'
+    if (!form.positionKey) e.positionKey = 'Obligatorio'
+    if (form.positionKey === 'otro' && !form.positionOther.trim()) e.positionOther = 'Especifica el cargo'
     if (!form.hireDate) e.hireDate = 'Obligatorio'
     if (Number(form.grossSalary) < IMM) e.grossSalary = `Mínimo: ${fmtMoney(IMM)} (Art. 44 CT)`
     return e
@@ -369,11 +597,17 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
   const handleNext = () => {
     const e = validate()
     setErrors(e)
-    if (Object.keys(e).length === 0) setStep(2)
+    if (Object.keys(e).length > 0) return
+    // Auto-populate JD from predefined list if not already customized
+    if (!jobDescription && form.positionKey && form.positionKey !== 'otro') {
+      setJobDescription(JOB_DESCRIPTIONS[form.positionKey] || '')
+    }
+    setStep(2)
   }
 
   const handlePrint = () => {
-    const html = buildContractHTML(form, jobDescription)
+    const contractForm = { ...form, position: resolvedPosition }
+    const html = buildContractHTML(contractForm, jobDescription)
     const win = window.open('', '_blank', 'width=900,height=700')
     if (!win) return
     win.document.write(html)
@@ -384,7 +618,8 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
   const handleSave = async () => {
     setSaving(true)
     try {
-      await api.createEmployee(form)
+      const payload = { ...form, position: resolvedPosition }
+      await api.createEmployee(payload)
       onCreated()
       onClose()
     } catch (err: any) {
@@ -470,7 +705,24 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
 
               <SectionTitle>Contrato Laboral</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                <Field label="Cargo *"><Input value={form.position} onChange={F('position')} /><ErrMsg msg={errors.position} /></Field>
+                <Field label="Cargo *">
+                  <Select
+                    value={form.positionKey}
+                    onChange={v => {
+                      setForm((p: any) => ({ ...p, positionKey: v, positionOther: '' }))
+                      // Reset JD when position changes so it auto-populates on Next
+                      setJobDescription('')
+                    }}
+                    options={[{ value: '', label: '— Seleccionar cargo —' }, ...POSITIONS_LIST]}
+                  />
+                  <ErrMsg msg={errors.positionKey} />
+                  {form.positionKey === 'otro' && (
+                    <div style={{ marginTop: 8 }}>
+                      <Input value={form.positionOther} onChange={F('positionOther')} placeholder="Especifica el nombre del cargo" />
+                      <ErrMsg msg={errors.positionOther} />
+                    </div>
+                  )}
+                </Field>
                 <Field label="Departamento"><Select value={form.department} onChange={F('department')} options={DEPARTMENTS} /></Field>
                 <Field label="Tipo Contrato"><Select value={form.contractType} onChange={F('contractType')} options={CONTRACT_TYPES} /></Field>
                 <Field label="Fecha Ingreso *"><Input type="date" value={form.hireDate} onChange={F('hireDate')} /><ErrMsg msg={errors.hireDate} /></Field>
@@ -550,11 +802,11 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                   <p style={{ marginBottom: 12 }}>En Antofagasta, a {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), y <strong>{form.firstName} {form.lastName}</strong>, RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato Individual de Trabajo:</p>
 
                   {[
-                    { title: 'Primero — Cargo y Funciones', content: <><p>Cargo: <strong>{form.position}</strong> — Área: <strong>{form.department}</strong></p>{jobDescription && <div style={{ marginTop: 8, background: '#f9f9f9', borderLeft: '3px solid #555', padding: '6px 10px', fontSize: 11, whiteSpace: 'pre-wrap' }}>{jobDescription}</div>}</> },
+                    { title: 'Primero — Cargo y Funciones', content: <><p>Cargo: <strong>{resolvedPosition}</strong> — Área: <strong>{form.department}</strong></p>{jobDescription && <div style={{ marginTop: 8, background: '#f9f9f9', borderLeft: '3px solid #555', padding: '6px 10px', fontSize: 11, whiteSpace: 'pre-wrap' }}>{jobDescription}</div>}</> },
                     { title: 'Segundo — Lugar de Trabajo', content: <p>Dependencias de Conniku SpA, Antofagasta, o modalidad de teletrabajo según lo coordinado.</p> },
                     { title: 'Tercero — Duración', content: <p dangerouslySetInnerHTML={{ __html: form.contractType === 'indefinido' ? 'Contrato de duración <strong>indefinida</strong> (Art. 159 N°4 CT).' : `Contrato a <strong>plazo fijo</strong> desde ${fmtDate(form.hireDate)}${form.endDate ? ` hasta ${fmtDate(form.endDate)}` : ''}.` }} /> },
                     { title: 'Cuarto — Jornada', content: <p><strong>{form.weeklyHours}h semanales</strong> — {SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label}. (Art. 22 CT)</p> },
-                    { title: 'Quinto — Remuneración', content: <p>Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>{Number(form.colacion) > 0 ? ` · Colación: ${fmtMoney(Number(form.colacion))}` : ''}{Number(form.movilizacion) > 0 ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}` : ''}. AFP: {AFP_LIST.find(a => a.value === form.afp)?.label}. Salud: {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}.</p> },
+                    { title: 'Quinto — Remuneración', content: <p>Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>{Number(form.colacion) > 0 ? ` · Colación: ${fmtMoney(Number(form.colacion))}` : ''}{Number(form.movilizacion) > 0 ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}` : ''}. AFP: {AFP_LIST.find(a => a.value === form.afp)?.label}. Salud: {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}. Pago: último día hábil del mes vía Previred.</p> },
                   ].map(({ title, content }) => (
                     <div key={title} style={{ marginBottom: 14 }}>
                       <div style={{ fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid #ddd', paddingBottom: 3, marginBottom: 6 }}>{title}</div>
@@ -566,7 +818,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                   <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between', gap: 40 }}>
                     {[
                       { name: 'Conniku SpA', sub: 'RUT 78.395.702-7 — Empleador' },
-                      { name: `${form.firstName} ${form.lastName}`, sub: `RUT ${form.rut} — Trabajador` },
+                      { name: `${form.firstName} ${form.lastName}`, sub: `RUT ${form.rut} — ${resolvedPosition || 'Trabajador'}` },
                     ].map(({ name, sub }) => (
                       <div key={name} style={{ flex: 1, textAlign: 'center' }}>
                         <div style={{ borderTop: '1px solid #000', paddingTop: 6, marginTop: 40 }}>
