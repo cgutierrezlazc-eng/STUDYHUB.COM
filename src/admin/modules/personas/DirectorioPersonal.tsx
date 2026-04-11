@@ -364,6 +364,20 @@ function buildContractHTML(form: any, jobDescription: string): string {
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000; background: #fff; padding: 36px 56px; line-height: 1.65; }
+    .liq-wrap { border: 2px solid #334155; border-radius: 4px; margin: 10px 0 14px; overflow: hidden; font-family: Arial, sans-serif; font-size: 10pt; }
+    .liq-header { background: #1e293b; color: #fff; padding: 7px 14px; font-weight: bold; font-size: 10.5pt; letter-spacing: 0.5px; }
+    .liq-sub { background: #334155; color: #e2e8f0; padding: 4px 14px; font-size: 9.5pt; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+    .liq-table { width: 100%; border-collapse: collapse; }
+    .liq-table td { padding: 4px 10px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    .liq-table tr:last-child td { border-bottom: none; }
+    .liq-label { width: 44%; font-size: 10pt; color: #1e293b; }
+    .liq-detail { width: 30%; font-size: 9pt; color: #64748b; }
+    .liq-amount { width: 26%; text-align: right; font-weight: 600; color: #1e293b; font-size: 10pt; }
+    .liq-total td { background: #f1f5f9; font-weight: bold; font-size: 10.5pt; color: #0f172a; padding: 6px 10px; }
+    .liq-net td { background: #0f172a; color: #fff; font-weight: bold; font-size: 12pt; padding: 9px 12px; border-bottom: none; }
+    .liq-employer td { background: #fafafa; color: #64748b; font-size: 9.5pt; }
+    .liq-employer-total td { background: #f1f5f9; font-size: 9.5pt; color: #475569; font-weight: bold; }
+    .liq-note { background: #fffbeb; border-top: 2px solid #f59e0b; padding: 8px 14px; font-size: 9pt; color: #78350f; line-height: 1.55; font-family: Arial, sans-serif; }
     h1 { font-size: 15pt; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
     .subtitle { text-align: center; font-size: 10.5pt; margin-bottom: 6px; color: #333; }
     .subtitle2 { text-align: center; font-size: 10pt; margin-bottom: 28px; color: #666; }
@@ -450,60 +464,128 @@ function buildContractHTML(form: any, jobDescription: string): string {
   </div>
 
   <div class="clause-title">Sexto — Remuneración, Cotizaciones y Política de Pagos</div>
-  <div class="clause">El Trabajador percibirá la siguiente remuneración mensual, con el detalle de descuentos legales calculados sobre la remuneración imponible:</div>
+  <div class="clause">Las partes acuerdan la siguiente estructura remuneracional. Los montos indicados corresponden a la proyección de la primera liquidación mensual completa, calculada a la fecha de suscripción de este contrato como referencia. Los porcentajes de cotizaciones se actualizarán automáticamente conforme a las resoluciones de la Superintendencia de Pensiones, FONASA, ISAPREs y AFC, sin necesidad de modificar este instrumento.</div>
   ${(() => {
     const salary = Number(form.grossSalary)
+    const colacion = Number(form.colacion) || 0
+    const movilizacion = Number(form.movilizacion) || 0
+    const totalHaberes = salary + colacion + movilizacion
     const d = calcDescuentos(salary, form.afp, form.healthSystem, form.contractType)
     const isapreLabel = form.healthSystem === 'isapre' ? (ISAPRE_LIST.find(i => i.value === form.isapreProvider)?.label || 'ISAPRE') : ''
     const afpR = AFP_RATES[form.afp] || AFP_RATES.modelo
-    const netEstimate = salary - d.afpTotal - d.salud - d.afcWorker
+    const afpLabel = AFP_LIST.find(a => a.value === form.afp)?.label || form.afp
+    const netLiquido = salary - d.afpTotal - d.salud - d.afcWorker
     const afcEmployerRate = form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO
-    return `<table class="data">
-    <tr><td colspan="3" style="background:#e8f5e9;font-weight:bold;text-align:center;font-size:10pt;">HABERES</td></tr>
-    <tr><td>Sueldo Base Bruto (imponible)</td><td style="font-size:10pt;color:#555;">Art. 41 y 44 CT — no inferior al IMM vigente</td><td><strong>${fmtMoney(salary)}</strong></td></tr>
-    ${Number(form.colacion) > 0 ? `<tr><td>Asignación de Colación (no imponible)</td><td style="font-size:10pt;color:#555;">No afecta base imponible</td><td>${fmtMoney(Number(form.colacion))}</td></tr>` : ''}
-    ${Number(form.movilizacion) > 0 ? `<tr><td>Asignación de Movilización (no imponible)</td><td style="font-size:10pt;color:#555;">No afecta base imponible</td><td>${fmtMoney(Number(form.movilizacion))}</td></tr>` : ''}
-    <tr><td colspan="3" style="background:#fff3e0;font-weight:bold;text-align:center;font-size:10pt;">DESCUENTOS TRABAJADOR</td></tr>
-    <tr>
-      <td>AFP ${afpLabel} (Ley 3.500)</td>
-      <td style="font-size:10pt;color:#555;">10% obligatorio ${fmtMoney(d.afpObligatorio)} + ${afpR.commission}% comisión ${fmtMoney(d.afpComision)} = ${(afpR.obligatory + afpR.commission).toFixed(2)}% total</td>
-      <td><strong>${fmtMoney(d.afpTotal)}</strong></td>
-    </tr>
-    <tr>
-      <td>${form.healthSystem === 'fonasa' ? 'FONASA (Ley 18.469)' : `ISAPRE ${isapreLabel} (DFL 1/2005)`}</td>
-      <td style="font-size:10pt;color:#555;">${FONASA_RATE}% remuneración imponible${form.healthSystem === 'isapre' ? ' — mínimo legal; plan puede tener costo adicional en UF' : ''}</td>
-      <td><strong>${fmtMoney(d.salud)}</strong></td>
-    </tr>
-    <tr>
-      <td>AFC — Seguro Cesantía trabajador (Ley 19.728)</td>
-      <td style="font-size:10pt;color:#555;">${AFC_WORKER}% remuneración imponible</td>
-      <td><strong>${fmtMoney(d.afcWorker)}</strong></td>
-    </tr>
-    <tr style="background:#f5f5f5;">
-      <td><strong>Total descuentos trabajador</strong></td>
-      <td style="font-size:10pt;color:#555;">AFP + Salud + AFC trabajador</td>
-      <td><strong>${fmtMoney(d.totalWorker)}</strong></td>
-    </tr>
-    <tr style="background:#e3f2fd;">
-      <td><strong>Sueldo líquido estimado *</strong></td>
-      <td style="font-size:10pt;color:#555;">Antes de Impuesto Único 2ª Categoría (Art. 42 Ley de Renta)</td>
-      <td><strong>${fmtMoney(netEstimate)}</strong></td>
-    </tr>
-    <tr><td colspan="3" style="background:#fce4ec;font-weight:bold;text-align:center;font-size:10pt;">CARGO EMPLEADOR (no se descuenta del trabajador)</td></tr>
-    <tr>
-      <td>AFC — Seguro Cesantía empleador (Ley 19.728)</td>
-      <td style="font-size:10pt;color:#555;">${afcEmployerRate}% — ${form.contractType === 'indefinido' ? 'contrato indefinido' : 'contrato plazo fijo/obra'}</td>
-      <td>${fmtMoney(d.afcEmployer)}</td>
-    </tr>
-    <tr>
-      <td>SIS — Seguro Invalidez y Sobrevivencia (Ley 3.500)</td>
-      <td style="font-size:10pt;color:#555;">${SIS_RATE}% — íntegro cargo empleador</td>
-      <td>${fmtMoney(d.sisEmployer)}</td>
-    </tr>
-    <tr><td colspan="3" style="background:#f5f5f5;font-weight:bold;text-align:center;font-size:10pt;">FORMA DE PAGO</td></tr>
-    <tr><td>Cuenta bancaria</td><td colspan="2">${form.bankName} · ${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || ''} N° ${form.bankAccountNumber || '—'}</td></tr>
-  </table>
-  <div style="font-size:9.5pt;color:#666;margin:4px 0 10px;">* El sueldo líquido definitivo puede variar por Impuesto Único de 2ª Categoría, pensión alimenticia u otros descuentos autorizados. Tasas AFP según Superintendencia de Pensiones (spensiones.cl) — vigentes 2025, se actualizan anualmente.</div>`
+    const totalCostoEmpresa = d.afcEmployer + d.sisEmployer
+    return `
+  <div class="liq-wrap">
+    <div class="liq-header">📋 LIQUIDACIÓN DE REMUNERACIÓN — REFERENCIA CONTRATO</div>
+    <div class="liq-sub">I. Haberes — Total imponible + no imponible</div>
+    <table class="liq-table">
+      <tr>
+        <td class="liq-label">Sueldo Base</td>
+        <td class="liq-detail">Imponible · Art. 41 y 44 CT</td>
+        <td class="liq-amount">${fmtMoney(salary)}</td>
+      </tr>
+      ${colacion > 0 ? `<tr>
+        <td class="liq-label">Asignación de Colación</td>
+        <td class="liq-detail">No imponible · no afecta AFP/Salud</td>
+        <td class="liq-amount">${fmtMoney(colacion)}</td>
+      </tr>` : ''}
+      ${movilizacion > 0 ? `<tr>
+        <td class="liq-label">Asignación de Movilización</td>
+        <td class="liq-detail">No imponible · no afecta AFP/Salud</td>
+        <td class="liq-amount">${fmtMoney(movilizacion)}</td>
+      </tr>` : ''}
+      <tr class="liq-total">
+        <td colspan="2">TOTAL HABERES</td>
+        <td style="text-align:right;">${fmtMoney(totalHaberes)}</td>
+      </tr>
+    </table>
+
+    <div class="liq-sub">II. Descuentos Legales — Cargo trabajador</div>
+    <table class="liq-table">
+      <tr>
+        <td class="liq-label">AFP ${afpLabel} — Cotización obligatoria</td>
+        <td class="liq-detail">${afpR.obligatory}% de ${fmtMoney(salary)} imponible · Ley 3.500</td>
+        <td class="liq-amount">${fmtMoney(d.afpObligatorio)}</td>
+      </tr>
+      <tr>
+        <td class="liq-label">AFP ${afpLabel} — Comisión administración</td>
+        <td class="liq-detail">${afpR.commission}% de ${fmtMoney(salary)} imponible</td>
+        <td class="liq-amount">${fmtMoney(d.afpComision)}</td>
+      </tr>
+      <tr>
+        <td class="liq-label">${form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${isapreLabel}`}</td>
+        <td class="liq-detail">${FONASA_RATE}% de ${fmtMoney(salary)} imponible · ${form.healthSystem === 'fonasa' ? 'Ley 18.469' : 'DFL 1/2005 — mínimo legal; plan en UF puede ser mayor'}</td>
+        <td class="liq-amount">${fmtMoney(d.salud)}</td>
+      </tr>
+      <tr>
+        <td class="liq-label">AFC — Seguro de Cesantía trabajador</td>
+        <td class="liq-detail">${AFC_WORKER}% de ${fmtMoney(salary)} imponible · Ley 19.728</td>
+        <td class="liq-amount">${fmtMoney(d.afcWorker)}</td>
+      </tr>
+      <tr class="liq-total">
+        <td colspan="2">TOTAL DESCUENTOS TRABAJADOR</td>
+        <td style="text-align:right;">${fmtMoney(d.totalWorker)}</td>
+      </tr>
+    </table>
+
+    <div class="liq-sub">III. Líquido a pagar al trabajador</div>
+    <table class="liq-table">
+      <tr>
+        <td class="liq-label">Total Haberes</td>
+        <td class="liq-detail"></td>
+        <td class="liq-amount">${fmtMoney(totalHaberes)}</td>
+      </tr>
+      <tr>
+        <td class="liq-label">(−) Total Descuentos</td>
+        <td class="liq-detail">AFP + Salud + AFC trabajador</td>
+        <td class="liq-amount" style="color:#dc2626;">− ${fmtMoney(d.totalWorker)}</td>
+      </tr>
+      <tr class="liq-net">
+        <td colspan="2">💰 TOTAL LÍQUIDO A RECIBIR *</td>
+        <td style="text-align:right;">${fmtMoney(netLiquido + colacion + movilizacion)}</td>
+      </tr>
+    </table>
+
+    <div class="liq-sub">IV. Costos adicionales empresa (no se descuentan del trabajador)</div>
+    <table class="liq-table">
+      <tr class="liq-employer">
+        <td class="liq-label">AFC — Seguro Cesantía empleador</td>
+        <td class="liq-detail">${afcEmployerRate}% · ${form.contractType === 'indefinido' ? 'contrato indefinido' : 'plazo fijo/obra'} · Ley 19.728</td>
+        <td class="liq-amount">${fmtMoney(d.afcEmployer)}</td>
+      </tr>
+      <tr class="liq-employer">
+        <td class="liq-label">SIS — Seguro Invalidez y Sobrevivencia</td>
+        <td class="liq-detail">${SIS_RATE}% · íntegro cargo empleador · Ley 3.500</td>
+        <td class="liq-amount">${fmtMoney(d.sisEmployer)}</td>
+      </tr>
+      <tr class="liq-employer-total">
+        <td colspan="2">Total costo empresa adicional al sueldo</td>
+        <td style="text-align:right;">${fmtMoney(totalCostoEmpresa)}</td>
+      </tr>
+    </table>
+
+    <div class="liq-sub">V. Forma de pago</div>
+    <table class="liq-table">
+      <tr>
+        <td class="liq-label">Institución bancaria</td>
+        <td class="liq-detail">Depósito el último día hábil del mes · Art. 55 CT</td>
+        <td class="liq-amount" style="font-size:9.5pt;">${form.bankName}</td>
+      </tr>
+      <tr>
+        <td class="liq-label">${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || 'Cuenta'}</td>
+        <td class="liq-detail">N° de cuenta</td>
+        <td class="liq-amount" style="font-size:9.5pt;">${form.bankAccountNumber || '—'}</td>
+      </tr>
+    </table>
+
+    <div class="liq-note">
+      ⚠️ <strong>Nota legal:</strong> (*) El líquido indicado es referencial y no incluye el Impuesto Único de Segunda Categoría (Art. 42 N°1 Ley de Renta), que se calculará mensualmente según la escala progresiva vigente. Tampoco incluye descuentos por pensión alimenticia judicial ni otros autorizados por escrito.<br>
+      Los porcentajes de cotización AFP, FONASA, ISAPRE y AFC corresponden a las tasas <strong>vigentes al ${new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>. Se actualizarán automáticamente conforme a las resoluciones de la <strong>Superintendencia de Pensiones</strong> (spensiones.cl), <strong>FONASA</strong> (fonasa.cl), las ISAPREs y el <strong>Fondo de Cesantía</strong> (afc.cl), sin que sea necesario modificar este contrato. El Empleador informará al Trabajador de cualquier cambio que afecte su liquidación mensual.
+    </div>
+  </div>`
   })()}
   <div class="clause">
     <strong>Cierre de mes:</strong> Las remuneraciones se calcularán considerando el cierre del período el <strong>día 22 de cada mes</strong>. Los días trabajados entre el 23 y el último día del mes se arrastrarán al período siguiente. <strong>Fecha de pago:</strong> El pago se realizará el <strong>último día hábil de cada mes</strong>, mediante depósito en la cuenta bancaria indicada (Art. 55 CT).
