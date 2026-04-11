@@ -281,6 +281,45 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     }
   }
 
+  const handleClearChat = () => {
+    if (messages.length === 0) return
+    if (window.confirm('¿Limpiar toda la conversación? No se puede deshacer.')) {
+      setMessages([])
+    }
+  }
+
+  const handleExportChatWord = async () => {
+    if (messages.length === 0) return
+    const content = messages
+      .map(m => `${m.role === 'user' ? 'Tú' : 'Conniku'}: ${m.content}`)
+      .join('\n\n')
+    try {
+      await api.exportDocx(project.id, content, `${project.name}-chat`)
+    } catch {
+      alert('No se pudo exportar a Word. Verifica que el backend esté corriendo.')
+    }
+  }
+
+  const handleExportChatExcel = () => {
+    if (messages.length === 0) return
+    const rows = [
+      ['Hora', 'Remitente', 'Mensaje'],
+      ...messages.map(m => [
+        m.timestamp ? new Date(m.timestamp).toLocaleString('es-CL') : '',
+        m.role === 'user' ? 'Tú' : 'Conniku',
+        m.content.replace(/"/g, '""'),
+      ]),
+    ]
+    const csv = rows.map(r => r.map(c => `"${c}"`).join(',')).join('\n')
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${project.name}-chat.csv`
+    a.click()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   const handleAddYoutube = async () => {
     if (!youtubeUrl.trim()) return
     setAddingVideo(true)
@@ -684,14 +723,38 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 <div className="chat-header-name">Conniku · {project.name}</div>
                 <div className="chat-header-sub">
                   {project.documents.length} {project.documents.length === 1 ? 'documento activo' : 'documentos activos'}
-                  {socraticMode && <span style={{ marginLeft: 6, color: 'var(--accent-blue)' }}>· Modo Socrático ON</span>}
+                  {socraticMode && <span style={{ marginLeft: 6, color: 'var(--accent-blue)' }}>· Socrático</span>}
                 </div>
               </div>
-              {messages.length > 0 && (
-                <button className="btn btn-secondary btn-xs" onClick={() => handleExportChatPdf()} title="Exportar chat como PDF">
-                  {Download()} PDF
-                </button>
-              )}
+              <div className="chat-header-actions">
+                {messages.length > 0 && (
+                  <>
+                    <button
+                      className="chat-action-btn chat-action-btn--danger"
+                      onClick={handleClearChat}
+                      title="Limpiar conversación"
+                    >
+                      {Trash2()} Limpiar
+                    </button>
+                    <div className="chat-action-sep" />
+                    <span className="chat-action-label">Exportar</span>
+                    <button
+                      className="chat-action-btn"
+                      onClick={handleExportChatWord}
+                      title="Exportar chat completo a Word (.docx)"
+                    >
+                      {FileText()} Word
+                    </button>
+                    <button
+                      className="chat-action-btn"
+                      onClick={handleExportChatExcel}
+                      title="Exportar chat a Excel/CSV"
+                    >
+                      {Download()} Excel
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Mensajes con scroll interno */}
