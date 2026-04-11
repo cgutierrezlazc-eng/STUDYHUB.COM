@@ -676,47 +676,93 @@ export default function HRDashboard({ onNavigate }: Props) {
 // PERSONAL TAB
 // ═════════════════════════════════════════════════════════════════
 function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmployee, setSelectedEmployee, searchTerm, setSearchTerm }: any) {
-  const [form, setForm] = useState<any>({
+  const imm = CHILE_LABOR.IMM.current
+  const emptyForm = {
     rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
     birthDate: '', nationality: 'Chilena', maritalStatus: 'soltero',
     emergencyContactName: '', emergencyContactPhone: '',
-    position: '', department: 'Tecnologia', hireDate: '', contractType: 'indefinido',
-    workSchedule: 'full_time', weeklyHours: 45,
-    grossSalary: 500000, colacion: 0, movilizacion: 0,
+    position: '', department: 'Tecnologia', hireDate: '', contractType: 'plazo_fijo',
+    endDate: '', workSchedule: 'full_time', weeklyHours: 45,
+    grossSalary: imm, colacion: 0, movilizacion: 0,
     afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_vista', bankAccountNumber: '',
-  })
+  }
+  const [form, setForm] = useState<any>(emptyForm)
   const [saving, setSaving] = useState(false)
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
 
   const filtered = employees.filter((e: Employee) =>
     `${e.firstName} ${e.lastName} ${e.rut} ${e.position}`.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const validate = () => {
+    const e: Record<string, string> = {}
+    if (!form.rut.trim()) e.rut = 'RUT es obligatorio'
+    if (!form.firstName.trim()) e.firstName = 'Nombre es obligatorio'
+    if (!form.lastName.trim()) e.lastName = 'Apellido es obligatorio'
+    if (!form.email.trim()) e.email = 'Email es obligatorio'
+    if (!form.position.trim()) e.position = 'Cargo es obligatorio'
+    if (!form.hireDate) e.hireDate = 'Fecha de ingreso es obligatoria'
+    const minSalary = form.weeklyHours < 40 ? CHILE_LABOR.IMM.partialRate(form.weeklyHours) : imm
+    if (!form.grossSalary || Number(form.grossSalary) < minSalary)
+      e.grossSalary = `Mínimo legal: $${minSalary.toLocaleString('es-CL')} (Art. 44 CT)`
+    return e
+  }
+
   const handleSave = async () => {
+    const errors = validate()
+    setFormErrors(errors)
+    if (Object.keys(errors).length > 0) return
     setSaving(true)
     try {
       await api.createEmployee(form)
       setShowAdd(false)
+      setFormErrors({})
+      setForm(emptyForm)
       onRefresh()
-    } catch (err) {
-      alert('Error al guardar empleado')
+    } catch (err: any) {
+      setFormErrors({ _general: err?.message || err?.detail || 'Error al guardar. Verifica los datos e intenta nuevamente.' })
     }
     setSaving(false)
   }
 
+  const openModal = () => { setFormErrors({}); setShowAdd(true) }
+  const closeModal = () => { setShowAdd(false); setFormErrors({}) }
+
+  // Inline error helper
+  const Err = ({ f }: { f: string }) =>
+    formErrors[f] ? <div style={{ fontSize: 11, color: '#ef4444', marginTop: 3 }}>{formErrors[f]}</div> : null
+
   return (
     <div>
-      {/* Stats Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <StatCard icon={Users} label="Total Empleados" value={employees.length} color="#3b82f6" />
+      {/* ─── Header ─── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20, gap: 16, flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Users size={20} style={{ color: 'var(--accent)' }} /> Directorio de Personal
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 3 }}>
+            {employees.length === 0
+              ? 'Aún no hay colaboradores registrados'
+              : `${employees.filter((e: Employee) => e.status === 'active').length} activo${employees.filter((e: Employee) => e.status === 'active').length !== 1 ? 's' : ''} de ${employees.length} colaborador${employees.length !== 1 ? 'es' : ''}`}
+          </p>
+        </div>
+        <button onClick={openModal} style={{ ...btnPrimary, padding: '11px 22px', fontSize: 14, flexShrink: 0 }}>
+          <UserPlus size={18} /> Nuevo Colaborador
+        </button>
+      </div>
+
+      {/* ─── Stats ─── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14, marginBottom: 24 }}>
+        <StatCard icon={Users} label="Total Colaboradores" value={employees.length} color="#3b82f6" />
         <StatCard icon={CheckCircle} label="Activos" value={employees.filter((e: Employee) => e.status === 'active').length} color="#22c55e" />
-        <StatCard icon={Clock} label="En Prueba" value={employees.filter((e: Employee) => e.contractType === 'plazo_fijo').length} color="#f59e0b" />
+        <StatCard icon={Clock} label="Plazo Fijo" value={employees.filter((e: Employee) => e.contractType === 'plazo_fijo').length} color="#f59e0b" />
         <StatCard icon={AlertTriangle} label="Inactivos" value={employees.filter((e: Employee) => e.status !== 'active').length} color="#ef4444" />
       </div>
 
-      {/* Search + Add */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20, alignItems: 'center' }}>
-        <div style={{ flex: 1, position: 'relative' }}>
+      {/* ─── Search (solo si hay empleados) ─── */}
+      {employees.length > 0 && (
+        <div style={{ position: 'relative', marginBottom: 20 }}>
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input
             type="text"
@@ -726,43 +772,29 @@ function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmploy
             style={{ width: '100%', padding: '10px 10px 10px 36px', borderRadius: 10, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14 }}
           />
         </div>
-        <button onClick={() => setShowAdd(true)} style={btnPrimary}>
-          <UserPlus size={16} /> Agregar Empleado
-        </button>
-      </div>
+      )}
 
-      {/* Employee List */}
-      {filtered.length === 0 ? (
-        <div className="card" style={{ padding: 40, textAlign: 'center' }}>
-          <Users size={48} style={{ color: 'var(--text-muted)', marginBottom: 12 }} />
-          <h3>Sin empleados registrados</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-            Agrega tu primer empleado para comenzar a gestionar tu equipo.
-          </p>
-          <button onClick={() => setShowAdd(true)} style={{ ...btnPrimary, marginTop: 16 }}>
-            <UserPlus size={16} /> Agregar Empleado
-          </button>
-        </div>
-      ) : (
+      {/* ─── Employee List OR Empty State ─── */}
+      {filtered.length > 0 ? (
         <div style={{ display: 'grid', gap: 12 }}>
           {filtered.map((emp: Employee) => (
             <div
               key={emp.id}
               className="card"
-              style={{ padding: 16, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 16 }}
+              style={{ padding: 16, cursor: 'pointer', transition: 'box-shadow 0.2s', display: 'flex', alignItems: 'center', gap: 16 }}
               onClick={() => setSelectedEmployee(selectedEmployee?.id === emp.id ? null : emp)}
             >
               <div style={{
                 width: 48, height: 48, borderRadius: '50%', background: 'var(--accent)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontWeight: 700, fontSize: 18, flexShrink: 0,
+                color: '#fff', fontWeight: 700, fontSize: 17, flexShrink: 0,
               }}>
                 {emp.firstName.charAt(0)}{emp.lastName.charAt(0)}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 700, fontSize: 15 }}>{emp.firstName} {emp.lastName}</div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  {emp.position} • {emp.department} • RUT: {emp.rut}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                  {emp.position} · {emp.department} · RUT: {emp.rut}
                 </div>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
@@ -770,39 +802,209 @@ function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmploy
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Bruto mensual</div>
               </div>
               <span style={{
-                padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600,
-                background: emp.status === 'active' ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
-                color: emp.status === 'active' ? '#22c55e' : '#ef4444',
+                padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 600, flexShrink: 0,
+                background: emp.status === 'active' ? 'rgba(34,197,94,0.15)' : emp.status === 'on_leave' ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)',
+                color: emp.status === 'active' ? '#22c55e' : emp.status === 'on_leave' ? '#f59e0b' : '#ef4444',
               }}>
                 {emp.status === 'active' ? 'Activo' : emp.status === 'on_leave' ? 'Licencia' : 'Inactivo'}
               </span>
-              <ChevronRight size={18} style={{ color: 'var(--text-muted)' }} />
+              <ChevronRight size={18} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             </div>
           ))}
         </div>
+      ) : (
+        /* ─── Empty State + Guía de Contratación ─── */
+        <div>
+          {/* CTA Hero */}
+          <div className="card" style={{ padding: '36px 32px', textAlign: 'center', marginBottom: 20, border: '2px dashed var(--border)' }}>
+            <div style={{
+              width: 68, height: 68, borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <UserPlus size={30} color="#fff" />
+            </div>
+            <h2 style={{ margin: '0 0 8px', fontSize: 22 }}>
+              {searchTerm ? `Sin resultados para "${searchTerm}"` : 'Registra tu primer colaborador'}
+            </h2>
+            <p style={{ color: 'var(--text-muted)', maxWidth: 500, margin: '0 auto 24px', fontSize: 14, lineHeight: 1.6 }}>
+              {searchTerm
+                ? 'Prueba con otro nombre, RUT o cargo.'
+                : 'Gestiona contratos, remuneraciones, previsión social y documentos legales de tu equipo de forma centralizada y conforme al Código del Trabajo de Chile.'}
+            </p>
+            {!searchTerm && (
+              <button onClick={openModal} style={{ ...btnPrimary, fontSize: 15, padding: '13px 32px', margin: '0 auto' }}>
+                <UserPlus size={18} /> Crear primer colaborador
+              </button>
+            )}
+          </div>
+
+          {/* ─── Guías de Contratación (solo cuando no hay búsqueda activa) ─── */}
+          {!searchTerm && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: 16 }}>
+
+              {/* Paso a paso */}
+              <div className="card" style={{ padding: 20 }}>
+                <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                  <Briefcase size={16} style={{ color: '#3b82f6' }} /> Cómo Contratar en Chile
+                </h3>
+                {[
+                  { n: 1, title: 'Recepción de documentos', body: 'Cédula vigente, certificado de antecedentes (vigente 30 días) y títulos si el cargo lo exige.' },
+                  { n: 2, title: 'Examen pre-ocupacional', body: 'Evaluación médica básica obligatoria (Art. 184 CT, Ley 16.744). Costo a cargo del empleador.' },
+                  { n: 3, title: 'Redacción del contrato', body: 'Contrato escrito en un plazo máximo de 15 días corridos desde el inicio (Art. 9 CT). Debe incluir: partes, funciones, jornada, remuneración, lugar de trabajo.' },
+                  { n: 4, title: 'Firma y distribución', body: '2 ejemplares firmados. Una copia para el trabajador, una para la empresa (Art. 9 CT).' },
+                  { n: 5, title: 'Alta previsional y laboral', body: 'Declarar en AFP, FONASA/ISAPRE y AFC. Incluir en la nómina de Previred al primer pago.' },
+                ].map(s => (
+                  <div key={s.n} style={{ display: 'flex', gap: 12, marginBottom: 14 }}>
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%', background: 'var(--accent)', color: '#fff',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0,
+                    }}>{s.n}</div>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 13, marginBottom: 2 }}>{s.title}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>{s.body}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Progresión de contratos */}
+              <div className="card" style={{ padding: 20 }}>
+                <h3 style={{ margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                  <FileText size={16} style={{ color: '#f59e0b' }} /> Progresión de Contratos
+                </h3>
+                <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>Art. 159 N°4 Código del Trabajo</p>
+                {[
+                  { label: '1er Contrato', tipo: 'Plazo Fijo', dur: '30 días corridos', color: '#f59e0b', icon: '🟡', art: 'Art. 159 CT' },
+                  { label: '2do Contrato', tipo: 'Plazo Fijo', dur: '60 días corridos', color: '#f97316', icon: '🟠', art: 'Art. 159 CT' },
+                  { label: '3er Contrato', tipo: 'Indefinido', dur: 'Automático por ley', color: '#22c55e', icon: '🟢', art: 'Art. 159 N°4 CT' },
+                ].map((c, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '10px 14px', borderRadius: 10, background: 'var(--bg-primary)', marginBottom: 10 }}>
+                    <span style={{ fontSize: 22 }}>{c.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13 }}>{c.label}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{c.tipo} · {c.dur}</div>
+                    </div>
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', flexShrink: 0 }}>{c.art}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: 12, padding: '10px 14px', borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 12, color: '#16a34a', lineHeight: 1.5 }}>
+                  <strong>CEO/RRHH puede saltar directo a Indefinido.</strong> El tercer contrato a plazo fijo se convierte en indefinido por ley de forma automática.
+                </div>
+              </div>
+
+              {/* Documentos obligatorios */}
+              <div className="card" style={{ padding: 20 }}>
+                <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                  <FolderOpen size={16} style={{ color: '#8b5cf6' }} /> Documentos Obligatorios
+                </h3>
+                {[
+                  { icon: '📋', label: 'Contrato de Trabajo', ref: 'Art. 9 CT', req: true },
+                  { icon: '🪪', label: 'Cédula de Identidad', ref: 'Art. 8 CT', req: true },
+                  { icon: '📜', label: 'Certificado de Antecedentes', ref: 'Ley 19.628', req: true },
+                  { icon: '🏥', label: 'Examen Pre-Ocupacional', ref: 'Ley 16.744', req: true },
+                  { icon: '📊', label: 'Ficha AFP / Sistema de Salud', ref: 'DL 3.500', req: true },
+                  { icon: '🎓', label: 'Título/Certificados profesionales', ref: 'Según cargo', req: false },
+                  { icon: '🏦', label: 'Datos bancarios para el pago', ref: 'Art. 54 CT', req: false },
+                ].map((d, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: i < 6 ? '1px solid var(--border)' : 'none' }}>
+                    <span style={{ fontSize: 18 }}>{d.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontSize: 13, fontWeight: 500 }}>{d.label}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 6 }}>{d.ref}</span>
+                    </div>
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 12, flexShrink: 0,
+                      background: d.req ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
+                      color: d.req ? '#ef4444' : '#22c55e',
+                    }}>{d.req ? 'Obligatorio' : 'Opcional'}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mínimos legales vigentes */}
+              <div className="card" style={{ padding: 20 }}>
+                <h3 style={{ margin: '0 0 16px', display: 'flex', alignItems: 'center', gap: 8, fontSize: 15 }}>
+                  <Calculator size={16} style={{ color: '#ef4444' }} /> Mínimos Legales Vigentes
+                </h3>
+                {[
+                  { label: 'Ingreso Mínimo Mensual', value: `$${CHILE_LABOR.IMM.current.toLocaleString('es-CL')}`, ref: 'Ley 21.578 · Art. 44 CT' },
+                  { label: 'Jornada máxima semanal', value: '45 horas', ref: 'Art. 22 CT' },
+                  { label: 'Horas extras máx. diarias', value: '2 hrs (+50%)', ref: 'Art. 30 CT' },
+                  { label: 'Feriado legal anual', value: '15 días hábiles', ref: 'Art. 67 CT' },
+                  { label: 'AFP — retención trabajador', value: '10,41% – 11,45%', ref: 'DL 3.500 (según AFP)' },
+                  { label: 'Salud — FONASA', value: '7%', ref: 'Art. 84 Ley 18.469' },
+                  { label: 'AFC — Seguro Cesantía', value: '0,6% trabajador', ref: 'Ley 19.728' },
+                  { label: 'SIS — Inv. y Sobrev.', value: '1,41% empleador', ref: 'Art. 59 DL 3.500' },
+                ].map((m, i) => (
+                  <div key={i} style={{ padding: '7px 0', borderBottom: i < 7 ? '1px solid var(--border)' : 'none' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{m.label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{m.value}</span>
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{m.ref}</div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          )}
+        </div>
       )}
 
-      {/* Employee Detail Panel */}
+      {/* ─── Employee Detail Panel ─── */}
       {selectedEmployee && (
         <EmployeeDetail employee={selectedEmployee} onClose={() => setSelectedEmployee(null)} onRefresh={onRefresh} />
       )}
 
-      {/* Add Employee Modal */}
+      {/* ─── Modal: Nuevo Colaborador ─── */}
       {showAdd && (
-        <div className="modal-overlay" onClick={() => setShowAdd(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 700, maxHeight: '90vh', overflow: 'auto', padding: 28 }}>
-            <h2 style={{ margin: '0 0 20px', display: 'flex', alignItems: 'center', gap: 10 }}>
-              <UserPlus size={22} /> Agregar Empleado
-            </h2>
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 720, maxHeight: '90vh', overflow: 'auto', padding: 28 }}>
 
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10, fontSize: 20 }}>
+                <UserPlus size={22} /> Nuevo Colaborador
+              </h2>
+              <button onClick={closeModal} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 4 }}>
+                <X size={22} />
+              </button>
+            </div>
+
+            {/* Legal notice */}
+            <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#3b82f6', marginBottom: 20, lineHeight: 1.5 }}>
+              <strong>Art. 9 CT:</strong> El contrato debe quedar firmado dentro de los 15 días corridos desde el inicio de la prestación. Sueldo mínimo legal: <strong>${imm.toLocaleString('es-CL')}</strong> (IMM vigente).
+            </div>
+
+            {/* General error banner */}
+            {formErrors._general && (
+              <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', fontSize: 13, color: '#ef4444', marginBottom: 16 }}>
+                ⚠️ {formErrors._general}
+              </div>
+            )}
+
+            {/* ── Datos Personales ── */}
             <SectionTitle>Datos Personales</SectionTitle>
             <div style={grid2}>
-              <FormField label="RUT" value={form.rut} onChange={v => setForm({ ...form, rut: v })} placeholder="12.345.678-9" required />
-              <FormField label="Nombre" value={form.firstName} onChange={v => setForm({ ...form, firstName: v })} required />
-              <FormField label="Apellido" value={form.lastName} onChange={v => setForm({ ...form, lastName: v })} required />
-              <FormField label="Email" value={form.email} onChange={v => setForm({ ...form, email: v })} type="email" required />
-              <FormField label="Telefono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} placeholder="+56 9 1234 5678" />
-              <FormField label="Direccion" value={form.address} onChange={v => setForm({ ...form, address: v })} />
+              <div>
+                <FormField label="RUT" value={form.rut} onChange={v => setForm({ ...form, rut: v })} placeholder="12.345.678-9" required />
+                <Err f="rut" />
+              </div>
+              <div>
+                <FormField label="Nombre" value={form.firstName} onChange={v => setForm({ ...form, firstName: v })} required />
+                <Err f="firstName" />
+              </div>
+              <div>
+                <FormField label="Apellido" value={form.lastName} onChange={v => setForm({ ...form, lastName: v })} required />
+                <Err f="lastName" />
+              </div>
+              <div>
+                <FormField label="Email" value={form.email} onChange={v => setForm({ ...form, email: v })} type="email" required />
+                <Err f="email" />
+              </div>
+              <FormField label="Teléfono" value={form.phone} onChange={v => setForm({ ...form, phone: v })} placeholder="+56 9 1234 5678" />
+              <FormField label="Dirección" value={form.address} onChange={v => setForm({ ...form, address: v })} />
               <FormField label="Fecha Nacimiento" value={form.birthDate} onChange={v => setForm({ ...form, birthDate: v })} type="date" />
               <FormField label="Nacionalidad" value={form.nationality} onChange={v => setForm({ ...form, nationality: v })} />
               <SelectField label="Estado Civil" value={form.maritalStatus} onChange={v => setForm({ ...form, maritalStatus: v })} options={[
@@ -813,60 +1015,82 @@ function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmploy
 
             <SectionTitle>Contacto de Emergencia</SectionTitle>
             <div style={grid2}>
-              <FormField label="Nombre" value={form.emergencyContactName} onChange={v => setForm({ ...form, emergencyContactName: v })} />
-              <FormField label="Telefono" value={form.emergencyContactPhone} onChange={v => setForm({ ...form, emergencyContactPhone: v })} />
+              <FormField label="Nombre contacto" value={form.emergencyContactName} onChange={v => setForm({ ...form, emergencyContactName: v })} />
+              <FormField label="Teléfono contacto" value={form.emergencyContactPhone} onChange={v => setForm({ ...form, emergencyContactPhone: v })} />
             </div>
 
+            {/* ── Datos Laborales ── */}
             <SectionTitle>Datos Laborales</SectionTitle>
             <div style={grid2}>
-              <FormField label="Cargo" value={form.position} onChange={v => setForm({ ...form, position: v })} required />
+              <div>
+                <FormField label="Cargo" value={form.position} onChange={v => setForm({ ...form, position: v })} required />
+                <Err f="position" />
+              </div>
               <SelectField label="Departamento" value={form.department} onChange={v => setForm({ ...form, department: v })} options={DEPARTMENTS.map(d => ({ value: d, label: d }))} />
-              <FormField label="Fecha Ingreso" value={form.hireDate} onChange={v => setForm({ ...form, hireDate: v })} type="date" required />
+              <div>
+                <FormField label="Fecha Ingreso" value={form.hireDate} onChange={v => setForm({ ...form, hireDate: v })} type="date" required />
+                <Err f="hireDate" />
+              </div>
               <SelectField label="Tipo Contrato" value={form.contractType} onChange={v => setForm({ ...form, contractType: v })} options={CONTRACT_TYPES} />
+              {form.contractType === 'plazo_fijo' && (
+                <FormField label="Fecha Término Contrato" value={form.endDate} onChange={v => setForm({ ...form, endDate: v })} type="date" />
+              )}
               <SelectField label="Jornada" value={form.workSchedule} onChange={v => setForm({ ...form, workSchedule: v })} options={[
-                { value: 'full_time', label: 'Completa (45 hrs)' }, { value: 'part_time', label: 'Parcial' },
+                { value: 'full_time', label: 'Completa (45 hrs/sem)' },
+                { value: 'part_time', label: 'Parcial' },
               ]} />
               <FormField label="Horas Semanales" value={form.weeklyHours} onChange={v => setForm({ ...form, weeklyHours: Number(v) })} type="number" />
             </div>
-
-            <SectionTitle>Remuneracion</SectionTitle>
-            <div style={grid2}>
-              <FormField label="Sueldo Bruto (CLP)" value={form.grossSalary} onChange={v => setForm({ ...form, grossSalary: Number(v) })} type="number" required />
-              <FormField label="Colacion (CLP)" value={form.colacion} onChange={v => setForm({ ...form, colacion: Number(v) })} type="number" />
-              <FormField label="Movilizacion (CLP)" value={form.movilizacion} onChange={v => setForm({ ...form, movilizacion: Number(v) })} type="number" />
+            <div style={{ marginTop: 8, padding: '8px 12px', borderRadius: 8, background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.2)', fontSize: 11, color: '#92400e' }}>
+              <strong>Progresión legal:</strong> 1er contrato plazo fijo 30 días → 2do plazo fijo 60 días → 3er contrato indefinido automático (Art. 159 N°4 CT)
             </div>
 
-            <SectionTitle>Prevision Social</SectionTitle>
+            {/* ── Remuneración ── */}
+            <SectionTitle>Remuneración</SectionTitle>
+            <div style={grid2}>
+              <div>
+                <FormField label={`Sueldo Bruto (CLP) — Mínimo: $${imm.toLocaleString('es-CL')}`} value={form.grossSalary} onChange={v => setForm({ ...form, grossSalary: Number(v) })} type="number" required />
+                <Err f="grossSalary" />
+              </div>
+              <FormField label="Colación (CLP)" value={form.colacion} onChange={v => setForm({ ...form, colacion: Number(v) })} type="number" />
+              <FormField label="Movilización (CLP)" value={form.movilizacion} onChange={v => setForm({ ...form, movilizacion: Number(v) })} type="number" />
+            </div>
+
+            {/* ── Previsión Social ── */}
+            <SectionTitle>Previsión Social</SectionTitle>
             <div style={grid2}>
               <SelectField label="AFP" value={form.afp} onChange={v => setForm({ ...form, afp: v })} options={AFP_OPTIONS.map(a => ({ value: a.value, label: `${a.label} (${a.rate}%)` }))} />
               <SelectField label="Sistema de Salud" value={form.healthSystem} onChange={v => setForm({ ...form, healthSystem: v })} options={HEALTH_OPTIONS} />
               {form.healthSystem === 'isapre' && (
                 <>
                   <FormField label="Nombre Isapre" value={form.isapreName} onChange={v => setForm({ ...form, isapreName: v })} />
-                  <FormField label="Plan UF" value={form.isapreUf} onChange={v => setForm({ ...form, isapreUf: Number(v) })} type="number" step="0.01" />
+                  <FormField label="Plan en UF" value={form.isapreUf} onChange={v => setForm({ ...form, isapreUf: Number(v) })} type="number" step="0.01" />
                 </>
               )}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input type="checkbox" checked={form.afcActive} onChange={e => setForm({ ...form, afcActive: e.target.checked })} id="afc" />
-                <label htmlFor="afc" style={{ fontSize: 13, fontWeight: 600 }}>AFC (Seguro Cesantia) Activo</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
+                <input type="checkbox" checked={form.afcActive} onChange={e => setForm({ ...form, afcActive: e.target.checked })} id="afc" style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                <label htmlFor="afc" style={{ fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>AFC (Seguro Cesantía) Activo — Ley 19.728</label>
               </div>
             </div>
 
+            {/* ── Datos Bancarios ── */}
             <SectionTitle>Datos Bancarios</SectionTitle>
             <div style={grid2}>
               <SelectField label="Banco" value={form.bankName} onChange={v => setForm({ ...form, bankName: v })} options={BANKS.map(b => ({ value: b, label: b }))} />
-              <SelectField label="Tipo Cuenta" value={form.bankAccountType} onChange={v => setForm({ ...form, bankAccountType: v })} options={[
-                { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
+              <SelectField label="Tipo de Cuenta" value={form.bankAccountType} onChange={v => setForm({ ...form, bankAccountType: v })} options={[
                 { value: 'cuenta_vista', label: 'Cuenta Vista / RUT' },
+                { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
                 { value: 'cuenta_ahorro', label: 'Cuenta Ahorro' },
+                { value: 'cuenta_rut', label: 'CuentaRUT' },
               ]} />
-              <FormField label="Numero Cuenta" value={form.bankAccountNumber} onChange={v => setForm({ ...form, bankAccountNumber: v })} />
+              <FormField label="Número de Cuenta" value={form.bankAccountNumber} onChange={v => setForm({ ...form, bankAccountNumber: v })} />
             </div>
 
-            <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'flex-end' }}>
-              <button onClick={() => setShowAdd(false)} style={btnSecondary}>Cancelar</button>
-              <button onClick={handleSave} disabled={saving} style={btnPrimary}>
-                {saving ? 'Guardando...' : 'Guardar Empleado'}
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: 12, marginTop: 28, justifyContent: 'flex-end', borderTop: '1px solid var(--border)', paddingTop: 20 }}>
+              <button onClick={closeModal} style={btnSecondary}>Cancelar</button>
+              <button onClick={handleSave} disabled={saving} style={{ ...btnPrimary, minWidth: 160, justifyContent: 'center' }}>
+                {saving ? '⏳ Guardando...' : '✓ Guardar Colaborador'}
               </button>
             </div>
           </div>
