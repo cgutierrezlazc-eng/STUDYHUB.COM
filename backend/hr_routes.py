@@ -12,7 +12,7 @@ from datetime import datetime, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, List
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Float, ForeignKey, Index
 from sqlalchemy.orm import Session, relationship
@@ -22,6 +22,40 @@ from database import Base, engine, get_db, User, gen_id
 from middleware import get_current_user
 
 router = APIRouter(prefix="/hr", tags=["hr"])
+
+
+# ─── Auto-migration: add new columns if missing ─────────────────
+def _run_migrations():
+    """Add new columns to existing tables without breaking data."""
+    from sqlalchemy import text
+    try:
+        from database import engine as _eng
+        with _eng.connect() as conn:
+            stmts = [
+                "ALTER TABLE hr_employees ADD COLUMN IF NOT EXISTS employee_number VARCHAR(20) UNIQUE",
+                "ALTER TABLE hr_employees ADD COLUMN IF NOT EXISTS corporate_email VARCHAR(255)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signed BOOLEAN DEFAULT FALSE",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signed_at TIMESTAMP",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signer_id VARCHAR(16)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signer_name VARCHAR(200)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signer_position VARCHAR(200)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_signer_username VARCHAR(100)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_employee_number VARCHAR(20)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_ip_address VARCHAR(45)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_document_hash VARCHAR(64)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS fes_verification_code VARCHAR(32)",
+                "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE",
+            ]
+            for stmt in stmts:
+                try:
+                    conn.execute(text(stmt))
+                except Exception:
+                    pass  # Column already exists or not PostgreSQL
+            conn.commit()
+    except Exception:
+        pass  # SQLite or connection error — harmless
+
+_run_migrations()
 
 
 # ─── Helper: require owner or admin ─────────────────────────────
@@ -89,6 +123,10 @@ class Employee(Base):
     profile_picture_url = Column(Text, nullable=True)
     is_art22_exempt = Column(Boolean, default=False)  # Art. 22 CT: sin control de jornada
 
+    # Platform credentials (auto-generated on provision)
+    employee_number = Column(String(20), unique=True, nullable=True)   # CON-2026-001
+    corporate_email = Column(String(255), nullable=True)               # c.gutierrez.l@conniku.com
+
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -102,7 +140,7 @@ class EmployeeDocument(Base):
 
     id = Column(String(16), primary_key=True, default=gen_id)
     employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
-    document_type = Column(String(30), default="otro")  # contrato/anexo/job_description/liquidacion/certificado/finiquito/otro
+    document_type = Column(String(30), default="otro")  # contrato/anexo/job_description/liquidacion/certificado/finiquito/ci/afp/isapre/antecedentes/academico/bancario/riohs/etica/equipos/otro
     name = Column(String(255), nullable=False)
     file_path = Column(Text, nullable=False)
     signed = Column(Boolean, default=False)
@@ -110,6 +148,19 @@ class EmployeeDocument(Base):
     signature_hash = Column(String(128), nullable=True)
     uploaded_by = Column(String(16), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+    # FES — Firma Electrónica Simple (Ley 19.799)
+    fes_signed = Column(Boolean, default=False)
+    fes_signed_at = Column(DateTime, nullable=True)
+    fes_signer_id = Column(String(16), nullable=True)       # user.id who FES-signed
+    fes_signer_name = Column(String(200), nullable=True)    # full name at time of signing
+    fes_signer_position = Column(String(200), nullable=True)
+    fes_signer_username = Column(String(100), nullable=True)
+    fes_employee_number = Column(String(20), nullable=True)
+    fes_ip_address = Column(String(45), nullable=True)
+    fes_document_hash = Column(String(64), nullable=True)   # SHA-256 of file content
+    fes_verification_code = Column(String(32), nullable=True)  # short code for verification URL
+    locked = Column(Boolean, default=False)  # document cannot be modified after FES signing
 
     employee = relationship("Employee", back_populates="documents")
 
@@ -699,6 +750,8 @@ def _employee_to_dict(emp: Employee) -> dict:
         "status": emp.status,
         "profile_picture_url": emp.profile_picture_url,
         "is_art22_exempt": emp.is_art22_exempt,
+        "employee_number": getattr(emp, 'employee_number', None),
+        "corporate_email": getattr(emp, 'corporate_email', None),
         "created_at": emp.created_at.isoformat() if emp.created_at else None,
         "updated_at": emp.updated_at.isoformat() if emp.updated_at else None,
     }
@@ -716,6 +769,16 @@ def _document_to_dict(doc: EmployeeDocument) -> dict:
         "signature_hash": doc.signature_hash,
         "uploaded_by": doc.uploaded_by,
         "created_at": doc.created_at.isoformat() if doc.created_at else None,
+        # FES fields
+        "fes_signed": getattr(doc, 'fes_signed', False),
+        "fes_signed_at": doc.fes_signed_at.isoformat() if getattr(doc, 'fes_signed_at', None) else None,
+        "fes_signer_name": getattr(doc, 'fes_signer_name', None),
+        "fes_signer_username": getattr(doc, 'fes_signer_username', None),
+        "fes_signer_position": getattr(doc, 'fes_signer_position', None),
+        "fes_employee_number": getattr(doc, 'fes_employee_number', None),
+        "fes_verification_code": getattr(doc, 'fes_verification_code', None),
+        "fes_document_hash": getattr(doc, 'fes_document_hash', None),
+        "locked": getattr(doc, 'locked', False),
     }
 
 
@@ -1602,6 +1665,244 @@ async def generate_contract_pdf(
         "document": _document_to_dict(doc),
         "message": "Contrato generado y guardado en la carpeta del trabajador",
         "filename": filename,
+    }
+
+
+# ── Provision employee platform account ────────────────────────────
+@router.post("/employees/{employee_id}/provision-account")
+def provision_employee_account(
+    employee_id: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Crea una cuenta de plataforma (conniku.com) para el empleado.
+    Genera: employee_number, username, password temporal, corporate_email.
+    La contraseña en texto plano se retorna UNA SOLA VEZ.
+    """
+    import bcrypt
+    import unicodedata
+    import re as _re
+
+    _require_hr_access(user)
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+    if emp.user_id:
+        raise HTTPException(400, "Este empleado ya tiene cuenta de plataforma")
+
+    # ── Normalizar tildes/ñ ─────────────────────────────────────────
+    def _norm(s: str) -> str:
+        return ''.join(
+            c for c in unicodedata.normalize('NFD', s)
+            if unicodedata.category(c) != 'Mn'
+        ).lower()
+
+    first_raw = (emp.first_name or "X").strip()
+    last_raw  = (emp.last_name or "User").strip()
+    first_norm = _norm(first_raw)
+    last_norm  = _norm(last_raw)
+
+    first_parts = first_norm.split()   # ['cristian', 'andres']
+    last_parts  = last_norm.split()    # ['gutierrez', 'lazcano']
+    f1 = first_parts[0][0] if first_parts else 'x'     # 'c'
+    l1 = last_parts[0] if last_parts else 'user'        # 'gutierrez'
+    l2 = last_parts[1] if len(last_parts) > 1 else ''   # 'lazcano'
+
+    # ── Employee number (CON-YYYY-NNN) ──────────────────────────────
+    year = datetime.utcnow().year
+    count = db.query(Employee).filter(Employee.employee_number.isnot(None)).count()
+    seq = count + 1
+    emp_num = f"CON-{year}-{seq:03d}"
+    # Ensure unique
+    while db.query(Employee).filter(Employee.employee_number == emp_num).first():
+        seq += 1
+        emp_num = f"CON-{year}-{seq:03d}"
+
+    # ── Username: f1 + l1 + seq ─────────────────────────────────────
+    username = f"{f1}{l1}{seq:03d}"   # cgutierrez001
+    username = _re.sub(r'[^a-z0-9]', '', username)
+    # Ensure unique
+    base = username
+    suffix = 1
+    while db.query(User).filter(User.username == username).first():
+        username = f"{base[:-3]}{suffix:03d}"
+        suffix += 1
+
+    # ── Password: f1 + l1 + l2 ─────────────────────────────────────
+    password_plain = f"{f1}{l1}{l2}" if l2 else f"{f1}{l1}123"
+    password_plain = _re.sub(r'[^a-z0-9]', '', password_plain)  # cgutierrezlazcano
+
+    # ── Corporate email: C.Gutierrez.L@conniku.com (lowercase) ─────
+    F1 = first_raw[0].upper()                 # C
+    L1 = l1.capitalize()                      # Gutierrez
+    L2_init = (l2[0].upper() + '.') if l2 else ''  # L.
+    corp_email = f"{F1}.{L1}.{L2_init}conniku.com".lower()
+    # e.g.: c.gutierrez.l.conniku.com  → add @ before conniku
+    corp_email = f"{F1}.{L1}.{L2_init}@conniku.com".lower()
+
+    # Ensure email unique
+    base_email = corp_email
+    email_suffix = 1
+    while db.query(User).filter(User.email == corp_email).first():
+        corp_email = base_email.replace('@', f'{email_suffix}@')
+        email_suffix += 1
+
+    # ── Hash password ───────────────────────────────────────────────
+    pwd_hash = bcrypt.hashpw(password_plain.encode(), bcrypt.gensalt(rounds=12)).decode()
+
+    # ── Create User account ─────────────────────────────────────────
+    new_platform_user = User(
+        id=gen_id(),
+        email=corp_email,
+        password_hash=pwd_hash,
+        username=username,
+        first_name=emp.first_name,
+        last_name=emp.last_name,
+        role='employee',
+        email_verified=True,
+    )
+    db.add(new_platform_user)
+
+    # ── Update Employee ─────────────────────────────────────────────
+    emp.employee_number = emp_num
+    emp.corporate_email = corp_email
+    emp.user_id = new_platform_user.id
+    db.commit()
+    db.refresh(emp)
+
+    return {
+        "employee_number": emp_num,
+        "username": username,
+        "password": password_plain,   # retornado UNA SOLA VEZ
+        "corporate_email": corp_email,
+        "user_id": new_platform_user.id,
+        "message": "Cuenta de plataforma creada exitosamente",
+    }
+
+
+# ── FES — Firma Electrónica Simple (Ley 19.799) ────────────────────
+@router.post("/documents/{document_id}/fes-sign")
+def fes_sign_document(
+    document_id: str,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Firma un documento con FES.
+    El firmante DEBE ser el empleado propietario del documento (o CEO/admin).
+    Tras la firma el documento queda BLOQUEADO e inmutable.
+    """
+    import secrets
+
+    doc = db.query(EmployeeDocument).filter(EmployeeDocument.id == document_id).first()
+    if not doc:
+        raise HTTPException(404, "Documento no encontrado")
+    if doc.locked:
+        raise HTTPException(400, "Documento ya firmado y bloqueado — no puede volver a firmarse")
+
+    # Verificar que el firmante es el empleado dueño o un admin/owner
+    emp = db.query(Employee).filter(Employee.id == doc.employee_id).first()
+    is_hr = getattr(user, 'role', 'user') in ('owner', 'admin')
+    is_owner = emp and emp.user_id == user.id
+    if not (is_hr or is_owner):
+        raise HTTPException(403, "Solo el trabajador o un administrador puede firmar este documento")
+
+    # ── Generar hash del contenido del archivo ──────────────────────
+    file_hash = "N/A"
+    try:
+        with open(doc.file_path, 'rb') as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()
+    except Exception:
+        pass
+
+    # ── Generar código de verificación único ───────────────────────
+    verification_code = secrets.token_hex(12).upper()   # 24 chars, e.g. A3F8C1D27E9B4501BCDF0012
+
+    # ── IP del firmante ─────────────────────────────────────────────
+    ip = (request.headers.get("x-forwarded-for") or "").split(",")[0].strip() or \
+         str(request.client.host) if request.client else "unknown"
+
+    now = datetime.utcnow()
+
+    # ── Datos del firmante ──────────────────────────────────────────
+    signer_name = f"{user.first_name} {user.last_name}".strip() if hasattr(user, 'first_name') else user.username
+    signer_position = emp.position if emp else "N/A"
+    signer_username = user.username or user.email
+    signer_emp_num = (emp.employee_number or "N/A") if emp else "N/A"
+
+    # ── Payload de firma ────────────────────────────────────────────
+    sig_payload = (
+        f"FES:CON:{doc.id}:{file_hash}:{user.id}:{signer_username}:"
+        f"{signer_emp_num}:{now.isoformat()}:{ip}"
+    )
+    sig_hash = hashlib.sha256(sig_payload.encode()).hexdigest()
+
+    # ── Actualizar documento ────────────────────────────────────────
+    doc.fes_signed = True
+    doc.fes_signed_at = now
+    doc.fes_signer_id = user.id
+    doc.fes_signer_name = signer_name
+    doc.fes_signer_position = signer_position
+    doc.fes_signer_username = signer_username
+    doc.fes_employee_number = signer_emp_num
+    doc.fes_ip_address = ip
+    doc.fes_document_hash = file_hash
+    doc.fes_verification_code = verification_code
+    doc.signed = True
+    doc.signed_at = now
+    doc.signature_hash = sig_hash
+    doc.locked = True
+    db.commit()
+    db.refresh(doc)
+
+    return {
+        "document": _document_to_dict(doc),
+        "fes": {
+            "verification_code": verification_code,
+            "verify_url": f"https://conniku.com/verify/{verification_code}",
+            "signed_at": now.isoformat(),
+            "signer_name": signer_name,
+            "signer_username": signer_username,
+            "employee_number": signer_emp_num,
+            "document_hash": file_hash,
+            "ip_address": ip,
+        },
+        "message": "Documento firmado con FES y bloqueado exitosamente (Ley 19.799)",
+    }
+
+
+# ── Verificación pública FES ────────────────────────────────────────
+@router.get("/documents/verify/{verification_code}")
+def verify_fes_document(
+    verification_code: str,
+    db: Session = Depends(get_db),
+):
+    """Endpoint público para verificar autenticidad de un documento FES."""
+    doc = db.query(EmployeeDocument).filter(
+        EmployeeDocument.fes_verification_code == verification_code
+    ).first()
+    if not doc:
+        raise HTTPException(404, "Código de verificación no encontrado")
+    emp = db.query(Employee).filter(Employee.id == doc.employee_id).first()
+    return {
+        "valid": True,
+        "document_name": doc.name,
+        "document_type": doc.document_type,
+        "employer": "Conniku SpA — RUT 78.395.702-7",
+        "worker_name": f"{emp.first_name} {emp.last_name}" if emp else "N/A",
+        "worker_rut": emp.rut if emp else "N/A",
+        "employee_number": doc.fes_employee_number,
+        "signer_name": doc.fes_signer_name,
+        "signer_username": doc.fes_signer_username,
+        "signer_position": doc.fes_signer_position,
+        "signed_at": doc.fes_signed_at.isoformat() if doc.fes_signed_at else None,
+        "ip_address": doc.fes_ip_address,
+        "document_hash": doc.fes_document_hash,
+        "verification_code": verification_code,
+        "legal_basis": "Ley 19.799 — Firma Electrónica Simple",
     }
 
 

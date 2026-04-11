@@ -1167,6 +1167,25 @@ export const api = {
   signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
   generateContractPdf: (employeeId: string, data: { html: string; worker_name: string }) =>
     request(`/hr/employees/${employeeId}/contract/generate`, { method: 'POST', body: JSON.stringify(data) }),
+  provisionEmployeeAccount: (employeeId: string) =>
+    request(`/hr/employees/${employeeId}/provision-account`, { method: 'POST' }),
+  fesSignDocument: (docId: string) =>
+    request(`/hr/documents/${docId}/fes-sign`, { method: 'POST' }),
+  verifyFesDocument: (verificationCode: string) =>
+    request(`/hr/documents/verify/${verificationCode}`),
+  uploadEmployeeFile: (employeeId: string, file: File, documentType: string, name: string) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('document_type', documentType)
+    formData.append('name', name)
+    const API_BASE = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com/api'
+    const token = localStorage.getItem('token')
+    return fetch(`${API_BASE}/hr/employees/${employeeId}/documents`, {
+      method: 'POST',
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+      body: formData,
+    }).then((r: Response) => r.json())
+  },
   calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
   getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
   approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),

@@ -8,6 +8,7 @@ const AdminPanel = lazy(() => import('./AdminPanel'))
 // HR & People — Directorio ERC (People & Culture)
 const DirectorioPersonal = lazy(() => import('./modules/personas/DirectorioPersonal'))
 const PersonasHub = lazy(() => import('./modules/personas/PersonasHub'))
+const PortalTrabajador = lazy(() => import('./modules/personas/PortalTrabajador'))
 const PersonalTab = lazy(() => import('./hr/PersonalTab'))
 const ContratosTab = lazy(() => import('./hr/ContratosTab'))
 const AsistenciaTab = lazy(() => import('./hr/AsistenciaTab'))
@@ -95,6 +96,7 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="hr/desempeno" element={<Wrap title="Evaluación de Desempeño"><DesempenoTab /></Wrap>} />
         <Route path="hr/reclutamiento" element={<Wrap title="Reclutamiento"><ReclutamientoTab /></Wrap>} />
         <Route path="hr/capacitacion" element={<Wrap title="Capacitación / SENCE"><CapacitacionTab /></Wrap>} />
+        <Route path="hr/mi-portal" element={<Wrap title="Mi Portal"><PortalTrabajador /></Wrap>} />
 
         {/* Payroll & Legal */}
         <Route path="payroll" element={<Wrap title="Remuneraciones"><PayrollModule /></Wrap>} />

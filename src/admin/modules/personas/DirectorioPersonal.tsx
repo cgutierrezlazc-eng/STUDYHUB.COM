@@ -869,7 +869,271 @@ function buildContractHTML(form: any, jobDescription: string): string {
 </html>`
 }
 
-// ─── Crear colaborador modal (2 pasos) ──────────────────────────
+// ─── Generador HTML hoja de credenciales (imprimible) ───────────
+function buildCredentialsHTML(data: {
+  employee_number: string; username: string; password: string; corporate_email: string;
+  fullName: string; position: string; rut: string; hireDate: string;
+}): string {
+  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+  <title>Credenciales Plataforma — ${data.fullName}</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family: 'Arial', sans-serif; padding: 40px 50px; background: #fff; color: #000; }
+    .header { text-align: center; margin-bottom: 30px; }
+    .logo { font-size: 28px; font-weight: 900; color: #1a56db; letter-spacing: 5px; }
+    .logo span { color: #000; }
+    .confidential { background: #dc2626; color: #fff; font-size: 13px; font-weight: 700;
+      padding: 7px 20px; border-radius: 4px; display: inline-block; margin: 14px 0; letter-spacing: 2px; }
+    .card { border: 2px solid #1a56db; border-radius: 10px; padding: 24px 30px; margin: 20px 0; }
+    .card h2 { font-size: 16px; color: #1a56db; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+    td:first-child { font-weight: 700; width: 45%; color: #374151; }
+    .value { font-family: 'Courier New', monospace; font-size: 15px; font-weight: 700; color: #1a56db; }
+    .password { font-family: 'Courier New', monospace; font-size: 15px; font-weight: 700; color: #dc2626; letter-spacing: 2px; }
+    .warning { background: #fffbeb; border: 1px solid #f59e0b; border-radius: 6px; padding: 14px 18px; font-size: 12px; margin-top: 20px; }
+    .instructions { margin-top: 20px; font-size: 12px; line-height: 1.7; }
+    .instructions h3 { font-size: 13px; margin-bottom: 8px; color: #1a56db; }
+    .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #6b7280; border-top: 1px solid #e5e7eb; padding-top: 12px; }
+    @media print { body { padding: 20px 30px; } }
+  </style>
+</head><body>
+  <div class="header">
+    <div class="logo">CEO<span style="font-weight:400;font-size:20px">·</span>CONNIKU</div>
+    <div style="font-size:11px;color:#6b7280;margin-top:4px;letter-spacing:2px">CONNIKU SpA · RUT 78.395.702-7 · conniku.com</div>
+    <div class="confidential">⚠ INFORMACIÓN CONFIDENCIAL — NO COMPARTIR</div>
+    <div style="font-size:12px;color:#6b7280;">Este documento contiene credenciales de acceso personales e intransferibles.</div>
+  </div>
+
+  <div class="card">
+    <h2>Datos del Colaborador</h2>
+    <table>
+      <tr><td>Nombre completo</td><td>${data.fullName}</td></tr>
+      <tr><td>RUT</td><td>${data.rut}</td></tr>
+      <tr><td>Cargo</td><td>${data.position}</td></tr>
+      <tr><td>N° Empleado</td><td class="value">${data.employee_number}</td></tr>
+      <tr><td>Fecha de ingreso</td><td>${data.hireDate}</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>🔐 Credenciales de Acceso — conniku.com</h2>
+    <table>
+      <tr><td>URL de acceso</td><td class="value">www.conniku.com</td></tr>
+      <tr><td>Nombre de usuario</td><td class="value">${data.username}</td></tr>
+      <tr><td>Contraseña inicial</td><td class="password">${data.password}</td></tr>
+      <tr><td>Email corporativo</td><td class="value">${data.corporate_email}</td></tr>
+    </table>
+  </div>
+
+  <div class="warning">
+    <strong>⚠️ IMPORTANTE:</strong>
+    <ul style="margin-top:6px;padding-left:18px;line-height:1.7;">
+      <li>Cambia tu contraseña inmediatamente al primer ingreso en <strong>Mi Perfil → Seguridad</strong>.</li>
+      <li>No compartas tus credenciales con nadie. Son personales e intransferibles.</li>
+      <li>Recuperación de contraseña: <strong>conniku.com/reset</strong> → recibirás un enlace en tu email corporativo.</li>
+      <li>Para configurar tu email en Outlook: Servidor IMAP <strong>imap.zoho.com:993</strong>, SMTP <strong>smtp.zoho.com:587</strong>.</li>
+    </ul>
+  </div>
+
+  <div class="instructions">
+    <h3>Primeros pasos en la plataforma:</h3>
+    <ol style="padding-left:18px;line-height:1.8;">
+      <li>Ingresa a <strong>www.conniku.com</strong> con tu usuario y contraseña inicial.</li>
+      <li>Dirígete a <strong>Mi Portal → Documentos</strong> para revisar tu contrato.</li>
+      <li>Lee el contrato completo y fírmalo con <strong>Firma Electrónica Simple (FES)</strong>.</li>
+      <li>Cambia tu contraseña inicial en <strong>Mi Perfil → Seguridad</strong>.</li>
+      <li>Ante dudas, consulta al asistente <strong>KONNI</strong> en la plataforma.</li>
+    </ol>
+  </div>
+
+  <div class="footer">
+    Documento generado por Conniku Admin · ${today}<br>
+    Conniku SpA · RUT 78.395.702-7 · contacto@conniku.com · www.conniku.com
+  </div>
+</body></html>`
+}
+
+// ─── Checklist de documentos (Paso 2) ───────────────────────────
+const DOC_CHECKLIST = [
+  // OBLIGATORIOS — Identidad
+  { id: 'ci_anverso', label: 'CI — Anverso (frente)', required: true, category: 'Identidad' },
+  { id: 'ci_reverso', label: 'CI — Reverso (dorso)', required: true, category: 'Identidad' },
+  { id: 'pasaporte', label: 'Pasaporte vigente', required: false, category: 'Identidad', note: 'Obligatorio para extranjeros' },
+  // OBLIGATORIOS — Previsional
+  { id: 'afp_cert', label: 'Certificado de afiliación AFP', required: true, category: 'Previsional' },
+  { id: 'salud_cert', label: 'Certificado FONASA / ISAPRE', required: true, category: 'Previsional' },
+  // OBLIGATORIOS — Legal
+  { id: 'antecedentes', label: 'Certificado de antecedentes (≤30 días)', required: true, category: 'Legal', note: 'Registro Civil o Carabineros' },
+  { id: 'datos_bancarios', label: 'Certificado de cuenta bancaria', required: true, category: 'Legal', note: 'Para depósito de sueldo' },
+  // COMPLEMENTARIOS
+  { id: 'cargas_familiares', label: 'Certificado de cargas familiares', required: false, category: 'Complementarios', note: 'Para asignación familiar' },
+  { id: 'nacimiento', label: 'Certificado de nacimiento', required: false, category: 'Complementarios', note: 'Para sala cuna / cargas' },
+  // ACADÉMICOS
+  { id: 'titulo', label: 'Título universitario / técnico', required: false, category: 'Académicos' },
+  { id: 'postgrados', label: 'Postgrados / magíster / doctorado', required: false, category: 'Académicos' },
+  { id: 'cursos', label: 'Certificados de cursos y capacitaciones', required: false, category: 'Académicos' },
+  { id: 'cv', label: 'Currículum Vitae actualizado', required: false, category: 'Académicos' },
+  // DECLARACIONES
+  { id: 'conflicto', label: 'Declaración no conflicto de interés', required: false, category: 'Declaraciones', note: 'Especialmente cargos con acceso a datos' },
+  { id: 'foto', label: 'Foto perfil laboral', required: false, category: 'Declaraciones' },
+]
+
+function DocumentChecklist({
+  employeeId, uploadedDocs, setUploadedDocs, workerName
+}: {
+  employeeId: string | null
+  uploadedDocs: Record<string, boolean>
+  setUploadedDocs: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
+  workerName: string
+}) {
+  const [uploading, setUploading] = useState<string | null>(null)
+  const categories = [...new Set(DOC_CHECKLIST.map(d => d.category))]
+  const requiredUploaded = DOC_CHECKLIST.filter(d => d.required).every(d => uploadedDocs[d.id])
+
+  const handleFileUpload = async (docId: string, label: string, file: File) => {
+    if (!employeeId) return
+    setUploading(docId)
+    try {
+      await api.uploadEmployeeFile(employeeId, file, 'otro', label + ' — ' + file.name)
+      setUploadedDocs(prev => ({ ...prev, [docId]: true }))
+    } catch {
+      alert('Error al subir el archivo. Intenta nuevamente.')
+    } finally {
+      setUploading(null)
+    }
+  }
+
+  return (
+    <div>
+      <div style={{ background: 'rgba(26,86,219,0.06)', border: '1px solid rgba(26,86,219,0.2)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 13 }}>
+        <strong>📋 Documentos de ingreso para {workerName}</strong>
+        <p style={{ marginTop: 4, color: 'var(--text-muted)', fontSize: 12 }}>
+          Sube los documentos requeridos para completar el expediente del colaborador.
+          Los marcados con <span style={{ color: '#dc2626' }}>*</span> son obligatorios antes de generar el contrato.
+          {!employeeId && <span style={{ color: '#f59e0b' }}> · Los archivos se guardarán al crear el colaborador en el paso siguiente.</span>}
+        </p>
+      </div>
+
+      {categories.map(cat => (
+        <div key={cat} style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid var(--border)' }}>
+            {cat}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {DOC_CHECKLIST.filter(d => d.category === cat).map(doc => (
+              <div key={doc.id} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '8px 12px',
+                background: uploadedDocs[doc.id] ? 'rgba(22,163,74,0.06)' : 'var(--bg-secondary)',
+                borderRadius: 8,
+                border: `1px solid ${uploadedDocs[doc.id] ? '#86efac' : 'var(--border)'}`,
+              }}>
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                  background: uploadedDocs[doc.id] ? '#16a34a' : doc.required ? '#fef2f2' : 'var(--bg-tertiary)',
+                  border: `2px solid ${uploadedDocs[doc.id] ? '#16a34a' : doc.required ? '#dc2626' : 'var(--border)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 12, color: '#fff',
+                }}>
+                  {uploadedDocs[doc.id] ? '✓' : doc.required ? '!' : ''}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500 }}>
+                    {doc.label}
+                    {doc.required && <span style={{ color: '#dc2626', marginLeft: 4 }}>*</span>}
+                  </div>
+                  {doc.note && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{doc.note}</div>}
+                </div>
+                <label style={{
+                  padding: '4px 12px', fontSize: 11, fontWeight: 600,
+                  background: uploadedDocs[doc.id] ? 'transparent' : 'var(--accent)',
+                  color: uploadedDocs[doc.id] ? 'var(--text-muted)' : '#fff',
+                  border: uploadedDocs[doc.id] ? '1px solid var(--border)' : 'none',
+                  borderRadius: 6, cursor: uploading === doc.id ? 'default' : 'pointer',
+                  opacity: uploading === doc.id ? 0.7 : 1,
+                }}>
+                  {uploading === doc.id ? '…' : uploadedDocs[doc.id] ? '✓ Subido' : '+ Subir'}
+                  {uploading !== doc.id && (
+                    <input
+                      type="file"
+                      style={{ display: 'none' }}
+                      onChange={e => {
+                        const f = e.target.files?.[0]
+                        if (f) handleFileUpload(doc.id, doc.label, f)
+                        e.target.value = ''
+                      }}
+                    />
+                  )}
+                </label>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {!requiredUploaded && (
+        <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#78350f', marginTop: 8 }}>
+          ⚠️ Aún faltan documentos obligatorios. Puedes continuar al paso siguiente, pero el expediente quedará incompleto.
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Pantalla de credenciales generadas ─────────────────────────
+function CredentialsScreen({ credentials, workerName, onPrint, onClose }: {
+  credentials: { employee_number: string; username: string; password: string; corporate_email: string }
+  workerName: string
+  onPrint: () => void
+  onClose: () => void
+}) {
+  return (
+    <div>
+      {/* Banner de éxito */}
+      <div style={{ background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 100%)', borderRadius: 12, padding: '20px 24px', marginBottom: 24, color: '#fff', textAlign: 'center' }}>
+        <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Colaborador creado exitosamente</div>
+        <div style={{ fontSize: 13, opacity: 0.8 }}>{workerName} ya tiene su cuenta en conniku.com</div>
+      </div>
+
+      {/* Credenciales */}
+      <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '18px 20px', border: '2px solid var(--accent)', marginBottom: 16 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, color: 'var(--accent)' }}>🔐 Credenciales de acceso a conniku.com</div>
+        {[
+          { label: 'N° Empleado', value: credentials.employee_number },
+          { label: 'Usuario', value: credentials.username },
+          { label: 'Contraseña inicial', value: credentials.password, highlight: true },
+          { label: 'Email corporativo', value: credentials.corporate_email },
+        ].map(({ label, value, highlight }) => (
+          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{label}</span>
+            <span style={{
+              fontFamily: 'monospace', fontSize: 14, fontWeight: 700,
+              color: highlight ? '#dc2626' : 'var(--text-primary)',
+              letterSpacing: highlight ? 2 : 0,
+            }}>{value}</span>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 8, padding: '12px 16px', fontSize: 12, color: '#78350f', marginBottom: 20 }}>
+        <strong>⚠️ Importante:</strong> Entrega este papel impreso al trabajador junto con su contrato.
+        Las credenciales no se volverán a mostrar. El trabajador deberá cambiar su contraseña en el primer acceso.
+      </div>
+
+      <button
+        onClick={onPrint}
+        style={{ width: '100%', padding: '12px', background: '#15803d', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14, marginBottom: 10 }}
+      >
+        🖨️ Imprimir hoja de credenciales (para entregar al trabajador)
+      </button>
+    </div>
+  )
+}
+
+// ─── Crear colaborador modal (3 pasos) ──────────────────────────
 function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const emptyForm = {
     rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
@@ -893,11 +1157,18 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     // Seguro colectivo (voluntario, acordado con trabajador)
     seguroColectivoActivo: false, seguroColectivoMonto: 0, seguroColectivoAseguradora: '',
   }
-  const [step, setStep]   = useState<1 | 2>(1)
+  const [step, setStep]   = useState<1 | 2 | 3>(1)
   const [form, setForm]   = useState<any>(emptyForm)
   const [jobDescription, setJobDescription] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
+  // ── Checklist documentos ────────────────────────────────────────
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({})
+  const [createdEmpId, setCreatedEmpId] = useState<string | null>(null)
+  // ── Credenciales generadas ──────────────────────────────────────
+  const [credentials, setCredentials] = useState<{
+    employee_number: string; username: string; password: string; corporate_email: string
+  } | null>(null)
 
   // Derived: the actual position string for display / contract
   const resolvedPosition = form.positionKey === 'otro' ? form.positionOther : (POSITIONS_LIST.find(p => p.value === form.positionKey)?.label || '')
@@ -918,14 +1189,18 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
   }
 
   const handleNext = () => {
-    const e = validate()
-    setErrors(e)
-    if (Object.keys(e).length > 0) return
-    // Auto-populate JD from predefined list if not already customized
-    if (!jobDescription && form.positionKey && form.positionKey !== 'otro') {
-      setJobDescription(JOB_DESCRIPTIONS[form.positionKey] || '')
+    if (step === 1) {
+      const e = validate()
+      setErrors(e)
+      if (Object.keys(e).length > 0) return
+      setStep(2)
+    } else if (step === 2) {
+      // Auto-populate JD from predefined list if not already customized
+      if (!jobDescription && form.positionKey && form.positionKey !== 'otro') {
+        setJobDescription(JOB_DESCRIPTIONS[form.positionKey] || '')
+      }
+      setStep(3)
     }
-    setStep(2)
   }
 
   const handlePrint = () => {
@@ -947,8 +1222,9 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
       const payload = { ...form, position: resolvedPosition }
       const result = await api.createEmployee(payload)
       const newEmpId: string = result?.employee?.id
+      setCreatedEmpId(newEmpId)
 
-      // ── Auto-guardar contrato como PDF firmado en carpeta del trabajador ──
+      // ── 1. Auto-guardar contrato como PDF en carpeta del trabajador ──
       if (newEmpId) {
         try {
           const contractForm = { ...form, position: resolvedPosition }
@@ -963,8 +1239,28 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
             setContractSaved(true)
           }
         } catch {
-          // PDF generation failure is non-blocking — el empleado igual se crea
-          console.warn('PDF generation failed, employee was created successfully')
+          console.warn('PDF generation failed — employee was created successfully')
+        }
+      }
+
+      // ── 2. Provisionar cuenta de plataforma + generar credenciales ──
+      if (newEmpId) {
+        try {
+          const credResult = await api.provisionEmployeeAccount(newEmpId)
+          if (credResult?.username) {
+            setCredentials({
+              employee_number: credResult.employee_number,
+              username: credResult.username,
+              password: credResult.password,
+              corporate_email: credResult.corporate_email,
+            })
+            // NO cerramos el modal — mostramos credenciales para imprimir
+            setSaving(false)
+            onCreated()
+            return
+          }
+        } catch {
+          console.warn('Account provisioning failed — employee was created successfully')
         }
       }
 
@@ -976,10 +1272,27 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     }
   }
 
+  // ── Imprimir hoja de credenciales ───────────────────────────────
+  const handlePrintCredentials = () => {
+    if (!credentials) return
+    const html = buildCredentialsHTML({
+      ...credentials,
+      fullName: `${form.firstName} ${form.lastName}`,
+      position: resolvedPosition,
+      rut: form.rut,
+      hireDate: form.hireDate,
+    })
+    const win = window.open('', '_blank', 'width=700,height=500')
+    if (!win) return
+    win.document.write(html)
+    win.document.close()
+    setTimeout(() => win.print(), 400)
+  }
+
   // ── Indicador de pasos ──────────────────────────────────────────
   const StepBar = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px' }}>
-      {[{ n: 1, label: 'Datos' }, { n: 2, label: 'Contrato' }].map(({ n, label }) => (
+      {[{ n: 1, label: 'Datos' }, { n: 2, label: 'Documentos' }, { n: 3, label: 'Contrato' }].map(({ n, label }) => (
         <React.Fragment key={n}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
             <div style={{
@@ -990,7 +1303,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
             }}>{n}</div>
             <span style={{ fontSize: 12, fontWeight: step === n ? 600 : 400, color: step === n ? 'var(--text-primary)' : 'var(--text-muted)' }}>{label}</span>
           </div>
-          {n < 2 && <div style={{ flex: 1, height: 1, background: step > n ? 'var(--accent)' : 'var(--border)', maxWidth: 40 }} />}
+          {n < 3 && <div style={{ flex: 1, height: 1, background: step > n ? 'var(--accent)' : 'var(--border)', maxWidth: 28 }} />}
         </React.Fragment>
       ))}
     </div>
@@ -1003,7 +1316,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     }}>
       <div style={{
         background: 'var(--bg-primary)', borderRadius: 16, width: '100%',
-        maxWidth: step === 2 ? 820 : 680, maxHeight: '92vh', overflow: 'hidden',
+        maxWidth: step === 3 ? 820 : 680, maxHeight: '92vh', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
         transition: 'max-width 0.25s ease',
       }}>
@@ -1013,7 +1326,10 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
           <div>
             <StepBar />
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              {step === 1 ? 'Art. 9 CT — contrato debe firmarse en 15 días corridos' : 'Revisa, edita la descripción de cargo e imprime el contrato'}
+              {step === 1 ? 'Art. 9 CT — contrato debe firmarse en 15 días corridos'
+                : step === 2 ? 'Sube los documentos requeridos antes de generar el contrato'
+                : credentials ? '✅ Colaborador creado — imprime las credenciales'
+                : 'Revisa, edita la descripción de cargo e imprime el contrato'}
             </div>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-muted)', lineHeight: 1 }}>×</button>
@@ -1273,8 +1589,23 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
             </>
           )}
 
-          {/* ── PASO 2: Vista previa del contrato ── */}
-          {step === 2 && (
+          {/* ── PASO 2: Checklist de documentos ── */}
+          {step === 2 && !credentials && (
+            <DocumentChecklist
+              employeeId={createdEmpId}
+              uploadedDocs={uploadedDocs}
+              setUploadedDocs={setUploadedDocs}
+              workerName={`${form.firstName} ${form.lastName}`}
+            />
+          )}
+
+          {/* ── PASO 3 / CREDENCIALES: Pantalla de credenciales generadas ── */}
+          {step === 3 && credentials && (
+            <CredentialsScreen credentials={credentials} workerName={`${form.firstName} ${form.lastName}`} onPrint={handlePrintCredentials} onClose={onClose} />
+          )}
+
+          {/* ── PASO 3: Vista previa del contrato ── */}
+          {step === 3 && !credentials && (
             <>
               {errors._general && (
                 <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
@@ -1358,21 +1689,23 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
         {/* ── Footer ── */}
         <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
           {/* Izquierda */}
-          <button
-            onClick={step === 1 ? onClose : () => setStep(1)}
-            style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}
-          >
-            {step === 1 ? 'Cancelar' : '← Volver'}
-          </button>
+          {!credentials && (
+            <button
+              onClick={step === 1 ? onClose : () => setStep(prev => (prev - 1) as 1 | 2 | 3)}
+              style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}
+            >
+              {step === 1 ? 'Cancelar' : '← Volver'}
+            </button>
+          )}
 
           {/* Derecha */}
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {step === 2 && contractSaved && (
+            {step === 3 && contractSaved && !credentials && (
               <span style={{ fontSize: 12, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 4 }}>
                 ✅ PDF guardado en carpeta del trabajador
               </span>
             )}
-            {step === 2 && (
+            {step === 3 && !credentials && (
               <button
                 onClick={handlePrint}
                 style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
@@ -1380,13 +1713,30 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 🖨️ Vista previa / Imprimir
               </button>
             )}
-            <button
-              onClick={step === 1 ? handleNext : handleSave}
-              disabled={saving}
-              style={{ padding: '9px 22px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
-            >
-              {step === 1 ? 'Siguiente →' : saving ? 'Creando y generando contrato…' : '✅ Crear Colaborador'}
-            </button>
+            {credentials ? (
+              <>
+                <button
+                  onClick={handlePrintCredentials}
+                  style={{ padding: '9px 20px', background: '#15803d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                >
+                  🖨️ Imprimir credenciales
+                </button>
+                <button
+                  onClick={onClose}
+                  style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                >
+                  Finalizar ✓
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={step < 3 ? handleNext : handleSave}
+                disabled={saving}
+                style={{ padding: '9px 22px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
+              >
+                {step < 3 ? 'Siguiente →' : saving ? 'Creando y generando contrato…' : '✅ Crear Colaborador'}
+              </button>
+            )}
           </div>
         </div>
 

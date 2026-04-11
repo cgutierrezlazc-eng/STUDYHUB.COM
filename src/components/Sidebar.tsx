@@ -4,6 +4,7 @@ import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Project } from '../types'
 import { Icons, IC, ChevronIcon } from './SidebarIcons'
+import { ADMIN_MODULES, CATEGORY_LABELS } from '../admin/adminModules'
 
 interface Props {
   projects: Project[]
@@ -42,13 +43,19 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const isJobsActive     = currentPath.startsWith('/jobs')
 
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    social:   isSocialActive,
-    academic: isAcademicActive,
-    subjects: true,
-    support:  isSupportActive,
-    tutor:    isTutorActive,
-    jobs:     isJobsActive,
+    social:      isSocialActive,
+    academic:    isAcademicActive,
+    subjects:    true,
+    support:     isSupportActive,
+    tutor:       isTutorActive,
+    jobs:        isJobsActive,
+    adminPanel:  currentPath.startsWith('/admin-panel'),
   })
+  const [openAdminCat, setOpenAdminCat] = useState<string | null>(
+    currentPath.startsWith('/admin-panel')
+      ? (ADMIN_MODULES.find(m => currentPath.startsWith(m.route))?.category ?? null)
+      : null
+  )
 
   // Keep active section open when route changes (rule C)
   useEffect(() => {
@@ -65,12 +72,13 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   // Rule C: active section cannot be closed — only toggle non-active ones
   const activeMap: Record<string, boolean> = {
-    social:   isSocialActive,
-    academic: isAcademicActive,
-    subjects: isSubjectsActive,
-    support:  isSupportActive,
-    tutor:    isTutorActive,
-    jobs:     isJobsActive,
+    social:      isSocialActive,
+    academic:    isAcademicActive,
+    subjects:    isSubjectsActive,
+    support:     isSupportActive,
+    tutor:       isTutorActive,
+    jobs:        isJobsActive,
+    adminPanel:  currentPath.startsWith('/admin-panel'),
   }
   const toggleSection = (key: string) => {
     if (activeMap[key]) return   // locked — active section stays open
@@ -278,15 +286,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             >
               {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
             </button>
-            {user?.role === 'owner' && (
-              <button
-                className={`nav-item ${isActive('/admin-panel') ? 'active' : ''}`}
-                onClick={() => onNavigate('/admin-panel')}
-                style={{ fontWeight: 600 }}
-              >
-                {Icons.building(IC.building)} Panel Admin
-              </button>
-            )}
             {user?.isAdmin && (
               <button
                 className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`}
@@ -344,6 +343,152 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
                 </>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ══ CEO / MI PANEL ══ */}
+      {(user?.role === 'owner' || user?.isAdmin || user?.role === 'employee') && (
+        <div style={{ marginTop: 'auto', paddingTop: 4 }}>
+          {/* Línea divisoria con gradiente Conniku */}
+          <div style={{
+            height: 2,
+            background: 'linear-gradient(90deg, transparent 0%, #1a56db 40%, #3b82f6 60%, transparent 100%)',
+            margin: '6px 12px 10px',
+            borderRadius: 2,
+          }} />
+
+          <div style={{ padding: '0 10px 14px' }}>
+            {/* Botón CEO / Usuario */}
+            <button
+              onClick={() => setOpenSections(prev => ({ ...prev, adminPanel: !prev.adminPanel }))}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                borderRadius: 13,
+                padding: '11px 14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                boxShadow: '0 4px 16px rgba(26,86,219,0.4)',
+                transition: 'box-shadow 0.2s',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  width: 36, height: 36,
+                  background: 'rgba(255,255,255,0.15)',
+                  borderRadius: 10,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18, flexShrink: 0,
+                }}>
+                  {user?.role === 'owner' ? '⚡' : '👤'}
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <div style={{
+                    fontSize: user?.role === 'owner' ? 22 : 15,
+                    fontWeight: 900,
+                    color: '#ffffff',
+                    letterSpacing: user?.role === 'owner' ? 6 : 1,
+                    lineHeight: 1,
+                    textTransform: 'uppercase',
+                    fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+                  }}>
+                    {user?.role === 'owner' ? 'CEO' : (user?.username || (user as any)?.first_name || 'Mi Panel')}
+                  </div>
+                  <div style={{
+                    fontSize: 10,
+                    color: 'rgba(255,255,255,0.55)',
+                    marginTop: 3,
+                    fontWeight: 400,
+                    letterSpacing: 1.5,
+                    textTransform: 'uppercase',
+                  }}>
+                    Conniku SpA
+                  </div>
+                </div>
+              </div>
+              <ChevronIcon open={!!openSections.adminPanel} />
+            </button>
+
+            {/* Módulos desplegables por categoría */}
+            {openSections.adminPanel && (
+              <div style={{ marginTop: 10 }}>
+                {Object.entries(CATEGORY_LABELS).map(([catKey, cat]) => {
+                  const mods = ADMIN_MODULES.filter(m =>
+                    m.category === catKey &&
+                    (user?.role === 'owner' || !(m as any).ownerOnly)
+                  )
+                  if (!mods.length) return null
+                  const isCatOpen = openAdminCat === catKey
+                  return (
+                    <div key={catKey} style={{ marginBottom: 2 }}>
+                      <button
+                        onClick={() => setOpenAdminCat(prev => prev === catKey ? null : catKey)}
+                        style={{
+                          width: '100%',
+                          background: isCatOpen ? 'rgba(26,86,219,0.12)' : 'rgba(255,255,255,0.03)',
+                          border: '1px solid',
+                          borderColor: isCatOpen ? 'rgba(26,86,219,0.3)' : 'transparent',
+                          borderRadius: 8,
+                          padding: '6px 10px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          color: isCatOpen ? 'var(--accent, #1a56db)' : 'var(--text-muted)',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: 1.2,
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        <span>{cat.label}</span>
+                        <ChevronIcon open={isCatOpen} />
+                      </button>
+                      {isCatOpen && (
+                        <div style={{ paddingLeft: 8, paddingTop: 2, paddingBottom: 2 }}>
+                          {mods.map(mod => (
+                            <button
+                              key={mod.id}
+                              onClick={() => onNavigate(mod.route)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%',
+                                textAlign: 'left',
+                                background: currentPath.startsWith(mod.route) ? 'rgba(26,86,219,0.1)' : 'transparent',
+                                border: 'none',
+                                borderLeft: currentPath.startsWith(mod.route) ? '2px solid var(--accent, #1a56db)' : '2px solid transparent',
+                                borderRadius: '0 6px 6px 0',
+                                padding: '5px 10px',
+                                cursor: 'pointer',
+                                fontSize: 12,
+                                fontWeight: currentPath.startsWith(mod.route) ? 600 : 400,
+                                color: currentPath.startsWith(mod.route) ? 'var(--accent, #1a56db)' : 'var(--text-secondary)',
+                                gap: 6,
+                              }}
+                            >
+                              <span style={{ flex: 1 }}>{mod.label}</span>
+                              {(mod as any).isNew && (
+                                <span style={{
+                                  fontSize: 8, background: 'var(--accent, #1a56db)',
+                                  color: '#fff', borderRadius: 3, padding: '1px 4px',
+                                  fontWeight: 700, letterSpacing: 0.5,
+                                }}>NEW</span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
