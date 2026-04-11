@@ -636,11 +636,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.02em', margin: 0 }}>
                 {profile.firstName} {profile.lastName}
               </h1>
-              <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4 }}>
-                {profile.career || t('userprofile.student')} | {t('userprofile.semester')} {profile.semester}
+              <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
+                {profile.career || t('userprofile.student')}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-                {profile.university || t('userprofile.noUni')}
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span>{profile.university || t('userprofile.noUni')}</span>
+                {profile.semester && (
+                  <>
+                    <span style={{ opacity: 0.4 }}>·</span>
+                    <span>{t('userprofile.semester')} {profile.semester}</span>
+                  </>
+                )}
               </div>
               <div style={{ fontSize: 13, color: 'var(--accent-blue)', marginTop: 6, cursor: 'pointer', fontWeight: 500 }}>
                 {profile.friendCount > 0 ? `${profile.friendCount} ${t('userprofile.connections')}` : `0 ${t('userprofile.connections')}`}
@@ -747,11 +753,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               )}
             </div>
 
-            {/* Right side info */}
-            <div style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-muted)', paddingTop: 4 }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{profile.university || ''}</div>
-              <div>{t('userprofile.semester')} {profile.semester}</div>
-              <div style={{ marginTop: 2 }}>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</div>
+            {/* Right side — identifiers únicos, sin repetir carrera/universidad */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, paddingTop: 4, flexShrink: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
+                @{profile.username}
+                <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 2 }}>
+                  #{String(profile.userNumber || 0).padStart(4, '0')}
+                </span>
+              </div>
+              {(profile as any).xp > 0 && (
+                <div style={{ background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>
+                  ⚡ {(profile as any).xp} XP
+                </div>
+              )}
+              {(profile as any).streak > 1 && (
+                <div style={{ fontSize: 12, color: 'var(--accent-orange, #f97316)' }}>
+                  🔥 {(profile as any).streak} días
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -814,11 +833,45 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <div className="fb-wall-sidebar">
               <div className="card fb-info-card">
                 <h4>{t('userprofile.academicInfo')}</h4>
-                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{t('userprofile.studies')} <strong>{profile.career}</strong></span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{profile.university}</span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>{t('userprofile.semester')} {profile.semester}</span></div>
+
+                {/* Carrera — única referencia en el sidebar (universidad/semestre ya están en el header) */}
+                {profile.career && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{GraduationCap({ size: 14 })}</span>
+                    <span><strong>{profile.career}</strong></span>
+                  </div>
+                )}
+
+                {/* Días estudiando en Conniku */}
                 {profile.studyDays > 0 && (
-                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> {t('userprofile.daysStudying')}</span></div>
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{Calendar({ size: 14 })}</span>
+                    <span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span>
+                  </div>
+                )}
+
+                {/* Nivel y XP */}
+                {((profile as any).level || (profile as any).xp) ? (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">⚡</span>
+                    <span>Nivel <strong>{(profile as any).level || 1}</strong> — {((profile as any).xp || 0).toLocaleString()} XP</span>
+                  </div>
+                ) : null}
+
+                {/* Racha */}
+                {(profile as any).streak > 0 && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">🔥</span>
+                    <span>Racha de <strong>{(profile as any).streak} días</strong></span>
+                  </div>
+                )}
+
+                {/* Miembro desde */}
+                {(profile as any).createdAt && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{Globe({ size: 14 })}</span>
+                    <span>En Conniku desde <strong>{new Date((profile as any).createdAt).getFullYear()}</strong></span>
+                  </div>
                 )}
               </div>
 
