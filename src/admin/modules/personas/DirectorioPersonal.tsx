@@ -43,7 +43,7 @@ const POSITIONS_LIST = [
   { value: 'desarrollador_fullstack', label: 'Desarrollador/a Full Stack' },
   { value: 'disenador_ux',         label: 'Diseñador/a UX/UI' },
   { value: 'marketing_digital',    label: 'Responsable de Marketing Digital' },
-  { value: 'rrhh_analista',        label: 'Analista de RRHH / People & Culture' },
+  { value: 'rrhh_analista',        label: 'Analista de RRHH y Remuneraciones' },
   { value: 'ejecutivo_ventas',     label: 'Ejecutivo/a de Ventas' },
   { value: 'soporte_cliente',      label: 'Ejecutivo/a de Soporte al Cliente' },
   { value: 'contador',             label: 'Contador/a / Analista Financiero' },
@@ -108,8 +108,11 @@ const JOB_DESCRIPTIONS: Record<string, string> = {
 • Reporta a: Gerente General / CEO.`,
 
   rrhh_analista: `• Gestionar el ciclo completo del colaborador: reclutamiento, onboarding, desarrollo y offboarding.
-• Procesar remuneraciones mensuales, retenciones previsionales y documentación laboral según la normativa vigente.
-• Elaborar contratos de trabajo, finiquitos, cartas de amonestación y documentos legales conforme al Código del Trabajo.
+• Procesar mensualmente las liquidaciones de sueldo de todos los colaboradores, incluyendo haberes, descuentos legales e impuesto de segunda categoría.
+• Calcular y pagar cotizaciones previsionales (AFP, Salud, AFC) a través de Previred antes del 10° día hábil del mes siguiente.
+• Calcular finiquitos, indemnizaciones por años de servicio y compensaciones legales al término de contratos.
+• Gestionar anticipos de remuneración (máx. 40% del sueldo bruto, Art. 58 CT) y llevar el registro correspondiente.
+• Elaborar contratos de trabajo, anexos, cartas de amonestación y documentos legales conforme al Código del Trabajo.
 • Gestionar y mantener actualizada la plataforma ERC (Employee Records Center) de Conniku.
 • Coordinar procesos de onboarding para nuevos colaboradores, incluyendo inducción y entrega de materiales.
 • Administrar solicitudes de licencias médicas, vacaciones, permisos y ausentismo.
