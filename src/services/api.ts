@@ -490,8 +490,8 @@ export const api = {
     request(`/social/feed?page=${page}&sort=${sort}&filter=${filter}`),
   getTrendingPosts: () =>
     request(`/social/feed/trending`),
-  getActivityFeed: (page: number = 1) =>
-    request(`/social/activity-feed?page=${page}`),
+  getActivityFeed: (page: number = 1, userId?: string) =>
+    request(`/social/activity-feed?page=${page}${userId ? `&user_id=${userId}` : ''}`),
 
   // ─── Wall Posts ───────────────────────────────────────────
   getWallPosts: (userId: string, page: number = 1) =>
