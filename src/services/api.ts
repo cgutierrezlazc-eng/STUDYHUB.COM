@@ -1324,6 +1324,17 @@ export const api = {
     request(`/hr/attendance/mine${limit ? `?limit=${limit}` : ''}`),
   getAllAttendance: (date?: string) =>
     request(`/hr/attendance/all${date ? `?date=${date}` : ''}`),
+
+  // ─── Blog Thread ─────────────────────────────────────────────
+  getBlogPosts: (limit: number = 50) => request(`/blog/posts?limit=${limit}`),
+  createBlogPost: (content: string) =>
+    request('/blog/posts', { method: 'POST', body: JSON.stringify({ content }) }),
+  likeBlogPost: (postId: string) =>
+    request(`/blog/posts/${postId}/like`, { method: 'POST' }),
+
+  // ─── Contact Form (público) ────────────────────────────────
+  sendContactForm: (data: { name: string; email: string; subject: string; message: string }) =>
+    request('/contact/send', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

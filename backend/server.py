@@ -225,6 +225,126 @@ app.include_router(tutor_router)
 app.include_router(ai_workflow_router)
 
 
+# ─── Contact Form (público, sin auth) ──────────────────────────────────────
+
+class ContactFormRequest(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
+
+@app.post("/contact/send")
+def contact_send(req: ContactFormRequest):
+    """Send contact form to contacto@conniku.com. No authentication required."""
+    try:
+        from notifications import _send_email_async, _email_template
+        body = f"""
+            <p><strong>Nueva consulta desde el formulario de contacto de conniku.com</strong></p>
+            <table style="width:100%;font-size:13px;border-collapse:collapse;margin-top:12px">
+                <tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666;width:30%">Nombre</td>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{req.name}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666">Email remitente</td>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{req.email}</td>
+                </tr>
+                <tr>
+                    <td style="padding:8px 0;color:#666">Asunto</td>
+                    <td style="padding:8px 0;font-weight:600">{req.subject}</td>
+                </tr>
+            </table>
+            <div style="margin-top:16px;padding:16px;background:#f8f9fa;border-radius:8px;">
+                <p style="margin:0;font-size:14px;color:#344054;white-space:pre-wrap">{req.message}</p>
+            </div>
+            <p style="margin-top:16px;font-size:12px;color:#999">
+                Para responder, usa Reply-To: {req.email}
+            </p>
+        """
+        html = _email_template("Consulta desde Conniku.com", body, sender="contacto")
+        _send_email_async(
+            "contacto@conniku.com",
+            f"[Formulario Web] {req.subject}",
+            html,
+            reply_to=req.email,
+            email_type="contact",
+            from_account="contacto",
+        )
+        return {"ok": True}
+    except Exception as e:
+        logger.error(f"Contact form error: {e}")
+        raise HTTPException(500, "No se pudo enviar el mensaje. Inténtalo más tarde.")
+
+
+# ─── Blog Thread ─────────────────────────────────────────────────────────────
+
+from database import BlogThread
+
+class BlogPostCreate(BaseModel):
+    content: str
+
+@app.get("/blog/posts")
+def get_blog_posts(limit: int = 50, db: Session = Depends(get_db)):
+    """Get public blog thread posts (no auth required)."""
+    posts = db.query(BlogThread).order_by(desc(BlogThread.created_at)).limit(min(limit, 100)).all()
+    result = []
+    for p in posts:
+        u = db.query(User).filter(User.id == p.user_id).first()
+        result.append({
+            "id": p.id,
+            "content": p.content,
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+            "likes": p.likes or 0,
+            "author": {
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "avatar": u.avatar or "",
+                "username": u.username,
+            } if u else {"id": "", "name": "Anónimo", "avatar": "", "username": ""},
+        })
+    return result
+
+@app.post("/blog/posts")
+def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Create a blog thread post (authenticated users only)."""
+    if not req.content.strip():
+        raise HTTPException(400, "El contenido no puede estar vacío")
+    if len(req.content) > 2000:
+        raise HTTPException(400, "El contenido no puede exceder 2000 caracteres")
+    if getattr(user, 'is_banned', False):
+        raise HTTPException(403, "Tu cuenta está suspendida")
+    post = BlogThread(
+        id=gen_id(),
+        user_id=user.id,
+        content=req.content.strip(),
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return {
+        "id": post.id,
+        "content": post.content,
+        "created_at": post.created_at.isoformat(),
+        "likes": 0,
+        "author": {
+            "id": user.id,
+            "name": f"{user.first_name} {user.last_name}",
+            "avatar": user.avatar or "",
+            "username": user.username,
+        },
+    }
+
+@app.post("/blog/posts/{post_id}/like")
+def like_blog_post(post_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Like a blog post (increments counter, no dedup)."""
+    post = db.query(BlogThread).filter(BlogThread.id == post_id).first()
+    if not post:
+        raise HTTPException(404, "Post no encontrado")
+    post.likes = (post.likes or 0) + 1
+    db.commit()
+    return {"likes": post.likes}
+
+
 @app.post("/admin/seed-ceo-profile")
 def seed_ceo_profile(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Seed the CEO profile with complete data and all courses completed. Owner only."""

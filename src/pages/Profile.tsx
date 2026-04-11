@@ -895,10 +895,11 @@ export default function Profile() {
                     </div>
                   ))}
                 </div>
-                <button className="btn btn-secondary btn-sm" style={{ marginTop: 16 }} onClick={() => {
-                  const email = prompt('Nuevo correo (ej: marketing@conniku.com):')
-                  if (email) alert(`Para crear ${email}, configúralo en tu panel de hosting (cPanel, Google Workspace, Zoho Mail, etc.)`)
-                }}>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  style={{ marginTop: 16 }}
+                  onClick={() => window.open('https://mailadmin.zoho.com/cpanel/index.do', '_blank', 'noopener,noreferrer')}
+                >
                   {t('profile.createEmail')}
                 </button>
 

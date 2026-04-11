@@ -1411,6 +1411,17 @@ def _ensure_columns():
                 print(f"Migration: added {table}.{col}")
 
 
+# ─── Blog Thread (hilo público de opiniones) ──────────────────
+
+class BlogThread(Base):
+    __tablename__ = "blog_threads"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    content = Column(Text, nullable=False)
+    likes = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()

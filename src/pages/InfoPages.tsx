@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import api from '../services/api'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -403,37 +404,176 @@ export function MobilePage({ onNavigate }: Props) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   8. BLOG  /blog
+   8. BLOG  /blog  — Hilo abierto de opiniones
 ══════════════════════════════════════════════════════════════ */
 export function BlogPage({ onNavigate }: Props) {
+  const [posts, setPosts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [newPost, setNewPost] = useState('')
+  const [posting, setPosting] = useState(false)
+  const [postError, setPostError] = useState('')
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    document.title = 'Blog — Conniku'
+    api.getBlogPosts(50)
+      .then((data: any) => setPosts(Array.isArray(data) ? data : []))
+      .catch(() => setPosts([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  async function handlePost(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newPost.trim()) return
+    setPosting(true)
+    setPostError('')
+    try {
+      const created = await api.createBlogPost(newPost.trim())
+      setPosts(prev => [created, ...prev])
+      setNewPost('')
+    } catch (err: any) {
+      setPostError(err?.message || 'No se pudo publicar. ¿Estás conectado?')
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  async function handleLike(postId: string) {
+    if (likedIds.has(postId)) return
+    try {
+      const res = await api.likeBlogPost(postId)
+      setLikedIds(prev => new Set([...prev, postId]))
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: res.likes } : p))
+    } catch {}
+  }
+
+  function formatDate(iso: string) {
+    try {
+      return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+    } catch { return iso }
+  }
+
+  const charCount = newPost.length
+  const charLimit = 2000
+
   return (
     <InfoLayout
       title="Blog Conniku"
-      subtitle="Noticias, guías y recursos para estudiantes universitarios"
+      subtitle="Un hilo abierto para estudiantes, tutores y curiosos — opina, comenta y conecta"
       onNavigate={onNavigate}
     >
-      <div style={{
-        textAlign: 'center', padding: '56px 24px', background: 'var(--bg-secondary)',
-        borderRadius: 12, border: '1px solid var(--border)',
-      }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>✍️</div>
-        <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Blog en construcción</h2>
-        <P>Estamos preparando contenido sobre productividad universitaria, tips de estudio, novedades de Conniku y recursos para tu carrera.</P>
-        <P>Mientras tanto, únete a la comunidad y sigue las novedades en el Feed.</P>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 20 }}>
-          <button
-            onClick={() => onNavigate('/feed')}
-            style={{ padding: '10px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 14, fontWeight: 600 }}
-          >
-            Ir al Feed
-          </button>
-          <button
-            onClick={() => onNavigate('/communities')}
-            style={{ padding: '10px 20px', background: 'none', border: '1px solid var(--border)', color: 'var(--text-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 14 }}
-          >
-            Ver Comunidades
-          </button>
+      {/* ── Formulario nueva publicación ── */}
+      <Card accent="var(--accent-blue)">
+        <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, marginTop: 0 }}>✍️ Comparte tu opinión</h3>
+        <form onSubmit={handlePost}>
+          <textarea
+            value={newPost}
+            onChange={e => setNewPost(e.target.value.slice(0, charLimit))}
+            placeholder="¿Qué opinas sobre la vida universitaria, el estudio o Conniku? Escribe aquí..."
+            rows={4}
+            style={{
+              width: '100%', padding: '12px', borderRadius: 8,
+              border: '1px solid var(--border)', background: 'var(--bg-primary)',
+              color: 'var(--text-primary)', fontSize: 14, resize: 'vertical',
+              boxSizing: 'border-box', fontFamily: 'inherit', lineHeight: 1.6,
+            }}
+          />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+            <span style={{ fontSize: 12, color: charCount > charLimit * 0.9 ? '#ef4444' : 'var(--text-muted)' }}>
+              {charCount} / {charLimit}
+            </span>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              {postError && <span style={{ fontSize: 12, color: '#ef4444' }}>{postError}</span>}
+              <button
+                type="submit"
+                disabled={posting || !newPost.trim()}
+                style={{
+                  padding: '8px 20px', background: posting || !newPost.trim() ? 'var(--text-muted)' : 'var(--accent)',
+                  color: '#fff', border: 'none', borderRadius: 8, fontSize: 13,
+                  fontWeight: 600, cursor: posting || !newPost.trim() ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {posting ? 'Publicando...' : 'Publicar'}
+              </button>
+            </div>
+          </div>
+        </form>
+      </Card>
+
+      {/* ── Hilo de posts ── */}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)', fontSize: 14 }}>
+          Cargando publicaciones...
         </div>
+      )}
+
+      {!loading && posts.length === 0 && (
+        <div style={{
+          textAlign: 'center', padding: '40px 24px', background: 'var(--bg-secondary)',
+          borderRadius: 12, border: '1px solid var(--border)',
+        }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+          <P><strong>Sé el primero en publicar.</strong> Comparte algo interesante sobre la vida universitaria, tips de estudio o lo que piensas de Conniku.</P>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {posts.map(post => (
+          <div
+            key={post.id}
+            style={{
+              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              borderRadius: 12, padding: '16px 18px',
+            }}
+          >
+            {/* Author row */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                background: post.author?.avatar
+                  ? `url(${post.author.avatar}) center/cover`
+                  : 'linear-gradient(135deg, #2D62C8, #5B8DEF)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontWeight: 700, fontSize: 14,
+              }}>
+                {!post.author?.avatar && (post.author?.name?.[0] || '?')}
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {post.author?.name || 'Anónimo'}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                  {post.created_at ? formatDate(post.created_at) : ''}
+                </div>
+              </div>
+            </div>
+
+            {/* Content */}
+            <p style={{
+              fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.65,
+              margin: '0 0 12px', whiteSpace: 'pre-wrap',
+            }}>
+              {post.content}
+            </p>
+
+            {/* Like button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <button
+                onClick={() => handleLike(post.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: likedIds.has(post.id) ? 'rgba(var(--accent-rgb, 45,98,200), 0.12)' : 'none',
+                  border: `1px solid ${likedIds.has(post.id) ? 'var(--accent)' : 'var(--border)'}`,
+                  borderRadius: 20, padding: '4px 12px', cursor: likedIds.has(post.id) ? 'default' : 'pointer',
+                  fontSize: 12, color: likedIds.has(post.id) ? 'var(--accent)' : 'var(--text-muted)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                👍 {post.likes || 0}
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
     </InfoLayout>
   )

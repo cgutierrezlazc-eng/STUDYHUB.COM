@@ -280,6 +280,20 @@ def migrate():
     except Exception as e:
         logger.warning(f"Could not set CEO ghost flag: {e}")
 
+    # Create blog_threads table if it doesn't exist
+    if not inspector.has_table("blog_threads"):
+        with engine.begin() as conn:
+            conn.execute(text("""
+                CREATE TABLE blog_threads (
+                    id VARCHAR(16) PRIMARY KEY,
+                    user_id VARCHAR(16) NOT NULL,
+                    content TEXT NOT NULL,
+                    likes INTEGER DEFAULT 0,
+                    created_at TIMESTAMP
+                )
+            """))
+            logger.info("Created blog_threads table.")
+
     logger.info("Migrations complete.")
 
 
