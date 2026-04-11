@@ -4,7 +4,7 @@ import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
 import CoverPhotoModal, { getCoverStyle, getTemplateById, COVER_TEMPLATES } from '../components/CoverPhotoModal'
-import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
+import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy, Upload, FileUp } from '../components/Icons'
 import ExecutiveShowcase from '../components/ExecutiveShowcase'
 
 interface Props {
@@ -26,6 +26,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias' | 'showcase'>('wall')
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
+  const [cvUploading, setCvUploading] = useState(false)
+  const [cvUploadMsg, setCvUploadMsg] = useState('')
   const [completedCourses, setCompletedCourses] = useState<any[]>([])
   const [coursesLoading, setCoursesLoading] = useState(false)
   const [selectedCert, setSelectedCert] = useState<any>(null)
@@ -140,6 +142,29 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       setCvData(data)
     } catch (err) { console.error('Failed to load CV:', err) }
     finally { setCvLoading(false) }
+  }
+
+  const handleCVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCvUploading(true)
+    setCvUploadMsg('⏳ Analizando tu CV con IA...')
+    try {
+      await api.uploadCV(file)
+      setCvUploadMsg('✅ CV importado. Redirigiendo para que ajustes los detalles...')
+      setTimeout(() => onNavigate('/cv'), 1200)
+    } catch (err: any) {
+      setCvUploadMsg(`❌ ${err.message || 'No se pudo importar. Asegúrate de subir un PDF o Word válido.'}`)
+      setCvUploading(false)
+    }
+    e.target.value = ''
+  }
+
+  const handleCVVisibility = async (vis: string) => {
+    try {
+      await api.updateCV({ ...cvData, visibility: vis })
+      setCvData((prev: any) => ({ ...prev, visibility: vis }))
+    } catch (err) { console.error('Failed to update CV visibility:', err) }
   }
 
   const loadCompletedCourses = async () => {
@@ -1615,14 +1640,101 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <p style={{ color: 'var(--text-muted)', marginTop: 12 }}>{t('userprofile.loadingCV')}</p>
               </div>
             ) : !cvData || (!cvData.headline && !cvData.aboutMe && (!cvData.skills || cvData.skills.length === 0) && (!cvData.experience || cvData.experience.length === 0)) ? (
-              <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
-                <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
-                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-                  {isOwn ? t('userprofile.noCVOwn') : t('userprofile.noCVOther')}
-                </p>
-              </div>
+              isOwn ? (
+                /* ── Owner: Upload + Manual options ── */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <div className="u-card" style={{ padding: '36px 32px', textAlign: 'center' }}>
+                    <div style={{ marginBottom: 16 }}>{FileUp({ size: 52, color: 'var(--accent)' })}</div>
+                    <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>Tu Curriculum Vitae</h3>
+                    <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 460, margin: '0 auto 8px', lineHeight: 1.6 }}>
+                      Sube tu CV en PDF y la IA extrae automáticamente experiencias, habilidades y formación.
+                      También puedes completarlo manualmente.
+                    </p>
+                    {cvUploadMsg && (
+                      <p style={{ fontSize: 13, marginBottom: 16, marginTop: 12, fontWeight: 500, color: cvUploadMsg.startsWith('✅') ? '#22c55e' : cvUploadMsg.startsWith('❌') ? '#ef4444' : 'var(--text-muted)' }}>
+                        {cvUploadMsg}
+                      </p>
+                    )}
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginTop: 24 }}>
+                      <label className="btn btn-primary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {Upload({ size: 16 })} {cvUploading ? 'Analizando...' : 'Subir CV en PDF'}
+                        <input type="file" accept=".pdf,.doc,.docx" onChange={handleCVUpload} disabled={cvUploading} style={{ display: 'none' }} />
+                      </label>
+                      <button className="btn btn-secondary" onClick={() => onNavigate('/cv')} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {Pencil({ size: 16 })} Completar manualmente
+                      </button>
+                    </div>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 20 }}>
+                      Formatos aceptados: PDF, DOC, DOCX · La IA extrae los datos automáticamente con Claude
+                    </p>
+                  </div>
+
+                  {/* Visibility info card */}
+                  <div className="u-card" style={{ padding: 20 }}>
+                    <h4 style={{ margin: '0 0 12px', fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {EyeOff({ size: 15, color: 'var(--accent)' })} Visibilidad del CV
+                    </h4>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
+                      Cuando tengas tu CV listo, elige quién puede verlo:
+                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                      {[
+                        { val: 'public', icon: '🌐', label: 'Todos', desc: 'Visible en Bolsa de Empleo para cualquier usuario' },
+                        { val: 'recruiters', icon: '💼', label: 'Solo Reclutadores', desc: 'Visible únicamente para reclutadores verificados' },
+                        { val: 'private', icon: '🔒', label: 'Solo yo', desc: 'Privado — nadie más puede verlo' },
+                      ].map(opt => (
+                        <div key={opt.val} style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center', background: 'var(--bg-secondary)' }}>
+                          <span style={{ fontSize: 20 }}>{opt.icon}</span>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 13 }}>{opt.label}</div>
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{opt.desc}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* ── Non-owner empty state ── */
+                <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                  <div style={{ marginBottom: 12 }}>{FileText({ size: 48, color: 'var(--text-muted)' })}</div>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                    {t('userprofile.noCVOther')}
+                  </p>
+                </div>
+              )
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* ── CV Management Header (owner only) ── */}
+                {isOwn && (
+                  <div className="u-card" style={{ padding: '12px 18px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                      {EyeOff({ size: 14, color: 'var(--text-muted)' })}
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>Visibilidad:</span>
+                      <select
+                        value={cvData?.visibility || 'public'}
+                        onChange={e => handleCVVisibility(e.target.value)}
+                        style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer' }}
+                      >
+                        <option value="public">🌐 Todos — visible en Bolsa de Empleo</option>
+                        <option value="recruiters">💼 Solo Reclutadores</option>
+                        <option value="private">🔒 Solo yo</option>
+                      </select>
+                    </div>
+                    <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '6px 12px' }}>
+                      {Upload({ size: 13 })} {cvUploading ? 'Analizando...' : 'Actualizar PDF'}
+                      <input type="file" accept=".pdf,.doc,.docx" onChange={handleCVUpload} disabled={cvUploading} style={{ display: 'none' }} />
+                    </label>
+                    <button className="btn btn-primary btn-sm" onClick={() => onNavigate('/cv')} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '6px 12px' }}>
+                      {Pencil({ size: 13 })} Editar CV
+                    </button>
+                  </div>
+                )}
+                {cvUploadMsg && isOwn && (
+                  <div style={{ padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 500, background: cvUploadMsg.startsWith('✅') ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)', border: `1px solid ${cvUploadMsg.startsWith('✅') ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, color: cvUploadMsg.startsWith('✅') ? '#22c55e' : '#ef4444' }}>
+                    {cvUploadMsg}
+                  </div>
+                )}
                 {/* Headline */}
                 {cvData.headline && (
                   <div className="u-card" style={{ padding: 20 }}>
