@@ -4396,6 +4396,131 @@ body.touch-device select {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   ONBOARDING — Dashboard usuario nuevo
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hero gradient */
+.ob-hero {
+  background: linear-gradient(135deg, #2563EB 0%, #7C3AED 100%);
+  border-radius: 16px;
+  padding: 32px 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.ob-hero-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  pointer-events: none;
+}
+.ob-hero-circle--1 { width: 180px; height: 180px; right: -30px; top: -30px; }
+.ob-hero-circle--2 { width: 110px; height: 110px; right: 60px; bottom: -45px; }
+.ob-hero-title {
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  color: #fff;
+}
+.ob-hero-sub {
+  font-size: 13px;
+  opacity: 0.9;
+  margin: 0 0 20px;
+  max-width: 480px;
+  line-height: 1.65;
+}
+.ob-hero-btn {
+  background: #fff;
+  color: #2563EB;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ob-hero-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+/* Section label */
+.ob-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+
+/* Feature cards grid */
+.ob-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ob-feature-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.ob-feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent);
+}
+.ob-feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+.ob-feature-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+.ob-feature-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* Quick actions for new users */
+.ob-quick-action {
+  padding: 16px 8px !important;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid var(--border) !important;
+  background: var(--bg-secondary) !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ob-quick-action:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+@media (max-width: 640px) {
+  .ob-feature-grid { grid-template-columns: 1fr; }
+  .ob-hero { padding: 22px 18px; }
+  .ob-hero-title { font-size: 18px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════
    ADS INFRASTRUCTURE — invisible hasta ADS_ENABLED = true
    (componente retorna null cuando desactivado)
    ═══════════════════════════════════════════════════════════════ */
