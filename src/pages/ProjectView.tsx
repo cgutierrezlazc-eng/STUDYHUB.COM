@@ -72,6 +72,14 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [quizSubmitted, setQuizSubmitted] = useState(false)
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
   const [quizScore, setQuizScore] = useState(0)
+  const [quizDifficulty, setQuizDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
+  const [quizNumQuestions, setQuizNumQuestions] = useState<5 | 10 | 15>(10)
+  const [quizHistory, setQuizHistory] = useState<any[]>(() => {
+    try {
+      const all = JSON.parse(localStorage.getItem('conniku_quiz_history') || '[]')
+      return all.filter((h: any) => h.projectId === id).slice(0, 8)
+    } catch { return [] }
+  })
   const [flashcards, setFlashcards] = useState<any[]>([])
   const [flashcardIndex, setFlashcardIndex] = useState(0)
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false)
@@ -916,74 +924,187 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
         {tab === 'quiz' && (
           <>
-            {/* Initial state: no questions generated yet */}
+            {/* ── SETUP: sin quiz activo ── */}
             {quizQuestions.length === 0 && !isGeneratingQuiz && (
-              <div className="empty-state">
-                <div className="empty-state-icon">{Brain({ size: 40 })}</div>
-                <h3>Quiz de Repaso</h3>
-                <p>Genera preguntas automáticas basadas en tus documentos</p>
-                {project.documents.length === 0 ? (
-                  <p style={{ color: 'var(--warning)', fontSize: 13, marginTop: 8 }}>
-                    {AlertTriangle()} Sube al menos un documento para generar un quiz.
-                  </p>
-                ) : (
-                  <button
-                    className="btn btn-primary"
-                    style={{ marginTop: 16 }}
-                    onClick={async () => {
-                      setIsGeneratingQuiz(true)
-                      try {
-                        const data = await api.generateQuiz(project.id)
-                        setQuizQuestions(data?.questions || [])
-                        setQuizCurrentIndex(0)
-                        setQuizAnswers({})
-                        setQuizSubmitted(false)
-                        setQuizScore(0)
-                      } catch (e) {
-                        console.error('Error generating quiz:', e)
-                      } finally {
-                        setIsGeneratingQuiz(false)
-                      }
-                    }}
-                  >
-                    Generar Quiz
-                  </button>
+              <div>
+                {/* Config card */}
+                <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                    <span style={{ fontSize: 28 }}>{Brain({ size: 28 })}</span>
+                    <div>
+                      <h3 style={{ margin: 0, fontSize: 16 }}>Quiz de {project.name}</h3>
+                      <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>
+                        {project.documents.length} documento{project.documents.length !== 1 ? 's' : ''} disponible{project.documents.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  {project.documents.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--accent-orange)', fontSize: 14 }}>
+                      {AlertTriangle()} Sube al menos un documento para generar un quiz.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Dificultad */}
+                      <div style={{ marginBottom: 16 }}>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+                          Dificultad
+                        </label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {([
+                            { val: 'easy',   label: 'Fácil',   color: 'var(--accent-green)',  emoji: '🟢' },
+                            { val: 'medium', label: 'Media',   color: 'var(--accent-orange)', emoji: '🟡' },
+                            { val: 'hard',   label: 'Difícil', color: 'var(--accent-red)',    emoji: '🔴' },
+                          ] as const).map(d => (
+                            <button
+                              key={d.val}
+                              onClick={() => setQuizDifficulty(d.val)}
+                              style={{
+                                flex: 1, padding: '10px 8px', borderRadius: 10, fontSize: 13,
+                                fontWeight: quizDifficulty === d.val ? 700 : 500,
+                                border: quizDifficulty === d.val ? `2px solid ${d.color}` : '1px solid var(--border)',
+                                background: quizDifficulty === d.val ? d.color + '18' : 'var(--bg-secondary)',
+                                color: quizDifficulty === d.val ? d.color : 'var(--text-secondary)',
+                                cursor: 'pointer', transition: 'all 0.15s',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                              }}
+                            >
+                              {d.emoji} {d.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Número de preguntas */}
+                      <div style={{ marginBottom: 20 }}>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>
+                          Número de preguntas
+                        </label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {([5, 10, 15] as const).map(n => (
+                            <button
+                              key={n}
+                              onClick={() => setQuizNumQuestions(n)}
+                              style={{
+                                flex: 1, padding: '10px 8px', borderRadius: 10, fontSize: 15,
+                                fontWeight: quizNumQuestions === n ? 700 : 500,
+                                border: quizNumQuestions === n ? '2px solid var(--accent)' : '1px solid var(--border)',
+                                background: quizNumQuestions === n ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)',
+                                color: quizNumQuestions === n ? 'var(--accent)' : 'var(--text-secondary)',
+                                cursor: 'pointer', transition: 'all 0.15s',
+                              }}
+                            >
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <button
+                        className="btn btn-primary"
+                        style={{ width: '100%', padding: '12px', fontSize: 15 }}
+                        onClick={async () => {
+                          setIsGeneratingQuiz(true)
+                          try {
+                            const data = await api.generateQuiz(project.id, quizNumQuestions, quizDifficulty)
+                            setQuizQuestions(data?.questions || [])
+                            setQuizCurrentIndex(0)
+                            setQuizAnswers({})
+                            setQuizSubmitted(false)
+                            setQuizScore(0)
+                          } catch (e) {
+                            console.error('Error generating quiz:', e)
+                          } finally {
+                            setIsGeneratingQuiz(false)
+                          }
+                        }}
+                      >
+                        {Sparkles()} Generar Quiz · {quizNumQuestions} preguntas
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Historial de quizzes de esta asignatura */}
+                {quizHistory.length > 0 && (
+                  <div>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 10px' }}>
+                      Historial
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {quizHistory.map((h: any, i: number) => {
+                        const pct = Math.round((h.score / h.total) * 100)
+                        const color = pct >= 70 ? 'var(--accent-green)' : pct >= 40 ? 'var(--accent-orange)' : 'var(--accent-red)'
+                        return (
+                          <div key={i} className="u-card" style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                            <div style={{
+                              width: 44, height: 44, borderRadius: 10, flexShrink: 0,
+                              background: color + '18', display: 'flex', alignItems: 'center',
+                              justifyContent: 'center', flexDirection: 'column',
+                            }}>
+                              <span style={{ fontSize: 14, fontWeight: 800, color, lineHeight: 1 }}>{pct}%</span>
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: 600 }}>
+                                {h.score}/{h.total} correctas
+                                {h.difficulty && (
+                                  <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>
+                                    · {h.difficulty === 'easy' ? 'Fácil' : h.difficulty === 'medium' ? 'Media' : 'Difícil'}
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                                {new Date(h.completedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </div>
+                            <div style={{ height: 4, width: 60, background: 'var(--bg-tertiary)', borderRadius: 2, flexShrink: 0, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
 
-            {/* Loading state */}
+            {/* ── LOADING ── */}
             {isGeneratingQuiz && (
               <div className="empty-state">
                 <div className="empty-state-icon" style={{ animation: 'pulse 1.5s infinite' }}>{Brain({ size: 40 })}</div>
                 <h3>Generando quiz...</h3>
-                <p>Analizando tus documentos para crear preguntas</p>
+                <p>Analizando los documentos de {project.name}</p>
               </div>
             )}
 
-            {/* Question view */}
+            {/* ── PREGUNTAS ── */}
             {quizQuestions.length > 0 && !quizSubmitted && !isGeneratingQuiz && (
               <div>
-                {/* Progress indicator */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                   <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Pregunta {quizCurrentIndex + 1} de {quizQuestions.length}
                   </span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {Object.keys(quizAnswers).length} de {quizQuestions.length} respondidas
-                  </span>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6,
+                      background: quizDifficulty === 'easy' ? 'rgba(5,150,105,0.12)' : quizDifficulty === 'medium' ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)',
+                      color: quizDifficulty === 'easy' ? 'var(--accent-green)' : quizDifficulty === 'medium' ? 'var(--accent-orange)' : 'var(--accent-red)',
+                    }}>
+                      {quizDifficulty === 'easy' ? 'Fácil' : quizDifficulty === 'medium' ? 'Media' : 'Difícil'}
+                    </span>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {Object.keys(quizAnswers).length}/{quizQuestions.length} respondidas
+                    </span>
+                  </div>
                 </div>
                 <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
                   <div style={{
-                    height: '100%',
-                    borderRadius: 2,
-                    background: 'var(--accent)',
-                    transition: 'width 0.3s',
+                    height: '100%', borderRadius: 2, background: 'var(--accent)', transition: 'width 0.3s',
                     width: `${((quizCurrentIndex + 1) / quizQuestions.length) * 100}%`,
                   }} />
                 </div>
 
-                {/* Question card */}
                 <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
                   <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>
                     {quizQuestions[quizCurrentIndex].question}
@@ -996,16 +1117,11 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                           key={idx}
                           onClick={() => setQuizAnswers(prev => ({ ...prev, [quizCurrentIndex]: idx }))}
                           style={{
-                            padding: '12px 16px',
-                            borderRadius: 'var(--radius-sm)',
+                            padding: '12px 16px', borderRadius: 'var(--radius-sm)',
                             border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border-color)',
-                            background: isSelected ? 'rgba(99, 102, 241, 0.1)' : 'var(--bg-secondary)',
-                            color: 'var(--text-primary)',
-                            cursor: 'pointer',
-                            textAlign: 'left',
-                            fontSize: 14,
-                            lineHeight: 1.4,
-                            transition: 'all 0.15s',
+                            background: isSelected ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)',
+                            color: 'var(--text-primary)', cursor: 'pointer',
+                            textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s',
                           }}
                         >
                           <span style={{ fontWeight: 600, marginRight: 10, color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}>
@@ -1018,37 +1134,42 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   </div>
                 </div>
 
-                {/* Navigation buttons */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <button
-                    className="btn btn-secondary"
-                    disabled={quizCurrentIndex === 0}
-                    onClick={() => setQuizCurrentIndex(i => i - 1)}
-                  >
+                  <button className="btn btn-secondary" disabled={quizCurrentIndex === 0} onClick={() => setQuizCurrentIndex(i => i - 1)}>
                     ← Anterior
                   </button>
                   <div style={{ display: 'flex', gap: 8 }}>
                     {quizCurrentIndex < quizQuestions.length - 1 ? (
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => setQuizCurrentIndex(i => i + 1)}
-                      >
+                      <button className="btn btn-primary" onClick={() => setQuizCurrentIndex(i => i + 1)}>
                         Siguiente →
                       </button>
                     ) : (
                       <button
                         className="btn btn-primary"
                         disabled={Object.keys(quizAnswers).length < quizQuestions.length}
+                        title={Object.keys(quizAnswers).length < quizQuestions.length ? 'Responde todas las preguntas primero' : ''}
                         onClick={() => {
                           let correct = 0
-                          quizQuestions.forEach((q: any, i: number) => {
-                            if (quizAnswers[i] === q.correctAnswer) correct++
-                          })
+                          quizQuestions.forEach((q: any, i: number) => { if (quizAnswers[i] === q.correctAnswer) correct++ })
                           setQuizScore(correct)
                           setQuizSubmitted(true)
                           setQuizResult({ score: correct, total: quizQuestions.length })
+                          // Guardar en historial
+                          try {
+                            const entry = {
+                              projectId: project.id,
+                              projectName: project.name,
+                              score: correct,
+                              total: quizQuestions.length,
+                              difficulty: quizDifficulty,
+                              completedAt: new Date().toISOString(),
+                            }
+                            const prev = JSON.parse(localStorage.getItem('conniku_quiz_history') || '[]')
+                            const updated = [entry, ...prev].slice(0, 50)
+                            localStorage.setItem('conniku_quiz_history', JSON.stringify(updated))
+                            setQuizHistory(updated.filter((h: any) => h.projectId === project.id).slice(0, 8))
+                          } catch {}
                         }}
-                        title={Object.keys(quizAnswers).length < quizQuestions.length ? 'Responde todas las preguntas primero' : ''}
                       >
                         Ver Resultados
                       </button>
@@ -1058,17 +1179,17 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               </div>
             )}
 
-            {/* Results view */}
+            {/* ── RESULTADOS ── */}
             {quizSubmitted && quizQuestions.length > 0 && (
               <div>
-                {/* Score summary */}
                 <div className="u-card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
                   <div className="empty-state-icon">
                     {quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? BookOpen({ size: 40 }) : Dumbbell({ size: 40 })}
                   </div>
-                  <h2 style={{ margin: '0 0 8px' }}>
-                    {quizScore} / {quizQuestions.length} correctas
-                  </h2>
+                  <h2 style={{ margin: '0 0 8px' }}>{quizScore} / {quizQuestions.length} correctas</h2>
+                  <div style={{ fontSize: 24, fontWeight: 800, color: quizScore / quizQuestions.length >= 0.7 ? 'var(--accent-green)' : quizScore / quizQuestions.length >= 0.4 ? 'var(--accent-orange)' : 'var(--accent-red)', marginBottom: 8 }}>
+                    {Math.round((quizScore / quizQuestions.length) * 100)}%
+                  </div>
                   <p style={{ color: 'var(--text-secondary)', margin: 0 }}>
                     {quizScore / quizQuestions.length >= 0.7
                       ? '¡Excelente trabajo! Dominas bien el material.'
@@ -1077,71 +1198,46 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         : 'Necesitas repasar más. ¡No te rindas!'}
                   </p>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 12, marginTop: 20 }}>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={() => {
-                        setQuizCurrentIndex(0)
-                        setQuizAnswers({})
-                        setQuizSubmitted(false)
-                        setQuizScore(0)
-                        setQuizResult(null)
-                      }}
-                    >
+                    <button className="btn btn-secondary" onClick={() => {
+                      setQuizCurrentIndex(0); setQuizAnswers({}); setQuizSubmitted(false); setQuizScore(0); setQuizResult(null)
+                    }}>
                       {RotateCcw()} Reintentar
                     </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={async () => {
-                        setQuizQuestions([])
-                        setQuizCurrentIndex(0)
-                        setQuizAnswers({})
-                        setQuizSubmitted(false)
-                        setQuizScore(0)
-                        setQuizResult(null)
-                        setIsGeneratingQuiz(true)
-                        try {
-                          const data = await api.generateQuiz(project.id)
-                          setQuizQuestions(data?.questions || [])
-                        } catch (e) {
-                          console.error('Error generating quiz:', e)
-                        } finally {
-                          setIsGeneratingQuiz(false)
-                        }
-                      }}
-                    >
+                    <button className="btn btn-secondary" onClick={() => {
+                      setQuizQuestions([]); setQuizCurrentIndex(0); setQuizAnswers({})
+                      setQuizSubmitted(false); setQuizScore(0); setQuizResult(null)
+                    }}>
+                      Cambiar config
+                    </button>
+                    <button className="btn btn-primary" onClick={async () => {
+                      setQuizQuestions([]); setQuizCurrentIndex(0); setQuizAnswers({})
+                      setQuizSubmitted(false); setQuizScore(0); setQuizResult(null)
+                      setIsGeneratingQuiz(true)
+                      try {
+                        const data = await api.generateQuiz(project.id, quizNumQuestions, quizDifficulty)
+                        setQuizQuestions(data?.questions || [])
+                      } catch (e) { console.error(e) } finally { setIsGeneratingQuiz(false) }
+                    }}>
                       {Sparkles()} Nuevo Quiz
                     </button>
                   </div>
                 </div>
 
-                {/* Detailed results */}
                 <h3 style={{ marginBottom: 12 }}>Detalle de Respuestas</h3>
                 {quizQuestions.map((q: any, i: number) => {
                   const userAnswer = quizAnswers[i]
                   const isCorrect = userAnswer === q.correctAnswer
                   return (
-                    <div
-                      key={i}
-                      className="u-card"
-                      style={{
-                        padding: 20,
-                        marginBottom: 12,
-                        borderLeft: `4px solid ${isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)'}`,
-                      }}
-                    >
+                    <div key={i} className="u-card" style={{
+                      padding: 20, marginBottom: 12,
+                      borderLeft: `4px solid ${isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)'}`,
+                    }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                        <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.5, flex: 1 }}>
-                          {i + 1}. {q.question}
-                        </h4>
+                        <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.5, flex: 1 }}>{i + 1}. {q.question}</h4>
                         <span style={{
-                          fontSize: 12,
-                          fontWeight: 600,
-                          padding: '2px 8px',
-                          borderRadius: 'var(--radius-sm)',
-                          background: isCorrect ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)',
+                          fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 'var(--radius-sm)', marginLeft: 12, whiteSpace: 'nowrap',
+                          background: isCorrect ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)',
                           color: isCorrect ? 'var(--success, #22c55e)' : 'var(--danger, #ef4444)',
-                          marginLeft: 12,
-                          whiteSpace: 'nowrap',
                         }}>
                           {isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
                         </span>
@@ -1161,15 +1257,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                         </div>
                       )}
                       {q.explanation && (
-                        <div style={{
-                          fontSize: 13,
-                          color: 'var(--text-secondary)',
-                          background: 'var(--bg-secondary)',
-                          padding: '10px 12px',
-                          borderRadius: 'var(--radius-sm)',
-                          marginTop: 8,
-                          lineHeight: 1.5,
-                        }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: 'var(--radius-sm)', marginTop: 8, lineHeight: 1.5 }}>
                           {Lightbulb()} {q.explanation}
                         </div>
                       )}

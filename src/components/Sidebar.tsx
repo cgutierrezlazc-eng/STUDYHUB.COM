@@ -31,7 +31,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   // ── Active-section detection ─────────────────────────────────
   const socialPaths   = ['/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
-  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/quizzes', '/gamification', '/search', '/calendar', '/marketplace', '/courses', '/tutores']
+  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/gamification', '/search', '/calendar', '/marketplace', '/courses', '/tutores']
   const supportPaths  = ['/profile', '/subscription', '/suggestions', '/admin', '/admin-panel']
 
   const isSocialActive   = socialPaths.some(p => currentPath.startsWith(p)) || currentPath.startsWith('/user/')
@@ -178,12 +178,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
               onClick={() => onNavigate('/study-paths')}
             >
               {Icons.bookOpen(IC.rooms)} Rutas de Estudio
-            </button>
-            <button
-              className={`nav-item ${isActive('/quizzes') ? 'active' : ''}`}
-              onClick={() => onNavigate('/quizzes')}
-            >
-              {Icons.sparkles(IC.ai)} Quizzes
             </button>
             <button
               className={`nav-item ${isActive('/gamification') ? 'active' : ''}`}
