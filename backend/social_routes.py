@@ -265,7 +265,7 @@ def get_friends(user: User = Depends(get_current_user), db: Session = Depends(ge
     for f in friendships:
         friend_id = f.addressee_id if f.requester_id == user.id else f.requester_id
         friend = db.query(User).filter(User.id == friend_id).first()
-        if friend:
+        if friend and not getattr(friend, 'is_ghost', False):
             friends.append({**user_brief(friend), "friendshipId": f.id, "since": f.updated_at.isoformat()})
     return friends
 
@@ -292,7 +292,7 @@ def get_user_friends(user_id: str, user: User = Depends(get_current_user), db: S
     for f in friendships:
         friend_id = f.addressee_id if f.requester_id == user_id else f.requester_id
         friend = db.query(User).filter(User.id == friend_id).first()
-        if friend:
+        if friend and not getattr(friend, 'is_ghost', False):
             friends.append({**user_brief(friend), "since": f.updated_at.isoformat()})
     return friends
 
@@ -339,6 +339,7 @@ def search_users(
     users = db.query(User).filter(
         User.id != user.id,
         User.is_banned == False,
+        User.is_ghost == False,
         or_(
             User.username.ilike(query),
             User.first_name.ilike(query),
@@ -357,6 +358,11 @@ def get_user_profile(
 ):
     target = db.query(User).filter(User.id == user_id).first()
     if not target:
+        raise HTTPException(404, "Usuario no encontrado")
+
+    # Ghost profiles are invisible to non-admin users
+    is_admin_viewer = getattr(user, 'is_admin', False) or getattr(user, 'role', '') in ('owner', 'admin')
+    if getattr(target, 'is_ghost', False) and not is_admin_viewer and user.id != target.id:
         raise HTTPException(404, "Usuario no encontrado")
 
     is_own = user.id == user_id
@@ -1321,12 +1327,14 @@ def get_friend_suggestions(
         same_uni_candidates = db.query(User).filter(
             User.id.notin_(exclude_ids),
             User.is_banned == False,
+            User.is_ghost == False,
             func.lower(User.university) == user.university.lower(),
         ).limit(50).all()
 
     other_candidates = db.query(User).filter(
         User.id.notin_(exclude_ids | {c.id for c in same_uni_candidates}),
         User.is_banned == False,
+        User.is_ghost == False,
     ).limit(50).all()
 
     candidates = same_uni_candidates + other_candidates

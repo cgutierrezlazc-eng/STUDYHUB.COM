@@ -103,6 +103,8 @@ def migrate():
         # Cover photo
         ("cover_photo", "VARCHAR(500) DEFAULT ''"),
         ("cover_type", "VARCHAR(20) DEFAULT 'template'"),
+        # Ghost / invisible profile (CEO only — not visible to other users)
+        ("is_ghost", "BOOLEAN DEFAULT FALSE"),
     ]
 
     inspector = inspect(engine)
@@ -255,6 +257,28 @@ def migrate():
                 )
             """))
             logger.info("Created moderation_queue table.")
+
+    # ─── Set CEO as ghost (invisible profile) ────────────────────
+    try:
+        import json
+        from pathlib import Path
+        config_file = Path(os.environ.get("DATA_DIR", "/data")) / "config.json"
+        admin_email = ""
+        if config_file.exists():
+            try:
+                admin_email = json.loads(config_file.read_text()).get("admin_email", "").lower()
+            except Exception:
+                pass
+        if not admin_email:
+            admin_email = os.environ.get("ADMIN_EMAIL", "").lower()
+        if admin_email:
+            with engine.begin() as conn:
+                conn.execute(text(
+                    "UPDATE users SET is_ghost = TRUE WHERE email = :email"
+                ), {"email": admin_email})
+                logger.info(f"CEO ghost flag set for {admin_email}")
+    except Exception as e:
+        logger.warning(f"Could not set CEO ghost flag: {e}")
 
     logger.info("Migrations complete.")
 

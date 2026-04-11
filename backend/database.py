@@ -107,6 +107,7 @@ class User(Base):
     is_banned = Column(Boolean, nullable=False, default=False)
     ban_reason = Column(String(500), nullable=True)
     is_admin = Column(Boolean, nullable=False, default=False)
+    is_ghost = Column(Boolean, nullable=False, default=False)  # invisible to other users
     role = Column(String(20), nullable=False, default="user")  # user | admin | owner | utp
     tos_accepted_at = Column(DateTime, nullable=True)
     onboarding_completed = Column(Boolean, nullable=False, default=False)
