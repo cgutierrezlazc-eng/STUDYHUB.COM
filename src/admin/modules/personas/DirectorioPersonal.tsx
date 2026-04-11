@@ -4,7 +4,15 @@ import { Employee } from '../../shared/types'
 
 // ─── Constantes laborales Chile ────────────────────────────────
 const IMM = 510966
-const AFP_LIST = ['Modelo','Capital','Cuprum','Habitat','PlanVital','ProVida','Uno']
+const AFP_LIST = [
+  { value: 'modelo',   label: 'Modelo' },
+  { value: 'capital',  label: 'Capital' },
+  { value: 'cuprum',   label: 'Cuprum' },
+  { value: 'habitat',  label: 'Habitat' },
+  { value: 'planvital',label: 'PlanVital' },
+  { value: 'provida',  label: 'ProVida' },
+  { value: 'uno',      label: 'Uno' },
+]
 const HEALTH_OPTIONS = [
   { value: 'fonasa', label: 'FONASA' },
   { value: 'isapre', label: 'ISAPRE' },
@@ -143,7 +151,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     position: '', department: 'Tecnologia', hireDate: '',
     contractType: 'plazo_fijo', endDate: '', workSchedule: 'full_time', weeklyHours: 45,
     grossSalary: IMM, colacion: 0, movilizacion: 0,
-    afp: 'Modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
+    afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_rut', bankAccountNumber: '',
   }
   const [form, setForm] = useState<any>(emptyForm)
