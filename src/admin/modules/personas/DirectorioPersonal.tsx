@@ -37,6 +37,47 @@ const ACCOUNT_TYPES = [
   { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
   { value: 'cuenta_rut', label: 'Cuenta RUT' },
 ]
+// ─── Tasas previsionales Chile 2025 ────────────────────────────
+// Fuente: Superintendencia de Pensiones (www.spensiones.cl) — vigentes 2025
+const AFP_RATES: Record<string, { commission: number; obligatory: number }> = {
+  modelo:    { commission: 0.58, obligatory: 10.00 },
+  capital:   { commission: 1.44, obligatory: 10.00 },
+  cuprum:    { commission: 1.44, obligatory: 10.00 },
+  habitat:   { commission: 1.27, obligatory: 10.00 },
+  planvital: { commission: 1.16, obligatory: 10.00 },
+  provida:   { commission: 1.45, obligatory: 10.00 },
+  uno:       { commission: 0.49, obligatory: 10.00 },
+}
+// SIS (Seguro Invalidez y Sobrevivencia): 1.49% — costo del EMPLEADOR, no se descuenta del trabajador
+const SIS_RATE = 1.49
+const FONASA_RATE = 7.00   // % de remuneración imponible (Ley 18.469)
+const AFC_WORKER = 0.60    // % trabajador (Ley 19.728)
+const AFC_EMPLOYER_INDEFINIDO = 2.40  // % empleador contrato indefinido
+const AFC_EMPLOYER_PLAZO_FIJO  = 3.00 // % empleador contrato plazo fijo/obra
+// ISAPREs vigentes en Chile 2025 — cotización mínima legal 7% remuneración imponible
+// (los planes tienen un costo adicional en UF según institución y cobertura)
+const ISAPRE_LIST = [
+  { value: 'banmedica',     label: 'Banmédica' },
+  { value: 'colmena',       label: 'Colmena' },
+  { value: 'cruz_blanca',   label: 'Cruz Blanca' },
+  { value: 'nueva_masvida', label: 'Nueva MásVida' },
+  { value: 'consalud',      label: 'Consalud' },
+  { value: 'vida_tres',     label: 'Vida Tres' },
+  { value: 'esencial',      label: 'Esencial' },
+]
+// Cálculo de descuentos legales sobre remuneración imponible
+function calcDescuentos(grossSalary: number, afp: string, healthSystem: string, contractType: string) {
+  const afpRate = AFP_RATES[afp] || AFP_RATES.modelo
+  const afpObligatorio = Math.round(grossSalary * afpRate.obligatory / 100)
+  const afpComision    = Math.round(grossSalary * afpRate.commission  / 100)
+  const afpTotal       = afpObligatorio + afpComision
+  const salud          = Math.round(grossSalary * FONASA_RATE / 100)
+  const afcWorker      = Math.round(grossSalary * AFC_WORKER  / 100)
+  const afcEmployer    = Math.round(grossSalary * (contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO) / 100)
+  const sisEmployer    = Math.round(grossSalary * SIS_RATE / 100)
+  const totalWorker    = afpTotal + salud + afcWorker
+  return { afpObligatorio, afpComision, afpTotal, salud, afcWorker, afcEmployer, sisEmployer, totalWorker }
+}
 const POSITIONS_LIST = [
   { value: 'gerente_general',      label: 'Gerente General / CEO' },
   { value: 'gerente_tecnologia',   label: 'Gerente de Tecnología / CTO' },
@@ -364,7 +405,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
       <tr><td>Giro</td><td>Desarrollo y Comercialización de Software (631200)</td></tr>
       <tr><td>Domicilio</td><td>Antofagasta, Región de Antofagasta, Chile</td></tr>
       <tr><td>Email</td><td>contacto@conniku.com</td></tr>
-      <tr><td>Representante Legal</td><td>Gerente General — Conniku SpA</td></tr>
+      <tr><td>Representante Legal</td><td>Cristian Andrés Gutiérrez Lazcano — RUT 14.112.896-5</td></tr>
     </table>
     <strong>Trabajador:</strong>
     <table class="data">
@@ -409,27 +450,72 @@ function buildContractHTML(form: any, jobDescription: string): string {
   </div>
 
   <div class="clause-title">Sexto — Remuneración, Cotizaciones y Política de Pagos</div>
-  <div class="clause">El Trabajador percibirá la siguiente remuneración mensual bruta:</div>
-  <table class="data">
-    <tr><td>Sueldo Base Bruto</td><td><strong>${fmtMoney(Number(form.grossSalary))}</strong> mensuales (Art. 41 y 44 CT — no inferior al Ingreso Mínimo Mensual vigente)</td></tr>
-    ${Number(form.colacion) > 0 ? `<tr><td>Asignación de Colación (no imponible)</td><td>${fmtMoney(Number(form.colacion))}</td></tr>` : ''}
-    ${Number(form.movilizacion) > 0 ? `<tr><td>Asignación de Movilización (no imponible)</td><td>${fmtMoney(Number(form.movilizacion))}</td></tr>` : ''}
-    <tr><td>AFP</td><td>${afpLabel} — cotización obligatoria (Ley 3.500)</td></tr>
-    <tr><td>Previsión de Salud</td><td>${healthLabel} — cotización legal 7% imponible</td></tr>
-    <tr><td>Seguro de Cesantía (AFC)</td><td>${form.afcActive ? 'Sí — cotización trabajador 0,6% + empleador 2,4% (Ley 19.728)' : 'No aplica'}</td></tr>
-    <tr><td>Forma de Pago</td><td>${form.bankName} · ${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || ''} N° ${form.bankAccountNumber || '—'}</td></tr>
+  <div class="clause">El Trabajador percibirá la siguiente remuneración mensual, con el detalle de descuentos legales calculados sobre la remuneración imponible:</div>
+  ${(() => {
+    const salary = Number(form.grossSalary)
+    const d = calcDescuentos(salary, form.afp, form.healthSystem, form.contractType)
+    const isapreLabel = form.healthSystem === 'isapre' ? (ISAPRE_LIST.find(i => i.value === form.isapreProvider)?.label || 'ISAPRE') : ''
+    const afpR = AFP_RATES[form.afp] || AFP_RATES.modelo
+    const netEstimate = salary - d.afpTotal - d.salud - d.afcWorker
+    const afcEmployerRate = form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO
+    return `<table class="data">
+    <tr><td colspan="3" style="background:#e8f5e9;font-weight:bold;text-align:center;font-size:10pt;">HABERES</td></tr>
+    <tr><td>Sueldo Base Bruto (imponible)</td><td style="font-size:10pt;color:#555;">Art. 41 y 44 CT — no inferior al IMM vigente</td><td><strong>${fmtMoney(salary)}</strong></td></tr>
+    ${Number(form.colacion) > 0 ? `<tr><td>Asignación de Colación (no imponible)</td><td style="font-size:10pt;color:#555;">No afecta base imponible</td><td>${fmtMoney(Number(form.colacion))}</td></tr>` : ''}
+    ${Number(form.movilizacion) > 0 ? `<tr><td>Asignación de Movilización (no imponible)</td><td style="font-size:10pt;color:#555;">No afecta base imponible</td><td>${fmtMoney(Number(form.movilizacion))}</td></tr>` : ''}
+    <tr><td colspan="3" style="background:#fff3e0;font-weight:bold;text-align:center;font-size:10pt;">DESCUENTOS TRABAJADOR</td></tr>
+    <tr>
+      <td>AFP ${afpLabel} (Ley 3.500)</td>
+      <td style="font-size:10pt;color:#555;">10% obligatorio ${fmtMoney(d.afpObligatorio)} + ${afpR.commission}% comisión ${fmtMoney(d.afpComision)} = ${(afpR.obligatory + afpR.commission).toFixed(2)}% total</td>
+      <td><strong>${fmtMoney(d.afpTotal)}</strong></td>
+    </tr>
+    <tr>
+      <td>${form.healthSystem === 'fonasa' ? 'FONASA (Ley 18.469)' : `ISAPRE ${isapreLabel} (DFL 1/2005)`}</td>
+      <td style="font-size:10pt;color:#555;">${FONASA_RATE}% remuneración imponible${form.healthSystem === 'isapre' ? ' — mínimo legal; plan puede tener costo adicional en UF' : ''}</td>
+      <td><strong>${fmtMoney(d.salud)}</strong></td>
+    </tr>
+    <tr>
+      <td>AFC — Seguro Cesantía trabajador (Ley 19.728)</td>
+      <td style="font-size:10pt;color:#555;">${AFC_WORKER}% remuneración imponible</td>
+      <td><strong>${fmtMoney(d.afcWorker)}</strong></td>
+    </tr>
+    <tr style="background:#f5f5f5;">
+      <td><strong>Total descuentos trabajador</strong></td>
+      <td style="font-size:10pt;color:#555;">AFP + Salud + AFC trabajador</td>
+      <td><strong>${fmtMoney(d.totalWorker)}</strong></td>
+    </tr>
+    <tr style="background:#e3f2fd;">
+      <td><strong>Sueldo líquido estimado *</strong></td>
+      <td style="font-size:10pt;color:#555;">Antes de Impuesto Único 2ª Categoría (Art. 42 Ley de Renta)</td>
+      <td><strong>${fmtMoney(netEstimate)}</strong></td>
+    </tr>
+    <tr><td colspan="3" style="background:#fce4ec;font-weight:bold;text-align:center;font-size:10pt;">CARGO EMPLEADOR (no se descuenta del trabajador)</td></tr>
+    <tr>
+      <td>AFC — Seguro Cesantía empleador (Ley 19.728)</td>
+      <td style="font-size:10pt;color:#555;">${afcEmployerRate}% — ${form.contractType === 'indefinido' ? 'contrato indefinido' : 'contrato plazo fijo/obra'}</td>
+      <td>${fmtMoney(d.afcEmployer)}</td>
+    </tr>
+    <tr>
+      <td>SIS — Seguro Invalidez y Sobrevivencia (Ley 3.500)</td>
+      <td style="font-size:10pt;color:#555;">${SIS_RATE}% — íntegro cargo empleador</td>
+      <td>${fmtMoney(d.sisEmployer)}</td>
+    </tr>
+    <tr><td colspan="3" style="background:#f5f5f5;font-weight:bold;text-align:center;font-size:10pt;">FORMA DE PAGO</td></tr>
+    <tr><td>Cuenta bancaria</td><td colspan="2">${form.bankName} · ${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || ''} N° ${form.bankAccountNumber || '—'}</td></tr>
   </table>
+  <div style="font-size:9.5pt;color:#666;margin:4px 0 10px;">* El sueldo líquido definitivo puede variar por Impuesto Único de 2ª Categoría, pensión alimenticia u otros descuentos autorizados. Tasas AFP según Superintendencia de Pensiones (spensiones.cl) — vigentes 2025, se actualizan anualmente.</div>`
+  })()}
   <div class="clause">
-    <strong>Cierre de mes:</strong> Las remuneraciones se calcularán considerando el cierre del período el <strong>día 22 de cada mes</strong>. Los días trabajados entre el 23 y el último día del mes se arrastrarán al período siguiente para efectos del cálculo. <strong>Fecha de pago:</strong> El pago se realizará el <strong>último día hábil de cada mes</strong>, mediante depósito en la cuenta bancaria indicada, conforme al artículo 55 del Código del Trabajo.
+    <strong>Cierre de mes:</strong> Las remuneraciones se calcularán considerando el cierre del período el <strong>día 22 de cada mes</strong>. Los días trabajados entre el 23 y el último día del mes se arrastrarán al período siguiente. <strong>Fecha de pago:</strong> El pago se realizará el <strong>último día hábil de cada mes</strong>, mediante depósito en la cuenta bancaria indicada (Art. 55 CT).
   </div>
   <div class="clause">
-    <strong>Anticipo de remuneración (Art. 58 CT):</strong> El Trabajador podrá solicitar un anticipo de hasta el <strong>40% de su sueldo bruto</strong>, previa solicitud escrita al Empleador. Esta facultad estará disponible desde el segundo mes de contrato. El anticipo será descontado íntegramente en la liquidación del mes correspondiente.
+    <strong>Anticipo de remuneración (Art. 58 CT):</strong> El Trabajador podrá solicitar un anticipo de hasta el <strong>40% de su sueldo bruto</strong>, previa solicitud escrita al Empleador. Esta facultad estará disponible desde el <strong>segundo mes</strong> de contrato. El anticipo será descontado íntegramente en la liquidación del mes correspondiente.
   </div>
   <div class="clause">
-    <strong>Cotizaciones previsionales:</strong> El Empleador enterará las cotizaciones obligatorias de AFP, Salud y AFC a través de la plataforma <strong>Previred</strong> (previred.com), dentro del plazo legal establecido (hasta el 10° día hábil del mes siguiente al devengo). El Trabajador recibirá copia de la liquidación de sueldo mensual debidamente firmada por el Empleador.
+    <strong>Cotizaciones previsionales:</strong> El Empleador enterará las cotizaciones obligatorias de AFP, Salud y AFC a través de <strong>Previred</strong> (previred.com), dentro del plazo legal (hasta el 10° día hábil del mes siguiente). El Trabajador recibirá copia de la liquidación de sueldo mensual debidamente firmada.
   </div>
   <div class="clause">
-    <strong>Descuentos legales (Art. 58 CT):</strong> Solo se podrán efectuar descuentos de la remuneración para el pago de cotizaciones previsionales, impuesto de segunda categoría, pensión alimenticia judicial, cuotas sindicales y demás obligaciones legales. Cualquier otro descuento requiere autorización escrita del Trabajador.
+    <strong>Descuentos legales (Art. 58 CT):</strong> Solo se podrán efectuar descuentos para cotizaciones previsionales, impuesto de segunda categoría, pensión alimenticia judicial, cuotas sindicales y demás obligaciones legales. Cualquier otro descuento requiere autorización escrita del Trabajador.
   </div>
 
   <div class="clause-title">Séptimo — Vacaciones y Feriado Anual</div>
@@ -527,10 +613,10 @@ function buildContractHTML(form: any, jobDescription: string): string {
   <div class="signatures">
     <div class="sig-block">
       <div class="sig-line">
-        <div class="sig-name">Conniku SpA</div>
-        <div class="sig-role">RUT 78.395.702-7</div>
-        <div class="sig-role">Empleador — Representante Legal</div>
-        <div class="sig-role">Antofagasta, Chile</div>
+        <div class="sig-name">Cristian Andrés Gutiérrez Lazcano</div>
+        <div class="sig-role">RUT 14.112.896-5</div>
+        <div class="sig-role">Representante Legal — Conniku SpA RUT 78.395.702-7</div>
+        <div class="sig-role">Av. Argentina 1805, Depto. 502 · Antofagasta</div>
       </div>
     </div>
     <div class="sig-block">
@@ -570,7 +656,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     positionKey: '', positionOther: '', department: 'Tecnologia', hireDate: '',
     contractType: 'plazo_fijo', endDate: '', workSchedule: 'full_time', weeklyHours: 45,
     grossSalary: IMM, colacion: 0, movilizacion: 0,
-    afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
+    afp: 'modelo', healthSystem: 'fonasa', isapreProvider: '', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_rut', bankAccountNumber: '',
   }
   const [step, setStep]   = useState<1 | 2>(1)
@@ -744,11 +830,56 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 </Field>
                 <Field label="Colación"><Input type="number" value={form.colacion} onChange={v => setForm((p:any) => ({...p, colacion: Number(v)}))} /></Field>
                 <Field label="Movilización"><Input type="number" value={form.movilizacion} onChange={v => setForm((p:any) => ({...p, movilizacion: Number(v)}))} /></Field>
-                <Field label="AFP"><Select value={form.afp} onChange={F('afp')} options={AFP_LIST} /></Field>
-                <Field label="Salud"><Select value={form.healthSystem} onChange={F('healthSystem')} options={HEALTH_OPTIONS} /></Field>
-                {form.healthSystem === 'isapre' && (
-                  <Field label="Nombre ISAPRE"><Input value={form.isapreName || ''} onChange={F('isapreName')} /></Field>
-                )}
+                <Field label="AFP">
+                  <Select value={form.afp} onChange={F('afp')} options={AFP_LIST} />
+                  {(() => {
+                    const r = AFP_RATES[form.afp]
+                    const total = r.obligatory + r.commission
+                    const monto = Math.round(Number(form.grossSalary) * total / 100)
+                    return (
+                      <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>10% obligatorio + {r.commission}% comisión = </span>
+                        <strong style={{ color: 'var(--accent)' }}>{total.toFixed(2)}% → {fmtMoney(monto)}</strong>
+                        <br /><span style={{ fontSize: 10, color: 'var(--text-muted)' }}>SIS {SIS_RATE}% lo paga el empleador — spensiones.cl 2025</span>
+                      </div>
+                    )
+                  })()}
+                </Field>
+                <Field label="Salud">
+                  <Select value={form.healthSystem} onChange={F('healthSystem')} options={HEALTH_OPTIONS} />
+                  {form.healthSystem === 'fonasa' && (
+                    <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>FONASA {FONASA_RATE}% remuneración imponible → </span>
+                      <strong style={{ color: 'var(--accent)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * FONASA_RATE / 100))}</strong>
+                    </div>
+                  )}
+                  {form.healthSystem === 'isapre' && (
+                    <div style={{ marginTop: 6 }}>
+                      <Select
+                        value={form.isapreProvider || ''}
+                        onChange={F('isapreProvider')}
+                        options={[{ value: '', label: '— Seleccionar ISAPRE —' }, ...ISAPRE_LIST]}
+                      />
+                      <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                        <span style={{ color: 'var(--text-secondary)' }}>Mínimo legal: {FONASA_RATE}% → </span>
+                        <strong style={{ color: 'var(--accent)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * FONASA_RATE / 100))}</strong>
+                        <br /><span style={{ fontSize: 10 }}>El plan específico puede tener costo adicional en UF según cobertura.</span>
+                      </div>
+                    </div>
+                  )}
+                </Field>
+                <Field label="AFC (Seguro Cesantía)">
+                  <div style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-tertiary)', fontSize: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Trabajador {AFC_WORKER}%</span>
+                      <strong>{fmtMoney(Math.round(Number(form.grossSalary) * AFC_WORKER / 100))}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-secondary)' }}>Empleador {form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO}%</span>
+                      <span style={{ color: 'var(--text-muted)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * (form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO) / 100))} (cargo empresa)</span>
+                    </div>
+                  </div>
+                </Field>
               </div>
 
               <SectionTitle>Datos Bancarios</SectionTitle>
