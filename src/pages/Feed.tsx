@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { api } from '../services/api'
 import { useI18n } from '../services/i18n'
 import { Home, Camera, Megaphone, MessageSquare, Calendar, BookOpen, BarChart3, Users as UsersIcon, Share2, Save as SaveIcon, Globe, Lock, ListChecks, Sparkles, MoreVertical, Pencil, Trash2, Check, X, Plus } from '../components/Icons'
+import AdSlot from '../components/AdSlot'
 
 interface Props {
   onNavigate: (path: string) => void
@@ -28,8 +29,6 @@ export default function Feed({ onNavigate }: Props) {
   const [suggestedTags, setSuggestedTags] = useState<string[]>([])
   const [tagsLoading, setTagsLoading] = useState(false)
   const tagTimeoutRef = useRef<any>(null)
-  const [universityNews, setUniversityNews] = useState<any[]>([])
-  const [newsLoading, setNewsLoading] = useState(false)
   const [commentTexts, setCommentTexts] = useState<Record<string, string>>({})
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
@@ -43,7 +42,6 @@ export default function Feed({ onNavigate }: Props) {
   const [creatingList, setCreatingList] = useState(false)
   const visibilityRef = useRef<HTMLDivElement>(null)
   const imageInputRef = useRef<HTMLInputElement>(null)
-  const [suggestedPeople, setSuggestedPeople] = useState<any[]>([])
   // Edit post state
   const [editingPostId, setEditingPostId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
@@ -63,20 +61,8 @@ export default function Feed({ onNavigate }: Props) {
   useEffect(() => {
     loadFeed()
     api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
-    loadUniversityNews()
-    api.getFriendSuggestions().then(data => setSuggestedPeople((data || []).slice(0, 5))).catch(() => {})
     api.getTrendingPosts().then(data => setTrendingPosts(data || [])).catch(() => {})
   }, [])
-
-  const loadUniversityNews = async () => {
-    if (localStorage.getItem('conniku_university_news') === 'false') return
-    try {
-      setNewsLoading(true)
-      const data = await api.getUniversityNews()
-      setUniversityNews(data.items || [])
-    } catch (err) { console.error('Failed to load news:', err) }
-    finally { setNewsLoading(false) }
-  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -739,7 +725,7 @@ export default function Feed({ onNavigate }: Props) {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                {posts.map(post => (
+                {posts.map((post, postIndex) => (
                   <div key={post.id} id={`post-${post.id}`} className="u-card" style={{ padding: 16 }}>
                     {/* Post Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
@@ -1033,6 +1019,8 @@ export default function Feed({ onNavigate }: Props) {
                       </div>
                     )}
                   </div>
+                  {/* Ad inline — aparece después del 4to post (invisible hasta ADS_ENABLED = true) */}
+                  {postIndex === 3 && <AdSlot placement="feed-inline" />}
                 ))}
 
                 {hasMore && (
@@ -1046,137 +1034,6 @@ export default function Feed({ onNavigate }: Props) {
 
           {/* Right Sidebar */}
           <div style={{ position: 'sticky', top: 20 }}>
-            {/* Suggested People */}
-            {suggestedPeople.length > 0 && (
-              <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
-                <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border, #2a3038)' }}>
-                  <h4 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {UsersIcon({ size: 18 })} Personas sugeridas
-                  </h4>
-                </div>
-                <div style={{ padding: '8px 12px' }}>
-                  {suggestedPeople.map((s: any) => (
-                    <div
-                      key={s.id}
-                      onClick={() => onNavigate(`/user/${s.id}`)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 8px',
-                        borderRadius: 8, cursor: 'pointer', transition: 'background 0.15s',
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                    >
-                      <div style={{
-                        width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontWeight: 700, fontSize: 14, flexShrink: 0, overflow: 'hidden',
-                      }}>
-                        {s.avatar ? <img src={s.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} /> : (s.firstName?.[0] || '?')}
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {s.firstName} {s.lastName}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {s.career || s.university || `@${s.username}`}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => onNavigate('/friends')}
-                    style={{
-                      width: '100%', padding: '8px', marginTop: 4, background: 'none',
-                      border: 'none', color: 'var(--accent)', fontSize: 12, fontWeight: 600,
-                      cursor: 'pointer', textAlign: 'center', borderRadius: 6,
-                    }}
-                  >
-                    Ver todos
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* University News */}
-            {localStorage.getItem('conniku_university_news') !== 'false' && (
-              <div style={{ marginBottom: 16, borderRadius: 12, overflow: 'hidden', background: 'var(--bg-card, #1E252A)', border: '1px solid var(--border, #2a3038)' }}>
-                {/* Header */}
-                <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border, #2a3038)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
-                    <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary, #F5F7F8)' }}>
-                      {t('feed.newsTitle')} de {user?.university || 'tu universidad'}
-                    </h4>
-                  </div>
-                  {universityNews.length > 0 && (
-                    <span style={{ fontSize: 11, color: 'var(--text-muted, #8a9bae)', background: 'var(--bg-tertiary, #151B1E)', padding: '3px 8px', borderRadius: 10 }}>
-                      {universityNews.length} {universityNews.length === 1 ? 'noticia' : 'noticias'}
-                    </span>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div style={{ padding: '12px 16px' }}>
-                  {newsLoading ? (
-                    <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13 }}>
-                      {t('feed.loadingNews')}
-                    </div>
-                  ) : universityNews.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: 20, color: 'var(--text-muted, #8a9bae)', fontSize: 13, lineHeight: 1.5 }}>
-                      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.4, marginBottom: 8 }}><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
-                      <div>{t('feed.newsEmpty')}</div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {universityNews.map((item: any, idx: number) => (
-                        <a
-                          key={idx}
-                          href={item.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            display: 'flex', gap: 12, padding: 12, borderRadius: 10,
-                            background: 'var(--bg-tertiary, #151B1E)', textDecoration: 'none',
-                            border: '1px solid transparent', transition: 'border-color 0.2s, background 0.2s',
-                            cursor: 'pointer',
-                          }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = '#2D62C8'; e.currentTarget.style.background = 'rgba(45,98,200,0.06)' }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'transparent'; e.currentTarget.style.background = 'var(--bg-tertiary, #151B1E)' }}
-                        >
-                          {item.imageUrl && (
-                            <img
-                              src={item.imageUrl}
-                              alt=""
-                              style={{ width: 72, height: 54, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }}
-                              onError={e => (e.currentTarget.style.display = 'none')}
-                            />
-                          )}
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary, #F5F7F8)', lineHeight: 1.4, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                              {item.title}
-                            </div>
-                            {item.summary && (
-                              <div style={{ fontSize: 12, color: 'var(--text-muted, #8a9bae)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                                {item.summary}
-                              </div>
-                            )}
-                            {item.published && (
-                              <div style={{ fontSize: 11, color: 'var(--text-muted, #6b7a8d)', marginTop: 4 }}>
-                                {item.published}
-                              </div>
-                            )}
-                          </div>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted, #6b7a8d)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                          </svg>
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
             {/* Quick Links */}
             <div className="u-card" style={{ padding: 16 }}>
               <h4 style={{ margin: '0 0 12px', fontSize: 14 }}>{t('feed.quickAccess')}</h4>

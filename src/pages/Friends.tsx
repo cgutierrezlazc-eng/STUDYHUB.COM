@@ -17,9 +17,7 @@ export default function Friends({ onNavigate }: Props) {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [sentRequests, setSentRequests] = useState<any[]>([])
-  const [suggestions, setSuggestions] = useState<any[]>([])
-
-  useEffect(() => { loadFriends(); loadRequests(); loadSentRequests(); loadSuggestions() }, [])
+  useEffect(() => { loadFriends(); loadRequests(); loadSentRequests() }, [])
 
   const loadFriends = async () => {
     try { setFriends(await api.getFriends()) } catch (err: any) { console.error('Failed to load friends:', err) }
@@ -30,10 +28,6 @@ export default function Friends({ onNavigate }: Props) {
   const loadSentRequests = async () => {
     try { setSentRequests(await api.getSentFriendRequests()) } catch (err: any) { console.error('Failed to load sent requests:', err) }
   }
-  const loadSuggestions = async () => {
-    try { setSuggestions(await api.getFriendSuggestions()) } catch (err: any) { console.error('Failed to load suggestions:', err) }
-  }
-
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
     try { setSearchResults(await api.searchUsers(searchQuery)) } catch (err: any) { console.error('Search failed:', err) }
@@ -101,64 +95,28 @@ export default function Friends({ onNavigate }: Props) {
           </button>
         </div>
 
-        {tab === 'friends' && suggestions.length > 0 && (
-          <div className="suggestions-section">
-            <h3>{t('friends.suggestionsTitle')}</h3>
-            <p>{t('friends.suggestionsSubtitle')}</p>
-            <div className="suggestions-grid">
-              {suggestions.slice(0, 8).map(s => (
-                <div key={s.id} className="suggestion-card" onClick={() => onNavigate(`/user/${s.id}`)}>
-                  <div className="suggestion-avatar">
-                    {s.avatar ? <img src={s.avatar} alt="" /> : <span>{(s.firstName?.[0] || '').toUpperCase()}</span>}
-                  </div>
-                  <h4>{s.firstName} {s.lastName}</h4>
-                  <div className="suggestion-username">@{s.username}</div>
-                  {s.reasons?.[0] && <div className="suggestion-reason">{s.reasons[0]}</div>}
-                  {s.career && <div className="suggestion-meta">{s.career}</div>}
-                  <div className="suggestion-actions" onClick={e => e.stopPropagation()}>
-                    <button className="btn btn-primary btn-xs" onClick={() => { handleSendRequest(s.id); setSuggestions(prev => prev.filter(x => x.id !== s.id)) }}>
-                      {t('friends.add')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {tab === 'friends' && (
           <div className="friends-grid">
             {friends.length === 0 ? (
-              suggestions.length === 0 ? (
-                <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
-                  <div style={{ marginBottom: 16, opacity: 0.6 }}>{Users({ size: 56, color: 'var(--accent)' })}</div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Conecta con tus companeros</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
-                    Agrega amigos para estudiar juntos, compartir apuntes y competir en las ligas semanales
-                  </p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
-                    Busca por nombre, usuario o universidad
-                  </p>
-                  <div className="friends-search-bar" style={{ marginTop: 0, marginBottom: 12, maxWidth: 400, margin: '0 auto' }}>
-                    <input
-                      placeholder={t('friends.searchPlaceholder')}
-                      value={searchQuery}
-                      onChange={e => setSearchQuery(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { handleSearch(); setTab('search') } }}
-                    />
-                    <button className="btn btn-primary" onClick={() => { handleSearch(); setTab('search') }}>Buscar</button>
-                  </div>
+              <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
+                <div style={{ marginBottom: 16, opacity: 0.6 }}>{Users({ size: 56, color: 'var(--accent)' })}</div>
+                <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Conecta con tus companeros</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
+                  Agrega amigos para estudiar juntos, compartir apuntes y competir en las ligas semanales
+                </p>
+                <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
+                  Busca por nombre, usuario o universidad
+                </p>
+                <div className="friends-search-bar" style={{ marginTop: 0, marginBottom: 12, maxWidth: 400, margin: '0 auto' }}>
+                  <input
+                    placeholder={t('friends.searchPlaceholder')}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { handleSearch(); setTab('search') } }}
+                  />
+                  <button className="btn btn-primary" onClick={() => { handleSearch(); setTab('search') }}>Buscar</button>
                 </div>
-              ) : (
-                <div className="friends-empty" style={{ padding: 48, textAlign: 'center' }}>
-                  <div style={{ marginBottom: 16, opacity: 0.6 }}>{Users({ size: 56, color: 'var(--accent)' })}</div>
-                  <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Aun no tienes amigos</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 14, maxWidth: 360, margin: '0 auto 20px', lineHeight: 1.6 }}>
-                    Revisa las sugerencias de arriba o busca companeros de tu carrera para empezar
-                  </p>
-                  <button className="btn btn-primary" onClick={() => setTab('search')}>Buscar companeros</button>
-                </div>
-              )
+              </div>
             ) : (
               friends.map(friend => (
                 <div key={friend.id} className="friend-card card" onClick={() => onNavigate(`/user/${friend.id}`)}>

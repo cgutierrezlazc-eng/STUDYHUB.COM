@@ -1,10 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useMemo } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
 import { LanguageSkill } from '../types'
 import MilestonePopup from '../components/MilestonePopup'
 import CoverPhotoModal, { getCoverStyle } from '../components/CoverPhotoModal'
+import { searchUniversities, University, getInstitutionCode } from '../data/universities'
 import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationCap, Users, Pencil, Lock, Settings, ClipboardList } from '../components/Icons'
 
 type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv'
@@ -44,6 +45,14 @@ export default function Profile() {
   const [confirmPw, setConfirmPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
+
+  // Institution picker state (for university edit)
+  const [uniSearch, setUniSearch] = useState('')
+  const [showUniDropdown, setShowUniDropdown] = useState(false)
+  const uniResults = useMemo(() => {
+    if (!uniSearch || uniSearch.length < 2) return []
+    return searchUniversities(uniSearch, (user as any)?.country || '').slice(0, 15)
+  }, [uniSearch])
 
   if (!user) return null
 
@@ -301,9 +310,69 @@ export default function Profile() {
                   )}
                 </div>
                 <div className="pf-fields-grid">
-                  <div className="pf-field">
+                  <div className="pf-field" style={{ position: 'relative' }}>
                     <label>{t('reg.university')}</label>
-                    {isEditing ? <input className="form-input" value={form.university} onChange={e => update('university', e.target.value)} /> : <p>{user.university || '—'}</p>}
+                    {isEditing ? (
+                      <div style={{ position: 'relative' }}>
+                        {form.university ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+                            background: 'rgba(45,98,200,0.06)', border: '1px solid rgba(45,98,200,0.2)',
+                            borderRadius: 8, fontSize: 13 }}>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 600 }}>{form.university}</div>
+                            </div>
+                            <button type="button" onClick={() => { update('university', ''); setUniSearch('') }}
+                              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 15, padding: '2px 4px' }}>✕</button>
+                          </div>
+                        ) : (
+                          <>
+                            <input className="form-input" placeholder="Buscar institución..."
+                              value={uniSearch}
+                              onChange={e => { setUniSearch(e.target.value); setShowUniDropdown(true) }}
+                              onFocus={() => setShowUniDropdown(true)} />
+                            {showUniDropdown && uniSearch.length >= 2 && (
+                              <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+                                background: 'var(--bg-card)', border: '1px solid var(--border)',
+                                borderRadius: 10, maxHeight: 240, overflowY: 'auto',
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.18)', marginTop: 4 }}>
+                                {uniResults.length === 0 ? (
+                                  <div style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 13 }}>Sin resultados</div>
+                                ) : uniResults.map(uni => (
+                                  <button key={uni.id} type="button"
+                                    onClick={() => {
+                                      const code = getInstitutionCode(uni)
+                                      const currentPrefix = user.username?.match(/^[A-Z]{3}_/)?.[0] || ''
+                                      const currentSuffix = currentPrefix ? user.username!.slice(currentPrefix.length) : user.username || ''
+                                      const newUsername = code + '_' + currentSuffix
+                                      update('university', uni.name)
+                                      update('username', newUsername)
+                                      setUniSearch('')
+                                      setShowUniDropdown(false)
+                                    }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%',
+                                      padding: '8px 14px', border: 'none', borderBottom: '1px solid var(--border)',
+                                      background: 'transparent', cursor: 'pointer', textAlign: 'left',
+                                      color: 'var(--text-primary)' }}>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                      <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uni.name}</div>
+                                      <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                        <span style={{ background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', padding: '0 4px', borderRadius: 3, fontWeight: 700 }}>
+                                          {getInstitutionCode(uni)}
+                                        </span>
+                                        <span>{uni.type === 'cft' ? 'CFT' : uni.type === 'instituto' ? 'IP' : 'Universidad'}</span>
+                                      </div>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        <small style={{ color: 'var(--accent)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                          Al cambiar institución, tu prefijo de usuario se actualizará automáticamente
+                        </small>
+                      </div>
+                    ) : <p>{user.university || '—'}</p>}
                   </div>
                   <div className="pf-field">
                     <label>{t('reg.career')}</label>
@@ -573,37 +642,6 @@ export default function Profile() {
                   <ToggleRow label={t('profile.privateProfile')} desc={t('profile.privateProfileDesc')} />
                   <ToggleRow label={t('profile.showOnline')} desc={t('profile.showOnlineDesc')} />
                   <ToggleRow label={t('profile.showSuggestions')} desc={t('profile.showSuggestionsDesc')} />
-                </div>
-
-                <div className="pf-divider" />
-
-                <h3>{t('profile.universitySection')}</h3>
-                <div className="pf-toggles">
-                  {/* University News Toggle */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
-                    <div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>{t('profile.uniNews')}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t('profile.uniNewsDesc')}</div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        const current = localStorage.getItem('conniku_university_news') !== 'false'
-                        localStorage.setItem('conniku_university_news', current ? 'false' : 'true')
-                        // Force re-render
-                        setForm(prev => ({ ...prev }))
-                      }}
-                      style={{
-                        width: 48, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer',
-                        background: localStorage.getItem('conniku_university_news') !== 'false' ? '#2D62C8' : 'var(--bg-tertiary)',
-                        position: 'relative', transition: 'background 0.2s',
-                      }}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: 11, background: '#fff',
-                        position: 'absolute', top: 2, transition: 'left 0.2s',
-                        left: localStorage.getItem('conniku_university_news') !== 'false' ? 24 : 2,
-                      }} />
-                    </button>
-                  </div>
                 </div>
 
                 <div className="pf-divider" />

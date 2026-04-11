@@ -5,7 +5,20 @@ import { Gender, Language } from '../types'
 import { api } from '../services/api'
 import TermsOfService from '../components/TermsOfService'
 import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency'
-import { searchUniversities, getUniversitiesForCountry, University } from '../data/universities'
+import { searchUniversities, getUniversitiesForCountry, University, getInstitutionCode } from '../data/universities'
+
+// ── Blocked username terms ──────────────────────────────────────────────────
+const BLOCKED_TERMS = [
+  'admin','root','conniku','soporte','support','moderador','moderator','staff',
+  'nigger','nigga','nazi','faggot','puta','puto','mierda','pendejo','culero',
+  'marica','hijodeputa','bastardo','cabrón','chingado','idiota','imbecil',
+  'estupido','retardo','fuck','shit','bitch','asshole','cunt','whore','slut',
+  'rape','porno','sexo','sex','xxx','hate','kill','muerte','terror',
+]
+function containsBlockedTerm(username: string): boolean {
+  const lower = username.toLowerCase().replace(/[_.\-]/g, '')
+  return BLOCKED_TERMS.some(term => lower.includes(term))
+}
 import { Brain, Users, BookOpen, Camera, Eye, EyeOff, Inbox } from '../components/Icons'
 
 interface Props {
@@ -31,6 +44,7 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
   const [uniSearch, setUniSearch] = useState('')
   const [showUniDropdown, setShowUniDropdown] = useState(false)
   const [selectedUni, setSelectedUni] = useState<University | null>(null)
+  const [institutionPrefix, setInstitutionPrefix] = useState('')
   const uniInputRef = useRef<HTMLInputElement>(null)
 
   const STEP_TITLES = [t('reg.step1'), t('reg.step2'), t('reg.step3'), t('reg.step4'), t('reg.stepFinal')]
@@ -132,11 +146,12 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
       if (calculateAge(form.birthDate) < 18) { setError(t('err.under18')); return false }
     }
     if (step === 2) {
+      if (!selectedUni) { setError('Debes seleccionar tu institución de estudios de la lista oficial'); return false }
       if (!form.username.trim()) { setError(t('err.usernameRequired')); return false }
-      if (form.username.length < 3 || form.username.length > 30) { setError(t('err.usernameLength')); return false }
-      if (!/^[a-z0-9._]+$/.test(form.username)) { setError(t('err.usernameChars')); return false }
+      if (form.username.length < 5 || form.username.length > 30) { setError('El nombre de usuario debe tener entre 5 y 30 caracteres en total'); return false }
+      if (!/^[a-zA-Z0-9._]+$/.test(form.username)) { setError(t('err.usernameChars')); return false }
+      if (containsBlockedTerm(form.username)) { setError('Este nombre de usuario no está permitido. Elige otro.'); return false }
       if (usernameAvailable === false) { setError(t('err.usernameTaken')); return false }
-      if (!form.university.trim()) { setError(t('err.enterUniversity')); return false }
       if (!form.career.trim()) { setError(t('err.enterCareer')); return false }
       if (form.academicStatus === 'titulado' && !form.professionalTitle.trim()) { setError(t('err.enterProfTitle')); return false }
       if ((form.academicStatus === 'egresado' || form.academicStatus === 'titulado') && !form.graduationStatusYear) { setError(t('err.selectGradYear')); return false }
@@ -361,48 +376,41 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
 
           {step === 2 && (
             <>
-              <div className="auth-field">
-                <label>{t('reg.usernameLabel')}</label>
-                <div style={{ position: 'relative' }}>
-                  <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontWeight: 600, fontSize: 15 }}>@</span>
-                  <input
-                    placeholder={t('reg.usernamePlaceholderShort')}
-                    value={form.username}
-                    onChange={e => update('username', e.target.value.toLowerCase().replace(/[^a-z0-9._]/g, ''))}
-                    style={{ paddingLeft: 32 }}
-                    autoFocus
-                    maxLength={30}
-                  />
-                  {form.username.length >= 3 && (
-                    <span style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>
-                      {checkingUsername ? '...' : usernameAvailable === true ? '✓' : usernameAvailable === false ? `✗ ${t('reg.usernameInUse')}` : ''}
-                    </span>
-                  )}
-                </div>
-                <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
-                  {t('reg.usernameHelp')}
-                </small>
-              </div>
+              {/* ── 1. País ── */}
               <div className="auth-field">
                 <label>{t('reg.country')}</label>
-                <select value={form.country || 'CL'} onChange={e => update('country', e.target.value)}
+                <select value={form.country || 'CL'}
+                  onChange={e => {
+                    update('country', e.target.value)
+                    // Clear institution & prefix when country changes
+                    setSelectedUni(null)
+                    setUniSearch('')
+                    setInstitutionPrefix('')
+                    setForm(prev => ({ ...prev, country: e.target.value, university: '', username: '' }))
+                    setUsernameAvailable(null)
+                  }}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
                   {[
-                    ['CL','Chile'],['MX','México'],['CO','Colombia'],['PE','Perú'],
-                    ['AR','Argentina'],['BR','Brasil'],['EC','Ecuador'],['UY','Uruguay'],
-                    ['PY','Paraguay'],['BO','Bolivia'],['VE','Venezuela'],['CR','Costa Rica'],
-                    ['PA','Panamá'],['DO','Rep. Dominicana'],['GT','Guatemala'],['HN','Honduras'],
-                    ['SV','El Salvador'],['NI','Nicaragua'],
-                    ['US','Estados Unidos'],['CA','Canadá'],['GB','Reino Unido'],['ES','España'],
-                    ['DE','Alemania'],['FR','Francia'],['IT','Italia'],['PT','Portugal'],
-                    ['JP','Japón'],['KR','Corea del Sur'],['AU','Australia'],['IN','India'],
+                    ['CL','🇨🇱 Chile'],['MX','🇲🇽 México'],['CO','🇨🇴 Colombia'],['PE','🇵🇪 Perú'],
+                    ['AR','🇦🇷 Argentina'],['BR','🇧🇷 Brasil'],['EC','🇪🇨 Ecuador'],['UY','🇺🇾 Uruguay'],
+                    ['PY','🇵🇾 Paraguay'],['BO','🇧🇴 Bolivia'],['VE','🇻🇪 Venezuela'],['CR','🇨🇷 Costa Rica'],
+                    ['PA','🇵🇦 Panamá'],['DO','🇩🇴 Rep. Dominicana'],['GT','🇬🇹 Guatemala'],['HN','🇭🇳 Honduras'],
+                    ['SV','🇸🇻 El Salvador'],['NI','🇳🇮 Nicaragua'],
+                    ['US','🇺🇸 Estados Unidos'],['CA','🇨🇦 Canadá'],['GB','🇬🇧 Reino Unido'],['ES','🇪🇸 España'],
+                    ['DE','🇩🇪 Alemania'],['FR','🇫🇷 Francia'],['IT','🇮🇹 Italia'],['PT','🇵🇹 Portugal'],
+                    ['JP','🇯🇵 Japón'],['KR','🇰🇷 Corea del Sur'],['AU','🇦🇺 Australia'],['IN','🇮🇳 India'],
                   ].map(([code, name]) => (
                     <option key={code} value={code}>{name}</option>
                   ))}
                 </select>
               </div>
+
+              {/* ── 2. Institución ── */}
               <div className="auth-field" style={{ position: 'relative' }}>
                 <label>{t('reg.university')} *</label>
+                <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 2, marginBottom: 6, display: 'block' }}>
+                  Tu institución determinará el prefijo de tu nombre de usuario
+                </small>
                 <div style={{ position: 'relative' }}>
                   {selectedUni && (
                     <div style={{
@@ -416,10 +424,23 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                       )}
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 13, fontWeight: 600 }}>{selectedUni.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{selectedUni.shortName} · {selectedUni.type === 'cft' ? 'CFT' : selectedUni.type === 'instituto' ? 'Instituto' : 'Universidad'}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{
+                            background: 'rgba(45,98,200,0.12)', color: 'var(--accent)', fontWeight: 700,
+                            padding: '1px 6px', borderRadius: 4, fontSize: 11, letterSpacing: 0.5,
+                          }}>
+                            {getInstitutionCode(selectedUni)}
+                          </span>
+                          <span>{selectedUni.type === 'cft' ? 'CFT' : selectedUni.type === 'instituto' ? 'IP' : 'Universidad'}</span>
+                        </div>
                       </div>
-                      <button type="button" onClick={() => { setSelectedUni(null); setUniSearch(''); update('university', '') }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, padding: '2px 6px' }}>✕</button>
+                      <button type="button" onClick={() => {
+                        setSelectedUni(null)
+                        setUniSearch('')
+                        setInstitutionPrefix('')
+                        setForm(prev => ({ ...prev, university: '', username: '' }))
+                        setUsernameAvailable(null)
+                      }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, padding: '2px 6px' }}>✕</button>
                     </div>
                   )}
                   {!selectedUni && (
@@ -441,20 +462,26 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                         }}>
                           {uniResults.length === 0 ? (
                             <div style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: 13 }}>
-                              {t('reg.uniNoResults')}
-                              <button type="button" onClick={() => { update('university', uniSearch); setShowUniDropdown(false) }}
-                                style={{ display: 'block', marginTop: 6, color: '#2D62C8', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
-                                {t('reg.uniUseCustom').replace('{name}', uniSearch)}
-                              </button>
+                              <div style={{ fontWeight: 600, marginBottom: 4 }}>Sin resultados para "{uniSearch}"</div>
+                              <div style={{ fontSize: 12 }}>
+                                Solo se pueden seleccionar instituciones de la lista oficial.
+                                Si tu institución no aparece, contáctanos a{' '}
+                                <a href="mailto:contacto@conniku.com" style={{ color: '#2D62C8' }}>contacto@conniku.com</a>
+                              </div>
                             </div>
                           ) : (
                             uniResults.map(uni => (
                               <button key={uni.id} type="button"
                                 onClick={() => {
+                                  const code = getInstitutionCode(uni)
+                                  const prefix = code + '_'
                                   setSelectedUni(uni)
-                                  update('university', uni.name)
+                                  setInstitutionPrefix(prefix)
                                   setUniSearch('')
                                   setShowUniDropdown(false)
+                                  // Set username to just the prefix — user types own alias
+                                  setForm(prev => ({ ...prev, university: uni.name, username: prefix }))
+                                  setUsernameAvailable(null)
                                 }}
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 10, width: '100%',
@@ -467,13 +494,16 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                                     onError={e => (e.target as HTMLImageElement).style.display = 'none'} />
                                 ) : (
                                   <div style={{ width: 28, height: 28, borderRadius: 4, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', flexShrink: 0 }}>
-                                    {uni.shortName.slice(0, 2)}
+                                    {getInstitutionCode(uni)}
                                   </div>
                                 )}
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{uni.name}</div>
-                                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                                    {uni.shortName} · {uni.type === 'cft' ? 'CFT' : uni.type === 'instituto' ? 'IP' : uni.type === 'university' ? 'University' : 'Universidad'}
+                                  <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <span style={{ background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', padding: '0 4px', borderRadius: 3, fontWeight: 700 }}>
+                                      {getInstitutionCode(uni)}
+                                    </span>
+                                    <span>{uni.type === 'cft' ? 'CFT' : uni.type === 'instituto' ? 'IP' : uni.type === 'university' ? 'University' : 'Universidad'}</span>
                                   </div>
                                 </div>
                               </button>
@@ -485,6 +515,66 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                   )}
                 </div>
               </div>
+
+              {/* ── 3. Nombre de usuario ── */}
+              <div className="auth-field">
+                <label>{t('reg.usernameLabel')}</label>
+                {institutionPrefix && (
+                  <small style={{ color: 'var(--accent)', fontSize: 11, marginTop: 2, marginBottom: 6, display: 'block', fontWeight: 600 }}>
+                    🔒 El prefijo <strong>{institutionPrefix}</strong> está asignado a tu institución y no puede cambiarse
+                  </small>
+                )}
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+                  borderRadius: 8, overflow: 'hidden',
+                }}>
+                  {/* @ decorativo */}
+                  <span style={{ padding: '0 8px 0 14px', color: 'var(--text-muted)', fontWeight: 700, fontSize: 15, flexShrink: 0 }}>@</span>
+
+                  {/* Prefijo bloqueado */}
+                  {institutionPrefix && (
+                    <span style={{
+                      padding: '10px 8px', background: 'rgba(45,98,200,0.1)',
+                      color: 'var(--accent)', fontWeight: 700, fontSize: 14,
+                      borderRight: '2px solid rgba(45,98,200,0.25)',
+                      flexShrink: 0, userSelect: 'none', letterSpacing: 0.3,
+                    }}>
+                      {institutionPrefix}
+                    </span>
+                  )}
+
+                  {/* Parte editable */}
+                  <input
+                    placeholder={institutionPrefix ? 'Nombre_Apellido' : t('reg.usernamePlaceholderShort')}
+                    value={institutionPrefix ? form.username.slice(institutionPrefix.length) : form.username}
+                    onChange={e => {
+                      const raw = e.target.value.replace(/[^a-zA-Z0-9_]/g, '')
+                      const full = institutionPrefix + raw
+                      setForm(prev => ({ ...prev, username: full }))
+                      checkUsernameAvailability(full)
+                    }}
+                    style={{ border: 'none', background: 'transparent', flex: 1, padding: '10px 12px', color: 'var(--text-primary)', outline: 'none', fontSize: 14 }}
+                    maxLength={institutionPrefix ? 30 - institutionPrefix.length : 30}
+                  />
+
+                  {/* Indicador disponibilidad */}
+                  {form.username.length >= 3 && (
+                    <span style={{ paddingRight: 14, fontSize: 13, flexShrink: 0,
+                      color: checkingUsername ? 'var(--text-muted)' : usernameAvailable === true ? '#22c55e' : usernameAvailable === false ? '#ef4444' : 'var(--text-muted)',
+                    }}>
+                      {checkingUsername ? '...' : usernameAvailable === true ? '✓' : usernameAvailable === false ? `✗ ${t('reg.usernameInUse')}` : ''}
+                    </span>
+                  )}
+                </div>
+                <small style={{ color: 'var(--text-muted)', fontSize: 11, marginTop: 4, display: 'block' }}>
+                  {institutionPrefix
+                    ? `Tu usuario será: @${form.username || institutionPrefix + 'Nombre_Apellido'}`
+                    : t('reg.usernameHelp')
+                  }
+                </small>
+              </div>
+
               <div className="auth-field">
                 <label>{t('reg.career')}</label>
                 <input placeholder={t('reg.careerPlaceholder')} value={form.career} onChange={e => update('career', e.target.value)} />
