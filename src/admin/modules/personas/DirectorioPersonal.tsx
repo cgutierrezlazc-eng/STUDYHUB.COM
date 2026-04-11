@@ -218,10 +218,10 @@ function buildContractHTML(form: any, jobDescription: string): string {
 </head>
 <body>
   <h1>Contrato Individual de Trabajo</h1>
-  <p class="subtitle">Conniku SpA · RUT 78.395.702-7 · Santiago, Chile</p>
+  <p class="subtitle">Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</p>
 
   <div class="clause">
-    En Santiago, a ${today}, entre:
+    En Antofagasta, a ${today}, entre:
   </div>
 
   <div class="section">
@@ -230,7 +230,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
       <tr><td>Razón Social</td><td>Conniku SpA</td></tr>
       <tr><td>RUT</td><td>78.395.702-7</td></tr>
       <tr><td>Giro</td><td>Desarrollo y Comercialización de Software (631200)</td></tr>
-      <tr><td>Domicilio</td><td>Santiago, Región Metropolitana, Chile</td></tr>
+      <tr><td>Domicilio</td><td>Antofagasta, Región de Antofagasta, Chile</td></tr>
       <tr><td>Representante Legal</td><td>Gerente General — Conniku SpA</td></tr>
     </table>
   </div>
@@ -257,7 +257,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
 
   <div class="clause"><strong>SEGUNDO — LUGAR DE TRABAJO</strong></div>
   <div class="clause">
-    El trabajador prestará sus servicios en las dependencias de Conniku SpA, ubicadas en Santiago, Región Metropolitana, o en el lugar que la empresa determine, incluyendo modalidad de teletrabajo cuando corresponda.
+    El trabajador prestará sus servicios en las dependencias de Conniku SpA, ubicadas en Antofagasta, Región de Antofagasta, o en el lugar que la empresa determine, incluyendo modalidad de teletrabajo cuando corresponda.
   </div>
 
   <div class="clause"><strong>TERCERO — DURACIÓN DEL CONTRATO</strong></div>
@@ -295,11 +295,11 @@ function buildContractHTML(form: any, jobDescription: string): string {
 
   <div class="clause"><strong>OCTAVO — NORMAS ADICIONALES</strong></div>
   <div class="clause">
-    El presente contrato se rige por el Código del Trabajo de Chile y demás normas legales vigentes. Cualquier modificación deberá constar por escrito y ser suscrita por ambas partes. En caso de controversia, las partes se someten a la jurisdicción de los Juzgados de Letras del Trabajo de Santiago.
+    El presente contrato se rige por el Código del Trabajo de Chile y demás normas legales vigentes. Cualquier modificación deberá constar por escrito y ser suscrita por ambas partes. En caso de controversia, las partes se someten a la jurisdicción de los Juzgados de Letras del Trabajo de Antofagasta.
   </div>
 
   <div class="clause" style="margin-top:24px;">
-    En prueba de conformidad, las partes firman el presente contrato en dos ejemplares del mismo tenor, en la ciudad de Santiago, a ${today}.
+    En prueba de conformidad, las partes firman el presente contrato en dos ejemplares del mismo tenor, en la ciudad de Antofagasta, a ${today}.
   </div>
 
   <div class="signatures">
@@ -545,13 +545,13 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 <div style={{ padding: '24px 32px', fontFamily: 'Georgia, serif', fontSize: 12, lineHeight: 1.65, color: '#111', maxHeight: 420, overflowY: 'auto' }}>
                   <div style={{ textAlign: 'center', marginBottom: 20 }}>
                     <div style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contrato Individual de Trabajo</div>
-                    <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Conniku SpA · RUT 78.395.702-7 · Santiago, Chile</div>
+                    <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</div>
                   </div>
-                  <p style={{ marginBottom: 12 }}>En Santiago, a {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), y <strong>{form.firstName} {form.lastName}</strong>, RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato Individual de Trabajo:</p>
+                  <p style={{ marginBottom: 12 }}>En Antofagasta, a {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), y <strong>{form.firstName} {form.lastName}</strong>, RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato Individual de Trabajo:</p>
 
                   {[
                     { title: 'Primero — Cargo y Funciones', content: <><p>Cargo: <strong>{form.position}</strong> — Área: <strong>{form.department}</strong></p>{jobDescription && <div style={{ marginTop: 8, background: '#f9f9f9', borderLeft: '3px solid #555', padding: '6px 10px', fontSize: 11, whiteSpace: 'pre-wrap' }}>{jobDescription}</div>}</> },
-                    { title: 'Segundo — Lugar de Trabajo', content: <p>Dependencias de Conniku SpA, Santiago, o modalidad de teletrabajo según lo coordinado.</p> },
+                    { title: 'Segundo — Lugar de Trabajo', content: <p>Dependencias de Conniku SpA, Antofagasta, o modalidad de teletrabajo según lo coordinado.</p> },
                     { title: 'Tercero — Duración', content: <p dangerouslySetInnerHTML={{ __html: form.contractType === 'indefinido' ? 'Contrato de duración <strong>indefinida</strong> (Art. 159 N°4 CT).' : `Contrato a <strong>plazo fijo</strong> desde ${fmtDate(form.hireDate)}${form.endDate ? ` hasta ${fmtDate(form.endDate)}` : ''}.` }} /> },
                     { title: 'Cuarto — Jornada', content: <p><strong>{form.weeklyHours}h semanales</strong> — {SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label}. (Art. 22 CT)</p> },
                     { title: 'Quinto — Remuneración', content: <p>Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>{Number(form.colacion) > 0 ? ` · Colación: ${fmtMoney(Number(form.colacion))}` : ''}{Number(form.movilizacion) > 0 ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}` : ''}. AFP: {AFP_LIST.find(a => a.value === form.afp)?.label}. Salud: {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}.</p> },
