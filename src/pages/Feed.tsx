@@ -726,7 +726,8 @@ export default function Feed({ onNavigate }: Props) {
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {posts.map((post, postIndex) => (
-                  <div key={post.id} id={`post-${post.id}`} className="u-card" style={{ padding: 16 }}>
+                  <React.Fragment key={post.id}>
+                  <div id={`post-${post.id}`} className="u-card" style={{ padding: 16 }}>
                     {/* Post Header */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
                       <div onClick={() => onNavigate(`/user/${post.authorId || post.author?.id}`)} style={{
@@ -1021,6 +1022,7 @@ export default function Feed({ onNavigate }: Props) {
                   </div>
                   {/* Ad inline — aparece después del 4to post (invisible hasta ADS_ENABLED = true) */}
                   {postIndex === 3 && <AdSlot placement="feed-inline" />}
+                  </React.Fragment>
                 ))}
 
                 {hasMore && (
