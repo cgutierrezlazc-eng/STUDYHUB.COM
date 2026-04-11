@@ -349,7 +349,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'userprofile.score': 'Nota',
     'userprofile.viewCert': 'Ver certificado',
     'userprofile.loadingCV': 'Cargando curriculum...',
-    'userprofile.noCVOwn': 'Aun no has completado tu curriculum. Ve a Cursos > tu CV para llenarlo.',
+    'userprofile.noCVOwn': 'Sube tu CV en PDF o complétalo manualmente desde tu perfil.',
     'userprofile.noCVOther': 'Este usuario aun no ha completado su curriculum.',
     'userprofile.experience': 'Experiencia',
     'userprofile.projects': 'Proyectos',
