@@ -111,7 +111,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const profilePhotoRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { loadProfile(); loadPosts(); loadFriends() }, [userId])
-  useEffect(() => { if (user && userId === user.id) { loadActivityFeed() } }, [userId, user])
+  useEffect(() => { if (userId) { loadActivityFeed() } }, [userId])
   useEffect(() => {
     if (user && userId === user.id) {
       api.getMyTutorProfile().then(tp => setTutorProfile(tp)).catch(() => setTutorProfile(null))
@@ -172,7 +172,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
   const loadActivityFeed = async () => {
     setActivityLoading(true)
-    try { setActivityFeed(await api.getActivityFeed()) } catch (err: any) { console.error('Failed to load activity feed:', err) }
+    try { setActivityFeed(await api.getActivityFeed(1, userId)) } catch (err: any) { console.error('Failed to load activity feed:', err) }
     setActivityLoading(false)
   }
 
@@ -1130,8 +1130,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               )}
 
-              {/* Actividad Reciente - mixed feed for own profile */}
-              {isOwn && activityFeed.length > 0 && (
+              {/* Actividad Reciente — visible para todos los visitantes */}
+              {activityFeed.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <h3 style={{ margin: '0 0 12px 0', fontSize: 18, fontWeight: 600 }}>{t('userprofile.recentActivity')}</h3>
                   {activityLoading ? (
@@ -1139,7 +1139,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                     </div>
                   ) : (
-                    activityFeed.slice(0, 5).map(item => {
+                    activityFeed
+                      .filter(item => isOwn || item.type === 'activity')  // Para otros: solo actividades públicas, no posts de amigos
+                      .slice(0, 5).map(item => {
                       if (item.type === 'activity') {
                         return (
                           <div key={item.id} className="u-card" style={{ padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
