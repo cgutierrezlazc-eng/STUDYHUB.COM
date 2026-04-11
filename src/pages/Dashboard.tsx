@@ -495,35 +495,89 @@ export default function Dashboard({ projects, onNavigate }: Props) {
                   </button>
                 </div>
                 {friendActivity.length > 0 ? (
-                  friendActivity.map((act: any, i: number) => (
-                    <div key={i}
-                      onClick={() => act.userId && onNavigate(`/user/${act.userId}`)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
-                        borderBottom: i < friendActivity.length - 1 ? '1px solid var(--border)' : 'none',
-                        cursor: 'pointer',
-                      }}>
-                      <div style={{
-                        width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: 13, fontWeight: 600, overflow: 'hidden', flexShrink: 0,
-                      }}>
-                        {act.avatar
-                          ? <img src={act.avatar} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
-                          : (act.firstName?.[0] || '?')}
+                  friendActivity.map((act: any, i: number) => {
+                    const activityLabel: Record<string, { label: string; color: string; emoji: string }> = {
+                      post: { label: 'publicó', color: '#3b82f6', emoji: '📝' },
+                      photo: { label: 'subió una foto', color: '#8b5cf6', emoji: '📷' },
+                      comment: { label: 'comentó', color: '#10b981', emoji: '💬' },
+                      like: { label: 'reaccionó', color: '#f59e0b', emoji: '👍' },
+                      join: { label: 'se unió', color: '#06b6d4', emoji: '🎉' },
+                      achievement: { label: 'logró', color: '#f97316', emoji: '🏅' },
+                      study: { label: 'estudió', color: '#6366f1', emoji: '📚' },
+                    }
+                    const typeKey = act.activityType?.toLowerCase() || 'post'
+                    const meta = activityLabel[typeKey] || { label: act.activityType || 'publicó', color: '#3b82f6', emoji: '📝' }
+                    const hasImage = !!(act.image || act.imageUrl || act.mediaUrl || act.thumbnail)
+                    const imgSrc = act.image || act.imageUrl || act.mediaUrl || act.thumbnail
+
+                    return (
+                      <div key={i}
+                        onClick={() => act.userId && onNavigate(`/user/${act.userId}`)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+                          borderBottom: i < friendActivity.length - 1 ? '1px solid var(--border)' : 'none',
+                          cursor: act.userId ? 'pointer' : 'default',
+                          transition: 'background 0.12s',
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                      >
+                        {/* Avatar */}
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '50%', background: 'var(--accent)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 13, fontWeight: 600, overflow: 'hidden', flexShrink: 0,
+                          boxShadow: '0 0 0 2px var(--bg-primary)',
+                        }}>
+                          {act.avatar
+                            ? <img src={act.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                            : (act.firstName?.[0] || '?')}
+                        </div>
+
+                        {/* Text content */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12, lineHeight: 1.4 }}>
+                            <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>
+                              {act.firstName} {act.lastName}
+                            </span>
+                            {' '}
+                            <span style={{ color: meta.color, fontWeight: 500 }}>{meta.emoji} {meta.label}</span>
+                          </div>
+                          {act.content && (
+                            <div style={{
+                              fontSize: 11, color: 'var(--text-muted)', marginTop: 2,
+                              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                              maxWidth: hasImage ? '120px' : '100%',
+                            }}>
+                              {act.content}
+                            </div>
+                          )}
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {act.createdAt ? timeAgo(act.createdAt) : ''}
+                          </div>
+                        </div>
+
+                        {/* Image thumbnail — shown when activity has a photo */}
+                        {hasImage && (
+                          <div style={{
+                            width: 44, height: 44, borderRadius: 8, overflow: 'hidden',
+                            flexShrink: 0, border: '1px solid var(--border)',
+                          }}>
+                            <img
+                              src={imgSrc}
+                              alt="Vista previa"
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+                            />
+                          </div>
+                        )}
                       </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <span style={{ fontWeight: 600, fontSize: 12 }}>{act.firstName} {act.lastName}</span>
-                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}> {act.activityType || act.content || ''}</span>
-                      </div>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
-                        {act.createdAt ? timeAgo(act.createdAt) : ''}
-                      </span>
-                    </div>
-                  ))
+                    )
+                  })
                 ) : (
                   <div style={{ padding: 24, textAlign: 'center' }}>
-                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Sin actividad reciente</div>
+                    <div style={{ fontSize: 32, marginBottom: 8 }}>👥</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>Sin actividad reciente</div>
                     <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
                       onClick={() => onNavigate('/friends')}>
                       {Plus({ size: 12 })} Conectar con estudiantes

@@ -98,7 +98,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       onClick={() => toggleSection(sectionKey)}
       aria-expanded={openSections[sectionKey]}
     >
-      <span className="sidebar-section-line" />
       <span className="sidebar-section-label">{label}</span>
       {extra}
       <span className="sidebar-section-line" />
