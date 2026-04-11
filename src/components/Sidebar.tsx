@@ -419,7 +419,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
                 {Object.entries(CATEGORY_LABELS).map(([catKey, cat]) => {
                   const mods = ADMIN_MODULES.filter(m =>
                     m.category === catKey &&
-                    (user?.role === 'owner' || !(m as any).ownerOnly)
+                    (user?.role === 'owner' || user?.isAdmin || !(m as any).ownerOnly)
                   )
                   if (!mods.length) return null
                   const isCatOpen = openAdminCat === catKey

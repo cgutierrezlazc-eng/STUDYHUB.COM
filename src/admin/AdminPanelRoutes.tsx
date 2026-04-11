@@ -9,6 +9,7 @@ const AdminPanel = lazy(() => import('./AdminPanel'))
 const DirectorioPersonal = lazy(() => import('./modules/personas/DirectorioPersonal'))
 const PersonasHub = lazy(() => import('./modules/personas/PersonasHub'))
 const PortalTrabajador = lazy(() => import('./modules/personas/PortalTrabajador'))
+const GestionUsuarios = lazy(() => import('./modules/personas/GestionUsuarios'))
 const PersonalTab = lazy(() => import('./hr/PersonalTab'))
 const ContratosTab = lazy(() => import('./hr/ContratosTab'))
 const AsistenciaTab = lazy(() => import('./hr/AsistenciaTab'))
@@ -97,6 +98,7 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route path="hr/reclutamiento" element={<Wrap title="Reclutamiento"><ReclutamientoTab /></Wrap>} />
         <Route path="hr/capacitacion" element={<Wrap title="Capacitación / SENCE"><CapacitacionTab /></Wrap>} />
         <Route path="hr/mi-portal" element={<Wrap title="Mi Portal"><PortalTrabajador /></Wrap>} />
+        <Route path="hr/usuarios" element={<Wrap title="Gestión de Usuarios"><GestionUsuarios onNavigate={onNavigate} /></Wrap>} />
 
         {/* Payroll & Legal */}
         <Route path="payroll" element={<Wrap title="Remuneraciones"><PayrollModule /></Wrap>} />

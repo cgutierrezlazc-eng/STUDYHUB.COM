@@ -56,7 +56,7 @@ export default function AccessControlTab() {
   }
 
   // ─── Access check ───
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && !user?.isAdmin) {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
         <Shield size={48} style={{ opacity: 0.3, marginBottom: 12 }} />

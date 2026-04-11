@@ -13,6 +13,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'capacitacion', label: 'Capacitación / SENCE', description: 'Registro de capacitaciones y franquicia SENCE', icon: 'book-open', category: 'hr', route: '/admin-panel/hr/capacitacion', status: 'active', isNew: true },
   { id: 'accesos', label: 'Control de Accesos', description: 'Habilita/deshabilita módulos por trabajador', icon: 'shield', category: 'hr', route: '/admin-panel/hr/accesos', status: 'active', isNew: true, ownerOnly: true },
   { id: 'mi-portal', label: 'Mi Portal', description: 'Portal personal del trabajador — documentos, contratos y FES', icon: 'id-card', category: 'hr', route: '/admin-panel/hr/mi-portal', status: 'active', isNew: true },
+  { id: 'usuarios', label: 'Gestión de Usuarios', description: 'Todos los usuarios de la plataforma — colaboradores, estudiantes y roles', icon: 'users-cog', category: 'hr', route: '/admin-panel/hr/usuarios', status: 'active', isNew: true, ownerOnly: true },
 
   // ─── Payroll & Legal ──────────────────────────────────
   { id: 'liquidaciones', label: 'Liquidaciones', description: 'Cálculo y emisión de liquidaciones de sueldo', icon: 'banknote', category: 'payroll', route: '/admin-panel/payroll/liquidaciones', status: 'active' },

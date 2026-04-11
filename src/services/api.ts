@@ -1163,6 +1163,22 @@ export const api = {
   },
   deleteEmployee: (id: string) => request(`/hr/employees/${id}`, { method: 'DELETE' }),
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
+  downloadEmployeeDocument: async (docId: string) => {
+    const token = localStorage.getItem('token')
+    const base = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'
+    const res = await fetch(`${base}/hr/documents/${docId}/download`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    if (!res.ok) return
+    const blob = await res.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    const cd = res.headers.get('content-disposition')
+    a.download = cd?.match(/filename="?([^"]+)"?/)?.[1] || `documento-${docId}.pdf`
+    a.click()
+    URL.revokeObjectURL(url)
+  },
   uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
   signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
   generateContractPdf: (employeeId: string, data: { html: string; worker_name: string }) =>
