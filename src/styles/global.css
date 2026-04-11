@@ -1473,7 +1473,7 @@ h1, h2, h3,
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius);
   padding: 20px;
-  text-align: center;
+  text-align: left;
   transition: border-color var(--transition-med);
 }
 
@@ -3888,8 +3888,6 @@ body.touch-device select {
 /* ═══════════════════════════════════════════════════════════ */
 
 .home-dash {
-  max-width: 1100px;
-  margin: 0 auto;
   padding: 28px 32px;
 }
 .home-greeting {
