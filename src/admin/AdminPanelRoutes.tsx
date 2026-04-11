@@ -5,7 +5,8 @@ import AdminShell from './AdminShell'
 // ─── Lazy-loaded admin modules ─────────────────────────────────
 const AdminPanel = lazy(() => import('./AdminPanel'))
 
-// HR & People — Personas Hub (People & Culture)
+// HR & People — Directorio ERC (People & Culture)
+const DirectorioPersonal = lazy(() => import('./modules/personas/DirectorioPersonal'))
 const PersonasHub = lazy(() => import('./modules/personas/PersonasHub'))
 const PersonalTab = lazy(() => import('./hr/PersonalTab'))
 const ContratosTab = lazy(() => import('./hr/ContratosTab'))
@@ -84,7 +85,7 @@ export default function AdminPanelRoutes({ onNavigate }: Props) {
         <Route index element={<AdminPanel onNavigate={onNavigate} />} />
 
         {/* HR & People */}
-        <Route path="hr/personal" element={<Wrap title="Personas — People & Culture"><PersonasHub /></Wrap>} />
+        <Route path="hr/personal" element={<Wrap title="Personas — People & Culture"><DirectorioPersonal /></Wrap>} />
         <Route path="hr/contratos" element={<Wrap title="Contratos y Vida Laboral"><ContratosTab /></Wrap>} />
         <Route path="hr/asistencia" element={<Wrap title="Asistencia y Jornada"><AsistenciaTab /></Wrap>} />
         <Route path="hr/vacaciones" element={<Wrap title="Vacaciones y Permisos"><VacacionesTab /></Wrap>} />
