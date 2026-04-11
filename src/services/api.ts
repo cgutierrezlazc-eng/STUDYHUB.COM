@@ -1165,6 +1165,8 @@ export const api = {
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
   uploadEmployeeDocument: (id: string, data: any) => request(`/hr/employees/${id}/documents`, { method: 'POST', body: JSON.stringify(data) }),
   signDocument: (docId: string) => request(`/hr/documents/${docId}/sign`, { method: 'POST' }),
+  generateContractPdf: (employeeId: string, data: { html: string; worker_name: string }) =>
+    request(`/hr/employees/${employeeId}/contract/generate`, { method: 'POST', body: JSON.stringify(data) }),
   calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
   getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
   approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),

@@ -1052,6 +1052,105 @@ def sign_document(
     }
 
 
+class ContractGenerateRequest(BaseModel):
+    html: str
+    worker_name: str = "trabajador"
+
+
+@router.post("/employees/{employee_id}/contract/generate")
+async def generate_contract_pdf(
+    employee_id: str,
+    body: ContractGenerateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Convierte el HTML del contrato a PDF con xhtml2pdf,
+    lo guarda en la carpeta del trabajador y crea un registro
+    firmado en EmployeeDocument (type='contrato').
+    """
+    import io
+    import re
+
+    _require_hr_access(user)
+
+    emp = db.query(Employee).filter(Employee.id == employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    html_content = body.html
+
+    # ── Preprocesar HTML para xhtml2pdf (no soporta flexbox) ───────
+    # Reemplazar la sección de firmas (flex) por una tabla HTML simple
+    flex_pattern = re.compile(
+        r'<div class="signatures">(.*?)</div>\s*</div>',
+        re.DOTALL,
+    )
+    def _replace_signatures(m: re.Match) -> str:
+        inner = m.group(1)
+        # Extraer los dos sig-block
+        blocks = re.findall(r'<div class="sig-block">(.*?)</div>', inner, re.DOTALL)
+        cells = "".join(
+            f'<td style="width:50%;vertical-align:bottom;text-align:center;padding:0 20px;">{b}</td>'
+            for b in blocks
+        )
+        return (
+            '<table style="width:100%;margin-top:50px;border-collapse:collapse;">'
+            f"<tr>{cells}</tr></table>"
+        )
+    html_content = flex_pattern.sub(_replace_signatures, html_content)
+    # Eliminar reglas flex del CSS embebido para evitar warnings
+    html_content = re.sub(r'display:\s*flex;?', 'display:block;', html_content)
+    html_content = re.sub(r'justify-content:[^;]+;', '', html_content)
+    html_content = re.sub(r'gap:\s*[^;]+;', '', html_content)
+
+    # ── Generar PDF con xhtml2pdf ───────────────────────────────────
+    try:
+        from xhtml2pdf import pisa  # lazy import — no rompe si no instalado aún
+        pdf_buffer = io.BytesIO()
+        status = pisa.CreatePDF(io.StringIO(html_content), dest=pdf_buffer)
+        if status.err:
+            raise ValueError(f"xhtml2pdf error: {status.err}")
+        pdf_bytes = pdf_buffer.getvalue()
+    except Exception as exc:
+        raise HTTPException(500, f"Error al generar PDF: {exc}")
+
+    # ── Guardar archivo en disco ────────────────────────────────────
+    os.makedirs(UPLOAD_DIR, exist_ok=True)
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    safe_name = re.sub(r"[^a-zA-Z0-9_\- ]", "", body.worker_name).replace(" ", "_")
+    filename = f"contrato_{safe_name}_{timestamp}.pdf"
+    file_path = os.path.join(UPLOAD_DIR, f"{employee_id}_{filename}")
+    with open(file_path, "wb") as f:
+        f.write(pdf_bytes)
+
+    # ── Crear registro de documento firmado ────────────────────────
+    now = datetime.utcnow()
+    sig_hash = hashlib.sha256(
+        f"{employee_id}:{file_path}:{user.id}:{now.isoformat()}".encode()
+    ).hexdigest()
+    doc = EmployeeDocument(
+        id=gen_id(),
+        employee_id=employee_id,
+        document_type="contrato",
+        name=f"Contrato Individual de Trabajo — {body.worker_name}",
+        file_path=file_path,
+        signed=True,
+        signed_at=now,
+        signature_hash=sig_hash,
+        uploaded_by=user.id,
+    )
+    db.add(doc)
+    db.commit()
+    db.refresh(doc)
+
+    return {
+        "document": _document_to_dict(doc),
+        "message": "Contrato generado y guardado en la carpeta del trabajador",
+        "filename": filename,
+    }
+
+
 @router.get("/documents/{document_id}/download")
 def download_document(
     document_id: str,

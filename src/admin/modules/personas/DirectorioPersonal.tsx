@@ -698,27 +698,47 @@ function buildContractHTML(form: any, jobDescription: string): string {
     <strong>Descuentos legales (Art. 58 CT):</strong> Solo se podrán efectuar descuentos para cotizaciones previsionales, impuesto de segunda categoría, pensión alimenticia judicial, cuotas sindicales y demás obligaciones legales. Cualquier otro descuento requiere autorización escrita del Trabajador.
   </div>
 
-  <div class="clause-title">Séptimo — Vacaciones y Feriado Anual</div>
+  <div class="clause-title">Séptimo — Igualdad de Remuneraciones</div>
+  <div class="clause">
+    Conniku SpA garantiza la igualdad de remuneraciones entre hombres y mujeres que realicen el mismo trabajo o trabajos de igual valor, en conformidad con la <strong>Ley 20.348</strong> que resguarda el derecho a la igualdad en las remuneraciones. El Empleador mantendrá un sistema de remuneraciones que no establezca diferencias arbitrarias basadas en sexo, género u otras características personales no vinculadas a la capacidad, experiencia o desempeño del trabajador. Todo trabajador/a que estime que sus remuneraciones no cumplen con este principio podrá ejercer los derechos consagrados en el <strong>artículo 62 bis del Código del Trabajo</strong>, incluyendo la posibilidad de recurrir a la Inspección del Trabajo. Conniku SpA se compromete a mantener un registro actualizado de remuneraciones y cargos conforme lo exige la legislación vigente.
+  </div>
+
+  <div class="clause-title">Octavo — Beneficios y Bonos</div>
+  <div class="clause">
+    Conniku SpA podrá otorgar, a su discreción, beneficios adicionales a la remuneración pactada, tales como bonos de desempeño, bonos de producción, bonos de vacaciones, bonos de bienestar u otros beneficios variables. Dichos beneficios son de carácter <strong>discrecional y variable</strong>, salvo que se establezca expresamente su carácter permanente mediante anexo escrito suscrito por ambas partes. La otorgación de un beneficio en uno o más períodos no genera derecho adquirido a su pago futuro ni integra la remuneración base, a menos que sea incorporado formalmente al contrato. El monto, periodicidad y condiciones de pago de cada beneficio se comunicarán al Trabajador con la debida anticipación.
+  </div>
+
+  <div class="clause-title">Noveno — Vacaciones y Feriado Anual</div>
   <div class="clause">
     El Trabajador tendrá derecho a un feriado anual pagado de <strong>15 días hábiles</strong>, después de cada año de servicio continuo, según lo establece el artículo 67 del Código del Trabajo. Los feriados progresivos se aplicarán conforme al artículo 68 del CT (un día adicional por cada 3 años de servicio con el mismo empleador, desde el décimo año). El feriado deberá hacerse efectivo dentro de los 6 meses siguientes al período en que se generó, pudiendo acumularse hasta 2 períodos de común acuerdo. No podrá compensarse en dinero, salvo en caso de término de contrato.
   </div>
 
-  <div class="clause-title">Octavo — Licencias Médicas y Permisos</div>
+  <div class="clause-title">Décimo — Licencias Médicas y Permisos</div>
   <div class="clause">
     El Trabajador tendrá derecho a licencia médica por enfermedad común, maternidad/paternidad y demás causas contempladas en la legislación vigente. Las licencias médicas deberán presentarse al Empleador dentro de 2 días hábiles de emitidas y ser tramitadas conforme al procedimiento COMPIN/FONASA/ISAPRE. Durante la vigencia de la licencia médica, el Trabajador percibirá subsidio según las normas del DFL N°44 de 1978. Los permisos sin goce de sueldo podrán acordarse por escrito entre ambas partes.
   </div>
 
-  <div class="clause-title">Noveno — Prevención y Sanción del Acoso Laboral y Sexual</div>
+  <div class="clause-title">Undécimo — Protección a la Maternidad y Paternidad</div>
+  <div class="clause">
+    De conformidad con los <strong>artículos 194 a 208 del Código del Trabajo</strong> y la <strong>Ley 20.545</strong>, se garantizan los siguientes derechos:<br><br>
+    <strong>(a) Fuero maternal:</strong> La trabajadora embarazada o en período de lactancia goza de fuero laboral desde el inicio del embarazo hasta un año después del término del descanso de maternidad postnatal. Solo podrá ser despedida con autorización previa del Tribunal del Trabajo competente.<br><br>
+    <strong>(b) Descanso pre y postnatal:</strong> La trabajadora tiene derecho a 6 semanas de descanso prenatal y 12 semanas de descanso postnatal. El postnatal parental (Ley 20.545) permite extender hasta 24 semanas adicionales a media jornada o 12 semanas a jornada completa, con subsidio. En caso de parto prematuro o múltiple, los plazos se amplían conforme a la ley.<br><br>
+    <strong>(c) Permiso de paternidad:</strong> El padre trabajador tiene derecho a <strong>5 días hábiles de permiso pagado</strong> por el Empleador, contados desde el día del parto (Art. 195 CT). Este permiso es irrenunciable.<br><br>
+    <strong>(d) Sala cuna y alimentación:</strong> En caso de corresponder conforme al Art. 203 CT (empresas con 20 o más trabajadoras), el Empleador proveerá acceso a sala cuna o pagará el beneficio equivalente. La madre trabajadora dispondrá de al menos <strong>una hora diaria</strong> para dar alimento a su hijo menor de 2 años, sin descuento de remuneración, hasta los 2 años de edad del menor.<br><br>
+    <strong>(e) Adopción:</strong> Los derechos de postnatal parental aplican también a las madres y padres adoptivos en los términos de la Ley 21.210.
+  </div>
+
+  <div class="clause-title">Duodécimo — Prevención y Sanción del Acoso Laboral y Sexual</div>
   <div class="clause">
     Conniku SpA declara su compromiso con el respeto a la dignidad de todos sus colaboradores. Se prohíbe expresamente toda conducta de acoso laboral (Ley 21.643, modificatoria del Art. 2 CT) y de acoso sexual (Ley 20.005). Ante cualquier denuncia, el Representante Legal de Conniku SpA, <strong>Cristian Andrés Gutiérrez Lazcano</strong>, en coordinación con el <strong>Director/a de Recursos Humanos</strong>, deberá iniciar el procedimiento de investigación interna dentro de 5 días corridos desde la recepción de la denuncia, guardar estricta confidencialidad, proteger al denunciante de cualquier represalia y adoptar las medidas correctivas que correspondan. El Representante Legal emitirá el veredicto final de la investigación. Las sanciones para el infractor podrán incluir desde amonestación escrita hasta la aplicación del artículo 160 N°1 del CT (despido sin indemnización). El canal de denuncia confidencial es: <strong>ceo@conniku.com</strong>. El Trabajador podrá, adicionalmente, presentar denuncia ante la Inspección del Trabajo (www.dt.gob.cl / 600 450 4000).
   </div>
 
-  <div class="clause-title">Décimo — Seguridad y Salud Ocupacional</div>
+  <div class="clause-title">Decimotercero — Seguridad y Salud Ocupacional</div>
   <div class="clause">
     El Empleador cumplirá con las obligaciones de seguridad y prevención de riesgos laborales establecidas en la Ley 16.744 sobre Accidentes del Trabajo y Enfermedades Profesionales, el Decreto Supremo N°40 (Reglamento sobre Prevención de Riesgos) y demás normas del Instituto de Seguridad Laboral (ISL) o Mutual de Seguridad correspondiente. El Trabajador deberá cumplir las instrucciones de seguridad, usar los elementos de protección personal (EPP) provistos, y reportar cualquier condición de riesgo en forma inmediata. En caso de accidente del trabajo, el Empleador deberá informar a la Mutual de Seguridad dentro de las 24 horas.
   </div>
 
-  <div class="clause-title">Undécimo — Obligaciones del Trabajador</div>
+  <div class="clause-title">Decimocuarto — Obligaciones del Trabajador</div>
   <div class="clause">
     El Trabajador se obliga a:
     (a) Desempeñar sus funciones con eficiencia, diligencia, honestidad y dedicación profesional;
@@ -732,27 +752,47 @@ function buildContractHTML(form: any, jobDescription: string): string {
     (i) Cumplir con todas las disposiciones legales aplicables en el desempeño de sus funciones.
   </div>
 
-  <div class="clause-title">Duodécimo — Propiedad Intelectual e Industrial</div>
+  <div class="clause-title">Decimoquinto — Entrega y Devolución de Equipos y Accesos</div>
+  <div class="clause">
+    Al inicio de la relación laboral, el Empleador entregará al Trabajador los equipos, herramientas, credenciales de acceso y recursos tecnológicos necesarios para el desempeño de sus funciones, lo que constará en un <strong>Acta de Entrega de Equipos</strong> suscrita por ambas partes, la cual forma parte integrante de este contrato. El Trabajador se obliga a:
+    <br><br>
+    <strong>(a)</strong> Cuidar los equipos y recursos entregados con la diligencia debida, dando aviso inmediato de cualquier daño, pérdida o hurto;
+    <br>
+    <strong>(b)</strong> Usar los equipos exclusivamente para fines laborales vinculados a las funciones del cargo;
+    <br>
+    <strong>(c)</strong> Devolver en buen estado todos los equipos y elementos entregados dentro de las <strong>24 horas siguientes</strong> al último día de trabajo, cualquiera sea la causa del término.
+    <br><br>
+    El Empleador procederá a la <strong>revocación de todos los accesos y credenciales</strong> del Trabajador en un plazo máximo de <strong>24 horas</strong> desde el término del contrato. La no devolución oportuna de equipos o la retención de credenciales facultará al Empleador a ejercer las acciones civiles y penales correspondientes, sin perjuicio de deducir del finiquito el valor del equipamiento no restituido, previa autorización escrita del Trabajador conforme al Art. 58 CT.
+  </div>
+
+  <div class="clause-title">Decimosexto — Propiedad Intelectual e Industrial</div>
   <div class="clause">
     Todo el software, código fuente, algoritmos, diseños, interfaces, documentación, bases de datos, procesos, metodologías, inventos, mejoras y creaciones intelectuales o industriales generados por el Trabajador en el ejercicio de sus funciones o con recursos de la empresa serán de propiedad exclusiva y permanente de <strong>Conniku SpA</strong>, en conformidad con la Ley 17.336 sobre Propiedad Intelectual y el artículo 19 N°25 de la Constitución Política de la República. El Trabajador cede desde ya, a título universal y gratuito, todos los derechos patrimoniales sobre dichas creaciones al Empleador. Esta cesión subsiste indefinidamente con posterioridad al término del contrato.
   </div>
 
-  <div class="clause-title">Decimotercero — Confidencialidad y Protección de Datos Personales</div>
+  <div class="clause-title">Decimoséptimo — Confidencialidad y Protección de Datos Personales</div>
   <div class="clause">
     El Trabajador declara conocer y comprometerse a cumplir la Ley 19.628 sobre Protección de la Vida Privada (y su modificatoria Ley 21.096), el Reglamento General de Protección de Datos de la UE (GDPR — aplicable a operaciones internacionales) y la Política de Privacidad publicada en <strong>conniku.com/privacy</strong>. El Trabajador solo podrá acceder, tratar y utilizar datos personales de usuarios, clientes y colaboradores en la medida estrictamente necesaria para el cumplimiento de sus funciones. Queda prohibido transferir, copiar, exportar o divulgar datos personales sin autorización expresa del Empleador. El incumplimiento de esta cláusula podrá dar lugar a responsabilidad civil y penal, además de las consecuencias laborales aplicables.
   </div>
 
-  <div class="clause-title">Decimocuarto — Uso de Tecnología, Sistemas y Redes Sociales</div>
+  <div class="clause-title">Decimoctavo — Uso de Tecnología, Sistemas y Redes Sociales</div>
   <div class="clause">
     Los equipos, sistemas, plataformas, correos electrónicos y cuentas corporativas provistas por el Empleador son de uso exclusivamente laboral. El Trabajador no deberá instalar software no autorizado, acceder a sistemas ajenos a sus funciones ni utilizar los recursos tecnológicos de la empresa para fines personales, ilícitos o contrarios a las políticas internas. Queda prohibido publicar información confidencial, crítica o denigratoria de Conniku SpA, sus productos, clientes o colaboradores en redes sociales u otros medios públicos, sin perjuicio del ejercicio legítimo del derecho a la libre expresión. El Empleador podrá monitorear el uso de los recursos tecnológicos corporativos en los términos autorizados por la legislación vigente, previa comunicación al Trabajador.
   </div>
 
-  <div class="clause-title">Decimoquinto — No Competencia y Exclusividad</div>
+  <div class="clause-title">Decimonoveno — Libertad Sindical y Derecho a Sindicación</div>
+  <div class="clause">
+    El Trabajador tiene plena libertad para afiliarse o no afiliarse a un sindicato, en conformidad con el <strong>artículo 212 del Código del Trabajo</strong> y el <strong>artículo 19 N°19 de la Constitución Política de la República</strong>. El Empleador no podrá condicionar el empleo a la afiliación o desafiliación sindical, ni ejercer presiones, amenazas o beneficios discriminatorios con el objeto de influir en este derecho. Cualquier conducta del Empleador que vulnere la libertad sindical podrá ser denunciada ante la Inspección del Trabajo y constituye práctica antisindical sancionada por los artículos 289 y siguientes del Código del Trabajo.
+    <br><br>
+    En caso de que el Trabajador se afilie a un sindicato, la <strong>cuota sindical</strong> correspondiente será descontada de su remuneración mensual previa autorización escrita del Trabajador, conforme al <strong>artículo 262 del Código del Trabajo</strong>. El monto descontado será transferido por el Empleador al sindicato respectivo dentro de los plazos legales. El Trabajador podrá revocar esta autorización en cualquier momento mediante comunicación escrita al Empleador.
+  </div>
+
+  <div class="clause-title">Vigésimo — No Competencia y Exclusividad</div>
   <div class="clause">
     Durante la vigencia del presente contrato, el Trabajador se compromete a no prestar servicios remunerados —ya sea como empleado, asesor, contratista o en cualquier otra calidad— a empresas que compitan directamente con el giro de Conniku SpA (plataformas de tecnología educativa, redes sociales estudiantiles o sistemas ERP/HRMS dirigidos al segmento educativo), salvo autorización escrita previa del Empleador. Esta restricción es razonable en su alcance y se sustenta en la necesidad de proteger el legítimo interés comercial de la empresa y la confidencialidad de su tecnología.
   </div>
 
-  <div class="clause-title">Decimosexto — Término del Contrato</div>
+  <div class="clause-title">Vigésimo Primero — Término del Contrato</div>
   <div class="clause">
     El presente contrato podrá terminar por las causales establecidas en los artículos 159, 160 y 161 del Código del Trabajo:
     (a) <strong>Mutuo acuerdo</strong> (Art. 159 N°1): las partes pueden convenir el término en cualquier momento, debiendo constar por escrito (finiquito);
@@ -763,14 +803,14 @@ function buildContractHTML(form: any, jobDescription: string): string {
     En todos los casos, el Empleador suscribirá el finiquito correspondiente dentro de los plazos legales. Ante cualquier irregularidad, el Trabajador podrá concurrir a la Inspección del Trabajo de Antofagasta o interponer demanda ante el Juzgado de Letras del Trabajo.
   </div>
 
-  <div class="clause-title">Decimoséptimo — Términos y Condiciones Generales</div>
+  <div class="clause-title">Vigésimo Segundo — Términos y Condiciones Generales</div>
   <div class="clause">
     Las partes declaran que el presente contrato recoge fielmente los acuerdos alcanzados y no existen otros pactos, verbales o escritos, que lo modifiquen, salvo los que puedan establecerse mediante anexos suscritos. Cualquier modificación al contrato deberá constar por escrito y ser firmada por ambas partes (Art. 11 CT). Las partes se obligan a comportarse de buena fe tanto en la ejecución como en la terminación de este contrato (Art. 1546 Código Civil). Los Términos y Condiciones de uso de la plataforma Conniku, publicados en <strong>conniku.com/terms</strong>, son parte integrante de las políticas de la empresa y el Trabajador declara haberlos leído y aceptado en lo que le aplica.
     El Trabajador declara haber tomado conocimiento del <strong>Reglamento Interno de Orden, Higiene y Seguridad (RIOHS)</strong>, del <strong>Código de Ética</strong> y de todas las políticas internas de Conniku SpA, comprometiéndose a su cumplimiento. Dichos documentos se encuentran disponibles de forma permanente y sin restricciones en la <strong>plataforma Conniku Admin</strong> (conniku.com/admin), accesible desde cualquier dispositivo con acceso autorizado, mediante accesos directos visibles en el panel principal. El Empleador garantiza que dichos documentos estarán siempre actualizados, accesibles y legibles en la plataforma.
     Adicionalmente, el Trabajador podrá consultar en cualquier momento el contenido de los reglamentos, políticas, procedimientos y documentos institucionales de la empresa a través de <strong>KONNI</strong>, el asistente de inteligencia artificial interactivo de Conniku SpA, disponible en la plataforma Admin. KONNI está habilitado para responder preguntas sobre RIOHS, Código de Ética, políticas de RRHH, procedimientos internos y normativa laboral aplicable, de manera inmediata y en cualquier horario. El uso de KONNI no reemplaza la asesoría legal formal ni las instancias oficiales de denuncia o consulta ante organismos del Estado.
   </div>
 
-  <div class="clause-title">Decimoctavo — Dirección del Trabajo e Información Legal</div>
+  <div class="clause-title">Vigésimo Tercero — Dirección del Trabajo e Información Legal</div>
   <div class="info-box">
     El Trabajador tiene derecho a obtener información, asesoría y presentar denuncias ante la <strong>Dirección del Trabajo</strong>:<br>
     — Sitio web: <strong>www.dt.gob.cl</strong><br>
@@ -779,7 +819,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
     El Empleador está obligado a pagar las cotizaciones previsionales a través de <strong>Previred (previred.com)</strong> antes del 10° día hábil del mes siguiente. El Trabajador puede verificar el cumplimiento de sus cotizaciones en la AFP correspondiente y en la Superintendencia de Pensiones (spensiones.cl).
   </div>
 
-  <div class="clause-title">Decimonoveno — Resolución de Conflictos y Jurisdicción</div>
+  <div class="clause-title">Vigésimo Cuarto — Resolución de Conflictos y Jurisdicción</div>
   <div class="clause">
     Ante cualquier controversia derivada del presente contrato, las partes procurarán resolverla directamente o mediante mediación ante la Inspección del Trabajo de Antofagasta. En caso de no arribar a acuerdo, la controversia será resuelta por los <strong>Juzgados de Letras del Trabajo de Antofagasta</strong>, conforme al procedimiento establecido en el Código del Trabajo (Arts. 420 y ss.). La ley aplicable es la legislación laboral de la República de Chile.
   </div>
@@ -898,11 +938,36 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     setTimeout(() => win.print(), 500)
   }
 
+  const [contractSaved, setContractSaved] = useState(false)
+  const [contractDocId, setContractDocId] = useState<string | null>(null)
+
   const handleSave = async () => {
     setSaving(true)
     try {
       const payload = { ...form, position: resolvedPosition }
-      await api.createEmployee(payload)
+      const result = await api.createEmployee(payload)
+      const newEmpId: string = result?.employee?.id
+
+      // ── Auto-guardar contrato como PDF firmado en carpeta del trabajador ──
+      if (newEmpId) {
+        try {
+          const contractForm = { ...form, position: resolvedPosition }
+          const htmlContent = buildContractHTML(contractForm, jobDescription)
+          const workerName = `${form.firstName} ${form.lastName}`.trim()
+          const pdfResult = await api.generateContractPdf(newEmpId, {
+            html: htmlContent,
+            worker_name: workerName,
+          })
+          if (pdfResult?.document?.id) {
+            setContractDocId(pdfResult.document.id)
+            setContractSaved(true)
+          }
+        } catch {
+          // PDF generation failure is non-blocking — el empleado igual se crea
+          console.warn('PDF generation failed, employee was created successfully')
+        }
+      }
+
       onCreated()
       onClose()
     } catch (err: any) {
@@ -1301,13 +1366,18 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
           </button>
 
           {/* Derecha */}
-          <div style={{ display: 'flex', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            {step === 2 && contractSaved && (
+              <span style={{ fontSize: 12, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 4 }}>
+                ✅ PDF guardado en carpeta del trabajador
+              </span>
+            )}
             {step === 2 && (
               <button
                 onClick={handlePrint}
                 style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                🖨️ Imprimir / Guardar PDF
+                🖨️ Vista previa / Imprimir
               </button>
             )}
             <button
@@ -1315,7 +1385,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
               disabled={saving}
               style={{ padding: '9px 22px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
             >
-              {step === 1 ? 'Siguiente →' : saving ? 'Creando…' : '✅ Crear Colaborador'}
+              {step === 1 ? 'Siguiente →' : saving ? 'Creando y generando contrato…' : '✅ Crear Colaborador'}
             </button>
           </div>
         </div>
