@@ -788,8 +788,8 @@ function buildContractHTML(form: any, jobDescription: string): string {
     <strong>Advertencia legal:</strong> Ambas partes declaran haber leído íntegramente el presente instrumento, comprendido su alcance y efectos jurídicos, y suscribirlo libre y voluntariamente, sin apremio ni coacción de ninguna especie. El trabajador tiene derecho a solicitar asesoría jurídica gratuita en la Corporación de Asistencia Judicial (www.cajantofagasta.cl).
   </div>
 
-  <div class="clause" style="margin-top:22px; text-align:center;">
-    En prueba de conformidad con todo lo expresado, las partes firman el presente Contrato Individual de Trabajo en <strong>dos ejemplares del mismo tenor</strong>, quedando uno en poder de cada parte, en la ciudad de Antofagasta, a ${today}.
+  <div class="clause" style="margin-top:22px; text-align:justify;">
+    En prueba de conformidad con todo lo expresado, las partes suscriben el presente Contrato Individual de Trabajo en <strong>dos ejemplares físicos del mismo tenor</strong>, quedando un ejemplar en poder de cada parte. Adicionalmente, se dejará constancia de la firma mediante <strong>firma electrónica avanzada</strong> conforme a la Ley 19.799, y una copia digital del contrato firmado será almacenada de forma segura en la <strong>ficha digital del Trabajador</strong> dentro de la plataforma <strong>Conniku Admin</strong>, con acceso restringido al personal autorizado de RRHH y a la Representante Legal de la empresa. Dicha copia digital tendrá pleno valor legal como respaldo del instrumento original, estará disponible para ser presentada ante la <strong>Inspección del Trabajo</strong>, el <strong>Juzgado de Letras del Trabajo</strong> o cualquier organismo fiscalizador que así lo requiera, y será conservada durante el plazo mínimo legal de 5 años contados desde el término de la relación laboral, conforme a la normativa vigente. Todo lo anterior se suscribe en la ciudad de Antofagasta, a ${today}.
   </div>
 
   <div class="signatures">
