@@ -62,6 +62,14 @@ const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
+const AboutPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.AboutPage })))
+const EnterprisePage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.EnterprisePage })))
+const SafetyPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.SafetyPage })))
+const AccessibilityPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.AccessibilityPage })))
+const CareersPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.CareersPage })))
+const AdvertisingPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.AdvertisingPage })))
+const MobilePage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.MobilePage })))
+const BlogPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.BlogPage })))
 const CertVerify = React.lazy(() => import('./pages/CertVerify'))
 const LandingProposals = React.lazy(() => import('./pages/LandingProposals'))
 const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'))
@@ -374,6 +382,14 @@ export default function App() {
             <Route path="/tutor/:username" element={tutorPageUsername ? <PublicTutorPage username={tutorPageUsername} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/terms" element={<TermsOfService onNavigate={(path) => navigate(path)} />} />
             <Route path="/privacy" element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />} />
+            <Route path="/about" element={<AboutPage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/enterprise" element={<EnterprisePage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/safety" element={<SafetyPage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/accessibility" element={<AccessibilityPage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/careers" element={<CareersPage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/advertising" element={<AdvertisingPage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/mobile" element={<MobilePage onNavigate={(path) => navigate(path)} />} />
+            <Route path="/blog" element={<BlogPage onNavigate={(path) => navigate(path)} />} />
             <Route path="/cert/:code" element={<CertVerify />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/subscription" element={<Subscription onNavigate={(path) => navigate(path)} />} />
