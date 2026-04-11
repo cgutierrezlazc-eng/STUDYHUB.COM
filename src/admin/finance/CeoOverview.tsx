@@ -61,7 +61,11 @@ export default function CeoOverview({ onNavigate }: Props) {
   const [tab, setTab] = useState<'overview' | 'acciones'>('overview')
 
   useEffect(() => {
-    if (user?.role !== 'owner') return
+    if (!user) return
+    if (user.role !== 'owner' && user.role !== 'admin') {
+      setLoading(false)
+      return
+    }
     Promise.all([
       api.getCeoWeeklyReport().catch(() => null),
       api.getEmployees().catch(() => []),
@@ -69,7 +73,7 @@ export default function CeoOverview({ onNavigate }: Props) {
       setReport(rpt)
       setEmployees(Array.isArray(emps) ? emps : [])
     }).finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const fmtClp = (n: number) => `$${(n || 0).toLocaleString('es-CL')} CLP`
   const fmtUsd = (n: number) => `US$${(n || 0).toFixed(2)}`
@@ -84,7 +88,7 @@ export default function CeoOverview({ onNavigate }: Props) {
     )
   }
 
-  if (user?.role !== 'owner') {
+  if (user?.role !== 'owner' && user?.role !== 'admin') {
     return (
       <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
         Acceso restringido al CEO.
