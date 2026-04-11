@@ -174,7 +174,167 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   )
 }
 
-// ─── Crear colaborador modal ─────────────────────────────────────
+// ─── Generador de contrato HTML imprimible ───────────────────────
+function buildContractHTML(form: any, jobDescription: string): string {
+  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const contractLabel = CONTRACT_TYPES.find(c => c.value === form.contractType)?.label || form.contractType
+  const scheduleLabel = SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label || form.workSchedule
+  const afpLabel = AFP_LIST.find(a => a.value === form.afp)?.label || form.afp
+  const healthLabel = form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName || ''}`
+  const duracionClause = form.contractType === 'indefinido'
+    ? 'El presente contrato es de duración <strong>indefinida</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.'
+    : form.contractType === 'plazo_fijo'
+    ? `El presente contrato es de <strong>plazo fijo</strong>, con fecha de inicio <strong>${fmtDate(form.hireDate)}</strong> y fecha de término <strong>${fmtDate(form.endDate || '')}</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.`
+    : `El presente contrato es por <strong>${contractLabel}</strong>, a partir del <strong>${fmtDate(form.hireDate)}</strong>.`
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Contrato Individual de Trabajo — ${form.firstName} ${form.lastName}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #000; background: #fff; padding: 40px 60px; line-height: 1.6; }
+    h1 { font-size: 16pt; text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px; }
+    .subtitle { text-align: center; font-size: 11pt; margin-bottom: 30px; color: #444; }
+    .section { margin-bottom: 18px; }
+    .section-title { font-weight: bold; text-transform: uppercase; font-size: 11pt; margin-bottom: 6px; border-bottom: 1px solid #000; padding-bottom: 3px; }
+    .clause { margin-bottom: 16px; }
+    .clause strong { font-weight: bold; }
+    table.data { width: 100%; border-collapse: collapse; margin: 10px 0; }
+    table.data td { padding: 5px 8px; border: 1px solid #ccc; font-size: 11pt; vertical-align: top; }
+    table.data td:first-child { font-weight: bold; width: 40%; background: #f9f9f9; }
+    .signatures { margin-top: 60px; display: flex; justify-content: space-between; gap: 40px; }
+    .sig-block { flex: 1; text-align: center; }
+    .sig-line { border-top: 1px solid #000; margin-bottom: 6px; margin-top: 60px; }
+    .sig-name { font-weight: bold; font-size: 11pt; }
+    .sig-role { font-size: 10pt; color: #555; }
+    .sig-link { margin-top: 16px; font-size: 10pt; color: #555; }
+    .sig-link a { color: #1a56db; }
+    .footer-note { margin-top: 30px; font-size: 9pt; color: #666; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
+    .jd-box { background: #f5f5f5; border-left: 3px solid #333; padding: 10px 14px; margin: 8px 0; font-size: 11pt; white-space: pre-wrap; }
+    @media print { body { padding: 20px 40px; } }
+  </style>
+</head>
+<body>
+  <h1>Contrato Individual de Trabajo</h1>
+  <p class="subtitle">Conniku SpA · RUT 78.395.702-7 · Santiago, Chile</p>
+
+  <div class="clause">
+    En Santiago, a ${today}, entre:
+  </div>
+
+  <div class="section">
+    <div class="section-title">Empleador</div>
+    <table class="data">
+      <tr><td>Razón Social</td><td>Conniku SpA</td></tr>
+      <tr><td>RUT</td><td>78.395.702-7</td></tr>
+      <tr><td>Giro</td><td>Desarrollo y Comercialización de Software (631200)</td></tr>
+      <tr><td>Domicilio</td><td>Santiago, Región Metropolitana, Chile</td></tr>
+      <tr><td>Representante Legal</td><td>Gerente General — Conniku SpA</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Trabajador</div>
+    <table class="data">
+      <tr><td>Nombre Completo</td><td>${form.firstName} ${form.lastName}</td></tr>
+      <tr><td>RUT</td><td>${form.rut}</td></tr>
+      <tr><td>Nacionalidad</td><td>${form.nationality || 'Chilena'}</td></tr>
+      <tr><td>Estado Civil</td><td>${form.maritalStatus || '—'}</td></tr>
+      <tr><td>Domicilio</td><td>${form.address || '—'}</td></tr>
+      <tr><td>Email</td><td>${form.email}</td></tr>
+      <tr><td>Teléfono</td><td>${form.phone || '—'}</td></tr>
+    </table>
+  </div>
+
+  <div class="clause"><strong>PRIMERO — NATURALEZA DE LOS SERVICIOS Y DESCRIPCIÓN DEL CARGO</strong></div>
+  <div class="clause">
+    El trabajador se desempeñará en el cargo de <strong>${form.position}</strong>, perteneciente al área de <strong>${form.department}</strong>.
+    Sus funciones principales son las siguientes:
+  </div>
+  <div class="jd-box">${jobDescription || '(Sin descripción de cargo especificada)'}</div>
+
+  <div class="clause"><strong>SEGUNDO — LUGAR DE TRABAJO</strong></div>
+  <div class="clause">
+    El trabajador prestará sus servicios en las dependencias de Conniku SpA, ubicadas en Santiago, Región Metropolitana, o en el lugar que la empresa determine, incluyendo modalidad de teletrabajo cuando corresponda.
+  </div>
+
+  <div class="clause"><strong>TERCERO — DURACIÓN DEL CONTRATO</strong></div>
+  <div class="clause">${duracionClause}</div>
+
+  <div class="clause"><strong>CUARTO — JORNADA DE TRABAJO</strong></div>
+  <div class="clause">
+    La jornada de trabajo será de <strong>${form.weeklyHours} horas semanales</strong> — modalidad: <strong>${scheduleLabel}</strong>, distribuidas de lunes a viernes, en conformidad con el artículo 22 del Código del Trabajo. Los horarios específicos serán coordinados con el empleador.
+  </div>
+
+  <div class="clause"><strong>QUINTO — REMUNERACIÓN</strong></div>
+  <div class="clause">El trabajador percibirá la siguiente remuneración mensual:</div>
+  <table class="data">
+    <tr><td>Sueldo Base Bruto</td><td>${fmtMoney(Number(form.grossSalary))} (Art. 41 y 44 CT)</td></tr>
+    ${Number(form.colacion) > 0 ? `<tr><td>Asignación de Colación (no imponible)</td><td>${fmtMoney(Number(form.colacion))}</td></tr>` : ''}
+    ${Number(form.movilizacion) > 0 ? `<tr><td>Asignación de Movilización (no imponible)</td><td>${fmtMoney(Number(form.movilizacion))}</td></tr>` : ''}
+    <tr><td>AFP</td><td>${afpLabel} (Ley 3.500)</td></tr>
+    <tr><td>Previsión de Salud</td><td>${healthLabel}</td></tr>
+    <tr><td>Seguro de Desempleo (AFC)</td><td>${form.afcActive ? 'Sí — Ley 19.728' : 'No aplica'}</td></tr>
+    <tr><td>Forma de Pago</td><td>${form.bankName} · ${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || ''} N° ${form.bankAccountNumber || '—'}</td></tr>
+  </table>
+  <div class="clause" style="font-size:10pt; color:#555; margin-top:4px;">
+    El empleador retendrá y enterará las cotizaciones previsionales y de salud conforme a la legislación vigente.
+  </div>
+
+  <div class="clause"><strong>SEXTO — OBLIGACIONES DEL TRABAJADOR</strong></div>
+  <div class="clause">
+    El trabajador se obliga a: (a) desempeñar sus funciones con eficiencia y dedicación; (b) respetar el Reglamento Interno de la empresa; (c) guardar absoluta reserva sobre información confidencial y datos de clientes; (d) no competir deslealmente durante la vigencia del contrato; (e) cuidar los bienes e infraestructura tecnológica de la empresa.
+  </div>
+
+  <div class="clause"><strong>SÉPTIMO — PROPIEDAD INTELECTUAL</strong></div>
+  <div class="clause">
+    Todos los desarrollos, creaciones, código fuente, diseños, algoritmos y productos generados por el trabajador en el ejercicio de sus funciones serán de propiedad exclusiva de Conniku SpA, en conformidad con la Ley 17.336 sobre Propiedad Intelectual.
+  </div>
+
+  <div class="clause"><strong>OCTAVO — NORMAS ADICIONALES</strong></div>
+  <div class="clause">
+    El presente contrato se rige por el Código del Trabajo de Chile y demás normas legales vigentes. Cualquier modificación deberá constar por escrito y ser suscrita por ambas partes. En caso de controversia, las partes se someten a la jurisdicción de los Juzgados de Letras del Trabajo de Santiago.
+  </div>
+
+  <div class="clause" style="margin-top:24px;">
+    En prueba de conformidad, las partes firman el presente contrato en dos ejemplares del mismo tenor, en la ciudad de Santiago, a ${today}.
+  </div>
+
+  <div class="signatures">
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-name">Conniku SpA</div>
+      <div class="sig-role">RUT 78.395.702-7 — Empleador</div>
+      <div class="sig-role">Representante Legal</div>
+    </div>
+    <div class="sig-block">
+      <div class="sig-line"></div>
+      <div class="sig-name">${form.firstName} ${form.lastName}</div>
+      <div class="sig-role">RUT ${form.rut} — Trabajador</div>
+      <div class="sig-role">${form.position}</div>
+    </div>
+  </div>
+
+  <div class="sig-link" style="text-align:center; margin-top:28px;">
+    ✍️ <strong>Firma Electrónica Avanzada (FEA):</strong>
+    <a href="https://www.acepta.com" target="_blank">Acepta.com</a> ·
+    <a href="https://www.e-certchile.cl" target="_blank">E-CertChile</a> ·
+    <a href="https://www.signer.cl" target="_blank">Signer.cl</a> ·
+    <a href="https://www.docusign.com" target="_blank">DocuSign</a>
+    <br><span style="font-size:9pt; color:#888;">Plataformas habilitadas para firma electrónica avanzada conforme a Ley 19.799 (Chile)</span>
+  </div>
+
+  <div class="footer-note">
+    Documento generado por Conniku SpA · conniku.com · contacto@conniku.com<br>
+    Este contrato debe quedar firmado dentro de los 15 días corridos desde el inicio de labores (Art. 9 Código del Trabajo).
+  </div>
+</body>
+</html>`
+}
+
+// ─── Crear colaborador modal (2 pasos) ──────────────────────────
 function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const emptyForm = {
     rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
@@ -186,7 +346,9 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     afp: 'modelo', healthSystem: 'fonasa', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_rut', bankAccountNumber: '',
   }
-  const [form, setForm] = useState<any>(emptyForm)
+  const [step, setStep]   = useState<1 | 2>(1)
+  const [form, setForm]   = useState<any>(emptyForm)
+  const [jobDescription, setJobDescription] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [saving, setSaving] = useState(false)
 
@@ -204,10 +366,22 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     return e
   }
 
-  const handleSave = async () => {
+  const handleNext = () => {
     const e = validate()
     setErrors(e)
-    if (Object.keys(e).length > 0) return
+    if (Object.keys(e).length === 0) setStep(2)
+  }
+
+  const handlePrint = () => {
+    const html = buildContractHTML(form, jobDescription)
+    const win = window.open('', '_blank', 'width=900,height=700')
+    if (!win) return
+    win.document.write(html)
+    win.document.close()
+    setTimeout(() => win.print(), 500)
+  }
+
+  const handleSave = async () => {
     setSaving(true)
     try {
       await api.createEmployee(form)
@@ -215,103 +389,234 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
       onClose()
     } catch (err: any) {
       setErrors({ _general: err?.message || err?.detail || 'Error al guardar. Verifica los datos.' })
+      setSaving(false)
     }
-    setSaving(false)
   }
+
+  // ── Indicador de pasos ──────────────────────────────────────────
+  const StepBar = () => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px' }}>
+      {[{ n: 1, label: 'Datos' }, { n: 2, label: 'Contrato' }].map(({ n, label }) => (
+        <React.Fragment key={n}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{
+              width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 11, fontWeight: 700,
+              background: step >= n ? 'var(--accent)' : 'var(--bg-tertiary)',
+              color: step >= n ? '#fff' : 'var(--text-muted)',
+            }}>{n}</div>
+            <span style={{ fontSize: 12, fontWeight: step === n ? 600 : 400, color: step === n ? 'var(--text-primary)' : 'var(--text-muted)' }}>{label}</span>
+          </div>
+          {n < 2 && <div style={{ flex: 1, height: 1, background: step > n ? 'var(--accent)' : 'var(--border)', maxWidth: 40 }} />}
+        </React.Fragment>
+      ))}
+    </div>
+  )
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
       zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <div style={{
         background: 'var(--bg-primary)', borderRadius: 16, width: '100%',
-        maxWidth: 680, maxHeight: '90vh', overflow: 'hidden',
+        maxWidth: step === 2 ? 820 : 680, maxHeight: '92vh', overflow: 'hidden',
         display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        transition: 'max-width 0.25s ease',
       }}>
-        {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 24px', borderBottom: '1px solid var(--border)' }}>
+
+        {/* ── Header ── */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700 }}>Nuevo Colaborador</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Art. 9 CT — contrato debe firmarse en 15 días corridos</div>
+            <StepBar />
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              {step === 1 ? 'Art. 9 CT — contrato debe firmarse en 15 días corridos' : 'Revisa, edita la descripción de cargo e imprime el contrato'}
+            </div>
           </div>
           <button onClick={onClose} style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-muted)', lineHeight: 1 }}>×</button>
         </div>
 
-        {/* Body */}
+        {/* ── Body ── */}
         <div style={{ overflowY: 'auto', padding: '20px 24px', flex: 1 }}>
-          {errors._general && (
-            <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
-              {errors._general}
-            </div>
+
+          {/* ── PASO 1: Formulario de datos ── */}
+          {step === 1 && (
+            <>
+              {errors._general && (
+                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
+                  {errors._general}
+                </div>
+              )}
+              <SectionTitle>Datos Personales</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Field label="RUT *"><RutInput value={form.rut} onChange={F('rut')} /><ErrMsg msg={errors.rut} /></Field>
+                <Field label="Fecha Nacimiento"><Input type="date" value={form.birthDate} onChange={F('birthDate')} /></Field>
+                <Field label="Nombre *"><Input value={form.firstName} onChange={F('firstName')} /><ErrMsg msg={errors.firstName} /></Field>
+                <Field label="Apellido *"><Input value={form.lastName} onChange={F('lastName')} /><ErrMsg msg={errors.lastName} /></Field>
+                <Field label="Email *"><Input type="email" value={form.email} onChange={F('email')} /><ErrMsg msg={errors.email} /></Field>
+                <Field label="Teléfono"><Input value={form.phone} onChange={F('phone')} placeholder="+56 9 xxxx xxxx" /></Field>
+                <Field label="Dirección"><Input value={form.address} onChange={F('address')} /></Field>
+                <Field label="Nacionalidad"><Input value={form.nationality} onChange={F('nationality')} /></Field>
+                <Field label="Estado Civil">
+                  <Select value={form.maritalStatus} onChange={F('maritalStatus')} options={[{value:'soltero',label:'Soltero/a'},{value:'casado',label:'Casado/a'},{value:'divorciado',label:'Divorciado/a'},{value:'viudo',label:'Viudo/a'}]} />
+                </Field>
+              </div>
+
+              <SectionTitle>Contacto de Emergencia</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Field label="Nombre Contacto"><Input value={form.emergencyContactName} onChange={F('emergencyContactName')} /></Field>
+                <Field label="Teléfono Contacto"><Input value={form.emergencyContactPhone} onChange={F('emergencyContactPhone')} /></Field>
+              </div>
+
+              <SectionTitle>Contrato Laboral</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Field label="Cargo *"><Input value={form.position} onChange={F('position')} /><ErrMsg msg={errors.position} /></Field>
+                <Field label="Departamento"><Select value={form.department} onChange={F('department')} options={DEPARTMENTS} /></Field>
+                <Field label="Tipo Contrato"><Select value={form.contractType} onChange={F('contractType')} options={CONTRACT_TYPES} /></Field>
+                <Field label="Fecha Ingreso *"><Input type="date" value={form.hireDate} onChange={F('hireDate')} /><ErrMsg msg={errors.hireDate} /></Field>
+                {(form.contractType === 'plazo_fijo' || form.contractType === 'obra_faena') && (
+                  <Field label="Fecha Término"><Input type="date" value={form.endDate} onChange={F('endDate')} /></Field>
+                )}
+                <Field label="Jornada"><Select value={form.workSchedule} onChange={F('workSchedule')} options={SCHEDULE_OPTIONS} /></Field>
+                <Field label="Horas Semanales"><Input type="number" value={form.weeklyHours} onChange={v => setForm((p:any) => ({...p, weeklyHours: Number(v)}))} /></Field>
+              </div>
+
+              <SectionTitle>Remuneración</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Field label={`Sueldo Bruto * (mín. ${fmtMoney(IMM)})`}>
+                  <Input type="number" value={form.grossSalary} onChange={v => setForm((p:any) => ({...p, grossSalary: Number(v)}))} />
+                  <ErrMsg msg={errors.grossSalary} />
+                </Field>
+                <Field label="Colación"><Input type="number" value={form.colacion} onChange={v => setForm((p:any) => ({...p, colacion: Number(v)}))} /></Field>
+                <Field label="Movilización"><Input type="number" value={form.movilizacion} onChange={v => setForm((p:any) => ({...p, movilizacion: Number(v)}))} /></Field>
+                <Field label="AFP"><Select value={form.afp} onChange={F('afp')} options={AFP_LIST} /></Field>
+                <Field label="Salud"><Select value={form.healthSystem} onChange={F('healthSystem')} options={HEALTH_OPTIONS} /></Field>
+                {form.healthSystem === 'isapre' && (
+                  <Field label="Nombre ISAPRE"><Input value={form.isapreName || ''} onChange={F('isapreName')} /></Field>
+                )}
+              </div>
+
+              <SectionTitle>Datos Bancarios</SectionTitle>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                <Field label="Banco"><Select value={form.bankName} onChange={F('bankName')} options={BANKS} /></Field>
+                <Field label="Tipo Cuenta"><Select value={form.bankAccountType} onChange={F('bankAccountType')} options={ACCOUNT_TYPES} /></Field>
+                <Field label="N° Cuenta"><Input value={form.bankAccountNumber} onChange={F('bankAccountNumber')} /></Field>
+              </div>
+            </>
           )}
 
-          <SectionTitle>Datos Personales</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label="RUT *"><RutInput value={form.rut} onChange={F('rut')} /><ErrMsg msg={errors.rut} /></Field>
-            <Field label="Fecha Nacimiento"><Input type="date" value={form.birthDate} onChange={F('birthDate')} /></Field>
-            <Field label="Nombre *"><Input value={form.firstName} onChange={F('firstName')} /><ErrMsg msg={errors.firstName} /></Field>
-            <Field label="Apellido *"><Input value={form.lastName} onChange={F('lastName')} /><ErrMsg msg={errors.lastName} /></Field>
-            <Field label="Email *"><Input type="email" value={form.email} onChange={F('email')} /><ErrMsg msg={errors.email} /></Field>
-            <Field label="Teléfono"><Input value={form.phone} onChange={F('phone')} placeholder="+56 9 xxxx xxxx" /></Field>
-            <Field label="Dirección"><Input value={form.address} onChange={F('address')} /></Field>
-            <Field label="Nacionalidad"><Input value={form.nationality} onChange={F('nationality')} /></Field>
-            <Field label="Estado Civil">
-              <Select value={form.maritalStatus} onChange={F('maritalStatus')} options={[{value:'soltero',label:'Soltero/a'},{value:'casado',label:'Casado/a'},{value:'divorciado',label:'Divorciado/a'},{value:'viudo',label:'Viudo/a'}]} />
-            </Field>
-          </div>
+          {/* ── PASO 2: Vista previa del contrato ── */}
+          {step === 2 && (
+            <>
+              {errors._general && (
+                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
+                  {errors._general}
+                </div>
+              )}
 
-          <SectionTitle>Contacto de Emergencia</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label="Nombre Contacto"><Input value={form.emergencyContactName} onChange={F('emergencyContactName')} /></Field>
-            <Field label="Teléfono Contacto"><Input value={form.emergencyContactPhone} onChange={F('emergencyContactPhone')} /></Field>
-          </div>
+              {/* Job Description editable */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
+                  Descripción del Cargo / Job Description
+                </label>
+                <textarea
+                  value={jobDescription}
+                  onChange={e => setJobDescription(e.target.value)}
+                  placeholder={`Ej:\n• Desarrollar y mantener el frontend de la plataforma Conniku usando React y TypeScript\n• Participar en code reviews y definición de arquitectura\n• Colaborar con el equipo de diseño para implementar interfaces de usuario\n• Reportar al Gerente de Tecnología`}
+                  rows={6}
+                  style={{
+                    width: '100%', padding: '10px 14px', border: '1px solid var(--border)',
+                    borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)',
+                    fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none',
+                    lineHeight: 1.6, boxSizing: 'border-box',
+                  }}
+                />
+              </div>
 
-          <SectionTitle>Contrato Laboral</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label="Cargo *"><Input value={form.position} onChange={F('position')} /><ErrMsg msg={errors.position} /></Field>
-            <Field label="Departamento"><Select value={form.department} onChange={F('department')} options={DEPARTMENTS} /></Field>
-            <Field label="Tipo Contrato"><Select value={form.contractType} onChange={F('contractType')} options={CONTRACT_TYPES} /></Field>
-            <Field label="Fecha Ingreso *"><Input type="date" value={form.hireDate} onChange={F('hireDate')} /><ErrMsg msg={errors.hireDate} /></Field>
-            {form.contractType === 'plazo_fijo' && (
-              <Field label="Fecha Término"><Input type="date" value={form.endDate} onChange={F('endDate')} /></Field>
+              {/* Preview del contrato */}
+              <div style={{
+                border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
+                background: '#fff', color: '#000',
+              }}>
+                <div style={{ background: '#f3f4f6', padding: '10px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>📄 Vista previa del contrato</span>
+                  <span style={{ fontSize: 11, color: '#6b7280' }}>— Se generará con los datos ingresados</span>
+                </div>
+                <div style={{ padding: '24px 32px', fontFamily: 'Georgia, serif', fontSize: 12, lineHeight: 1.65, color: '#111', maxHeight: 420, overflowY: 'auto' }}>
+                  <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                    <div style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contrato Individual de Trabajo</div>
+                    <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Conniku SpA · RUT 78.395.702-7 · Santiago, Chile</div>
+                  </div>
+                  <p style={{ marginBottom: 12 }}>En Santiago, a {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), y <strong>{form.firstName} {form.lastName}</strong>, RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato Individual de Trabajo:</p>
+
+                  {[
+                    { title: 'Primero — Cargo y Funciones', content: <><p>Cargo: <strong>{form.position}</strong> — Área: <strong>{form.department}</strong></p>{jobDescription && <div style={{ marginTop: 8, background: '#f9f9f9', borderLeft: '3px solid #555', padding: '6px 10px', fontSize: 11, whiteSpace: 'pre-wrap' }}>{jobDescription}</div>}</> },
+                    { title: 'Segundo — Lugar de Trabajo', content: <p>Dependencias de Conniku SpA, Santiago, o modalidad de teletrabajo según lo coordinado.</p> },
+                    { title: 'Tercero — Duración', content: <p dangerouslySetInnerHTML={{ __html: form.contractType === 'indefinido' ? 'Contrato de duración <strong>indefinida</strong> (Art. 159 N°4 CT).' : `Contrato a <strong>plazo fijo</strong> desde ${fmtDate(form.hireDate)}${form.endDate ? ` hasta ${fmtDate(form.endDate)}` : ''}.` }} /> },
+                    { title: 'Cuarto — Jornada', content: <p><strong>{form.weeklyHours}h semanales</strong> — {SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label}. (Art. 22 CT)</p> },
+                    { title: 'Quinto — Remuneración', content: <p>Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>{Number(form.colacion) > 0 ? ` · Colación: ${fmtMoney(Number(form.colacion))}` : ''}{Number(form.movilizacion) > 0 ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}` : ''}. AFP: {AFP_LIST.find(a => a.value === form.afp)?.label}. Salud: {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}.</p> },
+                  ].map(({ title, content }) => (
+                    <div key={title} style={{ marginBottom: 14 }}>
+                      <div style={{ fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid #ddd', paddingBottom: 3, marginBottom: 6 }}>{title}</div>
+                      {content}
+                    </div>
+                  ))}
+
+                  {/* Firmas preview */}
+                  <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between', gap: 40 }}>
+                    {[
+                      { name: 'Conniku SpA', sub: 'RUT 78.395.702-7 — Empleador' },
+                      { name: `${form.firstName} ${form.lastName}`, sub: `RUT ${form.rut} — Trabajador` },
+                    ].map(({ name, sub }) => (
+                      <div key={name} style={{ flex: 1, textAlign: 'center' }}>
+                        <div style={{ borderTop: '1px solid #000', paddingTop: 6, marginTop: 40 }}>
+                          <div style={{ fontWeight: 700, fontSize: 12 }}>{name}</div>
+                          <div style={{ fontSize: 10, color: '#555' }}>{sub}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 16, textAlign: 'center', fontSize: 10, color: '#777' }}>
+                    ✍️ Firma electrónica avanzada disponible en:&nbsp;
+                    <strong>Acepta.com</strong> · <strong>E-CertChile</strong> · <strong>Signer.cl</strong> · <strong>DocuSign</strong>
+                    <br />Ley 19.799 — Firma Electrónica (Chile)
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* ── Footer ── */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+          {/* Izquierda */}
+          <button
+            onClick={step === 1 ? onClose : () => setStep(1)}
+            style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}
+          >
+            {step === 1 ? 'Cancelar' : '← Volver'}
+          </button>
+
+          {/* Derecha */}
+          <div style={{ display: 'flex', gap: 10 }}>
+            {step === 2 && (
+              <button
+                onClick={handlePrint}
+                style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                🖨️ Imprimir / Guardar PDF
+              </button>
             )}
-            <Field label="Jornada"><Select value={form.workSchedule} onChange={F('workSchedule')} options={SCHEDULE_OPTIONS} /></Field>
-            <Field label="Horas Semanales"><Input type="number" value={form.weeklyHours} onChange={v => setForm((p:any) => ({...p, weeklyHours: Number(v)}))} /></Field>
-          </div>
-
-          <SectionTitle>Remuneración</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label={`Sueldo Bruto * (mín. ${fmtMoney(IMM)})`}>
-              <Input type="number" value={form.grossSalary} onChange={v => setForm((p:any) => ({...p, grossSalary: Number(v)}))} />
-              <ErrMsg msg={errors.grossSalary} />
-            </Field>
-            <Field label="Colación"><Input type="number" value={form.colacion} onChange={v => setForm((p:any) => ({...p, colacion: Number(v)}))} /></Field>
-            <Field label="Movilización"><Input type="number" value={form.movilizacion} onChange={v => setForm((p:any) => ({...p, movilizacion: Number(v)}))} /></Field>
-            <Field label="AFP"><Select value={form.afp} onChange={F('afp')} options={AFP_LIST} /></Field>
-            <Field label="Salud"><Select value={form.healthSystem} onChange={F('healthSystem')} options={HEALTH_OPTIONS} /></Field>
-            {form.healthSystem === 'isapre' && (
-              <Field label="Nombre ISAPRE"><Input value={form.isapreName || ''} onChange={F('isapreName')} /></Field>
-            )}
-          </div>
-
-          <SectionTitle>Datos Bancarios</SectionTitle>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label="Banco"><Select value={form.bankName} onChange={F('bankName')} options={BANKS} /></Field>
-            <Field label="Tipo Cuenta"><Select value={form.bankAccountType} onChange={F('bankAccountType')} options={ACCOUNT_TYPES} /></Field>
-            <Field label="N° Cuenta"><Input value={form.bankAccountNumber} onChange={F('bankAccountNumber')} /></Field>
+            <button
+              onClick={step === 1 ? handleNext : handleSave}
+              disabled={saving}
+              style={{ padding: '9px 22px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
+            >
+              {step === 1 ? 'Siguiente →' : saving ? 'Creando…' : '✅ Crear Colaborador'}
+            </button>
           </div>
         </div>
 
-        {/* Footer */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-          <button onClick={onClose} style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>
-            Cancelar
-          </button>
-          <button onClick={handleSave} disabled={saving} style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}>
-            {saving ? 'Guardando…' : 'Crear Colaborador'}
-          </button>
-        </div>
       </div>
     </div>
   )
