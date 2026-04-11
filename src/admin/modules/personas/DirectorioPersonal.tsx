@@ -78,6 +78,34 @@ function calcDescuentos(grossSalary: number, afp: string, healthSystem: string, 
   const totalWorker    = afpTotal + salud + afcWorker
   return { afpObligatorio, afpComision, afpTotal, salud, afcWorker, afcEmployer, sisEmployer, totalWorker }
 }
+// ─── APV y Descuentos Adicionales ──────────────────────────────
+// Fuente: DL 3.500 Art.20 bis/ter, Ley 19.768, Ley 14.908, Art.58 CT
+const APV_REGIMEN = [
+  { value: 'B', label: 'Régimen B — Rebaja base imponible Imp. 2ª Categoría (rentas altas)' },
+  { value: 'A', label: 'Régimen A — Crédito tributario 15%, tope 6 UTM/año (rentas bajas/medias)' },
+]
+const APV_INSTITUTIONS = [
+  { value: 'afp_mismo',   label: 'Misma AFP del trabajador' },
+  { value: 'fondo_mutuo', label: 'Administradora de Fondos Mutuos' },
+  { value: 'banco',       label: 'Banco (depósito a plazo APV)' },
+  { value: 'seguro_vida', label: 'Compañía de Seguros de Vida' },
+  { value: 'otro',        label: 'Otra institución habilitada SP' },
+]
+const PENSION_TIPOS = [
+  { value: 'fijo',       label: 'Monto fijo mensual ($)' },
+  { value: 'porcentaje', label: 'Porcentaje del sueldo líquido (%)' },
+]
+const PENSION_DESTINO = [
+  { value: 'transferencia', label: 'Transferencia bancaria al beneficiario' },
+  { value: 'tribunal',      label: 'Depósito cuenta Tribunal de Familia' },
+  { value: 'ojv',           label: 'Oficina Judicial Virtual (OJV) — Poder Judicial' },
+]
+const PENSION_CUENTA_TIPOS = [
+  { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
+  { value: 'cuenta_vista',     label: 'Cuenta Vista' },
+  { value: 'cuenta_rut',       label: 'Cuenta RUT' },
+]
+const PENSION_BANCOS = ['Banco Estado','BancoChile','Santander','BCI','Itaú','Scotiabank','Falabella','Ripley','Security','Consorcio','Tribunal de Familia']
 const POSITIONS_LIST = [
   { value: 'gerente_general',      label: 'Gerente General / CEO' },
   { value: 'gerente_tecnologia',   label: 'Gerente de Tecnología / CTO' },
@@ -525,10 +553,57 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-detail">${AFC_WORKER}% de ${fmtMoney(salary)} imponible · Ley 19.728</td>
         <td class="liq-amount">${fmtMoney(d.afcWorker)}</td>
       </tr>
-      <tr class="liq-total">
-        <td colspan="2">TOTAL DESCUENTOS TRABAJADOR</td>
-        <td style="text-align:right;">${fmtMoney(d.totalWorker)}</td>
-      </tr>
+      ${form.apvActivo && form.apvMonto > 0 ? `<tr>
+        <td class="liq-label">APV — Ahorro Previsional Voluntario (Régimen ${form.apvRegimen})</td>
+        <td class="liq-detail">${form.apvInstitucion === 'afp_mismo' ? `Misma AFP ${afpLabel}` : (form.apvInstitucionNombre || 'Institución habilitada')} · DL 3.500 Art. 20 bis · Ley 19.768${form.apvRegimen === 'B' ? ' · Rebaja base imponible Imp. 2ª Cat.' : ' · Crédito trib. 15%'}</td>
+        <td class="liq-amount">${fmtMoney(Number(form.apvMonto))}</td>
+      </tr>` : ''}
+      ${form.pensionActiva ? `<tr>
+        <td class="liq-label">Pensión de Alimentos</td>
+        <td class="liq-detail">RIT ${form.pensionRit || '—'} · ${form.pensionTribunal || 'Tribunal de Familia'} · Ley 14.908 · Art. 58 CT</td>
+        <td class="liq-amount">${form.pensionTipo === 'fijo' ? fmtMoney(Number(form.pensionMonto)) : fmtMoney(Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) + ` (${form.pensionPorcentaje}% líquido)`}</td>
+      </tr>` : ''}
+      ${form.cuotaSindicalActiva && form.cuotaSindicalMonto > 0 ? `<tr>
+        <td class="liq-label">Cuota Sindical</td>
+        <td class="liq-detail">${form.cuotaSindicalSindicato || 'Sindicato'} · Art. 262 CT</td>
+        <td class="liq-amount">${fmtMoney(Number(form.cuotaSindicalMonto))}</td>
+      </tr>` : ''}
+      ${form.prestamoActivo && form.prestamoCuota > 0 ? `<tr>
+        <td class="liq-label">Cuota Préstamo Empresa</td>
+        <td class="liq-detail">Saldo total: ${fmtMoney(Number(form.prestamoSaldo))} · Autorizado por el trabajador · Art. 58 CT</td>
+        <td class="liq-amount">${fmtMoney(Number(form.prestamoCuota))}</td>
+      </tr>` : ''}
+      ${form.seguroColectivoActivo && form.seguroColectivoMonto > 0 ? `<tr>
+        <td class="liq-label">Seguro Colectivo</td>
+        <td class="liq-detail">${form.seguroColectivoAseguradora || 'Aseguradora'} · Prima mensual acordada con trabajador</td>
+        <td class="liq-amount">${fmtMoney(Number(form.seguroColectivoMonto))}</td>
+      </tr>` : ''}
+      ${(() => {
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0
+        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
+        const totalAdicional = apv + pension + sindical + prestamo + seguro
+        if (totalAdicional === 0) return ''
+        return `<tr style="background:#fff7ed;">
+          <td class="liq-label" style="font-size:9.5pt;color:#92400e;">Subtotal descuentos adicionales</td>
+          <td class="liq-detail" style="color:#92400e;">APV + Pensión + Sindical + Préstamo + Seguro</td>
+          <td class="liq-amount" style="color:#92400e;">${fmtMoney(totalAdicional)}</td>
+        </tr>`
+      })()}
+      ${(() => {
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0
+        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
+        const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro
+        return `<tr class="liq-total">
+          <td colspan="2">TOTAL DESCUENTOS TRABAJADOR</td>
+          <td style="text-align:right;">${fmtMoney(totalDesc)}</td>
+        </tr>`
+      })()}
     </table>
 
     <div class="liq-sub">III. Líquido a pagar al trabajador</div>
@@ -539,13 +614,35 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-amount">${fmtMoney(totalHaberes)}</td>
       </tr>
       <tr>
-        <td class="liq-label">(−) Total Descuentos</td>
+        <td class="liq-label">(−) Descuentos previsionales obligatorios</td>
         <td class="liq-detail">AFP + Salud + AFC trabajador</td>
         <td class="liq-amount" style="color:#dc2626;">− ${fmtMoney(d.totalWorker)}</td>
       </tr>
+      ${(() => {
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0
+        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
+        const totalAdicional = apv + pension + sindical + prestamo + seguro
+        if (totalAdicional === 0) return ''
+        return `<tr>
+          <td class="liq-label">(−) Descuentos adicionales</td>
+          <td class="liq-detail">APV + Alimentos + Sindical + Otros</td>
+          <td class="liq-amount" style="color:#dc2626;">− ${fmtMoney(totalAdicional)}</td>
+        </tr>`
+      })()}
       <tr class="liq-net">
         <td colspan="2">💰 TOTAL LÍQUIDO A RECIBIR *</td>
-        <td style="text-align:right;">${fmtMoney(netLiquido + colacion + movilizacion)}</td>
+        <td style="text-align:right;">${(() => {
+          const apv = form.apvActivo ? Number(form.apvMonto) : 0
+          const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
+          const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
+          const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
+          const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
+          const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro
+          return fmtMoney(totalHaberes - totalDesc)
+        })()}</td>
       </tr>
     </table>
 
@@ -741,6 +838,18 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     grossSalary: IMM, colacion: 0, movilizacion: 0,
     afp: 'modelo', healthSystem: 'fonasa', isapreProvider: '', isapreName: '', isapreUf: 0,
     afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_rut', bankAccountNumber: '',
+    // APV — Ahorro Previsional Voluntario (DL 3.500 Art. 20 bis, Ley 19.768)
+    apvActivo: false, apvRegimen: 'B', apvMonto: 0, apvInstitucion: 'afp_mismo', apvInstitucionNombre: '',
+    // Pensión de Alimentos (Ley 14.908, Art. 58 CT)
+    pensionActiva: false, pensionTipo: 'fijo', pensionMonto: 0, pensionPorcentaje: 0,
+    pensionRit: '', pensionTribunal: 'Tribunal de Familia de Antofagasta', pensionBeneficiario: '',
+    pensionDestino: 'transferencia', pensionCuentaBanco: 'Banco Estado', pensionCuentaTipo: 'cuenta_corriente', pensionCuentaNumero: '',
+    // Cuota Sindical (Art. 262 CT) — solo si trabajador afiliado a sindicato
+    cuotaSindicalActiva: false, cuotaSindicalMonto: 0, cuotaSindicalSindicato: '',
+    // Préstamo empresa (Art. 58 CT — requiere autorización escrita del trabajador)
+    prestamoActivo: false, prestamoCuota: 0, prestamoSaldo: 0,
+    // Seguro colectivo (voluntario, acordado con trabajador)
+    seguroColectivoActivo: false, seguroColectivoMonto: 0, seguroColectivoAseguradora: '',
   }
   const [step, setStep]   = useState<1 | 2>(1)
   const [form, setForm]   = useState<any>(emptyForm)
@@ -970,6 +1079,129 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 <Field label="Banco"><Select value={form.bankName} onChange={F('bankName')} options={BANKS} /></Field>
                 <Field label="Tipo Cuenta"><Select value={form.bankAccountType} onChange={F('bankAccountType')} options={ACCOUNT_TYPES} /></Field>
                 <Field label="N° Cuenta"><Input value={form.bankAccountNumber} onChange={F('bankAccountNumber')} /></Field>
+              </div>
+
+              <SectionTitle>Descuentos y Beneficios Adicionales</SectionTitle>
+
+              {/* ── APV ── */}
+              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.apvActivo ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>📈 APV — Ahorro Previsional Voluntario</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>DL 3.500 Art. 20 bis · Ley 19.768 · máx. 50 UF/mes</div>
+                  </div>
+                  <select value={form.apvActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, apvActivo: e.target.value === 'si' }))}
+                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.apvActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.apvActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                    <option value="no">No aplica</option>
+                    <option value="si">Sí, tiene APV</option>
+                  </select>
+                </div>
+                {form.apvActivo && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                    <Field label="Régimen"><Select value={form.apvRegimen} onChange={F('apvRegimen')} options={APV_REGIMEN} /></Field>
+                    <Field label="Monto mensual APV ($)"><Input type="number" value={form.apvMonto} onChange={v => setForm((p: any) => ({ ...p, apvMonto: Number(v) }))} /></Field>
+                    <Field label="Institución APV"><Select value={form.apvInstitucion} onChange={F('apvInstitucion')} options={APV_INSTITUTIONS} /></Field>
+                    {form.apvInstitucion !== 'afp_mismo' && (
+                      <Field label="Nombre institución"><Input value={form.apvInstitucionNombre} onChange={F('apvInstitucionNombre')} placeholder="Ej: Fondo Mutuo BCI" /></Field>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Pensión de alimentos ── */}
+              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.pensionActiva ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>⚖️ Pensión de Alimentos</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Ley 14.908 · Art. 58 CT · resolución judicial obligatoria</div>
+                  </div>
+                  <select value={form.pensionActiva ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, pensionActiva: e.target.value === 'si' }))}
+                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.pensionActiva ? '#dc2626' : 'var(--bg-tertiary)', color: form.pensionActiva ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                    <option value="no">Sin orden judicial</option>
+                    <option value="si">Con orden judicial</option>
+                  </select>
+                </div>
+                {form.pensionActiva && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                    <Field label="Tipo de descuento"><Select value={form.pensionTipo} onChange={F('pensionTipo')} options={PENSION_TIPOS} /></Field>
+                    {form.pensionTipo === 'fijo'
+                      ? <Field label="Monto fijo mensual ($)"><Input type="number" value={form.pensionMonto} onChange={v => setForm((p: any) => ({ ...p, pensionMonto: Number(v) }))} /></Field>
+                      : <Field label="Porcentaje del líquido (%)"><Input type="number" value={form.pensionPorcentaje} onChange={v => setForm((p: any) => ({ ...p, pensionPorcentaje: Number(v) }))} /></Field>
+                    }
+                    <Field label="RIT (N° causa)"><Input value={form.pensionRit} onChange={F('pensionRit')} placeholder="Ej: A-1234-2025" /></Field>
+                    <Field label="Tribunal"><Input value={form.pensionTribunal} onChange={F('pensionTribunal')} /></Field>
+                    <Field label="Nombre beneficiario"><Input value={form.pensionBeneficiario} onChange={F('pensionBeneficiario')} /></Field>
+                    <Field label="Destino del pago"><Select value={form.pensionDestino} onChange={F('pensionDestino')} options={PENSION_DESTINO} /></Field>
+                    {form.pensionDestino === 'transferencia' && (<>
+                      <Field label="Banco beneficiario"><Select value={form.pensionCuentaBanco} onChange={F('pensionCuentaBanco')} options={PENSION_BANCOS} /></Field>
+                      <Field label="Tipo cuenta"><Select value={form.pensionCuentaTipo} onChange={F('pensionCuentaTipo')} options={PENSION_CUENTA_TIPOS} /></Field>
+                      <Field label="N° cuenta beneficiario"><Input value={form.pensionCuentaNumero} onChange={F('pensionCuentaNumero')} /></Field>
+                    </>)}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Cuota sindical ── */}
+              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.cuotaSindicalActiva ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>🤝 Cuota Sindical</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Art. 262 CT · solo si trabajador está afiliado a sindicato</div>
+                  </div>
+                  <select value={form.cuotaSindicalActiva ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, cuotaSindicalActiva: e.target.value === 'si' }))}
+                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.cuotaSindicalActiva ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.cuotaSindicalActiva ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                    <option value="no">No afiliado</option>
+                    <option value="si">Sí, afiliado</option>
+                  </select>
+                </div>
+                {form.cuotaSindicalActiva && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                    <Field label="Nombre del sindicato"><Input value={form.cuotaSindicalSindicato} onChange={F('cuotaSindicalSindicato')} /></Field>
+                    <Field label="Cuota mensual ($)"><Input type="number" value={form.cuotaSindicalMonto} onChange={v => setForm((p: any) => ({ ...p, cuotaSindicalMonto: Number(v) }))} /></Field>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Préstamo empresa ── */}
+              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.prestamoActivo ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>💳 Préstamo Empresa</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Art. 58 CT · requiere autorización escrita del trabajador</div>
+                  </div>
+                  <select value={form.prestamoActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, prestamoActivo: e.target.value === 'si' }))}
+                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.prestamoActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.prestamoActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                    <option value="no">Sin préstamo</option>
+                    <option value="si">Con préstamo activo</option>
+                  </select>
+                </div>
+                {form.prestamoActivo && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                    <Field label="Cuota mensual a descontar ($)"><Input type="number" value={form.prestamoCuota} onChange={v => setForm((p: any) => ({ ...p, prestamoCuota: Number(v) }))} /></Field>
+                    <Field label="Saldo total del préstamo ($)"><Input type="number" value={form.prestamoSaldo} onChange={v => setForm((p: any) => ({ ...p, prestamoSaldo: Number(v) }))} /></Field>
+                  </div>
+                )}
+              </div>
+
+              {/* ── Seguro colectivo ── */}
+              <div style={{ marginBottom: 4, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.seguroColectivoActivo ? 12 : 0 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>🛡️ Seguro Colectivo</div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Prima mensual voluntaria · acordado con trabajador por escrito</div>
+                  </div>
+                  <select value={form.seguroColectivoActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, seguroColectivoActivo: e.target.value === 'si' }))}
+                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.seguroColectivoActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.seguroColectivoActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                    <option value="no">Sin seguro colectivo</option>
+                    <option value="si">Con seguro colectivo</option>
+                  </select>
+                </div>
+                {form.seguroColectivoActivo && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
+                    <Field label="Aseguradora"><Input value={form.seguroColectivoAseguradora} onChange={F('seguroColectivoAseguradora')} placeholder="Ej: Metlife, Seguros Vida" /></Field>
+                    <Field label="Prima mensual ($)"><Input type="number" value={form.seguroColectivoMonto} onChange={v => setForm((p: any) => ({ ...p, seguroColectivoMonto: Number(v) }))} /></Field>
+                  </div>
+                )}
               </div>
             </>
           )}
