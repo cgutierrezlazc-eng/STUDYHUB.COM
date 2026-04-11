@@ -9,6 +9,7 @@ import App from './App'
 import './styles/global.css'
 import './styles/auth.css'
 import './styles/mobile-native.css'
+import 'katex/dist/katex.min.css'
 
 // Add native platform class for CSS targeting
 if (isNative) {

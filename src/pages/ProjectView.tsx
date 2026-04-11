@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { Project, Document, ChatMessage } from '../types'
+import ChatMessageRenderer from '../components/ChatMessageRenderer'
 import { api } from '../services/api'
 import { FileText, FileUp, Pencil, Trash2, Upload, Film, FolderOpen, PlayCircle, Video, Download, MessageSquare, Brain, BookOpen, Rocket, Hourglass, Lightbulb, Camera, Mic, Save, ClipboardList, SquareFunction, Map, RotateCcw, Dumbbell, AlertTriangle, Sparkles, Link } from '../components/Icons'
 
@@ -710,7 +711,7 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   <div key={msg.id} className={`chat-msg-row ${msg.role}`}>
                     {msg.role === 'assistant' && <div className="chat-msg-avatar">C</div>}
                     <div className="chat-msg-col">
-                      <div className={`chat-message ${msg.role}`}>{msg.content}</div>
+                      <div className={`chat-message ${msg.role}`}><ChatMessageRenderer content={msg.content} /></div>
                       <div className="chat-msg-meta">
                         {ts && <span className="chat-msg-time">{ts}</span>}
                         {msg.role === 'assistant' && !msg.content.startsWith('⚠️') && (

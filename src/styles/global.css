@@ -1071,9 +1071,17 @@ h1, h2, h3,
   border-radius: 18px;
   font-size: 13px;
   line-height: 1.55;
-  white-space: pre-wrap;
   word-break: break-word;
 }
+
+/* Estilos para contenido renderizado dentro de burbujas */
+.chat-message strong { font-weight: 700; }
+.chat-message em { font-style: italic; }
+.chat-message code { font-family: monospace; font-size: 12px; background: rgba(0,0,0,.08); padding: 1px 4px; border-radius: 3px; }
+.chat-message.user code { background: rgba(255,255,255,.15); }
+/* KaTeX block math: centrado y con margen */
+.chat-message .katex-display { margin: 8px 0; overflow-x: auto; }
+.chat-message .katex { font-size: 1em; }
 
 @keyframes msg-appear {
   from { opacity: 0; transform: translateY(4px); }
