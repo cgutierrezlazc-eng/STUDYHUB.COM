@@ -702,25 +702,39 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   <p>Hazme preguntas sobre el material de {project.name}</p>
                 </div>
               )}
-              {messages.map(msg => (
-                <div key={msg.id} className={`chat-message ${msg.role}`}>
-                  {msg.content}
-                  {msg.role === 'assistant' && !msg.content.startsWith('⚠️') && (
-                    <div>
-                      <button
-                        className="btn btn-secondary btn-xs chat-export-btn"
-                        onClick={() => handleExportDocx(msg.content)}
-                        title="Descargar como Word"
-                      >
-                        {Download()} Word
-                      </button>
+              {messages.map(msg => {
+                const ts = msg.timestamp
+                  ? new Date(msg.timestamp).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+                  : ''
+                return (
+                  <div key={msg.id} className={`chat-msg-row ${msg.role}`}>
+                    {msg.role === 'assistant' && <div className="chat-msg-avatar">C</div>}
+                    <div className="chat-msg-col">
+                      <div className={`chat-message ${msg.role}`}>{msg.content}</div>
+                      <div className="chat-msg-meta">
+                        {ts && <span className="chat-msg-time">{ts}</span>}
+                        {msg.role === 'assistant' && !msg.content.startsWith('⚠️') && (
+                          <button
+                            className="btn btn-secondary btn-xs chat-export-btn"
+                            onClick={() => handleExportDocx(msg.content)}
+                            title="Descargar como Word"
+                          >
+                            {Download()} Word
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                  </div>
+                )
+              })}
               {isLoading && (
-                <div className="chat-message assistant">
-                  <div className="loading-dots"><span /><span /><span /></div>
+                <div className="chat-msg-row assistant">
+                  <div className="chat-msg-avatar">C</div>
+                  <div className="chat-msg-col">
+                    <div className="chat-message assistant">
+                      <div className="loading-dots"><span /><span /><span /></div>
+                    </div>
+                  </div>
                 </div>
               )}
               <div ref={chatEndRef} />
