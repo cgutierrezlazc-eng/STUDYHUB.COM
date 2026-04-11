@@ -37,6 +37,19 @@ const ACCOUNT_TYPES = [
   { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
   { value: 'cuenta_rut', label: 'Cuenta RUT' },
 ]
+// ─── Formateador RUT Chile ──────────────────────────────────────
+function formatRUT(raw: string): string {
+  // Limpia todo excepto dígitos y K
+  const clean = raw.replace(/[^0-9kK]/g, '').toUpperCase()
+  if (clean.length === 0) return ''
+  if (clean.length === 1) return clean
+  const verifier = clean.slice(-1)
+  const numbers  = clean.slice(0, -1)
+  // Puntos cada 3 dígitos de derecha a izquierda
+  const dotted = numbers.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  return `${dotted}-${verifier}`
+}
+
 const STATUS_COLOR: Record<string, string> = {
   active: '#22c55e',
   terminated: '#ef4444',
@@ -122,6 +135,25 @@ function Select({ value, onChange, options, disabled }: {
     >
       {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
+  )
+}
+
+function RutInput({ value, onChange, disabled }: { value: string; onChange?: (v: string) => void; disabled?: boolean }) {
+  return (
+    <input
+      type="text"
+      value={value ?? ''}
+      placeholder="12.345.678-9"
+      disabled={disabled}
+      maxLength={12}
+      onChange={e => onChange?.(formatRUT(e.target.value))}
+      style={{
+        width: '100%', padding: '8px 12px', borderRadius: 8,
+        border: '1px solid var(--border)', background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
+        color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box',
+        outline: 'none', fontFamily: 'inherit',
+      }}
+    />
   )
 }
 
@@ -216,7 +248,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
 
           <SectionTitle>Datos Personales</SectionTitle>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-            <Field label="RUT *"><Input value={form.rut} onChange={F('rut')} placeholder="12.345.678-9" /><ErrMsg msg={errors.rut} /></Field>
+            <Field label="RUT *"><RutInput value={form.rut} onChange={F('rut')} /><ErrMsg msg={errors.rut} /></Field>
             <Field label="Fecha Nacimiento"><Input type="date" value={form.birthDate} onChange={F('birthDate')} /></Field>
             <Field label="Nombre *"><Input value={form.firstName} onChange={F('firstName')} /><ErrMsg msg={errors.firstName} /></Field>
             <Field label="Apellido *"><Input value={form.lastName} onChange={F('lastName')} /><ErrMsg msg={errors.lastName} /></Field>
@@ -293,7 +325,7 @@ function TabDatos({ emp, onChange, saving, onSave }: { emp: Employee; onChange: 
     <div>
       <SectionTitle>Identificación</SectionTitle>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="RUT"><Input value={emp.rut} onChange={v => onChange('rut', v)} /></Field>
+        <Field label="RUT"><RutInput value={emp.rut} onChange={v => onChange('rut', v)} /></Field>
         <Field label="Fecha Nacimiento"><Input type="date" value={emp.birthDate} onChange={v => onChange('birthDate', v)} /></Field>
         <Field label="Nombre"><Input value={emp.firstName} onChange={v => onChange('firstName', v)} /></Field>
         <Field label="Apellido"><Input value={emp.lastName} onChange={v => onChange('lastName', v)} /></Field>
