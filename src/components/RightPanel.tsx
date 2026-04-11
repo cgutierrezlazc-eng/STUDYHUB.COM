@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
 import { api } from '../services/api'
 import { Flame, Globe, Users } from './Icons'
+import AdSlot from './AdSlot'
 
 interface Props {
   currentPath: string
@@ -57,8 +58,11 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Friend Suggestions — only on social routes */}
-      {suggestions.length > 0 && ['/feed', '/friends', '/communities', '/social'].some(p => currentPath.startsWith(p)) && (
+      {/* Ad slot — sidebar top (invisible hasta ADS_ENABLED = true) */}
+      <AdSlot placement="sidebar-top" />
+
+      {/* Friend Suggestions — only on /communities */}
+      {suggestions.length > 0 && currentPath.startsWith('/communities') && (
         <div className="rp-widget">
           <h4 className="rp-widget-title">{t('rightpanel.suggestedPeople')}</h4>
           {suggestions.map(s => (
@@ -75,6 +79,9 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
           <button className="rp-see-more" onClick={() => onNavigate('/friends')}>{t('rightpanel.seeMore')}</button>
         </div>
       )}
+
+      {/* Ad slot — sidebar mid (invisible hasta ADS_ENABLED = true) */}
+      <AdSlot placement="sidebar-mid" />
 
       {/* Community Suggestions */}
       {communities.length > 0 && (

@@ -62,18 +62,64 @@ def verify_password(password: str, stored: str) -> bool:
     return False
 
 
+# ─── Username content moderation ───────────────────────────────
+BLOCKED_USERNAME_TERMS = {
+    'admin', 'root', 'conniku', 'soporte', 'support', 'moderador', 'moderator',
+    'staff', 'sistema', 'system', 'oficial', 'official',
+    # Offensive / hate
+    'nigger', 'nigga', 'nazi', 'faggot', 'puta', 'puto', 'mierda', 'pendejo',
+    'culero', 'marica', 'hijodeputa', 'bastardo', 'cabron', 'chingado', 'idiota',
+    'imbecil', 'estupido', 'retardo', 'fuck', 'shit', 'bitch', 'asshole', 'cunt',
+    'whore', 'slut', 'rape', 'porno', 'sexo', 'sex', 'xxx', 'hate', 'terror',
+    'pedofilo', 'pedophile',
+}
+
+def is_username_allowed(username: str) -> bool:
+    """Returns False if username contains any blocked term."""
+    normalized = re.sub(r'[_.\-]', '', username.lower())
+    return not any(term in normalized for term in BLOCKED_USERNAME_TERMS)
+
+
 # ─── Auto-generate username ─────────────────────────────────────
 
-def generate_username(first_name: str, db: Session) -> str:
-    base = first_name.lower().strip().replace(' ', '')[:15]
-    if not base:
-        base = "user"
-    for _ in range(50):
-        suffix = ''.join(random.choices(string.digits, k=4))
-        candidate = f"{base}{suffix}"
+def _normalize_name_part(s: str) -> str:
+    """Strip accents and special chars, title-case for username segments."""
+    import unicodedata
+    nfkd = unicodedata.normalize('NFD', s)
+    ascii_str = ''.join(c for c in nfkd if unicodedata.category(c) != 'Mn')
+    ascii_str = ascii_str.replace('ñ', 'n').replace('Ñ', 'N')
+    # Keep only alphanumeric
+    clean = ''.join(c for c in ascii_str if c.isalnum())
+    return clean.capitalize() if clean else ''
+
+
+def generate_username(first_name: str, db: Session,
+                      last_name: str = '', institution_code: str = '') -> str:
+    first_part = _normalize_name_part(first_name)
+    last_part = _normalize_name_part(last_name)
+
+    if institution_code:
+        # Format: CODE_FirstName_LastName (with numeric suffix on conflict)
+        prefix = institution_code.upper()[:3] + '_'
+        base_suffix = (first_part or 'Usuario') + ('_' + last_part if last_part else '')
+        candidate = prefix + base_suffix
         if not db.query(User).filter(User.username == candidate).first():
             return candidate
-    return f"{base}{random.randint(10000, 99999)}"
+        # Try numeric suffixes
+        for n in range(2, 200):
+            candidate = f"{prefix}{base_suffix}_{n}"
+            if not db.query(User).filter(User.username == candidate).first():
+                return candidate
+        return prefix + base_suffix + '_' + str(random.randint(1000, 9999))
+    else:
+        # Legacy fallback: lowercase first_name + 4 random digits
+        base = (first_part or 'user').lower()[:15]
+        for _ in range(50):
+            suffix = ''.join(random.choices(string.digits, k=4))
+            candidate = f"{base}{suffix}"
+            if not db.query(User).filter(User.username == candidate).first():
+                return candidate
+        return f"{base}{random.randint(10000, 99999)}"
 
 
 def get_next_user_number(db: Session) -> int:
@@ -376,13 +422,17 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
 
     # Generate or validate username
     if req.username:
-        username = req.username.lower().strip()
-        if len(username) < 3 or len(username) > 30:
-            raise HTTPException(400, "El nombre de usuario debe tener entre 3 y 30 caracteres")
+        username = req.username.strip()
+        if len(username) < 5 or len(username) > 30:
+            raise HTTPException(400, "El nombre de usuario debe tener entre 5 y 30 caracteres")
+        if not re.match(r'^[a-zA-Z0-9._]+$', username):
+            raise HTTPException(400, "El nombre de usuario solo puede contener letras, números, puntos y guiones bajos")
+        if not is_username_allowed(username):
+            raise HTTPException(400, "Este nombre de usuario no está permitido. Elige otro.")
         if db.query(User).filter(User.username == username).first():
             raise HTTPException(400, "Este nombre de usuario ya está en uso")
     else:
-        username = generate_username(req.first_name, db)
+        username = generate_username(req.first_name, db, req.last_name)
 
     # Generate verification code
     verification_code = ''.join(random.choices(string.digits, k=6))
@@ -901,11 +951,13 @@ async def update_cover_photo(
 
 @router.put("/me/username")
 def change_username(req: UsernameRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    username = req.username.lower().strip()
-    if len(username) < 3 or len(username) > 30:
-        raise HTTPException(400, "El nombre de usuario debe tener entre 3 y 30 caracteres")
-    if not username.replace('_', '').replace('.', '').isalnum():
+    username = req.username.strip()
+    if len(username) < 5 or len(username) > 30:
+        raise HTTPException(400, "El nombre de usuario debe tener entre 5 y 30 caracteres")
+    if not re.match(r'^[a-zA-Z0-9._]+$', username):
         raise HTTPException(400, "Solo letras, números, puntos y guiones bajos")
+    if not is_username_allowed(username):
+        raise HTTPException(400, "Este nombre de usuario no está permitido. Elige otro.")
 
     existing = db.query(User).filter(User.username == username, User.id != user.id).first()
     if existing:
@@ -918,7 +970,9 @@ def change_username(req: UsernameRequest, user: User = Depends(get_current_user)
 
 @router.get("/check-username")
 def check_username(q: str, db: Session = Depends(get_db)):
-    username = q.lower().strip()
+    username = q.strip()
+    if not username or len(username) < 3:
+        return {"available": False}
     exists = db.query(User).filter(User.username == username).first() is not None
     return {"available": not exists}
 
@@ -1641,3 +1695,107 @@ def get_user_executive_showcase(
     if tier != 'max' and getattr(target, 'role', 'user') not in ('owner', 'admin'):
         return {"items": []}  # Non-MAX users have no showcase
     return {"items": _json.loads(getattr(target, 'executive_showcase', None) or "[]")}
+
+
+# ─── Migrate existing usernames to institution prefix format ───────────────
+# Maps known university names (substrings) → 3-letter prefix
+_UNI_PREFIX_MAP = {
+    'universidad de chile': 'UCH', 'pontificia universidad católica de chile': 'PUC',
+    'pontificia universidad catolica de chile': 'PUC',
+    'universidad de concepción': 'UDE', 'universidad de concepcion': 'UDE',
+    'universidad de santiago': 'USA', 'universidad técnica federico santa maría': 'USM',
+    'universidad tecnica federico santa maria': 'USM',
+    'pontificia universidad católica de valparaíso': 'PUV',
+    'pontificia universidad catolica de valparaiso': 'PUV',
+    'universidad austral': 'UAC', 'universidad de valparaíso': 'UVA',
+    'universidad de valparaiso': 'UVA', 'universidad del bío-bío': 'UBB',
+    'universidad del bio-bio': 'UBB', 'universidad de atacama': 'UDA',
+    'universidad de la serena': 'ULS', 'universidad de magallanes': 'UMA',
+    'universidad de tarapacá': 'UTA', 'universidad de tarapaca': 'UTA',
+    'universidad arturo prat': 'UAP', 'universidad de antofagasta': 'UAN',
+    'universidad de la frontera': 'UFR', 'universidad de los lagos': 'ULA',
+    'universidad de playa ancha': 'UPA', 'universidad metropolitana': 'UME',
+    'universidad tecnológica metropolitana': 'UTM',
+    'universidad tecnologica metropolitana': 'UTM',
+    'universidad mayor': 'UMA', 'universidad de desarrollo': 'UDD',
+    'universidad diego portales': 'UDP', 'universidad finis terrae': 'UFT',
+    'universidad adolfo ibáñez': 'UAI', 'universidad adolfo ibanez': 'UAI',
+    'universidad del pacífico': 'UPC', 'universidad del pacifico': 'UPC',
+    'universidad san sebastián': 'USS', 'universidad san sebastian': 'USS',
+    'universidad de los andes': 'ULA', 'universidad bernardo ohiggins': 'UBO',
+    'universidad central': 'UCE', 'universidad autónoma': 'UAU',
+    'universidad autonoma': 'UAU', 'universidad católica del norte': 'UCN',
+    'universidad catolica del norte': 'UCN',
+    'universidad católica de temuco': 'UCT', 'universidad catolica de temuco': 'UCT',
+    'universidad católica del maule': 'UCM', 'universidad catolica del maule': 'UCM',
+    'universidad católica de la santísima concepción': 'UCS',
+    'duoc': 'DUO', 'inacap': 'INA', 'aiep': 'AIE', 'cft': 'CFT',
+}
+
+def _derive_prefix(university_name: str) -> str:
+    """Best-effort: derive 3-letter prefix from a university name."""
+    name_lower = university_name.lower().strip()
+    for key, code in _UNI_PREFIX_MAP.items():
+        if key in name_lower:
+            return code
+    # Fallback: initials of significant words
+    SKIP = {'de', 'del', 'la', 'los', 'las', 'el', 'y', 'e', 'en', 'of', 'the', 'y'}
+    words = [w for w in name_lower.split() if w not in SKIP and len(w) > 1]
+    initials = ''.join(w[0] for w in words[:6]).upper()
+    return initials[:3].ljust(3, 'X') if initials else 'CON'
+
+
+@router.post("/admin/migrate-username-prefixes")
+def migrate_username_prefixes(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Admin-only: prepend institution 3-letter prefix to existing usernames.
+    Skips: accounts with role='owner', already-prefixed usernames (CODE_ pattern).
+    """
+    if not (current_user.is_admin or current_user.role in ('owner', 'admin')):
+        raise HTTPException(403, "Solo administradores")
+
+    admin_email = get_admin_email()
+    users = db.query(User).all()
+    updated, skipped, failed = [], [], []
+
+    for u in users:
+        # Never touch owner / admin / cristian.ceo
+        if u.role == 'owner' or (admin_email and u.email.lower() == admin_email.lower()):
+            skipped.append(u.username)
+            continue
+
+        # Skip if username already matches CODE_ pattern (3 uppercase + underscore)
+        if re.match(r'^[A-Z]{3}_', u.username or ''):
+            skipped.append(u.username)
+            continue
+
+        if not u.university:
+            failed.append({'username': u.username, 'reason': 'sin institución registrada'})
+            continue
+
+        prefix = _derive_prefix(u.university) + '_'
+        candidate = prefix + (u.username or 'usuario')
+
+        # Ensure uniqueness
+        suffix_n = 2
+        while db.query(User).filter(User.username == candidate, User.id != u.id).first():
+            candidate = prefix + (u.username or 'usuario') + '_' + str(suffix_n)
+            suffix_n += 1
+            if suffix_n > 999:
+                failed.append({'username': u.username, 'reason': 'no se pudo resolver conflicto'})
+                break
+
+        old = u.username
+        u.username = candidate
+        updated.append({'old': old, 'new': candidate})
+
+    db.commit()
+    return {
+        "updated": len(updated),
+        "skipped": len(skipped),
+        "failed": len(failed),
+        "details": {"updated": updated, "skipped": skipped, "failed": failed}
+    }

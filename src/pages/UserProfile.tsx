@@ -1,59 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n } from '../services/i18n'
-import { api, getApiBase } from '../services/api'
+import { api } from '../services/api'
 import { formatPriceDisplay } from '../utils/currency'
-
-const API_BASE = getApiBase();
+import CoverPhotoModal, { getCoverStyle, getTemplateById, COVER_TEMPLATES } from '../components/CoverPhotoModal'
 import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy } from '../components/Icons'
 import ExecutiveShowcase from '../components/ExecutiveShowcase'
-
-const COVER_TEMPLATES = [
-  // General
-  { id: 'default-blue', name: 'Conniku Azul', gradient: 'linear-gradient(135deg, #1a3a6e 0%, #2D62C8 50%, #5B8DEF 100%)', career: '' },
-  { id: 'default-dark', name: 'Noche de Estudio', gradient: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', career: '' },
-  { id: 'default-sunset', name: 'Atardecer', gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', career: '' },
-  // Medicina / Salud
-  { id: 'med-1', name: 'Medicina', gradient: 'linear-gradient(135deg, #0d4e4e 0%, #1a8a8a 50%, #2dd4bf 100%)', career: 'medicina' },
-  { id: 'med-2', name: 'Salud', gradient: 'linear-gradient(135deg, #065f46 0%, #059669 100%)', career: 'medicina' },
-  // Ingenieria
-  { id: 'eng-1', name: 'Ingenieria', gradient: 'linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6366f1 100%)', career: 'ingenieria' },
-  { id: 'eng-2', name: 'Tecnologia', gradient: 'linear-gradient(135deg, #042f2e 0%, #0d9488 100%)', career: 'ingenieria' },
-  // Derecho
-  { id: 'law-1', name: 'Derecho', gradient: 'linear-gradient(135deg, #44403c 0%, #78716c 50%, #a8a29e 100%)', career: 'derecho' },
-  { id: 'law-2', name: 'Justicia', gradient: 'linear-gradient(135deg, #1c1917 0%, #57534e 100%)', career: 'derecho' },
-  // Negocios / Economia
-  { id: 'biz-1', name: 'Negocios', gradient: 'linear-gradient(135deg, #172554 0%, #1e40af 50%, #3b82f6 100%)', career: 'negocios' },
-  { id: 'biz-2', name: 'Finanzas', gradient: 'linear-gradient(135deg, #14532d 0%, #166534 50%, #22c55e 100%)', career: 'negocios' },
-  // Arte / Diseno
-  { id: 'art-1', name: 'Arte', gradient: 'linear-gradient(135deg, #831843 0%, #db2777 50%, #f472b6 100%)', career: 'arte' },
-  { id: 'art-2', name: 'Diseno', gradient: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fb923c 100%)', career: 'arte' },
-  // Ciencias
-  { id: 'sci-1', name: 'Ciencias', gradient: 'linear-gradient(135deg, #0c4a6e 0%, #0284c7 50%, #38bdf8 100%)', career: 'ciencias' },
-  { id: 'sci-2', name: 'Laboratorio', gradient: 'linear-gradient(135deg, #365314 0%, #65a30d 50%, #a3e635 100%)', career: 'ciencias' },
-  // Educacion
-  { id: 'edu-1', name: 'Educacion', gradient: 'linear-gradient(135deg, #581c87 0%, #9333ea 50%, #c084fc 100%)', career: 'educacion' },
-  // Arquitectura
-  { id: 'arch-1', name: 'Arquitectura', gradient: 'linear-gradient(135deg, #27272a 0%, #52525b 50%, #a1a1aa 100%)', career: 'arquitectura' },
-  // Psicologia
-  { id: 'psy-1', name: 'Psicologia', gradient: 'linear-gradient(135deg, #4a1d96 0%, #7c3aed 50%, #a78bfa 100%)', career: 'psicologia' },
-]
-
-function getTemplateById(id: string) {
-  return COVER_TEMPLATES.find(t => t.id === id)
-}
-
-function getCoverStyle(coverPhoto: string, coverType: string): React.CSSProperties {
-  if (coverType === 'custom' && coverPhoto) {
-    const url = coverPhoto.startsWith('/uploads') ? `${API_BASE}${coverPhoto}` : coverPhoto;
-    return { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-  }
-  if (coverType === 'template' && coverPhoto) {
-    const tpl = getTemplateById(coverPhoto)
-    if (tpl) return { background: tpl.gradient }
-  }
-  return { background: 'linear-gradient(135deg, #071e3d 0%, #0a2a5e 40%, #1a1050 100%)' }
-}
 
 interface Props {
   userId: string
@@ -684,11 +636,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.02em', margin: 0 }}>
                 {profile.firstName} {profile.lastName}
               </h1>
-              <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4 }}>
-                {profile.career || t('userprofile.student')} | {t('userprofile.semester')} {profile.semester}
+              <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
+                {profile.career || t('userprofile.student')}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 4 }}>
-                {profile.university || t('userprofile.noUni')}
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <span>{profile.university || t('userprofile.noUni')}</span>
+                {profile.semester && (
+                  <>
+                    <span style={{ opacity: 0.4 }}>·</span>
+                    <span>{t('userprofile.semester')} {profile.semester}</span>
+                  </>
+                )}
               </div>
               <div style={{ fontSize: 13, color: 'var(--accent-blue)', marginTop: 6, cursor: 'pointer', fontWeight: 500 }}>
                 {profile.friendCount > 0 ? `${profile.friendCount} ${t('userprofile.connections')}` : `0 ${t('userprofile.connections')}`}
@@ -795,11 +753,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               )}
             </div>
 
-            {/* Right side info */}
-            <div style={{ textAlign: 'right', fontSize: 13, color: 'var(--text-muted)', paddingTop: 4 }}>
-              <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{profile.university || ''}</div>
-              <div>{t('userprofile.semester')} {profile.semester}</div>
-              <div style={{ marginTop: 2 }}>@{profile.username} #{String(profile.userNumber || 0).padStart(4, '0')}</div>
+            {/* Right side — identifiers únicos, sin repetir carrera/universidad */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, paddingTop: 4, flexShrink: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
+                @{profile.username}
+                <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 2 }}>
+                  #{String(profile.userNumber || 0).padStart(4, '0')}
+                </span>
+              </div>
+              {(profile as any).xp > 0 && (
+                <div style={{ background: 'rgba(45,98,200,0.1)', color: 'var(--accent)', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 600 }}>
+                  ⚡ {(profile as any).xp} XP
+                </div>
+              )}
+              {(profile as any).streak > 1 && (
+                <div style={{ fontSize: 12, color: 'var(--accent-orange, #f97316)' }}>
+                  🔥 {(profile as any).streak} días
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -862,11 +833,45 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             <div className="fb-wall-sidebar">
               <div className="card fb-info-card">
                 <h4>{t('userprofile.academicInfo')}</h4>
-                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{t('userprofile.studies')} <strong>{profile.career}</strong></span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">{GraduationCap({ size: 14 })}</span><span>{profile.university}</span></div>
-                <div className="fb-info-item"><span className="fb-info-icon">{BookOpen({ size: 14 })}</span><span>{t('userprofile.semester')} {profile.semester}</span></div>
+
+                {/* Carrera — única referencia en el sidebar (universidad/semestre ya están en el header) */}
+                {profile.career && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{GraduationCap({ size: 14 })}</span>
+                    <span><strong>{profile.career}</strong></span>
+                  </div>
+                )}
+
+                {/* Días estudiando en Conniku */}
                 {profile.studyDays > 0 && (
-                  <div className="fb-info-item"><span className="fb-info-icon">{Calendar({ size: 14 })}</span><span><strong>{profile.studyDays.toLocaleString()}</strong> {t('userprofile.daysStudying')}</span></div>
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{Calendar({ size: 14 })}</span>
+                    <span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span>
+                  </div>
+                )}
+
+                {/* Nivel y XP */}
+                {((profile as any).level || (profile as any).xp) ? (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">⚡</span>
+                    <span>Nivel <strong>{(profile as any).level || 1}</strong> — {((profile as any).xp || 0).toLocaleString()} XP</span>
+                  </div>
+                ) : null}
+
+                {/* Racha */}
+                {(profile as any).streak > 0 && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">🔥</span>
+                    <span>Racha de <strong>{(profile as any).streak} días</strong></span>
+                  </div>
+                )}
+
+                {/* Miembro desde */}
+                {(profile as any).createdAt && (
+                  <div className="fb-info-item">
+                    <span className="fb-info-icon">{Globe({ size: 14 })}</span>
+                    <span>En Conniku desde <strong>{new Date((profile as any).createdAt).getFullYear()}</strong></span>
+                  </div>
                 )}
               </div>
 
@@ -2930,122 +2935,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       )}
 
       {/* Cover Photo Modal */}
-      {showCoverModal && (
-        <div className="modal-overlay" onClick={() => setShowCoverModal(false)}>
-          <div className="cover-modal" onClick={e => e.stopPropagation()}>
-            <div className="cover-modal-header">
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Foto de Portada</h3>
-              <button className="cover-modal-close" onClick={() => setShowCoverModal(false)}>{XCircle({ size: 20 })}</button>
-            </div>
+      <CoverPhotoModal
+        isOpen={showCoverModal}
+        onClose={() => setShowCoverModal(false)}
+        currentCover={profile?.coverPhoto || ''}
+        currentCoverType={profile?.coverType || 'template'}
+        onSaved={(coverPhoto, coverType) => {
+          setProfile((prev: any) => ({ ...prev, coverPhoto, coverType }))
+          updateProfile({ coverPhoto, coverType } as any)
+        }}
+      />
 
-            {/* Preview */}
-            <div className="cover-modal-preview" style={
-              coverModalTab === 'upload' && coverPreviewFile
-                ? { backgroundImage: `url(${coverPreviewFile})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-                : selectedTemplate
-                  ? { background: getTemplateById(selectedTemplate)?.gradient || 'var(--bg-hover)' }
-                  : getCoverStyle(profile.coverPhoto || '', profile.coverType || 'template')
-            }>
-              <span style={{ color: '#fff', fontSize: 13, textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Vista previa</span>
-            </div>
-
-            {/* Tabs */}
-            <div className="cover-modal-tabs">
-              <button
-                className={`cover-modal-tab ${coverModalTab === 'templates' ? 'active' : ''}`}
-                onClick={() => setCoverModalTab('templates')}
-              >Plantillas</button>
-              <button
-                className={`cover-modal-tab ${coverModalTab === 'upload' ? 'active' : ''}`}
-                onClick={() => setCoverModalTab('upload')}
-              >Subir foto</button>
-            </div>
-
-            {/* Tab Content */}
-            <div className="cover-modal-body">
-              {coverModalTab === 'templates' && (
-                <>
-                  {/* Career filter */}
-                  <div className="cover-filter-bar">
-                    {[
-                      { id: 'all', label: 'Todas' },
-                      { id: 'medicina', label: 'Medicina' },
-                      { id: 'ingenieria', label: 'Ingenieria' },
-                      { id: 'derecho', label: 'Derecho' },
-                      { id: 'negocios', label: 'Negocios' },
-                      { id: 'arte', label: 'Arte' },
-                      { id: 'ciencias', label: 'Ciencias' },
-                      { id: 'educacion', label: 'Educacion' },
-                      { id: 'arquitectura', label: 'Arquitectura' },
-                      { id: 'psicologia', label: 'Psicologia' },
-                    ].map(f => (
-                      <button
-                        key={f.id}
-                        className={`cover-filter-chip ${coverFilter === f.id ? 'active' : ''}`}
-                        onClick={() => setCoverFilter(f.id)}
-                      >{f.label}</button>
-                    ))}
-                  </div>
-                  <div className="cover-templates-grid">
-                    {COVER_TEMPLATES
-                      .filter(t => coverFilter === 'all' || t.career === coverFilter || (!t.career && coverFilter === 'all'))
-                      .map(t => (
-                        <button
-                          key={t.id}
-                          className={`cover-template-card ${selectedTemplate === t.id ? 'selected' : ''}`}
-                          onClick={() => { setSelectedTemplate(t.id); setCoverPreviewFile(null); setCoverFile(null) }}
-                        >
-                          <div className="cover-template-swatch" style={{ background: t.gradient }} />
-                          <span className="cover-template-name">{t.name}</span>
-                        </button>
-                      ))}
-                  </div>
-                </>
-              )}
-
-              {coverModalTab === 'upload' && (
-                <div className="cover-upload-area">
-                  <input
-                    ref={coverUploadRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    style={{ display: 'none' }}
-                    onChange={handleCoverChange}
-                  />
-                  {coverPreviewFile ? (
-                    <div style={{ textAlign: 'center' }}>
-                      <img src={coverPreviewFile} alt="" style={{ maxWidth: '100%', maxHeight: 160, borderRadius: 8, marginBottom: 12 }} />
-                      <div>
-                        <button className="btn btn-secondary btn-sm" onClick={() => coverUploadRef.current?.click()}>
-                          Cambiar imagen
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button className="cover-upload-btn" onClick={() => coverUploadRef.current?.click()}>
-                      {Image({ size: 32 })}
-                      <span style={{ fontWeight: 600, fontSize: 15 }}>Seleccionar imagen</span>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>JPG, PNG, WebP o GIF (max. 5MB)</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Actions */}
-            <div className="cover-modal-footer">
-              <button className="btn btn-secondary" onClick={() => setShowCoverModal(false)}>Cancelar</button>
-              <button
-                className="btn btn-primary"
-                disabled={coverSaving || (!selectedTemplate && !coverFile)}
-                onClick={handleSaveCover}
-              >
-                {coverSaving ? 'Guardando...' : 'Guardar'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

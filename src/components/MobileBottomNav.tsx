@@ -31,7 +31,6 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
   const [showMore, setShowMore] = useState(false)
 
   const items = [
-    { icon: 'home', label: 'Inicio', path: '/' },
     { icon: 'book', label: 'Estudio', path: '/dashboard' },
     { icon: 'chat', label: 'Chat', path: '/messages' },
     { icon: 'user', label: 'Perfil', path: '/my-profile' },
@@ -83,7 +82,7 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
       {/* Bottom navigation bar */}
       <nav className="mobile-bottom-nav">
         {items.map(item => {
-          const isActive = item.path === '/' ? (currentPath === '/' || currentPath === '/feed') : currentPath.startsWith(item.path)
+          const isActive = currentPath.startsWith(item.path)
           return (
             <button key={item.path} className={`mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => { setShowMore(false); onNavigate(item.path) }}>
               <span className="mobile-nav-icon"><NavIcon type={item.icon} /></span>

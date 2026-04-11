@@ -1603,3 +1603,40 @@ export function getUniversityById(id: string): University | undefined {
 export function getUniversitiesForCountry(countryCode: string): University[] {
   return UNIVERSITIES.filter((u) => u.country === countryCode.toUpperCase());
 }
+
+/**
+ * Derives the 3-letter institution code from a university's shortName.
+ * Examples: 'UCH' → 'UCH', 'UdeC' → 'UDE', 'USACH' → 'USA', 'Instituto X' → 'INS'
+ */
+export function getInstitutionCode(university: University): string {
+  const letters = (university.shortName || '').replace(/[^a-zA-Z]/g, '')
+  if (letters.length >= 3) return letters.slice(0, 3).toUpperCase()
+  // Fallback: first letters of significant words in the name
+  const SKIP = new Set(['de', 'del', 'la', 'los', 'las', 'el', 'y', 'e', 'en', 'of', 'the'])
+  const initials = university.name
+    .split(/\s+/)
+    .filter(w => !SKIP.has(w.toLowerCase()) && w.length > 0)
+    .map(w => w[0])
+    .join('')
+  const combined = (letters + initials).toUpperCase()
+  return combined.slice(0, 3).padEnd(3, 'X')
+}
+
+/**
+ * Normalizes a string for use as the editable part of a username.
+ * Strips accents, replaces special chars/spaces with underscore, title-cases.
+ */
+export function normalizeForUsername(str: string): string {
+  if (!str) return ''
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')   // strip combining diacritics
+    .replace(/[ñÑ]/g, 'n')
+    .replace(/[^a-zA-Z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    // Title-case each segment
+    .split('_')
+    .map(p => p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : '')
+    .join('_')
+}
