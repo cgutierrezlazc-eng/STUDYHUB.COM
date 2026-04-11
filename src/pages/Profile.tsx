@@ -4,6 +4,7 @@ import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
 import { LanguageSkill } from '../types'
 import MilestonePopup from '../components/MilestonePopup'
+import CoverPhotoModal, { getCoverStyle } from '../components/CoverPhotoModal'
 import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationCap, Users, Pencil, Lock, Settings, ClipboardList } from '../components/Icons'
 
 type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv'
@@ -20,9 +21,9 @@ export default function Profile() {
   const [newUsername, setNewUsername] = useState('')
   const [usernameError, setUsernameError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const coverFileRef = useRef<HTMLInputElement>(null)
   const [coverUploading, setCoverUploading] = useState(false)
   const [coverMsg, setCoverMsg] = useState('')
+  const [showCoverModal, setShowCoverModal] = useState(false)
   const [form, setForm] = useState({ ...user! })
   const [cvVisibility, setCvVisibility] = useState<'public' | 'recruiters' | 'private'>((user as any).cvVisibility || 'private')
   const [cvData, setCvData] = useState({
@@ -105,25 +106,6 @@ export default function Profile() {
     reader.readAsDataURL(file)
   }
 
-  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setCoverUploading(true)
-    setCoverMsg('')
-    try {
-      const fd = new FormData()
-      fd.append('file', file)
-      const res = await api.updateCoverPhoto(fd)
-      if (res.coverPhoto) updateProfile({ coverPhoto: res.coverPhoto } as any)
-      setCoverMsg('Foto de portada actualizada')
-      setTimeout(() => setCoverMsg(''), 3000)
-    } catch {
-      setCoverMsg('Error al subir la imagen. Intenta de nuevo.')
-    } finally {
-      setCoverUploading(false)
-      if (coverFileRef.current) coverFileRef.current.value = ''
-    }
-  }
 
   const handleChangeUsername = async () => {
     if (!newUsername || newUsername.length < 3) {
@@ -469,31 +451,39 @@ export default function Profile() {
               <div className="pf-section">
                 <h3>{t('profile.coverPhoto')}</h3>
                 <p className="pf-hint">{t('profile.coverPhotoHint')}</p>
-                <input
-                  ref={coverFileRef}
-                  type="file"
-                  accept="image/*"
-                  style={{ display: 'none' }}
-                  onChange={handleCoverChange}
-                />
+
                 {(user as any).coverPhoto && (
-                  <div style={{ marginBottom: 12, borderRadius: 10, overflow: 'hidden', height: 80 }}>
-                    <img src={(user as any).coverPhoto} alt="portada" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  </div>
+                  <div style={{
+                    marginBottom: 12, borderRadius: 10, height: 80,
+                    ...getCoverStyle((user as any).coverPhoto, (user as any).coverType || 'template'),
+                  }} />
                 )}
+
                 <button
                   className="btn btn-secondary"
                   style={{ marginBottom: 8 }}
-                  disabled={coverUploading}
-                  onClick={() => coverFileRef.current?.click()}
+                  onClick={() => setShowCoverModal(true)}
                 >
-                  {Pencil({ size: 14 })} {coverUploading ? 'Subiendo...' : t('profile.changeCover')}
+                  {Pencil({ size: 14 })} {t('profile.changeCover')}
                 </button>
+
                 {coverMsg && (
                   <p style={{ fontSize: 12, color: coverMsg.startsWith('Error') ? 'var(--accent-orange)' : 'var(--accent-green)', marginBottom: 12 }}>
                     {coverMsg}
                   </p>
                 )}
+
+                <CoverPhotoModal
+                  isOpen={showCoverModal}
+                  onClose={() => setShowCoverModal(false)}
+                  currentCover={(user as any).coverPhoto}
+                  currentCoverType={(user as any).coverType}
+                  onSaved={(coverPhoto, coverType) => {
+                    updateProfile({ coverPhoto, coverType } as any)
+                    setCoverMsg('Foto de portada actualizada')
+                    setTimeout(() => setCoverMsg(''), 3000)
+                  }}
+                />
 
                 <div className="pf-divider" />
 
