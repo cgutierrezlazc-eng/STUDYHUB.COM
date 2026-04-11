@@ -654,6 +654,7 @@ export const api = {
   },
   createCommunity: (data: { name: string; description?: string; type?: string; category?: string; university?: string; rules?: string; avatar?: string }) =>
     request('/communities', { method: 'POST', body: JSON.stringify(data) }),
+  getTrendingCommunities: (limit: number = 6) => request(`/communities/trending?limit=${limit}`),
   getCommunity: (id: string) => request(`/communities/${id}`),
   updateCommunity: (id: string, data: any) =>
     request(`/communities/${id}`, { method: 'PUT', body: JSON.stringify(data) }),

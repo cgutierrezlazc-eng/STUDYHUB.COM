@@ -59,6 +59,7 @@ export default function Feed({ onNavigate }: Props) {
   const [loadingPolls, setLoadingPolls] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    document.title = 'Feed — Conniku'
     loadFeed()
     api.getFriendLists().then(data => setFriendLists(data || [])).catch(() => {})
     api.getTrendingPosts().then(data => setTrendingPosts(data || [])).catch(() => {})

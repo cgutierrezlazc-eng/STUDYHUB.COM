@@ -799,7 +799,7 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12, overflowX: 'auto', paddingBottom: 4 }}>
           {TAB_CONFIG_KEYS.map(tc => (
-            <button key={tc.key} className={`tab ${tab === tc.key ? 'active' : ''}`} onClick={() => handleTabChange(tc.key)}>
+            <button key={tc.key} className={`tab ${tab === tc.key ? 'active' : ''}`} onClick={() => handleTabChange(tc.key)} style={{ flexShrink: 0 }}>
               {tc.icon({ size: 14 })} {t(tc.labelKey)}{tc.key === 'my-apps' && localAppCount > 0 ? ` (${localAppCount})` : ''}
             </button>
           ))}

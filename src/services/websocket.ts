@@ -42,7 +42,7 @@ class WebSocketService {
     // Determine WebSocket URL
     const apiBase = window.location.hostname === 'localhost'
       ? 'ws://localhost:8000'
-      : `wss://${window.location.hostname === 'conniku.com' ? 'studyhub-api-bpco.onrender.com' : window.location.hostname}`
+      : `wss://${window.location.hostname.includes('conniku.com') ? 'studyhub-api-bpco.onrender.com' : window.location.hostname}`
 
     this.url = `${apiBase}/ws?token=${encodeURIComponent(token)}`
 
