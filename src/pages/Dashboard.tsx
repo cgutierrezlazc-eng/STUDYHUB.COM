@@ -8,12 +8,36 @@ import {
   Flame, BookOpen, FileText, Clock, Star, Trophy, BarChart3,
   MessageSquare, Calendar, Users, Medal, Lightbulb, Megaphone,
   Sun, CloudSun, Moon, Shield, GraduationCap, Brain, Rocket,
-  CheckCircle, ChevronRight, Zap, Sparkles, Briefcase,
+  CheckCircle, ChevronRight, Zap, Sparkles, Briefcase, Plus,
 } from '../components/Icons'
 
 interface Props {
   projects: Project[]
   onNavigate: (path: string) => void
+}
+
+// ── Frases filosóficas diarias ───────────────────────────────
+const PHILOSOPHY_QUOTES = [
+  { quote: 'Educar la mente sin educar el corazón no es educación en absoluto.', author: 'Aristóteles' },
+  { quote: 'La mente no es un recipiente que se llena, sino un fuego que se enciende.', author: 'Plutarco' },
+  { quote: 'El aprendizaje nunca agota la mente.', author: 'Leonardo da Vinci' },
+  { quote: 'Dime y lo olvido, enséñame y lo recuerdo, involúcrame y lo aprendo.', author: 'Benjamín Franklin' },
+  { quote: 'Solo hay un bien: el conocimiento. Solo hay un mal: la ignorancia.', author: 'Sócrates' },
+  { quote: 'Una inversión en conocimiento paga el mejor interés.', author: 'Benjamín Franklin' },
+  { quote: 'La educación es el movimiento de la oscuridad a la luz.', author: 'Allan Bloom' },
+  { quote: 'El objetivo de la educación es la virtud y el deseo de convertirse en un buen ciudadano.', author: 'Platón' },
+  { quote: 'El conocimiento es la única cosa que nadie puede quitarte.', author: 'Nelson Mandela' },
+  { quote: 'Aprender sin pensar es inútil. Pensar sin aprender es peligroso.', author: 'Confucio' },
+  { quote: 'El aprendizaje es un tesoro que seguirá a su dueño a todas partes.', author: 'Proverbio chino' },
+  { quote: 'No hay enseñanza sin que el maestro también aprenda.', author: 'Paulo Freire' },
+  { quote: 'Toda la educación viene de dentro; tú no puedes obtenerla de nadie más.', author: 'Ralph Waldo Emerson' },
+  { quote: 'La raíz del aprendizaje es amarga, pero su fruto es dulce.', author: 'Aristóteles' },
+  { quote: 'El hombre sabio no da las respuestas correctas, hace las preguntas correctas.', author: 'Claude Lévi-Strauss' },
+]
+
+function getDailyQuote() {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000)
+  return PHILOSOPHY_QUOTES[dayOfYear % PHILOSOPHY_QUOTES.length]
 }
 
 function getGreetingIcon() {
@@ -31,6 +55,9 @@ function formatStudyTime(seconds: number): string {
   if (mins === 0) return `${hours}h`
   return `${hours}h ${mins}m`
 }
+
+const DAY_NAMES  = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb']
+const MONTH_NAMES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
 // ── Onboarding (usuario nuevo) ───────────────────────────────
 interface OnboardingProps {
@@ -276,6 +303,8 @@ export default function Dashboard({ projects, onNavigate }: Props) {
   const [studyTime, setStudyTime]       = useState<any>(null)
   const [league, setLeague]             = useState<any>(null)
   const [friendActivity, setFriendActivity] = useState<any[]>([])
+  const [events, setEvents]             = useState<any[]>([])
+  const [dailySummary, setDailySummary] = useState<any>(null)
   const [milestonePopup, setMilestonePopup] = useState<any>(null)
 
   useEffect(() => {
@@ -294,6 +323,12 @@ export default function Dashboard({ projects, onNavigate }: Props) {
     api.getStudyTime().then(setStudyTime).catch(() => {})
     api.getLeague().then(setLeague).catch(() => {})
     api.getActivityFeed(1).then(data => setFriendActivity((data.items || data).slice(0, 5))).catch(() => {})
+    api.getCalendarEvents().then(d => {
+      const today = new Date().toISOString().split('T')[0]
+      const upcoming = (d || []).filter((e: any) => e.date >= today).slice(0, 4)
+      setEvents(upcoming)
+    }).catch(() => {})
+    api.dailySummary().then(setDailySummary).catch(() => {})
   }, [])
 
   const timeAgo = (iso: string) => {
@@ -305,8 +340,11 @@ export default function Dashboard({ projects, onNavigate }: Props) {
     return `hace ${Math.floor(hrs / 24)}d`
   }
 
+  const now = new Date()
+  const weekNum = Math.ceil(((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000 + new Date(now.getFullYear(), 0, 1).getDay() + 1) / 7)
   const totalDocs  = projects.reduce((sum, p) => sum + p.documents.length, 0)
   const isNewUser  = projects.length === 0 && (stats?.xp || 0) < 50
+  const dailyQuote = getDailyQuote()
 
   return (
     <>
@@ -317,12 +355,12 @@ export default function Dashboard({ projects, onNavigate }: Props) {
               {getGreetingIcon()} {t(`welcome.${user?.gender || 'unspecified'}`)}, {user?.firstName}!
             </h2>
             <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              {isNewUser ? 'Comencemos a configurar tu espacio académico' : 'Tu centro de estudio inteligente'}
+              {DAY_NAMES[now.getDay()]} {now.getDate()} de {MONTH_NAMES[now.getMonth()]} {now.getFullYear()} · Semana {weekNum}
             </p>
           </div>
 
           {/* Streak — solo usuarios activos */}
-          {!isNewUser && stats && (
+          {!isNewUser && stats && (stats.streakDays || 0) > 0 && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12,
               background: 'linear-gradient(135deg, #ff6b3520, #ff9a5620)',
@@ -360,6 +398,54 @@ export default function Dashboard({ projects, onNavigate }: Props) {
           <>
             {/* ══ USUARIO ACTIVO: dashboard completo ══ */}
 
+            {/* Resumen diario IA o frase del día */}
+            {dailySummary ? (
+              <div className="u-card-flat" style={{
+                padding: '16px 20px', marginBottom: 20,
+                borderLeft: `4px solid ${dailySummary.mood === 'positive' ? 'var(--accent-green)' : dailySummary.mood === 'alert' ? 'var(--accent-orange)' : 'var(--accent-blue)'}`,
+              }}>
+                <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: 8, flexShrink: 0,
+                    background: dailySummary.mood === 'positive' ? 'rgba(5,150,105,0.08)' : dailySummary.mood === 'alert' ? 'rgba(217,119,6,0.08)' : 'rgba(37,99,235,0.08)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {Sparkles({ size: 16, color: dailySummary.mood === 'positive' ? 'var(--accent-green)' : dailySummary.mood === 'alert' ? 'var(--accent-orange)' : 'var(--accent-blue)' })}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, lineHeight: 1.5, color: 'var(--text-primary)' }}>{dailySummary.summary}</div>
+                    {dailySummary.tip && (
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontStyle: 'italic' }}>
+                        💡 {dailySummary.tip}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                marginBottom: 20, padding: '16px 20px',
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border-subtle)',
+                borderLeft: '4px solid var(--accent)',
+                borderRadius: 12,
+                display: 'flex', gap: 14, alignItems: 'flex-start',
+              }}>
+                <div style={{
+                  fontSize: 40, lineHeight: 1, color: 'var(--accent)',
+                  opacity: 0.2, fontFamily: 'Georgia, serif', flexShrink: 0, marginTop: -6,
+                }}>"</div>
+                <div>
+                  <div style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-primary)', fontStyle: 'italic' }}>
+                    {dailyQuote.quote}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6, fontWeight: 600 }}>
+                    — {dailyQuote.author}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Stats Grid */}
             <div className="stats-grid">
               <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-blue)' }}>
@@ -374,18 +460,121 @@ export default function Dashboard({ projects, onNavigate }: Props) {
               </div>
               <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-orange)' }}>
                 <div className="stat-icon">{Clock({ size: 20, color: 'var(--accent-orange)' })}</div>
-                <div className="stat-value">{formatStudyTime(studyTime?.totalSeconds || 0)}</div>
-                <div className="stat-label">{t('dash.studyTime')}</div>
+                <div className="stat-value">{formatStudyTime(studyTime?.weekSeconds || 0)}</div>
+                <div className="stat-label">Esta semana</div>
+                {(studyTime?.todaySeconds || 0) > 0 && (
+                  <div style={{ fontSize: 11, color: 'var(--accent-green)', marginTop: 4 }}>
+                    +{formatStudyTime(studyTime.todaySeconds)} hoy
+                  </div>
+                )}
               </div>
               <div className="stat-card" style={{ borderLeft: '4px solid var(--accent-purple)' }}>
                 <div className="stat-icon">{Star({ size: 20, color: 'var(--accent-purple)' })}</div>
                 <div className="stat-value">Nv. {stats?.level || 1}</div>
                 <div className="stat-label">{stats?.xp || 0} XP</div>
+                {stats && (
+                  <div style={{ marginTop: 6, height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${(stats.xp || 0) % 100}%`, background: 'var(--accent-purple)', borderRadius: 2, transition: 'width 0.6s' }} />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* League + Study Time */}
+            {/* Widgets: Actividad + Calendario */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 20 }}>
+
+              {/* Actividad de amigos */}
+              <div className="u-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 10px', borderBottom: '1px solid var(--border)' }}>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Megaphone({ size: 15 })} Actividad reciente
+                  </h3>
+                  <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}
+                    onClick={() => onNavigate('/feed')}>
+                    Ver todo →
+                  </button>
+                </div>
+                {friendActivity.length > 0 ? (
+                  friendActivity.map((act: any, i: number) => (
+                    <div key={i}
+                      onClick={() => act.userId && onNavigate(`/user/${act.userId}`)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+                        borderBottom: i < friendActivity.length - 1 ? '1px solid var(--border)' : 'none',
+                        cursor: 'pointer',
+                      }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: '50%', background: 'var(--accent)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#fff', fontSize: 13, fontWeight: 600, overflow: 'hidden', flexShrink: 0,
+                      }}>
+                        {act.avatar
+                          ? <img src={act.avatar} alt="" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+                          : (act.firstName?.[0] || '?')}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <span style={{ fontWeight: 600, fontSize: 12 }}>{act.firstName} {act.lastName}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}> {act.activityType || act.content || ''}</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+                        {act.createdAt ? timeAgo(act.createdAt) : ''}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: 24, textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Sin actividad reciente</div>
+                    <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+                      onClick={() => onNavigate('/friends')}>
+                      {Plus({ size: 12 })} Conectar con estudiantes
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Calendario: próximos eventos */}
+              <div className="u-card" style={{ padding: 0, overflow: 'hidden' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px 10px', borderBottom: '1px solid var(--border)' }}>
+                  <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {Calendar({ size: 15 })} Próximos eventos
+                  </h3>
+                  <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', cursor: 'pointer', fontWeight: 500 }}
+                    onClick={() => onNavigate('/calendar')}>
+                    Ver calendario →
+                  </button>
+                </div>
+                {events.length > 0 ? (
+                  events.map((ev: any, i: number) => (
+                    <div key={i} style={{
+                      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+                      borderBottom: i < events.length - 1 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      <div style={{
+                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                        background: ev.type === 'deadline' ? 'var(--accent-red)'
+                          : ev.type === 'study' ? 'var(--accent-blue)'
+                          : 'var(--accent-green)',
+                      }} />
+                      <div style={{ flex: 1, fontSize: 13 }}>{ev.title}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+                        {ev.time || ev.date?.slice(5) || ''}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ padding: 24, textAlign: 'center' }}>
+                    <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>Sin eventos próximos</div>
+                    <button style={{ border: 'none', background: 'none', fontSize: 12, color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+                      onClick={() => onNavigate('/calendar')}>
+                      + Agregar evento
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Liga + Tiempo de Estudio */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 16 }}>
               {/* Liga */}
               <div className="u-card" style={{ padding: 20 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
@@ -444,7 +633,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                   {[
                     { label: 'Hoy',        val: studyTime?.todaySeconds  || 0 },
-                    { label: 'Esta semana',val: studyTime?.weekSeconds   || 0 },
+                    { label: 'Esta semana', val: studyTime?.weekSeconds   || 0 },
                     { label: 'Este mes',   val: studyTime?.monthSeconds  || 0 },
                     { label: 'Total',      val: studyTime?.totalSeconds  || 0 },
                   ].map(({ label, val }) => (
@@ -469,7 +658,7 @@ export default function Dashboard({ projects, onNavigate }: Props) {
             </div>
 
             {/* Quick Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 16 }}>
               {[
                 { icon: MessageSquare({ size: 24 }), label: 'Mensajes',   path: '/messages' },
                 { icon: Calendar({ size: 24 }),      label: 'Calendario', path: '/calendar' },
@@ -512,43 +701,6 @@ export default function Dashboard({ projects, onNavigate }: Props) {
                   {Lightbulb({ size: 16, color: 'var(--accent-orange)' })} Consejo:
                 </strong>{' '}
                 Sube documentos a una asignatura para que Conniku genere guías, quizzes y flashcards automáticamente.
-              </div>
-            )}
-
-            {/* Actividad de amigos */}
-            {friendActivity.length > 0 && (
-              <div style={{ marginTop: 20 }}>
-                <h3 style={{ fontSize: 15, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  {Megaphone({ size: 16 })} Actividad de amigos
-                </h3>
-                <div className="u-card" style={{ padding: 0, overflow: 'hidden' }}>
-                  {friendActivity.map((act: any, i: number) => (
-                    <div key={i}
-                      onClick={() => act.userId && onNavigate(`/user/${act.userId}`)}
-                      style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                        borderBottom: i < friendActivity.length - 1 ? '1px solid var(--border)' : 'none',
-                        cursor: 'pointer',
-                      }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        color: '#fff', fontSize: 14, fontWeight: 600, overflow: 'hidden',
-                      }}>
-                        {act.avatar
-                          ? <img src={act.avatar} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
-                          : (act.firstName?.[0] || '?')}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontWeight: 600, fontSize: 13 }}>{act.firstName} {act.lastName}</span>
-                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}> {act.activityType || act.content || ''}</span>
-                      </div>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {act.createdAt ? timeAgo(act.createdAt) : ''}
-                      </span>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
 

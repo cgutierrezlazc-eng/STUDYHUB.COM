@@ -58,7 +58,6 @@ const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'))
 const CVProfile = React.lazy(() => import('./pages/CVProfile'))
 const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
-const HomeDashboard = React.lazy(() => import('./pages/HomeDashboard'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
@@ -333,7 +332,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <SEORouter />
             <Routes>
-            <Route path="/" element={user ? <HomeDashboard projects={projects} onNavigate={(path) => navigate(path)} /> : <Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} onNewProject={() => setShowNewProject(true)} />} />
@@ -422,7 +421,6 @@ export default function App() {
         location.pathname.startsWith('/project/') ? `Materia: ${projects.find(p => p.id === location.pathname.split('/')[2])?.name || 'Asignatura'}`
         : location.pathname === '/dashboard' ? 'Pagina: Dashboard de estudio'
         : location.pathname === '/feed' ? 'Pagina: Feed social academico'
-        : location.pathname === '/' ? 'Pagina: Inicio'
         : ''
       } projectId={location.pathname.startsWith('/project/') ? location.pathname.split('/')[2] : undefined} />}
     </div>
