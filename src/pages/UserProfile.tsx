@@ -628,8 +628,16 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           ...getCoverStyle(profile.coverPhoto || '', profile.coverType || 'template', profile.coverPositionY ?? 50),
           height: 150,
         }}>
-          {/* Corner avatar — emerges from cover boundary */}
-          <div className="fb-profile-photo-corner" onClick={() => isOwn && profilePhotoRef.current?.click()}>
+          {isOwn && (
+            <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
+              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
+            </button>
+          )}
+        </div>
+
+        {/* Photo + Identity */}
+        <div className="fb-profile-photo-section">
+          <div className="fb-profile-photo" onClick={() => isOwn && profilePhotoRef.current?.click()}>
             {profile.avatar ? (
               <img src={profile.avatar} alt="" />
             ) : (
@@ -642,16 +650,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               </>
             )}
           </div>
-          {isOwn && (
-            <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
-              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
-            </button>
-          )}
-        </div>
 
-        {/* Identity section — content offset right of corner avatar */}
-        <div className="fb-profile-identity-section" style={{ padding: '18px 28px 24px calc(26% + 12px)', position: 'relative' }}>
-          <div className="fb-profile-identity-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 0 }}>
+          <div className="fb-profile-name-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               {/* Name + role badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
