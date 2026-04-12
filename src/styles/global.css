@@ -149,7 +149,7 @@
 
 [data-theme="conniku"] .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
 [data-theme="conniku"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="conniku"] .sidebar .nav-item.active { color: #fff; background: rgba(45,98,200,0.2); }
+[data-theme="conniku"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1442A8 0%, #2D6EF0 100%); color: #FFFFFF; box-shadow: 0 5px 20px rgba(30,80,220,0.55), inset 0 1px 0 rgba(100,180,255,0.22); }
 [data-theme="conniku"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="conniku"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
 
@@ -177,8 +177,8 @@
 }
 [data-theme="pizarra"] .sidebar { background: #FFFFFF; border-right-color: var(--border); color: var(--text-primary); }
 [data-theme="pizarra"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="pizarra"] .sidebar .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
-[data-theme="pizarra"] .sidebar .nav-item.active { background: #FEF3C7; color: #92400E; }
+[data-theme="pizarra"] .sidebar .nav-item:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+[data-theme="pizarra"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%); color: #FFFFFF; font-weight: 600; box-shadow: 0 5px 16px rgba(30,84,192,0.38), inset 0 1px 0 rgba(255,255,255,0.18); }
 [data-theme="pizarra"] .sidebar .nav-section-title,
 [data-theme="pizarra"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="pizarra"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
@@ -211,8 +211,8 @@
 }
 [data-theme="dorado"] .sidebar { background: #FFFFFF; border-right-color: var(--border); color: var(--text-primary); }
 [data-theme="dorado"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="dorado"] .sidebar .nav-item:hover { background: #FEF3C7; color: var(--text-primary); }
-[data-theme="dorado"] .sidebar .nav-item.active { background: #FEF3C7; color: #92400E; font-weight: 700; }
+[data-theme="dorado"] .sidebar .nav-item:hover:not(.active) { background: #FEF3C7; color: var(--text-primary); }
+[data-theme="dorado"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%); color: #FFFFFF; font-weight: 600; box-shadow: 0 5px 16px rgba(30,84,192,0.38), inset 0 1px 0 rgba(255,255,255,0.18); }
 [data-theme="dorado"] .sidebar .nav-section-title,
 [data-theme="dorado"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="dorado"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
@@ -245,8 +245,8 @@
 }
 [data-theme="corporativo"] .sidebar { background: #FFFFFF; border-right-color: var(--border); color: var(--text-primary); }
 [data-theme="corporativo"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="corporativo"] .sidebar .nav-item:hover { background: #EFF6FF; color: var(--text-primary); }
-[data-theme="corporativo"] .sidebar .nav-item.active { background: #EFF6FF; color: #1D4ED8; font-weight: 700; }
+[data-theme="corporativo"] .sidebar .nav-item:hover:not(.active) { background: #EFF6FF; color: var(--text-primary); }
+[data-theme="corporativo"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%); color: #FFFFFF; font-weight: 600; box-shadow: 0 5px 16px rgba(30,84,192,0.38), inset 0 1px 0 rgba(255,255,255,0.18); }
 [data-theme="corporativo"] .sidebar .nav-section-title,
 [data-theme="corporativo"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="corporativo"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
@@ -279,8 +279,8 @@
 }
 [data-theme="equilibrado"] .sidebar { background: #FFFFFF; border-right-color: var(--border); color: var(--text-primary); }
 [data-theme="equilibrado"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="equilibrado"] .sidebar .nav-item:hover { background: #EFF6FF; color: var(--text-primary); }
-[data-theme="equilibrado"] .sidebar .nav-item.active { background: #EFF6FF; color: #1D4ED8; font-weight: 700; }
+[data-theme="equilibrado"] .sidebar .nav-item:hover:not(.active) { background: #F1F5F9; color: var(--text-primary); }
+[data-theme="equilibrado"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%); color: #FFFFFF; font-weight: 600; box-shadow: 0 5px 16px rgba(30,84,192,0.38), inset 0 1px 0 rgba(255,255,255,0.18); }
 [data-theme="equilibrado"] .sidebar .nav-section-title,
 [data-theme="equilibrado"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="equilibrado"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
@@ -297,7 +297,7 @@
 :root .sidebar .nav-item:hover,
 [data-theme="nocturno"] .sidebar .nav-item:hover { background: var(--bg-hover); color: var(--text-primary); }
 :root .sidebar .nav-item.active,
-[data-theme="nocturno"] .sidebar .nav-item.active { background: rgba(37,99,235,0.08); color: var(--accent-blue); }
+[data-theme="nocturno"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%); color: #FFFFFF; box-shadow: 0 5px 16px rgba(30,84,192,0.45), inset 0 1px 0 rgba(255,255,255,0.18); }
 :root .sidebar .nav-section-title,
 [data-theme="nocturno"] .sidebar .nav-section-title,
 :root .sidebar .sidebar-section-toggle,
@@ -311,7 +311,7 @@
 
 [data-theme="oceano"] .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
 [data-theme="oceano"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="oceano"] .sidebar .nav-item.active { color: #fff; background: rgba(56,189,248,0.15); }
+[data-theme="oceano"] .sidebar .nav-item.active { background: linear-gradient(155deg, #1442A8 0%, #2D6EF0 100%); color: #FFFFFF; box-shadow: 0 5px 20px rgba(30,80,220,0.55), inset 0 1px 0 rgba(100,180,255,0.22); }
 [data-theme="oceano"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
 [data-theme="oceano"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
 [data-theme="oceano"] .auth-error { color: var(--accent-red); background: rgba(251,113,133,0.1); }
@@ -651,28 +651,60 @@ h1, h2, h3,
   line-height: 16px;
 }
 
+/* ── Badge de ícono (inactivo) ── */
+.nav-item-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 2px 5px rgba(0,0,0,0.18),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+  transition: transform 0.13s ease, box-shadow 0.13s ease;
+}
+
+/* Badge levita al hover */
+.nav-item:hover:not(.active) .nav-item-icon {
+  transform: translateY(-1px);
+  box-shadow:
+    0 4px 9px rgba(0,0,0,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.22);
+}
+
+/* ── Nav item activo — pill azul sólido ── */
 .nav-item.active {
-  background: rgba(37,99,235,0.08);
-  color: var(--accent-blue);
+  background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%);
+  color: #FFFFFF;
   font-weight: 600;
   position: relative;
+  box-shadow:
+    0 5px 16px rgba(30, 84, 192, 0.38),
+    0 1px 4px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
+/* Quitar borde izquierdo antiguo */
 .nav-item.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 6px;
-  bottom: 6px;
-  width: 3px;
-  background: var(--accent-blue);
-  border-radius: 0 3px 3px 0;
+  display: none;
 }
 
-.nav-item-icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
+/* Badge incrustado dentro del pill azul */
+.nav-item.active .nav-item-icon {
+  background: rgba(0, 0, 50, 0.22) !important;
+  box-shadow:
+    inset 0 2px 5px rgba(0, 0, 80, 0.45),
+    inset 0 -0.5px 0 rgba(255, 255, 255, 0.08) !important;
+  transform: none;
+}
+
+/* Ícono grabado en el azul */
+.nav-item.active .nav-item-icon svg {
+  filter:
+    drop-shadow(0 2px 3px rgba(0, 10, 80, 0.55))
+    drop-shadow(0 -1px 0px rgba(180, 210, 255, 0.40));
 }
 
 .project-dot {
