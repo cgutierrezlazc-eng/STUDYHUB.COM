@@ -104,6 +104,7 @@ export interface Document {
   uploadedAt: string;
   processed: boolean;
   summary?: string;
+  uploadError?: string;
 }
 
 export interface ChatMessage {

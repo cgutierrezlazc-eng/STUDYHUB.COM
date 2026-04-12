@@ -704,8 +704,11 @@ export const api = {
     request(`/communities/${communityId}/members/${userId}/remove`, { method: 'POST' }),
   getCommunityPosts: (id: string, page?: number) =>
     request(`/communities/${id}/posts${page ? `?page=${page}` : ''}`),
-  createCommunityPost: (id: string, content: string, imageUrl?: string) =>
-    request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, image_url: imageUrl }) }),
+  createCommunityPost: (id: string, content: string, opts?: string | { image_url?: string; is_announcement?: boolean }) => {
+    const image_url = typeof opts === 'string' ? opts : opts?.image_url
+    const is_announcement = typeof opts === 'object' ? (opts?.is_announcement ?? false) : false
+    return request(`/communities/${id}/posts`, { method: 'POST', body: JSON.stringify({ content, image_url, is_announcement }) })
+  },
   likeCommunityPost: (postId: string, reactionType?: string) =>
     request(`/communities/posts/${postId}/like`, { method: 'POST', body: JSON.stringify({ reaction_type: reactionType || 'like' }) }),
   getCommunityPostComments: (postId: string) =>
@@ -1267,7 +1270,7 @@ export const api = {
       body: formData,
     }).then((r: Response) => r.json())
   },
-  calculatePayroll: (month: number, year: number) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year }) }),
+  calculatePayroll: (month: number, year: number, overrides?: Record<string, any>) => request('/hr/payroll/calculate', { method: 'POST', body: JSON.stringify({ month, year, overrides }) }),
   getPayroll: (year: number, month: number) => request(`/hr/payroll/${year}/${month}`),
   approvePayroll: (id: string) => request(`/hr/payroll/${id}/approve`, { method: 'PUT' }),
   markPayrollPaid: (id: string) => request(`/hr/payroll/${id}/mark-paid`, { method: 'PUT' }),

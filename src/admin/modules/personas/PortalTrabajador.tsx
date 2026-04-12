@@ -393,7 +393,7 @@ function DocCard({ doc, onSign, signing }: { doc: EmployeeDoc; onSign: () => voi
       >
         <span style={{ fontSize: 22 }}>{icon}</span>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontWeight: 600, fontSize: 13, truncate: 'ellipsis' }}>{doc.name}</div>
+          <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name}</div>
           <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
             {label} · {new Date(doc.created_at).toLocaleDateString('es-CL')}
           </div>
