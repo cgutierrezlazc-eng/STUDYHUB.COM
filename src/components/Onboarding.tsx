@@ -43,29 +43,26 @@ export default function Onboarding({ onComplete, onNavigate }: Props) {
           {step + 1} {t('onb.stepOf')} {STEP_CONFIG.length}
         </div>
 
-        <div className="onb-icon" style={{ color: current.color }}>{current.icon}</div>
+        <div className="onb-icon" style={{ color: current.color, background: `${current.color}18` }}>{current.icon}</div>
         <h2>{t(current.titleKey)}</h2>
         <p>{t(current.descKey)}</p>
 
         <div className="onb-actions">
-          {step > 0 && (
+          {step > 0 ? (
             <button className="btn btn-secondary btn-sm" onClick={() => setStep(s => s - 1)}>
               {t('onb.back')}
             </button>
+          ) : (
+            <div style={{ minWidth: 110 }} />
           )}
           {step < STEP_CONFIG.length - 1 ? (
             <button className="btn btn-primary btn-sm btn-glow" onClick={() => setStep(s => s + 1)}>
               {t('onb.next')}
             </button>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, width: '100%' }}>
-              <button className="btn btn-primary btn-sm btn-glow" onClick={() => handleComplete('/dashboard')}>
-                Crear mi primera asignatura
-              </button>
-              <button className="btn btn-secondary btn-sm" onClick={() => handleComplete()}>
-                {t('onb.start')}
-              </button>
-            </div>
+            <button className="btn btn-primary btn-sm btn-glow" onClick={() => handleComplete('/dashboard')}>
+              ¡Comenzar!
+            </button>
           )}
         </div>
 
