@@ -22,8 +22,10 @@ export default function Onboarding({ onComplete, onNavigate }: Props) {
   const { t } = useI18n()
   const [step, setStep] = useState(0)
 
-  const handleComplete = async (navigateTo?: string) => {
-    try { await api.completeOnboarding() } catch {}
+  const handleComplete = (navigateTo?: string) => {
+    // Fire-and-forget — don't block navigation on the API call
+    // (Render cold start can take 30+ sec; user must navigate immediately)
+    api.completeOnboarding().catch(() => {})
     onComplete()
     if (navigateTo && onNavigate) onNavigate(navigateTo)
   }

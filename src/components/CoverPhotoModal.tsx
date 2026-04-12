@@ -112,7 +112,7 @@ export default function CoverPhotoModal({ isOpen, onClose, currentCover, current
   const canSave = !saving && (!!selectedTemplate || !!coverFile)
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay cover-modal-overlay" onClick={onClose}>
       <div className="cover-modal" onClick={e => e.stopPropagation()}>
 
         {/* Header */}

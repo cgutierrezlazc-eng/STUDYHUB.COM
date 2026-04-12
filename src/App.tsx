@@ -17,7 +17,7 @@ import PWAInstallPrompt from './components/PWAInstallPrompt'
 import AppAvailableBanner from './components/AppAvailableBanner'
 import SupportChat from './components/SupportChat'
 import StudyBuddy from './components/StudyBuddy'
-import Footer from './components/Footer'
+
 import Landing from './pages/Landing'
 import { Project } from './types'
 import { api, initPushNotifications } from './services/api'
@@ -398,7 +398,6 @@ export default function App() {
           </Routes>
         </Suspense>
           </ErrorBoundary>
-        <Footer onNavigate={(path) => navigate(path)} />
       </main>
       {!showMobileUI && !showTabletUI && (
         <RightPanel currentPath={location.pathname} onNavigate={(path) => navigate(path)} />
@@ -411,7 +410,7 @@ export default function App() {
 
       {showOnboarding && (
         <Onboarding
-          onComplete={() => { setShowOnboarding(false); refreshUser() }}
+          onComplete={() => { setShowOnboarding(false) }}
           onNavigate={(path) => navigate(path)}
         />
       )}
