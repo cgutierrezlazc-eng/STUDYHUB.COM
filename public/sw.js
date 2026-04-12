@@ -1,12 +1,12 @@
-// Conniku Service Worker v7.0
+// Conniku Service Worker v8.0
 // Full offline support + push notifications + background sync
-// v7: Fix diagonal C logo orientation in all icons
+// v8: Force full cache purge — footer eliminado, onboarding fix, portada móvil
 
-const SW_VERSION = 'v7';
-const CACHE_NAME = 'conniku-v7';
-const STATIC_CACHE = 'conniku-static-v7';
-const API_CACHE = 'conniku-api-v7';
-const IMAGE_CACHE = 'conniku-images-v7';
+const SW_VERSION = 'v8';
+const CACHE_NAME = 'conniku-v8';
+const STATIC_CACHE = 'conniku-static-v8';
+const API_CACHE = 'conniku-api-v8';
+const IMAGE_CACHE = 'conniku-images-v8';
 
 // App shell files to precache (with cache-busting)
 const APP_SHELL = [
@@ -36,25 +36,25 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating ' + SW_VERSION + ' — purging ALL old caches');
   event.waitUntil(
-    caches.keys().then((cacheNames) =>
-      Promise.all(
-        cacheNames
-          .filter((name) => name !== STATIC_CACHE && name !== API_CACHE && name !== IMAGE_CACHE)
-          .map((name) => {
-            console.log('[SW] Deleting old cache:', name);
-            return caches.delete(name);
+    caches.keys()
+      .then((cacheNames) =>
+        Promise.all(
+          cacheNames.map((name) => {
+            console.log('[SW] Deleting cache:', name);
+            return caches.delete(name);   // delete ALL caches unconditionally
           })
+        )
       )
-    )
-    .then(() => self.clients.claim())
-    .then(() => {
-      // Notify all open tabs to refresh
-      self.clients.matchAll({ type: 'window' }).then((clients) => {
+      .then(() => self.clients.claim())
+      .then(() => {
+        // Notify ALL open tabs — main.tsx will call window.location.reload()
+        return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      })
+      .then((clients) => {
         clients.forEach((client) => {
           client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
         });
-      });
-    })
+      })
   );
 });
 
