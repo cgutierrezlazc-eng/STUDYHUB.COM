@@ -194,14 +194,10 @@ export default function App() {
     }
   }, [user])
 
-  // Apply theme
+  // Force Océano theme for all users
   useEffect(() => {
-    if (user?.theme && user.theme !== 'sereno') {
-      document.documentElement.setAttribute('data-theme', user.theme)
-    } else {
-      document.documentElement.removeAttribute('data-theme')
-    }
-  }, [user?.theme])
+    document.documentElement.setAttribute('data-theme', 'oceano')
+  }, [])
 
   if (isLoading) {
     return (

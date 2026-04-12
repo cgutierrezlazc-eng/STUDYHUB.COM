@@ -705,30 +705,7 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                <h3>{t('profile.visualTheme')}</h3>
-                <p className="pf-hint">{t('profile.visualThemeHint')}</p>
-                <div className="theme-selector">
-                  {([
-                    { id: 'sereno', name: 'Conniku Theme', desc: 'Principal — azul y blanco', colors: ['#F5F3EF', '#2563EB', '#1D2939'] },
-                    { id: 'nocturno', name: 'Nocturno', desc: 'Modo noche', colors: ['#0D1117', '#58A6FF', '#E6EDF3'] },
-                    { id: 'calido', name: 'Noche Calma', desc: 'Oscuro y suave', colors: ['#111318', '#60A5FA', '#ECECEF'] },
-                    { id: 'profesional', name: 'Bosque', desc: 'Verde y natural', colors: ['#F2F5F0', '#16A34A', '#1A2E1A'] },
-                    { id: 'vibrante', name: 'Océano', desc: 'Azul profundo', colors: ['#0F172A', '#38BDF8', '#F1F5F9'] },
-                  ] as const).map(theme => (
-                    <button key={theme.id} className={`theme-card ${(user.theme || 'sereno') === theme.id ? 'active' : ''}`}
-                      onClick={() => {
-                        if (theme.id === 'sereno') { document.documentElement.removeAttribute('data-theme') } else { document.documentElement.setAttribute('data-theme', theme.id) }
-                        updateProfile({ theme: theme.id } as any)
-                        api.updateMe({ theme: theme.id }).catch(() => {})
-                      }}>
-                      <div className="theme-preview">
-                        {theme.colors.map((c, i) => <div key={i} style={{ background: c, flex: 1 }} />)}
-                      </div>
-                      <strong>{theme.name}</strong>
-                      <small>{theme.desc}</small>
-                    </button>
-                  ))}
-                </div>
+                {/* Theme selector removed — Océano is the only theme */}
 
                 <div className="pf-divider" />
 
