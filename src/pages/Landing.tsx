@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { useDevice } from '../hooks/useDevice'
 import { useI18n } from '../services/i18n'
 import { useOnlineCount } from '../services/useOnlineCount'
+import { api } from '../services/api'
 
 /* ─── Scroll Animation Hook ─── */
 function useScrollAnimation() {
@@ -414,6 +415,10 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
   const [activeModal, setActiveModal] = useState<ModalType>(null)
   const [headerVisible, setHeaderVisible] = useState(true)
+  const [showDevModal, setShowDevModal] = useState(false)
+  const [devForm, setDevForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [devSending, setDevSending] = useState(false)
+  const [devSent, setDevSent] = useState(false)
   const lastScrollY = useRef(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
@@ -1108,16 +1113,165 @@ export default function Landing({ onLogin, onRegister }: Props) {
         </AnimatedSection>
       </section>
 
+      {/* ─── Desarrollado por ─── */}
+      <section style={{
+        background: '#0f172a', borderTop: '1px solid #1e293b',
+        padding: compact ? '32px 20px' : '40px 60px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 24,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          {/* Avatar inicial */}
+          <div style={{
+            width: 48, height: 48, borderRadius: 12, flexShrink: 0,
+            background: 'linear-gradient(135deg, #2D62C8 0%, #7C3AED 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 18, fontWeight: 800, color: '#fff', letterSpacing: -1,
+          }}>CG</div>
+          <div>
+            <div style={{ fontSize: 13, color: '#64748b', marginBottom: 2 }}>Diseñado y desarrollado por</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#f1f5f9', lineHeight: 1.2 }}>
+              Cristian A. Gutiérrez Lazcano
+            </div>
+            <div style={{ fontSize: 12, color: '#38BDF8', marginTop: 2 }}>
+              CEO &amp; Founder, Conniku SpA · <a href="mailto:ceo@conniku.com" style={{ color: '#38BDF8', textDecoration: 'none' }}>ceo@conniku.com</a>
+            </div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, alignItems: compact ? 'flex-start' : 'flex-end' }}>
+          <div style={{ fontSize: 12, color: '#475569', maxWidth: 260, textAlign: compact ? 'left' : 'right', lineHeight: 1.5 }}>
+            ¿Te gustó esta plataforma? Puedo construir algo similar para ti o tu empresa.
+          </div>
+          <button
+            onClick={() => { setShowDevModal(true); setDevSent(false); setDevForm({ name: '', email: '', subject: '', message: '' }) }}
+            style={{
+              background: 'linear-gradient(135deg, #2D62C8, #7C3AED)',
+              color: '#fff', border: 'none', borderRadius: 10,
+              padding: '10px 20px', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            ¿Tienes un proyecto en mente? →
+          </button>
+        </div>
+      </section>
+
       {/* ─── Footer ─── */}
       <footer style={{
-        background: vars.bgCard, borderTop: `1px solid ${vars.border}`,
-        padding: '20px 40px', textAlign: 'center', fontSize: 12, color: vars.textMuted,
+        background: '#080f1c', borderTop: '1px solid #1e293b',
+        padding: '16px 40px', textAlign: 'center', fontSize: 11, color: '#334155',
       }}>
         <a href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>{t('landing.footerTerms')}</a>
-        {' - '}
+        {' · '}
         <a href="/privacy" style={{ color: 'inherit', textDecoration: 'none' }}>{t('landing.footerPrivacy')}</a>
-        {' - '}{t('landing.footerContact')} - {t('landing.copyright')} - {t('landing.statsMadeInChile')}
+        {' · '}{t('landing.copyright')}
       </footer>
+
+      {/* ─── Modal Proyecto ─── */}
+      {showDevModal && (
+        <div
+          onClick={() => setShowDevModal(false)}
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
+            zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#1e293b', borderRadius: 20, padding: compact ? 24 : 36,
+              width: '100%', maxWidth: 480, border: '1px solid #334155',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
+            }}
+          >
+            {devSent ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✅</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 }}>¡Mensaje enviado!</div>
+                <div style={{ fontSize: 13, color: '#94a3b8', marginBottom: 20 }}>
+                  Cristian revisará tu consulta y te responderá a la brevedad en {devForm.email}.
+                </div>
+                <button onClick={() => setShowDevModal(false)} style={{ background: '#38BDF8', color: '#0f172a', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Cerrar</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                  <div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: '#f1f5f9' }}>Cuéntame tu proyecto</div>
+                    <div style={{ fontSize: 12, color: '#64748b', marginTop: 4 }}>Cristian A. Gutiérrez Lazcano · ceo@conniku.com</div>
+                  </div>
+                  <button onClick={() => setShowDevModal(false)} style={{ background: 'none', border: 'none', color: '#64748b', fontSize: 20, cursor: 'pointer', padding: 4 }}>✕</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {[
+                    { key: 'name', label: 'Tu nombre *', placeholder: 'Ej: María González', type: 'text' },
+                    { key: 'email', label: 'Tu email *', placeholder: 'maria@empresa.com', type: 'email' },
+                    { key: 'subject', label: 'Tipo de proyecto *', placeholder: 'Ej: App educativa, plataforma SaaS, e-commerce...', type: 'text' },
+                  ].map(f => (
+                    <div key={f.key}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</div>
+                      <input
+                        type={f.type}
+                        value={devForm[f.key as keyof typeof devForm]}
+                        onChange={e => setDevForm(p => ({ ...p, [f.key]: e.target.value }))}
+                        placeholder={f.placeholder}
+                        style={{
+                          width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155',
+                          borderRadius: 8, color: '#f1f5f9', fontSize: 13, outline: 'none',
+                          boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Descripción del proyecto *</div>
+                    <textarea
+                      value={devForm.message}
+                      onChange={e => setDevForm(p => ({ ...p, message: e.target.value }))}
+                      rows={4}
+                      placeholder="Describe qué necesitas construir, para qué sirve, quiénes serán los usuarios..."
+                      style={{
+                        width: '100%', padding: '10px 12px', background: '#0f172a', border: '1px solid #334155',
+                        borderRadius: 8, color: '#f1f5f9', fontSize: 13, outline: 'none', resize: 'vertical',
+                        fontFamily: 'inherit', boxSizing: 'border-box',
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={async () => {
+                      if (!devForm.name || !devForm.email || !devForm.subject || !devForm.message) return
+                      setDevSending(true)
+                      try {
+                        await (api as any).sendContactForm({
+                          name: devForm.name,
+                          email: devForm.email,
+                          subject: `[Proyecto] ${devForm.subject}`,
+                          message: devForm.message,
+                        })
+                        setDevSent(true)
+                      } catch {
+                        alert('No se pudo enviar. Escríbeme directamente a ceo@conniku.com')
+                      } finally {
+                        setDevSending(false)
+                      }
+                    }}
+                    disabled={devSending || !devForm.name || !devForm.email || !devForm.subject || !devForm.message}
+                    style={{
+                      background: 'linear-gradient(135deg, #2D62C8, #7C3AED)',
+                      color: '#fff', border: 'none', borderRadius: 10, padding: '12px',
+                      fontSize: 14, fontWeight: 600, cursor: devSending ? 'wait' : 'pointer',
+                      opacity: (!devForm.name || !devForm.email || !devForm.subject || !devForm.message) ? 0.5 : 1,
+                      marginTop: 4,
+                    }}
+                  >
+                    {devSending ? 'Enviando...' : 'Enviar consulta →'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
