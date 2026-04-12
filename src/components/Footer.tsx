@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import api from '../services/api'
+import { api } from '../services/api'
 
 interface Props {
   onNavigate: (path: string) => void
