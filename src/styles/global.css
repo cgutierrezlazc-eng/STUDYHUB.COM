@@ -4622,150 +4622,79 @@ body.touch-device select {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   SITE FOOTER — LinkedIn style
+   SITE FOOTER — Minimal non-invasive bar
    ═══════════════════════════════════════════════════════════════ */
 .site-footer {
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color, var(--border));
-  padding: 28px 32px 16px;
+  padding: 10px 24px;
   flex-shrink: 0;
   margin-top: auto;
-  font-size: 13px;
 }
-.site-footer-inner {
+.site-footer-bar {
   max-width: 1080px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-.site-footer-brand {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.site-footer-logo {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: -0.02em;
-}
-.site-footer-tagline {
-  font-size: 11px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0 4px;
+  font-size: 12px;
   color: var(--text-muted);
 }
-.site-footer-body {
-  display: flex;
-  align-items: flex-start;
-  gap: 32px;
-  flex-wrap: wrap;
+.site-footer-copy {
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-right: 6px;
+  padding: 2px 0;
 }
-.site-footer-cols {
+.site-footer-links {
   display: flex;
-  gap: 40px;
+  align-items: center;
   flex-wrap: wrap;
+  gap: 0;
   flex: 1;
 }
-.site-footer-col {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-width: 140px;
+.site-footer-dot {
+  color: var(--border);
+  font-size: 12px;
+  user-select: none;
+  padding: 0 4px;
+  line-height: 1;
 }
 .site-footer-link {
   background: none;
   border: none;
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-muted);
+  font-size: 12px;
   cursor: pointer;
-  padding: 0;
+  padding: 2px 4px;
   text-align: left;
-  text-decoration: none;
   transition: color 0.15s;
   font-family: inherit;
-  line-height: 1.4;
+  white-space: nowrap;
+  line-height: 1.6;
 }
-.site-footer-link:hover { color: var(--text-primary); text-decoration: underline; }
-
-.site-footer-divider {
-  width: 1px;
-  background: var(--border-color, var(--border));
-  align-self: stretch;
-  flex-shrink: 0;
-}
-.site-footer-right {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  min-width: 260px;
-}
-.site-footer-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.site-footer-action {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-.site-footer-action-icon { font-size: 18px; flex-shrink: 0; line-height: 1; }
-.site-footer-action-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 1px;
-}
-.site-footer-action-link {
-  font-size: 12px;
-  color: var(--text-muted);
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  text-decoration: none;
-  transition: color 0.15s;
-}
-.site-footer-action-link:hover { color: var(--accent); text-decoration: underline; }
-
-.site-footer-lang { display: flex; flex-direction: column; gap: 4px; }
-.site-footer-lang-label { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+.site-footer-link:hover { color: var(--text-primary); }
 .site-footer-lang-select {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid var(--border-color, var(--border));
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: 13px;
-  cursor: pointer;
-  max-width: 220px;
-}
-.site-footer-bottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-color, var(--border));
-  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: transparent;
   color: var(--text-muted);
-}
-.site-footer-bottom-links {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  max-width: 140px;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 @media (max-width: 768px) {
-  .site-footer { padding: 24px 16px 12px; }
-  .site-footer-cols { gap: 24px; }
-  .site-footer-divider { display: none; }
-  .site-footer-right { min-width: unset; width: 100%; }
-  .site-footer-bottom { flex-direction: column; align-items: flex-start; gap: 6px; }
-  .site-footer-bottom-links { flex-wrap: wrap; }
+  .site-footer { padding: 8px 16px 10px; }
+  .site-footer-bar { gap: 0 2px; }
+  .site-footer-link { font-size: 11px; padding: 2px 3px; }
+  .site-footer-dot { padding: 0 2px; }
+  .site-footer-lang-select { display: none; }
 }
-
 /* ═══════════════════════════════════════════════════════════════
    EXECUTIVE SHOWCASE — LinkedIn Executive Style (Plan MAX)
    ═══════════════════════════════════════════════════════════════ */
