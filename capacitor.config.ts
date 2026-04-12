@@ -5,9 +5,10 @@ const config: CapacitorConfig = {
   appName: 'Conniku',
   webDir: 'dist/renderer',
   server: {
+    url: 'https://www.conniku.com',
+    cleartext: false,
     androidScheme: 'https',
     iosScheme: 'https',
-    hostname: 'app.conniku.com',
   },
   plugins: {
     SplashScreen: {
