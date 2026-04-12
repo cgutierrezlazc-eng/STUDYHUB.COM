@@ -914,7 +914,7 @@ async def update_cover_photo(
     db: Session = Depends(get_db),
 ):
     """Update user cover photo: either upload a custom image or select a template."""
-    import pathlib
+    from database import DATA_DIR
     if file:
         # Validate file type
         allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -924,9 +924,9 @@ async def update_cover_photo(
         content = await file.read()
         if len(content) > 5 * 1024 * 1024:
             raise HTTPException(400, "La imagen no puede superar 5MB.")
-        # Save file
+        # Save file using DATA_DIR (same persistent path as server.py COVERS_DIR)
         ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
-        covers_dir = pathlib.Path.home() / ".conniku" / "uploads" / "covers"
+        covers_dir = DATA_DIR / "uploads" / "covers"
         covers_dir.mkdir(parents=True, exist_ok=True)
         file_path = covers_dir / f"{user.id}.{ext}"
         # Remove old cover files for this user

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Alternativas de Tema</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a0f; font-family: 'Inter', system-ui, sans-serif; color: #fff; padding: 40px 24px; min-height: 100vh; }
+  h1 { text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.03em; }
+  .subtitle { text-align: center; color: #888; font-size: 14px; margin-bottom: 48px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+
+  .theme-card {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+  }
+  .theme-card:hover { transform: translateY(-4px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+  .theme-header {
+    padding: 20px 20px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .theme-name { font-size: 16px; font-weight: 700; }
+  .theme-tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; opacity: 0.8; }
+
+  /* Mini UI mockup */
+  .theme-mockup {
+    padding: 16px;
+    display: flex;
+    gap: 10px;
+    height: 200px;
+  }
+  .mock-sidebar {
+    width: 52px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+    gap: 14px;
+  }
+  .mock-dot { width: 24px; height: 24px; border-radius: 8px; opacity: 0.7; }
+  .mock-dot.active { opacity: 1; width: 24px; height: 24px; }
+  .mock-main { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .mock-topbar { height: 30px; border-radius: 10px; display: flex; align-items: center; padding: 0 10px; gap: 8px; flex-shrink: 0; }
+  .mock-topbar-dot { width: 8px; height: 8px; border-radius: 50%; opacity: 0.5; }
+  .mock-topbar-line { height: 8px; border-radius: 4px; opacity: 0.4; }
+  .mock-content { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex: 1; }
+  .mock-card { border-radius: 10px; padding: 8px; display: flex; flex-direction: column; justify-content: flex-end; gap: 3px; }
+  .mock-card-line { height: 5px; border-radius: 3px; opacity: 0.5; }
+  .mock-card-line.accent { opacity: 0.9; }
+  .mock-wide { grid-column: span 2; }
+
+  .theme-palette { padding: 12px 16px 16px; display: flex; gap: 8px; align-items: center; }
+  .palette-swatch { flex: 1; height: 28px; border-radius: 8px; transition: transform 0.2s; }
+  .palette-swatch:hover { transform: scaleY(1.2); }
+  .theme-desc { padding: 0 16px 16px; font-size: 12px; opacity: 0.6; line-height: 1.5; }
+
+  /* === THEME 1: OCEANO (actual) === */
+  .t-oceano { background: #0F172A; }
+  .t-oceano .theme-header { background: #1E293B; }
+  .t-oceano .theme-name { color: #38BDF8; }
+  .t-oceano .theme-tag { background: rgba(56,189,248,0.15); color: #38BDF8; }
+  .t-oceano .mock-sidebar { background: #1E293B; }
+  .t-oceano .mock-dot { background: #38BDF8; }
+  .t-oceano .mock-topbar { background: #1E293B; }
+  .t-oceano .mock-topbar-dot { background: #38BDF8; }
+  .t-oceano .mock-topbar-line { background: #94A3B8; }
+  .t-oceano .mock-card { background: #1E293B; }
+  .t-oceano .mock-card-line { background: #94A3B8; }
+  .t-oceano .mock-card-line.accent { background: #38BDF8; }
+
+  /* === THEME 2: CONNIKU (marca) === */
+  .t-conniku { background: #070D18; }
+  .t-conniku .theme-header { background: #0D1526; }
+  .t-conniku .theme-name { color: #6B9EF4; }
+  .t-conniku .theme-tag { background: rgba(45,98,200,0.2); color: #6B9EF4; }
+  .t-conniku .mock-sidebar { background: #0D1526; }
+  .t-conniku .mock-dot { background: #2D62C8; }
+  .t-conniku .mock-topbar { background: #0D1526; }
+  .t-conniku .mock-topbar-dot { background: #2D62C8; }
+  .t-conniku .mock-topbar-line { background: #8FA3C0; }
+  .t-conniku .mock-card { background: #111D33; }
+  .t-conniku .mock-card-line { background: #8FA3C0; }
+  .t-conniku .mock-card-line.accent { background: #2D62C8; }
+
+  /* === THEME 3: TIERRA (ambar/dorado) === */
+  .t-tierra { background: #120C02; }
+  .t-tierra .theme-header { background: #1C1405; }
+  .t-tierra .theme-name { color: #F59E0B; }
+  .t-tierra .theme-tag { background: rgba(245,158,11,0.15); color: #F59E0B; }
+  .t-tierra .mock-sidebar { background: #1C1405; }
+  .t-tierra .mock-dot { background: #F59E0B; }
+  .t-tierra .mock-topbar { background: #1C1405; }
+  .t-tierra .mock-topbar-dot { background: #F59E0B; }
+  .t-tierra .mock-topbar-line { background: #92817A; }
+  .t-tierra .mock-card { background: #1C1405; }
+  .t-tierra .mock-card-line { background: #92817A; }
+  .t-tierra .mock-card-line.accent { background: #F59E0B; }
+
+  /* === THEME 4: NEBLINA (violeta/purpura) === */
+  .t-neblina { background: #0D0818; }
+  .t-neblina .theme-header { background: #160E28; }
+  .t-neblina .theme-name { color: #A855F7; }
+  .t-neblina .theme-tag { background: rgba(168,85,247,0.15); color: #A855F7; }
+  .t-neblina .mock-sidebar { background: #160E28; }
+  .t-neblina .mock-dot { background: #A855F7; }
+  .t-neblina .mock-topbar { background: #160E28; }
+  .t-neblina .mock-topbar-dot { background: #A855F7; }
+  .t-neblina .mock-topbar-line { background: #8B8BA0; }
+  .t-neblina .mock-card { background: #1E1338; }
+  .t-neblina .mock-card-line { background: #8B8BA0; }
+  .t-neblina .mock-card-line.accent { background: #A855F7; }
+
+  /* === THEME 5: SELVA (verde esmeralda) === */
+  .t-selva { background: #041A0C; }
+  .t-selva .theme-header { background: #082712; }
+  .t-selva .theme-name { color: #22C55E; }
+  .t-selva .theme-tag { background: rgba(34,197,94,0.15); color: #22C55E; }
+  .t-selva .mock-sidebar { background: #082712; }
+  .t-selva .mock-dot { background: #22C55E; }
+  .t-selva .mock-topbar { background: #082712; }
+  .t-selva .mock-topbar-dot { background: #22C55E; }
+  .t-selva .mock-topbar-line { background: #6A9E7A; }
+  .t-selva .mock-card { background: #0A2E15; }
+  .t-selva .mock-card-line { background: #6A9E7A; }
+  .t-selva .mock-card-line.accent { background: #22C55E; }
+
+  /* === THEME 6: VOLCÁN (rojo/coral) === */
+  .t-volcan { background: #130404; }
+  .t-volcan .theme-header { background: #1E0707; }
+  .t-volcan .theme-name { color: #F87171; }
+  .t-volcan .theme-tag { background: rgba(248,113,113,0.15); color: #F87171; }
+  .t-volcan .mock-sidebar { background: #1E0707; }
+  .t-volcan .mock-dot { background: #F87171; }
+  .t-volcan .mock-topbar { background: #1E0707; }
+  .t-volcan .mock-topbar-dot { background: #F87171; }
+  .t-volcan .mock-topbar-line { background: #9E7A7A; }
+  .t-volcan .mock-card { background: #1E0707; }
+  .t-volcan .mock-card-line { background: #9E7A7A; }
+  .t-volcan .mock-card-line.accent { background: #F87171; }
+
+  /* === THEME 7: PATAGONIA (teal/hielo) === */
+  .t-patagonia { background: #031316; }
+  .t-patagonia .theme-header { background: #051E23; }
+  .t-patagonia .theme-name { color: #2DD4BF; }
+  .t-patagonia .theme-tag { background: rgba(45,212,191,0.15); color: #2DD4BF; }
+  .t-patagonia .mock-sidebar { background: #051E23; }
+  .t-patagonia .mock-dot { background: #2DD4BF; }
+  .t-patagonia .mock-topbar { background: #051E23; }
+  .t-patagonia .mock-topbar-dot { background: #2DD4BF; }
+  .t-patagonia .mock-topbar-line { background: #5E9E9A; }
+  .t-patagonia .mock-card { background: #071F24; }
+  .t-patagonia .mock-card-line { background: #5E9E9A; }
+  .t-patagonia .mock-card-line.accent { background: #2DD4BF; }
+
+  /* === THEME 8: AURORA (degradado rosado-lila) === */
+  .t-aurora { background: #0E0518; }
+  .t-aurora .theme-header { background: #1A0A2E; }
+  .t-aurora .theme-name { color: #E879F9; }
+  .t-aurora .theme-tag { background: rgba(232,121,249,0.15); color: #E879F9; }
+  .t-aurora .mock-sidebar { background: #1A0A2E; }
+  .t-aurora .mock-dot { background: linear-gradient(135deg,#E879F9,#818CF8); }
+  .t-aurora .mock-topbar { background: #1A0A2E; }
+  .t-aurora .mock-topbar-dot { background: #E879F9; }
+  .t-aurora .mock-topbar-line { background: #8B8BA0; }
+  .t-aurora .mock-card { background: #1A0A2E; }
+  .t-aurora .mock-card-line { background: #8B8BA0; }
+  .t-aurora .mock-card-line.accent { background: #E879F9; }
+
+  .section-label { grid-column: 1 / -1; font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+  .badge-current { display: inline-block; background: rgba(255,255,255,0.1); color: #ccc; font-size: 10px; padding: 2px 8px; border-radius: 8px; margin-left: 8px; vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<h1>Conniku — Alternativas de Tema</h1>
+<p class="subtitle">Propuestas visuales para diferenciarse de Facebook · Abre en navegador para ver colores completos</p>
+
+<div class="grid">
+
+  <div class="section-label">▸ Temas actuales (disponibles hoy)</div>
+
+  <!-- OCEANO (actual) -->
+  <div class="theme-card t-oceano">
+    <div class="theme-header">
+      <span class="theme-name">Océano <span class="badge-current">actual</span></span>
+      <span class="theme-tag">Predeterminado</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot"></div>
+          <div class="mock-topbar-line" style="width:60px"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide"><div class="mock-card-line accent" style="width:70%"></div><div class="mock-card-line" style="width:90%"></div><div class="mock-card-line" style="width:50%"></div></div>
+          <div class="mock-card"><div class="mock-card-line accent" style="width:60%"></div><div class="mock-card-line" style="width:80%"></div></div>
+          <div class="mock-card"><div class="mock-card-line accent" style="width:50%"></div><div class="mock-card-line" style="width:70%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#0F172A" title="#0F172A"></div>
+      <div class="palette-swatch" style="background:#1E293B" title="#1E293B"></div>
+      <div class="palette-swatch" style="background:#38BDF8" title="#38BDF8"></div>
+      <div class="palette-swatch" style="background:#34D399" title="#34D399"></div>
+      <div class="palette-swatch" style="background:#FB7185" title="#FB7185"></div>
+    </div>
+    <div class="theme-desc">Fondo azul marino oscuro · Acento celeste · Similar a Meta/Facebook dark mode en percepción visual</div>
+  </div>
+
+  <!-- CONNIKU -->
+  <div class="theme-card t-conniku">
+    <div class="theme-header">
+      <span class="theme-name">Conniku</span>
+      <span class="theme-tag">Marca</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot"></div>
+          <div class="mock-topbar-line" style="width:60px"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide"><div class="mock-card-line accent" style="width:70%"></div><div class="mock-card-line" style="width:90%"></div><div class="mock-card-line" style="width:50%"></div></div>
+          <div class="mock-card"><div class="mock-card-line accent" style="width:60%"></div><div class="mock-card-line" style="width:80%"></div></div>
+          <div class="mock-card"><div class="mock-card-line accent" style="width:50%"></div><div class="mock-card-line" style="width:70%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#070D18" title="#070D18"></div>
+      <div class="palette-swatch" style="background:#111D33" title="#111D33"></div>
+      <div class="palette-swatch" style="background:#2D62C8" title="#2D62C8"></div>
+      <div class="palette-swatch" style="background:#22C55E" title="#22C55E"></div>
+      <div class="palette-swatch" style="background:#EF4444" title="#EF4444"></div>
+    </div>
+    <div class="theme-desc">Azul de marca #2D62C8 · Fondo muy oscuro casi negro · Más profundo y exclusivo que Océano</div>
+  </div>
+
+  <div class="section-label">▸ Propuestas nuevas — 100% diferente a Facebook</div>
+
+  <!-- TIERRA -->
+  <div class="theme-card t-tierra">
+    <div class="theme-header">
+      <span class="theme-name">Tierra Chilena</span>
+      <span class="theme-tag">Único</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+        <div class="mock-dot" style="opacity:0.3"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot"></div>
+          <div class="mock-topbar-line" style="width:60px"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide" style="background:#1C1405"><div class="mock-card-line accent" style="width:70%"></div><div class="mock-card-line" style="width:90%"></div></div>
+          <div class="mock-card" style="background:#1C1405"><div class="mock-card-line accent" style="width:60%"></div></div>
+          <div class="mock-card" style="background:#1C1405"><div class="mock-card-line accent" style="width:50%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#120C02"></div>
+      <div class="palette-swatch" style="background:#1C1405"></div>
+      <div class="palette-swatch" style="background:#F59E0B"></div>
+      <div class="palette-swatch" style="background:#D97706"></div>
+      <div class="palette-swatch" style="background:#92400E"></div>
+    </div>
+    <div class="theme-desc">Ámbar/dorado sobre negro cálido · Evoca tierra, autenticidad, LATAM · Sin ninguna asociación con Facebook</div>
+  </div>
+
+  <!-- NEBLINA -->
+  <div class="theme-card t-neblina">
+    <div class="theme-header">
+      <span class="theme-name">Neblina</span>
+      <span class="theme-tag">Creativo</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active" style="background:linear-gradient(135deg,#A855F7,#6366F1)"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#A855F7"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#A855F7"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#A855F7"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot" style="background:#A855F7"></div>
+          <div class="mock-topbar-line" style="width:60px;background:#8B8BA0"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto;background:#8B8BA0"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide" style="background:#1E1338"><div class="mock-card-line accent" style="width:70%;background:#A855F7"></div><div class="mock-card-line" style="width:90%;background:#8B8BA0"></div></div>
+          <div class="mock-card" style="background:#1E1338"><div class="mock-card-line accent" style="width:60%;background:#A855F7"></div></div>
+          <div class="mock-card" style="background:#1E1338"><div class="mock-card-line accent" style="width:50%;background:#6366F1"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#0D0818"></div>
+      <div class="palette-swatch" style="background:#160E28"></div>
+      <div class="palette-swatch" style="background:#A855F7"></div>
+      <div class="palette-swatch" style="background:#6366F1"></div>
+      <div class="palette-swatch" style="background:#EC4899"></div>
+    </div>
+    <div class="theme-desc">Violeta/índigo sobre negro profundo · Notion, Linear, Raycast usan esta paleta · Proyecta innovación</div>
+  </div>
+
+  <!-- SELVA -->
+  <div class="theme-card t-selva">
+    <div class="theme-header">
+      <span class="theme-name">Selva</span>
+      <span class="theme-tag">Natural</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active" style="background:#22C55E"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#22C55E"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#22C55E"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#22C55E"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot" style="background:#22C55E"></div>
+          <div class="mock-topbar-line" style="width:60px;background:#6A9E7A"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto;background:#6A9E7A"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide" style="background:#0A2E15"><div class="mock-card-line accent" style="width:70%;background:#22C55E"></div><div class="mock-card-line" style="width:90%;background:#6A9E7A"></div></div>
+          <div class="mock-card" style="background:#0A2E15"><div class="mock-card-line accent" style="width:60%;background:#22C55E"></div></div>
+          <div class="mock-card" style="background:#0A2E15"><div class="mock-card-line accent" style="width:50%;background:#4ADE80"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#041A0C"></div>
+      <div class="palette-swatch" style="background:#082712"></div>
+      <div class="palette-swatch" style="background:#22C55E"></div>
+      <div class="palette-swatch" style="background:#4ADE80"></div>
+      <div class="palette-swatch" style="background:#86EFAC"></div>
+    </div>
+    <div class="theme-desc">Verde esmeralda sobre negro vegetal · Crecimiento, aprendizaje, naturaleza · Asociación educativa fuerte</div>
+  </div>
+
+  <!-- PATAGONIA -->
+  <div class="theme-card t-patagonia">
+    <div class="theme-header">
+      <span class="theme-name">Patagonia</span>
+      <span class="theme-tag">Distintivo</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active" style="background:#2DD4BF"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#2DD4BF"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#2DD4BF"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#2DD4BF"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot" style="background:#2DD4BF"></div>
+          <div class="mock-topbar-line" style="width:60px;background:#5E9E9A"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto;background:#5E9E9A"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide" style="background:#071F24"><div class="mock-card-line accent" style="width:70%;background:#2DD4BF"></div><div class="mock-card-line" style="width:90%;background:#5E9E9A"></div></div>
+          <div class="mock-card" style="background:#071F24"><div class="mock-card-line accent" style="width:60%;background:#2DD4BF"></div></div>
+          <div class="mock-card" style="background:#071F24"><div class="mock-card-line accent" style="width:50%;background:#14B8A6"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#031316"></div>
+      <div class="palette-swatch" style="background:#051E23"></div>
+      <div class="palette-swatch" style="background:#2DD4BF"></div>
+      <div class="palette-swatch" style="background:#14B8A6"></div>
+      <div class="palette-swatch" style="background:#0D9488"></div>
+    </div>
+    <div class="theme-desc">Teal/turquesa sobre verde-negro profundo · Completamente diferente al blue de FB · Evoca agua del sur de Chile</div>
+  </div>
+
+  <!-- AURORA -->
+  <div class="theme-card t-aurora">
+    <div class="theme-header">
+      <span class="theme-name">Aurora</span>
+      <span class="theme-tag">Premium</span>
+    </div>
+    <div class="theme-mockup">
+      <div class="mock-sidebar">
+        <div class="mock-dot active" style="background:linear-gradient(135deg,#E879F9,#818CF8)"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#E879F9"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#E879F9"></div>
+        <div class="mock-dot" style="opacity:0.3;background:#E879F9"></div>
+      </div>
+      <div class="mock-main">
+        <div class="mock-topbar">
+          <div class="mock-topbar-dot" style="background:#E879F9"></div>
+          <div class="mock-topbar-line" style="width:60px;background:#8B8BA0"></div>
+          <div class="mock-topbar-line" style="width:40px;margin-left:auto;background:#8B8BA0"></div>
+        </div>
+        <div class="mock-content">
+          <div class="mock-card mock-wide" style="background:#1A0A2E"><div class="mock-card-line" style="width:70%;background:linear-gradient(90deg,#E879F9,#818CF8)"></div><div class="mock-card-line" style="width:90%;background:#8B8BA0"></div></div>
+          <div class="mock-card" style="background:#1A0A2E"><div class="mock-card-line" style="width:60%;background:#E879F9"></div></div>
+          <div class="mock-card" style="background:#1A0A2E"><div class="mock-card-line" style="width:50%;background:#818CF8"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="theme-palette">
+      <div class="palette-swatch" style="background:#0E0518"></div>
+      <div class="palette-swatch" style="background:#1A0A2E"></div>
+      <div class="palette-swatch" style="background:linear-gradient(90deg,#E879F9,#818CF8)"></div>
+      <div class="palette-swatch" style="background:#C026D3"></div>
+      <div class="palette-swatch" style="background:#818CF8"></div>
+    </div>
+    <div class="theme-desc">Fucsia-índigo degradado · Máxima diferenciación · Proyecta tecnología de punta y creatividad</div>
+  </div>
+
+</div>
+
+<p style="text-align:center;color:#444;font-size:12px;margin-top:48px;padding-bottom:24px;">
+  Para agregar cualquiera de estos temas: díselo a Claude Code con el nombre del tema y se implementa en minutos.
+</p>
+
+</body>
+</html>

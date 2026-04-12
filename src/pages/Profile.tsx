@@ -14,6 +14,7 @@ export default function Profile() {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<Section>('profile')
+  const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'oceano')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -705,7 +706,40 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                {/* Theme selector removed — Océano is the only theme */}
+                <h3>Tema de color</h3>
+                <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                  {[
+                    { id: 'oceano', name: 'Océano', colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Azul cielo — predeterminado' },
+                    { id: 'conniku', name: 'Conniku', colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Azul marca — oscuro profundo' },
+                  ].map(th => {
+                    const isActive = currentTheme === th.id
+                    return (
+                      <button
+                        key={th.id}
+                        onClick={() => {
+                          localStorage.setItem('conniku_theme', th.id)
+                          document.documentElement.setAttribute('data-theme', th.id)
+                          setCurrentTheme(th.id)
+                        }}
+                        style={{
+                          flex: 1, padding: '14px 12px', borderRadius: 12, cursor: 'pointer',
+                          border: isActive ? '2px solid var(--accent)' : '1.5px solid var(--border)',
+                          background: isActive ? 'rgba(56,189,248,0.06)' : 'var(--bg-secondary)',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {th.colors.map((c, i) => (
+                            <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: c, border: '2px solid rgba(255,255,255,0.1)' }} />
+                          ))}
+                        </div>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{th.name}</div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{th.desc}</div>
+                      </button>
+                    )
+                  })}
+                </div>
 
                 <div className="pf-divider" />
 

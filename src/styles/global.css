@@ -102,7 +102,7 @@
 }
 
 /* ─── Oceano ─────────────────────────────────────────────── */
-[data-theme="vibrante"] {
+[data-theme="oceano"] {
   --bg-primary: #0F172A;
   --bg-secondary: #1E293B;
   --bg-card: #1E293B;
@@ -124,6 +124,35 @@
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
 }
 
+/* ─── Conniku (marca — profundo) ────────────────────────── */
+[data-theme="conniku"] {
+  --bg-primary: #070D18;
+  --bg-secondary: #0D1526;
+  --bg-card: #111D33;
+  --bg-hover: #1A2A45;
+  --bg-tertiary: #0F1A2E;
+  --text-primary: #E8EEFF;
+  --text-secondary: #8FA3C0;
+  --text-muted: #4E6585;
+  --accent: #2D62C8;
+  --accent-blue: #2D62C8;
+  --accent-green: #22C55E;
+  --accent-orange: #F59E0B;
+  --accent-red: #EF4444;
+  --accent-purple: #818CF8;
+  --accent-cyan: #06B6D4;
+  --border: #1C2E4A;
+  --border-subtle: #142239;
+  --shadow: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+[data-theme="conniku"] .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
+[data-theme="conniku"] .sidebar .nav-item { color: var(--text-secondary); }
+[data-theme="conniku"] .sidebar .nav-item.active { color: #fff; background: rgba(45,98,200,0.2); }
+[data-theme="conniku"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
+[data-theme="conniku"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
+
 /* ─── Per-theme sidebar overrides ────────────────────────── */
 :root .sidebar,
 [data-theme="nocturno"] .sidebar { background: var(--bg-secondary); border-right-color: var(--border); }
@@ -144,12 +173,12 @@
 :root .auth-error,
 [data-theme="nocturno"] .auth-error { color: var(--accent-red); background: rgba(248,81,73,0.1); }
 
-[data-theme="vibrante"] .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
-[data-theme="vibrante"] .sidebar .nav-item { color: var(--text-secondary); }
-[data-theme="vibrante"] .sidebar .nav-item.active { color: #fff; background: rgba(56,189,248,0.15); }
-[data-theme="vibrante"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
-[data-theme="vibrante"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
-[data-theme="vibrante"] .auth-error { color: var(--accent-red); background: rgba(251,113,133,0.1); }
+[data-theme="oceano"] .sidebar { background: var(--bg-secondary); color: var(--text-primary); }
+[data-theme="oceano"] .sidebar .nav-item { color: var(--text-secondary); }
+[data-theme="oceano"] .sidebar .nav-item.active { color: #fff; background: rgba(56,189,248,0.15); }
+[data-theme="oceano"] .sidebar .sidebar-section-toggle { color: var(--text-muted); }
+[data-theme="oceano"] .sidebar .user-profile { border-top-color: var(--border); color: var(--text-primary); }
+[data-theme="oceano"] .auth-error { color: var(--accent-red); background: rgba(251,113,133,0.1); }
 
 [data-theme="calido"] .sidebar { background: var(--bg-secondary); border-right-color: var(--border); }
 [data-theme="calido"] .sidebar .nav-item { color: var(--text-secondary); }
@@ -1369,7 +1398,7 @@ h1, h2, h3,
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10001;
   animation: modal-fade-in 0.15s ease;
 }
 
@@ -2925,7 +2954,7 @@ h1, h2, h3,
 }
 
 /* Cover modal overlay — bottom sheet on mobile */
-.cover-modal-overlay { z-index: 10000; }
+.cover-modal-overlay { z-index: 10001; }
 
 @media (max-width: 480px) {
   .cover-modal-overlay { align-items: flex-end; padding: 0; }
@@ -3466,15 +3495,20 @@ body.touch-device select {
   .msg-chat { width: 100%; }
 
   /* Profile */
-  .fb-cover-photo { height: 160px !important; }
-  .fb-profile-photo { width: 90px !important; height: 90px !important; }
-  .fb-profile-initials { font-size: 24px !important; }
+  .fb-cover-photo { height: 140px !important; }
+  .fb-profile-photo { width: 80px !important; height: 80px !important; margin-top: -40px !important; }
+  .fb-profile-initials { font-size: 22px !important; }
   .fb-wall-layout { grid-template-columns: 1fr !important; }
   .fb-wall-sidebar { display: none; }
   .fb-profile-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0 8px; }
-  .fb-tab { flex: none; padding: 10px 14px; font-size: 12.5px; }
+  .fb-tab { flex: none; padding: 10px 12px; font-size: 12px; }
   .fb-profile-name-section { flex-direction: column; align-items: flex-start !important; gap: 4px; }
   .fb-profile-actions { flex-wrap: wrap; }
+  /* Compact identity section on mobile */
+  .fb-profile-identity-section { padding: 0 16px 16px !important; }
+  .fb-profile-identity-name { font-size: 20px !important; }
+  .fb-profile-identifiers { display: none !important; }
+  .fb-profile-identity-row { gap: 8px; }
 
   /* Grids */
   .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }

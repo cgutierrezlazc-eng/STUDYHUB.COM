@@ -51,25 +51,61 @@ body.native-platform .app-layout {
 
 /* ─── Bottom Navigation Bar ─────────────────────────────────── */
 
-.mobile-bottom-nav {
+.mobile-bottom-nav-wrapper {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: calc(var(--bottom-nav-height) + var(--safe-area-bottom));
-  padding-bottom: var(--safe-area-bottom);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease-out;
+}
+
+body.keyboard-open .mobile-bottom-nav-wrapper {
+  display: none;
+}
+
+.mobile-bottom-nav {
+  height: var(--bottom-nav-height);
   background: var(--bg-secondary);
   border-top: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  z-index: 9999;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
-body.keyboard-open .mobile-bottom-nav {
-  display: none;
+/* Toggle handle — always visible, used to show/hide the nav */
+.mobile-nav-handle {
+  height: 14px;
+  padding-bottom: var(--safe-area-bottom);
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-handle-pill {
+  width: 36px;
+  height: 3px;
+  background: var(--text-secondary);
+  border-radius: 2px;
+  opacity: 0.3;
+  transition: opacity 0.15s;
+}
+
+.mobile-nav-handle.nav-closed .mobile-nav-handle-pill {
+  opacity: 0.6;
+}
+
+.mobile-nav-handle:active .mobile-nav-handle-pill {
+  opacity: 0.8;
 }
 
 .mobile-nav-item {

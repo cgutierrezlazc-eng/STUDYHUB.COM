@@ -254,7 +254,7 @@ export default function SupportChat() {
   // ── Floating button ──────────────────────────────────────────────────────
   if (!open) {
     return (
-      <div style={{ position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 9990 }}>
+      <div style={{ position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 10000 }}>
         <button
           onClick={() => setOpen(true)}
           aria-label="Abrir soporte"
@@ -337,7 +337,7 @@ export default function SupportChat() {
   if (isAdmin && !adminChat) {
     return (
       <div style={{
-        position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 9990,
+        position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 10000,
         width: 380, maxWidth: 'calc(100vw - 32px)',
         height: 520, maxHeight: 'calc(100vh - 100px)',
         borderRadius: 16, overflow: 'hidden',
@@ -450,7 +450,7 @@ export default function SupportChat() {
   // ── Chat view (admin in chat mode, or user always) ────────────────────────
   return (
     <div style={{
-      position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 9990,
+      position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 10000,
       width: 380, maxWidth: 'calc(100vw - 32px)',
       height: 520, maxHeight: 'calc(100vh - 100px)',
       borderRadius: 16, overflow: 'hidden',

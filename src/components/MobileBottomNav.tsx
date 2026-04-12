@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 interface Props {
   currentPath: string
@@ -29,44 +29,11 @@ const moreMenuItems = [
 
 export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
   const [showMore, setShowMore] = useState(false)
-  const [visible, setVisible] = useState(true)
-  const lastScrollY = useRef(0)
-  const ticking = useRef(false)
-
-  // Auto-hide on scroll down, show on scroll up (like Instagram)
-  useEffect(() => {
-    const handleScroll = () => {
-      if (ticking.current) return
-      ticking.current = true
-      requestAnimationFrame(() => {
-        const currentY = window.scrollY
-        const delta = currentY - lastScrollY.current
-
-        if (delta > 8 && currentY > 60) {
-          // Scrolling down — hide
-          setVisible(false)
-          setShowMore(false)
-        } else if (delta < -5) {
-          // Scrolling up — show
-          setVisible(true)
-        }
-
-        // Always show at top of page
-        if (currentY < 30) setVisible(true)
-
-        lastScrollY.current = currentY
-        ticking.current = false
-      })
-    }
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const [navOpen, setNavOpen] = useState(true)
 
   // Close bottom sheet on route change
   useEffect(() => {
     setShowMore(false)
-    setVisible(true) // Show nav on route change
   }, [currentPath])
 
   // Close on escape key
@@ -113,31 +80,42 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Bottom navigation bar — auto-hide on scroll */}
-      <nav
-        className="mobile-bottom-nav"
+      {/* Nav wrapper — slides down when hidden, exposing only the toggle handle */}
+      <div
+        className="mobile-bottom-nav-wrapper"
         style={{
-          transform: visible ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.25s ease-out',
+          transform: navOpen ? 'translateY(0)' : 'translateY(var(--bottom-nav-height))',
         }}
       >
-        {items.map(item => {
-          const isActive = currentPath.startsWith(item.path)
-          return (
-            <button key={item.path} className={`mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => { setShowMore(false); onNavigate(item.path) }}>
-              <span className="mobile-nav-icon"><NavIcon type={item.icon} /></span>
-              <span className="mobile-nav-label">{item.label}</span>
-            </button>
-          )
-        })}
-        <button
-          className={`mobile-nav-item ${showMore ? 'active' : ''}`}
-          onClick={() => setShowMore(!showMore)}
+        <nav className="mobile-bottom-nav">
+          {items.map(item => {
+            const isActive = currentPath.startsWith(item.path)
+            return (
+              <button key={item.path} className={`mobile-nav-item ${isActive ? 'active' : ''}`} onClick={() => { setShowMore(false); onNavigate(item.path) }}>
+                <span className="mobile-nav-icon"><NavIcon type={item.icon} /></span>
+                <span className="mobile-nav-label">{item.label}</span>
+              </button>
+            )
+          })}
+          <button
+            className={`mobile-nav-item ${showMore ? 'active' : ''}`}
+            onClick={() => setShowMore(!showMore)}
+          >
+            <span className="mobile-nav-icon"><NavIcon type="menu" /></span>
+            <span className="mobile-nav-label">Mas</span>
+          </button>
+        </nav>
+
+        {/* Toggle handle — always visible, click to show/hide nav */}
+        <div
+          className={`mobile-nav-handle${navOpen ? '' : ' nav-closed'}`}
+          onClick={() => { setNavOpen(v => !v); setShowMore(false) }}
+          role="button"
+          aria-label={navOpen ? 'Ocultar navegación' : 'Mostrar navegación'}
         >
-          <span className="mobile-nav-icon"><NavIcon type="menu" /></span>
-          <span className="mobile-nav-label">Mas</span>
-        </button>
-      </nav>
+          <div className="mobile-nav-handle-pill" />
+        </div>
+      </div>
     </>
   )
 }

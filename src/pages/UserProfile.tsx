@@ -635,7 +635,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
 
         {/* Identity section inside card */}
-        <div style={{ padding: '0 32px 24px', position: 'relative' }}>
+        <div className="fb-profile-identity-section" style={{ padding: '0 32px 24px', position: 'relative' }}>
           {/* Avatar overlapping cover */}
           <div className="fb-profile-photo" onClick={() => isOwn && profilePhotoRef.current?.click()} style={{ marginTop: -70, border: '5px solid var(--bg-card)', width: 140, height: 140 }}>
             {profile.avatar ? (
@@ -656,9 +656,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
+          <div className="fb-profile-identity-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
             <div>
-              <h1 style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.02em', margin: 0 }}>
+              <h1 className="fb-profile-identity-name" style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.02em', margin: 0 }}>
                 {profile.firstName} {profile.lastName}
               </h1>
               <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
@@ -779,7 +779,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             </div>
 
             {/* Right side — identifiers únicos, sin repetir carrera/universidad */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, paddingTop: 4, flexShrink: 0 }}>
+            <div className="fb-profile-identifiers" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, paddingTop: 4, flexShrink: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--accent)' }}>
                 @{profile.username}
                 <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 2 }}>

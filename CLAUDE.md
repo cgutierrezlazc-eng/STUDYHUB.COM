@@ -74,10 +74,13 @@ Before EVERY action, Claude MUST complete these checks silently. If any check fa
 - Si la instruccion es vaga: preguntar hasta que sea concreta
 - Un mensaje = un objetivo claro
 
-### Contexto
+### Contexto y Checkpoints
 - Usar /compact despues de completar cada tarea confirmada
 - No tocar nada que no haya sido explicitamente solicitado
 - Lo que funciona NO SE TOCA
+- **CHECKPOINT:** Al inicio de cada sesion, leer `memory/session_checkpoint.md` y `memory/project_pending_tasks.md` para retomar contexto
+- **CHECKPOINT:** Antes de cada /compact o cuando el contexto este lleno, actualizar `memory/session_checkpoint.md` con estado actual
+- **CHECKPOINT:** Configurar CronCreate cada 20 minutos para auto-guardar checkpoint
 
 ### Errores
 - Cada error se registra abajo con fecha y prevencion
@@ -86,6 +89,9 @@ Before EVERY action, Claude MUST complete these checks silently. If any check fa
 ## Error Log
 <!-- YYYY-MM-DD | Que paso | Como evitarlo -->
 - 2026-04-09 | Inventé un RUT personal de ejemplo (12.345.678-9) en una respuesta de texto | NUNCA inventar datos — ni en ejemplos, ni en comentarios, ni en código. Si un dato es desconocido, dejarlo vacío y pedir el dato real a Cristian.
+- 2026-04-12 | Subí ícono incorrecto a Play Console sin verificar visualmente | SIEMPRE leer y mostrar al usuario cualquier asset antes de subirlo
+- 2026-04-12 | Subí feature graphic de baja calidad sin preguntar | NO tomar decisiones de diseño sin aprobación explícita
+- 2026-04-12 | Busqué logos antiguos cuando el usuario ya había adjuntado el correcto | USAR SOLO lo que el usuario proporciona, no buscar alternativas
 
 ## General Rules
 - Keep commits atomic and descriptive

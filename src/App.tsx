@@ -194,9 +194,11 @@ export default function App() {
     }
   }, [user])
 
-  // Force Océano theme for all users
+  // Apply theme — default Océano, can be Conniku
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', 'oceano')
+    const saved = localStorage.getItem('conniku_theme')
+    const theme = saved === 'conniku' ? 'conniku' : 'oceano'
+    document.documentElement.setAttribute('data-theme', theme)
   }, [])
 
   if (isLoading) {

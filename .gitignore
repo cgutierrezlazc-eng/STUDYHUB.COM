@@ -79,3 +79,4 @@ seed_*.js
 # Mac files
 Thumbs.db
 .DS_Store
+.vercel
