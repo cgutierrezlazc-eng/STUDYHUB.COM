@@ -346,7 +346,7 @@ export default function App() {
           <Suspense fallback={<PageLoader />}>
             <SEORouter />
             <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/" element={<Navigate to="/my-profile" replace />} />
             <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} onNewProject={() => setShowNewProject(true)} />} />

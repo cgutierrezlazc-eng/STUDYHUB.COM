@@ -105,12 +105,12 @@
 [data-theme="oceano"] {
   --bg-primary: #0F172A;
   --bg-secondary: #1E293B;
-  --bg-card: #1E293B;
-  --bg-hover: #334155;
-  --bg-tertiary: #253347;
-  --text-primary: #F1F5F9;
-  --text-secondary: #94A3B8;
-  --text-muted: #64748B;
+  --bg-card: #243B54;
+  --bg-hover: #3C5270;
+  --bg-tertiary: #2B4058;
+  --text-primary: #C0CEDF;
+  --text-secondary: #8499B0;
+  --text-muted: #56687A;
   --accent: #38BDF8;
   --accent-blue: #38BDF8;
   --accent-green: #34D399;
@@ -119,7 +119,7 @@
   --accent-purple: #A78BFA;
   --accent-cyan: #22D3EE;
   --border: #334155;
-  --border-subtle: #293548;
+  --border-subtle: #2A3D54;
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
 }
@@ -754,6 +754,7 @@ h1, h2, h3,
   display: flex;
   width: 100%;
   height: calc(100vh - 56px);
+  gap: 8px;
 }
 
 /* ─── Right Panel ───────────────────────────────────────── */
@@ -2865,10 +2866,71 @@ h1, h2, h3,
 
 .fb-cover-section { position: relative; margin-bottom: 16px; }
 .fb-cover-photo {
-  width: 100%; height: 220px; border-radius: var(--radius) var(--radius) 0 0;
+  width: 100%; height: 150px; border-radius: var(--radius) var(--radius) 0 0;
   background-size: cover; background-position: center;
   background-color: var(--bg-hover); position: relative;
+  overflow: visible;
+  z-index: 1;
+}
+
+/* Seam diffuser — vertical gradient overlay behind the corner avatar */
+.fb-cover-photo::after {
+  content: '';
+  position: absolute;
+  bottom: -82px;
+  left: 0;
+  width: 38%;
+  height: 108px;
+  background: linear-gradient(to bottom,
+    rgba(36,59,84,0)    0%,
+    rgba(36,59,84,0.18) 28%,
+    rgba(36,59,84,0.65) 58%,
+    rgba(36,59,84,1)   100%
+  );
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ─── Corner avatar (foto emergente desde la esquina) ─────── */
+.fb-profile-photo-corner {
+  position: absolute;
+  left: 0;
+  bottom: -70px;
+  width: 24%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 0 12px 12px 0;
+  z-index: 4;
   overflow: hidden;
+  cursor: pointer;
+  background: var(--bg-card);
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.08) 12%,
+    rgba(0,0,0,0.38) 26%,
+    rgba(0,0,0,0.82) 42%,
+    black 56%,
+    black 100%
+  );
+  mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.08) 12%,
+    rgba(0,0,0,0.38) 26%,
+    rgba(0,0,0,0.82) 42%,
+    black 56%,
+    black 100%
+  );
+}
+.fb-profile-photo-corner img {
+  width: 100%; height: 100%; object-fit: cover;
+  object-position: center 15%; display: block;
+}
+.fb-profile-photo-corner .fb-profile-initials {
+  border-radius: 0 12px 12px 0;
+  font-size: 32px;
+}
+.fb-profile-photo-corner .fb-photo-overlay {
+  border-radius: 0 12px 12px 0;
 }
 
 .fb-cover-edit-btn {
@@ -3005,7 +3067,7 @@ h1, h2, h3,
 }
 .fb-tab {
   padding: 12px 20px; border: none; background: none; cursor: pointer;
-  color: var(--text-muted); font-weight: 600; font-size: 13.5px;
+  color: var(--text-secondary); font-weight: 600; font-size: 13.5px;
   border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all var(--transition-fast);
   font-family: var(--font-sans); flex: 1; text-align: center; white-space: nowrap;
 }

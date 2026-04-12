@@ -24,6 +24,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
   const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias' | 'showcase'>('wall')
+  const [showMoreTabs, setShowMoreTabs] = useState(false)
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [cvUploading, setCvUploading] = useState(false)
@@ -625,19 +626,10 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         {/* Cover */}
         <div className="fb-cover-photo" style={{
           ...getCoverStyle(profile.coverPhoto || '', profile.coverType || 'template', profile.coverPositionY ?? 50),
-          height: 200,
+          height: 150,
         }}>
-          {isOwn && (
-            <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
-              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
-            </button>
-          )}
-        </div>
-
-        {/* Identity section inside card */}
-        <div className="fb-profile-identity-section" style={{ padding: '0 32px 24px', position: 'relative' }}>
-          {/* Avatar overlapping cover */}
-          <div className="fb-profile-photo" onClick={() => isOwn && profilePhotoRef.current?.click()} style={{ marginTop: -70, border: '5px solid var(--bg-card)', width: 140, height: 140 }}>
+          {/* Corner avatar — emerges from cover boundary */}
+          <div className="fb-profile-photo-corner" onClick={() => isOwn && profilePhotoRef.current?.click()}>
             {profile.avatar ? (
               <img src={profile.avatar} alt="" />
             ) : (
@@ -650,31 +642,54 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               </>
             )}
           </div>
-          {isOwn && !profile.avatar && (
-            <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-              {t('userprofile.uploadPhoto')}
-            </div>
+          {isOwn && (
+            <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
+              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
+            </button>
           )}
+        </div>
 
-          <div className="fb-profile-identity-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 12 }}>
+        {/* Identity section — content offset right of corner avatar */}
+        <div className="fb-profile-identity-section" style={{ padding: '18px 28px 24px calc(26% + 12px)', position: 'relative' }}>
+          <div className="fb-profile-identity-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: 0 }}>
             <div>
-              <h1 className="fb-profile-identity-name" style={{ fontSize: 26, fontWeight: 700, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.02em', margin: 0 }}>
-                {profile.firstName} {profile.lastName}
-              </h1>
+              {/* Name + role badge */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <h1 className="fb-profile-identity-name" style={{ fontSize: 28, fontWeight: 800, fontFamily: "'Sora', var(--font-sans)", letterSpacing: '-0.03em', margin: 0, lineHeight: 1.15 }}>
+                  {profile.firstName} {profile.lastName}
+                </h1>
+                {profile.role === 'owner' && (
+                  <span style={{ background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.3)', color: 'var(--accent)', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, textTransform: 'uppercase', letterSpacing: '0.06em' }}>CEO</span>
+                )}
+              </div>
               <div style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
                 {profile.career || t('userprofile.student')}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 <span>{profile.university || t('userprofile.noUni')}</span>
                 {profile.semester && (
                   <>
-                    <span style={{ opacity: 0.4 }}>·</span>
-                    <span>{t('userprofile.semester')} {profile.semester}</span>
+                    <span style={{ opacity: 0.35 }}>·</span>
+                    <span>Semestre {profile.semester}</span>
                   </>
                 )}
               </div>
-              <div style={{ fontSize: 13, color: 'var(--accent-blue)', marginTop: 6, cursor: 'pointer', fontWeight: 500 }}>
-                {profile.friendCount > 0 ? `${profile.friendCount} ${t('userprofile.connections')}` : `0 ${t('userprofile.connections')}`}
+              {/* Stats strip */}
+              <div style={{ display: 'flex', gap: 14, marginTop: 10, alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{(profile.friendCount || 0).toLocaleString()}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>conexiones</span>
+                </div>
+                <div style={{ width: 1, height: 26, background: 'var(--border)' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>{posts.length}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>posts</span>
+                </div>
+                <div style={{ width: 1, height: 26, background: 'var(--border)' }} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{((profile as any).xp || 0).toLocaleString()}</span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>XP</span>
+                </div>
               </div>
 
               {/* Action buttons */}
@@ -720,8 +735,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               )}
 
               {isOwn && (
-                <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24 }} onClick={() => onNavigate('/friends')}>{t('userprofile.findFriends')}</button>
+                <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+                  <button className="btn btn-primary btn-sm" style={{ borderRadius: 24, display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => onNavigate('/profile')}>
+                    {Pencil({ size: 13 })} Editar perfil
+                  </button>
+                  <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24, display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => onNavigate('/friends')}>
+                    {Users({ size: 13 })} Encontrar amigos
+                  </button>
                 </div>
               )}
 
@@ -801,16 +821,13 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Profile Tabs — outside header card, LinkedIn style */}
-      <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)' }}>
+      {/* Profile Tabs — 4 visible + Más dropdown */}
+      <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', position: 'relative' }}>
         <button className={`fb-tab ${activeTab === 'wall' ? 'active' : ''}`} onClick={() => setActiveTab('wall')}>
           {t('userprofile.tabPosts')}
         </button>
         <button className={`fb-tab ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
           {t('userprofile.tabInfo')}
-        </button>
-        <button className={`fb-tab ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>
-          {t('userprofile.tabPhotos')}
         </button>
         <button className={`fb-tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends() }}>
           {t('userprofile.tabFriends')}
@@ -818,36 +835,41 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
           {t('userprofile.tabCourses')}
         </button>
-        <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV() }}>
-          {t('userprofile.tabCV')}
-        </button>
-        {isOwn && tutorProfile && (
+        {/* Más dropdown */}
+        <div style={{ position: 'relative', marginLeft: 'auto' }}>
           <button
-            className={`fb-tab ${activeTab === 'servicios' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('servicios'); loadTutorData() }}
-            style={activeTab === 'servicios' ? { borderColor: '#d97706', color: '#d97706' } : {}}
+            className={`fb-tab ${['photos','cv','servicios','tutorias','showcase'].includes(activeTab) ? 'active' : ''}`}
+            onClick={() => setShowMoreTabs(v => !v)}
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
-            {t('userprofile.tabServices')}
+            Más {showMoreTabs ? '▲' : '▼'}
           </button>
-        )}
-        {isOwn && (
-          <button
-            className={`fb-tab ${activeTab === 'tutorias' ? 'active' : ''}`}
-            onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData() }}
-            style={activeTab === 'tutorias' ? { borderColor: '#7c3aed', color: '#7c3aed' } : {}}
-          >
-            {GraduationCap({ size: 14 })} {t('userprofile.tabTutoring')}
-          </button>
-        )}
-        {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
-          <button
-            className={`fb-tab ${activeTab === 'showcase' ? 'active' : ''}`}
-            onClick={() => setActiveTab('showcase')}
-            style={activeTab === 'showcase' ? { borderColor: '#f59e0b', color: '#d97706', fontWeight: 700 } : {}}
-          >
-            ★ Showcase
-          </button>
-        )}
+          {showMoreTabs && (
+            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, minWidth: 160, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', overflow: 'hidden' }} onClick={() => setShowMoreTabs(false)}>
+              <button className={`fb-tab ${activeTab === 'photos' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => setActiveTab('photos')}>
+                {t('userprofile.tabPhotos')}
+              </button>
+              <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('cv'); loadCV() }}>
+                {t('userprofile.tabCV')}
+              </button>
+              {isOwn && tutorProfile && (
+                <button className={`fb-tab ${activeTab === 'servicios' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('servicios'); loadTutorData() }}>
+                  {t('userprofile.tabServices')}
+                </button>
+              )}
+              {isOwn && (
+                <button className={`fb-tab ${activeTab === 'tutorias' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData() }}>
+                  {GraduationCap({ size: 13 })} {t('userprofile.tabTutoring')}
+                </button>
+              )}
+              {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
+                <button className={`fb-tab ${activeTab === 'showcase' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13, color: '#d97706' }} onClick={() => setActiveTab('showcase')}>
+                  ★ Showcase
+                </button>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Tab Content */}
