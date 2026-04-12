@@ -56,7 +56,7 @@ from push_routes import router as push_router
 from certificate_routes import router as certificate_router
 from conference_routes import router as conference_router
 from ws_routes import router as ws_router
-from hr_routes import router as hr_router
+from hr_routes import router as hr_router, daily_refresh_indicators
 from tutor_routes import router as tutor_router
 from ai_workflow_routes import router as ai_workflow_router
 from moderation_queue_routes import router as moderation_queue_router
@@ -186,6 +186,33 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Run migrations on startup
 migrate()
+
+# ─── APScheduler: actualización diaria de indicadores laborales (08:00 Chile) ─
+try:
+    import asyncio
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from apscheduler.triggers.cron import CronTrigger
+    import pytz
+
+    _scheduler = AsyncIOScheduler(timezone=pytz.utc)
+
+    @app.on_event("startup")
+    async def start_scheduler():
+        # Chile standard time = UTC-4 (no daylight saving since 2015)
+        _scheduler.add_job(
+            daily_refresh_indicators,
+            CronTrigger(hour=12, minute=0, timezone=pytz.utc),  # 08:00 Chile = 12:00 UTC
+            id="daily_indicators",
+            replace_existing=True,
+        )
+        _scheduler.start()
+        logging.getLogger(__name__).info("APScheduler started — daily HR indicators at 08:00 Chile (12:00 UTC)")
+
+    @app.on_event("shutdown")
+    async def stop_scheduler():
+        _scheduler.shutdown(wait=False)
+except ImportError:
+    logging.getLogger(__name__).warning("apscheduler not installed — daily indicator refresh disabled")
 
 # Include routers
 app.include_router(auth_router)

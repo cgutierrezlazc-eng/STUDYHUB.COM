@@ -5,9 +5,12 @@ All monetary values are in CLP unless otherwise noted.
 """
 import hashlib
 import json
+import logging
 import os
 import time
 import httpx
+
+logger = logging.getLogger(__name__)
 from datetime import datetime, date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from typing import Optional, List
@@ -886,6 +889,12 @@ def _validate_rut(rut: str) -> bool:
 # ═════════════════════════════════════════════════════════════════
 _indicators_cache = {"data": None, "timestamp": 0}
 _CACHE_TTL = 3600  # Cache por 1 hora (3600 segundos)
+_daily_update_log = {
+    "last_daily_run": None,     # ISO datetime of last scheduled 8am run
+    "last_daily_run_date": None, # Date string YYYY-MM-DD
+    "imm_prev": None,           # IMM value before last update
+    "imm_changed": False,       # True if IMM changed in the last daily run
+}
 
 MINDICADOR_URL = "https://mindicador.cl/api"
 
@@ -990,6 +999,7 @@ async def _fetch_indicators():
         return data
 
     except Exception as e:
+        logger.warning(f"mindicador.cl fetch failed: {e}")
         # If fetch fails, return cached data or defaults
         if _indicators_cache["data"]:
             return _indicators_cache["data"]
@@ -1007,6 +1017,24 @@ async def _fetch_indicators():
         }
 
 
+async def daily_refresh_indicators():
+    """Called by APScheduler every day at 08:00 Chile time."""
+    global _daily_update_log
+    try:
+        prev_imm = (_indicators_cache.get("data") or {}).get("imm", {}).get("value")
+        _indicators_cache["timestamp"] = 0  # force cache bypass
+        data = await _fetch_indicators()
+        new_imm = data.get("imm", {}).get("value")
+        today = date.today().isoformat()
+        _daily_update_log["last_daily_run"] = datetime.utcnow().isoformat()
+        _daily_update_log["last_daily_run_date"] = today
+        _daily_update_log["imm_prev"] = prev_imm
+        _daily_update_log["imm_changed"] = (prev_imm is not None and prev_imm != new_imm)
+        logger.info(f"Daily HR indicators refresh: IMM={new_imm}, changed={_daily_update_log['imm_changed']}")
+    except Exception as e:
+        logger.error(f"Daily indicators refresh failed: {e}")
+
+
 @router.get("/indicators")
 async def get_chile_indicators(user: User = Depends(get_current_user)):
     """
@@ -1015,7 +1043,17 @@ async def get_chile_indicators(user: User = Depends(get_current_user)):
     Used by payroll calculator, contract generator, and HR dashboard.
     """
     _require_hr_access(user)
-    return await _fetch_indicators()
+    data = await _fetch_indicators()
+    today = date.today().isoformat()
+    return {
+        **data,
+        "daily_update": {
+            "last_run": _daily_update_log["last_daily_run"],
+            "updated_today": _daily_update_log["last_daily_run_date"] == today,
+            "imm_changed": _daily_update_log["imm_changed"],
+            "imm_prev": _daily_update_log["imm_prev"],
+        }
+    }
 
 
 @router.get("/indicators/public")

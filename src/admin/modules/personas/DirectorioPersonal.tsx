@@ -1185,6 +1185,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
     if (form.positionKey === 'otro' && !form.positionOther.trim()) e.positionOther = 'Especifica el cargo'
     if (!form.hireDate) e.hireDate = 'Obligatorio'
     if (Number(form.grossSalary) < IMM) e.grossSalary = `Mínimo: ${fmtMoney(IMM)} (Art. 44 CT)`
+    if (form.healthSystem === 'isapre' && !form.isapreProvider) e.isapreProvider = 'Selecciona una ISAPRE'
     return e
   }
 
@@ -1219,7 +1220,12 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
   const handleSave = async () => {
     setSaving(true)
     try {
-      const payload = { ...form, position: resolvedPosition }
+      const isapreLabel = ISAPRE_LIST.find(i => i.value === form.isapreProvider)?.label || form.isapreProvider || ''
+      const payload = {
+        ...form,
+        position: resolvedPosition,
+        isapreName: form.healthSystem === 'isapre' ? isapreLabel : '',
+      }
       const result = await api.createEmployee(payload)
       const newEmpId: string = result?.employee?.id
       setCreatedEmpId(newEmpId)
@@ -1405,6 +1411,17 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 </Field>
                 <Field label="Colación"><Input type="number" value={form.colacion} onChange={v => setForm((p:any) => ({...p, colacion: Number(v)}))} /></Field>
                 <Field label="Movilización"><Input type="number" value={form.movilizacion} onChange={v => setForm((p:any) => ({...p, movilizacion: Number(v)}))} /></Field>
+                {/* ── Compliance box ── */}
+                <div style={{ gridColumn: 'span 2', background: Number(form.grossSalary) < IMM ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.07)', border: `1px solid ${Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e'}`, borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.8 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 4, color: Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e' }}>
+                    {Number(form.grossSalary) < IMM ? `⚠ Sueldo base BAJO el mínimo legal (Art. 44 CT)` : `✓ Sueldo base sobre el mínimo legal`}
+                  </div>
+                  <div><span style={{ color: 'var(--text-muted)' }}>Sueldo base (imponible):</span> <strong>{fmtMoney(Number(form.grossSalary))}</strong> — mínimo legal: <strong>{fmtMoney(IMM)}</strong></div>
+                  {(Number(form.colacion) > 0 || Number(form.movilizacion) > 0) && (
+                    <div><span style={{ color: 'var(--text-muted)' }}>Bonos no imponibles (colación + movilización):</span> <strong>+{fmtMoney(Number(form.colacion) + Number(form.movilizacion))}</strong> <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>(NO cuentan para el mínimo legal — Art. 44 CT)</span></div>
+                  )}
+                  <div><span style={{ color: 'var(--text-muted)' }}>Total paquete remuneracional:</span> <strong>{fmtMoney(Number(form.grossSalary) + Number(form.colacion) + Number(form.movilizacion))}</strong></div>
+                </div>
                 <Field label="AFP">
                   <Select value={form.afp} onChange={F('afp')} options={AFP_LIST} />
                   {(() => {
@@ -1435,6 +1452,7 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                         onChange={F('isapreProvider')}
                         options={[{ value: '', label: '— Seleccionar ISAPRE —' }, ...ISAPRE_LIST]}
                       />
+                      <ErrMsg msg={errors.isapreProvider} />
                       <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
                         <span style={{ color: 'var(--text-secondary)' }}>Mínimo legal: {FONASA_RATE}% → </span>
                         <strong style={{ color: 'var(--accent)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * FONASA_RATE / 100))}</strong>
@@ -1824,7 +1842,7 @@ function TabRemuneracion({ emp, onChange, saving, onSave }: { emp: Employee; onC
         <Field label="Sistema de Salud"><Select value={emp.healthSystem} onChange={v => onChange('healthSystem', v)} options={HEALTH_OPTIONS} /></Field>
         {emp.healthSystem === 'isapre' && (
           <>
-            <Field label="Nombre ISAPRE"><Input value={emp.isapreName || ''} onChange={v => onChange('isapreName', v)} /></Field>
+            <Field label="ISAPRE"><Select value={ISAPRE_LIST.find(i => i.label === emp.isapreName)?.value || ''} onChange={v => onChange('isapreName', ISAPRE_LIST.find(i => i.value === v)?.label || v)} options={[{ value: '', label: '— Seleccionar —' }, ...ISAPRE_LIST]} /></Field>
             <Field label="Cotización ISAPRE (UF)"><Input type="number" value={emp.isapreUf || 0} onChange={v => onChange('isapreUf', Number(v))} /></Field>
           </>
         )}
@@ -1935,6 +1953,229 @@ function SaveBtn({ saving, onSave }: { saving: boolean; onSave: () => void }) {
   )
 }
 
+// ═══════════════════════════════════════════════════════════════
+// ANEXO DE CONTRATO
+// ═══════════════════════════════════════════════════════════════
+
+interface AnexoChange {
+  clause: string
+  legalRef: string
+  oldValue: string
+  newValue: string
+}
+
+const ANEXO_TIPOS = [
+  { key: 'salary',        label: 'Sueldo Bruto',              legalRef: 'Art. 11 CT' },
+  { key: 'benefits',      label: 'Colación / Movilización',   legalRef: 'Art. 41 CT' },
+  { key: 'health',        label: 'Sistema de Salud',          legalRef: 'DFL 1/2005' },
+  { key: 'position',      label: 'Cargo / Funciones',         legalRef: 'Art. 12 CT' },
+  { key: 'schedule',      label: 'Jornada / Horario',         legalRef: 'Art. 22 CT' },
+  { key: 'contract_type', label: 'Tipo de Contrato',          legalRef: 'Art. 9 CT'  },
+  { key: 'other',         label: 'Otro acuerdo',              legalRef: 'Art. 11 CT' },
+]
+
+function buildAnexoHTML(emp: Employee, changes: AnexoChange[], notes: string): string {
+  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const hireDisplay = emp.hireDate ? new Date(emp.hireDate + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) : 'la fecha de inicio'
+  const rows = changes.map(c => `
+    <tr>
+      <td><strong>${c.clause}</strong><br><span style="font-size:10px;color:#888">${c.legalRef}</span></td>
+      <td style="color:#c00">${c.oldValue}</td>
+      <td style="color:#006600"><strong>${c.newValue}</strong></td>
+    </tr>`).join('')
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+    body{font-family:Georgia,serif;font-size:12px;color:#1a1a1a;max-width:780px;margin:0 auto;padding:32px}
+    h1{text-align:center;font-size:15px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+    .sub{text-align:center;font-size:11px;color:#666;margin-bottom:24px}
+    table{width:100%;border-collapse:collapse;margin:16px 0}
+    th{background:#f4f4f4;padding:8px 10px;text-align:left;border:1px solid #ccc;font-size:11px}
+    td{padding:8px 10px;border:1px solid #ccc;font-size:11px;vertical-align:top}
+    .clause{margin:14px 0;line-height:1.7}
+    .sign-row{display:flex;justify-content:space-between;margin-top:56px}
+    .sign-box{width:44%;border-top:1px solid #333;padding-top:8px;text-align:center;font-size:11px}
+    strong{font-weight:700}
+  </style></head><body>
+  <h1>Anexo de Contrato Individual de Trabajo</h1>
+  <div class="sub">Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</div>
+  <div class="clause">En Antofagasta, a <strong>${today}</strong>, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7, representada por su Representante Legal (en adelante "el Empleador"), y <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut} (en adelante "el Trabajador"), acuerdan suscribir el presente Anexo al Contrato Individual de Trabajo celebrado con fecha <strong>${hireDisplay}</strong>:</div>
+  <div class="clause"><strong>PRIMERO — OBJETO DEL ANEXO</strong><br>Por medio del presente instrumento, las partes acuerdan modificar las siguientes cláusulas del contrato original, en los términos indicados:</div>
+  <table><thead><tr>
+    <th style="width:30%">Cláusula / Materia</th>
+    <th style="width:35%">Condición Anterior</th>
+    <th style="width:35%">Nueva Condición</th>
+  </tr></thead><tbody>${rows}</tbody></table>
+  <div class="clause"><strong>SEGUNDO — CONDICIONES VIGENTES</strong><br>Todas las demás estipulaciones del Contrato Individual de Trabajo original y sus anteriores anexos permanecen inalteradas y plenamente vigentes.</div>
+  <div class="clause"><strong>TERCERO — VIGENCIA</strong><br>Las modificaciones acordadas en este instrumento entran en vigencia a partir de la fecha de su suscripción.</div>
+  ${notes ? `<div class="clause"><strong>CUARTO — OBSERVACIONES</strong><br>${notes}</div>` : ''}
+  <div class="clause" style="margin-top:24px">Las partes firman el presente Anexo en dos ejemplares de igual tenor y valor, quedando uno en poder de cada parte. Una copia digital firmada quedará almacenada en la ficha del Trabajador en la plataforma Conniku Admin, conforme a la Ley 19.799.</div>
+  <div class="sign-row">
+    <div class="sign-box">________________________________<br>Firma Empleador<br><strong>Conniku SpA</strong><br>RUT 78.395.702-7</div>
+    <div class="sign-box">________________________________<br>Firma Trabajador<br><strong>${emp.firstName} ${emp.lastName}</strong><br>RUT ${emp.rut}</div>
+  </div>
+  </body></html>`
+}
+
+function AnexoModal({ emp, onClose, onCreated }: { emp: Employee; onClose: () => void; onCreated: () => void }) {
+  const [selected, setSelected] = useState<string[]>([])
+  const [vals, setVals] = useState<Record<string, any>>({})
+  const [notes, setNotes] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [preview, setPreview] = useState(false)
+
+  const toggle = (key: string) =>
+    setSelected(p => p.includes(key) ? p.filter(k => k !== key) : [...p, key])
+
+  const setVal = (key: string, field: string, val: any) =>
+    setVals(p => ({ ...p, [key]: { ...(p[key] || {}), [field]: val } }))
+
+  const buildChanges = (): AnexoChange[] => selected.map(key => {
+    const tipo = ANEXO_TIPOS.find(t => t.key === key)!
+    const v = vals[key] || {}
+    switch (key) {
+      case 'salary':
+        return { clause: 'Sueldo Bruto', legalRef: tipo.legalRef, oldValue: `$${fmtMoney(emp.grossSalary)} CLP mensual`, newValue: `$${fmtMoney(Number(v.grossSalary || 0))} CLP mensual` }
+      case 'benefits':
+        return { clause: 'Beneficios No Imponibles', legalRef: tipo.legalRef, oldValue: `Colación $${fmtMoney(emp.colacion)} · Movilización $${fmtMoney(emp.movilizacion)}`, newValue: `Colación $${fmtMoney(Number(v.colacion ?? emp.colacion))} · Movilización $${fmtMoney(Number(v.movilizacion ?? emp.movilizacion))}` }
+      case 'health':
+        return { clause: 'Sistema de Salud Previsional', legalRef: tipo.legalRef, oldValue: emp.healthSystem === 'fonasa' ? 'FONASA (7%)' : `ISAPRE ${emp.isapreName} (${emp.isapreUf} UF)`, newValue: v.healthSystem === 'fonasa' ? 'FONASA (7%)' : `ISAPRE ${v.isapreName || ''} (${v.isapreUf || 0} UF)` }
+      case 'position':
+        return { clause: 'Cargo y Funciones', legalRef: tipo.legalRef, oldValue: emp.position || '', newValue: v.position || '' }
+      case 'schedule':
+        return { clause: 'Jornada Laboral', legalRef: tipo.legalRef, oldValue: `${emp.workSchedule === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${emp.weeklyHours}h semanales`, newValue: `${(v.workSchedule || emp.workSchedule) === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${v.weeklyHours || emp.weeklyHours}h semanales` }
+      case 'contract_type':
+        return { clause: 'Tipo de Contrato', legalRef: tipo.legalRef, oldValue: CONTRACT_TYPES.find(c => c.value === emp.contractType)?.label || emp.contractType, newValue: CONTRACT_TYPES.find(c => c.value === (v.contractType || emp.contractType))?.label || v.contractType || '' }
+      case 'other':
+        return { clause: 'Acuerdo Especial', legalRef: tipo.legalRef, oldValue: '—', newValue: v.description || '' }
+      default:
+        return { clause: tipo.label, legalRef: tipo.legalRef, oldValue: '—', newValue: v.newValue || '' }
+    }
+  })
+
+  const buildUpdates = () => {
+    const u: any = {}
+    for (const key of selected) {
+      const v = vals[key] || {}
+      if (key === 'salary' && v.grossSalary) u.grossSalary = Number(v.grossSalary)
+      if (key === 'benefits') { if (v.colacion !== undefined) u.colacion = Number(v.colacion); if (v.movilizacion !== undefined) u.movilizacion = Number(v.movilizacion) }
+      if (key === 'health') { u.healthSystem = v.healthSystem || emp.healthSystem; u.isapreName = v.isapreName || ''; u.isapreUf = v.isapreUf || 0 }
+      if (key === 'position' && v.position) u.position = v.position
+      if (key === 'schedule') { if (v.workSchedule) u.workSchedule = v.workSchedule; if (v.weeklyHours) u.weeklyHours = Number(v.weeklyHours) }
+      if (key === 'contract_type' && v.contractType) u.contractType = v.contractType
+    }
+    return u
+  }
+
+  const handleSubmit = async () => {
+    setError('')
+    if (selected.length === 0) { setError('Selecciona al menos una modificación'); return }
+    const changes = buildChanges()
+    const invalid = changes.find(c => c.newValue === c.oldValue || !c.newValue.trim() || c.newValue === '— ')
+    if (invalid) { setError(`Completa el nuevo valor para: ${invalid.clause}`); return }
+    setSaving(true)
+    try {
+      const updates = buildUpdates()
+      if (Object.keys(updates).length > 0) await api.updateEmployee(emp.id, updates)
+      const html = buildAnexoHTML(emp, changes, notes)
+      await api.generateContractPdf(emp.id, { html, worker_name: `${emp.firstName} ${emp.lastName}` })
+      onCreated()
+      onClose()
+    } catch (err: any) {
+      setError(err?.message || 'Error al generar el Anexo')
+    }
+    setSaving(false)
+  }
+
+  const iStyle: React.CSSProperties = { width: '100%', padding: '7px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: 'var(--bg-primary)', borderRadius: 14, width: '100%', maxWidth: 620, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+        {/* Header */}
+        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>Crear Anexo de Contrato</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{emp.firstName} {emp.lastName} · {emp.rut}</div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}>✕</button>
+        </div>
+        {/* Body */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>
+            Selecciona qué modificar. Los cambios se guardan en el sistema y se genera un Anexo PDF listo para firma electrónica.
+          </div>
+          {/* Tipo selector */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+            {ANEXO_TIPOS.map(t => (
+              <button key={t.key} onClick={() => toggle(t.key)} style={{ padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${selected.includes(t.key) ? 'var(--accent)' : 'var(--border)'}`, background: selected.includes(t.key) ? 'var(--accent)' : 'var(--bg-secondary)', color: selected.includes(t.key) ? '#fff' : 'var(--text-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+          {/* Fields per selected type */}
+          {selected.map(key => {
+            const v = vals[key] || {}
+            const setV = (f: string, val: any) => setVal(key, f, val)
+            return (
+              <div key={key} style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '14px 16px', marginBottom: 14, border: '1px solid var(--border)' }}>
+                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: 'var(--accent)' }}>
+                  {ANEXO_TIPOS.find(t => t.key === key)?.label} <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>({ANEXO_TIPOS.find(t => t.key === key)?.legalRef})</span>
+                </div>
+                {key === 'salary' && (
+                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sueldo actual: ${fmtMoney(emp.grossSalary)} → Nuevo sueldo bruto (CLP)</label><input style={iStyle} type="number" value={v.grossSalary || ''} onChange={e => setV('grossSalary', e.target.value)} placeholder={String(emp.grossSalary)} /></div>
+                )}
+                {key === 'benefits' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Colación (actual: ${fmtMoney(emp.colacion)})</label><input style={iStyle} type="number" value={v.colacion ?? ''} onChange={e => setV('colacion', e.target.value)} /></div>
+                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Movilización (actual: ${fmtMoney(emp.movilizacion)})</label><input style={iStyle} type="number" value={v.movilizacion ?? ''} onChange={e => setV('movilizacion', e.target.value)} /></div>
+                  </div>
+                )}
+                {key === 'health' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sistema (actual: {emp.healthSystem})</label><select style={iStyle} value={v.healthSystem || emp.healthSystem} onChange={e => setV('healthSystem', e.target.value)}><option value="fonasa">FONASA (7%)</option><option value="isapre">ISAPRE</option></select></div>
+                    {(v.healthSystem || emp.healthSystem) === 'isapre' && (<>
+                      <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>ISAPRE</label><select style={iStyle} value={v.isapreName || ''} onChange={e => setV('isapreName', e.target.value)}><option value="">— Seleccionar —</option>{ISAPRE_LIST.map(i => <option key={i.value} value={i.label}>{i.label}</option>)}</select></div>
+                      <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Plan (UF mensuales)</label><input style={iStyle} type="number" step="0.01" value={v.isapreUf || ''} onChange={e => setV('isapreUf', e.target.value)} /></div>
+                    </>)}
+                  </div>
+                )}
+                {key === 'position' && (
+                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cargo actual: {emp.position} → Nuevo cargo</label><input style={iStyle} value={v.position || ''} onChange={e => setV('position', e.target.value)} /></div>
+                )}
+                {key === 'schedule' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Jornada</label><select style={iStyle} value={v.workSchedule || emp.workSchedule} onChange={e => setV('workSchedule', e.target.value)}><option value="full_time">Jornada Completa</option><option value="part_time">Jornada Parcial</option></select></div>
+                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Horas semanales</label><input style={iStyle} type="number" value={v.weeklyHours || emp.weeklyHours} onChange={e => setV('weeklyHours', e.target.value)} /></div>
+                  </div>
+                )}
+                {key === 'contract_type' && (
+                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tipo actual: {CONTRACT_TYPES.find(c => c.value === emp.contractType)?.label} → Nuevo tipo</label><select style={iStyle} value={v.contractType || emp.contractType} onChange={e => setV('contractType', e.target.value)}>{CONTRACT_TYPES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
+                )}
+                {key === 'other' && (
+                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Describe el acuerdo</label><textarea style={{ ...iStyle, minHeight: 70, resize: 'vertical' }} value={v.description || ''} onChange={e => setV('description', e.target.value)} /></div>
+                )}
+              </div>
+            )
+          })}
+          {/* Observaciones */}
+          <div style={{ marginTop: 4 }}>
+            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Observaciones adicionales (opcional)</label>
+            <textarea style={{ ...iStyle, minHeight: 60, resize: 'vertical' }} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Ej: Este acuerdo se suscribe a solicitud del trabajador conforme a lo establecido en el Art. 11 CT." />
+          </div>
+          {error && <div style={{ marginTop: 10, fontSize: 12, color: '#ef4444' }}>{error}</div>}
+        </div>
+        {/* Footer */}
+        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>Cancelar</button>
+          <button onClick={handleSubmit} disabled={saving || selected.length === 0} style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving || selected.length === 0 ? 0.6 : 1 }}>
+            {saving ? 'Generando Anexo…' : 'Guardar y Generar Anexo PDF'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── Panel derecho: Perfil completo ──────────────────────────────
 function EmployeeProfile({ employee, onUpdated, onDelete }: {
   employee: Employee
@@ -1946,6 +2187,7 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showAnexo, setShowAnexo] = useState(false)
 
   // Reset form when employee changes
   useEffect(() => { setForm({ ...employee }); setActiveTab('datos'); setSaveMsg('') }, [employee.id])
@@ -2032,8 +2274,14 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
             </div>
           </div>
 
-          {/* Acción dar de baja */}
-          <div style={{ flexShrink: 0 }}>
+          {/* Acciones */}
+          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+            <button
+              onClick={() => setShowAnexo(true)}
+              style={{ fontSize: 12, padding: '6px 12px', border: '1.5px solid var(--accent)', borderRadius: 8, background: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+            >
+              + Anexo de Contrato
+            </button>
             {!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
@@ -2086,6 +2334,19 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
         {activeTab === 'documentos' && <TabDocumentos emp={form} />}
         {activeTab === 'historial' && <TabHistorial emp={form} />}
       </div>
+
+      {showAnexo && (
+        <AnexoModal
+          emp={form}
+          onClose={() => setShowAnexo(false)}
+          onCreated={() => {
+            setShowAnexo(false)
+            setActiveTab('documentos')
+            setSaveMsg('✅ Anexo generado — ve a la pestaña Documentos para firmarlo')
+            setTimeout(() => setSaveMsg(''), 5000)
+          }}
+        />
+      )}
     </div>
   )
 }

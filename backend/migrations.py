@@ -103,6 +103,7 @@ def migrate():
         # Cover photo
         ("cover_photo", "VARCHAR(500) DEFAULT ''"),
         ("cover_type", "VARCHAR(20) DEFAULT 'template'"),
+        ("cover_position_y", "INTEGER DEFAULT 50"),
         # Ghost / invisible profile (CEO only — not visible to other users)
         ("is_ghost", "BOOLEAN DEFAULT FALSE"),
     ]

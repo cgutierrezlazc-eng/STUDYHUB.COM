@@ -624,7 +624,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
       <div className="li-profile-card card" style={{ padding: 0, overflow: 'hidden', marginBottom: 16 }}>
         {/* Cover */}
         <div className="fb-cover-photo" style={{
-          ...getCoverStyle(profile.coverPhoto || '', profile.coverType || 'template'),
+          ...getCoverStyle(profile.coverPhoto || '', profile.coverType || 'template', profile.coverPositionY ?? 50),
           height: 200,
         }}>
           {isOwn && (
@@ -3054,8 +3054,9 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         onClose={() => setShowCoverModal(false)}
         currentCover={profile?.coverPhoto || ''}
         currentCoverType={profile?.coverType || 'template'}
-        onSaved={(coverPhoto, coverType) => {
-          setProfile((prev: any) => ({ ...prev, coverPhoto, coverType }))
+        currentPositionY={profile?.coverPositionY ?? 50}
+        onSaved={(coverPhoto, coverType, positionY) => {
+          setProfile((prev: any) => ({ ...prev, coverPhoto, coverType, coverPositionY: positionY }))
           updateProfile({ coverPhoto, coverType } as any)
         }}
       />

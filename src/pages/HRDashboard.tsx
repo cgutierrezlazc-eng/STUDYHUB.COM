@@ -510,9 +510,20 @@ export default function HRDashboard({ onNavigate }: Props) {
             <div style={{ padding: '8px 14px', background: 'var(--bg-secondary)', borderRadius: 10, fontSize: 12, whiteSpace: 'nowrap' }}>
               <span style={{ color: 'var(--text-muted)' }}>Grat. Mensual</span> <strong>${indicators.gratificacion?.tope_mensual?.toLocaleString('es-CL')}</strong>
             </div>
-            <div style={{ padding: '8px 14px', background: 'rgba(34,197,94,0.1)', borderRadius: 10, fontSize: 11, whiteSpace: 'nowrap', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <CheckCircle size={12} /> En vivo — mindicador.cl
-            </div>
+            {indicators.daily_update?.updated_today ? (
+              <div style={{ padding: '8px 14px', background: 'rgba(34,197,94,0.15)', border: '1px solid #22c55e', borderRadius: 10, fontSize: 11, whiteSpace: 'nowrap', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <CheckCircle size={12} /> Actualizado hoy 08:00
+                {indicators.daily_update.imm_changed && (
+                  <span style={{ marginLeft: 6, background: '#f59e0b', color: '#fff', borderRadius: 4, padding: '1px 6px', fontSize: 10, fontWeight: 700 }}>
+                    IMM CAMBIÓ: ${indicators.daily_update.imm_prev?.toLocaleString('es-CL')} → ${indicators.imm?.value?.toLocaleString('es-CL')}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div style={{ padding: '8px 14px', background: 'rgba(34,197,94,0.1)', borderRadius: 10, fontSize: 11, whiteSpace: 'nowrap', color: '#22c55e', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <CheckCircle size={12} /> En vivo — mindicador.cl
+              </div>
+            )}
           </>
         ) : indicatorsError ? (
           <div style={{ padding: '8px 14px', background: 'rgba(245,158,11,0.1)', borderRadius: 10, fontSize: 12, color: '#f59e0b', display: 'flex', alignItems: 'center', gap: 6 }}>

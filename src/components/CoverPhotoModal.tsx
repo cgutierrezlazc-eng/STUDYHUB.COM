@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { api, getApiBase } from '../services/api'
 
 // ── Templates ────────────────────────────────────────────────
@@ -31,11 +31,11 @@ export function getTemplateById(id: string) {
   return COVER_TEMPLATES.find(t => t.id === id)
 }
 
-export function getCoverStyle(coverPhoto: string, coverType: string): React.CSSProperties {
+export function getCoverStyle(coverPhoto: string, coverType: string, positionY = 50): React.CSSProperties {
   const API_BASE = getApiBase()
   if (coverType === 'custom' && coverPhoto) {
     const url = coverPhoto.startsWith('/uploads') ? `${API_BASE}${coverPhoto}` : coverPhoto
-    return { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    return { backgroundImage: `url(${url})`, backgroundSize: 'cover', backgroundPosition: `center ${positionY}%` }
   }
   if (coverType === 'template' && coverPhoto) {
     const tpl = getTemplateById(coverPhoto)
@@ -50,25 +50,62 @@ interface Props {
   onClose: () => void
   currentCover?: string
   currentCoverType?: string
-  onSaved: (coverPhoto: string, coverType: string) => void
+  currentPositionY?: number
+  onSaved: (coverPhoto: string, coverType: string, positionY: number) => void
 }
 
-export default function CoverPhotoModal({ isOpen, onClose, currentCover, currentCoverType, onSaved }: Props) {
+export default function CoverPhotoModal({ isOpen, onClose, currentCover, currentCoverType, currentPositionY = 50, onSaved }: Props) {
   const [tab, setTab] = useState<'templates' | 'upload'>('templates')
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
   const [previewFile, setPreviewFile] = useState<string | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [positionY, setPositionY] = useState(currentPositionY)
   const [saving, setSaving] = useState(false)
   const uploadRef = useRef<HTMLInputElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
+  const dragState = useRef<{ startY: number; startPos: number } | null>(null)
 
   if (!isOpen) return null
 
+  const isCustomPreview = tab === 'upload' && !!previewFile
   const previewStyle: React.CSSProperties =
-    tab === 'upload' && previewFile
-      ? { backgroundImage: `url(${previewFile})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+    isCustomPreview
+      ? { backgroundImage: `url(${previewFile})`, backgroundSize: 'cover', backgroundPosition: `center ${positionY}%` }
       : selectedTemplate
         ? { background: getTemplateById(selectedTemplate)?.gradient || 'var(--bg-hover)' }
-        : getCoverStyle(currentCover || '', currentCoverType || 'template')
+        : getCoverStyle(currentCover || '', currentCoverType || 'template', positionY)
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isCustomPreview && !(currentCoverType === 'custom')) return
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    dragState.current = { startY: clientY, startPos: positionY }
+    e.preventDefault()
+  }
+
+  const handleDragMove = useCallback((e: MouseEvent | TouchEvent) => {
+    if (!dragState.current || !previewRef.current) return
+    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY
+    const rect = previewRef.current.getBoundingClientRect()
+    const dy = clientY - dragState.current.startY
+    const pctChange = (dy / rect.height) * 100
+    const newPos = Math.max(0, Math.min(100, dragState.current.startPos + pctChange))
+    setPositionY(Math.round(newPos))
+  }, [])
+
+  const handleDragEnd = useCallback(() => { dragState.current = null }, [])
+
+  React.useEffect(() => {
+    window.addEventListener('mousemove', handleDragMove)
+    window.addEventListener('mouseup', handleDragEnd)
+    window.addEventListener('touchmove', handleDragMove)
+    window.addEventListener('touchend', handleDragEnd)
+    return () => {
+      window.removeEventListener('mousemove', handleDragMove)
+      window.removeEventListener('mouseup', handleDragEnd)
+      window.removeEventListener('touchmove', handleDragMove)
+      window.removeEventListener('touchend', handleDragEnd)
+    }
+  }, [handleDragMove, handleDragEnd])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -78,6 +115,7 @@ export default function CoverPhotoModal({ isOpen, onClose, currentCover, current
     reader.onloadend = () => setPreviewFile(reader.result as string)
     reader.readAsDataURL(file)
     setSelectedTemplate(null)
+    setPositionY(50)
     setTab('upload')
     if (e.target) e.target.value = ''
   }
@@ -88,15 +126,16 @@ export default function CoverPhotoModal({ isOpen, onClose, currentCover, current
       const formData = new FormData()
       if (tab === 'upload' && coverFile) {
         formData.append('file', coverFile)
+        formData.append('position_y', String(positionY))
       } else if (selectedTemplate) {
         formData.append('template_id', selectedTemplate)
+        formData.append('position_y', '50')
       } else {
         setSaving(false)
         return
       }
       const result = await api.updateCoverPhoto(formData)
-      onSaved(result.coverPhoto, result.coverType)
-      // reset internal state
+      onSaved(result.coverPhoto, result.coverType, result.coverPositionY ?? positionY)
       setSelectedTemplate(null)
       setPreviewFile(null)
       setCoverFile(null)
@@ -127,10 +166,23 @@ export default function CoverPhotoModal({ isOpen, onClose, currentCover, current
         </div>
 
         {/* Preview */}
-        <div className="cover-modal-preview" style={previewStyle}>
-          <span style={{ color: '#fff', fontSize: 12, textShadow: '0 1px 4px rgba(0,0,0,0.6)', opacity: 0.8 }}>
-            Vista previa
-          </span>
+        <div
+          ref={previewRef}
+          className="cover-modal-preview"
+          style={{ ...previewStyle, cursor: isCustomPreview ? 'ns-resize' : 'default', userSelect: 'none' }}
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart}
+        >
+          {isCustomPreview ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <span style={{ color: '#fff', fontSize: 11, textShadow: '0 1px 4px rgba(0,0,0,0.8)', background: 'rgba(0,0,0,0.4)', padding: '3px 10px', borderRadius: 12 }}>
+                Arrastra para ajustar la posición
+              </span>
+              <span style={{ color: '#fff', fontSize: 10, opacity: 0.7 }}>↕ {positionY}%</span>
+            </div>
+          ) : (
+            <span style={{ color: '#fff', fontSize: 12, textShadow: '0 1px 4px rgba(0,0,0,0.6)', opacity: 0.8 }}>Vista previa</span>
+          )}
         </div>
 
         {/* Tabs */}
@@ -211,7 +263,7 @@ export default function CoverPhotoModal({ isOpen, onClose, currentCover, current
             Cancelar
           </button>
           <button className="btn btn-primary" disabled={!canSave} onClick={handleSave}>
-            {saving ? 'Guardando...' : 'Guardar'}
+            {saving ? 'Aplicando...' : 'Aplicar'}
           </button>
         </div>
 

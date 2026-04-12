@@ -368,6 +368,7 @@ def user_to_dict(user: User) -> dict:
         "professionalTitle": getattr(user, 'professional_title', '') or "",
         "coverPhoto": getattr(user, 'cover_photo', '') or "",
         "coverType": getattr(user, 'cover_type', 'template') or "template",
+        "coverPositionY": getattr(user, 'cover_position_y', 50) or 50,
         "studyStartDate": getattr(user, 'study_start_date', '') or "",
         "studyDays": _calc_study_days(getattr(user, 'study_start_date', '') or ""),
         "executiveShowcase": _json.loads(getattr(user, 'executive_showcase', None) or "[]"),
@@ -910,6 +911,7 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
 async def update_cover_photo(
     file: UploadFile = File(None),
     template_id: str = Form(None),
+    position_y: int = Form(50),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -942,10 +944,12 @@ async def update_cover_photo(
     else:
         raise HTTPException(400, "Debes enviar una imagen o seleccionar una plantilla.")
 
+    setattr(user, 'cover_position_y', max(0, min(100, position_y)))
     db.commit()
     return {
         "coverPhoto": user.cover_photo,
         "coverType": user.cover_type,
+        "coverPositionY": getattr(user, 'cover_position_y', 50),
     }
 
 
