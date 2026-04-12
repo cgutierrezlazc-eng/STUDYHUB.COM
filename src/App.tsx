@@ -62,6 +62,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'))
+const DeleteAccount = React.lazy(() => import('./pages/DeleteAccount'))
 const AboutPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.AboutPage })))
 const EnterprisePage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.EnterprisePage })))
 const SafetyPage = React.lazy(() => import('./pages/InfoPages').then(m => ({ default: m.SafetyPage })))
@@ -234,6 +235,13 @@ export default function App() {
         </Suspense>
       )
     }
+    if (location.pathname === '/delete-account') {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <DeleteAccount onNavigate={(path) => navigate(path)} />
+        </Suspense>
+      )
+    }
     if (location.pathname.startsWith('/cert/')) {
       return (
         <Suspense fallback={<PageLoader />}>
@@ -382,6 +390,7 @@ export default function App() {
             <Route path="/tutor/:username" element={tutorPageUsername ? <PublicTutorPage username={tutorPageUsername} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/terms" element={<TermsOfService onNavigate={(path) => navigate(path)} />} />
             <Route path="/privacy" element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />} />
+            <Route path="/delete-account" element={<DeleteAccount onNavigate={(path) => navigate(path)} />} />
             <Route path="/about" element={<AboutPage onNavigate={(path) => navigate(path)} />} />
             <Route path="/enterprise" element={<EnterprisePage onNavigate={(path) => navigate(path)} />} />
             <Route path="/safety" element={<SafetyPage onNavigate={(path) => navigate(path)} />} />

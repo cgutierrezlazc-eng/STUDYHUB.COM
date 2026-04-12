@@ -220,11 +220,44 @@ export default function TermsOfService({ onNavigate }: Props) {
       </ul>
 
       {/* 9. Suspensión y terminación */}
-      <h2 style={styles.h2}>9. Suspensión y Terminación</h2>
+      <h2 style={styles.h2}>9. Suspensión, Terminación y Eliminación de Cuenta</h2>
+      <h3 style={styles.h3}>9.1. Suspensión por incumplimiento</h3>
       <p style={styles.p}>
         Conniku se reserva el derecho de suspender o cancelar la cuenta de cualquier usuario que
-        incumpla estos Términos, sin previo aviso y sin derecho a reembolso. El usuario puede
-        eliminar su cuenta en cualquier momento desde la configuración de su perfil.
+        incumpla estos Términos, sin previo aviso y sin derecho a reembolso.
+      </p>
+      <h3 style={styles.h3}>9.2. Eliminación voluntaria de cuenta</h3>
+      <p style={styles.p}>
+        El usuario puede eliminar su cuenta de Conniku en cualquier momento, de forma gratuita.
+        Existen dos formas de hacerlo:
+      </p>
+      <ul style={styles.ul}>
+        <li>
+          <strong>Desde la aplicación:</strong> Accede a tu Perfil → Configuración → desplázate
+          hasta "Zona de peligro" → haz clic en "Eliminar cuenta" y confirma escribiendo "ELIMINAR".
+        </li>
+        <li>
+          <strong>Por correo electrónico:</strong> Envía una solicitud a{' '}
+          <a href="mailto:privacidad@conniku.com" style={{ color: '#2D62C8' }}>privacidad@conniku.com</a>{' '}
+          indicando tu nombre completo y correo registrado.
+        </li>
+      </ul>
+      <p style={styles.p}>
+        Para instrucciones detalladas, tiempos de procesamiento y qué datos se eliminan, visita
+        nuestra página dedicada:{' '}
+        <a
+          href="/delete-account"
+          onClick={e => { e.preventDefault(); onNavigate('/delete-account') }}
+          style={{ color: '#2D62C8', textDecoration: 'underline' }}
+        >
+          conniku.com/delete-account
+        </a>.
+      </p>
+      <h3 style={styles.h3}>9.3. Efectos de la eliminación</h3>
+      <p style={styles.p}>
+        La eliminación de la cuenta es irreversible. Los datos identificables se eliminan dentro de
+        los 30 días siguientes a la solicitud. Ciertos datos podrán conservarse en forma anonimizada
+        o por obligación legal (ver sección 9 de la Política de Privacidad).
       </p>
 
       {/* 10. Modificaciones */}

@@ -311,6 +311,35 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         gran parte de sus datos directamente desde la configuración de su perfil en la plataforma.
       </p>
 
+      <h3 style={styles.h3}>7.1. Cómo eliminar tu cuenta y tus datos</h3>
+      <p style={styles.p}>
+        Puedes solicitar la eliminación completa de tu cuenta de Conniku en cualquier momento,
+        de forma gratuita, mediante cualquiera de estos métodos:
+      </p>
+      <ul style={styles.ul}>
+        <li>
+          <strong>Desde la app:</strong> Perfil → Configuración → "Zona de peligro" → "Eliminar cuenta" →
+          confirma escribiendo "ELIMINAR".
+        </li>
+        <li>
+          <strong>Por correo:</strong> Escribe a{' '}
+          <a href="mailto:privacidad@conniku.com" style={{ color: '#2D62C8' }}>privacidad@conniku.com</a>{' '}
+          con tu nombre completo y correo registrado.
+        </li>
+      </ul>
+      <p style={styles.p}>
+        Los datos identificables se eliminan dentro de los <strong>30 días</strong> siguientes a la solicitud.
+        Ciertos datos anonimizados pueden conservarse hasta 2 años con fines estadísticos.
+        Para ver las instrucciones completas y la tabla de retención de datos por tipo, visita:{' '}
+        <a
+          href="/delete-account"
+          onClick={e => { e.preventDefault(); onNavigate('/delete-account') }}
+          style={{ color: '#2D62C8', textDecoration: 'underline' }}
+        >
+          conniku.com/delete-account
+        </a>.
+      </p>
+
       {/* 8. Cookies */}
       <h2 style={styles.h2}>8. Cookies y Tecnologías Similares</h2>
       <p style={styles.p}>
