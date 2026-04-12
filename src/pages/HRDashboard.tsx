@@ -323,6 +323,16 @@ const HEALTH_OPTIONS = [
   { value: 'isapre', label: 'Isapre' },
 ]
 
+const ISAPRE_OPTIONS = [
+  { value: 'Banmédica', label: 'Banmédica' },
+  { value: 'Colmena Golden Cross', label: 'Colmena Golden Cross' },
+  { value: 'Consalud', label: 'Consalud' },
+  { value: 'Cruz Blanca', label: 'Cruz Blanca' },
+  { value: 'Esencial', label: 'Esencial' },
+  { value: 'MasVida', label: 'MasVida' },
+  { value: 'Vida Tres', label: 'Vida Tres' },
+]
+
 const CONTRACT_TYPES = [
   { value: 'indefinido', label: 'Indefinido' },
   { value: 'plazo_fijo', label: 'Plazo Fijo' },
@@ -706,6 +716,10 @@ function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmploy
     const minSalary = form.weeklyHours < 40 ? CHILE_LABOR.IMM.partialRate(form.weeklyHours) : imm
     if (!form.grossSalary || Number(form.grossSalary) < minSalary)
       e.grossSalary = `Mínimo legal: $${minSalary.toLocaleString('es-CL')} (Art. 44 CT)`
+    if (form.healthSystem === 'isapre' && !form.isapreName)
+      e.isapreName = 'Seleccione una Isapre'
+    if (form.healthSystem === 'isapre' && (!form.isapreUf || Number(form.isapreUf) <= 0))
+      e.isapreUf = 'Ingrese el costo del plan en UF'
     return e
   }
 
@@ -1060,11 +1074,36 @@ function PersonalTab({ employees, onRefresh, showAdd, setShowAdd, selectedEmploy
             <SectionTitle>Previsión Social</SectionTitle>
             <div style={grid2}>
               <SelectField label="AFP" value={form.afp} onChange={v => setForm({ ...form, afp: v })} options={AFP_OPTIONS.map(a => ({ value: a.value, label: `${a.label} (${a.rate}%)` }))} />
-              <SelectField label="Sistema de Salud" value={form.healthSystem} onChange={v => setForm({ ...form, healthSystem: v })} options={HEALTH_OPTIONS} />
+              <SelectField label="Sistema de Salud" value={form.healthSystem} onChange={v => setForm({ ...form, healthSystem: v, isapreName: v === 'isapre' ? (form.isapreName || ISAPRE_OPTIONS[0].value) : form.isapreName })} options={HEALTH_OPTIONS} />
               {form.healthSystem === 'isapre' && (
                 <>
-                  <FormField label="Nombre Isapre" value={form.isapreName} onChange={v => setForm({ ...form, isapreName: v })} />
-                  <FormField label="Plan en UF" value={form.isapreUf} onChange={v => setForm({ ...form, isapreUf: Number(v) })} type="number" step="0.01" />
+                  <div>
+                    <SelectField label="Isapre" value={form.isapreName || ''} onChange={v => setForm({ ...form, isapreName: v })} options={ISAPRE_OPTIONS} />
+                    {formErrors.isapreName && <div style={{ fontSize: 11, color: '#ef4444', marginTop: 3 }}>{formErrors.isapreName}</div>}
+                  </div>
+                  <div>
+                    <FormField label="Plan mensual (UF)" value={form.isapreUf} onChange={v => setForm({ ...form, isapreUf: Number(v) })} type="number" step="0.01" />
+                    {formErrors.isapreUf && <div style={{ fontSize: 11, color: '#ef4444', marginTop: 3 }}>{formErrors.isapreUf}</div>}
+                  </div>
+                  {form.isapreUf > 0 && form.grossSalary > 0 && (() => {
+                    const ufVal = CHILE_LABOR.UF.value
+                    const planClp = Math.round(form.isapreUf * ufVal)
+                    const minLegal = Math.round(form.grossSalary * 0.07)
+                    const descuento = Math.max(planClp, minLegal)
+                    const adicional = Math.max(0, planClp - minLegal)
+                    const adicionalPct = ((descuento / form.grossSalary) * 100).toFixed(1)
+                    return (
+                      <div style={{ gridColumn: 'span 2', background: 'var(--bg-secondary)', borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.7 }}>
+                        <div style={{ fontWeight: 700, marginBottom: 4 }}>Cálculo descuento salud</div>
+                        <div>Plan {form.isapreName}: <strong>{form.isapreUf} UF = ${planClp.toLocaleString('es-CL')} CLP</strong></div>
+                        <div>Mínimo legal Fonasa (7%): ${minLegal.toLocaleString('es-CL')} CLP</div>
+                        <div style={{ color: adicional > 0 ? '#f59e0b' : 'var(--text-muted)' }}>
+                          Descuento total: <strong>${descuento.toLocaleString('es-CL')} CLP ({adicionalPct}% del sueldo bruto)</strong>
+                          {adicional > 0 && <span> — exceso s/ Fonasa: ${adicional.toLocaleString('es-CL')}</span>}
+                        </div>
+                      </div>
+                    )
+                  })()}
                 </>
               )}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 0' }}>
