@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 
 interface Props {
   currentPath: string
@@ -23,22 +23,50 @@ const NavIcon = ({ type }: { type: string }) => {
 const moreMenuItems = [
   { icon: 'community', label: 'Comunidades', path: '/communities' },
   { icon: 'calendar', label: 'Calendario', path: '/calendar' },
-  { icon: 'search', label: 'Búsqueda', path: '/search' },
+  { icon: 'search', label: 'Busqueda', path: '/search' },
   { icon: 'user', label: 'Tutores', path: '/tutores' },
 ]
 
 export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
   const [showMore, setShowMore] = useState(false)
+  const [visible, setVisible] = useState(true)
+  const lastScrollY = useRef(0)
+  const ticking = useRef(false)
 
-  const items = [
-    { icon: 'book', label: 'Estudio', path: '/dashboard' },
-    { icon: 'chat', label: 'Chat', path: '/messages' },
-    { icon: 'user', label: 'Perfil', path: '/my-profile' },
-  ]
+  // Auto-hide on scroll down, show on scroll up (like Instagram)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (ticking.current) return
+      ticking.current = true
+      requestAnimationFrame(() => {
+        const currentY = window.scrollY
+        const delta = currentY - lastScrollY.current
+
+        if (delta > 8 && currentY > 60) {
+          // Scrolling down — hide
+          setVisible(false)
+          setShowMore(false)
+        } else if (delta < -5) {
+          // Scrolling up — show
+          setVisible(true)
+        }
+
+        // Always show at top of page
+        if (currentY < 30) setVisible(true)
+
+        lastScrollY.current = currentY
+        ticking.current = false
+      })
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Close bottom sheet on route change
   useEffect(() => {
     setShowMore(false)
+    setVisible(true) // Show nav on route change
   }, [currentPath])
 
   // Close on escape key
@@ -55,6 +83,12 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
     setShowMore(false)
     onNavigate(path)
   }, [onNavigate])
+
+  const items = [
+    { icon: 'book', label: 'Estudio', path: '/dashboard' },
+    { icon: 'chat', label: 'Chat', path: '/messages' },
+    { icon: 'user', label: 'Perfil', path: '/my-profile' },
+  ]
 
   return (
     <>
@@ -79,8 +113,14 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Bottom navigation bar */}
-      <nav className="mobile-bottom-nav">
+      {/* Bottom navigation bar — auto-hide on scroll */}
+      <nav
+        className="mobile-bottom-nav"
+        style={{
+          transform: visible ? 'translateY(0)' : 'translateY(100%)',
+          transition: 'transform 0.25s ease-out',
+        }}
+      >
         {items.map(item => {
           const isActive = currentPath.startsWith(item.path)
           return (
@@ -95,7 +135,7 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
           onClick={() => setShowMore(!showMore)}
         >
           <span className="mobile-nav-icon"><NavIcon type="menu" /></span>
-          <span className="mobile-nav-label">Más</span>
+          <span className="mobile-nav-label">Mas</span>
         </button>
       </nav>
     </>
