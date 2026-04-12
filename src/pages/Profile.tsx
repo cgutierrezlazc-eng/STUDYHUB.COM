@@ -14,7 +14,7 @@ export default function Profile() {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<Section>('profile')
-  const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'oceano')
+  const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'pizarra')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -710,7 +710,8 @@ export default function Profile() {
                 <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
                   {[
-                    { id: 'oceano', name: 'Océano', colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Azul cielo — predeterminado' },
+                    { id: 'pizarra', name: 'Pizarra', colors: ['#F1F5F9', '#D97706', '#FFFFFF'], desc: 'Claro dorado — predeterminado' },
+                    { id: 'oceano', name: 'Océano', colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Azul cielo — oscuro' },
                     { id: 'conniku', name: 'Conniku', colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Azul marca — oscuro profundo' },
                   ].map(th => {
                     const isActive = currentTheme === th.id

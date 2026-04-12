@@ -194,10 +194,11 @@ export default function App() {
     }
   }, [user])
 
-  // Apply theme — default Océano, can be Conniku
+  // Apply theme — default Pizarra, options: pizarra, oceano, conniku
   useEffect(() => {
     const saved = localStorage.getItem('conniku_theme')
-    const theme = saved === 'conniku' ? 'conniku' : 'oceano'
+    const allowed = ['pizarra', 'oceano', 'conniku']
+    const theme = allowed.includes(saved || '') ? saved! : 'pizarra'
     document.documentElement.setAttribute('data-theme', theme)
   }, [])
 
