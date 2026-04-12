@@ -14,6 +14,7 @@ import {
 interface Props {
   projects: Project[]
   onNavigate: (path: string) => void
+  onNewProject?: () => void
 }
 
 // ── Frases filosóficas diarias ───────────────────────────────
@@ -64,9 +65,10 @@ interface OnboardingProps {
   user: any
   projects: Project[]
   onNavigate: (path: string) => void
+  onNewProject?: () => void
 }
 
-function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
+function OnboardingSection({ user, projects, onNavigate, onNewProject }: OnboardingProps) {
   const [visited, setVisited] = useState<Record<string, boolean>>(() => {
     try { return JSON.parse(localStorage.getItem('ob_visited') || '{}') } catch { return {} }
   })
@@ -75,7 +77,11 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
     const next = { ...visited, [id]: true }
     setVisited(next)
     localStorage.setItem('ob_visited', JSON.stringify(next))
-    onNavigate(path)
+    if (path === '__new_project__' && onNewProject) {
+      onNewProject()
+    } else {
+      onNavigate(path)
+    }
   }
 
   const steps = [
@@ -92,9 +98,9 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
       id: 'subject',
       emoji: '📚',
       label: 'Crea tu primera asignatura',
-      desc: 'Sube apuntes y la IA genera quizzes automáticamente',
+      desc: 'Sube apuntes y genera quizzes automáticamente',
       done: projects.length > 0,
-      path: '/new-project',
+      path: '__new_project__',
       cta: 'Crear',
     },
     {
@@ -119,11 +125,11 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
 
   const features = [
     {
-      emoji: '🤖',
-      title: 'IA Académica',
+      emoji: '📚',
+      title: 'Asistente Académico',
       desc: 'Sube tus apuntes y genera quizzes, flashcards y guías de estudio en segundos',
       accentColor: '#2563EB',
-      path: '/new-project',
+      path: '__new_project__',
     },
     {
       emoji: '🌐',
@@ -155,10 +161,10 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
           <div style={{ fontSize: 38, marginBottom: 8, lineHeight: 1 }}>🚀</div>
           <h2 className="ob-hero-title">¡Bienvenido a Conniku, {user?.firstName}!</h2>
           <p className="ob-hero-sub">
-            Tu plataforma académica inteligente. En menos de 5 minutos puedes tener tu primera
-            asignatura lista con quizzes y flashcards generados por IA.
+            Tu plataforma académica todo en uno. En menos de 5 minutos puedes tener tu primera
+            asignatura lista con quizzes y flashcards generados automáticamente.
           </p>
-          <button className="ob-hero-btn" onClick={() => onNavigate('/new-project')}>
+          <button className="ob-hero-btn" onClick={() => onNewProject ? onNewProject() : onNavigate('/dashboard')}>
             {Rocket({ size: 15 })} Empezar ahora
           </button>
         </div>
@@ -172,7 +178,7 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
             <button
               key={f.path}
               className="ob-feature-card"
-              onClick={() => onNavigate(f.path)}
+              onClick={() => f.path === '__new_project__' && onNewProject ? onNewProject() : onNavigate(f.path)}
             >
               <div
                 className="ob-feature-icon"
@@ -296,7 +302,7 @@ function OnboardingSection({ user, projects, onNavigate }: OnboardingProps) {
 }
 
 // ── Dashboard principal ──────────────────────────────────────
-export default function Dashboard({ projects, onNavigate }: Props) {
+export default function Dashboard({ projects, onNavigate, onNewProject }: Props) {
   const { user } = useAuth()
   const { t } = useI18n()
   const [stats, setStats]               = useState<any>(null)
@@ -393,12 +399,12 @@ export default function Dashboard({ projects, onNavigate }: Props) {
 
         {/* ══ NUEVO USUARIO: onboarding ══ */}
         {isNewUser ? (
-          <OnboardingSection user={user} projects={projects} onNavigate={onNavigate} />
+          <OnboardingSection user={user} projects={projects} onNavigate={onNavigate} onNewProject={onNewProject} />
         ) : (
           <>
             {/* ══ USUARIO ACTIVO: dashboard completo ══ */}
 
-            {/* Resumen diario IA o frase del día */}
+            {/* Resumen diario o frase del día */}
             {dailySummary ? (
               <div className="u-card-flat" style={{
                 padding: '16px 20px', marginBottom: 20,

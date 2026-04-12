@@ -59,6 +59,8 @@ from ws_routes import router as ws_router
 from hr_routes import router as hr_router
 from tutor_routes import router as tutor_router
 from ai_workflow_routes import router as ai_workflow_router
+from moderation_queue_routes import router as moderation_queue_router
+# payment_routes (Stripe) removed — using MercadoPago + PayPal only
 from migrations import migrate
 from prompts import (
     AUDIO_TO_NOTES_PROMPT,
@@ -223,6 +225,8 @@ app.include_router(ws_router)
 app.include_router(hr_router)
 app.include_router(tutor_router)
 app.include_router(ai_workflow_router)
+app.include_router(moderation_queue_router)
+# app.include_router(payment_router)  # Stripe removed
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────

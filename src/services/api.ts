@@ -361,8 +361,27 @@ export const api = {
   getMessages: (convId: string, before?: string) =>
     request(`/messaging/conversations/${convId}/messages${before ? `?before=${before}` : ''}`),
 
-  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string }) =>
+  sendMessage: (convId: string, data: { content: string; message_type?: string; document_name?: string; document_path?: string; reply_to_id?: string }) =>
     request(`/messaging/conversations/${convId}/messages`, { method: 'POST', body: JSON.stringify(data) }),
+
+  uploadVideoMessage: async (videoBlob: Blob) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', videoBlob, 'video.webm');
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/messaging/upload-media`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      let msg = `Error ${res.status}`;
+      try { const e = await res.json(); if (e.detail || e.message) msg = e.detail || e.message; } catch {}
+      throw new Error(msg);
+    }
+    return res.json();
+  },
 
   editMessage: (convId: string, msgId: string, content: string) =>
     request(`/messaging/conversations/${convId}/messages/${msgId}`, { method: 'PUT', body: JSON.stringify({ content }) }),
@@ -528,6 +547,20 @@ export const api = {
   getFriendSuggestions: () =>
     request('/social/friend-suggestions'),
 
+  // ─── Portfolio & Publications ─────────────────────────────
+  getUserProjects: (userId: string) =>
+    request(`/social/users/${userId}/projects`),
+  addPortfolioProject: (userId: string, data: any) =>
+    request(`/social/users/${userId}/projects`, { method: 'POST', body: JSON.stringify(data) }),
+  deletePortfolioProject: (projectId: string) =>
+    request(`/social/projects/${projectId}`, { method: 'DELETE' }),
+  getUserPublications: (userId: string) =>
+    request(`/social/users/${userId}/publications`),
+  addPublication: (userId: string, data: any) =>
+    request(`/social/users/${userId}/publications`, { method: 'POST', body: JSON.stringify(data) }),
+  deletePublication: (pubId: string) =>
+    request(`/social/publications/${pubId}`, { method: 'DELETE' }),
+
   // ─── Friend Lists ─────────────────────────────────────────
   getFriendLists: () =>
     request('/social/friend-lists'),
@@ -686,6 +719,36 @@ export const api = {
   reportCommunityPost: (postId: string, reason: string) =>
     request(`/communities/posts/${postId}/report`, { method: 'POST', body: JSON.stringify({ reason }) }),
   getCommunitySuggestions: () => request('/communities/suggestions'),
+  getCommunityResources: (communityId: string) =>
+    request(`/communities/${communityId}/resources`),
+  addCommunityResource: (communityId: string, data: { resource_type: string; title: string; url: string; description?: string }) =>
+    request(`/communities/${communityId}/resources`, { method: 'POST', body: JSON.stringify(data) }),
+  deleteCommunityResource: (communityId: string, resourceId: string) =>
+    request(`/communities/${communityId}/resources/${resourceId}`, { method: 'DELETE' }),
+  getCommunityEvents: (communityId: string) =>
+    request(`/communities/${communityId}/events`),
+  createCommunityEvent: (communityId: string, data: { title: string; description?: string; event_date: string; location?: string; meet_url?: string }) =>
+    request(`/communities/${communityId}/events`, { method: 'POST', body: JSON.stringify(data) }),
+  rsvpCommunityEvent: (communityId: string, eventId: string, status: string) =>
+    request(`/communities/${communityId}/events/${eventId}/rsvp?status=${status}`, { method: 'POST' }),
+  uploadCommunityCover: async (communityId: string, file: File) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/communities/${communityId}/cover`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      let msg = `Error ${res.status}`;
+      try { const e = await res.json(); if (e.detail || e.message) msg = e.detail || e.message; } catch {}
+      throw new Error(msg);
+    }
+    return res.json();
+  },
 
   // ─── Polls ────────────────────────────────────────────────
   createPoll: (data: { question: string; options: string[]; is_anonymous?: boolean; expires_in_hours?: number; wall_post_id?: string }) =>
@@ -1033,6 +1096,15 @@ export const api = {
   getReferralFraudReport: () => request('/referrals/admin/fraud-report'),
   getComplianceStatus: () => request('/finance/compliance-status'),
 
+  // ─── CEO Moderation Queue ─────────────────────────────────
+  getModerationQueue: (status?: string) =>
+    request(`/ceo/moderation/queue${status ? `?status=${status}` : ''}`),
+  getModerationStats: () => request('/ceo/moderation/stats'),
+  approveModerationItem: (itemId: string) =>
+    request(`/ceo/moderation/${itemId}/approve`, { method: 'POST' }),
+  rejectModerationItem: (itemId: string, note?: string) =>
+    request(`/ceo/moderation/${itemId}/reject${note ? `?note=${encodeURIComponent(note)}` : ''}`, { method: 'POST' }),
+
   // ─── CEO Email Management ─────────────────────────────────
   getCeoEmailInbox: (page?: number, emailType?: string, account?: string) =>
     request(`/email/ceo/inbox?page=${page || 1}${emailType ? `&email_type=${emailType}` : ''}${account ? `&account=${account}` : ''}`),
@@ -1213,6 +1285,26 @@ export const api = {
   updateExpense: (id: string, data: any) => request(`/hr/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteExpense: (id: string) => request(`/hr/expenses/${id}`, { method: 'DELETE' }),
   getExpenseSummary: (year: number) => request(`/hr/expenses/summary/${year}`),
+
+  // ─── HR Leave / Vacaciones ────────────────────────────────
+  getLeaveRequests: (status?: string, employeeId?: string) => {
+    const params = new URLSearchParams();
+    if (status) params.set('status', status);
+    if (employeeId) params.set('employee_id', employeeId);
+    const qs = params.toString();
+    return request(`/hr/leave/requests${qs ? `?${qs}` : ''}`);
+  },
+  createLeaveRequest: (data: any) =>
+    request('/hr/leave/request', { method: 'POST', body: JSON.stringify(data) }),
+  approveLeaveRequest: (requestId: string) =>
+    request(`/hr/leave/requests/${requestId}/approve`, { method: 'PUT' }),
+  rejectLeaveRequest: (requestId: string, reason?: string) =>
+    request(`/hr/leave/requests/${requestId}/reject`, { method: 'PUT', body: JSON.stringify({ reject_reason: reason }) }),
+
+  // ─── Legal Obligations ────────────────────────────────────
+  getLegalObligations: () => request('/legal-obligations'),
+  saveLegalObligations: (items: any[]) =>
+    request('/legal-obligations', { method: 'POST', body: JSON.stringify({ items }) }),
 
   // ─── Tutores / Prestadores Externos ────────────────────────
   applyAsTutor: (data: any) => request('/tutors/apply', { method: 'POST', body: JSON.stringify(data) }),

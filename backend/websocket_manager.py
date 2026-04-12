@@ -19,7 +19,12 @@ def _get_secret():
     global SECRET_KEY
     if not SECRET_KEY:
         import os
-        SECRET_KEY = os.environ.get("JWT_SECRET", "conniku-secret-key-change-in-production")
+        SECRET_KEY = os.environ.get("JWT_SECRET", "")
+        if not SECRET_KEY:
+            raise RuntimeError(
+                "JWT_SECRET is required. "
+                "Set the JWT_SECRET environment variable before starting the server."
+            )
     return SECRET_KEY
 
 

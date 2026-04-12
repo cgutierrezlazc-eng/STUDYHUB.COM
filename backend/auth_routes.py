@@ -1106,7 +1106,9 @@ class OwnerSetupRequest(BaseModel):
 @router.post("/setup-owner")
 def setup_owner(req: OwnerSetupRequest, db: Session = Depends(get_db)):
     """Set/reset the owner account password using a setup key."""
-    expected_key = os.environ.get("SETUP_KEY", "conniku-setup-2026")
+    expected_key = os.environ.get("SETUP_KEY", "")
+    if not expected_key:
+        raise HTTPException(503, "Setup endpoint not configured. Set SETUP_KEY env var.")
     if req.setup_key != expected_key:
         raise HTTPException(403, "Invalid setup key")
 
