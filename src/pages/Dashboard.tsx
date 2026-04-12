@@ -279,24 +279,7 @@ function OnboardingSection({ user, projects, onNavigate, onNewProject }: Onboard
         )}
       </div>
 
-      {/* ── Quick actions ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-        {[
-          { icon: MessageSquare({ size: 22 }), label: 'Mensajes',   path: '/messages' },
-          { icon: Calendar({ size: 22 }),      label: 'Calendario', path: '/calendar' },
-          { icon: BookOpen({ size: 22 }),      label: 'Apuntes',    path: '/marketplace' },
-          { icon: Users({ size: 22 }),         label: 'Comunidad',  path: '/communities' },
-        ].map(a => (
-          <button
-            key={a.path}
-            className="u-card ob-quick-action"
-            onClick={() => onNavigate(a.path)}
-          >
-            <div style={{ color: 'var(--accent)', marginBottom: 6 }}>{a.icon}</div>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>{a.label}</div>
-          </button>
-        ))}
-      </div>
+      {/* Quick actions eliminadas — se acceden desde MobileBottomNav */}
     </div>
   )
 }
@@ -717,21 +700,7 @@ export default function Dashboard({ projects, onNavigate, onNewProject }: Props)
               </div>
             </div>
 
-            {/* Quick Actions */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginTop: 16 }}>
-              {[
-                { icon: MessageSquare({ size: 24 }), label: 'Mensajes',   path: '/messages' },
-                { icon: Calendar({ size: 24 }),      label: 'Calendario', path: '/calendar' },
-                { icon: BookOpen({ size: 24 }),      label: 'Apuntes',    path: '/marketplace' },
-                { icon: Users({ size: 24 }),         label: 'Comunidad',  path: '/communities' },
-              ].map(a => (
-                <button key={a.path} className="u-card" onClick={() => onNavigate(a.path)}
-                  style={{ padding: 16, textAlign: 'center', cursor: 'pointer', border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                  <div style={{ color: 'var(--accent)' }}>{a.icon}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{a.label}</div>
-                </button>
-              ))}
-            </div>
+            {/* Quick Actions eliminadas — se acceden desde MobileBottomNav */}
 
             {/* Insignias */}
             {stats?.badges?.some((b: any) => b.earned) && (

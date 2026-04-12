@@ -274,9 +274,9 @@ def migrate():
         if admin_email:
             with engine.begin() as conn:
                 conn.execute(text(
-                    "UPDATE users SET is_ghost = TRUE WHERE email = :email"
+                    "UPDATE users SET is_ghost = FALSE WHERE email = :email"
                 ), {"email": admin_email})
-                logger.info(f"CEO ghost flag set for {admin_email}")
+                logger.info(f"CEO visible (is_ghost=FALSE) for {admin_email}")
     except Exception as e:
         logger.warning(f"Could not set CEO ghost flag: {e}")
 
