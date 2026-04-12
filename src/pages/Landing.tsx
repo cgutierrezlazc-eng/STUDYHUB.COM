@@ -26,7 +26,7 @@ function AnimatedSection({ children, delay = 0, className = '', style = {} }: { 
     <div ref={ref} className={className} style={{
       opacity: isVisible ? 1 : 0,
       transform: isVisible ? 'translateY(0)' : 'translateY(30px)',
-      transition: `opacity 0.7s ease ${delay}s, transform 0.7s ease ${delay}s`,
+      transition: `opacity 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s, transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s`,
       ...style,
     }}>
       {children}
@@ -119,7 +119,7 @@ function LogoMark({ size = 34 }: { size?: number }) {
 
 function LogoType({ size = 36 }: { size?: number }) {
   return (
-    <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: size, fontWeight: 700, color: '#151B1E', letterSpacing: '-0.05em', lineHeight: 1 }}>
+    <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: size, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.05em', lineHeight: 1 }}>
       conni<span style={{ color: '#2D62C8' }}>ku</span>
     </span>
   )
@@ -128,7 +128,7 @@ function LogoType({ size = 36 }: { size?: number }) {
 /* Lucide-style check icon */
 function CheckIcon() {
   return (
-    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#2D62C8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, color: 'var(--accent)' }}>
       <path d="M20 6 9 17l-5-5" />
     </svg>
   )
@@ -148,7 +148,7 @@ function LaptopFrame({ children }: { children: React.ReactNode }) {
         <div style={{ flex: 1, textAlign: 'center', fontSize: 11, color: '#888', marginRight: 40 }}>conniku.com</div>
       </div>
       <div style={{
-        background: '#F5F7F8', border: '2px solid #1a1a1a', borderTop: 'none',
+        background: 'var(--bg-secondary)', border: '2px solid #1a1a1a', borderTop: 'none',
         borderRadius: '0 0 4px 4px', padding: 16, minHeight: 280,
       }}>
         {children}
@@ -163,7 +163,7 @@ function LaptopFrame({ children }: { children: React.ReactNode }) {
 
 /* Profile mockup */
 function ProfileMockup() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', accentLight: '#E2EAF9' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', accentLight: 'rgba(56,189,248,0.12)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ height: 60, background: 'linear-gradient(135deg, #2D62C8, #4A7FE0)' }} />
@@ -187,7 +187,7 @@ function ProfileMockup() {
       <div style={{ borderTop: `1px solid ${vars.border}`, padding: 16 }}>
         <div style={{ fontSize: 12, fontWeight: 600, color: vars.textPrimary, marginBottom: 8 }}>Publicaciones recientes</div>
         {['Alguien tiene las guias de bioquimica?', 'Grupo de estudio sabado en biblioteca central'].map((p, i) => (
-          <div key={i} style={{ padding: '8px 0', borderBottom: `1px solid ${vars.border}`, fontSize: 11, color: '#4A5568' }}>{p}</div>
+          <div key={i} style={{ padding: '8px 0', borderBottom: `1px solid ${vars.border}`, fontSize: 11, color: 'var(--text-secondary)' }}>{p}</div>
         ))}
       </div>
     </div>
@@ -197,7 +197,7 @@ function ProfileMockup() {
 /* Chat mockup */
 function ChatMockup() {
   const { t } = useI18n()
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)' }
   const msgs = [
     { text: 'Hola! Tienes la guia de estudio?', sent: false, time: '10:31' },
     { text: 'Si! Te la mando ahora mismo', sent: true, time: '10:32' },
@@ -221,7 +221,7 @@ function ChatMockup() {
               padding: '8px 12px', borderRadius: 12, fontSize: 12, maxWidth: '75%', lineHeight: 1.4,
               ...(m.sent
                 ? { background: vars.accent, color: '#fff', borderBottomRightRadius: 3 }
-                : { background: vars.bgPrimary, color: '#4A5568', borderBottomLeftRadius: 3 }),
+                : { background: vars.bgPrimary, color: 'var(--text-secondary)', borderBottomLeftRadius: 3 }),
             }}>
               {m.text}
               <div style={{ fontSize: 9, marginTop: 2, opacity: 0.6, textAlign: 'right' }}>{m.time}</div>
@@ -242,7 +242,7 @@ function ChatMockup() {
 /* Doc study mockup */
 function DocMockup() {
   const { t } = useI18n()
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8', accentLight: '#E2EAF9' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)', accentLight: 'rgba(56,189,248,0.12)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: `1px solid ${vars.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -262,7 +262,7 @@ function DocMockup() {
         {['1. Reacciones de sustitucion nucleofilica (SN1/SN2)', '2. Reacciones de eliminacion (E1/E2)', '3. Adicion a alquenos y alquinos'].map((item, i) => (
           <div key={i} style={{ padding: '8px 12px', background: i === 0 ? vars.accentLight : vars.bgPrimary, borderRadius: 6, marginBottom: 4, fontSize: 11, color: vars.textPrimary, border: i === 0 ? `1px solid ${vars.accent}33` : 'none' }}>{item}</div>
         ))}
-        <div style={{ marginTop: 12, padding: '10px 12px', background: `linear-gradient(135deg, rgba(45,98,200,0.06), rgba(45,98,200,0.02))`, borderLeft: `3px solid ${vars.accent}`, borderRadius: '0 8px 8px 0', fontSize: 11, color: '#4A5568', lineHeight: 1.5 }}>
+        <div style={{ marginTop: 12, padding: '10px 12px', background: `linear-gradient(135deg, rgba(45,98,200,0.06), rgba(45,98,200,0.02))`, borderLeft: `3px solid ${vars.accent}`, borderRadius: '0 8px 8px 0', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
           Resumen: Las reacciones principales del capitulo incluyen mecanismos de sustitucion y eliminacion, con enfasis en factores como la naturaleza del sustrato y disolvente...
         </div>
       </div>
@@ -272,7 +272,7 @@ function DocMockup() {
 
 /* Feed mockup */
 function FeedMockup() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: `1px solid ${vars.border}`, fontSize: 14, fontWeight: 700, color: vars.textPrimary }}>Tu Feed</div>
@@ -288,7 +288,7 @@ function FeedMockup() {
               <div style={{ fontSize: 9, color: vars.textMuted }}>{post.uni} - hace {post.time}</div>
             </div>
           </div>
-          <div style={{ fontSize: 12, color: '#4A5568', lineHeight: 1.5, marginBottom: 8 }}>{post.text}</div>
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 8 }}>{post.text}</div>
           <div style={{ display: 'flex', gap: 16, fontSize: 10, color: vars.textMuted }}>
             <span>{post.likes} Me gusta</span><span>{post.comments} Comentarios</span><span>Compartir</span>
           </div>
@@ -300,7 +300,7 @@ function FeedMockup() {
 
 /* Jobs mockup */
 function JobsMockup() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 10, overflow: 'hidden' }}>
       <div style={{ padding: '10px 16px', borderBottom: `1px solid ${vars.border}`, fontSize: 14, fontWeight: 700, color: vars.textPrimary }}>Bolsa de Empleo</div>
@@ -326,7 +326,7 @@ function JobsMockup() {
 
 /* Mini feature previews for the features section */
 function FlashcardMiniPreview() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8', accentLight: '#E2EAF9' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)', accentLight: 'rgba(56,189,248,0.12)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 8, padding: 12, border: `1px solid ${vars.border}`, marginBottom: 14 }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
@@ -348,7 +348,7 @@ function FlashcardMiniPreview() {
 }
 
 function CommunityMiniPreview() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 8, padding: 12, border: `1px solid ${vars.border}`, marginBottom: 14 }}>
       {[
@@ -369,7 +369,7 @@ function CommunityMiniPreview() {
 }
 
 function JobsMiniPreview() {
-  const vars = { accent: '#2D62C8', textPrimary: '#151B1E', textMuted: '#8E99A4', border: '#E0E4E7', bgCard: '#FFFFFF', bgPrimary: '#F5F7F8' }
+  const vars = { accent: 'var(--accent)', textPrimary: 'var(--text-primary)', textMuted: 'var(--text-muted)', border: 'var(--border)', bgCard: 'var(--bg-card)', bgPrimary: 'var(--bg-primary)' }
   return (
     <div style={{ background: vars.bgCard, borderRadius: 8, padding: 12, border: `1px solid ${vars.border}`, marginBottom: 14 }}>
       {[
@@ -442,20 +442,20 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
   const font = "'Outfit', -apple-system, sans-serif"
   const vars = {
-    bgPrimary: '#F5F7F8',
-    bgSecondary: '#F9FAFB',
-    bgCard: '#FFFFFF',
-    textPrimary: '#151B1E',
-    textSecondary: '#4A5568',
-    textMuted: '#8E99A4',
-    accent: '#2D62C8',
-    accentLight: '#E2EAF9',
-    accentHover: '#2350A8',
-    border: '#E0E4E7',
+    bgPrimary: 'var(--bg-primary)',
+    bgSecondary: 'var(--bg-secondary)',
+    bgCard: 'var(--bg-card)',
+    textPrimary: 'var(--text-primary)',
+    textSecondary: 'var(--text-secondary)',
+    textMuted: 'var(--text-muted)',
+    accent: 'var(--accent)',
+    accentLight: 'rgba(56,189,248,0.12)',
+    accentHover: 'var(--accent)',
+    border: 'var(--border)',
   }
 
   const cardHoverStyle: React.CSSProperties = {
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     cursor: 'pointer',
   }
 
@@ -572,11 +572,11 @@ export default function Landing({ onLogin, onRegister }: Props) {
       <nav style={{
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: compact ? '0 16px' : '0 40px', height: compact ? 56 : 60,
-        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(12px)',
+        background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(16px)',
         borderBottom: `1px solid ${vars.border}`,
         position: 'sticky', top: 0, zIndex: 50,
         transform: headerVisible ? 'translateY(0)' : 'translateY(-100%)',
-        transition: 'transform 0.3s ease',
+        transition: 'transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: compact ? 8 : 10 }}>
           <LogoMark size={compact ? 28 : 34} />
@@ -630,7 +630,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
           flexDirection: compact ? 'column' : 'row',
         }}>
           {/* Left */}
-          <div style={{ flex: 1, animation: 'conniku-slideInLeft 0.8s ease both' }}>
+          <div style={{ flex: 1, animation: 'conniku-slideInLeft 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) both' }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               background: vars.accentLight, color: vars.accent,
@@ -693,7 +693,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
           {/* Right — Hero showcase cards (desktop/tablet) */}
           {!compact && (
-            <div style={{ flex: 1, maxWidth: mid ? 420 : 580, animation: 'conniku-slideInRight 0.8s ease both' }}>
+            <div style={{ flex: 1, maxWidth: mid ? 420 : 580, animation: 'conniku-slideInRight 1.0s cubic-bezier(0.25, 0.46, 0.45, 0.94) both' }}>
               <div style={{ position: 'relative', height: mid ? 460 : 580, animation: 'conniku-float 4s ease-in-out infinite' }}>
                 {/* Profile card */}
                 <div
@@ -973,8 +973,8 @@ export default function Landing({ onLogin, onRegister }: Props) {
                   transition: 'background 0.2s ease',
                   height: '100%',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F0F2F5' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = vars.bgSecondary }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#334155' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-secondary)' }}
               >
                 <div style={{ fontSize: 10, color: vars.textMuted, fontWeight: 500, marginBottom: 14 }}>{f.num}</div>
                 <div style={{ width: 44, height: 44, borderRadius: 10, background: f.bg, color: f.color, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
@@ -1045,7 +1045,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
               <AnimatedSection key={plan.name} delay={idx * 0.15} style={{ flex: 1 }}>
                 <div style={{
                   padding: compact ? '24px 20px' : '28px 24px', position: 'relative',
-                  background: plan.hl ? vars.textPrimary : vars.bgSecondary,
+                  background: plan.hl ? 'linear-gradient(135deg, #1a3a6e 0%, #0d2a5c 100%)' : vars.bgSecondary,
                   color: plan.hl ? '#fff' : vars.textPrimary,
                   height: '100%', boxSizing: 'border-box',
                 }}>
@@ -1094,7 +1094,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
 
       {/* ─── Final CTA ─── */}
       <section style={{
-        background: vars.textPrimary, padding: compact ? '48px 16px' : '80px 40px', textAlign: 'center',
+        background: 'linear-gradient(135deg, #0d1a30 0%, #1a3a6e 100%)', padding: compact ? '48px 16px' : '80px 40px', textAlign: 'center',
         borderRadius: '40px 40px 0 0', marginTop: -20, position: 'relative', zIndex: 3,
       }}>
         <AnimatedSection>

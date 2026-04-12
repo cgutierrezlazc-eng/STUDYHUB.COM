@@ -343,21 +343,21 @@ h1, h2, h3,
 }
 
 /* Page load stagger — content always visible, only slides up */
-.page-header { animation: fadeInUp 0.28s ease both; }
-.page-body > * { animation: fadeInUp 0.28s ease both; }
+.page-header { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.page-body > * { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
 .page-body > *:nth-child(1) { animation-delay: 0.04s; }
 .page-body > *:nth-child(2) { animation-delay: 0.08s; }
 .page-body > *:nth-child(3) { animation-delay: 0.12s; }
 .page-body > *:nth-child(4) { animation-delay: 0.16s; }
 .page-body > *:nth-child(5) { animation-delay: 0.20s; }
 
-.stat-card { animation: fadeInUp 0.28s ease both; }
-.stat-card:nth-child(1) { animation-delay: 0.05s; }
-.stat-card:nth-child(2) { animation-delay: 0.10s; }
-.stat-card:nth-child(3) { animation-delay: 0.15s; }
-.stat-card:nth-child(4) { animation-delay: 0.20s; }
+.stat-card { animation: fadeInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+.stat-card:nth-child(1) { animation-delay: 0.06s; }
+.stat-card:nth-child(2) { animation-delay: 0.12s; }
+.stat-card:nth-child(3) { animation-delay: 0.18s; }
+.stat-card:nth-child(4) { animation-delay: 0.24s; }
 
-.sidebar { animation: slideInLeft 0.22s ease both; }
+.sidebar { animation: slideInLeft 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
 
 /* ─── App Layout ─────────────────────────────────────────── */
 .app-layout {
