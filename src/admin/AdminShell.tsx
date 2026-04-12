@@ -33,14 +33,15 @@ export default function AdminShell({ title, children }: Props) {
     )
   }
 
-  // If not a popup, render with back-nav header
+  // If not a popup, render with back-nav header + scrollable content area
   if (!isPopup) {
     return (
-      <div style={{ minHeight: '100%' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+        {/* Back-nav bar — always visible, never scrolls away */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10, padding: '8px 24px',
           borderBottom: '1px solid var(--border)', background: 'var(--bg-secondary)',
-          marginBottom: 0, position: 'sticky', top: 0, zIndex: 10,
+          flexShrink: 0, zIndex: 10,
         }}>
           <button
             onClick={() => navigate(-1)}
@@ -56,7 +57,10 @@ export default function AdminShell({ title, children }: Props) {
           </button>
           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{title}</span>
         </div>
-        {children}
+        {/* Content — fills remaining height, scrolls internally */}
+        <div style={{ flex: 1, overflow: 'auto', minHeight: 0 }}>
+          {children}
+        </div>
       </div>
     )
   }

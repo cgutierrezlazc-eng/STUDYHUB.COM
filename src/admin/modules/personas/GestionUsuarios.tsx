@@ -146,10 +146,10 @@ function ColaboradorPanel({ emp, onClose, onNavigate }: {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, right: 0, width: 480, height: '100vh',
+      position: 'fixed', top: 56, right: 0, width: 480, height: 'calc(100vh - 56px)',
       background: 'var(--bg-primary)', borderLeft: '1px solid var(--border)',
       boxShadow: '-8px 0 32px rgba(0,0,0,0.12)', overflowY: 'auto',
-      zIndex: 1000, display: 'flex', flexDirection: 'column',
+      zIndex: 60, display: 'flex', flexDirection: 'column',
     }}>
       {/* Header */}
       <div style={{
@@ -371,10 +371,10 @@ function PlatformUserPanel({ usr, onClose }: { usr: PlatformUser; onClose: () =>
 
   return (
     <div style={{
-      position: 'fixed', top: 0, right: 0, width: 420, height: '100vh',
+      position: 'fixed', top: 56, right: 0, width: 420, height: 'calc(100vh - 56px)',
       background: 'var(--bg-primary)', borderLeft: '1px solid var(--border)',
       boxShadow: '-8px 0 32px rgba(0,0,0,0.12)', overflowY: 'auto',
-      zIndex: 1000, display: 'flex', flexDirection: 'column',
+      zIndex: 60, display: 'flex', flexDirection: 'column',
     }}>
       <div style={{
         padding: '20px 24px', background: `linear-gradient(135deg, ${info.color}dd 0%, ${info.color} 100%)`,
@@ -815,7 +815,7 @@ export default function GestionUsuarios({ onNavigate }: { onNavigate?: (path: st
         <>
           <div
             onClick={() => setSelectedEmp(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 }}
+            style={{ position: 'fixed', top: 56, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 48 }}
           />
           <ColaboradorPanel
             emp={selectedEmp}
@@ -828,7 +828,7 @@ export default function GestionUsuarios({ onNavigate }: { onNavigate?: (path: st
         <>
           <div
             onClick={() => setSelectedUser(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 999 }}
+            style={{ position: 'fixed', top: 56, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', zIndex: 48 }}
           />
           <PlatformUserPanel usr={selectedUser} onClose={() => setSelectedUser(null)} />
         </>
