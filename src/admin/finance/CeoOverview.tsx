@@ -153,7 +153,7 @@ export default function CeoOverview({ onNavigate }: Props) {
           <Section title="Ingresos — Semana">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 14 }}>
               <KPI label="Ingreso Bruto" value={fmtUsd(rev.grossUsd)} sub={fmtClp(rev.grossClp)} color="#22c55e" trend={rev.growthPercent} />
-              <KPI label="Neto tras Stripe" value={fmtClp(rev.netAfterStripeClp)} sub="IVA incluido" color="#16a34a" />
+              <KPI label="Neto tras Comisiones" value={fmtClp(rev.netAfterStripeClp)} sub="IVA incluido" color="#16a34a" />
               <KPI label="IVA (19%)" value={fmtClp(rev.ivaClp)} sub="Declarable en F29" color="#f59e0b" />
               <KPI label="Ganancia Neta" value={fmtClp(rev.gananciaNetaClp)} sub="Libre de impuestos" color="#3b82f6" />
               <KPI label="Pagos Esta Semana" value={r.subscriptions?.newPayments || 0} sub="Transacciones completadas" />

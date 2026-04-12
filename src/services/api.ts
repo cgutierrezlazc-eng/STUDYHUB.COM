@@ -954,14 +954,6 @@ export const api = {
   sharePost: (postId: string, comment?: string) =>
     request(`/social/posts/${postId}/share`, { method: 'POST', body: JSON.stringify({ comment }) }),
 
-  // ─── Payments ─────────────────────────────────────────────
-  createCheckoutSession: (plan: 'monthly' | 'yearly') =>
-    request('/payments/create-checkout-session', { method: 'POST', body: JSON.stringify({ plan }) }),
-  createPortalSession: () =>
-    request('/payments/create-portal-session', { method: 'POST' }),
-  getSubscriptionStatus: () => request('/payments/subscription-status'),
-  getStripeHealth: () => request('/payments/health'),
-
   // ─── Mercado Pago ─────────────────────────────────────────
   getMpHealth: () => request('/payments/mp/health'),
   getMpPlans: () => request('/payments/mp/plans'),

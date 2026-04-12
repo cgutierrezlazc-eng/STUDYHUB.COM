@@ -19,7 +19,7 @@ export default function Subscription({ onNavigate }: Props) {
   const [selectedTier, setSelectedTier] = useState<'pro' | 'max'>('pro')
 
   useEffect(() => {
-    api.getSubscriptionStatus().then(setSubStatus).catch(() => {})
+    api.getMpSubscriptionStatus().then(setSubStatus).catch(() => {})
     api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
     api.getMpPlans().then(setMpPlans).catch(() => {})
     // Check URL params for success/cancel (Mercado Pago + PayPal)
