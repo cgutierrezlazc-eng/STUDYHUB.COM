@@ -3009,11 +3009,12 @@ h1, h2, h3,
 }
 
 .fb-profile-photo-section {
-  display: flex; align-items: flex-end; justify-content: flex-start; gap: 16px; padding: 0 24px;
-  margin-top: -50px; position: relative; z-index: 2; flex-wrap: wrap;
+  display: flex; flex-direction: column; align-items: flex-start;
+  gap: 12px; padding: 0 24px 20px;
+  margin-top: -56px; position: relative; z-index: 2;
 }
 .fb-profile-photo {
-  width: 140px; height: 140px; border-radius: 14px;
+  width: 112px; height: 112px; border-radius: 14px;
   border: 4px solid var(--bg-card); overflow: hidden;
   cursor: pointer; position: relative; flex-shrink: 0;
   background: var(--bg-card);
@@ -3031,7 +3032,7 @@ h1, h2, h3,
 }
 .fb-profile-photo:hover .fb-photo-overlay { opacity: 1; }
 
-.fb-profile-name-section { flex: 1; padding-bottom: 12px; }
+.fb-profile-name-section { width: 100%; padding-bottom: 4px; }
 .fb-profile-name-section h1 { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
 .fb-headline { font-size: 15px; color: var(--text-secondary); margin-top: 2px; }
 .fb-username { color: var(--text-muted); font-size: 13px; }
@@ -3539,7 +3540,7 @@ body.touch-device select {
 
   /* Profile */
   .fb-cover-photo { height: 140px !important; }
-  .fb-profile-photo { width: 80px !important; height: 80px !important; margin-top: -40px !important; }
+  .fb-profile-photo { width: 80px !important; height: 80px !important; }
   .fb-profile-initials { font-size: 22px !important; }
   .fb-wall-layout { grid-template-columns: 1fr !important; }
   .fb-wall-sidebar { display: none; }
@@ -3604,7 +3605,7 @@ body.touch-device select {
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr !important; }
   .suggestions-grid { grid-template-columns: 1fr !important; }
-  .fb-profile-photo-section { flex-direction: column; align-items: flex-start; text-align: left; }
+  .fb-profile-photo-section { padding: 0 16px 16px; margin-top: -44px; }
   .quick-shortcuts { grid-template-columns: 1fr !important; }
   .topbar { padding: 0 8px; }
   .topbar-right { gap: 0; }

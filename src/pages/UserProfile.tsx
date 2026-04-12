@@ -651,7 +651,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             )}
           </div>
 
-          <div className="fb-profile-name-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div className="fb-profile-name-section">
             <div>
               {/* Name + role badge */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
