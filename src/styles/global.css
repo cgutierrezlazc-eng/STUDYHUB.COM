@@ -3467,7 +3467,8 @@ body.touch-device select {
   .fb-profile-initials { font-size: 24px !important; }
   .fb-wall-layout { grid-template-columns: 1fr !important; }
   .fb-wall-sidebar { display: none; }
-  .fb-profile-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+  .fb-profile-tabs { overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; padding: 0 8px; }
+  .fb-tab { flex: none; padding: 10px 14px; font-size: 12.5px; }
   .fb-profile-name-section { flex-direction: column; align-items: flex-start !important; gap: 4px; }
   .fb-profile-actions { flex-wrap: wrap; }
 

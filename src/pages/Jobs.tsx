@@ -782,12 +782,12 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
   return (
     <>
       <div className="page-header page-enter">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ minWidth: 0 }}>
             <h2>{Briefcase()} {t('jobs.title')}</h2>
-            <p>{t('jobs.subtitle')}</p>
+            <p style={{ marginBottom: 0 }}>{t('jobs.subtitle')}</p>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexShrink: 0 }}>
             <button
               onClick={toggleOpenToWork}
               className={`btn btn-sm ${careerStatus?.isOpenToOpportunities ? 'btn-primary' : 'btn-secondary'}`}
