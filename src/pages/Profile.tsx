@@ -14,7 +14,7 @@ export default function Profile() {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<Section>('profile')
-  const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'pizarra')
+  const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'equilibrado')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -710,10 +710,10 @@ export default function Profile() {
                 <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
                   {[
-                    { id: 'pizarra',     name: 'Pizarra',     colors: ['#F1F5F9', '#D97706', '#FFFFFF'], desc: 'Claro · amber — predeterminado' },
+                    { id: 'equilibrado', name: 'Equilibrado', colors: ['#FAF8F4', '#D97706', '#2D62C8'], desc: 'Claro cálido · dual accent — predeterminado' },
+                    { id: 'pizarra',     name: 'Pizarra',     colors: ['#F1F5F9', '#D97706', '#FFFFFF'], desc: 'Claro · amber' },
                     { id: 'dorado',      name: 'Dorado',      colors: ['#F1F5F9', '#D97706', '#2D62C8'], desc: 'Claro · amber nav + azul info' },
                     { id: 'corporativo', name: 'Corporativo', colors: ['#F1F5F9', '#2D62C8', '#D97706'], desc: 'Claro · azul nav + amber CTA' },
-                    { id: 'equilibrado', name: 'Equilibrado', colors: ['#FAF8F4', '#D97706', '#2D62C8'], desc: 'Claro cálido · dual accent' },
                     { id: 'oceano',      name: 'Océano',      colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Oscuro · azul cielo' },
                     { id: 'conniku',     name: 'Conniku',     colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Oscuro · azul marca' },
                   ].map(th => {

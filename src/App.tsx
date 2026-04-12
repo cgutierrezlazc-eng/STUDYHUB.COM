@@ -198,7 +198,7 @@ export default function App() {
   useEffect(() => {
     const saved = localStorage.getItem('conniku_theme')
     const allowed = ['pizarra', 'dorado', 'corporativo', 'equilibrado', 'oceano', 'conniku']
-    const theme = allowed.includes(saved || '') ? saved! : 'pizarra'
+    const theme = allowed.includes(saved || '') ? saved! : 'equilibrado'
     document.documentElement.setAttribute('data-theme', theme)
   }, [])
 
