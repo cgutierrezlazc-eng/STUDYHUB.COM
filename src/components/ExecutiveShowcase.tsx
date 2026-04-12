@@ -38,11 +38,21 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
   const meta = typeMap[item.type as TypeId] || typeMap.insight
 
   return (
-    <div className="sc-card" style={{ borderLeft: `4px solid ${meta.color}` }}>
-      {/* Type pill */}
-      <div className="sc-type-pill" style={{ color: meta.color, background: meta.color + '14' }}>
-        <span>{meta.icon}</span>
-        <span>{meta.label}</span>
+    <div
+      className="sc-card"
+      style={{ '--sc-accent': meta.color } as React.CSSProperties}
+    >
+      {/* Large icon spot — top right */}
+      <div
+        className="sc-icon-spot"
+        style={{ background: meta.color + '18' }}
+      >
+        {meta.icon}
+      </div>
+
+      {/* Type label */}
+      <div className="sc-type-pill">
+        {meta.label}
       </div>
 
       {/* Title */}
@@ -53,9 +63,8 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
             target="_blank"
             rel="noopener noreferrer"
             className="sc-title-link"
-            style={{ '--link-color': meta.color } as React.CSSProperties}
           >
-            {item.title} <span className="sc-link-arrow">↗</span>
+            {item.title}<span className="sc-link-arrow"> ↗</span>
           </a>
         ) : item.title}
       </div>
@@ -69,7 +78,7 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
           {item.tag && (
             <span
               className="sc-tag"
-              style={{ color: meta.color, background: meta.color + '14', borderColor: meta.color + '30' }}
+              style={{ color: meta.color, background: meta.color + '14', borderColor: meta.color + '25' }}
             >
               {item.tag}
             </span>

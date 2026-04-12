@@ -4784,91 +4784,106 @@ body.touch-device select {
   gap: 0;
 }
 
-/* Banner premium */
+/* ── Banner premium (dark editorial) ─────────────────────── */
 .sc-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 20px 22px;
-  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1a1050 100%);
   border-radius: 14px 14px 0 0;
+  border: 1px solid rgba(255,255,255,0.07);
   color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.sc-banner::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%);
+  pointer-events: none;
 }
 .sc-banner-left { display: flex; flex-direction: column; gap: 3px; }
 .sc-banner-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 800;
   color: #fff;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.01em;
 }
 .sc-max-badge {
-  font-size: 10px;
-  font-weight: 700;
-  background: #06b6d4;
+  font-size: 9px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
   color: #fff;
-  border-radius: 6px;
+  border-radius: 5px;
   padding: 2px 7px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .sc-banner-sub {
   font-size: 12px;
-  opacity: 0.75;
+  opacity: 0.55;
   color: #fff;
 }
 .sc-btn-add {
-  background: rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.10);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 7px 15px;
+  font-size: 12px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
+  letter-spacing: 0.02em;
 }
-.sc-btn-add:hover { background: rgba(255,255,255,0.28); }
+.sc-btn-add:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); }
 .sc-btn-add--hero {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
   margin-top: 16px;
 }
-.sc-btn-add--hero:hover { opacity: 0.9; background: var(--accent); }
+.sc-btn-add--hero:hover { opacity: 0.9; }
 
-/* Filter bar */
+/* ── Filter bar ────────────────────────────────────────── */
 .sc-filter-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  padding: 14px 16px;
+  gap: 5px;
+  padding: 12px 16px;
   background: var(--bg-card);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
 .sc-filter-pill {
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
+  padding: 3px 11px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   background: transparent;
   color: var(--text-muted);
-  transition: all 0.15s;
+  transition: all 0.13s;
 }
 .sc-filter-pill:hover { background: var(--bg-secondary); }
-.sc-filter-pill.active { font-weight: 600; }
+.sc-filter-pill.active { font-weight: 700; }
 
-/* Cards grid */
+/* ── Cards grid ────────────────────────────────────────── */
 .sc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 12px;
   padding: 16px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
@@ -4876,31 +4891,60 @@ body.touch-device select {
   border-radius: 0 0 14px 14px;
 }
 
-/* Individual card */
+/* ── Individual card — editorial style ─────────────────── */
 .sc-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 14px;
+  padding: 18px 18px 14px;
   position: relative;
-  transition: box-shadow 0.18s, transform 0.18s;
+  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.sc-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--sc-accent, var(--accent));
+  border-radius: 14px 14px 0 0;
 }
 .sc-card:hover {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
-  transform: translateY(-1px);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+  border-color: var(--sc-accent, var(--border));
 }
 
-/* Type pill */
+/* Large icon spot — top right */
+.sc-icon-spot {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  opacity: 0.85;
+}
+
+/* Type label */
 .sc-type-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 20px;
-  padding: 3px 9px;
-  margin-bottom: 10px;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sc-accent, var(--text-muted));
+  margin-bottom: 8px;
+  padding-right: 48px;
 }
 
 /* Title */
@@ -4916,45 +4960,48 @@ body.touch-device select {
   text-decoration: none;
   transition: color 0.15s;
 }
-.sc-title-link:hover { color: var(--link-color, var(--accent)); }
-.sc-link-arrow { font-size: 12px; opacity: 0.5; }
+.sc-title-link:hover { color: var(--sc-accent, var(--accent)); }
+.sc-link-arrow { font-size: 11px; opacity: 0.45; margin-left: 2px; }
 
 /* Description */
 .sc-desc {
   font-size: 12px;
   color: var(--text-muted);
-  line-height: 1.55;
+  line-height: 1.6;
   margin: 0 0 10px;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  flex: 1;
 }
 
 /* Footer: tag + date */
 .sc-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle, var(--border));
 }
 .sc-tag {
   display: inline-flex;
   align-items: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  border-radius: 6px;
+  border-radius: 5px;
   border: 1px solid transparent;
-  padding: 2px 8px;
+  padding: 2px 7px;
 }
 .sc-date {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-muted);
   margin-left: auto;
 }
 
-/* Edit / Delete actions — visible on hover */
+/* Edit / Delete — visible on hover */
 .sc-actions {
   position: absolute;
   top: 10px;
@@ -4963,6 +5010,7 @@ body.touch-device select {
   gap: 4px;
   opacity: 0;
   transition: opacity 0.15s;
+  z-index: 2;
 }
 .sc-card:hover .sc-actions { opacity: 1; }
 .sc-btn-edit {

@@ -359,116 +359,94 @@ export default function Quizzes({ projects, onNavigate }: Props) {
       {/* ═══════════════════ TAB: QUIZZES ═══════════════════ */}
       {activeTab === 'quizzes' && (
         <div>
-          {!quiz ? (
-            /* Quiz setup */
-            <div className="u-card" style={{ padding: 24 }}>
-              <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 20px' }}>
-                Configurar Quiz
-              </h2>
+          {projects.length === 0 ? (
+            <div className="u-card" style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
+              <p>Crea una asignatura para empezar a generar quizzes.</p>
+            </div>
+          ) : (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14, marginBottom: 32 }}>
+                {projects.map(p => {
+                  const ph = quizHistory.filter(h => h.projectName === p.name)
+                  const last = ph[0]
+                  const avgPct = ph.length > 0
+                    ? Math.round(ph.reduce((a, h) => a + (h.score / h.total) * 100, 0) / ph.length)
+                    : null
+                  const hasDocs = p.documents.length > 0
+                  return (
+                    <div key={p.id} className="u-card" style={{ padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                          background: (p as any).color || 'var(--accent)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18,
+                        }}>
+                          {(p as any).icon || '📚'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                            {p.documents.length} doc{p.documents.length !== 1 ? 's' : ''}
+                            {ph.length > 0 && <span> · {ph.length} quiz{ph.length !== 1 ? 'zes' : ''}</span>}
+                            {avgPct !== null && <span style={{ color: scoreColor(avgPct), fontWeight: 600 }}> · avg {avgPct}%</span>}
+                          </div>
+                        </div>
+                      </div>
 
-              {/* Subject selector */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                  Asignatura
-                </label>
-                <select
-                  value={selectedProjectId}
-                  onChange={e => setSelectedProjectId(e.target.value)}
-                  style={{
-                    width: '100%', padding: '10px 12px', borderRadius: 8, fontSize: 14,
-                    border: '1px solid var(--border)', background: 'var(--bg-primary)',
-                    color: 'var(--text-primary)', outline: 'none',
-                  }}
-                >
-                  <option value="">Selecciona una asignatura...</option>
-                  {projects.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                      {last && (
+                        <div style={{ padding: '7px 10px', borderRadius: 7, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: scoreColor(Math.round((last.score / last.total) * 100)) }}>
+                            {Math.round((last.score / last.total) * 100)}%
+                          </span>
+                          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{last.score}/{last.total} · {new Date(last.date).toLocaleDateString('es-CL')}</span>
+                        </div>
+                      )}
+
+                      {/* Document preview */}
+                      {hasDocs && (
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {p.documents.slice(0, 3).map(d => (
+                            <span key={d.id} style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)' }}>
+                              {d.name.length > 20 ? d.name.slice(0, 18) + '…' : d.name}
+                            </span>
+                          ))}
+                          {p.documents.length > 3 && <span style={{ padding: '2px 6px', color: 'var(--text-muted)' }}>+{p.documents.length - 3} más</span>}
+                        </div>
+                      )}
+
+                      <button
+                        className="btn btn-primary btn-sm"
+                        disabled={!hasDocs}
+                        title={!hasDocs ? 'Sube documentos primero en la asignatura' : ''}
+                        onClick={() => onNavigate(`/project/${p.id}?tab=quiz`)}
+                        style={{ alignSelf: 'stretch', marginTop: 'auto' }}
+                      >
+                        {hasDocs ? 'Ir al Quiz →' : 'Sin documentos'}
+                      </button>
+                    </div>
+                  )
+                })}
               </div>
 
-              {/* Difficulty */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                  Dificultad
-                </label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {(['easy', 'medium', 'hard'] as Difficulty[]).map(d => (
-                    <button
-                      key={d}
-                      onClick={() => setDifficulty(d)}
-                      style={{
-                        flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)',
-                        cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.2s',
-                        background: difficulty === d ? 'var(--accent)' : 'var(--bg-primary)',
-                        color: difficulty === d ? '#fff' : 'var(--text-secondary)',
-                      }}
-                    >
-                      {diffLabels[d]}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Number of questions */}
-              <div style={{ marginBottom: 24 }}>
-                <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>
-                  Numero de preguntas
-                </label>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {[5, 10, 15].map(n => (
-                    <button
-                      key={n}
-                      onClick={() => setNumQuestions(n)}
-                      style={{
-                        flex: 1, padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)',
-                        cursor: 'pointer', fontSize: 13, fontWeight: 600, transition: 'all 0.2s',
-                        background: numQuestions === n ? 'var(--accent)' : 'var(--bg-primary)',
-                        color: numQuestions === n ? '#fff' : 'var(--text-secondary)',
-                      }}
-                    >
-                      {n} preguntas
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button
-                className="btn btn-primary"
-                onClick={handleGenerateQuiz}
-                disabled={!selectedProjectId || quizLoading}
-                style={{ width: '100%', padding: '12px', fontSize: 15, fontWeight: 600, borderRadius: 10 }}
-              >
-                {quizLoading ? 'Generando quiz...' : 'Generar Quiz'}
-              </button>
-
-              {/* Quiz history */}
               {quizHistory.length > 0 && (
-                <div style={{ marginTop: 32 }}>
-                  <h3 style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 12px' }}>
-                    Historial de Quizzes
+                <div>
+                  <h3 style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 10px' }}>
+                    Historial reciente
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {quizHistory.slice(0, 8).map(h => {
                       const pct = Math.round((h.score / h.total) * 100)
                       return (
-                        <div key={h.id} style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '10px 14px', borderRadius: 8, background: 'var(--bg-secondary)',
-                        }}>
-                          <div>
-                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{h.projectName}</span>
-                            <span style={{ fontSize: 12, color: 'var(--text-secondary)', marginLeft: 8 }}>
-                              {diffLabels[h.difficulty as Difficulty] || h.difficulty}
-                            </span>
+                        <div key={h.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
+                          <div style={{ width: 40, height: 40, borderRadius: 8, background: scoreColor(pct) + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                            <span style={{ fontSize: 12, fontWeight: 800, color: scoreColor(pct) }}>{pct}%</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                              {new Date(h.date).toLocaleDateString('es-CL')}
-                            </span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: scoreColor(pct) }}>
-                              {h.score}/{h.total} ({pct}%)
-                            </span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.projectName}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                              {diffLabels[h.difficulty as Difficulty] || h.difficulty} · {h.score}/{h.total} · {new Date(h.date).toLocaleDateString('es-CL')}
+                            </div>
                           </div>
                         </div>
                       )
@@ -476,198 +454,7 @@ export default function Quizzes({ projects, onNavigate }: Props) {
                   </div>
                 </div>
               )}
-            </div>
-          ) : !quizSubmitted ? (
-            /* Active quiz */
-            <div>
-              {/* Progress bar */}
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>
-                    Pregunta {currentQuestion + 1} de {quiz.questions.length}
-                  </span>
-                  <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-                    {Object.keys(userAnswers).length}/{quiz.questions.length} respondidas
-                  </span>
-                </div>
-                <div style={{ height: 6, borderRadius: 3, background: 'var(--bg-secondary)', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 3, background: 'var(--accent)',
-                    width: `${((currentQuestion + 1) / quiz.questions.length) * 100}%`,
-                    transition: 'width 0.3s ease',
-                  }} />
-                </div>
-              </div>
-
-              {/* Question card */}
-              <div className="u-card" style={{ padding: 24, marginBottom: 16 }}>
-                <h3 style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 20px', lineHeight: 1.5 }}>
-                  {quiz.questions[currentQuestion].question}
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {quiz.questions[currentQuestion].options.map((opt, idx) => {
-                    const selected = userAnswers[currentQuestion] === idx
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => selectAnswer(currentQuestion, idx)}
-                        style={{
-                          padding: '14px 16px', borderRadius: 10, border: '2px solid',
-                          borderColor: selected ? 'var(--accent)' : 'var(--border)',
-                          background: selected ? 'var(--accent)10' : 'var(--bg-primary)',
-                          color: 'var(--text-primary)', fontSize: 14, textAlign: 'left',
-                          cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 12,
-                        }}
-                      >
-                        <span style={{
-                          width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center',
-                          justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0,
-                          background: selected ? 'var(--accent)' : 'var(--bg-secondary)',
-                          color: selected ? '#fff' : 'var(--text-secondary)',
-                        }}>
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        {opt}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-
-              {/* Navigation */}
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'space-between' }}>
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => setCurrentQuestion(c => Math.max(0, c - 1))}
-                  disabled={currentQuestion === 0}
-                  style={{ padding: '10px 20px', fontSize: 14 }}
-                >
-                  Anterior
-                </button>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  {currentQuestion < quiz.questions.length - 1 ? (
-                    <button
-                      className="btn btn-primary"
-                      onClick={() => setCurrentQuestion(c => c + 1)}
-                      style={{ padding: '10px 20px', fontSize: 14 }}
-                    >
-                      Siguiente
-                    </button>
-                  ) : (
-                    <button
-                      className="btn btn-primary"
-                      onClick={submitQuiz}
-                      disabled={Object.keys(userAnswers).length < quiz.questions.length}
-                      style={{
-                        padding: '10px 24px', fontSize: 14, fontWeight: 700,
-                        opacity: Object.keys(userAnswers).length < quiz.questions.length ? 0.5 : 1,
-                      }}
-                    >
-                      Enviar Quiz
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Question dots */}
-              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 20, flexWrap: 'wrap' }}>
-                {quiz.questions.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setCurrentQuestion(i)}
-                    style={{
-                      width: 32, height: 32, borderRadius: '50%', border: 'none', cursor: 'pointer',
-                      fontSize: 12, fontWeight: 600, transition: 'all 0.2s',
-                      background: i === currentQuestion ? 'var(--accent)' : userAnswers[i] !== undefined ? 'var(--accent)30' : 'var(--bg-secondary)',
-                      color: i === currentQuestion ? '#fff' : userAnswers[i] !== undefined ? 'var(--accent)' : 'var(--text-secondary)',
-                    }}
-                  >
-                    {i + 1}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            /* Results screen */
-            <div>
-              {(() => {
-                const correct = quiz.questions.reduce((acc, q, i) => acc + (userAnswers[i] === q.correctAnswer ? 1 : 0), 0)
-                const pct = Math.round((correct / quiz.questions.length) * 100)
-                return (
-                  <>
-                    {/* Score card */}
-                    <div className="u-card" style={{ padding: 32, textAlign: 'center', marginBottom: 24 }}>
-                      <div style={{
-                        width: 100, height: 100, borderRadius: '50%', margin: '0 auto 16px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        background: `${scoreColor(pct)}15`, border: `3px solid ${scoreColor(pct)}`,
-                      }}>
-                        <span style={{ fontSize: 32, fontWeight: 800, color: scoreColor(pct) }}>{pct}%</span>
-                      </div>
-                      <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-                        {pct >= 70 ? 'Excelente trabajo!' : pct >= 50 ? 'Buen intento!' : 'Sigue practicando!'}
-                      </h2>
-                      <p style={{ fontSize: 16, color: 'var(--text-secondary)', margin: 0 }}>
-                        {correct} de {quiz.questions.length} respuestas correctas
-                      </p>
-                      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginTop: 20 }}>
-                        <button className="btn btn-primary" onClick={handleGenerateQuiz} style={{ padding: '10px 24px' }}>
-                          Intentar de nuevo
-                        </button>
-                        <button className="btn btn-secondary" onClick={resetQuiz} style={{ padding: '10px 24px' }}>
-                          Nuevo quiz
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Review questions */}
-                    <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 16px' }}>
-                      Revision de respuestas
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                      {quiz.questions.map((q, i) => {
-                        const isCorrect = userAnswers[i] === q.correctAnswer
-                        return (
-                          <div key={i} className="u-card" style={{
-                            padding: 16, borderLeft: `4px solid ${isCorrect ? '#10B981' : '#EF4444'}`,
-                          }}>
-                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 10 }}>
-                              <span style={{
-                                width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 12, fontWeight: 700,
-                                background: isCorrect ? '#10B98120' : '#EF444420',
-                                color: isCorrect ? '#10B981' : '#EF4444',
-                              }}>
-                                {isCorrect ? '\u2713' : '\u2717'}
-                              </span>
-                              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0, lineHeight: 1.5 }}>
-                                {i + 1}. {q.question}
-                              </p>
-                            </div>
-                            <div style={{ marginLeft: 34, fontSize: 13 }}>
-                              {!isCorrect && (
-                                <p style={{ color: '#EF4444', margin: '0 0 4px' }}>
-                                  Tu respuesta: {q.options[userAnswers[i]] || 'Sin respuesta'}
-                                </p>
-                              )}
-                              <p style={{ color: '#10B981', margin: '0 0 4px' }}>
-                                Respuesta correcta: {q.options[q.correctAnswer]}
-                              </p>
-                              {q.explanation && (
-                                <p style={{ color: 'var(--text-secondary)', margin: '4px 0 0', fontStyle: 'italic' }}>
-                                  {q.explanation}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
+            </>
           )}
         </div>
       )}

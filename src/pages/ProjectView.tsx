@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Project, Document, ChatMessage } from '../types'
 import ChatMessageRenderer from '../components/ChatMessageRenderer'
 import { api } from '../services/api'
@@ -44,8 +44,10 @@ function formatSize(bytes: number) {
 
 export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const project = projects.find(p => p.id === id)
-  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'summary' | 'live'>('docs')
+  const initialTab = (['docs', 'chat', 'guide', 'quiz', 'flashcards', 'summary', 'live'].includes(searchParams.get('tab') || '') ? searchParams.get('tab') : 'docs') as 'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'summary' | 'live'
+  const [tab, setTab] = useState<'docs' | 'chat' | 'guide' | 'quiz' | 'flashcards' | 'summary' | 'live'>(initialTab)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatInput, setChatInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -942,9 +944,32 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                   {project.documents.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--accent-orange)', fontSize: 14 }}>
                       {AlertTriangle()} Sube al menos un documento para generar un quiz.
+                      <div style={{ marginTop: 10 }}>
+                        <button className="btn btn-secondary btn-sm" onClick={() => setTab('docs')}>
+                          Ir a Documentos →
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <>
+                      {/* Documentos que se usarán */}
+                      <div style={{ marginBottom: 16, padding: '10px 12px', background: 'var(--bg-secondary)', borderRadius: 8, border: '1px solid var(--border-subtle)' }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                          Material incluido en el quiz
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          {project.documents.map(doc => (
+                            <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 5px', borderRadius: 4, background: 'var(--accent)22', color: 'var(--accent)', flexShrink: 0 }}>
+                                {(doc.type || 'DOC').toUpperCase().slice(0, 3)}
+                              </span>
+                              <span style={{ color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.name}</span>
+                              {doc.processed && <span style={{ marginLeft: 'auto', color: 'var(--accent-green)', fontSize: 10, flexShrink: 0 }}>✓</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
                       {/* Dificultad */}
                       <div style={{ marginBottom: 16 }}>
                         <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>

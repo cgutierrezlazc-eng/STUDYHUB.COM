@@ -1155,230 +1155,143 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 </div>
               )}
 
-              {/* Actividad Reciente — visible para todos los visitantes */}
-              {activityFeed.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <h3 style={{ margin: '0 0 12px 0', fontSize: 18, fontWeight: 600 }}>{t('userprofile.recentActivity')}</h3>
-                  {activityLoading ? (
+              {/* ── Timeline unificado: posts + actividad ── */}
+              {(() => {
+                // Merge posts (type='post') + activity feed items sorted by date
+                const activityItems = activityFeed
+                  .filter(item => item.type === 'activity' && (isOwn || true))
+                  .map(item => ({ ...item, _kind: 'activity' as const }))
+                const postItems = posts.map(p => ({ ...p, _kind: 'post' as const }))
+                const merged = [...postItems, ...activityItems].sort((a, b) => {
+                  const ta = new Date(a.createdAt || 0).getTime()
+                  const tb = new Date(b.createdAt || 0).getTime()
+                  return tb - ta
+                })
+
+                if (activityLoading && posts.length === 0) {
+                  return (
                     <div className="u-card" style={{ textAlign: 'center', padding: 20 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
                     </div>
-                  ) : (
-                    activityFeed
-                      .filter(item => isOwn || item.type === 'activity')  // Para otros: solo actividades públicas, no posts de amigos
-                      .slice(0, 5).map(item => {
-                      if (item.type === 'activity') {
-                        return (
-                          <div key={item.id} className="u-card" style={{ padding: '12px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-                            <span style={{ fontSize: 20 }}>
-                              {item.activityType === 'quiz_generated' ? FileText({ size: 20 }) :
-                               item.activityType === 'guide_generated' ? BookOpen({ size: 20 }) :
-                               item.activityType === 'document_uploaded' ? FileText({ size: 20 }) :
-                               item.activityType === 'friend_added' ? Users({ size: 20 }) : Zap({ size: 20 })}
-                            </span>
-                            <div>
-                              <span style={{ fontSize: 14 }}>{item.content}</span>
-                              <small style={{ display: 'block', color: 'var(--text-muted)', marginTop: 2 }}>{timeAgo(item.createdAt)}</small>
-                            </div>
-                          </div>
-                        )
-                      }
-                      // type === "post" - friend's post
-                      const isFriendPost = item.author?.id !== user?.id
-                      const isOnOtherWall = item.wallOwner && item.author && item.wallOwner.id !== item.author.id
-                      return (
-                        <div key={item.id} className="card fb-post" style={{ marginBottom: 8 }}>
-                          <div className="fb-post-header">
-                            <div className="fb-post-author" onClick={() => item.author && onNavigate(`/user/${item.author.id}`)}>
-                              {item.author?.avatar ? (
-                                <img src={item.author.avatar} alt="" className="fb-post-avatar" />
-                              ) : (
-                                <div className="fb-post-avatar-initials">
-                                  {(item.author?.firstName?.[0] || '') + (item.author?.lastName?.[0] || '')}
-                                </div>
-                              )}
-                              <div>
-                                <strong>{item.author?.firstName} {item.author?.lastName}</strong>
-                                {isOnOtherWall && (
-                                  <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>
-                                    {' '}public\u00f3 en el perfil de{' '}
-                                    <strong
-                                      style={{ cursor: 'pointer', color: 'var(--text-primary)' }}
-                                      onClick={e => { e.stopPropagation(); onNavigate(`/user/${item.wallOwner.id}`) }}
-                                    >
-                                      {item.wallOwner.firstName} {item.wallOwner.lastName}
-                                    </strong>
-                                  </span>
-                                )}
-                                <span className="fb-post-time">{timeAgo(item.createdAt)}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <p className="fb-post-content">{item.content}</p>
-                          {item.imageUrl && (
-                            <div className="fb-post-image"><img src={item.imageUrl} alt="" /></div>
-                          )}
-                          <div className="fb-post-stats">
-                            {item.likes > 0 && <span>{Heart({ size: 14, color: '#ef4444' })} {item.likes}</span>}
-                            {item.commentCount > 0 && (
-                              <span className="fb-comment-count" onClick={() => toggleComments(item.id)}>
-                                {item.commentCount} comentario{item.commentCount !== 1 ? 's' : ''}
-                              </span>
-                            )}
-                          </div>
-                          <div className="fb-post-actions">
-                            <button
-                              className={`fb-action-btn ${item.liked ? 'liked' : ''}`}
-                              onClick={() => handleLike(item.id)}
-                            >
-                              {Heart({ size: 14, color: item.liked ? '#ef4444' : undefined })} {t('userprofile.like')}
-                            </button>
-                            <button className="fb-action-btn" onClick={() => toggleComments(item.id)}>
-                              {MessageSquare({ size: 14 })} {t('userprofile.comment')}
-                            </button>
-                          </div>
-                          {expandedComments.has(item.id) && (
-                            <div className="fb-comments-section">
-                              {(comments[item.id] || []).map(c => (
-                                <div key={c.id} className="fb-comment">
-                                  <div className="fb-comment-avatar" onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
-                                    {c.author?.avatar ? (
-                                      <img src={c.author.avatar} alt="" />
-                                    ) : (
-                                      <div className="fb-comment-avatar-initials">
-                                        {(c.author?.firstName?.[0] || '')}
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="fb-comment-body">
-                                    <strong onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
-                                      {c.author?.firstName} {c.author?.lastName}
-                                    </strong>
-                                    <span>{c.content}</span>
-                                    <small>{timeAgo(c.createdAt)}</small>
-                                  </div>
-                                </div>
-                              ))}
-                              <div className="fb-comment-input-row">
-                                <input
-                                  placeholder={t('userprofile.writeComment')}
-                                  value={commentText[item.id] || ''}
-                                  onChange={e => setCommentText(prev => ({ ...prev, [item.id]: e.target.value }))}
-                                  onKeyDown={e => e.key === 'Enter' && handleComment(item.id)}
-                                />
-                                <button className="btn btn-primary btn-xs" onClick={() => handleComment(item.id)}>
-                                  {t('userprofile.send')}
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-              )}
+                  )
+                }
 
-
-
-              {/* Posts */}
-              {posts.length === 0 ? (
-                <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
-                  <div className="empty-state-icon">{FileText({ size: 48 })}</div>
-                  <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noPosts')}</p>
-                  {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t('userprofile.shareWithPeers')}</p>}
-                </div>
-              ) : (
-                posts.map(post => (
-                  <div key={post.id} className="card fb-post">
-                    <div className="fb-post-header">
-                      <div className="fb-post-author" onClick={() => post.author && onNavigate(`/user/${post.author.id}`)}>
-                        {post.author?.avatar ? (
-                          <img src={post.author.avatar} alt="" className="fb-post-avatar" />
-                        ) : (
-                          <div className="fb-post-avatar-initials">
-                            {(post.author?.firstName?.[0] || '') + (post.author?.lastName?.[0] || '')}
-                          </div>
-                        )}
-                        <div>
-                          <strong>{post.author?.firstName} {post.author?.lastName}</strong>
-                          <span className="fb-post-time">{timeAgo(post.createdAt)}</span>
-                        </div>
-                      </div>
-                      {(post.author?.id === user?.id || isOwn) && (
-                        <button className="fb-post-menu" onClick={() => handleDeletePost(post.id)} title="Eliminar">
-                          ✕
-                        </button>
-                      )}
+                if (merged.length === 0) {
+                  return (
+                    <div className="u-card" style={{ textAlign: 'center', padding: 40 }}>
+                      <div className="empty-state-icon">{FileText({ size: 48 })}</div>
+                      <p style={{ color: 'var(--text-muted)' }}>{t('userprofile.noPosts')}</p>
+                      {isOwn && <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t('userprofile.shareWithPeers')}</p>}
                     </div>
+                  )
+                }
 
-                    <p className="fb-post-content">{post.content}</p>
-
-                    {post.imageUrl && (
-                      <div className="fb-post-image">
-                        <img src={post.imageUrl} alt="" />
-                      </div>
-                    )}
-
-                    <div className="fb-post-stats">
-                      {post.likes > 0 && <span>{Heart({ size: 14, color: '#ef4444' })} {post.likes}</span>}
-                      {post.commentCount > 0 && (
-                        <span className="fb-comment-count" onClick={() => toggleComments(post.id)}>
-                          {post.commentCount} comentario{post.commentCount !== 1 ? 's' : ''}
+                return merged.map(item => {
+                  // Activity row
+                  if (item._kind === 'activity') {
+                    return (
+                      <div key={item.id} className="u-card" style={{ padding: '11px 16px', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {item.activityType === 'quiz_generated' ? FileText({ size: 16 }) :
+                           item.activityType === 'guide_generated' ? BookOpen({ size: 16 }) :
+                           item.activityType === 'document_uploaded' ? FileText({ size: 16 }) :
+                           item.activityType === 'friend_added' ? Users({ size: 16 }) : Zap({ size: 16 })}
                         </span>
-                      )}
-                    </div>
-
-                    <div className="fb-post-actions">
-                      <button
-                        className={`fb-action-btn ${post.liked ? 'liked' : ''}`}
-                        onClick={() => handleLike(post.id)}
-                      >
-                        {Heart({ size: 14, color: post.liked ? '#ef4444' : undefined })} {t('userprofile.like')}
-                      </button>
-                      <button className="fb-action-btn" onClick={() => toggleComments(post.id)}>
-                        {MessageSquare({ size: 14 })} {t('userprofile.comment')}
-                      </button>
-                    </div>
-
-                    {expandedComments.has(post.id) && (
-                      <div className="fb-comments-section">
-                        {(comments[post.id] || []).map(c => (
-                          <div key={c.id} className="fb-comment">
-                            <div className="fb-comment-avatar" onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
-                              {c.author?.avatar ? (
-                                <img src={c.author.avatar} alt="" />
-                              ) : (
-                                <div className="fb-comment-avatar-initials">
-                                  {(c.author?.firstName?.[0] || '')}
-                                </div>
-                              )}
-                            </div>
-                            <div className="fb-comment-body">
-                              <strong onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
-                                {c.author?.firstName} {c.author?.lastName}
-                              </strong>
-                              <span>{c.content}</span>
-                              <small>{timeAgo(c.createdAt)}</small>
-                            </div>
-                          </div>
-                        ))}
-                        <div className="fb-comment-input-row">
-                          <input
-                            placeholder={t('userprofile.writeComment')}
-                            value={commentText[post.id] || ''}
-                            onChange={e => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
-                            onKeyDown={e => e.key === 'Enter' && handleComment(post.id)}
-                          />
-                          <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>
-                            Enviar
-                          </button>
+                        <div style={{ flex: 1 }}>
+                          <span style={{ fontSize: 13 }}>{item.content}</span>
+                          <small style={{ display: 'block', color: 'var(--text-muted)', marginTop: 1, fontSize: 11 }}>{timeAgo(item.createdAt)}</small>
                         </div>
                       </div>
-                    )}
-                  </div>
-                ))
-              )}
+                    )
+                  }
+
+                  // Post card
+                  const post = item as any
+                  return (
+                    <div key={post.id} className="card fb-post">
+                      <div className="fb-post-header">
+                        <div className="fb-post-author" onClick={() => post.author && onNavigate(`/user/${post.author.id}`)}>
+                          {post.author?.avatar ? (
+                            <img src={post.author.avatar} alt="" className="fb-post-avatar" />
+                          ) : (
+                            <div className="fb-post-avatar-initials">
+                              {(post.author?.firstName?.[0] || '') + (post.author?.lastName?.[0] || '')}
+                            </div>
+                          )}
+                          <div>
+                            <strong>{post.author?.firstName} {post.author?.lastName}</strong>
+                            <span className="fb-post-time">{timeAgo(post.createdAt)}</span>
+                          </div>
+                        </div>
+                        {(post.author?.id === user?.id || isOwn) && (
+                          <button className="fb-post-menu" onClick={() => handleDeletePost(post.id)} title="Eliminar">✕</button>
+                        )}
+                      </div>
+
+                      <p className="fb-post-content">{post.content}</p>
+
+                      {post.imageUrl && (
+                        <div className="fb-post-image"><img src={post.imageUrl} alt="" /></div>
+                      )}
+
+                      <div className="fb-post-stats">
+                        {post.likes > 0 && <span>{Heart({ size: 14, color: '#ef4444' })} {post.likes}</span>}
+                        {post.commentCount > 0 && (
+                          <span className="fb-comment-count" onClick={() => toggleComments(post.id)}>
+                            {post.commentCount} comentario{post.commentCount !== 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="fb-post-actions">
+                        <button
+                          className={`fb-action-btn ${post.liked ? 'liked' : ''}`}
+                          onClick={() => handleLike(post.id)}
+                        >
+                          {Heart({ size: 14, color: post.liked ? '#ef4444' : undefined })} {t('userprofile.like')}
+                        </button>
+                        <button className="fb-action-btn" onClick={() => toggleComments(post.id)}>
+                          {MessageSquare({ size: 14 })} {t('userprofile.comment')}
+                        </button>
+                      </div>
+
+                      {expandedComments.has(post.id) && (
+                        <div className="fb-comments-section">
+                          {(comments[post.id] || []).map(c => (
+                            <div key={c.id} className="fb-comment">
+                              <div className="fb-comment-avatar" onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
+                                {c.author?.avatar ? (
+                                  <img src={c.author.avatar} alt="" />
+                                ) : (
+                                  <div className="fb-comment-avatar-initials">{(c.author?.firstName?.[0] || '')}</div>
+                                )}
+                              </div>
+                              <div className="fb-comment-body">
+                                <strong onClick={() => c.author && onNavigate(`/user/${c.author.id}`)}>
+                                  {c.author?.firstName} {c.author?.lastName}
+                                </strong>
+                                <span>{c.content}</span>
+                                <small>{timeAgo(c.createdAt)}</small>
+                              </div>
+                            </div>
+                          ))}
+                          <div className="fb-comment-input-row">
+                            <input
+                              placeholder={t('userprofile.writeComment')}
+                              value={commentText[post.id] || ''}
+                              onChange={e => setCommentText(prev => ({ ...prev, [post.id]: e.target.value }))}
+                              onKeyDown={e => e.key === 'Enter' && handleComment(post.id)}
+                            />
+                            <button className="btn btn-primary btn-xs" onClick={() => handleComment(post.id)}>
+                              {t('userprofile.send')}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              })()}
                 </>
               )}
 
