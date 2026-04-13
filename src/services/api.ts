@@ -1496,6 +1496,13 @@ export const api = {
   lmsGetCourses: () => request('/lms/courses'),
   lmsActivateCourses: (connectionId: string, courseIds: string[]) =>
     request('/lms/activate-courses', { method: 'POST', body: JSON.stringify({ connection_id: connectionId, course_ids: courseIds }) }),
+  lmsGetHub: () => request('/lms/hub'),
+  lmsMarkVisited: () => request('/lms/mark-visited', { method: 'POST' }),
+  lmsGetTopics: (courseId: string) => request(`/lms/courses/${courseId}/topics`),
+  lmsGetAvailable: (connId: string) => request(`/lms/courses/available/${connId}`),
+  lmsAddCourses: (connectionId: string, courseIds: string[]) =>
+    request('/lms/courses/add', { method: 'POST', body: JSON.stringify({ connection_id: connectionId, course_ids: courseIds }) }),
+  lmsScanCourse: (courseId: string) => request(`/lms/scan/${courseId}`, { method: 'POST' }),
   importDocumentB64: (projectId: string, filename: string, content_b64: string, file_type?: string) =>
     request(`/projects/${projectId}/documents/import`, {
       method: 'POST',

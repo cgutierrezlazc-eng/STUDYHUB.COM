@@ -1506,10 +1506,8 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                 <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                   {[
-                    { id: 'corporativo', name: 'Corporativo', colors: ['#F1F5F9', '#2D62C8', '#D97706'], desc: 'Claro · azul nav + amber CTA', available: true },
-                    { id: 'conniku',     name: 'Conniku',     colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Oscuro · azul marca',          available: true },
-                    { id: 'equilibrado', name: 'Equilibrado', colors: ['#FAF8F4', '#D97706', '#2D62C8'], desc: 'Próximamente',                  available: false },
-                    { id: 'oceano',      name: 'Océano',      colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Próximamente',                  available: false },
+                    { id: 'corporativo', name: 'Corporativo', colors: ['#F1F5F9', '#2D62C8', '#D97706'], desc: 'Claro · azul nav + amber', available: true },
+                    { id: 'conniku',     name: 'Conniku',     colors: ['#070D18', '#2D62C8', '#3b82f6'], desc: 'Oscuro · azul marca',    available: true },
                   ].map(th => {
                     const isActive = currentTheme === th.id
                     return (

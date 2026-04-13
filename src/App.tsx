@@ -195,11 +195,13 @@ export default function App() {
     }
   }, [user])
 
-  // Apply theme — default Pizarra, options: pizarra, oceano, conniku
+  // Apply theme — opciones: corporativo (claro) | conniku (oscuro)
   useEffect(() => {
     const saved = localStorage.getItem('conniku_theme')
-    const allowed = ['pizarra', 'dorado', 'corporativo', 'equilibrado', 'oceano', 'conniku']
-    const theme = allowed.includes(saved || '') ? saved! : 'equilibrado'
+    const allowed = ['corporativo', 'conniku']
+    // Migrar temas eliminados al tema por defecto
+    const theme = allowed.includes(saved || '') ? saved! : 'conniku'
+    if (!allowed.includes(saved || '')) localStorage.setItem('conniku_theme', theme)
     document.documentElement.setAttribute('data-theme', theme)
   }, [])
 

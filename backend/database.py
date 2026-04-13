@@ -1537,6 +1537,7 @@ class UniversityConnection(Base):
     status = Column(String(20), default="pending")        # pending | connected | error | disconnected
     error_msg = Column(Text, default="")
     last_scan = Column(DateTime, nullable=True)
+    last_visited_at = Column(DateTime, nullable=True)     # last time user opened Mi Universidad
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -1550,6 +1551,9 @@ class LMSCourse(Base):
     short_name = Column(String(100), default="")
     semester = Column(String(50), default="")
     year = Column(Integer, nullable=True)
+    startdate = Column(Integer, server_default="0")       # Unix timestamp from LMS
+    enddate = Column(Integer, server_default="0")         # Unix timestamp (0 = sin fecha de término)
+    is_active = Column(Boolean, server_default="true")    # usuario ha activado esta asignatura
     conniku_project_id = Column(String(255), nullable=True)  # linked Conniku project
     last_checked = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -1562,10 +1566,13 @@ class LMSSyncItem(Base):
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     external_id = Column(String(255), default="")         # ID del recurso en plataforma
     item_name = Column(String(500), default="")
-    item_type = Column(String(50), default="file")        # file | url | assignment | event | page
+    item_type = Column(String(50), default="file")        # file | url | assignment | quiz | page
     item_url = Column(String(1000), default="")
     mime_type = Column(String(100), default="application/pdf")
     file_size = Column(Integer, default=0)
+    topic_name = Column(String(500), server_default="")   # nombre del tema/sección del curso
+    topic_order = Column(Integer, server_default="0")     # orden del tema dentro del curso
+    module_name = Column(String(500), server_default="")  # nombre del módulo/recurso padre
     status = Column(String(20), default="pending")        # pending | synced | dismissed
     file_content_b64 = Column(Text, nullable=True)        # contenido descargado (base64)
     detected_at = Column(DateTime, default=datetime.utcnow)

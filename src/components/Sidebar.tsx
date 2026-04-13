@@ -103,54 +103,78 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       {/* ══ ACADÉMICO ══ */}
       <SepLabel label={t('sidebar.academic')} />
 
-      {/* ── Mi Universidad (acordeón con asignaturas) ── */}
-      <button
-        className={`nav-item ${isActive('/mi-universidad') ? 'active' : ''}`}
-        onClick={() => setUniExpanded(prev => !prev)}
-        style={{ justifyContent: 'space-between' }}
-      >
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {Icons.diploma(IC.courses)} Mi Universidad
-          {projects.length > 0 && (
-            <span style={{ fontSize: 10, background: 'var(--accent, #1a56db)', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
-              {projects.length}
-            </span>
-          )}
-        </span>
-        <ChevronIcon open={uniExpanded} />
-      </button>
+      {/* ── Mi Universidad (caja estilo CEO, acordeón asignaturas) ── */}
+      <div style={{ padding: '0 10px 10px' }}>
+        <button
+          onClick={() => {
+            onNavigate('/mi-universidad')
+            setUniExpanded(prev => !prev)
+          }}
+          style={{
+            width: '100%',
+            background: isActive('/mi-universidad')
+              ? 'linear-gradient(135deg, #0a3060 0%, #1a56db 60%, #3b82f6 100%)'
+              : 'linear-gradient(135deg, rgba(10,30,70,0.85) 0%, rgba(26,86,219,0.7) 100%)',
+            border: '1px solid rgba(255,255,255,0.10)',
+            borderRadius: 12,
+            padding: '10px 13px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            boxShadow: isActive('/mi-universidad') ? '0 4px 14px rgba(26,86,219,0.35)' : '0 2px 8px rgba(0,0,0,0.2)',
+            transition: 'box-shadow 0.2s, background 0.2s',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <div style={{
+              width: 32, height: 32,
+              background: 'rgba(255,255,255,0.13)',
+              borderRadius: 8,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 16, flexShrink: 0,
+            }}>🎓</div>
+            <div style={{ textAlign: 'left' }}>
+              <div style={{
+                fontSize: 14,
+                fontWeight: 800,
+                color: '#ffffff',
+                letterSpacing: 0.5,
+                lineHeight: 1.1,
+                textTransform: 'uppercase',
+                fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+              }}>
+                Mi Universidad
+              </div>
+              {projects.length > 0 && (
+                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 2, fontWeight: 400, letterSpacing: 0.5 }}>
+                  {projects.length} asignatura{projects.length !== 1 ? 's' : ''}
+                </div>
+              )}
+            </div>
+          </div>
+          <ChevronIcon open={uniExpanded} />
+        </button>
 
-      {uniExpanded && (
-        <div style={{ marginBottom: 2 }}>
-          {/* Enlace a configuración de Mi Universidad */}
-          <button
-            className={`nav-item nav-item-sub ${currentPath === '/mi-universidad' ? 'active' : ''}`}
-            onClick={() => onNavigate('/mi-universidad')}
-            style={{ fontSize: 11, color: 'var(--text-muted)', paddingTop: 4, paddingBottom: 4 }}
-          >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-            Conectar / Configurar
-          </button>
-
-          {/* Asignaturas como sub-carpetas */}
-          {projects.map(project => (
-            <button
-              key={project.id}
-              className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
-              onClick={() => onNavigate(`/project/${project.id}`)}
-            >
-              <span className="project-dot" style={{ background: project.color }} />
-              {project.name}
+        {/* Sub-items acordeón */}
+        {uniExpanded && (
+          <div style={{ marginTop: 4 }}>
+            {projects.map(project => (
+              <button
+                key={project.id}
+                className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
+                onClick={() => onNavigate(`/project/${project.id}`)}
+              >
+                <span className="project-dot" style={{ background: project.color }} />
+                {project.name}
+              </button>
+            ))}
+            <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
+              {Icons.plus(IC.plus)} {t('nav.newSubject')}
             </button>
-          ))}
-          <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
-            {Icons.plus(IC.plus)} {t('nav.newSubject')}
-          </button>
-        </div>
-      )}
+          </div>
+        )}
+      </div>
 
       {/* ── Resto del académico ── */}
       <button

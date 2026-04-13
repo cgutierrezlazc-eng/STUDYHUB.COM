@@ -6,6 +6,7 @@ import base64
 import json
 import logging
 import re
+import time
 from datetime import datetime
 from typing import Optional
 
@@ -534,6 +535,9 @@ def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
                 short_name=c.get("short_name", "")[:100],
                 semester=c.get("semester", ""),
                 year=c.get("year"),
+                startdate=c.get("startdate", 0),
+                enddate=c.get("enddate", 0),
+                is_active=True,
             ))
             added += 1
 
@@ -547,6 +551,16 @@ def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
     return added, courses_list
 
 
+def _is_current_course(startdate: int, enddate: int) -> bool:
+    """Detecta si un curso está en curso basado en fechas Unix."""
+    now = int(time.time())
+    if enddate and enddate > 0 and enddate < now:
+        return False  # Ya terminó
+    if startdate and startdate > now + (60 * 86400):
+        return False  # Comienza en más de 60 días (futuro lejano)
+    return True
+
+
 def _normalize_courses(platform_type: str, raw: list) -> list:
     result = []
     for c in raw:
@@ -557,6 +571,8 @@ def _normalize_courses(platform_type: str, raw: list) -> list:
                 "short_name": c.get("shortname", ""),
                 "semester": "",
                 "year": None,
+                "startdate": c.get("startdate", 0) or 0,
+                "enddate": c.get("enddate", 0) or 0,
             })
         elif platform_type == "canvas":
             term = c.get("term", {}) or {}
@@ -714,6 +730,9 @@ def _scan_course(conn: UniversityConnection, course: LMSCourse, token: str, db: 
             item_url=item.get("url", ""),
             mime_type=item.get("mime", "application/octet-stream"),
             file_size=item.get("size", 0),
+            topic_name=item.get("topic_name", ""),
+            topic_order=item.get("topic_order", 0),
+            module_name=item.get("module_name", ""),
             status="pending",
         ))
 
@@ -723,27 +742,106 @@ def _scan_course(conn: UniversityConnection, course: LMSCourse, token: str, db: 
 def _scan_moodle_course(base_url: str, token: str, course: LMSCourse, known_ids: set) -> list:
     contents = moodle_get_contents(base_url, token, int(course.external_id))
     new_items = []
-    for section in contents:
+    for section_idx, section in enumerate(contents):
+        topic_name = section.get("name", f"Tema {section_idx + 1}") or f"Tema {section_idx + 1}"
+        topic_order = section.get("section", section_idx)
+
         for module in section.get("modules", []):
-            for f in module.get("contents", []):
-                if f.get("type") != "file":
-                    continue
-                fid = str(f.get("fileurl", ""))
-                # Use filename+fileurl hash as external_id
-                ext_id = f"{course.external_id}_{f.get('filename', '')}_{f.get('filesize', 0)}"
-                if ext_id in known_ids:
-                    continue
-                mime = f.get("mimetype", "application/octet-stream")
-                if not _is_useful_mime(mime):
-                    continue
-                new_items.append({
-                    "external_id": ext_id,
-                    "name": f.get("filename", "archivo"),
-                    "type": "file",
-                    "url": fid,
-                    "mime": mime,
-                    "size": f.get("filesize", 0),
-                })
+            mod_type = module.get("modtype", "")
+            mod_name = module.get("name", "")
+
+            # ── Archivos adjuntos al módulo ──────────────────
+            if mod_type in ("resource", "folder"):
+                for f in module.get("contents", []):
+                    if f.get("type") != "file":
+                        continue
+                    ext_id = f"{course.external_id}_{f.get('filename', '')}_{f.get('filesize', 0)}"
+                    if ext_id in known_ids:
+                        continue
+                    mime = f.get("mimetype", "application/octet-stream")
+                    if not _is_useful_mime(mime):
+                        continue
+                    new_items.append({
+                        "external_id": ext_id,
+                        "name": f.get("filename", "archivo"),
+                        "type": "file",
+                        "url": f.get("fileurl", ""),
+                        "mime": mime,
+                        "size": f.get("filesize", 0),
+                        "topic_name": topic_name,
+                        "topic_order": topic_order,
+                        "module_name": mod_name,
+                    })
+
+            # ── URL externa ──────────────────────────────────
+            elif mod_type == "url":
+                ext_id = f"{course.external_id}_url_{module.get('id', mod_name)}"
+                if ext_id not in known_ids:
+                    url_val = ""
+                    for c in module.get("contents", []):
+                        if c.get("type") == "url":
+                            url_val = c.get("fileurl", "")
+                            break
+                    new_items.append({
+                        "external_id": ext_id,
+                        "name": mod_name,
+                        "type": "url",
+                        "url": url_val or module.get("url", ""),
+                        "mime": "text/html",
+                        "size": 0,
+                        "topic_name": topic_name,
+                        "topic_order": topic_order,
+                        "module_name": mod_name,
+                    })
+
+            # ── Tarea / Entrega ──────────────────────────────
+            elif mod_type == "assign":
+                ext_id = f"{course.external_id}_assign_{module.get('id', mod_name)}"
+                if ext_id not in known_ids:
+                    new_items.append({
+                        "external_id": ext_id,
+                        "name": mod_name,
+                        "type": "assignment",
+                        "url": module.get("url", ""),
+                        "mime": "application/assignment",
+                        "size": 0,
+                        "topic_name": topic_name,
+                        "topic_order": topic_order,
+                        "module_name": mod_name,
+                    })
+
+            # ── Quiz / Prueba ────────────────────────────────
+            elif mod_type == "quiz":
+                ext_id = f"{course.external_id}_quiz_{module.get('id', mod_name)}"
+                if ext_id not in known_ids:
+                    new_items.append({
+                        "external_id": ext_id,
+                        "name": mod_name,
+                        "type": "quiz",
+                        "url": module.get("url", ""),
+                        "mime": "application/quiz",
+                        "size": 0,
+                        "topic_name": topic_name,
+                        "topic_order": topic_order,
+                        "module_name": mod_name,
+                    })
+
+            # ── Página de contenido ──────────────────────────
+            elif mod_type == "page":
+                ext_id = f"{course.external_id}_page_{module.get('id', mod_name)}"
+                if ext_id not in known_ids:
+                    new_items.append({
+                        "external_id": ext_id,
+                        "name": mod_name,
+                        "type": "page",
+                        "url": module.get("url", ""),
+                        "mime": "text/html",
+                        "size": 0,
+                        "topic_name": topic_name,
+                        "topic_order": topic_order,
+                        "module_name": mod_name,
+                    })
+
     return new_items
 
 
@@ -946,6 +1044,262 @@ def activate_courses(
 
     db.commit()
     return {"activated": len(all_courses) - removed, "removed": removed}
+
+
+# ──────────────────────────────────────────────────────────────
+# Hub — vista principal de Mi Universidad
+# ──────────────────────────────────────────────────────────────
+
+class AddCoursesRequest(BaseModel):
+    connection_id: str
+    course_ids: list  # list of LMSCourse.id to activate
+
+
+def _course_to_dict(c: LMSCourse, new_count: int, total_items: int) -> dict:
+    return {
+        "id": c.id,
+        "name": c.name,
+        "short_name": c.short_name or "",
+        "semester": c.semester or "",
+        "external_id": c.external_id,
+        "startdate": c.startdate or 0,
+        "enddate": c.enddate or 0,
+        "is_current": _is_current_course(c.startdate or 0, c.enddate or 0),
+        "new_items": new_count,
+        "total_items": total_items,
+        "last_checked": c.last_checked.isoformat() if c.last_checked else None,
+        "conniku_project_id": c.conniku_project_id,
+    }
+
+
+@router.get("/hub")
+def get_lms_hub(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Devuelve toda la información necesaria para el hub Mi Universidad."""
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.user_id == user.id,
+        UniversityConnection.status == "connected",
+    ).first()
+
+    if not conn:
+        return {"connected": False}
+
+    last_visited = conn.last_visited_at or datetime(2000, 1, 1)
+
+    # Cursos activos del usuario
+    courses = db.query(LMSCourse).filter(
+        LMSCourse.connection_id == conn.id,
+        LMSCourse.is_active == True,
+    ).all()
+
+    current_courses, past_courses = [], []
+    new_items_by_course: dict = {}
+
+    for c in courses:
+        total_items = db.query(LMSSyncItem).filter(
+            LMSSyncItem.course_id == c.id,
+        ).count()
+        new_items = db.query(LMSSyncItem).filter(
+            LMSSyncItem.course_id == c.id,
+            LMSSyncItem.detected_at > last_visited,
+        ).all()
+        new_count = len(new_items)
+
+        d = _course_to_dict(c, new_count, total_items)
+
+        if d["is_current"]:
+            current_courses.append(d)
+        else:
+            past_courses.append(d)
+
+        if new_count > 0:
+            new_items_by_course[c.id] = {
+                "course_name": c.name,
+                "items": [
+                    {
+                        "id": i.id,
+                        "item_name": i.item_name,
+                        "item_type": i.item_type,
+                        "topic_name": i.topic_name or "",
+                        "detected_at": i.detected_at.isoformat() if i.detected_at else "",
+                    }
+                    for i in new_items[:10]  # max 10 por curso en el hub
+                ],
+            }
+
+    current_courses.sort(key=lambda x: x["name"])
+    past_courses.sort(key=lambda x: x["name"])
+
+    return {
+        "connected": True,
+        "connection": {
+            "id": conn.id,
+            "platform_type": conn.platform_type,
+            "platform_name": conn.platform_name,
+            "api_url": conn.api_url,
+            "status": conn.status,
+            "last_scan": conn.last_scan.isoformat() if conn.last_scan else None,
+        },
+        "current_courses": current_courses,
+        "past_courses": past_courses,
+        "new_items_by_course": new_items_by_course,
+        "total_new": sum(len(v["items"]) for v in new_items_by_course.values()),
+    }
+
+
+@router.post("/mark-visited")
+def mark_visited(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Marca la visita actual — resetea el contador de novedades."""
+    conns = db.query(UniversityConnection).filter(
+        UniversityConnection.user_id == user.id,
+        UniversityConnection.status == "connected",
+    ).all()
+    for conn in conns:
+        conn.last_visited_at = datetime.utcnow()
+    db.commit()
+    return {"ok": True}
+
+
+# ── IMPORTANT: /courses/available/{conn_id} debe estar ANTES de /courses/{course_id}/topics
+@router.get("/courses/available/{conn_id}")
+def get_available_courses(conn_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Re-escanea el LMS y devuelve cursos disponibles para agregar (no activos aún),
+    separados en en_curso / anteriores.
+    """
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == conn_id,
+        UniversityConnection.user_id == user.id,
+        UniversityConnection.status == "connected",
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión no encontrada")
+
+    # Re-fetch courses from LMS to catch new enrollments
+    _, _ = _fetch_and_store_courses(conn, db)
+
+    # Return inactive courses (not yet added by user)
+    inactive = db.query(LMSCourse).filter(
+        LMSCourse.connection_id == conn_id,
+        LMSCourse.is_active == False,
+    ).all()
+
+    en_curso = []
+    anteriores = []
+    for c in inactive:
+        d = {
+            "id": c.id,
+            "name": c.name,
+            "short_name": c.short_name or "",
+            "startdate": c.startdate or 0,
+            "enddate": c.enddate or 0,
+        }
+        if _is_current_course(c.startdate or 0, c.enddate or 0):
+            en_curso.append(d)
+        else:
+            anteriores.append(d)
+
+    en_curso.sort(key=lambda x: x["name"])
+    anteriores.sort(key=lambda x: x["name"])
+    return {"en_curso": en_curso, "anteriores": anteriores}
+
+
+@router.get("/courses/{course_id}/topics")
+def get_course_topics(course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Devuelve todo el material de una asignatura organizado por tema/módulo."""
+    course = db.query(LMSCourse).filter(
+        LMSCourse.id == course_id,
+        LMSCourse.user_id == user.id,
+    ).first()
+    if not course:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    items = db.query(LMSSyncItem).filter(
+        LMSSyncItem.course_id == course_id,
+    ).order_by(LMSSyncItem.topic_order, LMSSyncItem.item_name).all()
+
+    # Agrupar por tema
+    topics_map: dict = {}
+    for item in items:
+        tname = item.topic_name or "General"
+        torder = item.topic_order or 0
+        if tname not in topics_map:
+            topics_map[tname] = {"name": tname, "order": torder, "items": []}
+        topics_map[tname]["items"].append({
+            "id": item.id,
+            "item_name": item.item_name,
+            "item_type": item.item_type,
+            "item_url": item.item_url,
+            "mime_type": item.mime_type,
+            "file_size": item.file_size,
+            "module_name": item.module_name or "",
+            "status": item.status,
+            "detected_at": item.detected_at.isoformat() if item.detected_at else "",
+        })
+
+    topics = sorted(topics_map.values(), key=lambda t: t["order"])
+    return {
+        "course_id": course_id,
+        "course_name": course.name,
+        "topics": topics,
+        "total_items": len(items),
+    }
+
+
+@router.post("/courses/add")
+def add_courses(req: AddCoursesRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Activa las asignaturas seleccionadas y escanea su material."""
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == req.connection_id,
+        UniversityConnection.user_id == user.id,
+        UniversityConnection.status == "connected",
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión no encontrada")
+
+    token, _ = _decode_token(conn)
+    total_new = 0
+    activated = []
+
+    for cid in req.course_ids:
+        course = db.query(LMSCourse).filter(
+            LMSCourse.id == cid,
+            LMSCourse.connection_id == req.connection_id,
+        ).first()
+        if not course:
+            continue
+        course.is_active = True
+        db.commit()
+        # Immediately scan for material
+        new_items = _scan_course(conn, course, token, db)
+        total_new += new_items
+        activated.append({"id": course.id, "name": course.name, "new_items": new_items})
+
+    db.commit()
+    return {"activated": len(activated), "total_new_items": total_new, "courses": activated}
+
+
+@router.post("/scan/{course_id}")
+def scan_single_course(course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Re-escanea una sola asignatura buscando material nuevo."""
+    course = db.query(LMSCourse).filter(
+        LMSCourse.id == course_id,
+        LMSCourse.user_id == user.id,
+    ).first()
+    if not course:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == course.connection_id
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión no encontrada")
+
+    token, _ = _decode_token(conn)
+    new_count = _scan_course(conn, course, token, db)
+    db.commit()
+    conn.last_scan = datetime.utcnow()
+    db.commit()
+    return {"new_items": new_count, "course_id": course_id}
 
 
 # ── Helpers ───────────────────────────────────────────────────
