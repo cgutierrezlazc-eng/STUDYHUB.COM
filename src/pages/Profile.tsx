@@ -1528,26 +1528,28 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
 
                 <h3>Tema de color</h3>
                 <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+                <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
                   {[
-                    { id: 'equilibrado', name: 'Equilibrado', colors: ['#FAF8F4', '#D97706', '#2D62C8'], desc: 'Claro cálido · dual accent — predeterminado' },
-                    { id: 'pizarra',     name: 'Pizarra',     colors: ['#F1F5F9', '#D97706', '#FFFFFF'], desc: 'Claro · amber' },
-                    { id: 'dorado',      name: 'Dorado',      colors: ['#F1F5F9', '#D97706', '#2D62C8'], desc: 'Claro · amber nav + azul info' },
-                    { id: 'corporativo', name: 'Corporativo', colors: ['#F1F5F9', '#2D62C8', '#D97706'], desc: 'Claro · azul nav + amber CTA' },
-                    { id: 'oceano',      name: 'Océano',      colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Oscuro · azul cielo' },
-                    { id: 'conniku',     name: 'Conniku',     colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Oscuro · azul marca' },
+                    { id: 'corporativo', name: 'Corporativo', colors: ['#F1F5F9', '#2D62C8', '#D97706'], desc: 'Claro · azul nav + amber CTA', available: true },
+                    { id: 'conniku',     name: 'Conniku',     colors: ['#070D18', '#2D62C8', '#111D33'], desc: 'Oscuro · azul marca',          available: true },
+                    { id: 'equilibrado', name: 'Equilibrado', colors: ['#FAF8F4', '#D97706', '#2D62C8'], desc: 'Próximamente',                  available: false },
+                    { id: 'oceano',      name: 'Océano',      colors: ['#0F172A', '#38BDF8', '#1E293B'], desc: 'Próximamente',                  available: false },
                   ].map(th => {
                     const isActive = currentTheme === th.id
                     return (
                       <button
                         key={th.id}
+                        disabled={!th.available}
                         onClick={() => {
+                          if (!th.available) return
                           localStorage.setItem('conniku_theme', th.id)
                           document.documentElement.setAttribute('data-theme', th.id)
                           setCurrentTheme(th.id)
                         }}
                         style={{
-                          flex: 1, padding: '14px 12px', borderRadius: 12, cursor: 'pointer',
+                          flex: 1, minWidth: 120, padding: '14px 12px', borderRadius: 12,
+                          cursor: th.available ? 'pointer' : 'not-allowed',
+                          opacity: th.available ? 1 : 0.38,
                           border: isActive ? '2px solid var(--accent)' : '1.5px solid var(--border)',
                           background: isActive ? 'rgba(56,189,248,0.06)' : 'var(--bg-secondary)',
                           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
@@ -1558,7 +1560,7 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                             <div key={i} style={{ width: 18, height: 18, borderRadius: '50%', background: c, border: '2px solid rgba(255,255,255,0.1)' }} />
                           ))}
                         </div>
-                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{th.name}</div>
+                        <div style={{ fontWeight: 600, fontSize: 13, color: th.available ? 'var(--text-primary)' : 'var(--text-muted)' }}>{th.name}</div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{th.desc}</div>
                       </button>
                     )
