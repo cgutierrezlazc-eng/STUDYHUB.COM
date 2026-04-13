@@ -87,9 +87,56 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
         </div>
       )}
 
-      {/* Edit / Delete — visible on hover */}
+      {/* Edit / Delete — hover on desktop, always visible on touch */}
       {editable && (
-        <div className="sc-actions">
+        <div className="sc-actions sc-actions--card">
+          <button className="sc-btn-edit" onClick={onEdit}>Editar</button>
+          <button className="sc-btn-delete" onClick={onDelete}>✕</button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── ShowcaseHeroCard — first item, full-width ─────────────────
+function ShowcaseHeroCard({ item, onEdit, onDelete, editable }: {
+  item: ExecutiveShowcaseItem
+  onEdit?: () => void
+  onDelete?: () => void
+  editable?: boolean
+}) {
+  const meta = typeMap[item.type as TypeId] || typeMap.insight
+  return (
+    <div
+      className="sc-card sc-card--hero"
+      style={{ '--sc-accent': meta.color } as React.CSSProperties}
+    >
+      <div className="sc-hero-icon" style={{ background: meta.color + '18', color: meta.color }}>
+        {meta.icon}
+      </div>
+      <div className="sc-hero-body">
+        <div className="sc-type-pill">{meta.label}</div>
+        <div className="sc-title sc-title--hero">
+          {item.url ? (
+            <a href={item.url} target="_blank" rel="noopener noreferrer" className="sc-title-link">
+              {item.title}<span className="sc-link-arrow"> ↗</span>
+            </a>
+          ) : item.title}
+        </div>
+        {item.description && <p className="sc-desc sc-desc--hero">{item.description}</p>}
+        {(item.tag || item.date) && (
+          <div className="sc-footer">
+            {item.tag && (
+              <span className="sc-tag" style={{ color: meta.color, background: meta.color + '14', borderColor: meta.color + '25' }}>
+                {item.tag}
+              </span>
+            )}
+            {item.date && <span className="sc-date">{formatDate(item.date)}</span>}
+          </div>
+        )}
+      </div>
+      {editable && (
+        <div className="sc-actions sc-actions--card">
           <button className="sc-btn-edit" onClick={onEdit}>Editar</button>
           <button className="sc-btn-delete" onClick={onDelete}>✕</button>
         </div>
@@ -337,7 +384,7 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
 
           {isOwner && (
             <div className="sc-tips">
-              <div className="sc-tips-title">💡 Qué suelen publicar los ejecutivos de alto nivel</div>
+              <div className="sc-tips-title">💡 Qué suelen publicar los profesionales de alto nivel</div>
               <div className="sc-tips-grid">
                 {ITEM_TYPES.map(t => (
                   <div key={t.id} className="sc-tips-item">
@@ -346,6 +393,22 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+          {/* Sample card preview */}
+          {isOwner && (
+            <div className="sc-sample-preview">
+              <ShowcaseHeroCard
+                item={{
+                  id: '__sample__',
+                  type: 'achievement',
+                  title: 'Así podría verse tu primer logro en el Showcase',
+                  description: 'Artículos, libros, charlas, apariciones en medios, reconocimientos — todo en un solo lugar que habla por ti.',
+                  tag: 'Ejemplo',
+                  date: new Date().toISOString().slice(0, 10),
+                  url: '',
+                }}
+              />
             </div>
           )}
         </div>
@@ -362,15 +425,25 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
             </div>
           ) : (
             <div className="sc-grid">
-              {visible.map(item => (
-                <ShowcaseCard
-                  key={item.id}
-                  item={item}
-                  editable={isOwner && !saving}
-                  onEdit={() => setEditingItem(item)}
-                  onDelete={() => handleDelete(item.id)}
-                />
-              ))}
+              {visible.map((item, idx) =>
+                idx === 0 ? (
+                  <ShowcaseHeroCard
+                    key={item.id}
+                    item={item}
+                    editable={isOwner && !saving}
+                    onEdit={() => setEditingItem(item)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                ) : (
+                  <ShowcaseCard
+                    key={item.id}
+                    item={item}
+                    editable={isOwner && !saving}
+                    onEdit={() => setEditingItem(item)}
+                    onDelete={() => handleDelete(item.id)}
+                  />
+                )
+              )}
             </div>
           )}
         </>

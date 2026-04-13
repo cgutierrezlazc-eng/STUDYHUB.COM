@@ -4749,17 +4749,18 @@ body.touch-device select {
   gap: 0;
 }
 
-/* ── Banner premium (dark editorial) ─────────────────────── */
+/* ── Banner — theme-aware (no hard-coded dark) ─────────────── */
 .sc-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   padding: 18px 22px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #1a1050 100%);
+  background: var(--bg-card);
   border-radius: 14px 14px 0 0;
-  border: 1px solid rgba(255,255,255,0.07);
-  color: #fff;
+  border: 1px solid var(--border);
+  border-bottom: 2px solid var(--accent);
+  color: var(--text-primary);
   position: relative;
   overflow: hidden;
 }
@@ -4768,14 +4769,14 @@ body.touch-device select {
   position: absolute;
   top: -40px; right: -40px;
   width: 160px; height: 160px;
-  background: radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(45,98,200,0.12) 0%, transparent 70%);
   pointer-events: none;
 }
 .sc-banner-left { display: flex; flex-direction: column; gap: 3px; }
 .sc-banner-title {
   font-size: 16px;
   font-weight: 800;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -4793,24 +4794,23 @@ body.touch-device select {
 }
 .sc-banner-sub {
   font-size: 12px;
-  opacity: 0.55;
-  color: #fff;
+  color: var(--text-muted);
 }
 .sc-btn-add {
-  background: rgba(255,255,255,0.10);
+  background: var(--accent);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid var(--accent);
   border-radius: 8px;
   padding: 7px 15px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: opacity 0.15s;
   white-space: nowrap;
   flex-shrink: 0;
   letter-spacing: 0.02em;
 }
-.sc-btn-add:hover { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.35); }
+.sc-btn-add:hover { opacity: 0.88; }
 .sc-btn-add--hero {
   background: var(--accent);
   border-color: var(--accent);
@@ -4823,23 +4823,29 @@ body.touch-device select {
 .sc-filter-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  padding: 12px 16px;
+  gap: 4px;
+  padding: 8px 16px;
   background: var(--bg-card);
   border-left: 1px solid var(--border);
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.sc-filter-bar::-webkit-scrollbar { display: none; }
 .sc-filter-pill {
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 3px 11px;
+  padding: 2px 10px;
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   background: transparent;
   color: var(--text-muted);
   transition: all 0.13s;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .sc-filter-pill:hover { background: var(--bg-secondary); }
 .sc-filter-pill.active { font-weight: 700; }
@@ -4856,31 +4862,24 @@ body.touch-device select {
   border-radius: 0 0 14px 14px;
 }
 
-/* ── Individual card — editorial style ─────────────────── */
+/* ── Individual card — accent-left-border style ─────────── */
 .sc-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
+  border-left: 4px solid var(--sc-accent, var(--accent));
   border-radius: 14px;
   padding: 18px 18px 14px;
   position: relative;
-  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+  transition: box-shadow 0.18s, transform 0.18s;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 0;
 }
-.sc-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--sc-accent, var(--accent));
-  border-radius: 14px 14px 0 0;
-}
+.sc-card::before { display: none; }
 .sc-card:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.10);
   transform: translateY(-2px);
-  border-color: var(--sc-accent, var(--border));
 }
 
 /* Large icon spot — top right */
@@ -4888,14 +4887,14 @@ body.touch-device select {
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  opacity: 0.85;
+  font-size: 22px;
+  opacity: 1;
 }
 
 /* Type label */
@@ -4978,6 +4977,10 @@ body.touch-device select {
   z-index: 2;
 }
 .sc-card:hover .sc-actions { opacity: 1; }
+/* Touch devices: actions always visible */
+@media (hover: none) {
+  .sc-actions--card { opacity: 1; }
+}
 .sc-btn-edit {
   font-size: 11px;
   font-weight: 600;
@@ -5126,6 +5129,55 @@ body.touch-device select {
   padding: 4px 0;
 }
 
+/* ── Hero card (first item, full-width) ─────────────────── */
+.sc-card--hero {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 18px;
+  padding: 22px 22px 18px;
+}
+.sc-card--hero .sc-icon-spot { display: none; }
+.sc-hero-icon {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+.sc-hero-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.sc-title--hero {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.sc-desc--hero {
+  -webkit-line-clamp: 3;
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* ── Sample preview in empty state ──────────────────────── */
+.sc-sample-preview {
+  margin: 20px auto 0;
+  max-width: 600px;
+  pointer-events: none;
+  opacity: 0.5;
+  transform: scale(0.97);
+  transform-origin: center top;
+}
+
 /* Saving toast */
 .sc-saving-toast {
   position: fixed;
@@ -5152,5 +5204,11 @@ body.touch-device select {
   .sc-form { margin: 12px; }
   .sc-form-grid { grid-template-columns: 1fr; }
   .sc-type-selector { gap: 4px; }
-  .sc-banner { border-radius: 10px 10px 0 0; padding: 16px; }
+  .sc-banner { border-radius: 10px 10px 0 0; padding: 14px 16px; }
+  /* Hero collapses to vertical on mobile */
+  .sc-card--hero { flex-direction: column; gap: 10px; }
+  .sc-hero-icon { width: 44px; height: 44px; font-size: 22px; border-radius: 12px; }
+  .sc-title--hero { font-size: 16px; }
+  /* Filter: single row, horizontal scroll */
+  .sc-filter-bar { flex-wrap: nowrap; padding: 7px 12px; }
 }

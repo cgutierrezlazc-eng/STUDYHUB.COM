@@ -2449,43 +2449,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
         {/* ─── Showcase Tab ─── */}
         {activeTab === 'showcase' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Header banner */}
-            <div style={{
-              padding: '20px 24px',
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, #92400e 0%, #d97706 50%, #f59e0b 100%)',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
-              gap: 12,
-            }}>
-              <div>
-                <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>★ Showcase Ejecutivo</h2>
-                <p style={{ margin: '4px 0 0', fontSize: 13, opacity: 0.9 }}>
-                  {isOwn ? 'Tu portafolio profesional y presencia ejecutiva en Conniku' : `Portafolio profesional de ${profile.firstName} ${profile.lastName}`}
-                </p>
-              </div>
-              {!((profile as any).subscriptionTier === 'max' || profile.role === 'owner') && isOwn && (
-                <span style={{
-                  padding: '6px 16px', background: 'rgba(255,255,255,0.2)',
-                  borderRadius: 20, fontSize: 12, fontWeight: 700, border: '1px solid rgba(255,255,255,0.4)',
-                }}>
-                  Plan MAX requerido
-                </span>
-              )}
-            </div>
-
-            {/* ExecutiveShowcase component — full width */}
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-              <ExecutiveShowcase
-                userId={profile.id}
-                isOwner={!!isOwn}
-                isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
-              />
-            </div>
+          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+            <ExecutiveShowcase
+              userId={profile.id}
+              isOwner={!!isOwn}
+              isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
+            />
           </div>
         )}
 
