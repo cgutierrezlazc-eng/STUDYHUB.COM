@@ -60,7 +60,27 @@ class SyncItemRequest(BaseModel):
 # ──────────────────────────────────────────────────────────────
 
 def _clean_url(url: str) -> str:
-    return url.rstrip("/")
+    """Normaliza la URL del campus virtual quitando trailing slashes y paths comunes
+    que los usuarios copian desde la barra del navegador (ej: /loginalt, /login/index.php)."""
+    url = url.strip().rstrip("/")
+    # Strip common paths users paste from their browser address bar
+    _strip_paths = [
+        "/login/token.php",
+        "/login/index.php",
+        "/loginalt",
+        "/login",
+        "/auth/cas/index.php",
+        "/auth/shibboleth/index.php",
+        "/my",
+        "/my/courses",
+        "/dashboard",
+    ]
+    lowered = url.lower()
+    for path in _strip_paths:
+        if lowered.endswith(path):
+            url = url[: -len(path)].rstrip("/")
+            break
+    return url
 
 
 def _moodle_get_token_from_password(base_url: str, username: str, password: str) -> str:
@@ -113,9 +133,23 @@ def _moodle_call(base_url: str, token: str, function: str, params: dict = {}) ->
     url = f"{base_url}/webservice/rest/server.php"
     p = {"wstoken": token, "wsfunction": function, "moodlewsrestformat": "json"}
     p.update(params)
-    r = requests.get(url, params=p, timeout=TIMEOUT, verify=True)
-    r.raise_for_status()
-    data = r.json()
+    try:
+        r = requests.get(url, params=p, timeout=TIMEOUT, verify=True)
+        r.raise_for_status()
+    except requests.exceptions.ConnectionError:
+        raise ValueError("No se pudo conectar al campus virtual. Verifica la URL.")
+    except requests.exceptions.Timeout:
+        raise ValueError("El campus virtual tardó demasiado en responder.")
+    except requests.exceptions.HTTPError as e:
+        raise ValueError(f"El campus virtual devolvió un error HTTP: {e.response.status_code}")
+    try:
+        data = r.json()
+    except Exception:
+        raise ValueError(
+            "El campus virtual no devolvió una respuesta JSON válida al verificar la conexión. "
+            "Asegúrate de ingresar solo la URL base del campus (ej: https://campusvirtual.tu-universidad.cl) "
+            "sin rutas adicionales como /loginalt, /login, etc."
+        )
     if isinstance(data, dict) and data.get("exception"):
         raise ValueError(data.get("message", "Moodle error"))
     return data

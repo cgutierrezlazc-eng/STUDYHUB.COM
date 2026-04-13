@@ -1266,9 +1266,21 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         </div>
                         <div>
                           <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>URL del campus virtual</label>
-                          <input type="url" value={lmsUrl} onChange={e => setLmsUrl(e.target.value)}
+                          <input type="url" value={lmsUrl}
+                            onChange={e => setLmsUrl(e.target.value)}
+                            onBlur={e => {
+                              // Auto-strip common login paths users copy from the browser
+                              let v = e.target.value.trim().replace(/\/+$/, '')
+                              const stripPaths = ['/login/token.php', '/login/index.php', '/loginalt', '/login', '/my/courses', '/my', '/dashboard']
+                              const low = v.toLowerCase()
+                              for (const p of stripPaths) { if (low.endsWith(p)) { v = v.slice(0, -p.length).replace(/\/+$/, ''); break } }
+                              setLmsUrl(v)
+                            }}
                             placeholder="https://campusvirtual.udalba.cl" className="form-input"
                             style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
+                          <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, lineHeight: 1.4 }}>
+                            Solo la URL base — sin /login, /loginalt ni otras rutas
+                          </p>
                         </div>
                       </div>
 
