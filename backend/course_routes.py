@@ -1,5 +1,6 @@
 """Courses platform for integral professional development."""
 import json
+import random
 from datetime import datetime
 from typing import Optional
 
@@ -592,23 +593,59 @@ def complete_lesson(course_id: str, lesson_id: str,
     return {"completedLessons": completed}
 
 
+@router.get("/{course_id}/quiz/questions")
+def get_quiz_questions(course_id: str,
+                       user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Return a freshly shuffled subset of quiz questions for this attempt.
+    Strips correctAnswer so it is never exposed to the client.
+    Each question carries a `qid` (pool index) used for server-side grading.
+    """
+    quiz = db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).first()
+    if not quiz:
+        raise HTTPException(404, "Quiz no encontrado para este curso")
+
+    pool = json.loads(quiz.questions or "[]")
+    if not pool:
+        raise HTTPException(404, "Este curso aún no tiene preguntas de examen")
+
+    # Tag each question with its stable pool index before shuffling
+    indexed = [{"qid": i, **q} for i, q in enumerate(pool)]
+
+    # Shuffle and pick up to 10 questions (or all if fewer)
+    n = min(10, len(indexed))
+    selected = random.sample(indexed, n)
+
+    # Strip correctAnswer — never send answers to the client
+    safe = [{k: v for k, v in q.items() if k != "correctAnswer"} for q in selected]
+
+    return {"questions": safe, "total": n}
+
+
 @router.post("/{course_id}/quiz/submit")
 def submit_quiz(course_id: str, data: dict,
                 user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    answers = data.get("answers", {})  # {questionIndex: selectedOption}
+    # Accepts {qid: selectedOption} — qid is the pool index from /quiz/questions
+    answers = data.get("answers", {})
 
     quiz = db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).first()
     if not quiz:
         raise HTTPException(404, "Quiz no encontrado")
 
-    questions = json.loads(quiz.questions or "[]")
-    correct = 0
-    for i, q in enumerate(questions):
-        if str(i) in answers and answers[str(i)] == q.get("correctAnswer"):
-            correct += 1
+    pool = json.loads(quiz.questions or "[]")
 
-    score = round((correct / max(len(questions), 1)) * 100)
-    passed = score >= 70
+    correct = 0
+    total = len(answers)
+    for qid_str, selected in answers.items():
+        try:
+            qid = int(qid_str)
+            if 0 <= qid < len(pool) and selected == pool[qid].get("correctAnswer"):
+                correct += 1
+        except (ValueError, TypeError):
+            pass
+
+    score = round((correct / max(total, 1)) * 100) if total > 0 else 0
+    passed = score >= 80
 
     progress = db.query(UserCourseProgress).filter(
         UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id

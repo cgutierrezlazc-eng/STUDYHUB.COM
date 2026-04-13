@@ -70,6 +70,11 @@ export default function Courses({ onNavigate }: Props) {
   const [tab, setTab] = useState<'catalog' | 'my-certs'>('catalog')
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [milestonePopup, setMilestonePopup] = useState<{type: string, title: string, description: string, icon: string} | null>(null)
+  // ─── Randomized quiz questions (loaded fresh each attempt) ───
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([])
+  const [quizQuestionsLoading, setQuizQuestionsLoading] = useState(false)
+  // ─── Catalog search ───
+  const [searchQuery, setSearchQuery] = useState('')
 
   // ─── Exercise state ───
   const [exerciseMode, setExerciseMode] = useState(false)
@@ -98,6 +103,21 @@ export default function Courses({ onNavigate }: Props) {
   }
   const loadExerciseResult = (courseId: string): { result: any; stats: any } | null => {
     try { const d = localStorage.getItem(`conniku_course_exercises_${courseId}`); return d ? JSON.parse(d) : null } catch { return null }
+  }
+
+  const loadQuizQuestions = async (courseId: string) => {
+    setQuizQuestionsLoading(true)
+    setQuizQuestions([])
+    setQuizAnswers({})
+    setQuizResult(null)
+    try {
+      const data = await api.getCourseQuizQuestions(courseId)
+      setQuizQuestions(data.questions || [])
+    } catch {
+      setQuizQuestions([])
+    } finally {
+      setQuizQuestionsLoading(false)
+    }
   }
 
   const handleDownloadCertificate = (courseName: string, score: number, studentName: string) => {
@@ -456,7 +476,7 @@ export default function Courses({ onNavigate }: Props) {
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', padding: '8px 8px 4px' }}>
                       Evaluación
                     </div>
-                    <button onClick={() => { setQuizMode(true); setExerciseMode(false); setSidebarOpen(false) }}
+                    <button onClick={() => { setQuizMode(true); setExerciseMode(false); setSidebarOpen(false); if (quizQuestions.length === 0 && !quizQuestionsLoading) loadQuizQuestions(courseDetail.id) }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 10, padding: '10px 10px', width: '100%',
                         borderRadius: 8, border: 'none', cursor: 'pointer', textAlign: 'left',
@@ -476,7 +496,7 @@ export default function Courses({ onNavigate }: Props) {
                           Examen Final
                         </div>
                         <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                          {courseDetail.quiz.questions?.length || 15} preguntas · 70% para aprobar
+                          10 preguntas · 80% para aprobar
                         </div>
                       </div>
                     </button>
@@ -787,7 +807,7 @@ export default function Courses({ onNavigate }: Props) {
                           Siguiente →
                         </button>
                       ) : allLessonsComplete && courseDetail.quiz ? (
-                        <button onClick={() => { setQuizMode(true); setExerciseMode(false) }}
+                        <button onClick={() => { setQuizMode(true); setExerciseMode(false); if (quizQuestions.length === 0 && !quizQuestionsLoading) loadQuizQuestions(courseDetail.id) }}
                           style={{
                             padding: '10px 18px', borderRadius: 8, border: 'none', cursor: 'pointer',
                             background: catColor, color: '#fff', fontSize: 13, fontWeight: 600,
@@ -802,24 +822,24 @@ export default function Courses({ onNavigate }: Props) {
               ) : quizMode && courseDetail.quiz ? (
                 <div style={{ maxWidth: 720 }}>
                   {quizResult ? (
+                    /* ── Results screen ── */
                     <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                       <div style={{
                         width: 100, height: 100, borderRadius: '50%', margin: '0 auto 20px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         background: quizResult.passed ? 'rgba(5,150,105,0.08)' : 'rgba(239,68,68,0.06)',
-                        fontSize: 48,
                       }}>
-                        {quizResult.passed ? CheckCircle({ size: 48, color: 'var(--accent-green)' }) : BookOpen({ size: 48 })}
+                        {quizResult.passed ? CheckCircle({ size: 48, color: '#059669' }) : BookOpen({ size: 48 })}
                       </div>
                       <h2 style={{ margin: '0 0 8px', fontSize: 24, color: 'var(--text-primary)' }}>
                         {quizResult.passed ? '¡Curso aprobado!' : 'No alcanzaste el mínimo'}
                       </h2>
                       <p style={{ color: 'var(--text-muted)', marginBottom: 20, fontSize: 14 }}>
                         {quizResult.passed
-                          ? 'Has demostrado dominio del contenido. Tu constancia fue generada.'
-                          : 'Necesitas al menos 70% para aprobar. Repasa las lecciones e intenta de nuevo.'}
+                          ? 'Has demostrado dominio del contenido. Tu certificado fue generado.'
+                          : 'Necesitas al menos 80% para aprobar. Las preguntas serán diferentes en el próximo intento.'}
                       </p>
-                      {/* Score display */}
+                      {/* Score */}
                       <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: 20,
                         background: 'var(--bg-secondary)', borderRadius: 12, padding: '16px 28px', marginBottom: 24,
@@ -833,89 +853,100 @@ export default function Courses({ onNavigate }: Props) {
                           <div style={{ fontSize: 36, fontWeight: 700, color: 'var(--text-primary)' }}>{quizResult.correct}/{quizResult.total}</div>
                           <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Correctas</div>
                         </div>
+                        <div style={{ width: 1, height: 40, background: 'var(--border)' }} />
+                        <div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: quizResult.passed ? '#059669' : '#DC2626' }}>
+                            {quizResult.passed ? '✓' : `${80 - quizResult.score}% falta`}
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Mínimo 80%</div>
+                        </div>
                       </div>
 
                       {quizResult.passed && (
                         <div style={{
-                          marginTop: 8, padding: '16px 20px', background: 'rgba(5,150,105,0.06)',
-                          borderRadius: 10, border: '1px solid rgba(5,150,105,0.15)', maxWidth: 400, margin: '8px auto 0',
+                          padding: '16px 20px', background: 'rgba(5,150,105,0.06)',
+                          borderRadius: 10, border: '1px solid rgba(5,150,105,0.15)', maxWidth: 400, margin: '0 auto 20px',
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 4 }}>
-                            <span style={{ fontSize: 18 }}>{Medal({ size: 18 })}</span>
-                            <strong style={{ color: '#059669', fontSize: 14 }}>Constancia de finalización emitida</strong>
+                            {Medal({ size: 18 })}
+                            <strong style={{ color: '#059669', fontSize: 14 }}>Certificado de finalización emitido</strong>
                           </div>
                           <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                            {quizResult.courseTitle} — se agregó a tu perfil profesional
+                            {quizResult.courseTitle} — agregado a tu perfil profesional
                           </p>
                         </div>
                       )}
 
-                      <div style={{ marginTop: 24, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
                         {!quizResult.passed ? (
-                          <button onClick={() => { setQuizResult(null); setQuizAnswers({}) }}
-                            style={{
-                              padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                              background: catColor, color: '#fff', fontSize: 14, fontWeight: 600,
-                            }}>
-                            Intentar de nuevo
+                          <button
+                            onClick={() => loadQuizQuestions(courseDetail.id)}
+                            style={{ padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer', background: catColor, color: '#fff', fontSize: 14, fontWeight: 600 }}
+                          >
+                            Intentar de nuevo (nuevas preguntas)
                           </button>
                         ) : (
                           <>
-                            <button onClick={() => handleDownloadCertificate(
-                              courseDetail.title,
-                              quizResult.score,
-                              user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.email || 'Estudiante')
-                            )}
-                              style={{
-                                padding: '12px 28px', borderRadius: 8, border: `2px solid ${catColor}`, cursor: 'pointer',
-                                background: '#fff', color: catColor, fontSize: 14, fontWeight: 600,
-                                display: 'flex', alignItems: 'center', gap: 8,
-                              }}>
+                            <button
+                              onClick={() => handleDownloadCertificate(
+                                courseDetail.title, quizResult.score,
+                                user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : (user?.email || 'Estudiante')
+                              )}
+                              style={{ padding: '12px 28px', borderRadius: 8, border: `2px solid ${catColor}`, cursor: 'pointer', background: '#fff', color: catColor, fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}
+                            >
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                               Descargar certificado
                             </button>
-                            <button onClick={() => { setCourseDetail(null); setSelectedCourse(null) }}
-                              style={{
-                                padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                                background: catColor, color: '#fff', fontSize: 14, fontWeight: 600,
-                              }}>
+                            <button
+                              onClick={() => { setCourseDetail(null); setSelectedCourse(null) }}
+                              style={{ padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer', background: catColor, color: '#fff', fontSize: 14, fontWeight: 600 }}
+                            >
                               Volver al catálogo
                             </button>
                           </>
                         )}
                       </div>
                     </div>
+                  ) : quizQuestionsLoading ? (
+                    /* ── Loading new set of questions ── */
+                    <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                        {[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}
+                      </div>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Preparando preguntas...</p>
+                    </div>
+                  ) : quizQuestions.length === 0 ? (
+                    /* ── No questions available ── */
+                    <div style={{ textAlign: 'center', padding: 60 }}>
+                      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No hay preguntas disponibles para este curso.</p>
+                      <button onClick={() => loadQuizQuestions(courseDetail.id)} className="btn btn-primary" style={{ marginTop: 12 }}>
+                        Reintentar
+                      </button>
+                    </div>
                   ) : (
+                    /* ── Quiz taking ── */
                     <div>
-                      {/* Quiz header */}
                       <div style={{ marginBottom: 28 }}>
-                        <div style={{
-                          fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase',
-                          color: catColor, marginBottom: 6,
-                        }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: catColor, marginBottom: 6 }}>
                           Evaluación Final
                         </div>
-                        <h2 style={{ margin: '0 0 6px', fontSize: 22, color: 'var(--text-primary)' }}>
-                          {courseDetail.title}
-                        </h2>
+                        <h2 style={{ margin: '0 0 6px', fontSize: 22, color: 'var(--text-primary)' }}>{courseDetail.title}</h2>
                         <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: 14 }}>
-                          Responde todas las preguntas. Necesitas <strong>70%</strong> para aprobar y obtener tu constancia de finalización.
+                          Responde todas las preguntas. Necesitas <strong>80%</strong> para aprobar y obtener tu certificado.
                         </p>
-                        <div style={{
-                          display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)',
-                        }}>
-                          <span>{FileText({ size: 12 })} {courseDetail.quiz.questions.length} preguntas</span>
+                        <div style={{ display: 'flex', gap: 16, marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+                          <span>{FileText({ size: 12 })} {quizQuestions.length} preguntas</span>
                           <span>{CheckCircle({ size: 12 })} {Object.keys(quizAnswers).length} respondidas</span>
-                          <span>{Target({ size: 12 })} Mínimo: 70%</span>
+                          <span>{Target({ size: 12 })} Mínimo: 80%</span>
                         </div>
                       </div>
 
-                      {/* Questions */}
-                      {courseDetail.quiz.questions.map((q: any, qi: number) => (
-                        <div key={qi} style={{
+                      {/* Questions — keyed by q.qid (pool index) */}
+                      {quizQuestions.map((q: any, qi: number) => (
+                        <div key={q.qid} style={{
                           marginBottom: 20, padding: '18px 20px',
                           background: '#fff', borderRadius: 10,
-                          border: `1px solid ${quizAnswers[String(qi)] !== undefined ? `${catColor}30` : 'var(--border)'}`,
+                          border: `1px solid ${quizAnswers[String(q.qid)] !== undefined ? `${catColor}30` : 'var(--border)'}`,
                           transition: 'border-color 0.2s',
                         }}>
                           <p style={{ fontWeight: 600, marginBottom: 12, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.5 }}>
@@ -924,9 +955,10 @@ export default function Courses({ onNavigate }: Props) {
                           </p>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                             {q.options.map((opt: string, oi: number) => {
-                              const isSelected = quizAnswers[String(qi)] === oi
+                              const isSelected = quizAnswers[String(q.qid)] === oi
                               return (
-                                <button key={oi} onClick={() => setQuizAnswers(prev => ({ ...prev, [String(qi)]: oi }))}
+                                <button key={oi}
+                                  onClick={() => setQuizAnswers(prev => ({ ...prev, [String(q.qid)]: oi }))}
                                   style={{
                                     padding: '10px 14px', borderRadius: 8, textAlign: 'left', cursor: 'pointer',
                                     border: `1.5px solid ${isSelected ? catColor : 'var(--border)'}`,
@@ -954,32 +986,24 @@ export default function Courses({ onNavigate }: Props) {
                       ))}
 
                       {quizError && (
-                        <div style={{
-                          padding: '12px 16px', marginBottom: 16, borderRadius: 8,
-                          background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)',
-                          fontSize: 13, color: '#DC2626',
-                        }}>
+                        <div style={{ padding: '12px 16px', marginBottom: 16, borderRadius: 8, background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.15)', fontSize: 13, color: '#DC2626' }}>
                           {quizError}
                         </div>
                       )}
 
-                      {/* Submit */}
-                      <div style={{
-                        position: 'sticky', bottom: 0, background: 'var(--bg-primary)',
-                        padding: '16px 0', borderTop: '1px solid var(--border)',
-                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                      }}>
+                      <div style={{ position: 'sticky', bottom: 0, background: 'var(--bg-primary)', padding: '16px 0', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                          {Object.keys(quizAnswers).length}/{courseDetail.quiz.questions.length} respondidas
+                          {Object.keys(quizAnswers).length}/{quizQuestions.length} respondidas
                         </span>
-                        <button onClick={handleSubmitQuiz}
-                          disabled={Object.keys(quizAnswers).length < courseDetail.quiz.questions.length}
+                        <button
+                          onClick={handleSubmitQuiz}
+                          disabled={Object.keys(quizAnswers).length < quizQuestions.length}
                           style={{
                             padding: '12px 28px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                            background: Object.keys(quizAnswers).length < courseDetail.quiz.questions.length ? 'var(--border)' : catColor,
-                            color: Object.keys(quizAnswers).length < courseDetail.quiz.questions.length ? 'var(--text-muted)' : '#fff',
+                            background: Object.keys(quizAnswers).length < quizQuestions.length ? 'var(--border)' : catColor,
+                            color: Object.keys(quizAnswers).length < quizQuestions.length ? 'var(--text-muted)' : '#fff',
                             fontSize: 14, fontWeight: 600,
-                            opacity: Object.keys(quizAnswers).length < courseDetail.quiz.questions.length ? 0.6 : 1,
+                            opacity: Object.keys(quizAnswers).length < quizQuestions.length ? 0.6 : 1,
                           }}>
                           Enviar examen
                         </button>
@@ -1066,17 +1090,36 @@ export default function Courses({ onNavigate }: Props) {
           </button>
         </div>
         {tab === 'catalog' && (
-          <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
-            <button className={`tab ${!selectedCategory ? 'active' : ''}`} onClick={() => { setSelectedCategory(''); setTimeout(loadCourses, 50) }}>
-              Todos
-            </button>
-            {Object.entries(categories).map(([key, label]) => (
-              <button key={key} className={`tab ${selectedCategory === key ? 'active' : ''}`}
-                onClick={() => { setSelectedCategory(key); setTimeout(loadCourses, 50) }}>
-                <CategoryIcon category={key} size={14} /> {label}
+          <>
+            {/* Search bar */}
+            <div style={{ marginTop: 12, position: 'relative' }}>
+              <svg
+                style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+              <input
+                className="form-control"
+                style={{ paddingLeft: 36, fontSize: 14 }}
+                placeholder="Buscar cursos..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+              />
+            </div>
+            {/* Category chips */}
+            <div style={{ display: 'flex', gap: 6, marginTop: 10, flexWrap: 'wrap' }}>
+              <button className={`tab ${!selectedCategory ? 'active' : ''}`} onClick={() => { setSelectedCategory(''); setTimeout(loadCourses, 50) }}>
+                Todos
               </button>
-            ))}
-          </div>
+              {Object.entries(categories).map(([key, label]) => (
+                <button key={key} className={`tab ${selectedCategory === key ? 'active' : ''}`}
+                  onClick={() => { setSelectedCategory(key); setTimeout(loadCourses, 50) }}>
+                  <CategoryIcon category={key} size={14} /> {label}
+                </button>
+              ))}
+            </div>
+          </>
         )}
       </div>
 
@@ -1179,88 +1222,135 @@ export default function Courses({ onNavigate }: Props) {
               </button>
             )}
           </div>
-        ) : (
-          <>
-            {/* Featured courses */}
-            {courses.filter(c => c.isFeatured && !selectedCategory).length > 0 && (
-              <div style={{ marginBottom: 24 }}>
-                <h3 style={{ fontSize: 15, marginBottom: 12 }}>{Star({ size: 16 })} Cursos Destacados</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-                  {courses.filter(c => c.isFeatured).map(course => {
-                    const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
-                    return (
-                      <div key={course.id} className="u-card hover-lift" style={{
-                        padding: 20, cursor: 'pointer', borderLeft: `4px solid ${cc}`,
-                        transition: 'transform 0.15s, box-shadow 0.15s',
-                      }}
-                        onClick={() => openCourse(course.id)}
-                        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 16px rgba(0,0,0,0.08)' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-                          <CourseIcon category={course.category} size={28} />
-                          <div style={{ flex: 1 }}>
-                            <h4 style={{ margin: 0, fontSize: 15, lineHeight: 1.3 }}>{course.title}</h4>
-                            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                              {course.lessonCount} lecciones · ~{course.estimatedMinutes} min
-                            </span>
-                          </div>
-                        </div>
-                        <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{course.description}</p>
-                        {course.progress?.completed && (
-                          <div style={{ marginTop: 10, fontSize: 12, color: '#059669', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>{CheckCircle({ size: 12 })} Completado · {Medal({ size: 12 })} Certificado</div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
+        ) : (() => {
+          // Filter by search query
+          const q = searchQuery.trim().toLowerCase()
+          const filtered = q
+            ? courses.filter(c =>
+                c.title.toLowerCase().includes(q) ||
+                c.description?.toLowerCase().includes(q)
+              )
+            : courses
 
-            {/* All courses grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-              {courses.map(course => {
-                const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
-                return (
-                  <div key={course.id} className="u-card hover-lift" style={{
-                    padding: 16, cursor: 'pointer',
-                    transition: 'transform 0.15s, box-shadow 0.15s',
-                  }}
-                    onClick={() => openCourse(course.id)}
-                    onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.06)' }}
-                    onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                      <CourseIcon category={course.category} size={24} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.3 }}>{course.title}</h4>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
-                          <span>{course.lessonCount} lecciones · ~{course.estimatedMinutes} min</span>
-                          {course.difficulty === 'intermediate' && (
-                            <span style={{ background: `${cc}15`, color: cc, padding: '1px 6px', borderRadius: 4, fontSize: 10, fontWeight: 600 }}>Intermedio</span>
-                          )}
-                        </div>
-                      </div>
-                      {course.progress?.completed ? (
-                        <span style={{ fontSize: 18 }}>{Medal({ size: 18 })}</span>
-                      ) : course.progress?.started ? (
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: cc }}>{course.progress.completedLessons}/{course.lessonCount}</div>
-                          <div style={{ width: 32, height: 3, borderRadius: 2, background: 'var(--border)', marginTop: 2, overflow: 'hidden' }}>
-                            <div style={{ width: `${(course.progress.completedLessons / course.lessonCount) * 100}%`, height: '100%', background: cc, borderRadius: 2 }} />
-                          </div>
-                        </div>
-                      ) : null}
+          // Course card component (inline)
+          const CourseCard = ({ course }: { course: any }) => {
+            const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
+            const progressPct = course.progress?.started && course.lessonCount > 0
+              ? Math.round((course.progress.completedLessons / course.lessonCount) * 100)
+              : 0
+            return (
+              <div
+                className="u-card hover-lift"
+                style={{ padding: 18, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', display: 'flex', flexDirection: 'column', gap: 10 }}
+                onClick={() => openCourse(course.id)}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <CourseIcon category={course.category} size={26} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ margin: '0 0 4px', fontSize: 14, lineHeight: 1.35, color: 'var(--text-primary)' }}>{course.title}</h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{course.lessonCount} lecciones · ~{course.estimatedMinutes} min</span>
+                      {course.difficulty === 'intermediate' && (
+                        <span style={{ background: `${cc}15`, color: cc, padding: '1px 7px', borderRadius: 20, fontSize: 10, fontWeight: 600 }}>Intermedio</span>
+                      )}
+                      {course.progress?.completed && (
+                        <span style={{ background: 'rgba(5,150,105,0.1)', color: '#059669', padding: '1px 7px', borderRadius: 20, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          {Medal({ size: 10 })} Completado
+                        </span>
+                      )}
                     </div>
-                    <p style={{
-                      fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.5,
-                      overflow: 'hidden', textOverflow: 'ellipsis',
-                      display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any,
-                    }}>{course.description}</p>
+                  </div>
+                </div>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.55, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
+                  {course.description}
+                </p>
+                {/* Progress bar */}
+                {course.progress?.started && !course.progress?.completed && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>
+                      <span>Progreso</span>
+                      <span style={{ color: cc, fontWeight: 600 }}>{progressPct}%</span>
+                    </div>
+                    <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+                      <div style={{ width: `${progressPct}%`, height: '100%', borderRadius: 2, background: cc, transition: 'width 0.4s ease' }} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          }
+
+          if (filtered.length === 0) {
+            return (
+              <div className="empty-state" style={{ padding: 40 }}>
+                <div className="empty-state-icon">{BookOpen({ size: 40 })}</div>
+                <h3>Sin resultados para "{searchQuery}"</h3>
+                <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => setSearchQuery('')}>Limpiar búsqueda</button>
+              </div>
+            )
+          }
+
+          // When a specific category is selected → flat grid
+          if (selectedCategory) {
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                {filtered.map(c => <CourseCard key={c.id} course={c} />)}
+              </div>
+            )
+          }
+
+          // "Todos" → group by category, each with its own row
+          const grouped: Record<string, any[]> = {}
+          for (const c of filtered) {
+            const cat = c.category || 'other'
+            if (!grouped[cat]) grouped[cat] = []
+            grouped[cat].push(c)
+          }
+
+          // Featured strip first
+          const featured = filtered.filter(c => c.isFeatured)
+          return (
+            <>
+              {featured.length > 0 && !q && (
+                <div style={{ marginBottom: 28 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)' }}>
+                    {Star({ size: 15 })} Cursos Destacados
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14 }}>
+                    {featured.map(c => <CourseCard key={c.id} course={c} />)}
+                  </div>
+                </div>
+              )}
+
+              {Object.entries(grouped).map(([cat, list]) => {
+                const label = categories[cat] || cat
+                const cc = CATEGORY_COLORS[cat] || '#64748B'
+                return (
+                  <div key={cat} style={{ marginBottom: 28 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                      <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)' }}>
+                        <CategoryIcon category={cat} size={16} color={cc} />
+                        {label}
+                        <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>{list.length} cursos</span>
+                      </h3>
+                      <button
+                        className="btn btn-secondary btn-xs"
+                        onClick={() => { setSelectedCategory(cat); setTimeout(loadCourses, 50) }}
+                      >
+                        Ver todos →
+                      </button>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
+                      {list.map(c => <CourseCard key={c.id} course={c} />)}
+                    </div>
                   </div>
                 )
               })}
-            </div>
-          </>
-        )}
+            </>
+          )
+        })()}
       </div>
     </>
   )

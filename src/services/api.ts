@@ -847,6 +847,9 @@ export const api = {
     request(`/courses/${id}/generate`, { method: 'POST' }),
   completeLesson: (courseId: string, lessonId: string) =>
     request(`/courses/${courseId}/lessons/${lessonId}/complete`, { method: 'POST' }),
+  getCourseQuizQuestions: (courseId: string) =>
+    request(`/courses/${courseId}/quiz/questions`),
+
   submitCourseQuiz: (courseId: string, answers: Record<string, number>) =>
     request(`/courses/${courseId}/quiz/submit`, { method: 'POST', body: JSON.stringify({ answers }) }),
   // ─── Exercises (never repeat) ───────────────────────────
