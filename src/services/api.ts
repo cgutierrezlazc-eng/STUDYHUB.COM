@@ -469,10 +469,7 @@ export const api = {
   sendSuggestion: (type: string, subject: string, message: string) =>
     request('/auth/me/suggestion', { method: 'POST', body: JSON.stringify({ type, subject, message }) }),
 
-  // ─── AI Study Buddy & Auto-tag ─────────────────────────────
-  studyBuddy: (message: string, context: string = '', history: any[] = []) =>
-    request('/ai/study-buddy', { method: 'POST', body: JSON.stringify({ message, context, history }) }),
-
+  // ─── AI Auto-tag ────────────────────────────────────────────
   autoTag: (text: string) =>
     request('/ai/auto-tag', { method: 'POST', body: JSON.stringify({ text }) }),
 

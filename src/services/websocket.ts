@@ -54,7 +54,6 @@ class WebSocketService {
         this.reconnectAttempts = 0
         this._notifyConnection(true)
         this._startPing()
-        console.log('[WS] Connected')
       }
 
       this.ws.onmessage = (event) => {
@@ -70,7 +69,6 @@ class WebSocketService {
         this._connected = false
         this._stopPing()
         this._notifyConnection(false)
-        console.log(`[WS] Disconnected (code: ${event.code})`)
 
         if (!this.isManualClose && event.code !== 4003) {
           this._scheduleReconnect()
@@ -216,14 +214,11 @@ class WebSocketService {
 
   private _scheduleReconnect(): void {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.log('[WS] Max reconnect attempts reached')
       return
     }
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000) // Exponential backoff, max 30s
     this.reconnectAttempts++
-
-    console.log(`[WS] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})`)
     this.reconnectTimer = setTimeout(() => {
       if (this.token) {
         this.connect(this.token)
