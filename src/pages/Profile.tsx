@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { useAuth } from '../services/auth'
 import { useI18n, LANGUAGES } from '../services/i18n'
 import { api } from '../services/api'
@@ -60,6 +60,10 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
   const [newProj, setNewProj] = useState({ title: '', description: '', projectUrl: '', techStack: '', category: 'personal', year: new Date().getFullYear() })
   const [newPub, setNewPub] = useState({ type: 'paper', title: '', description: '', year: new Date().getFullYear(), url: '', institution: '' })
 
+  // CV Unificado — compact summary from StudentCV/CVProfile
+  const [myCV, setMyCV] = useState<any>(null)
+  const [myCVLoaded, setMyCVLoaded] = useState(false)
+
   // Institution picker state (for university edit)
   const [uniSearch, setUniSearch] = useState('')
   const [showUniDropdown, setShowUniDropdown] = useState(false)
@@ -67,6 +71,16 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
     if (!uniSearch || uniSearch.length < 2) return []
     return searchUniversities(uniSearch, (user as any)?.country || '').slice(0, 15)
   }, [uniSearch])
+
+  // Auto-load CV summary when user navigates to CV section
+  useEffect(() => {
+    if (activeSection === 'cv' && !myCVLoaded) {
+      setMyCVLoaded(true)
+      api.getMyCV()
+        .then((d: any) => setMyCV(d))
+        .catch(() => {})
+    }
+  }, [activeSection, myCVLoaded])
 
   if (!user) return null
 
@@ -655,6 +669,67 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
                 <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 20 }}>
                   Elige cómo quieres construir tu perfil profesional. Puedes llenarlo manualmente con todo el detalle, o subir tu CV y Conniku se encargará de analizarlo y construir tu perfil automáticamente.
                 </p>
+
+                {/* ─── CV actual (compact summary) ─── */}
+                {myCV?.exists && myCV?.profile && (() => {
+                  const p = myCV.profile
+                  // Extract top skills (flat list from nested structure)
+                  let topSkills: string[] = []
+                  try {
+                    const skillGroups = JSON.parse(p.skills || '[]')
+                    skillGroups.forEach((g: any) => {
+                      (g.items || []).forEach((item: any) => {
+                        if (topSkills.length < 6) topSkills.push(typeof item === 'string' ? item : item.name)
+                      })
+                    })
+                    if (topSkills.length === 0 && Array.isArray(skillGroups) && typeof skillGroups[0] === 'string') {
+                      topSkills = skillGroups.slice(0, 6)
+                    }
+                  } catch {}
+                  const visibilityLabel: Record<string, string> = { public: 'Público', friends: 'Amigos', recruiters: 'Reclutadores', private: 'Privado' }
+                  const visColor: Record<string, string> = { public: '#22c55e', friends: '#3b82f6', recruiters: '#8b5cf6', private: '#6b7280' }
+                  const vis = p.visibility || 'public'
+                  const expCount = (() => { try { return JSON.parse(p.experience || '[]').length } catch { return 0 } })()
+                  return (
+                    <div style={{ marginBottom: 24, padding: 18, borderRadius: 14, background: 'var(--bg-card)', border: '2px solid var(--accent)', position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: 180 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 }}>
+                            ✦ Tu CV en Conniku
+                          </div>
+                          {p.headline && (
+                            <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-primary)', marginBottom: 6 }}>{p.headline}</div>
+                          )}
+                          {p.location && (
+                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>📍 {p.location}</div>
+                          )}
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: topSkills.length > 0 ? 10 : 0 }}>
+                            {topSkills.map((sk: string) => (
+                              <span key={sk} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>{sk}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 10, background: visColor[vis] + '22', color: visColor[vis] }}>
+                            {visibilityLabel[vis] || vis}
+                          </span>
+                          {p.open_to_work && (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 10, background: '#22c55e22', color: '#22c55e' }}>
+                              #OpenToWork
+                            </span>
+                          )}
+                          {expCount > 0 && (
+                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{expCount} exp. laboral{expCount !== 1 ? 'es' : ''}</span>
+                          )}
+                        </div>
+                      </div>
+                      <button onClick={() => onNavigate?.('/jobs')}
+                        style={{ marginTop: 12, padding: '7px 16px', borderRadius: 8, border: '1px solid var(--accent)', background: 'transparent', color: 'var(--accent)', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+                        Ver y editar CV completo →
+                      </button>
+                    </div>
+                  )
+                })()}
 
                 {/* Two paths */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>

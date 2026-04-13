@@ -27,9 +27,10 @@ export default function Admin() {
   const [payments, setPayments] = useState<any[]>([])
   const [refundRequests, setRefundRequests] = useState<any[]>([])
   const [refundUpdateMsg, setRefundUpdateMsg] = useState('')
+  const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: any[] } | null>(null)
 
   useEffect(() => {
-    if (tab === 'stats') loadStats()
+    if (tab === 'stats') { loadStats(); loadOnlineUsers() }
     if (tab === 'users') loadUsers()
     if (tab === 'subscribers') loadUsers()
     if (tab === 'payments') loadFinancials()
@@ -42,6 +43,10 @@ export default function Admin() {
 
   const loadStats = async () => {
     try { setStats(await api.adminGetStats()) } catch {}
+  }
+
+  const loadOnlineUsers = async () => {
+    try { setOnlineUsers(await api.getOnlineUsers()) } catch {}
   }
 
   const loadUsers = async () => {
@@ -245,6 +250,35 @@ export default function Admin() {
               <div className="stat-card"><div className="stat-value" style={{ color: 'var(--accent-orange)' }}>{stats.totalReports}</div><div className="stat-label">Reportes Totales</div></div>
               <div className="stat-card clickable" onClick={() => { setTab('blocks'); setPage(1) }}><div className="stat-value" style={{ color: 'var(--text-muted)' }}>{stats.totalBlocks}</div><div className="stat-label">Bloqueos Activos</div></div>
             </div>
+
+            {/* ─── Online Users ─── */}
+            <h3 style={{ margin: '24px 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 0 3px #22c55e44' }} />
+              En línea ahora
+              {onlineUsers && (
+                <span style={{ marginLeft: 6, fontSize: 13, fontWeight: 400, color: 'var(--text-muted)' }}>— {onlineUsers.count} usuario{onlineUsers.count !== 1 ? 's' : ''} activo{onlineUsers.count !== 1 ? 's' : ''} en los últimos 5 min</span>
+              )}
+            </h3>
+            {onlineUsers && onlineUsers.count > 0 ? (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                {onlineUsers.users.map((u: any) => (
+                  <div key={u.id} title={u.email}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 12px', borderRadius: 20, background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontSize: 13 }}>
+                    {u.avatar
+                      ? <img src={u.avatar} alt="" style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} />
+                      : <span style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: '#fff' }}>{u.name?.[0] || '?'}</span>
+                    }
+                    <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{u.name}</span>
+                    {u.role && u.role !== 'user' && (
+                      <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 8, background: u.role === 'admin' ? '#8b5cf633' : '#f59e0b33', color: u.role === 'admin' ? '#8b5cf6' : '#f59e0b', textTransform: 'uppercase' }}>{u.role}</span>
+                    )}
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', flexShrink: 0 }} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>No hay usuarios activos en este momento.</p>
+            )}
 
             <h3 style={{ margin: '24px 0 16px' }}>Distribución de Usuarios</h3>
             <div className="admin-chart">
