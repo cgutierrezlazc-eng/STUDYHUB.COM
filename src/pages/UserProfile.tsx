@@ -893,7 +893,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             { id: 'appearance',   label: 'Apariencia',          color: '#b45309' },
             { id: 'notifications',label: 'Notificaciones',      color: '#374151' },
             { id: 'security',     label: 'Seguridad',           color: '#991b1b' },
-            ...(user?.role === 'owner' ? [{ id: 'email', label: 'Correo Corp.', color: '#1d4ed8' }] : []),
           ] as { id: string; label: string; color: string }[]).map(tab => (
             <button
               key={tab.id}

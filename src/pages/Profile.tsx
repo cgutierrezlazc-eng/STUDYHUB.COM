@@ -15,7 +15,7 @@ interface ProfileProps { onNavigate?: (path: string) => void; embedded?: boolean
 export default function Profile({ onNavigate, embedded = false, initialSection }: ProfileProps = {}) {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
-  const [activeSection, setActiveSection] = useState<Section>((initialSection as Section) || 'profile')
+  const [activeSection, setActiveSection] = useState<Section>((initialSection as Section) || (embedded ? 'profile' : 'appearance'))
   const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'equilibrado')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -248,17 +248,13 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
     { value: 'advanced', label: t('skill.advanced'), desc: t('skill.advancedDesc') },
   ]
 
+  // Configuración solo muestra: Apariencia, Notificaciones, Seguridad
+  // El resto (Mi Perfil, Académico, CV, etc.) son accesibles desde las pestañas del perfil social
+  // Correo Corporativo: pendiente de mover al módulo CEO
   const SECTIONS: { id: Section; label: string; icon: React.ReactNode }[] = [
-    { id: 'profile', label: t('profile.sectionProfile'), icon: Users({ size: 16 }) },
-    { id: 'academic', label: t('profile.sectionAcademic'), icon: GraduationCap({ size: 16 }) },
-    { id: 'cv', label: t('profile.sectionCV'), icon: ClipboardList({ size: 16 }) },
-    { id: 'projects' as Section, label: 'Proyectos', icon: <span>🗂</span> },
-    { id: 'publications' as Section, label: 'Publicaciones', icon: <span>📚</span> },
-    { id: 'universidad' as Section, label: 'Mi Universidad', icon: <span>🎓</span> },
     { id: 'appearance', label: t('profile.sectionAppearance'), icon: Settings({ size: 16 }) },
     { id: 'notifications', label: t('profile.sectionNotifications'), icon: Bell({ size: 16 }) },
     { id: 'security', label: t('profile.sectionSecurity'), icon: Lock({ size: 16 }) },
-    ...(user.role === 'owner' ? [{ id: 'email' as Section, label: t('profile.sectionEmail'), icon: CheckCircle({ size: 16 }) }] : []),
   ]
 
   const ToggleRow = ({ label, desc, defaultOn = true }: { label: string; desc: string; defaultOn?: boolean }) => (
@@ -1488,44 +1484,6 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
             {/* ─── Apariencia ─── */}
             {activeSection === 'appearance' && (
               <div className="pf-section">
-                <h3>{t('profile.coverPhoto')}</h3>
-                <p className="pf-hint">{t('profile.coverPhotoHint')}</p>
-
-                {(user as any).coverPhoto && (
-                  <div style={{
-                    marginBottom: 12, borderRadius: 10, height: 80,
-                    ...getCoverStyle((user as any).coverPhoto, (user as any).coverType || 'template'),
-                  }} />
-                )}
-
-                <button
-                  className="btn btn-secondary"
-                  style={{ marginBottom: 8 }}
-                  onClick={() => setShowCoverModal(true)}
-                >
-                  {Pencil({ size: 14 })} {t('profile.changeCover')}
-                </button>
-
-                {coverMsg && (
-                  <p style={{ fontSize: 12, color: coverMsg.startsWith('Error') ? 'var(--accent-orange)' : 'var(--accent-green)', marginBottom: 12 }}>
-                    {coverMsg}
-                  </p>
-                )}
-
-                <CoverPhotoModal
-                  isOpen={showCoverModal}
-                  onClose={() => setShowCoverModal(false)}
-                  currentCover={(user as any).coverPhoto}
-                  currentCoverType={(user as any).coverType}
-                  onSaved={(coverPhoto, coverType) => {
-                    updateProfile({ coverPhoto, coverType } as any)
-                    setCoverMsg('Foto de portada actualizada')
-                    setTimeout(() => setCoverMsg(''), 3000)
-                  }}
-                />
-
-                <div className="pf-divider" />
-
                 <h3>Tema de color</h3>
                 <p className="pf-hint">Elige el aspecto visual de la plataforma</p>
                 <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
