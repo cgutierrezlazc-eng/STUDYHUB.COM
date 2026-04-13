@@ -228,8 +228,8 @@ export const api = {
     request('/ai-workflows/design/brief', { method: 'POST', body: JSON.stringify(data) }),
 
   // ─── Support Chat ──────────────────────────────────────────
-  supportChat: (message: string, history: { role: string; content: string }[] = []) =>
-    request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
+  supportChat: (message: string, history: { role: string; content: string }[] = [], page_context = '') =>
+    request('/support/chat', { method: 'POST', body: JSON.stringify({ message, history, page_context }) }),
   supportAdminChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
   getKonniBroadcasts: () => request('/support/konni-broadcasts'),

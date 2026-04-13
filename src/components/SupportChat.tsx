@@ -152,8 +152,28 @@ export default function SupportChat() {
   const [input, setInput]           = useState('')
   const [loading, setLoading]       = useState(false)
   const [expandedMsgs, setExpandedMsgs] = useState<Set<number>>(new Set())
-  const [jobBadge, setJobBadge]     = useState(false)  // pulsing badge for new job alerts
+  const [jobBadge, setJobBadge]     = useState(false)
+  const [detectedMode, setDetectedMode] = useState<'academic' | 'support' | null>(null)
   const lastJobCheckRef             = useRef<string>(new Date().toISOString())
+
+  // ── Detección de intención por keywords (visual instantáneo) ─────────────
+  const detectIntent = (text: string): 'academic' | 'support' | null => {
+    const t = text.toLowerCase()
+    const academic = ['explica', 'explícame', 'resuelve', 'calcula', 'derivada', 'integral',
+      'fórmula', 'algoritmo', 'código', 'programa', 'matemática', 'física', 'química',
+      'biología', 'historia', 'economía', 'estadística', 'teorema', 'ecuación', 'función',
+      'ejercicio', 'tarea', 'examen', 'prueba', 'qué es', 'cómo funciona', 'cómo se hace',
+      'por qué', 'demostrar', 'probar', 'definición', 'concepto', 'ejemplo de', 'paso a paso']
+    const support = ['cuenta', 'contraseña', 'password', 'suscripción', 'suscripcion',
+      'pago', 'cobro', 'factura', 'reembolso', 'no puedo', 'no funciona', 'error',
+      'no me deja', 'olvidé', 'bloqueo', 'notificación', 'configuración', 'acceso',
+      'eliminar cuenta', 'verificación', 'correo', 'descargar', 'problema con']
+    const isAcademic = academic.some(k => t.includes(k))
+    const isSupport  = support.some(k => t.includes(k))
+    if (isAcademic && !isSupport) return 'academic'
+    if (isSupport  && !isAcademic) return 'support'
+    return null
+  }
 
   const LONG_THRESHOLD = 420 // chars — collapse messages longer than this
   const toggleExpand = (i: number) => setExpandedMsgs(prev => {
@@ -192,6 +212,7 @@ export default function SupportChat() {
     setAdminCat(null)
     setAdminChat(false)
     setChipCat(null)
+    setDetectedMode(null)
     setOpen(false)
     if (!isAdmin) {
       setMessages([{ role: 'assistant', content: `Hola${user?.firstName ? `, ${user.firstName}` : ''}! Soy Konni, tu asistente personal de estudio. ¿En qué te puedo ayudar?` }])
@@ -250,13 +271,20 @@ export default function SupportChat() {
     const msg = text.trim()
     if (!msg || loading) return
     setInput('')
+    // Detect intent from user message → update visual mode immediately
+    const intent = detectIntent(msg)
+    if (intent) setDetectedMode(intent)
     const updated: Message[] = [...messages, { role: 'user', content: msg }]
     setMessages(updated)
     setLoading(true)
     try {
-      const chatFn = isAdmin ? api.supportAdminChat : api.supportChat
-      const res = await chatFn(msg, updated.slice(-12))
-      setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
+      if (isAdmin) {
+        const res = await api.supportAdminChat(msg, updated.slice(-12))
+        setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
+      } else {
+        const res = await api.supportChat(msg, updated.slice(-12), location.pathname)
+        setMessages(prev => [...prev, { role: 'assistant', content: res.response }])
+      }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Ups, algo salió mal. Intenta de nuevo o escribe a contacto@conniku.com.' }])
     }
@@ -316,8 +344,29 @@ export default function SupportChat() {
         <NodoKonniIcon size={22} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 700, fontSize: 14 }}>{isAdmin ? 'Konni Admin' : 'Konni — Soporte'}</div>
-        <div style={{ fontSize: 11, opacity: 0.8 }}>{isAdmin ? 'Asistente Ejecutivo' : 'Especialista de Conniku'}</div>
+        <div style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+          {isAdmin ? 'Konni Admin' : 'Konni'}
+          {!isAdmin && detectedMode && (
+            <span style={{
+              fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 20,
+              background: detectedMode === 'academic' ? 'rgba(251,191,36,0.22)' : 'rgba(255,255,255,0.18)',
+              border: `1px solid ${detectedMode === 'academic' ? 'rgba(251,191,36,0.4)' : 'rgba(255,255,255,0.3)'}`,
+              color: detectedMode === 'academic' ? '#fbbf24' : 'rgba(255,255,255,0.9)',
+              letterSpacing: '0.06em', textTransform: 'uppercase',
+            }}>
+              {detectedMode === 'academic' ? 'Tutor' : 'Soporte'}
+            </span>
+          )}
+        </div>
+        <div style={{ fontSize: 11, opacity: 0.75 }}>
+          {isAdmin
+            ? 'Asistente Ejecutivo'
+            : detectedMode === 'academic'
+              ? 'Modo tutor activo'
+              : detectedMode === 'support'
+                ? 'Soporte Conniku'
+                : 'Pregúntame lo que quieras'}
+        </div>
       </div>
       {/* Admin: "Menú" button when in chat */}
       {isAdmin && adminChat && (

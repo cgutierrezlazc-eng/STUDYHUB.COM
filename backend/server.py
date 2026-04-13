@@ -701,6 +701,7 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
 class SupportChatRequest(BaseModel):
     message: str
     history: list = []
+    page_context: str = ""
 
 def _build_user_context(user: User, db: Session) -> str:
     """Build personalized context string from user data for Konni."""
@@ -898,16 +899,46 @@ DISPUTAS: Se rigen por la ley chilena. Tribunales competentes de Santiago.
 Para dudas sobre terminos: contacto@conniku.com"""
 
 
+# ─── Bloque de detección de intención (Idea 3) ────────────────────────────────
+KONNI_INTENT_BLOCK = """
+=== DETECCIÓN DE INTENCIÓN — MODO AUTOMÁTICO ===
+
+Analiza el mensaje del usuario y adapta tu respuesta según lo que necesita, SIN avisar que cambiaste de modo.
+
+MODO ACADÉMICO — cuando el usuario pregunta sobre contenido de estudio:
+  Señales: explica, resuelve, calcula, qué es, cómo funciona, ejercicio, fórmula, derivada, integral, código, algoritmo, teorema, demostrar, materia, asignatura, examen, prueba, tarea académica, concepto, definición, historia, biología, física, química, economía, estadística, programación, etc.
+  Comportamiento: eres un tutor experto. Explicas paso a paso con claridad, das ejemplos concretos, anticipas el siguiente nivel de dificultad. Adapta la profundidad al semestre/carrera del usuario si los conoces.
+
+MODO SOPORTE — cuando el usuario pregunta sobre la plataforma:
+  Señales: no puedo, error, suscripción, pago, cobro, contraseña, cuenta, acceso, configuración, problema, notificación, reembolso, factura, correo, verificación, descargar la app, PWA, eliminar cuenta.
+  Comportamiento: eres el especialista de soporte de Conniku. Das instrucciones paso a paso, ofreces contacto (contacto@conniku.com) si no puedes resolver.
+
+MODO MIXTO — si la pregunta mezcla plataforma + contenido académico:
+  Responde ambas partes en el mismo mensaje. No las separes en secciones artificiales.
+
+CONTEXTO DE PÁGINA (señal adicional, no determinante):
+  {page_context}
+  - /project/* o /dashboard → señal académica
+  - /profile, /subscription, /settings → señal soporte
+  - Cualquier otra página → neutral
+
+REGLA: nunca digas "cambiando al modo tutor" ni "en modo soporte". Solo responde naturalmente según lo que el usuario necesite."""
+
+
 @app.post("/support/chat")
 def support_chat(req: SupportChatRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Konni USER — personalized assistant powered by Claude."""
+    """Konni USER — personalized assistant powered by Claude (intent detection)."""
     check_chat_limit(user, db)
 
     # Build personalized context
     user_context = _build_user_context(user, db)
     today = datetime.utcnow().strftime("%A %d de %B %Y, %H:%M UTC")
 
+    intent_block = KONNI_INTENT_BLOCK.format(page_context=req.page_context or "No especificado")
+
     system = f"""{KONNI_USER_SYSTEM}
+
+{intent_block}
 
 === DATOS DEL ESTUDIANTE (hoy es {today}) ===
 {user_context}"""
