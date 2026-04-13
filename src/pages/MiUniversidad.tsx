@@ -414,29 +414,37 @@ export default function MiUniversidad({ onNavigate }: Props) {
 
   return (
     <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 0 60px' }}>
-      {/* Header conexión */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            🎓 Mi Universidad
-          </h1>
-          <p style={{ margin: '4px 0 0', fontSize: 13, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-            {connection?.platform_name}
-            {connection?.last_scan && ` · Actualizado ${timeAgo(connection.last_scan)}`}
-          </p>
+
+      {/* ── Barra de plataforma conectada — SIEMPRE ARRIBA ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'linear-gradient(135deg, rgba(10,30,70,0.7) 0%, rgba(26,86,219,0.5) 100%)',
+        border: '1px solid rgba(59,130,246,0.25)',
+        borderRadius: 12, padding: '10px 16px', marginBottom: 20, flexWrap: 'wrap', gap: 8,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', flexShrink: 0, boxShadow: '0 0 6px #10b981' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>{connection?.platform_name}</span>
+          {connection?.last_scan && (
+            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>· {timeAgo(connection.last_scan)}</span>
+          )}
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={handleScan} disabled={scanning}
-            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: scanning ? 'not-allowed' : 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '5px 13px', fontSize: 12, cursor: scanning ? 'not-allowed' : 'pointer', color: '#fff', display: 'flex', alignItems: 'center', gap: 5 }}>
             {scanning ? '⏳' : '↻'} Sincronizar
           </button>
           <button onClick={() => setShowConfig(true)}
-            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: 'pointer', color: 'var(--text-muted)' }}>
-            ⚙ Configurar
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '5px 13px', fontSize: 12, cursor: 'pointer', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            ⚙ Cambiar plataforma
           </button>
         </div>
       </div>
+
+      {/* Título del módulo */}
+      <h1 style={{ margin: '0 0 20px', fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+        🎓 Mi Universidad
+      </h1>
 
       {scanMsg && (
         <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 16px', marginBottom: 16, fontSize: 13, color: 'var(--text-muted)' }}>
