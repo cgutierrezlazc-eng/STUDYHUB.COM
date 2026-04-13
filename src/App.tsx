@@ -16,7 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import AppAvailableBanner from './components/AppAvailableBanner'
 import SupportChat from './components/SupportChat'
-import StudyBuddy from './components/StudyBuddy'
+
 
 import Landing from './pages/Landing'
 import { Project } from './types'
@@ -440,12 +440,6 @@ export default function App() {
       <PWAInstallPrompt />
       <AppAvailableBanner />
       <SupportChat />
-      {user && <StudyBuddy context={
-        location.pathname.startsWith('/project/') ? `Materia: ${projects.find(p => p.id === location.pathname.split('/')[2])?.name || 'Asignatura'}`
-        : location.pathname === '/dashboard' ? 'Pagina: Dashboard de estudio'
-        : location.pathname === '/feed' ? 'Pagina: Feed social academico'
-        : ''
-      } projectId={location.pathname.startsWith('/project/') ? location.pathname.split('/')[2] : undefined} />}
     </div>
   )
 }
