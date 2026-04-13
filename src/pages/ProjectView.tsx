@@ -82,6 +82,24 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
       return all.filter((h: any) => h.projectId === id).slice(0, 8)
     } catch { return [] }
   })
+
+  // ─── Quiz System (diagnóstico + programados) ───────────────
+  const [qsAvg, setQsAvg] = useState<any>(null)
+  const [qsSched, setQsSched] = useState<any[]>([])
+  const [qsLoaded, setQsLoaded] = useState(false)
+  // Diagnóstico
+  type DiagMode = 'idle' | 'loading' | 'active' | 'done'
+  const [diagMode, setDiagMode] = useState<DiagMode>('idle')
+  const [diagQs, setDiagQs] = useState<any[]>([])
+  const [diagIdx, setDiagIdx] = useState(0)
+  const [diagAns, setDiagAns] = useState<Record<number, number>>({})
+  const [diagRes, setDiagRes] = useState<any>(null)
+  // Quiz programado activo
+  const [schedActive, setSchedActive] = useState<{
+    quizId: string; num: number; questions: any[]; answers: Record<number, number>;
+    idx: number; mode: 'loading' | 'active' | 'done'; result: any
+  } | null>(null)
+
   const [flashcards, setFlashcards] = useState<any[]>([])
   const [flashcardIndex, setFlashcardIndex] = useState(0)
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false)
@@ -119,6 +137,24 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     document.addEventListener('click', handleClickOutside)
     return () => document.removeEventListener('click', handleClickOutside)
   }, [showProjectMenu])
+
+  // Cargar quiz system al entrar al tab quiz
+  useEffect(() => {
+    if (tab !== 'quiz' || !id || qsLoaded) return
+    Promise.all([
+      api.getSubjectAverage(id).catch(() => null),
+      api.getScheduledQuizzes(id).catch(() => []),
+    ]).then(([avg, sched]) => {
+      setQsAvg(avg || null)
+      setQsSched(Array.isArray(sched) ? sched : [])
+      // Si ya hizo el diagnóstico, marcarlo como done
+      if (avg?.history?.some((h: any) => h.type === 'diagnostic')) {
+        setDiagMode('done')
+        setDiagRes(avg.history.find((h: any) => h.type === 'diagnostic') || null)
+      }
+      setQsLoaded(true)
+    })
+  }, [tab, id, qsLoaded])
 
   if (!project) {
     return (
@@ -926,9 +962,301 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
 
         {tab === 'quiz' && (
           <>
-            {/* ── SETUP: sin quiz activo ── */}
-            {quizQuestions.length === 0 && !isGeneratingQuiz && (
+            {/* ── DIAGNÓSTICO ACTIVO ── */}
+            {diagMode === 'active' && diagQs.length > 0 && (
               <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Diagnóstico · Pregunta {diagIdx + 1} de {diagQs.length}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {Object.keys(diagAns).length}/{diagQs.length} respondidas
+                  </span>
+                </div>
+                <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent)', transition: 'width 0.3s', width: `${((diagIdx + 1) / diagQs.length) * 100}%` }} />
+                </div>
+                <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                    Tema: {diagQs[diagIdx]?.topic}
+                  </div>
+                  <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>{diagQs[diagIdx]?.question}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {diagQs[diagIdx]?.options?.map((opt: string, i: number) => {
+                      const sel = diagAns[diagIdx] === i
+                      return (
+                        <button key={i} onClick={() => setDiagAns(prev => ({ ...prev, [diagIdx]: i }))}
+                          style={{ padding: '12px 16px', borderRadius: 'var(--radius-sm)', border: sel ? '2px solid var(--accent)' : '1px solid var(--border-color)', background: sel ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s' }}>
+                          <span style={{ fontWeight: 600, marginRight: 10, color: sel ? 'var(--accent)' : 'var(--text-muted)' }}>{String.fromCharCode(65 + i)}.</span>
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button className="btn btn-secondary" disabled={diagIdx === 0} onClick={() => setDiagIdx(i => i - 1)}>← Anterior</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {diagIdx < diagQs.length - 1 ? (
+                      <button className="btn btn-primary" onClick={() => setDiagIdx(i => i + 1)}>Siguiente →</button>
+                    ) : (
+                      <button className="btn btn-primary"
+                        disabled={Object.keys(diagAns).length < diagQs.length}
+                        title={Object.keys(diagAns).length < diagQs.length ? 'Responde todas las preguntas primero' : ''}
+                        onClick={async () => {
+                          try {
+                            const res = await api.submitDiagnostic(project.id, diagAns, diagQs)
+                            setDiagRes(res)
+                            setDiagMode('done')
+                            // refrescar promedio y programados
+                            const [avg, sched] = await Promise.all([
+                              api.getSubjectAverage(project.id).catch(() => null),
+                              api.getScheduledQuizzes(project.id).catch(() => []),
+                            ])
+                            setQsAvg(avg || null)
+                            setQsSched(Array.isArray(sched) ? sched : [])
+                          } catch { alert('Error al enviar diagnóstico') }
+                        }}>
+                        Ver Resultado
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── QUIZ PROGRAMADO ACTIVO ── */}
+            {schedActive?.mode === 'active' && schedActive.questions.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                    Quiz {schedActive.num} · Pregunta {schedActive.idx + 1} de {schedActive.questions.length}
+                  </span>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {Object.keys(schedActive.answers).length}/{schedActive.questions.length} respondidas
+                  </span>
+                </div>
+                <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', borderRadius: 2, background: '#8B5CF6', transition: 'width 0.3s', width: `${((schedActive.idx + 1) / schedActive.questions.length) * 100}%` }} />
+                </div>
+                <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+                    Tema: {schedActive.questions[schedActive.idx]?.topic}
+                  </div>
+                  <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>{schedActive.questions[schedActive.idx]?.question}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {schedActive.questions[schedActive.idx]?.options?.map((opt: string, i: number) => {
+                      const sel = schedActive.answers[schedActive.idx] === i
+                      return (
+                        <button key={i}
+                          onClick={() => setSchedActive(prev => prev ? { ...prev, answers: { ...prev.answers, [prev.idx]: i } } : prev)}
+                          style={{ padding: '12px 16px', borderRadius: 'var(--radius-sm)', border: sel ? '2px solid #8B5CF6' : '1px solid var(--border-color)', background: sel ? 'rgba(139,92,246,0.1)' : 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s' }}>
+                          <span style={{ fontWeight: 600, marginRight: 10, color: sel ? '#8B5CF6' : 'var(--text-muted)' }}>{String.fromCharCode(65 + i)}.</span>
+                          {opt}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <button className="btn btn-secondary" disabled={schedActive.idx === 0} onClick={() => setSchedActive(prev => prev ? { ...prev, idx: prev.idx - 1 } : prev)}>← Anterior</button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {schedActive.idx < schedActive.questions.length - 1 ? (
+                      <button className="btn btn-primary" onClick={() => setSchedActive(prev => prev ? { ...prev, idx: prev.idx + 1 } : prev)}>Siguiente →</button>
+                    ) : (
+                      <button className="btn btn-primary"
+                        disabled={Object.keys(schedActive.answers).length < schedActive.questions.length}
+                        title={Object.keys(schedActive.answers).length < schedActive.questions.length ? 'Responde todas las preguntas primero' : ''}
+                        onClick={async () => {
+                          try {
+                            const res = await api.submitScheduledQuiz(schedActive.quizId, schedActive.answers, schedActive.questions)
+                            setSchedActive(prev => prev ? { ...prev, result: res, mode: 'done' } : prev)
+                            const [avg, sched] = await Promise.all([
+                              api.getSubjectAverage(project.id).catch(() => null),
+                              api.getScheduledQuizzes(project.id).catch(() => []),
+                            ])
+                            setQsAvg(avg || null)
+                            setQsSched(Array.isArray(sched) ? sched : [])
+                          } catch { alert('Error al enviar quiz') }
+                        }}>
+                        Ver Resultado
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── RESULTADO QUIZ PROGRAMADO ── */}
+            {schedActive?.mode === 'done' && schedActive.result && (
+              <div>
+                <div className="u-card" style={{ padding: 24, marginBottom: 20, textAlign: 'center' }}>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>{schedActive.result.score >= 7 ? '🎉' : schedActive.result.score >= 5 ? '📚' : '💪'}</div>
+                  <h2 style={{ margin: '0 0 4px' }}>Quiz {schedActive.num} completado</h2>
+                  <div style={{ fontSize: 42, fontWeight: 800, color: schedActive.result.score >= 7 ? 'var(--accent-green)' : schedActive.result.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', margin: '8px 0' }}>
+                    {schedActive.result.score}<span style={{ fontSize: 22 }}>/10</span>
+                  </div>
+                  <p style={{ color: 'var(--text-secondary)', margin: '0 0 20px' }}>
+                    {schedActive.result.correct}/{schedActive.result.total} respuestas correctas
+                  </p>
+                  {schedActive.result.topicsScores && Object.keys(schedActive.result.topicsScores).length > 0 && (
+                    <div style={{ textAlign: 'left', marginBottom: 16 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Puntaje por tema</div>
+                      {Object.entries(schedActive.result.topicsScores).map(([t, s]: any) => (
+                        <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontSize: 13 }}>
+                          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t}</span>
+                          <div style={{ width: 80, height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, flexShrink: 0, overflow: 'hidden' }}>
+                            <div style={{ height: '100%', width: `${(s / 10) * 100}%`, background: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', borderRadius: 2 }} />
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', width: 28, textAlign: 'right' }}>{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button className="btn btn-primary" onClick={() => setSchedActive(null)}>← Volver</button>
+                </div>
+              </div>
+            )}
+
+            {/* ── SETUP: sin quiz activo ── */}
+            {quizQuestions.length === 0 && !isGeneratingQuiz && diagMode !== 'active' && schedActive?.mode !== 'active' && schedActive?.mode !== 'done' && (
+              <div>
+                {/* ── Barra de promedio ── */}
+                {qsAvg && qsAvg.quizCount > 0 && (
+                  <div className="u-card" style={{ padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      background: qsAvg.average >= 7 ? 'rgba(16,185,129,0.12)' : qsAvg.average >= 5 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
+                    }}>
+                      <span style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: qsAvg.average >= 7 ? 'var(--accent-green)' : qsAvg.average >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)' }}>{qsAvg.average}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>/ 10</span>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>Nota promedio de la asignatura</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{qsAvg.quizCount} quiz{qsAvg.quizCount !== 1 ? 'zes' : ''} completado{qsAvg.quizCount !== 1 ? 's' : ''}</div>
+                    </div>
+                    {qsAvg.topicsAverage && Object.keys(qsAvg.topicsAverage).length > 0 && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', maxWidth: 180 }}>
+                        {Object.entries(qsAvg.topicsAverage).slice(0, 4).map(([t, s]: any) => (
+                          <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600, background: s >= 7 ? 'rgba(16,185,129,0.15)' : s >= 5 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)', color: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)' }}>
+                            {t.length > 14 ? t.slice(0, 14) + '…' : t} {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Diagnóstico Inicial ── */}
+                {diagMode === 'idle' && (
+                  <div className="u-card" style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid var(--accent)', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ fontSize: 32, flexShrink: 0 }}>🔬</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>Prueba Diagnóstica</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>15 preguntas para evaluar tu nivel inicial en {project.name}. No requiere documentos.</div>
+                    </div>
+                    <button className="btn btn-primary btn-sm" style={{ flexShrink: 0 }}
+                      onClick={async () => {
+                        setDiagMode('loading')
+                        try {
+                          const res = await api.generateDiagnostic(project.id, project.name, 16)
+                          setDiagQs(res.questions || [])
+                          setDiagIdx(0)
+                          setDiagAns({})
+                          setDiagMode('active')
+                          // también guardar quizzes programados si los devuelve
+                          if (res.scheduledQuizzes?.length && qsSched.length === 0) {
+                            setQsSched(res.scheduledQuizzes)
+                          }
+                        } catch { alert('Error al generar diagnóstico'); setDiagMode('idle') }
+                      }}>
+                      Iniciar
+                    </button>
+                  </div>
+                )}
+                {diagMode === 'loading' && (
+                  <div className="u-card" style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid var(--accent)', display: 'flex', alignItems: 'center', gap: 16 }}>
+                    <div style={{ fontSize: 32, flexShrink: 0 }}>🔬</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>Generando diagnóstico...</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Creando preguntas personalizadas para {project.name}</div>
+                    </div>
+                    <span className="spinner" style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                  </div>
+                )}
+                {diagMode === 'done' && diagRes && (
+                  <div className="u-card" style={{ padding: 20, marginBottom: 16, borderLeft: `4px solid ${diagRes.score >= 7 ? 'var(--accent-green)' : diagRes.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                      <div style={{ fontSize: 32 }}>🔬</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700 }}>Diagnóstico completado</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nivel inicial evaluado</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: 28, fontWeight: 800, color: diagRes.score >= 7 ? 'var(--accent-green)' : diagRes.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', lineHeight: 1 }}>{diagRes.score}<span style={{ fontSize: 14 }}>/10</span></div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{diagRes.correct}/{diagRes.total} correctas</div>
+                      </div>
+                    </div>
+                    {(diagRes.weakTopics?.length > 0 || diagRes.strongTopics?.length > 0) && (
+                      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                        {diagRes.weakTopics?.slice(0, 3).map((t: string) => (
+                          <span key={t} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: 'var(--accent-red)', fontWeight: 600 }}>⚠ {t}</span>
+                        ))}
+                        {diagRes.strongTopics?.slice(0, 3).map((t: string) => (
+                          <span key={t} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(16,185,129,0.12)', color: 'var(--accent-green)', fontWeight: 600 }}>✓ {t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Quizzes Programados ── */}
+                {qsSched.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Quizzes Programados del Semestre</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+                      {qsSched.map((sq: any) => {
+                        const st = sq.status || 'pending'
+                        const color = st === 'completed' ? 'var(--accent-green)' : st === 'available' ? '#8B5CF6' : st === 'overdue' ? 'var(--accent-red)' : 'var(--text-muted)'
+                        const bg = st === 'completed' ? 'rgba(16,185,129,0.08)' : st === 'available' ? 'rgba(139,92,246,0.08)' : st === 'overdue' ? 'rgba(239,68,68,0.08)' : 'var(--bg-secondary)'
+                        const label = st === 'completed' ? '✓ Completado' : st === 'available' ? '📝 Disponible' : st === 'overdue' ? '⏰ Vencido' : '🔒 Pendiente'
+                        const dateStr = sq.scheduledDate ? new Date(sq.scheduledDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }) : ''
+                        return (
+                          <div key={sq.id || sq.quizNumber} className="u-card" style={{ padding: 16, background: bg, border: `1px solid ${color}30` }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                              <div style={{ fontSize: 20, fontWeight: 800, color }}>Q{sq.quizNumber}</div>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: `${color}20`, color }}>{label}</span>
+                            </div>
+                            {dateStr && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{dateStr}</div>}
+                            {sq.score != null && (
+                              <div style={{ fontSize: 16, fontWeight: 700, color, marginBottom: 8 }}>{sq.score}/10</div>
+                            )}
+                            {(st === 'available' || st === 'overdue') && (
+                              <button className="btn btn-primary btn-sm" style={{ width: '100%', background: '#8B5CF6', borderColor: '#8B5CF6' }}
+                                onClick={async () => {
+                                  setSchedActive({ quizId: sq.id, num: sq.quizNumber, questions: [], answers: {}, idx: 0, mode: 'loading', result: null })
+                                  try {
+                                    const res = await api.generateScheduledQuiz(sq.id)
+                                    setSchedActive({ quizId: sq.id, num: sq.quizNumber, questions: res.questions || [], answers: {}, idx: 0, mode: 'active', result: null })
+                                  } catch { alert('Error al generar quiz'); setSchedActive(null) }
+                                }}>
+                                Iniciar Quiz {sq.quizNumber}
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Separador Quiz Libre ── */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '20px 0 16px' }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Quiz Libre</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                </div>
+
                 {/* Config card */}
                 <div className="u-card" style={{ padding: 24, marginBottom: 20 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
