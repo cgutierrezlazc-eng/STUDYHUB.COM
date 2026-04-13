@@ -17,7 +17,8 @@
     "mobile:sync": "npx cap sync",
     "mobile:run:android": "npx cap run android",
     "mobile:run:ios": "npx cap run ios",
-    "mobile:dev": "vite build --watch & npx cap sync android --watch"
+    "mobile:dev": "vite build --watch & npx cap sync android --watch",
+    "build:apk": "bash scripts/trigger-apk-build.sh"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
