@@ -58,6 +58,7 @@ from conference_routes import router as conference_router
 from ws_routes import router as ws_router
 from hr_routes import router as hr_router, daily_refresh_indicators
 from tutor_routes import router as tutor_router
+from email_doc_routes import router as email_doc_router, poll_email_inbox as poll_email_docs
 from ai_workflow_routes import router as ai_workflow_router
 from moderation_queue_routes import router as moderation_queue_router
 # payment_routes (Stripe) removed — using MercadoPago + PayPal only
@@ -205,8 +206,26 @@ try:
             id="daily_indicators",
             replace_existing=True,
         )
+
+        # Mail → Contabilidad: poll ceo@conniku.com every 30 minutes
+        from apscheduler.triggers.interval import IntervalTrigger
+
+        async def _async_poll_email():
+            try:
+                result = poll_email_docs()
+                logging.getLogger(__name__).info(f"[EmailDoc] Scheduled poll: {result}")
+            except Exception as e:
+                logging.getLogger(__name__).error(f"[EmailDoc] Scheduled poll error: {e}")
+
+        _scheduler.add_job(
+            _async_poll_email,
+            IntervalTrigger(minutes=30),
+            id="email_docs_poll",
+            replace_existing=True,
+        )
+
         _scheduler.start()
-        logging.getLogger(__name__).info("APScheduler started — daily HR indicators at 08:00 Chile (12:00 UTC)")
+        logging.getLogger(__name__).info("APScheduler started — HR indicators 08:00 CL + email docs every 30 min")
 
     @app.on_event("shutdown")
     async def stop_scheduler():
@@ -251,6 +270,7 @@ app.include_router(conference_router)
 app.include_router(ws_router)
 app.include_router(hr_router)
 app.include_router(tutor_router)
+app.include_router(email_doc_router)
 app.include_router(ai_workflow_router)
 app.include_router(moderation_queue_router)
 # app.include_router(payment_router)  # Stripe removed

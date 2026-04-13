@@ -8,7 +8,7 @@ import { BarChart3, Users, AlertTriangle, ClipboardList, CheckCircle, XCircle, G
 export default function Admin() {
   const { user } = useAuth()
   const { t } = useI18n()
-  const [tab, setTab] = useState<'stats' | 'users' | 'subscribers' | 'payments' | 'refunds' | 'reports' | 'flagged' | 'blocks' | 'logs'>('stats')
+  const [tab, setTab] = useState<'stats' | 'users' | 'subscribers' | 'payments' | 'refunds' | 'correo' | 'reports' | 'flagged' | 'blocks' | 'logs'>('stats')
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [users, setUsers] = useState<any[]>([])
   const [flagged, setFlagged] = useState<any[]>([])
@@ -28,6 +28,11 @@ export default function Admin() {
   const [refundRequests, setRefundRequests] = useState<any[]>([])
   const [refundUpdateMsg, setRefundUpdateMsg] = useState('')
   const [onlineUsers, setOnlineUsers] = useState<{ count: number; users: any[] } | null>(null)
+  const [emailDocs, setEmailDocs] = useState<any[]>([])
+  const [emailDocsStats, setEmailDocsStats] = useState<any>(null)
+  const [emailPolling, setEmailPolling] = useState(false)
+  const [emailPollMsg, setEmailPollMsg] = useState('')
+  const [emailDocFilter, setEmailDocFilter] = useState<string>('')
 
   useEffect(() => {
     if (tab === 'stats') { loadStats(); loadOnlineUsers() }
@@ -35,6 +40,7 @@ export default function Admin() {
     if (tab === 'subscribers') loadUsers()
     if (tab === 'payments') loadFinancials()
     if (tab === 'refunds') loadRefunds()
+    if (tab === 'correo') { loadEmailDocs(); loadEmailDocsStats() }
     if (tab === 'flagged') loadFlagged()
     if (tab === 'logs') loadLogs()
     if (tab === 'reports') loadReports()
@@ -47,6 +53,47 @@ export default function Admin() {
 
   const loadOnlineUsers = async () => {
     try { setOnlineUsers(await api.getOnlineUsers()) } catch {}
+  }
+
+  const loadEmailDocs = async () => {
+    try { const d: any = await api.getEmailDocs(emailDocFilter || undefined); setEmailDocs(d?.docs || []) } catch {}
+  }
+
+  const loadEmailDocsStats = async () => {
+    try { setEmailDocsStats(await api.getEmailDocsStats()) } catch {}
+  }
+
+  const handleEmailPoll = async () => {
+    setEmailPolling(true); setEmailPollMsg('')
+    try {
+      const r: any = await api.pollEmailDocs()
+      setEmailPollMsg(`✓ Revisado — ${r.result?.processed ?? 0} nuevo(s), ${r.result?.skipped ?? 0} omitido(s)`)
+      loadEmailDocs(); loadEmailDocsStats()
+    } catch (e: any) {
+      setEmailPollMsg(`Error: ${e.message}`)
+    } finally { setEmailPolling(false) }
+  }
+
+  const handleReviewEmailDoc = async (id: string, status: string, notes?: string) => {
+    try {
+      await api.reviewEmailDoc(id, status, notes)
+      setEmailDocs(prev => prev.map(d => d.id === id ? { ...d, status } : d))
+      loadEmailDocsStats()
+    } catch (e: any) { alert(e.message) }
+  }
+
+  const handleDownloadEmailDoc = async (id: string, filename: string) => {
+    try {
+      const r: any = await api.downloadEmailDoc(id)
+      if (!r.file_content_b64) return
+      const bytes = atob(r.file_content_b64)
+      const arr = new Uint8Array(bytes.length)
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i)
+      const blob = new Blob([arr], { type: r.mime_type || 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = filename || 'documento.pdf'; a.click()
+      URL.revokeObjectURL(url)
+    } catch (e: any) { alert(e.message) }
   }
 
   const loadUsers = async () => {
@@ -198,6 +245,7 @@ export default function Admin() {
     { id: 'subscribers', label: 'Suscriptores', icon: Gem({ size: 14 }) },
     ...(user?.role === 'owner' ? [{ id: 'payments', label: 'Pagos/Finanzas', icon: Gem({ size: 14 }) }] : []),
     { id: 'refunds', label: `Reembolsos${refundRequests.filter((r: any) => r.status === 'pending').length > 0 ? ` (${refundRequests.filter((r: any) => r.status === 'pending').length})` : ''}`, icon: ClipboardList({ size: 14 }) },
+    { id: 'correo', label: `📬 Correo${emailDocsStats?.pending > 0 ? ` (${emailDocsStats.pending})` : ''}`, icon: null },
     { id: 'reports', label: `Reportes${stats?.pendingReports ? ` (${stats.pendingReports})` : ''}`, icon: AlertTriangle({ size: 14 }) },
     { id: 'flagged', label: 'Mensajes Report.', icon: AlertTriangle({ size: 14 }) },
     { id: 'blocks', label: 'Bloqueos', icon: Shield({ size: 14 }) },
@@ -715,6 +763,150 @@ export default function Admin() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── Correo → Contabilidad ─── */}
+        {tab === 'correo' && (
+          <div>
+            {/* Header + poll button */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, flexWrap: 'wrap' }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ margin: 0, fontSize: 16 }}>📬 Documentos recibidos por correo</h3>
+                <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                  Facturas, boletas y comprobantes enviados a <strong>ceo@conniku.com</strong>.
+                  El sistema revisa automáticamente cada 30 min.
+                  <strong> Nunca crea asientos automáticamente</strong> — toda acción requiere aprobación.
+                </p>
+              </div>
+              <button onClick={handleEmailPoll} disabled={emailPolling}
+                style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 13, cursor: emailPolling ? 'wait' : 'pointer', opacity: emailPolling ? 0.7 : 1 }}>
+                {emailPolling ? '⟳ Revisando...' : '⟳ Revisar ahora'}
+              </button>
+            </div>
+
+            {/* Poll result message */}
+            {emailPollMsg && (
+              <div style={{ padding: '8px 14px', borderRadius: 8, background: '#22c55e18', border: '1px solid #22c55e44', fontSize: 13, color: '#22c55e', marginBottom: 12 }}>
+                {emailPollMsg}
+              </div>
+            )}
+
+            {/* Stats pills */}
+            {emailDocsStats && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16, flexWrap: 'wrap' }}>
+                {[
+                  { key: '', label: 'Todos', count: (emailDocsStats.pending + emailDocsStats.reviewed), color: 'var(--accent)' },
+                  { key: 'pending', label: 'Pendientes', count: emailDocsStats.pending, color: '#f59e0b' },
+                  { key: 'reviewed', label: 'Revisados', count: emailDocsStats.reviewed, color: '#3b82f6' },
+                  { key: 'dismissed', label: 'Descartados', count: emailDocsStats.dismissed, color: '#6b7280' },
+                  { key: 'entry_created', label: 'Con asiento', count: emailDocsStats.entry_created, color: '#22c55e' },
+                ].map(s => (
+                  <button key={s.key}
+                    onClick={() => { setEmailDocFilter(s.key); setTimeout(loadEmailDocs, 0) }}
+                    style={{ padding: '4px 12px', borderRadius: 16, border: `1.5px solid ${emailDocFilter === s.key ? s.color : 'var(--border)'}`, background: emailDocFilter === s.key ? s.color + '22' : 'transparent', color: emailDocFilter === s.key ? s.color : 'var(--text-muted)', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                    {s.label} ({s.count})
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Document list */}
+            {emailDocs.length === 0 ? (
+              <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
+                <p>No hay documentos en esta categoría.</p>
+                <p style={{ fontSize: 12 }}>El sistema revisará el correo automáticamente en los próximos 30 min, o puedes hacerlo manualmente.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gap: 10 }}>
+                {emailDocs.map((doc: any) => {
+                  const statusMeta: Record<string, { label: string; color: string }> = {
+                    pending:       { label: '⏳ Pendiente',    color: '#f59e0b' },
+                    reviewed:      { label: '👀 Revisado',     color: '#3b82f6' },
+                    dismissed:     { label: '🗑 Descartado',   color: '#6b7280' },
+                    entry_created: { label: '✓ Con asiento',   color: '#22c55e' },
+                  }
+                  const docTypeLabel: Record<string, string> = {
+                    factura:           'Factura',
+                    factura_exenta:    'Factura Exenta',
+                    boleta:            'Boleta',
+                    boleta_honorarios: 'Boleta Honorarios',
+                    nota_credito:      'Nota de Crédito',
+                    nota_debito:       'Nota de Débito',
+                    invoice:           'Invoice',
+                    recibo:            'Recibo',
+                  }
+                  const sm = statusMeta[doc.status] || { label: doc.status, color: '#6b7280' }
+                  const fmtClp = (n: number) => n ? `$${n.toLocaleString('es-CL')}` : ''
+                  return (
+                    <div key={doc.id} className="card" style={{ padding: 16 }}>
+                      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, fontSize: 14 }}>{doc.filename || 'Documento'}</span>
+                            <span style={{ padding: '2px 8px', borderRadius: 10, fontSize: 11, fontWeight: 700, background: sm.color + '22', color: sm.color }}>{sm.label}</span>
+                            {doc.extracted_doc_type && (
+                              <span style={{ padding: '2px 8px', borderRadius: 10, fontSize: 11, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                                {docTypeLabel[doc.extracted_doc_type] || doc.extracted_doc_type}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            <span>📨 {doc.email_from}</span>
+                            {doc.email_date && <span>📅 {new Date(doc.email_date).toLocaleDateString('es-CL')}</span>}
+                          </div>
+                          {doc.email_subject && (
+                            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, fontStyle: 'italic' }}>"{doc.email_subject}"</div>
+                          )}
+                          {/* Extracted data pills */}
+                          <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+                            {doc.extracted_vendor && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>🏢 {doc.extracted_vendor}</span>}
+                            {doc.extracted_amount && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: '#22c55e18', color: '#22c55e', fontWeight: 700 }}>{fmtClp(doc.extracted_amount)} {doc.extracted_currency}</span>}
+                            {doc.extracted_doc_number && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>N° {doc.extracted_doc_number}</span>}
+                            {doc.extracted_date && <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>📅 {doc.extracted_date}</span>}
+                          </div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                            ⚠️ Datos extraídos automáticamente — verificar antes de registrar
+                          </div>
+                        </div>
+                        {/* Action buttons */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 140 }}>
+                          {doc.has_file && (
+                            <button onClick={() => handleDownloadEmailDoc(doc.id, doc.filename)}
+                              style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                              ⬇ Descargar
+                            </button>
+                          )}
+                          {doc.status === 'pending' && (
+                            <>
+                              <button onClick={() => handleReviewEmailDoc(doc.id, 'reviewed')}
+                                style={{ padding: '6px 12px', borderRadius: 7, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
+                                👀 Marcar revisado
+                              </button>
+                              <button onClick={() => handleReviewEmailDoc(doc.id, 'entry_created', 'Asiento creado manualmente')}
+                                style={{ padding: '6px 12px', borderRadius: 7, border: 'none', background: '#22c55e', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
+                                ✓ Asiento creado
+                              </button>
+                              <button onClick={() => handleReviewEmailDoc(doc.id, 'dismissed')}
+                                style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', fontSize: 12, cursor: 'pointer' }}>
+                                Descartar
+                              </button>
+                            </>
+                          )}
+                          {doc.status === 'reviewed' && (
+                            <button onClick={() => handleReviewEmailDoc(doc.id, 'entry_created')}
+                              style={{ padding: '6px 12px', borderRadius: 7, border: 'none', background: '#22c55e', color: '#fff', fontSize: 12, cursor: 'pointer', fontWeight: 700 }}>
+                              ✓ Asiento creado
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>

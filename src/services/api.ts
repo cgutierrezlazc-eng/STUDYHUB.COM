@@ -997,6 +997,14 @@ export const api = {
 
   getAdminRefundRequests: () => request('/admin/refund-requests'),
 
+  // ─── Mail → Contabilidad ───────────────────────────────────
+  getEmailDocs: (status?: string) => request(`/email-docs/${status ? `?status=${status}` : ''}`),
+  getEmailDocsStats: () => request('/email-docs/stats'),
+  pollEmailDocs: () => request('/email-docs/poll', { method: 'POST' }),
+  downloadEmailDoc: (id: string) => request(`/email-docs/${id}/download`),
+  reviewEmailDoc: (id: string, status: string, adminNotes?: string) =>
+    request(`/email-docs/${id}/review`, { method: 'PUT', body: JSON.stringify({ status, admin_notes: adminNotes || '' }) }),
+
   updateAdminRefundRequest: (id: string, data: any) =>
     request(`/admin/refund-requests/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
