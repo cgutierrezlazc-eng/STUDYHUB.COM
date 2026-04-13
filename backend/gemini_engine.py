@@ -1,6 +1,7 @@
 """
-AI Engine: handles RAG with ChromaDB + OpenAI GPT-4o Mini for chat, study guides, quizzes, flashcards,
+AI Engine: handles RAG with ChromaDB + Claude Haiku for chat, study guides, quizzes, flashcards,
 summaries, document analysis, concept maps, and visual explanations.
+Migrado de OpenAI GPT-4o Mini a Anthropic Claude Haiku para unificar el proveedor de IA.
 """
 import os
 import json
@@ -8,14 +9,20 @@ from typing import Optional
 from pathlib import Path
 
 import chromadb
-from openai import OpenAI
+import anthropic
 
 from database import DATA_DIR
 
-# OpenAI client — used for all AI generation (GPT-4o Mini)
-_OPENAI_KEY = os.environ.get("OPENAI_API_KEY", "")
-gpt_client = OpenAI(api_key=_OPENAI_KEY) if _OPENAI_KEY else None
-GPT_MODEL = "gpt-4o-mini"
+# Anthropic client — same key as Konni (claude-haiku-4-5-20251001)
+_ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+_claude_client: anthropic.Anthropic | None = None
+if _ANTHROPIC_KEY:
+    try:
+        _claude_client = anthropic.Anthropic(api_key=_ANTHROPIC_KEY)
+    except Exception:
+        _claude_client = None
+
+GPT_MODEL = "claude-haiku-4-5-20251001"  # mismo modelo que Konni
 
 # Language instruction mappings shared across methods
 LANG_INSTRUCTIONS = {
@@ -49,7 +56,7 @@ class AIEngine:
         self.chroma_client = chromadb.PersistentClient(path=chroma_path)
 
         # Primary model for chat and rich generation
-        self.api_available = bool(_OPENAI_KEY)
+        self.api_available = bool(_ANTHROPIC_KEY)
 
     # ------------------------------------------------------------------ #
     #  ChromaDB / RAG helpers (identical to original)
@@ -129,59 +136,75 @@ class AIEngine:
         return ""
 
     # ------------------------------------------------------------------ #
-    #  OpenAI GPT-4o Mini API helpers
+    #  Claude Haiku API helpers (migrado desde OpenAI GPT-4o Mini)
     # ------------------------------------------------------------------ #
 
     def _call_gemini(self, system: str, user_message: str, model: str = None) -> str:
-        """Text generation via GPT-4o Mini (replaces Gemini)."""
-        if not gpt_client:
-            return "⚠️ OPENAI_API_KEY no configurada en el servidor."
+        """Text generation via Claude Haiku."""
+        if not _claude_client:
+            return "⚠️ ANTHROPIC_API_KEY no configurada en el servidor."
         try:
-            resp = gpt_client.chat.completions.create(
+            resp = _claude_client.messages.create(
                 model=GPT_MODEL,
                 max_tokens=4096,
-                messages=[
-                    {"role": "system", "content": system},
-                    {"role": "user", "content": user_message},
-                ],
+                system=system,
+                messages=[{"role": "user", "content": user_message}],
             )
-            return resp.choices[0].message.content
+            return resp.content[0].text
         except Exception as e:
             return f"⚠️ Error al comunicarse con el asistente: {str(e)}"
 
     def _call_gemini_chat(self, system: str, messages: list, model: str = None) -> str:
-        """Chat with history via GPT-4o Mini (replaces Gemini)."""
-        if not gpt_client:
+        """Chat with history via Claude Haiku."""
+        if not _claude_client:
             return "Lo siento, el asistente no está disponible en este momento."
         try:
-            oai_messages = [{"role": "system", "content": system}] + [
-                {"role": m["role"], "content": m["content"]} for m in messages
-                if m.get("role") in ("user", "assistant") and m.get("content")
-            ]
-            resp = gpt_client.chat.completions.create(
+            # Claude requiere mensajes alternados user/assistant
+            cleaned: list = []
+            last_role = None
+            for m in messages:
+                role = m.get("role", "user")
+                content = str(m.get("content", "")).strip()
+                if not content or role not in ("user", "assistant"):
+                    continue
+                if role == last_role:
+                    cleaned[-1]["content"] += f"\n{content}"
+                else:
+                    cleaned.append({"role": role, "content": content})
+                    last_role = role
+            if not cleaned:
+                cleaned = [{"role": "user", "content": "Hola"}]
+            if cleaned[0]["role"] != "user":
+                cleaned.insert(0, {"role": "user", "content": "Continúa"})
+            resp = _claude_client.messages.create(
                 model=GPT_MODEL,
                 max_tokens=2048,
-                messages=oai_messages,
+                system=system,
+                messages=cleaned,
             )
-            return resp.choices[0].message.content
+            return resp.content[0].text
         except Exception as e:
             return f"Lo siento, tuve un problema al responder. (Error: {str(e)[:80]})"
 
     def _call_gemini_json(self, system: str, user_message: str, model: str = None) -> str:
-        """JSON generation via GPT-4o Mini (replaces Gemini)."""
-        if not gpt_client:
+        """JSON generation via Claude Haiku. Claude produce JSON cuando se le pide explícitamente."""
+        if not _claude_client:
             return "{}"
         try:
-            resp = gpt_client.chat.completions.create(
+            resp = _claude_client.messages.create(
                 model=GPT_MODEL,
                 max_tokens=8192,
-                response_format={"type": "json_object"},
-                messages=[
-                    {"role": "system", "content": system + "\nResponde ÚNICAMENTE con JSON válido, sin texto adicional."},
-                    {"role": "user", "content": user_message},
-                ],
+                system=system + "\nResponde ÚNICAMENTE con JSON válido, sin texto adicional, sin bloques de código markdown.",
+                messages=[{"role": "user", "content": user_message}],
             )
-            return resp.choices[0].message.content
+            text = resp.content[0].text.strip()
+            # Limpiar bloques markdown si Claude los incluyó
+            if text.startswith("```"):
+                lines = text.split("\n")
+                # Saltar primera línea (```json o ```) y última línea (```)
+                inner = lines[1:-1] if lines[-1].strip() == "```" else lines[1:]
+                text = "\n".join(inner).strip()
+            return text
         except Exception as e:
             return f"{{\"error\": \"{str(e)[:80]}\"}}"
 
