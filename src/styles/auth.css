@@ -1186,17 +1186,76 @@
   .pf-settings-layout {
     grid-template-columns: 1fr;
   }
+  /* Nav horizontal scrollable: items must be auto-width, not 100% */
   .pf-settings-nav {
     flex-direction: row;
     overflow-x: auto;
+    overflow-y: visible;
     position: static;
     gap: 4px;
+    padding: 8px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;          /* Firefox */
+  }
+  .pf-settings-nav::-webkit-scrollbar {
+    display: none;                  /* Chrome/Safari */
+  }
+  .pf-nav-item {
+    width: auto;                    /* CLAVE: no 100% en fila */
+    flex-shrink: 0;
+    white-space: nowrap;
+    padding: 8px 12px;
+    font-size: 12.5px;
+  }
+  .pf-nav-icon {
+    display: none;                  /* ocultar íconos en tabs móvil */
   }
   .pf-nav-divider {
     display: none;
   }
   .pf-fields-grid {
     grid-template-columns: 1fr;
+  }
+  /* Reducir padding del panel de contenido */
+  .pf-settings-content {
+    padding: 18px 16px;
+  }
+}
+
+/* ─── Mobile pequeño (< 640px) ─── */
+@media (max-width: 640px) {
+  /* Header card: avatar más pequeño, layout apretado */
+  .pf-header-card {
+    gap: 12px;
+    padding: 14px;
+  }
+  .pf-avatar-img,
+  .pf-avatar-initials {
+    width: 64px;
+    height: 64px;
+    font-size: 22px;
+  }
+  .pf-header-name {
+    font-size: 17px;
+    margin-bottom: 2px;
+  }
+  .pf-header-meta {
+    font-size: 12px;
+    gap: 4px;
+  }
+  .pf-header-badges {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  /* Footer meta: apilar en móvil */
+  .pf-footer-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+  /* Section header con botón: no desbordar */
+  .pf-section-header {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 }
 
