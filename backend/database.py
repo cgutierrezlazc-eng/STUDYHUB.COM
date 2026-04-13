@@ -84,6 +84,7 @@ class User(Base):
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
     cover_photo = Column(String(500), default="")  # URL or template ID
     cover_type = Column(String(20), default="template")  # "template" or "custom"
+    cover_position_y = Column(Integer, default=50)  # 0-100, vertical position %
     provider = Column(String(20), default="email")  # email | google
 
     # CV / Resume fields
@@ -1362,6 +1363,7 @@ def _ensure_columns():
         ("users", "professional_title", "VARCHAR(255) DEFAULT ''"),
         ("users", "cover_photo", "VARCHAR(500) DEFAULT ''"),
         ("users", "cover_type", "VARCHAR(20) DEFAULT 'template'"),
+        ("users", "cover_position_y", "INTEGER DEFAULT 50"),
         ("users", "provider", "VARCHAR(20) DEFAULT 'email'"),
         # users — CV fields
         ("users", "cv_headline", "VARCHAR(255) DEFAULT ''"),
