@@ -1,5 +1,8 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { api } from '../services/api'
+
+// Profile embebido para el formulario de conexión LMS
+const Profile = lazy(() => import('./Profile'))
 
 interface Props {
   onNavigate?: (path: string) => void
@@ -115,6 +118,8 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [loading, setLoading] = useState(true)
   const [scanning, setScanning] = useState(false)
   const [scanMsg, setScanMsg] = useState('')
+  // Configuración de conexión embebida dentro del módulo
+  const [showConfig, setShowConfig] = useState(false)
 
   // Vista de asignatura
   const [selectedCourse, setSelectedCourse] = useState<CourseItem | null>(null)
@@ -286,7 +291,37 @@ export default function MiUniversidad({ onNavigate }: Props) {
     </div>
   )
 
-  if (!hub?.connected) return <NoConnection onNavigate={onNavigate} />
+  // Formulario de configuración/conexión embebido (sin salir del módulo)
+  if (showConfig || !hub?.connected) return (
+    <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 0 60px' }}>
+      {hub?.connected && (
+        <button onClick={() => setShowConfig(false)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, padding: '0 0 16px', marginBottom: 8 }}>
+          ← Volver a Mi Universidad
+        </button>
+      )}
+      <Suspense fallback={
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 32, color: 'var(--text-muted)', fontSize: 14 }}>
+          <div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+          Cargando configuración…
+        </div>
+      }>
+        <Profile
+          embedded
+          initialSection="universidad"
+          onNavigate={(path) => {
+            // Si navegan a /mi-universidad desde el form (tras conectar exitosamente), recargar el hub
+            if (path === '/mi-universidad') {
+              setShowConfig(false)
+              loadHub()
+            } else {
+              onNavigate?.(path)
+            }
+          }}
+        />
+      </Suspense>
+    </div>
+  )
 
   // ── Vista detalle de asignatura ─────────────────────────────
   if (view === 'course' && selectedCourse) {
@@ -396,7 +431,7 @@ export default function MiUniversidad({ onNavigate }: Props) {
             style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: scanning ? 'not-allowed' : 'pointer', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
             {scanning ? '⏳' : '↻'} Sincronizar
           </button>
-          <button onClick={() => onNavigate?.('/profile')}
+          <button onClick={() => setShowConfig(true)}
             style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '8px 16px', fontSize: 13, cursor: 'pointer', color: 'var(--text-muted)' }}>
             ⚙ Configurar
           </button>
@@ -667,20 +702,3 @@ function ItemRow({ item, borderTop }: { item: TopicItem; borderTop: boolean }) {
   )
 }
 
-function NoConnection({ onNavigate }: { onNavigate?: (path: string) => void }) {
-  return (
-    <div style={{ maxWidth: 480, margin: '60px auto', textAlign: 'center', padding: '0 24px' }}>
-      <p style={{ fontSize: 48, margin: '0 0 16px' }}>🎓</p>
-      <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-        Conecta tu universidad
-      </h2>
-      <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6, margin: '0 0 24px' }}>
-        Conecta tu plataforma universitaria (Moodle, Canvas, Blackboard y más) para acceder automáticamente a todo el material de tus asignaturas.
-      </p>
-      <button onClick={() => onNavigate?.('/profile')}
-        style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: '12px 28px', fontSize: 15, fontWeight: 600, cursor: 'pointer' }}>
-        Conectar mi universidad →
-      </button>
-    </div>
-  )
-}

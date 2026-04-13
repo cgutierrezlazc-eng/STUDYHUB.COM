@@ -21,7 +21,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [tutorStatus, setTutorStatus] = useState<string | null>(null)
-  const [uniExpanded, setUniExpanded] = useState(true)
   const [adminPanelOpen, setAdminPanelOpen] = useState(currentPath.startsWith('/admin-panel'))
   const [openAdminCat, setOpenAdminCat] = useState<string | null>(
     currentPath.startsWith('/admin-panel')
@@ -103,13 +102,10 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       {/* ══ ACADÉMICO ══ */}
       <SepLabel label={t('sidebar.academic')} />
 
-      {/* ── Mi Universidad (caja estilo CEO, acordeón asignaturas) ── */}
+      {/* ── Mi Universidad — caja estilo CEO, sin acordeón (asignaturas van dentro del módulo) ── */}
       <div style={{ padding: '0 10px 10px' }}>
         <button
-          onClick={() => {
-            onNavigate('/mi-universidad')
-            setUniExpanded(prev => !prev)
-          }}
+          onClick={() => onNavigate('/mi-universidad')}
           style={{
             width: '100%',
             background: isActive('/mi-universidad')
@@ -121,59 +117,34 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'space-between',
+            gap: 9,
             boxShadow: isActive('/mi-universidad') ? '0 4px 14px rgba(26,86,219,0.35)' : '0 2px 8px rgba(0,0,0,0.2)',
             transition: 'box-shadow 0.2s, background 0.2s',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+          <div style={{
+            width: 32, height: 32,
+            background: 'rgba(255,255,255,0.13)',
+            borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 16, flexShrink: 0,
+          }}>🎓</div>
+          <div style={{ textAlign: 'left', flex: 1 }}>
             <div style={{
-              width: 32, height: 32,
-              background: 'rgba(255,255,255,0.13)',
-              borderRadius: 8,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 16, flexShrink: 0,
-            }}>🎓</div>
-            <div style={{ textAlign: 'left' }}>
-              <div style={{
-                fontSize: 14,
-                fontWeight: 800,
-                color: '#ffffff',
-                letterSpacing: 0.5,
-                lineHeight: 1.1,
-                textTransform: 'uppercase',
-                fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
-              }}>
-                Mi Universidad
-              </div>
-              {projects.length > 0 && (
-                <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 2, fontWeight: 400, letterSpacing: 0.5 }}>
-                  {projects.length} asignatura{projects.length !== 1 ? 's' : ''}
-                </div>
-              )}
+              fontSize: 14, fontWeight: 800, color: '#ffffff',
+              letterSpacing: 0.5, lineHeight: 1.1,
+              textTransform: 'uppercase',
+              fontFamily: "'Inter', 'Helvetica Neue', sans-serif",
+            }}>
+              Mi Universidad
             </div>
+            {projects.length > 0 && (
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)', marginTop: 2, fontWeight: 400 }}>
+                {projects.length} asignatura{projects.length !== 1 ? 's' : ''} activa{projects.length !== 1 ? 's' : ''}
+              </div>
+            )}
           </div>
-          <ChevronIcon open={uniExpanded} />
         </button>
-
-        {/* Sub-items acordeón */}
-        {uniExpanded && (
-          <div style={{ marginTop: 4 }}>
-            {projects.map(project => (
-              <button
-                key={project.id}
-                className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
-                onClick={() => onNavigate(`/project/${project.id}`)}
-              >
-                <span className="project-dot" style={{ background: project.color }} />
-                {project.name}
-              </button>
-            ))}
-            <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
-              {Icons.plus(IC.plus)} {t('nav.newSubject')}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ── Resto del académico ── */}
