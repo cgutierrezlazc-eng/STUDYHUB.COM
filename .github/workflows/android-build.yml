@@ -1,14 +1,22 @@
-name: Build Android AAB
+name: Build Android AAB + APK
 
-# ─── TRIGGER: Solo manual desde GitHub UI ────────────────────────────────────
-# Se quitó el trigger automático de push para evitar emails de error
-# en cada commit. Ejecutar manualmente cuando se necesite un release.
+# ─── Se dispara en cada push a main que toque código relevante ────────────────
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - 'package.json'
+      - 'vite.config.*'
+  workflow_dispatch:   # también permite disparo manual
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Checkout code
@@ -23,12 +31,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # ── Verificación rápida antes de compilar ──────────────────────────────
+      - name: TypeScript check
+        run: npx tsc --noEmit
+        continue-on-error: false
+
       - name: Build web assets
         run: npx vite build
 
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # ── Android ────────────────────────────────────────────────────────────
       - name: Setup Java JDK
         uses: actions/setup-java@v4
         with:
@@ -49,16 +63,24 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease
 
-      - name: Upload AAB artifact
+      # ── Artefactos ─────────────────────────────────────────────────────────
+      - name: Upload AAB
         uses: actions/upload-artifact@v4
         with:
           name: conniku-release-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
           retention-days: 30
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: conniku-release-apk
           path: android/app/build/outputs/apk/release/app-release-unsigned.apk
           retention-days: 30
+
+      - name: Build summary
+        run: |
+          echo "## ✅ Build Android completado" >> $GITHUB_STEP_SUMMARY
+          echo "- **AAB**: listo para Play Store" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK**: listo para distribución directa" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

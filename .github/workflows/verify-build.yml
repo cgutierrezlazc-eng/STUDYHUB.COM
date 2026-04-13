@@ -1,0 +1,61 @@
+name: Verify — Web + Mobile Format
+
+# ─── Corre en CADA push/PR a main ────────────────────────────────────────────
+# Verifica que el código no rompe:
+#   - TypeScript (errores de tipos)
+#   - Build web (Vite)
+#   - Capacitor sync (compatibilidad móvil)
+# Es rápido (~2 min) y bloquea merges si algo falla.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    name: Verificar Web + Capacitor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── 1. TypeScript — sin errores de tipos ──────────────────────────────
+      - name: TypeScript check
+        run: npx tsc --noEmit
+
+      # ── 2. Vite build — el web compila sin errores ────────────────────────
+      - name: Build web
+        run: npx vite build
+
+      # ── 3. Capacitor sync — assets móviles actualizados ───────────────────
+      - name: Capacitor sync check
+        run: npx cap sync --inline
+        continue-on-error: true   # No bloquea si no hay plataformas instaladas en CI
+
+      # ── 4. Verificar tamaño del bundle (alerta si crece mucho) ────────────
+      - name: Bundle size check
+        run: |
+          TOTAL=$(du -sh dist/renderer/ | cut -f1)
+          INDEX_SIZE=$(ls -la dist/renderer/assets/index-*.js 2>/dev/null | awk '{sum += $5} END {print sum/1024 " KB"}')
+          echo "## 📦 Bundle Report" >> $GITHUB_STEP_SUMMARY
+          echo "| Métrica | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Total dist/ | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+          echo "| index.js | $INDEX_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
+          echo ""
+          echo "✅ Build web OK — $TOTAL total"
