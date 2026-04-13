@@ -331,10 +331,28 @@ export const api = {
     }),
 
   // ─── Math ──────────────────────────────────────────────────
-  solvemath: (expression: string, step_by_step: boolean = true) =>
+  solvemath: (expression: string, step_by_step: boolean = true, language: string = 'es') =>
     request('/math/solve', {
       method: 'POST',
-      body: JSON.stringify({ expression, step_by_step }),
+      body: JSON.stringify({ expression, step_by_step, language }),
+    }),
+
+  mathNatural: (query: string, step_by_step: boolean = true, language: string = 'es') =>
+    request('/math/natural', {
+      method: 'POST',
+      body: JSON.stringify({ query, step_by_step, language }),
+    }),
+
+  mathVerify: (problem: string, student_answer: string, language: string = 'es') =>
+    request('/math/verify', {
+      method: 'POST',
+      body: JSON.stringify({ problem, student_answer, language }),
+    }),
+
+  mathGraph: (expression: string, variable: string = 'x', x_min: number = -10, x_max: number = 10) =>
+    request('/math/graph', {
+      method: 'POST',
+      body: JSON.stringify({ expression, variable, x_min, x_max }),
     }),
 
   scanAndSolve: (imageBase64: string, language?: string) =>

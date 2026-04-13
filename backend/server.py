@@ -491,10 +491,27 @@ class PathUploadRequest(BaseModel):
 class MathRequest(BaseModel):
     expression: str
     step_by_step: bool = True
+    language: str = "es"
 
 class ScanSolveRequest(BaseModel):
     image_base64: str  # Base64 encoded image
     language: str = "es"
+
+class MathNaturalRequest(BaseModel):
+    query: str                 # Free-form natural language math question
+    step_by_step: bool = True
+    language: str = "es"
+
+class MathVerifyRequest(BaseModel):
+    problem: str               # The original problem
+    student_answer: str        # Student's answer to check
+    language: str = "es"
+
+class MathGraphRequest(BaseModel):
+    expression: str            # Function expression to graph
+    variable: str = "x"
+    x_min: float = -10.0
+    x_max: float = 10.0
 
 class QuizRequest(BaseModel):
     num_questions: int = 10
@@ -1642,51 +1659,145 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
 def solve_math(req: MathRequest, user: User = Depends(get_current_user)):
     from math_engine import MathEngine
     engine = MathEngine()
-    result = engine.solve(req.expression, req.step_by_step)
+    result = engine.solve(req.expression, req.step_by_step, req.language)
     return result
+
+
+@app.post("/math/natural")
+def math_natural(req: MathNaturalRequest, user: User = Depends(get_current_user)):
+    """
+    Full natural language → Claude intent extraction → MathEngine solve.
+    Accepts queries like 'cuánto es la derivada de x al cubo más dos x?'
+    """
+    if not _claude_client:
+        # Fallback: pass query directly to MathEngine router
+        from math_engine import MathEngine
+        return MathEngine().solve(req.query, req.step_by_step, req.language)
+
+    lang_name = "español" if req.language == "es" else "inglés"
+    # Ask Claude to extract the mathematical expression / operation
+    extraction_prompt = (
+        f"El usuario pregunta (en {lang_name}): \"{req.query}\"\n\n"
+        "Extrae la expresión matemática en texto plano apto para un motor CAS (SymPy). "
+        "Responde SOLO con la expresión/operación lista para procesar, sin explicaciones. "
+        "Ejemplos de formato aceptable: 'derivar x**3 + 2*x', 'integral de sin(x)', "
+        "'resolver x**2 - 5*x + 6 = 0', 'lim x→0 sin(x)/x', 'matriz [[1,2],[3,4]] determinante'. "
+        "Si la pregunta ya es una expresión, devuélvela tal cual."
+    )
+    try:
+        extraction_resp = _claude_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=200,
+            messages=[{"role": "user", "content": extraction_prompt}],
+        )
+        extracted = extraction_resp.content[0].text.strip()
+    except Exception:
+        extracted = req.query  # fallback: use raw query
+
+    from math_engine import MathEngine
+    result = MathEngine().solve(extracted, req.step_by_step, req.language)
+    result["original_query"] = req.query
+    result["extracted_expression"] = extracted
+    return result
+
+
+@app.post("/math/verify")
+def math_verify(req: MathVerifyRequest, user: User = Depends(get_current_user)):
+    """Verify whether a student's answer to a math problem is correct."""
+    from math_engine import MathEngine
+    return MathEngine().verify_answer(req.problem, req.student_answer, req.language)
+
+
+@app.post("/math/graph")
+def math_graph(req: MathGraphRequest, user: User = Depends(get_current_user)):
+    """Generate a 2D graph of a function as a base64 PNG."""
+    try:
+        from math_engine import _graph_function
+        img_b64 = _graph_function(req.expression, req.variable, req.x_min, req.x_max)
+        if img_b64:
+            return {"success": True, "image_base64": img_b64, "expression": req.expression}
+        return {"success": False, "error": "Matplotlib no disponible en el servidor."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 @app.post("/math/scan")
 def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)):
-    """Scan an image of a math problem and solve it step by step."""
-    from middleware import get_tier_limits
-    # Check daily scan limit (tier-based)
-    # For now, just log — full rate tracking would need a counter
+    """Scan an image of a math problem using Claude Vision and solve it step by step."""
+    # Detect image type from base64 header
+    mime_type = "image/jpeg"
+    if req.image_base64.startswith("data:"):
+        parts = req.image_base64.split(",", 1)
+        if "png" in parts[0]:
+            mime_type = "image/png"
+        elif "webp" in parts[0]:
+            mime_type = "image/webp"
+        image_data = parts[1] if len(parts) > 1 else req.image_base64
+    else:
+        image_data = req.image_base64
 
-    import base64
+    lang_name = "español" if req.language == "es" else "inglés" if req.language == "en" else req.language
 
-    lang_name = 'español' if req.language == 'es' else 'inglés' if req.language == 'en' else req.language
-    system = MATH_SCAN_PROMPT.format(lang=lang_name)
+    if not _claude_client:
+        return {"solution": "El motor de IA no está disponible en este momento.", "success": False}
 
     try:
-        from gemini_engine import gpt_client, GPT_MODEL
-
-        # Detect image type from base64 header
-        mime_type = "image/jpeg"
-        if req.image_base64.startswith("data:"):
-            parts = req.image_base64.split(",", 1)
-            if "png" in parts[0]: mime_type = "image/png"
-            elif "webp" in parts[0]: mime_type = "image/webp"
-            image_data = parts[1] if len(parts) > 1 else req.image_base64
-        else:
-            image_data = req.image_base64
-
-        if not gpt_client:
-            return {"solution": "OPENAI_API_KEY no configurada en el servidor.", "success": False}
-
-        resp = gpt_client.chat.completions.create(
-            model=GPT_MODEL,
-            max_tokens=4096,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": [
-                    {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_data}"}},
-                    {"type": "text", "text": "Resuelve este problema paso a paso."},
-                ]},
-            ],
+        # Step 1: Claude Vision extracts the problem from the image
+        extraction_resp = _claude_client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=300,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": mime_type,
+                            "data": image_data,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": (
+                            "Transcribe SOLAMENTE la expresión o problema matemático que aparece en esta imagen, "
+                            "en formato de texto plano apto para un motor CAS (SymPy). "
+                            "Responde ÚNICAMENTE la expresión, sin explicaciones. "
+                            "Ejemplo: 'derivar x**3 + 2*x', 'integral de sin(x) dx de 0 a pi', "
+                            "'resolver x**2 - 4 = 0'."
+                        ),
+                    },
+                ],
+            }],
         )
-        result = resp.choices[0].message.content
-        return {"solution": result, "success": True}
+        extracted = extraction_resp.content[0].text.strip()
+
+        # Step 2: Solve with MathEngine
+        from math_engine import MathEngine
+        engine = MathEngine()
+        result = engine.solve(extracted, step_by_step=True, language=req.language)
+
+        # Step 3: Format a human-readable solution
+        explanation = result.get("explanation", "")
+        result_latex = result.get("result_latex", "")
+        steps = result.get("steps", [])
+
+        lines = [f"**Problema detectado:** `{extracted}`\n"]
+        if steps:
+            lines.append("**Resolución paso a paso:**")
+            for s in steps:
+                lines.append(f"- {s}")
+        if result_latex:
+            lines.append(f"\n**Resultado:** ${result_latex}$")
+        if explanation:
+            lines.append(f"\n{explanation}")
+
+        return {
+            "solution": "\n".join(lines),
+            "extracted": extracted,
+            "math_result": result,
+            "success": True,
+        }
     except Exception as e:
         return {"solution": f"Error al procesar la imagen: {str(e)}", "success": False}
 

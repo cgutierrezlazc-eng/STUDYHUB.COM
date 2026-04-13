@@ -114,6 +114,26 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [isExporting, setIsExporting] = useState(false)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [uploadingFileName, setUploadingFileName] = useState('')
+
+  // ─── Math Panel ────────────────────────────────────────────────────────────
+  type MathPanelMode = 'hidden' | 'solve' | 'verify' | 'graph'
+  const [mathPanelMode, setMathPanelMode] = useState<MathPanelMode>('hidden')
+  const [mathExpr, setMathExpr] = useState('')
+  const [mathStepByStep, setMathStepByStep] = useState(true)
+  const [mathResult, setMathResult] = useState<any>(null)
+  const [mathLoading, setMathLoading] = useState(false)
+  const [mathError, setMathError] = useState('')
+  // Verify mode
+  const [mathVerifyProblem, setMathVerifyProblem] = useState('')
+  const [mathVerifyAnswer, setMathVerifyAnswer] = useState('')
+  const [mathVerifyResult, setMathVerifyResult] = useState<any>(null)
+  // Graph mode
+  const [mathGraphExpr, setMathGraphExpr] = useState('')
+  const [mathGraphVar, setMathGraphVar] = useState('x')
+  const [mathGraphMin, setMathGraphMin] = useState('-10')
+  const [mathGraphMax, setMathGraphMax] = useState('10')
+  const [mathGraphImg, setMathGraphImg] = useState('')
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const recordingChunksRef = useRef<Blob[]>([])
   const recordingTimerRef = useRef<number | null>(null)
@@ -472,6 +492,82 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     } finally {
       setIsGeneratingGuide(false)
     }
+  }
+
+  // ─── Math Panel Handlers ──────────────────────────────────────────────────
+  const handleMathSolve = async () => {
+    if (!mathExpr.trim()) return
+    setMathLoading(true)
+    setMathError('')
+    setMathResult(null)
+    try {
+      const res = await api.mathNatural(mathExpr.trim(), mathStepByStep)
+      setMathResult(res)
+    } catch (e: any) {
+      setMathError(e?.message || 'Error al resolver la expresión')
+    } finally {
+      setMathLoading(false)
+    }
+  }
+
+  const handleMathVerify = async () => {
+    if (!mathVerifyProblem.trim() || !mathVerifyAnswer.trim()) return
+    setMathLoading(true)
+    setMathError('')
+    setMathVerifyResult(null)
+    try {
+      const res = await api.mathVerify(mathVerifyProblem.trim(), mathVerifyAnswer.trim())
+      setMathVerifyResult(res)
+    } catch (e: any) {
+      setMathError(e?.message || 'Error al verificar')
+    } finally {
+      setMathLoading(false)
+    }
+  }
+
+  const handleMathGraph = async () => {
+    if (!mathGraphExpr.trim()) return
+    setMathLoading(true)
+    setMathError('')
+    setMathGraphImg('')
+    try {
+      const res = await api.mathGraph(
+        mathGraphExpr.trim(),
+        mathGraphVar || 'x',
+        parseFloat(mathGraphMin) || -10,
+        parseFloat(mathGraphMax) || 10,
+      )
+      if (res.success && res.image_base64) {
+        setMathGraphImg(res.image_base64)
+      } else {
+        setMathError(res.error || 'No se pudo generar el gráfico')
+      }
+    } catch (e: any) {
+      setMathError(e?.message || 'Error al graficar')
+    } finally {
+      setMathLoading(false)
+    }
+  }
+
+  const sendMathResultToChat = () => {
+    if (!mathResult) return
+    const lines: string[] = []
+    if (mathResult.original_query) lines.push(`**Consulta:** ${mathResult.original_query}`)
+    if (mathResult.extracted_expression) lines.push(`**Expresión:** \`${mathResult.extracted_expression}\``)
+    if (mathResult.result_latex) lines.push(`**Resultado:** $${mathResult.result_latex}$`)
+    if (mathResult.explanation) lines.push(`\n${mathResult.explanation}`)
+    if (mathResult.steps?.length) {
+      lines.push('\n**Pasos:**')
+      mathResult.steps.forEach((s: string) => lines.push(`- ${s}`))
+    }
+    const content = lines.join('\n') || JSON.stringify(mathResult)
+    const msg: ChatMessage = {
+      id: Date.now().toString(), role: 'assistant',
+      content, timestamp: new Date().toISOString(), projectId: project.id,
+    }
+    setMessages(prev => [...prev, msg])
+    setMathPanelMode('hidden')
+    setTab('chat')
   }
 
   return (
@@ -903,7 +999,220 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 >
                   {Camera()} Escanear
                 </button>
+                <button
+                  className={`btn btn-xs ${mathPanelMode !== 'hidden' ? 'btn-primary' : 'btn-secondary'}`}
+                  title="Motor de Cálculo — resolver, verificar y graficar"
+                  onClick={() => setMathPanelMode(p => p === 'hidden' ? 'solve' : 'hidden')}
+                >
+                  {SquareFunction()} Cálculo
+                </button>
               </div>
+
+              {/* ─── Math Panel ─────────────────────────────────────── */}
+              {mathPanelMode !== 'hidden' && (
+                <div className="math-panel card" style={{
+                  margin: '0 0 8px 0', padding: 16,
+                  background: 'var(--bg-secondary)', borderRadius: 10,
+                  border: '1px solid var(--border-color)',
+                }}>
+                  {/* Tab selector */}
+                  <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+                    {(['solve', 'verify', 'graph'] as const).map(m => (
+                      <button
+                        key={m}
+                        className={`btn btn-xs ${mathPanelMode === m ? 'btn-primary' : 'btn-secondary'}`}
+                        onClick={() => { setMathPanelMode(m); setMathError('') }}
+                      >
+                        {m === 'solve' ? '∑ Resolver' : m === 'verify' ? '✓ Verificar' : '📈 Graficar'}
+                      </button>
+                    ))}
+                    <button
+                      className="btn btn-xs btn-secondary"
+                      style={{ marginLeft: 'auto' }}
+                      onClick={() => setMathPanelMode('hidden')}
+                      title="Cerrar"
+                    >✕</button>
+                  </div>
+
+                  {/* ── Solve mode ── */}
+                  {mathPanelMode === 'solve' && (
+                    <div>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
+                        <input
+                          className="form-control"
+                          style={{ flex: 1, fontSize: 14 }}
+                          placeholder="ej: derivar x**3 + 2*x, integral de sin(x), resolver x**2=4"
+                          value={mathExpr}
+                          onChange={e => setMathExpr(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleMathSolve()}
+                        />
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleMathSolve}
+                          disabled={mathLoading || !mathExpr.trim()}
+                        >
+                          {mathLoading ? '...' : 'Resolver'}
+                        </button>
+                      </div>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                        <input type="checkbox" checked={mathStepByStep} onChange={e => setMathStepByStep(e.target.checked)} />
+                        Mostrar pasos
+                      </label>
+                      {mathError && <p style={{ color: 'var(--accent-red)', fontSize: 12, marginTop: 8 }}>{mathError}</p>}
+                      {mathResult && (
+                        <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-primary)', borderRadius: 8, fontSize: 13 }}>
+                          {mathResult.extracted_expression && (
+                            <p style={{ color: 'var(--text-secondary)', fontSize: 11, marginBottom: 4 }}>
+                              Expresión: <code>{mathResult.extracted_expression}</code>
+                            </p>
+                          )}
+                          {mathResult.result_latex && (
+                            <p style={{ fontWeight: 600, marginBottom: 8 }}>
+                              Resultado: <span style={{ color: 'var(--accent)' }}>${mathResult.result_latex}$</span>
+                            </p>
+                          )}
+                          {mathResult.explanation && (
+                            <p style={{ lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{mathResult.explanation}</p>
+                          )}
+                          {mathResult.steps?.length > 0 && mathStepByStep && (
+                            <div style={{ marginTop: 8 }}>
+                              <p style={{ fontWeight: 600, marginBottom: 4, fontSize: 12 }}>Pasos:</p>
+                              <ol style={{ paddingLeft: 16, fontSize: 12, lineHeight: 1.6 }}>
+                                {mathResult.steps.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                              </ol>
+                            </div>
+                          )}
+                          {mathResult.graph_base64 && (
+                            <img
+                              src={`data:image/png;base64,${mathResult.graph_base64}`}
+                              alt="Gráfico"
+                              style={{ width: '100%', borderRadius: 6, marginTop: 8 }}
+                            />
+                          )}
+                          {mathResult.error && (
+                            <p style={{ color: 'var(--accent-orange)', fontSize: 12 }}>⚠️ {mathResult.error}</p>
+                          )}
+                          <button
+                            className="btn btn-secondary btn-xs"
+                            style={{ marginTop: 8 }}
+                            onClick={sendMathResultToChat}
+                          >
+                            Enviar al chat
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Verify mode ── */}
+                  {mathPanelMode === 'verify' && (
+                    <div>
+                      <input
+                        className="form-control"
+                        style={{ marginBottom: 6, fontSize: 14 }}
+                        placeholder="Problema original (ej: derivar x**2)"
+                        value={mathVerifyProblem}
+                        onChange={e => setMathVerifyProblem(e.target.value)}
+                      />
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <input
+                          className="form-control"
+                          style={{ flex: 1, fontSize: 14 }}
+                          placeholder="Tu respuesta (ej: 2*x)"
+                          value={mathVerifyAnswer}
+                          onChange={e => setMathVerifyAnswer(e.target.value)}
+                          onKeyDown={e => e.key === 'Enter' && handleMathVerify()}
+                        />
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleMathVerify}
+                          disabled={mathLoading || !mathVerifyProblem.trim() || !mathVerifyAnswer.trim()}
+                        >
+                          {mathLoading ? '...' : 'Verificar'}
+                        </button>
+                      </div>
+                      {mathError && <p style={{ color: 'var(--accent-red)', fontSize: 12, marginTop: 8 }}>{mathError}</p>}
+                      {mathVerifyResult && (
+                        <div style={{
+                          marginTop: 12, padding: 12, borderRadius: 8, fontSize: 13,
+                          background: mathVerifyResult.correct ? '#16a34a22' : '#dc262622',
+                          border: `1px solid ${mathVerifyResult.correct ? '#16a34a' : '#dc2626'}44`,
+                        }}>
+                          <p style={{ fontWeight: 700, marginBottom: 6 }}>
+                            {mathVerifyResult.correct ? '✅ ¡Correcto!' : '❌ Incorrecto'}
+                          </p>
+                          {mathVerifyResult.feedback && (
+                            <p style={{ lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{mathVerifyResult.feedback}</p>
+                          )}
+                          {mathVerifyResult.correct_result?.result_latex && (
+                            <p style={{ marginTop: 8, fontSize: 12 }}>
+                              Respuesta correcta: <strong>${mathVerifyResult.correct_result.result_latex}$</strong>
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ── Graph mode ── */}
+                  {mathPanelMode === 'graph' && (
+                    <div>
+                      <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                        <input
+                          className="form-control"
+                          style={{ flex: 3, fontSize: 14 }}
+                          placeholder="Función (ej: sin(x), x**2 - 3*x + 2)"
+                          value={mathGraphExpr}
+                          onChange={e => setMathGraphExpr(e.target.value)}
+                        />
+                        <input
+                          className="form-control"
+                          style={{ width: 60, fontSize: 14 }}
+                          placeholder="var"
+                          value={mathGraphVar}
+                          onChange={e => setMathGraphVar(e.target.value)}
+                          title="Variable"
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 8 }}>
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>x:</span>
+                        <input
+                          className="form-control"
+                          style={{ width: 70, fontSize: 13 }}
+                          placeholder="min"
+                          value={mathGraphMin}
+                          onChange={e => setMathGraphMin(e.target.value)}
+                        />
+                        <span style={{ fontSize: 12 }}>a</span>
+                        <input
+                          className="form-control"
+                          style={{ width: 70, fontSize: 13 }}
+                          placeholder="max"
+                          value={mathGraphMax}
+                          onChange={e => setMathGraphMax(e.target.value)}
+                        />
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleMathGraph}
+                          disabled={mathLoading || !mathGraphExpr.trim()}
+                          style={{ marginLeft: 4 }}
+                        >
+                          {mathLoading ? '...' : 'Graficar'}
+                        </button>
+                      </div>
+                      {mathError && <p style={{ color: 'var(--accent-red)', fontSize: 12 }}>{mathError}</p>}
+                      {mathGraphImg && (
+                        <img
+                          src={`data:image/png;base64,${mathGraphImg}`}
+                          alt="Gráfico"
+                          style={{ width: '100%', borderRadius: 8, marginTop: 4 }}
+                        />
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="chat-input-row">
                 <textarea
                   className="chat-input"
