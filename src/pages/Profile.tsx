@@ -8,7 +8,7 @@ import CoverPhotoModal, { getCoverStyle } from '../components/CoverPhotoModal'
 import { searchUniversities, University, getInstitutionCode } from '../data/universities'
 import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationCap, Users, Pencil, Lock, Settings, ClipboardList } from '../components/Icons'
 
-type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv' | 'projects' | 'publications'
+type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv' | 'projects' | 'publications' | 'universidad'
 
 interface ProfileProps { onNavigate?: (path: string) => void }
 
@@ -64,6 +64,22 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
   const [myCV, setMyCV] = useState<any>(null)
   const [myCVLoaded, setMyCVLoaded] = useState(false)
 
+  // ─── LMS Universidad ──────────────────────────────────────
+  const [lmsConnections, setLmsConnections] = useState<any[]>([])
+  const [lmsLoaded, setLmsLoaded] = useState(false)
+  const [lmsShowConnect, setLmsShowConnect] = useState(false)
+  const [lmsPlatformType, setLmsPlatformType] = useState('auto')
+  const [lmsPlatformName, setLmsPlatformName] = useState('')
+  const [lmsUrl, setLmsUrl] = useState('')
+  const [lmsToken, setLmsToken] = useState('')
+  const [lmsConnecting, setLmsConnecting] = useState(false)
+  const [lmsConnectError, setLmsConnectError] = useState('')
+  const [lmsPending, setLmsPending] = useState<any[]>([])
+  const [lmsScanning, setLmsScanning] = useState(false)
+  const [lmsScanMsg, setLmsScanMsg] = useState('')
+  const [lmsSyncingId, setLmsSyncingId] = useState('')
+  const [lmsProjects, setLmsProjects] = useState<any[]>([])
+
   // Institution picker state (for university edit)
   const [uniSearch, setUniSearch] = useState('')
   const [showUniDropdown, setShowUniDropdown] = useState(false)
@@ -81,6 +97,22 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
         .catch(() => {})
     }
   }, [activeSection, myCVLoaded])
+
+  // Auto-load LMS connections when user navigates to universidad section
+  useEffect(() => {
+    if (activeSection === 'universidad' && !lmsLoaded) {
+      setLmsLoaded(true)
+      Promise.all([
+        api.lmsGetConnections().catch(() => []),
+        api.lmsGetPending().catch(() => []),
+        api.getProjects().catch(() => []),
+      ]).then(([conns, pending, projs]: any) => {
+        setLmsConnections(Array.isArray(conns) ? conns : [])
+        setLmsPending(Array.isArray(pending) ? pending : [])
+        setLmsProjects(Array.isArray(projs) ? projs : [])
+      })
+    }
+  }, [activeSection, lmsLoaded])
 
   if (!user) return null
 
@@ -214,6 +246,7 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
     { id: 'cv', label: t('profile.sectionCV'), icon: ClipboardList({ size: 16 }) },
     { id: 'projects' as Section, label: 'Proyectos', icon: <span>🗂</span> },
     { id: 'publications' as Section, label: 'Publicaciones', icon: <span>📚</span> },
+    { id: 'universidad' as Section, label: 'Mi Universidad', icon: <span>🎓</span> },
     { id: 'appearance', label: t('profile.sectionAppearance'), icon: Settings({ size: 16 }) },
     { id: 'notifications', label: t('profile.sectionNotifications'), icon: Bell({ size: 16 }) },
     { id: 'security', label: t('profile.sectionSecurity'), icon: Lock({ size: 16 }) },
@@ -988,6 +1021,271 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
                     }}>Cargar mis publicaciones</button>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ─── Mi Universidad (LMS Integration) ─── */}
+            {activeSection === 'universidad' && (
+              <div className="pf-section">
+                <h3>🎓 Mi Universidad</h3>
+                <p className="pf-hint">Conecta tu plataforma universitaria (Moodle, Canvas, Blackboard, Brightspace, Sakai u otras) para importar automáticamente el material de tus ramos a Conniku.</p>
+
+                {/* ── Conexiones activas ── */}
+                {lmsConnections.length > 0 && lmsConnections.map((conn: any) => (
+                  <div key={conn.id} className="u-card" style={{ padding: 20, marginBottom: 16, borderLeft: `4px solid ${conn.status === 'connected' ? 'var(--accent-green)' : 'var(--accent-red)'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                      <span style={{ fontSize: 28 }}>
+                        {conn.platform_type === 'moodle' ? '🟧' : conn.platform_type === 'canvas' ? '🟥' : conn.platform_type === 'blackboard' ? '⬛' : conn.platform_type === 'brightspace' ? '🟦' : '🎓'}
+                      </span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15 }}>{conn.platform_name}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                          {conn.api_url} · {conn.courses?.length || 0} asignatura{conn.courses?.length !== 1 ? 's' : ''} detectada{conn.courses?.length !== 1 ? 's' : ''}
+                          {conn.last_scan && ` · Última revisión: ${new Date(conn.last_scan).toLocaleDateString('es-CL')}`}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn btn-primary btn-sm"
+                          disabled={lmsScanning}
+                          onClick={async () => {
+                            setLmsScanning(true); setLmsScanMsg('')
+                            try {
+                              const res: any = await api.lmsScan()
+                              setLmsScanMsg(res.total_new > 0 ? `✅ ${res.total_new} archivo${res.total_new !== 1 ? 's' : ''} nuevo${res.total_new !== 1 ? 's' : ''} encontrado${res.total_new !== 1 ? 's' : ''}` : '✓ Todo actualizado')
+                              const pending: any = await api.lmsGetPending().catch(() => [])
+                              setLmsPending(Array.isArray(pending) ? pending : [])
+                              setLmsLoaded(false) // force reload connections for last_scan update
+                            } catch { setLmsScanMsg('Error al escanear') }
+                            finally { setLmsScanning(false) }
+                          }}>
+                          {lmsScanning ? '⏳ Revisando...' : '🔍 Revisar ahora'}
+                        </button>
+                        <button className="btn btn-secondary btn-sm"
+                          onClick={async () => {
+                            if (!confirm('¿Desconectar esta plataforma?')) return
+                            await api.lmsDisconnect(conn.id).catch(() => {})
+                            setLmsConnections(prev => prev.filter((c: any) => c.id !== conn.id))
+                          }}>
+                          Desconectar
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Scan result message */}
+                    {lmsScanMsg && <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 8 }}>{lmsScanMsg}</div>}
+
+                    {/* Courses list */}
+                    {conn.courses?.length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Asignaturas detectadas</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {conn.courses.map((c: any) => (
+                            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'var(--bg-secondary)', borderRadius: 8, fontSize: 13 }}>
+                              <span>📚</span>
+                              <span style={{ flex: 1, fontWeight: 500 }}>{c.name}</span>
+                              {c.conniku_project_id ? (
+                                <span style={{ fontSize: 11, color: 'var(--accent-green)', fontWeight: 600 }}>✓ Vinculada</span>
+                              ) : (
+                                <select
+                                  style={{ fontSize: 11, padding: '2px 6px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', cursor: 'pointer' }}
+                                  defaultValue=""
+                                  onChange={async (e) => {
+                                    if (!e.target.value) return
+                                    await api.lmsLinkCourse(c.id, e.target.value).catch(() => {})
+                                    setLmsLoaded(false)
+                                  }}>
+                                  <option value="">Vincular a proyecto...</option>
+                                  {lmsProjects.map((p: any) => (
+                                    <option key={p.id} value={p.id}>{p.name}</option>
+                                  ))}
+                                </select>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* ── Items pendientes de sincronización ── */}
+                {lmsPending.length > 0 && (
+                  <div style={{ marginBottom: 24 }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>
+                      📥 Material nuevo detectado — {lmsPending.length} archivo{lmsPending.length !== 1 ? 's' : ''}
+                    </div>
+                    {lmsPending.map((item: any) => (
+                      <div key={item.id} className="u-card" style={{ padding: 16, marginBottom: 10, borderLeft: '4px solid var(--accent)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ fontSize: 24, flexShrink: 0 }}>
+                          {item.mime_type?.includes('pdf') ? '📄' : item.mime_type?.includes('word') ? '📝' : item.mime_type?.includes('ppt') ? '📊' : '📎'}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.item_name}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                            {item.course_name} · {item.file_size ? `${Math.round(item.file_size / 1024)} KB · ` : ''}{new Date(item.detected_at).toLocaleDateString('es-CL')}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <select
+                            style={{ fontSize: 12, padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+                            defaultValue={item.conniku_project_id || ''}
+                            id={`proj-sel-${item.id}`}>
+                            <option value="">Seleccionar proyecto...</option>
+                            {lmsProjects.map((p: any) => (
+                              <option key={p.id} value={p.id}>{p.name}</option>
+                            ))}
+                          </select>
+                          <button className="btn btn-primary btn-sm"
+                            disabled={lmsSyncingId === item.id}
+                            onClick={async () => {
+                              const sel = (document.getElementById(`proj-sel-${item.id}`) as HTMLSelectElement)?.value
+                              if (!sel) { alert('Selecciona un proyecto Conniku destino'); return }
+                              setLmsSyncingId(item.id)
+                              try {
+                                const res: any = await api.lmsSyncItem(item.id, sel)
+                                if (res.has_content && res.content_b64) {
+                                  await api.importDocumentB64(sel, res.filename, res.content_b64, res.file_type)
+                                }
+                                setLmsPending(prev => prev.filter((i: any) => i.id !== item.id))
+                              } catch (e: any) {
+                                alert(e.message || 'Error al sincronizar')
+                              } finally { setLmsSyncingId('') }
+                            }}>
+                            {lmsSyncingId === item.id ? '⏳' : '↓ Sincronizar'}
+                          </button>
+                          <button className="btn btn-secondary btn-sm"
+                            onClick={async () => {
+                              await api.lmsDismissItem(item.id).catch(() => {})
+                              setLmsPending(prev => prev.filter((i: any) => i.id !== item.id))
+                            }}>
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* ── Sin conexiones → CTA ── */}
+                {lmsConnections.length === 0 && !lmsShowConnect && (
+                  <div className="u-card" style={{ padding: 32, textAlign: 'center' }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>🎓</div>
+                    <h3 style={{ margin: '0 0 8px' }}>Conecta tu plataforma universitaria</h3>
+                    <p style={{ color: 'var(--text-muted)', margin: '0 0 20px', fontSize: 14 }}>
+                      Importa el material de tus ramos automáticamente a tus asignaturas en Conniku.<br />
+                      Compatible con Moodle, Canvas, Blackboard, Brightspace, Sakai y más.
+                    </p>
+                    <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
+                      {['Moodle', 'Canvas', 'Blackboard', 'Brightspace', 'Sakai'].map(p => (
+                        <span key={p} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontWeight: 600 }}>{p}</span>
+                      ))}
+                    </div>
+                    <button className="btn btn-primary" onClick={() => setLmsShowConnect(true)}>
+                      Conectar Universidad
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Formulario de conexión ── */}
+                {lmsShowConnect && (
+                  <div className="u-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                      <h4 style={{ margin: 0 }}>Conectar plataforma universitaria</h4>
+                      <button onClick={() => { setLmsShowConnect(false); setLmsConnectError('') }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}>✕</button>
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Plataforma</label>
+                      <select value={lmsPlatformType} onChange={e => setLmsPlatformType(e.target.value)}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14 }}>
+                        <option value="auto">🔍 Detectar automáticamente</option>
+                        <option value="moodle">Moodle</option>
+                        <option value="canvas">Canvas LMS</option>
+                        <option value="blackboard">Blackboard Learn</option>
+                        <option value="brightspace">Brightspace (D2L)</option>
+                        <option value="sakai">Sakai</option>
+                        <option value="teams">Microsoft Teams Educativo</option>
+                        <option value="classroom">Google Classroom</option>
+                        <option value="other">Otra plataforma</option>
+                      </select>
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Nombre de tu universidad</label>
+                      <input type="text" value={lmsPlatformName} onChange={e => setLmsPlatformName(e.target.value)}
+                        placeholder="Ej: Universidad de Chile" className="pf-input" />
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>URL de la plataforma</label>
+                      <input type="url" value={lmsUrl} onChange={e => setLmsUrl(e.target.value)}
+                        placeholder="https://moodle.uchile.cl" className="pf-input" />
+                    </div>
+
+                    <div style={{ marginBottom: 6 }}>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Token de acceso</label>
+                      <input type="password" value={lmsToken} onChange={e => setLmsToken(e.target.value)}
+                        placeholder="Token generado en tu perfil de la plataforma" className="pf-input" />
+                    </div>
+
+                    {/* Token instructions per platform */}
+                    {lmsPlatformType !== 'auto' && (
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: 8, marginBottom: 16, lineHeight: 1.6 }}>
+                        {lmsPlatformType === 'moodle' && <><strong>Moodle:</strong> Accede a tu cuenta → Perfil → Preferencias → Seguridad → Claves del servicio web → Crear token</>}
+                        {lmsPlatformType === 'canvas' && <><strong>Canvas:</strong> Configuración de cuenta → Tokens de acceso → Generar nuevo token</>}
+                        {lmsPlatformType === 'blackboard' && <><strong>Blackboard:</strong> Consulta a tu institución para obtener un token de API de estudiante</>}
+                        {lmsPlatformType === 'brightspace' && <><strong>Brightspace:</strong> Mi cuenta → Conexiones de cuenta → Gestionar tokens de API</>}
+                        {lmsPlatformType === 'sakai' && <><strong>Sakai:</strong> Perfil → Preferencias → Clave de sesión (Session Key)</>}
+                        {lmsPlatformType === 'teams' && <><strong>Teams Educativo:</strong> Actualmente requiere configuración institucional. Contacta a tu centro de informática.</>}
+                        {lmsPlatformType === 'classroom' && <><strong>Google Classroom:</strong> Actualmente requiere autorización OAuth. Disponible próximamente.</>}
+                        {lmsPlatformType === 'other' && <>Consulta la documentación de tu plataforma para obtener un token de API REST.</>}
+                      </div>
+                    )}
+
+                    {lmsConnectError && (
+                      <div style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 12, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>
+                        ⚠ {lmsConnectError}
+                      </div>
+                    )}
+
+                    <button className="btn btn-primary" style={{ width: '100%' }}
+                      disabled={lmsConnecting || !lmsUrl || !lmsToken}
+                      onClick={async () => {
+                        if (!lmsUrl || !lmsToken) return
+                        setLmsConnecting(true); setLmsConnectError('')
+                        try {
+                          const res: any = await api.lmsConnect({
+                            platform_type: lmsPlatformType,
+                            platform_name: lmsPlatformName,
+                            api_url: lmsUrl,
+                            api_token: lmsToken,
+                          })
+                          setLmsConnections(prev => [...prev, res])
+                          setLmsShowConnect(false)
+                          setLmsUrl(''); setLmsToken(''); setLmsPlatformName('')
+                          setLmsScanMsg(`✅ Conectado — ${res.courses_found} asignatura${res.courses_found !== 1 ? 's' : ''} detectada${res.courses_found !== 1 ? 's' : ''}`)
+                          // Reload connections to get full course list
+                          const conns: any = await api.lmsGetConnections().catch(() => [])
+                          setLmsConnections(Array.isArray(conns) ? conns : [])
+                          const projs: any = await api.getProjects().catch(() => [])
+                          setLmsProjects(Array.isArray(projs) ? projs : [])
+                        } catch (e: any) {
+                          setLmsConnectError(e.message || 'No se pudo conectar. Verifica la URL y el token.')
+                        } finally { setLmsConnecting(false) }
+                      }}>
+                      {lmsConnecting ? '⏳ Conectando...' : 'Conectar y verificar'}
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Botón agregar otra conexión ── */}
+                {lmsConnections.length > 0 && !lmsShowConnect && (
+                  <button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }}
+                    onClick={() => setLmsShowConnect(true)}>
+                    + Conectar otra plataforma
+                  </button>
+                )}
               </div>
             )}
 

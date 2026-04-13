@@ -1453,6 +1453,8 @@ def _ensure_columns():
         ("tutor_documents", "file_mime", "VARCHAR(100)"),
         # users — last_seen for online presence
         ("users", "last_seen", "TIMESTAMP"),
+        # lms_courses — link to conniku project
+        ("lms_courses", "conniku_project_id", "VARCHAR(255)"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
@@ -1471,6 +1473,56 @@ def _ensure_columns():
                 print("Migration: cover_photo widened to TEXT")
         except Exception:
             pass  # Already TEXT or not applicable
+
+
+# ─── LMS University Integration ──────────────────────────────
+
+class UniversityConnection(Base):
+    __tablename__ = "university_connections"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    platform_type = Column(String(30), default="unknown")
+    # moodle | canvas | blackboard | teams | classroom | brightspace | sakai | other
+    platform_name = Column(String(255), default="")      # "U. de Chile — Moodle"
+    api_url = Column(String(500), default="")             # https://moodle.uchile.cl
+    api_token = Column(Text, default="")                  # token/key (base64 stored)
+    extra_field = Column(Text, default="")                # additional field (e.g. username, secret)
+    status = Column(String(20), default="pending")        # pending | connected | error | disconnected
+    error_msg = Column(Text, default="")
+    last_scan = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LMSCourse(Base):
+    __tablename__ = "lms_courses"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    connection_id = Column(String(16), ForeignKey("university_connections.id"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    external_id = Column(String(255), default="")         # ID del curso en la plataforma
+    name = Column(String(500), default="")
+    short_name = Column(String(100), default="")
+    semester = Column(String(50), default="")
+    year = Column(Integer, nullable=True)
+    conniku_project_id = Column(String(255), nullable=True)  # linked Conniku project
+    last_checked = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class LMSSyncItem(Base):
+    __tablename__ = "lms_sync_items"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    course_id = Column(String(16), ForeignKey("lms_courses.id"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    external_id = Column(String(255), default="")         # ID del recurso en plataforma
+    item_name = Column(String(500), default="")
+    item_type = Column(String(50), default="file")        # file | url | assignment | event | page
+    item_url = Column(String(1000), default="")
+    mime_type = Column(String(100), default="application/pdf")
+    file_size = Column(Integer, default=0)
+    status = Column(String(20), default="pending")        # pending | synced | dismissed
+    file_content_b64 = Column(Text, nullable=True)        # contenido descargado (base64)
+    detected_at = Column(DateTime, default=datetime.utcnow)
+    synced_at = Column(DateTime, nullable=True)
 
 
 # ─── Blog Thread (hilo público de opiniones) ──────────────────

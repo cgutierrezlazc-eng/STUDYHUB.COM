@@ -59,6 +59,7 @@ from ws_routes import router as ws_router
 from hr_routes import router as hr_router, daily_refresh_indicators
 from tutor_routes import router as tutor_router
 from email_doc_routes import router as email_doc_router, poll_email_inbox as poll_email_docs
+from lms_routes import router as lms_router
 from ai_workflow_routes import router as ai_workflow_router
 from moderation_queue_routes import router as moderation_queue_router
 # payment_routes (Stripe) removed — using MercadoPago + PayPal only
@@ -271,6 +272,7 @@ app.include_router(ws_router)
 app.include_router(hr_router)
 app.include_router(tutor_router)
 app.include_router(email_doc_router)
+app.include_router(lms_router)
 app.include_router(ai_workflow_router)
 app.include_router(moderation_queue_router)
 # app.include_router(payment_router)  # Stripe removed
@@ -656,6 +658,62 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     save_project_meta(project_id, meta)
 
     return {"id": doc_id, "name": file.filename, "processed": True, "text_length": len(text)}
+
+
+class ImportDocumentRequest(BaseModel):
+    filename: str
+    content_b64: str        # base64-encoded file content
+    file_type: str = ""     # pdf | docx | pptx | xlsx | txt | other (auto-detected from ext if empty)
+
+@app.post("/projects/{project_id}/documents/import")
+async def import_document_b64(project_id: str, req: ImportDocumentRequest,
+                               user: User = Depends(get_current_user),
+                               db: Session = Depends(get_db)):
+    """Import a document from base64 content (used by LMS sync and other integrations)."""
+    meta = get_project_meta(project_id)
+    if not meta or meta.get("user_id") != user.id:
+        raise HTTPException(403, "No tienes acceso a este proyecto")
+
+    try:
+        content = base64.b64decode(req.content_b64)
+    except Exception:
+        raise HTTPException(400, "Contenido base64 inválido")
+
+    file_size = len(content)
+    current_used = user.storage_used_bytes or 0
+    storage_limit = user.storage_limit_bytes or 524288000
+    if current_used + file_size > storage_limit:
+        raise HTTPException(413, "Almacenamiento lleno.")
+
+    docs_dir = get_project_docs_dir(project_id)
+    safe_name = Path(req.filename).name
+    file_path = docs_dir / safe_name
+    file_path.write_bytes(content)
+
+    user.storage_used_bytes = current_used + file_size
+    db.commit()
+
+    text = doc_processor.extract_text(str(file_path))
+    doc_id = uuid.uuid4().hex[:12]
+    ai_engine.add_document(project_id, doc_id, req.filename, text)
+
+    ext = Path(req.filename).suffix.lower().lstrip('.')
+    type_map = {'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx', 'xls': 'xlsx', 'xlsx': 'xlsx',
+                'ppt': 'pptx', 'pptx': 'pptx', 'txt': 'txt', 'csv': 'csv'}
+    doc_type = req.file_type or type_map.get(ext, 'other')
+
+    meta.setdefault("documents", []).append({
+        "id": doc_id,
+        "name": req.filename,
+        "path": str(file_path),
+        "size": file_size,
+        "type": doc_type,
+        "uploadedAt": datetime.utcnow().isoformat() + "Z",
+        "processed": bool(text),
+        "source": "lms",
+    })
+    save_project_meta(project_id, meta)
+    return {"id": doc_id, "name": req.filename, "processed": bool(text)}
 
 
 @app.post("/projects/{project_id}/documents/path")

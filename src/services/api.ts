@@ -1453,6 +1453,25 @@ export const api = {
   // ─── Contact Form (público) ────────────────────────────────
   sendContactForm: (data: { name: string; email: string; subject: string; message: string }) =>
     request('/contact/send', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ─── LMS University Integration ──────────────────────────────
+  lmsConnect: (data: { platform_type: string; platform_name: string; api_url: string; api_token: string; extra_field?: string }) =>
+    request('/lms/connect', { method: 'POST', body: JSON.stringify({ ...data, extra_field: data.extra_field || '' }) }),
+  lmsGetConnections: () => request('/lms/connections'),
+  lmsDisconnect: (connId: string) => request(`/lms/connections/${connId}`, { method: 'DELETE' }),
+  lmsScan: () => request('/lms/scan', { method: 'POST' }),
+  lmsGetPending: () => request('/lms/pending'),
+  lmsSyncItem: (itemId: string, conniku_project_id: string) =>
+    request(`/lms/sync/${itemId}`, { method: 'POST', body: JSON.stringify({ item_id: itemId, conniku_project_id }) }),
+  lmsDismissItem: (itemId: string) => request(`/lms/dismiss/${itemId}`, { method: 'POST' }),
+  lmsLinkCourse: (courseId: string, conniku_project_id: string) =>
+    request('/lms/link-course', { method: 'POST', body: JSON.stringify({ course_id: courseId, conniku_project_id }) }),
+  lmsGetCourses: () => request('/lms/courses'),
+  importDocumentB64: (projectId: string, filename: string, content_b64: string, file_type?: string) =>
+    request(`/projects/${projectId}/documents/import`, {
+      method: 'POST',
+      body: JSON.stringify({ filename, content_b64, file_type: file_type || '' }),
+    }),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────
