@@ -25,7 +25,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set())
   const [comments, setComments] = useState<Record<string, any[]>>({})
   const [activeTab, setActiveTab] = useState<'wall' | 'photos' | 'friends' | 'about' | 'cv' | 'courses' | 'servicios' | 'tutorias' | 'showcase'>('wall')
-  const [showMoreTabs, setShowMoreTabs] = useState(false)
+  // showMoreTabs eliminado — todos los tabs son visibles directamente
   const [cvData, setCvData] = useState<any>(null)
   const [cvLoading, setCvLoading] = useState(false)
   const [cvUploading, setCvUploading] = useState(false)
@@ -700,6 +700,45 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   </>
                 )}
               </div>
+
+              {/* Divider + Bio/Presentación */}
+              <div style={{ height: 1, background: 'var(--border-subtle)', margin: '10px 0 8px' }} />
+              {editingBio ? (
+                <div style={{ marginBottom: 8 }}>
+                  <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={2} placeholder="Escribe tu presentación..." maxLength={300} style={{ fontSize: 13, resize: 'none' }} />
+                  <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end', marginTop: 6 }}>
+                    <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>Cancelar</button>
+                    <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>Guardar</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                  <p style={{ fontSize: 13, color: profile.bio ? 'var(--text-secondary)' : 'var(--text-muted)', lineHeight: 1.55, margin: 0, flex: 1, fontStyle: profile.bio ? 'normal' : 'italic' }}>
+                    {profile.bio || (isOwn ? 'Agrega una presentación sobre ti...' : '')}
+                  </p>
+                  {isOwn && (
+                    <button onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }} style={{ background: 'none', border: 'none', padding: '1px 4px', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 11, flexShrink: 0, opacity: 0.7, display: 'flex', alignItems: 'center', gap: 3 }} title="Editar presentación">
+                      {Pencil({ size: 11 })}
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Ofrece Tutorías — compacto en header */}
+              {profile.offersMentoring && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginRight: 2 }}>🎓 Tutorías</span>
+                  {(profile.mentoringServices || []).slice(0, 3).map((s: string) => (
+                    <span key={s} style={{ padding: '2px 8px', background: 'rgba(45,98,200,0.1)', color: '#2D62C8', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
+                      {s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s}
+                    </span>
+                  ))}
+                  <span style={{ fontSize: 11, fontWeight: 700, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8', background: profile.mentoringPriceType === 'free' ? 'rgba(34,197,94,0.1)' : 'rgba(45,98,200,0.08)', padding: '2px 8px', borderRadius: 6 }}>
+                    {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${profile.mentoringPricePerHour || 0}/hr`}
+                  </span>
+                </div>
+              )}
+
               {/* Stats strip */}
               <div style={{ display: 'flex', gap: 14, marginTop: 10, alignItems: 'center' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -790,7 +829,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
               {isOwn && (
                 <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
-                  <button className="btn btn-primary btn-sm" style={{ borderRadius: 24, display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => onNavigate('/profile')}>
+                  <button className="btn btn-primary btn-sm" style={{ borderRadius: 24, display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => setConfigSection('profile')}>
                     {Pencil({ size: 13 })} Editar perfil
                   </button>
                   <button className="btn btn-secondary btn-sm" style={{ borderRadius: 24, display: 'flex', alignItems: 'center', gap: 6 }} onClick={() => onNavigate('/friends')}>
@@ -875,55 +914,26 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ─── Fila 1: Social Tabs ─── */}
-      <div className="fb-profile-tabs" style={{ marginBottom: isOwn ? 0 : 16, borderRadius: isOwn ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderBottom: isOwn ? 'none' : undefined, position: 'relative' }}>
+      {/* ─── Fila 1: Social Tabs — todos visibles, sin "Más" ─── */}
+      <div className="fb-profile-tabs" style={{ marginBottom: isOwn ? 0 : 16, borderRadius: isOwn ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderBottom: isOwn ? 'none' : undefined, position: 'relative', flexWrap: 'wrap' }}>
         <button className={`fb-tab ${!configSection && activeTab === 'wall' ? 'active' : ''}`} onClick={() => { setActiveTab('wall'); setConfigSection(null) }}>
-          {t('userprofile.tabPosts')}
+          Publicaciones
         </button>
-        <button className={`fb-tab ${!configSection && activeTab === 'about' ? 'active' : ''}`} onClick={() => { setActiveTab('about'); setConfigSection(null) }}>
-          {t('userprofile.tabInfo')}
-        </button>
-        <button className={`fb-tab ${!configSection && activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends(); setConfigSection(null) }}>
-          {t('userprofile.tabFriends')}
+        <button className={`fb-tab ${!configSection && activeTab === 'tutorias' ? 'active' : ''}`} onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData(); loadTutorData(); setConfigSection(null) }}>
+          Tutorías
         </button>
         <button className={`fb-tab ${!configSection && activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses(); setConfigSection(null) }}>
-          {t('userprofile.tabCourses')}
+          Cursos Realizados
         </button>
-        {/* Más dropdown */}
-        <div style={{ position: 'relative', marginLeft: 'auto' }}>
-          <button
-            className={`fb-tab ${!configSection && ['photos','cv','servicios','tutorias','showcase'].includes(activeTab) ? 'active' : ''}`}
-            onClick={() => setShowMoreTabs(v => !v)}
-            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-          >
-            Más {showMoreTabs ? '▲' : '▼'}
-          </button>
-          {showMoreTabs && (
-            <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, minWidth: 160, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', overflow: 'hidden' }} onClick={() => setShowMoreTabs(false)}>
-              <button className={`fb-tab ${!configSection && activeTab === 'photos' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('photos'); setConfigSection(null) }}>
-                {t('userprofile.tabPhotos')}
-              </button>
-              <button className={`fb-tab ${!configSection && activeTab === 'cv' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('cv'); loadCV(); setConfigSection(null) }}>
-                {t('userprofile.tabCV')}
-              </button>
-              {isOwn && tutorProfile && (
-                <button className={`fb-tab ${!configSection && activeTab === 'servicios' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('servicios'); loadTutorData(); setConfigSection(null) }}>
-                  {t('userprofile.tabServices')}
-                </button>
-              )}
-              {isOwn && (
-                <button className={`fb-tab ${!configSection && activeTab === 'tutorias' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData(); setConfigSection(null) }}>
-                  {GraduationCap({ size: 13 })} {t('userprofile.tabTutoring')}
-                </button>
-              )}
-              {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
-                <button className={`fb-tab ${!configSection && activeTab === 'showcase' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13, color: '#d97706' }} onClick={() => { setActiveTab('showcase'); setConfigSection(null) }}>
-                  ★ Showcase
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <button className={`fb-tab ${!configSection && activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV(); setConfigSection(null) }}>
+          Curriculum Vitae
+        </button>
+        <button className={`fb-tab ${!configSection && activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends(); setConfigSection(null) }}>
+          Amigos
+        </button>
+        <button className={`fb-tab ${!configSection && activeTab === 'photos' ? 'active' : ''}`} onClick={() => { setActiveTab('photos'); setConfigSection(null) }}>
+          Fotos
+        </button>
       </div>
 
       {/* ─── Fila 2: Config Tabs (solo propietario del perfil) ─── */}
@@ -975,220 +985,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
       {/* Tab Content */}
       <div className="fb-profile-content" style={{ display: configSection ? 'none' : undefined }}>
-        <div className={activeTab === 'wall' ? "fb-wall-layout" : ""}>
-          {/* Right sidebar — Academic Info + Friends */}
-          {activeTab === 'wall' && (
-            <div className="fb-wall-sidebar">
-              <div className="card fb-info-card">
-                <h4>{t('userprofile.academicInfo')}</h4>
-
-                {/* Carrera — única referencia en el sidebar (universidad/semestre ya están en el header) */}
-                {profile.career && (
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">{GraduationCap({ size: 14 })}</span>
-                    <span><strong>{profile.career}</strong></span>
-                  </div>
-                )}
-
-                {/* Días estudiando en Conniku */}
-                {profile.studyDays > 0 && (
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">{Calendar({ size: 14 })}</span>
-                    <span><strong>{profile.studyDays.toLocaleString()}</strong> días estudiando</span>
-                  </div>
-                )}
-
-                {/* Nivel y XP */}
-                {((profile as any).level || (profile as any).xp) ? (
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">⚡</span>
-                    <span>Nivel <strong>{(profile as any).level || 1}</strong> — {((profile as any).xp || 0).toLocaleString()} XP</span>
-                  </div>
-                ) : null}
-
-                {/* Racha */}
-                {(profile as any).streak > 0 && (
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">🔥</span>
-                    <span>Racha de <strong>{(profile as any).streak} días</strong></span>
-                  </div>
-                )}
-
-                {/* Miembro desde */}
-                {(profile as any).createdAt && (
-                  <div className="fb-info-item">
-                    <span className="fb-info-icon">{Globe({ size: 14 })}</span>
-                    <span>En Conniku desde <strong>{new Date((profile as any).createdAt).getFullYear()}</strong></span>
-                  </div>
-                )}
-              </div>
-
-              {/* Tutoring card */}
-              {profile.offersMentoring && (
-                <div className="card fb-info-card">
-                  <h4>{t('userprofile.offersTutoring')}</h4>
-                  {profile.mentoringServices && profile.mentoringServices.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 8 }}>
-                      {profile.mentoringServices.map((s: string) => (
-                        <span key={s} style={{ padding: '3px 8px', background: 'rgba(45,98,200,0.1)', color: '#2D62C8', borderRadius: 6, fontSize: 11, fontWeight: 600 }}>
-                          {s === 'ayudantias' ? 'Ayudantías' : s === 'cursos' ? 'Cursos' : s === 'clases_particulares' ? 'Clases particulares' : s}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                  {profile.mentoringSubjects && profile.mentoringSubjects.length > 0 && (
-                    <div className="fb-info-item" style={{ flexWrap: 'wrap' }}>
-                      <span className="fb-info-icon">{BookOpen({ size: 14 })}</span>
-                      <span style={{ fontSize: 12 }}>{profile.mentoringSubjects.join(', ')}</span>
-                    </div>
-                  )}
-                  <div className="fb-info-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span className="fb-info-icon">{profile.mentoringPriceType === 'free' ? 'Gratis' : 'Precio'}</span>
-                      <span style={{ fontWeight: 600, color: profile.mentoringPriceType === 'free' ? '#22c55e' : '#2D62C8' }}>
-                        {profile.mentoringPriceType === 'free' ? 'Gratis' : `$${profile.mentoringPricePerHour || 0} USD/hora`}
-                      </span>
-                    </div>
-                    {profile.mentoringPriceType === 'paid' && profile.mentoringPricePerHour && user?.country && (() => {
-                      const prices = formatPriceDisplay(profile.mentoringPricePerHour, user.country)
-                      return prices.localText ? (
-                        <span style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 24 }}>≈ {prices.localText}/hora</span>
-                      ) : null
-                    })()}
-                  </div>
-                  {isOtherUser && user && profile.academicStatus !== 'estudiante' && (
-                    <button onClick={() => setShowTutoringModal(true)}
-                      style={{
-                        width: '100%', marginTop: 8, padding: '8px 12px', background: '#2D62C8', color: '#fff',
-                        border: 'none', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13,
-                      }}>
-                      {t('userprofile.requestTutoring')}
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Showcase mini-card — MAX users */}
-              {((profile as any).subscriptionTier === 'max' || profile.role === 'owner' || isOwn) && (
-                <div
-                  className="card fb-info-card"
-                  onClick={() => setActiveTab('showcase')}
-                  style={{ cursor: 'pointer', border: '1.5px solid rgba(245,158,11,0.4)', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                    <h4 style={{ margin: 0, color: '#92400e', fontSize: 14 }}>★ Showcase Ejecutivo</h4>
-                    <span style={{ fontSize: 11, color: '#d97706', fontWeight: 600, background: 'rgba(217,119,6,0.1)', padding: '2px 8px', borderRadius: 10 }}>MAX</span>
-                  </div>
-                  <p style={{ margin: 0, fontSize: 12, color: '#92400e', lineHeight: 1.5 }}>
-                    {isOwn
-                      ? 'Tu perfil ejecutivo y portafolio profesional. Haz clic para editar.'
-                      : `Perfil ejecutivo de ${profile.firstName}.`}
-                  </p>
-                  <div style={{ marginTop: 8, fontSize: 11, color: '#d97706', fontWeight: 600 }}>
-                    Ver Showcase →
-                  </div>
-                </div>
-              )}
-
-              {/* Noticias de Educación Chile */}
-              <div className="card fb-info-card">
-                <h4 style={{ margin: '0 0 10px', fontSize: 14, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 16 }}>📰</span> Noticias de Educación
-                </h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {[
-                    { title: 'Proceso de Admisión DEMRE 2025', source: 'DEMRE', url: 'https://demre.cl', color: '#2D62C8' },
-                    { title: 'Becas y Créditos JUNAEB 2025', source: 'JUNAEB', url: 'https://junaeb.cl', color: '#059669' },
-                    { title: 'Calidad de la Educación Superior', source: 'CNA Chile', url: 'https://cnachile.cl', color: '#7c3aed' },
-                    { title: 'Noticias Ministerio de Educación', source: 'MINEDUC', url: 'https://mineduc.cl', color: '#d97706' },
-                  ].map((item, i) => (
-                    <a
-                      key={i}
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ textDecoration: 'none', display: 'block', padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', transition: 'all 0.15s' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = item.color; (e.currentTarget as HTMLElement).style.background = 'var(--bg-card)' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)'; (e.currentTarget as HTMLElement).style.background = 'var(--bg-secondary)' }}
-                    >
-                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{item.title}</div>
-                      <div style={{ fontSize: 11, color: item.color, fontWeight: 600, marginTop: 2 }}>{item.source}</div>
-                    </a>
-                  ))}
-                </div>
-                <a
-                  href="https://mineduc.cl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ display: 'block', textAlign: 'center', fontSize: 11, color: 'var(--text-muted)', marginTop: 10, textDecoration: 'none' }}
-                >
-                  Más noticias →
-                </a>
-              </div>
-
-              {/* Photos card */}
-              {allPhotos.length > 0 && (
-                <div className="card fb-info-card">
-                  <h4>{t('userprofile.photos')}</h4>
-                  <div className="fb-photos-mini-grid">
-                    {allPhotos.slice(0, 9).map((url, i) => (
-                      <div key={i} className="fb-photo-thumb" style={{ backgroundImage: `url(${url})` }} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Friends mini */}
-              {profile.friendCount > 0 && (
-                <div className="card fb-info-card">
-                  <h4>{t('userprofile.friends')} ({profile.friendCount})</h4>
-                  <div className="fb-photos-mini-grid">
-                    {friendsList.slice(0, 9).map(f => (
-                      <div key={f.id} style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => onNavigate(`/user/${f.id}`)}>
-                        <div style={{ width: '100%', aspectRatio: '1', borderRadius: 6, background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 600, color: 'var(--text-muted)', overflow: 'hidden' }}>
-                          {f.avatar ? <img src={f.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : `${f.firstName?.[0] || ''}${f.lastName?.[0] || ''}`}
-                        </div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.firstName}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-            {/* Main wall — Presentación + Posts */}
-            <div className={activeTab === 'wall' ? "fb-wall-main" : ""}>
+        <div>
+            {/* Contenido de tabs — full width */}
+            <div>
               {activeTab === 'wall' && (
                 <>
-                  {/* Presentación card — LinkedIn "About" section */}
-                  <div className="card fb-info-card">
-                <h4>{t('userprofile.presentation')}</h4>
-                {editingBio ? (
-                  <div style={{ marginBottom: 12 }}>
-                    <textarea className="form-input" value={bioText} onChange={e => setBioText(e.target.value)} rows={3} placeholder={t('userprofile.bioPlaceholder')} maxLength={300} />
-                    <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-                      <button className="btn btn-secondary btn-xs" onClick={() => setEditingBio(false)}>{t('userprofile.cancelBtn')}</button>
-                      <button className="btn btn-primary btn-xs" onClick={handleSaveBio}>{t('userprofile.saveBtn')}</button>
-                    </div>
-                  </div>
-                ) : (
-                  <>
-                    {profile.bio ? (
-                      <p className="fb-bio">{profile.bio}</p>
-                    ) : (
-                      <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>{t('userprofile.noPresentation')}</p>
-                    )}
-                    {isOwn && (
-                      <button className="btn btn-secondary btn-sm" style={{ width: '100%', borderRadius: 24, marginTop: 8 }}
-                        onClick={() => { setBioText(profile.bio || ''); setEditingBio(true) }}>
-                        {profile.bio ? <>{Pencil({ size: 14 })} {t('userprofile.editBio')}</> : t('userprofile.addBio')}
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-              {/* Post composer */}
+                  {/* Post composer */}
               {canPost && (
                 <div className="card fb-post-composer">
                   <div className="fb-composer-header">

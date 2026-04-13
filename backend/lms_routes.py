@@ -1077,7 +1077,7 @@ def get_lms_hub(user: User = Depends(get_current_user), db: Session = Depends(ge
     """Devuelve toda la información necesaria para el hub Mi Universidad."""
     conn = db.query(UniversityConnection).filter(
         UniversityConnection.user_id == user.id,
-        UniversityConnection.status == "connected",
+        UniversityConnection.status != "disconnected",
     ).first()
 
     if not conn:

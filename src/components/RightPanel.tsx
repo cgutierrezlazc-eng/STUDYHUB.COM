@@ -101,6 +101,42 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
           <button className="rp-see-more" onClick={() => onNavigate('/communities')}>{t('rightpanel.explore')}</button>
         </div>
       )}
+
+      {/* Showcase Ejecutivo — solo perfil propio, rol owner o tier MAX */}
+      {currentPath.startsWith('/my-profile') && (user?.role === 'owner' || (user as any)?.subscriptionTier === 'max') && (
+        <div className="rp-widget" style={{ border: '1.5px solid rgba(245,158,11,0.35)', background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(254,243,199,0.07) 100%)' }}>
+          <h4 className="rp-widget-title" style={{ color: '#d97706' }}>★ Showcase Ejecutivo</h4>
+          <p style={{ margin: '4px 0 12px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+            Tu perfil ejecutivo y portafolio profesional.
+          </p>
+          <button
+            onClick={() => onNavigate('/my-profile')}
+            style={{ width: '100%', padding: '7px 0', background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
+          >
+            Ver Showcase →
+          </button>
+        </div>
+      )}
+
+      {/* Noticias de Educación — páginas de perfil */}
+      {(currentPath.startsWith('/my-profile') || currentPath.startsWith('/user/')) && (
+        <div className="rp-widget">
+          <h4 className="rp-widget-title">📰 Noticias de Educación</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {[
+              { title: 'Admisión DEMRE 2025', source: 'DEMRE', color: '#2D62C8' },
+              { title: 'Becas JUNAEB 2025', source: 'JUNAEB', color: '#059669' },
+              { title: 'Calidad Educación Superior', source: 'CNA Chile', color: '#7c3aed' },
+              { title: 'Noticias MINEDUC', source: 'MINEDUC', color: '#d97706' },
+            ].map((item, i) => (
+              <div key={i} style={{ padding: '8px 10px', borderRadius: 8, background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', cursor: 'pointer' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>{item.title}</div>
+                <div style={{ fontSize: 11, color: item.color, fontWeight: 600, marginTop: 2 }}>{item.source}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </aside>
   )
 }
