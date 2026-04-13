@@ -3650,6 +3650,8 @@ body.touch-device select {
     box-shadow: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* padding-bottom so last items clear the bottom nav bar */
+    padding-bottom: calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 20px);
   }
   .sidebar.open {
     left: 0;
