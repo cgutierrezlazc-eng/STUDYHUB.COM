@@ -63,47 +63,8 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         <button className="sidebar-close-btn" onClick={onClose} aria-label="Cerrar menú">×</button>
       )}
 
-      {/* ══ SOCIAL ══ */}
-      <SepLabel label={t('sidebar.social')} />
-      <button
-        className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`}
-        onClick={() => onNavigate('/my-profile')}
-      >
-        {Icons.user(IC.profile)} {t('sidebar.myProfile')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
-        onClick={() => onNavigate('/feed')}
-      >
-        {Icons.feed(IC.feed)} {t('sidebar.feed')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`}
-        onClick={() => onNavigate('/communities')}
-      >
-        {Icons.globe(IC.globe)} {t('sidebar.communities')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/events') ? 'active' : ''}`}
-        onClick={() => onNavigate('/events')}
-      >
-        {Icons.calendar(IC.events)} {t('sidebar.events')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/messages') ? 'active' : ''}`}
-        onClick={() => onNavigate('/messages')}
-      >
-        {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
-        {unreadMessages > 0 && (
-          <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
-        )}
-      </button>
-
-      {/* ══ ACADÉMICO ══ */}
-      <SepLabel label={t('sidebar.academic')} />
-
-      {/* ── Mi Universidad — caja estilo CEO, sin acordeón (asignaturas van dentro del módulo) ── */}
-      <div style={{ padding: '0 10px 10px' }}>
+      {/* ── Mi Universidad — primero en el sidebar ── */}
+      <div style={{ padding: '10px 10px 4px' }}>
         <button
           onClick={() => onNavigate('/mi-universidad')}
           style={{
@@ -147,7 +108,45 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         </button>
       </div>
 
-      {/* ── Resto del académico ── */}
+      {/* ══ SOCIAL ══ */}
+      <SepLabel label={t('sidebar.social')} />
+      <button
+        className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`}
+        onClick={() => onNavigate('/my-profile')}
+      >
+        {Icons.user(IC.profile)} {t('sidebar.myProfile')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
+        onClick={() => onNavigate('/feed')}
+      >
+        {Icons.feed(IC.feed)} {t('sidebar.feed')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`}
+        onClick={() => onNavigate('/communities')}
+      >
+        {Icons.globe(IC.globe)} {t('sidebar.communities')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/events') ? 'active' : ''}`}
+        onClick={() => onNavigate('/events')}
+      >
+        {Icons.calendar(IC.events)} {t('sidebar.events')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/messages') ? 'active' : ''}`}
+        onClick={() => onNavigate('/messages')}
+      >
+        {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
+        {unreadMessages > 0 && (
+          <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
+        )}
+      </button>
+
+      {/* ══ ACADÉMICO ══ */}
+      <SepLabel label={t('sidebar.academic')} />
+
       <button
         className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
         onClick={() => onNavigate('/courses')}
