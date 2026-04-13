@@ -938,9 +938,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         <button className={`fb-tab ${!configSection && activeTab === 'cv' ? 'active' : ''}`} onClick={() => { setActiveTab('cv'); loadCV(); setConfigSection(null) }}>
           Curriculum Vitae
         </button>
-        <button className={`fb-tab ${!configSection && activeTab === 'showcase' ? 'active' : ''}`} onClick={() => { setActiveTab('showcase'); setConfigSection(null) }}>
-          Showcase
-        </button>
         <button className={`fb-tab ${!configSection && activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends(); setConfigSection(null) }}>
           Amigos
         </button>
@@ -2363,15 +2360,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </div>
         )}
 
-        {/* ─── Showcase Tab ─── */}
-        {activeTab === 'showcase' && (
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <ExecutiveShowcase
-              userId={profile.id}
-              isOwner={!!isOwn}
-            />
-          </div>
-        )}
 
         </div>
       </div>

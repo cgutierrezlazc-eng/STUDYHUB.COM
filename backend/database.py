@@ -551,11 +551,25 @@ class CalendarEvent(Base):
     project_id = Column(String(255), nullable=True)
     title = Column(String(500), nullable=False)
     description = Column(Text, default="")
-    event_type = Column(String(30), default="task")  # task | exam | deadline | study_session
+    event_type = Column(String(30), default="task")  # task | exam | deadline | study_session | class | forum
     due_date = Column(DateTime, nullable=False)
     completed = Column(Boolean, default=False)
     color = Column(String(20), default="#4f8cff")
+    # LMS sync fields
+    source = Column(String(20), default="manual")       # manual | lms
+    lms_event_id = Column(String(200), nullable=True)   # Moodle/Canvas event ID (dedup)
+    lms_course_name = Column(String(500), nullable=True) # nombre de la asignatura origen
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UserNotificationPrefs(Base):
+    """Preferencias de notificación del calendario por usuario."""
+    __tablename__ = "user_notification_prefs"
+    user_id = Column(String(16), ForeignKey("users.id"), primary_key=True)
+    cal_push = Column(Boolean, default=True)    # push notifications
+    cal_inapp = Column(Boolean, default=True)   # in-app notifications
+    cal_email = Column(Boolean, default=True)   # email notifications
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ─── Leagues ───────────────────────────────────────────────────
@@ -1504,6 +1518,10 @@ def _ensure_columns():
         ("lms_courses", "conniku_project_id", "VARCHAR(255)"),
         # lms_courses — nombre personalizado por el usuario (sync usa .name interno)
         ("lms_courses", "display_name", "VARCHAR(500)"),
+        # calendar_events — campos LMS sync
+        ("calendar_events", "source", "VARCHAR(20) DEFAULT 'manual'"),
+        ("calendar_events", "lms_event_id", "VARCHAR(200)"),
+        ("calendar_events", "lms_course_name", "VARCHAR(500)"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
@@ -1513,6 +1531,19 @@ def _ensure_columns():
             if col not in existing:
                 conn.execute(_t(f'ALTER TABLE {table} ADD COLUMN {col} {col_type}'))
                 print(f"Migration: added {table}.{col}")
+
+        # Crear tabla user_notification_prefs si no existe
+        if "user_notification_prefs" not in insp.get_table_names():
+            conn.execute(_t("""
+                CREATE TABLE user_notification_prefs (
+                    user_id VARCHAR(16) PRIMARY KEY,
+                    cal_push BOOLEAN DEFAULT TRUE,
+                    cal_inapp BOOLEAN DEFAULT TRUE,
+                    cal_email BOOLEAN DEFAULT TRUE,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """))
+            print("Migration: created user_notification_prefs")
 
         # One-time: widen cover_photo to TEXT so base64 data URIs fit (Postgres only)
         try:

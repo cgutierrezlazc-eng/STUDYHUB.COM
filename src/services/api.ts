@@ -1502,6 +1502,11 @@ export const api = {
   lmsRenameCourse: (courseId: string, displayName: string) =>
     request(`/lms/courses/${courseId}/rename`, { method: 'PATCH', body: JSON.stringify({ display_name: displayName }) }),
   lmsGetAvailable: (connId: string) => request(`/lms/courses/available/${connId}`),
+  // ─── LMS Calendar ────────────────────────────────────────────
+  lmsGetCalendar: () => request('/lms/calendar'),
+  lmsSyncCalendar: () => request('/lms/sync-calendar', { method: 'POST' }),
+  lmsUpdateCalendarPrefs: (prefs: { cal_push?: boolean; cal_inapp?: boolean; cal_email?: boolean }) =>
+    request('/lms/calendar-prefs', { method: 'PATCH', body: JSON.stringify(prefs) }),
   lmsAddCourses: (connectionId: string, courseIds: string[]) =>
     request('/lms/courses/add', { method: 'POST', body: JSON.stringify({ connection_id: connectionId, course_ids: courseIds }) }),
   lmsScanCourse: (courseId: string) => request(`/lms/scan/${courseId}`, { method: 'POST' }),

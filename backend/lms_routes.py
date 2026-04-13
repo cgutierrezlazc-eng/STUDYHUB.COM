@@ -16,7 +16,8 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import (
-    get_db, User, UniversityConnection, LMSCourse, LMSSyncItem, gen_id
+    get_db, User, UniversityConnection, LMSCourse, LMSSyncItem,
+    CalendarEvent, UserNotificationPrefs, InAppNotification, gen_id
 )
 from middleware import get_current_user
 
@@ -1334,3 +1335,278 @@ def _mime_to_doc_type(mime: str) -> str:
     if "text" in mime:
         return "txt"
     return "other"
+
+
+# ══════════════════════════════════════════════════════════════
+# CALENDARIO UNIVERSITARIO
+# ══════════════════════════════════════════════════════════════
+
+# ── Mapeo Moodle modulename → tipo Conniku ─────────────────────
+def _map_event_type(modulename: str) -> str:
+    m = (modulename or "").lower()
+    if m in ("assign", "assignment"):
+        return "deadline"
+    if m in ("quiz", "questionnaire"):
+        return "exam"
+    if m in ("bigbluebuttonbn", "zoom", "attendance", "collaborate", "teams"):
+        return "class"
+    if m in ("forum", "hsuforum"):
+        return "forum"
+    return "task"
+
+
+def _event_color(event_type: str) -> str:
+    return {
+        "deadline": "#f59e0b",
+        "exam":     "#ef4444",
+        "class":    "#3b82f6",
+        "forum":    "#10b981",
+        "task":     "#4f8cff",
+    }.get(event_type, "#4f8cff")
+
+
+def moodle_get_calendar_events(base_url: str, token: str,
+                                time_from: int, time_to: int) -> list:
+    """Obtiene eventos del calendario Moodle via core_calendar_get_action_events_by_timesort."""
+    try:
+        data = _moodle_call(base_url, token,
+                            "core_calendar_get_action_events_by_timesort", {
+                                "timesortfrom": time_from,
+                                "timesortto":   time_to,
+                                "limitnum":     300,
+                            })
+        return data.get("events", []) if isinstance(data, dict) else []
+    except Exception as e:
+        log.warning(f"Moodle calendar API failed: {e}")
+        return []
+
+
+def canvas_get_calendar_events(base_url: str, token: str,
+                                time_from: str, time_to: str) -> list:
+    """Obtiene eventos del calendario Canvas."""
+    try:
+        items = canvas_get(base_url, token, "/calendar_events", {
+            "type": "assignment",
+            "start_date": time_from,
+            "end_date": time_to,
+            "per_page": 100,
+        })
+        return items if isinstance(items, list) else []
+    except Exception as e:
+        log.warning(f"Canvas calendar API failed: {e}")
+        return []
+
+
+def _create_alert_notification(db, user_id: str, title: str, body: str,
+                                link: str = "/calendar") -> None:
+    notif = InAppNotification(
+        id=gen_id(),
+        user_id=user_id,
+        type="calendar_alert",
+        title=title,
+        body=body,
+        link=link,
+    )
+    db.add(notif)
+
+
+def _maybe_send_alerts(db, user_id: str, event_type: str,
+                        due_date: datetime, title: str,
+                        course_name: str, prefs) -> None:
+    """Crea notificaciones in-app según las reglas de alerta."""
+    now = datetime.utcnow()
+    seconds_left = (due_date - now).total_seconds()
+    if seconds_left < 0:
+        return  # Ya pasó
+
+    # Clases sincrónicas: alerta 15 minutos antes
+    if event_type == "class":
+        if 0 < seconds_left <= 15 * 60 and getattr(prefs, "cal_inapp", True):
+            _create_alert_notification(
+                db, user_id,
+                f"🎥 Clase en 15 minutos",
+                f"{title}" + (f" · {course_name}" if course_name else ""),
+            )
+    # Tareas/exámenes/foros: alerta 24h antes
+    elif event_type in ("deadline", "exam", "forum", "task"):
+        if 0 < seconds_left <= 24 * 3600 and getattr(prefs, "cal_inapp", True):
+            hours = int(seconds_left // 3600)
+            label = f"en {hours}h" if hours > 0 else "pronto"
+            emoji = "📝" if event_type == "deadline" else "🧩" if event_type == "exam" else "💬"
+            _create_alert_notification(
+                db, user_id,
+                f"{emoji} Vence {label}: {title[:50]}",
+                f"{course_name}" if course_name else "",
+            )
+
+
+# ── GET /lms/calendar — eventos para el hub ────────────────────
+@router.get("/calendar")
+def get_lms_calendar(user: User = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    """Devuelve eventos de calendario origen LMS para el hub de Mi Universidad."""
+    from sqlalchemy import and_
+    now = datetime.utcnow()
+    events = (
+        db.query(CalendarEvent)
+        .filter(
+            CalendarEvent.user_id == user.id,
+            CalendarEvent.source == "lms",
+            CalendarEvent.due_date >= now,
+            CalendarEvent.completed == False,
+        )
+        .order_by(CalendarEvent.due_date.asc())
+        .limit(50)
+        .all()
+    )
+    prefs = db.query(UserNotificationPrefs).filter(
+        UserNotificationPrefs.user_id == user.id
+    ).first()
+
+    return {
+        "events": [
+            {
+                "id":          e.id,
+                "title":       e.title,
+                "event_type":  e.event_type,
+                "due_date":    e.due_date.isoformat() + "Z",
+                "color":       e.color,
+                "course_name": e.lms_course_name or "",
+                "completed":   e.completed,
+            }
+            for e in events
+        ],
+        "prefs": {
+            "cal_push":  prefs.cal_push  if prefs else True,
+            "cal_inapp": prefs.cal_inapp if prefs else True,
+            "cal_email": prefs.cal_email if prefs else True,
+        },
+    }
+
+
+# ── POST /lms/sync-calendar — sincroniza con LMS ───────────────
+@router.post("/sync-calendar")
+def sync_lms_calendar(user: User = Depends(get_current_user),
+                      db: Session = Depends(get_db)):
+    """Obtiene eventos del calendario universitario y los guarda en calendar_events."""
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.user_id == user.id,
+        UniversityConnection.status != "disconnected",
+    ).first()
+    if not conn:
+        raise HTTPException(404, "No hay conexión universitaria activa")
+
+    token, _ = _decode_token(conn)
+    now_ts   = int(time.time())
+    future   = now_ts + 60 * 24 * 3600  # 60 días adelante
+
+    # Obtener eventos del LMS
+    raw_events = []
+    if conn.platform_type == "moodle":
+        raw_events = moodle_get_calendar_events(
+            conn.api_url, token, now_ts - 3600, future
+        )
+    elif conn.platform_type == "canvas":
+        from datetime import timezone
+        from_str = datetime.utcnow().strftime("%Y-%m-%d")
+        to_str   = datetime.utcfromtimestamp(future).strftime("%Y-%m-%d")
+        raw_events = canvas_get_calendar_events(conn.api_url, token, from_str, to_str)
+
+    # Obtener preferencias del usuario
+    prefs = db.query(UserNotificationPrefs).filter(
+        UserNotificationPrefs.user_id == user.id
+    ).first()
+    if not prefs:
+        prefs = UserNotificationPrefs(user_id=user.id)
+        db.add(prefs)
+        db.flush()
+
+    created = updated = 0
+
+    for ev in raw_events:
+        # Extraer campos según plataforma
+        if conn.platform_type == "moodle":
+            lms_id   = str(ev.get("id", ""))
+            title    = ev.get("name", "Evento")
+            modname  = ev.get("modulename", "")
+            ts       = ev.get("timesort") or ev.get("timestart") or 0
+            course_n = (ev.get("course") or {}).get("fullname", "")
+        else:  # canvas
+            lms_id   = str(ev.get("id", ""))
+            title    = ev.get("title", ev.get("name", "Evento"))
+            modname  = "assign"
+            ts       = 0
+            try:
+                ts = int(datetime.fromisoformat(
+                    (ev.get("end_at") or ev.get("start_at") or "").rstrip("Z")
+                ).timestamp())
+            except Exception:
+                pass
+            course_n = (ev.get("context_name") or "")
+
+        if not ts or not lms_id:
+            continue
+
+        due_dt     = datetime.utcfromtimestamp(ts)
+        event_type = _map_event_type(modname)
+        color      = _event_color(event_type)
+
+        # Buscar evento existente (dedup por lms_event_id)
+        existing = db.query(CalendarEvent).filter(
+            CalendarEvent.user_id    == user.id,
+            CalendarEvent.lms_event_id == lms_id,
+        ).first()
+
+        if existing:
+            existing.title          = title
+            existing.due_date       = due_dt
+            existing.event_type     = event_type
+            existing.color          = color
+            existing.lms_course_name = course_n
+            updated += 1
+        else:
+            new_ev = CalendarEvent(
+                id=gen_id(),
+                user_id=user.id,
+                title=title,
+                description=course_n,
+                event_type=event_type,
+                due_date=due_dt,
+                color=color,
+                source="lms",
+                lms_event_id=lms_id,
+                lms_course_name=course_n,
+            )
+            db.add(new_ev)
+            created += 1
+
+        # Crear alertas in-app si aplica
+        _maybe_send_alerts(db, user.id, event_type, due_dt, title, course_n, prefs)
+
+    db.commit()
+    return {
+        "ok":      True,
+        "created": created,
+        "updated": updated,
+        "total":   len(raw_events),
+    }
+
+
+# ── PATCH /lms/calendar-prefs — actualiza preferencias ─────────
+@router.patch("/calendar-prefs")
+def update_calendar_prefs(body: dict,
+                           user: User = Depends(get_current_user),
+                           db: Session = Depends(get_db)):
+    prefs = db.query(UserNotificationPrefs).filter(
+        UserNotificationPrefs.user_id == user.id
+    ).first()
+    if not prefs:
+        prefs = UserNotificationPrefs(user_id=user.id)
+        db.add(prefs)
+
+    for key in ("cal_push", "cal_inapp", "cal_email"):
+        if key in body:
+            setattr(prefs, key, bool(body[key]))
+    prefs.updated_at = datetime.utcnow()
+    db.commit()
+    return {"ok": True}

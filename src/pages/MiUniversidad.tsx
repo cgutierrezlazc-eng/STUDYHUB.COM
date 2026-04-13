@@ -147,6 +147,16 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
+  // ── Calendario universitario ────────────────────────────────
+  const [calEvents, setCalEvents] = useState<any[]>([])
+  const [calPrefs, setCalPrefs] = useState({ cal_push: true, cal_inapp: true, cal_email: true })
+  const [calSyncing, setCalSyncing] = useState(false)
+  const [calMsg, setCalMsg] = useState('')
+  const [calMonth, setCalMonth] = useState(() => {
+    const d = new Date(); return { year: d.getFullYear(), month: d.getMonth() }
+  })
+  const [, setTick] = useState(0) // fuerza re-render cada minuto para countdowns
+
   // ── Carga hub ───────────────────────────────────────────────
   const loadHub = useCallback(async () => {
     setLoading(true)
@@ -162,8 +172,15 @@ export default function MiUniversidad({ onNavigate }: Props) {
 
   useEffect(() => {
     loadHub()
-    // Marcar visita al abrir
     api.lmsMarkVisited().catch(() => {})
+    // Cargar eventos del calendario universitario
+    api.lmsGetCalendar().then((d: any) => {
+      setCalEvents(d?.events || [])
+      if (d?.prefs) setCalPrefs(d.prefs)
+    }).catch(() => {})
+    // Tick cada minuto para actualizar countdowns
+    const timer = setInterval(() => setTick(t => t + 1), 60_000)
+    return () => clearInterval(timer)
   }, [loadHub])
 
   // ── Escanear material nuevo ─────────────────────────────────
@@ -302,6 +319,30 @@ export default function MiUniversidad({ onNavigate }: Props) {
     setRenamingId(null)
   }
 
+  // ── Sincronizar calendario universitario ───────────────────
+  const handleSyncCalendar = async () => {
+    setCalSyncing(true)
+    setCalMsg('⏳ Sincronizando calendario...')
+    try {
+      const res: any = await api.lmsSyncCalendar()
+      setCalMsg(`✅ ${res.total} eventos sincronizados`)
+      const d: any = await api.lmsGetCalendar()
+      setCalEvents(d?.events || [])
+    } catch {
+      setCalMsg('⚠ No se pudo sincronizar el calendario')
+    } finally {
+      setCalSyncing(false)
+      setTimeout(() => setCalMsg(''), 4000)
+    }
+  }
+
+  // ── Actualizar preferencias de notificación ─────────────────
+  const updatePref = async (key: string, val: boolean) => {
+    const next = { ...calPrefs, [key]: val }
+    setCalPrefs(next as any)
+    await api.lmsUpdateCalendarPrefs({ [key]: val }).catch(() => {})
+  }
+
   // ──────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────
@@ -435,7 +476,7 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const { connection, current_courses, past_courses, new_items_by_course, total_new } = hub!
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto', padding: '0 0 60px' }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 0 60px' }}>
 
       {/* ── Barra de plataforma conectada — SIEMPRE ARRIBA ── */}
       <div style={{
@@ -473,6 +514,10 @@ export default function MiUniversidad({ onNavigate }: Props) {
           {scanMsg}
         </div>
       )}
+
+      {/* ── Layout 2 columnas: contenido principal + sidebar calendario ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 284px', gap: 20, alignItems: 'start' }}>
+      <div>{/* ── COLUMNA PRINCIPAL ── */}
 
       {/* ── Semestre actual: Asignaturas ──────────────────────── */}
       <div style={{ marginBottom: 28 }}>
@@ -644,6 +689,22 @@ export default function MiUniversidad({ onNavigate }: Props) {
           </div>
         </div>
       )}
+
+      </div>{/* /columna principal */}
+
+      {/* ══ SIDEBAR DERECHO — CALENDARIO ══════════════════════════ */}
+      <CalendarSidebar
+        events={calEvents}
+        prefs={calPrefs}
+        syncing={calSyncing}
+        msg={calMsg}
+        month={calMonth}
+        onMonthChange={setCalMonth}
+        onSync={handleSyncCalendar}
+        onPrefChange={updatePref}
+      />
+
+      </div>{/* /grid */}
 
       {/* ── Modal agregar asignaturas ──────────────────────────── */}
       {showAddModal && (
@@ -883,6 +944,218 @@ function CourseCard({
           {isLinked ? 'Ver asignatura →' : '🚀 Importar'}
         </button>
       )}
+    </div>
+  )
+}
+
+// ══════════════════════════════════════════════════════════════
+// CALENDARIO SIDEBAR
+// ══════════════════════════════════════════════════════════════
+
+const EV_ICON: Record<string, string> = { deadline: '📝', exam: '🧩', class: '🎥', forum: '💬', task: '📋' }
+const EV_COLOR: Record<string, string> = { deadline: '#f59e0b', exam: '#ef4444', class: '#3b82f6', forum: '#10b981', task: '#4f8cff' }
+
+function countdown(isoDate: string): { label: string; pct: number; urgency: 'urgent' | 'warning' | 'ok' } {
+  const ms = new Date(isoDate).getTime() - Date.now()
+  if (ms <= 0) return { label: 'Vencido', pct: 100, urgency: 'urgent' }
+  const mins  = Math.floor(ms / 60000)
+  const hours = Math.floor(ms / 3600000)
+  const days  = Math.floor(ms / 86400000)
+  const label = days > 1 ? `${days}d ${hours % 24}h` : hours > 0 ? `${hours}h ${mins % 60}m` : `${mins}m`
+  const urgency: 'urgent' | 'warning' | 'ok' = ms < 3600000 * 6 ? 'urgent' : ms < 3600000 * 26 ? 'warning' : 'ok'
+  const maxWindow = 7 * 86400000
+  const pct = Math.min(100, Math.round(100 - (ms / maxWindow) * 100))
+  return { label, pct, urgency }
+}
+
+function MiniCalendar({ year, month, events, onMonthChange }: {
+  year: number; month: number
+  events: any[]
+  onMonthChange: (m: { year: number; month: number }) => void
+}) {
+  const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const today = new Date()
+
+  // Calcular días del mes
+  const firstDay = new Date(year, month, 1).getDay() // 0=Dom
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1 // lunes primero
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const daysInPrev  = new Date(year, month, 0).getDate()
+
+  // Índice de eventos por día
+  const eventDays = new Map<string, string[]>()
+  events.forEach(ev => {
+    const d = new Date(ev.due_date)
+    if (d.getFullYear() === year && d.getMonth() === month) {
+      const key = d.getDate().toString()
+      if (!eventDays.has(key)) eventDays.set(key, [])
+      eventDays.get(key)!.push(ev.event_type)
+    }
+  })
+
+  const cells: { day: number; thisMonth: boolean; types: string[] }[] = []
+  for (let i = 0; i < startOffset; i++)
+    cells.push({ day: daysInPrev - startOffset + 1 + i, thisMonth: false, types: [] })
+  for (let d = 1; d <= daysInMonth; d++)
+    cells.push({ day: d, thisMonth: true, types: eventDays.get(d.toString()) || [] })
+  while (cells.length % 7 !== 0)
+    cells.push({ day: cells.length - startOffset - daysInMonth + 1, thisMonth: false, types: [] })
+
+  const prev = () => month === 0 ? onMonthChange({ year: year - 1, month: 11 }) : onMonthChange({ year, month: month - 1 })
+  const next = () => month === 11 ? onMonthChange({ year: year + 1, month: 0 }) : onMonthChange({ year, month: month + 1 })
+
+  return (
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 14px 10px', borderBottom: '1px solid var(--border-subtle)' }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{monthNames[month]} {year}</div>
+          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>
+            {events.filter(e => { const d = new Date(e.due_date); return d.getFullYear() === year && d.getMonth() === month }).length} eventos este mes
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 2 }}>
+          {[['‹', prev], ['›', next]].map(([lbl, fn]) => (
+            <button key={lbl as string} onClick={fn as () => void}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: 16, padding: '2px 7px', borderRadius: 6, lineHeight: 1 }}>
+              {lbl as string}
+            </button>
+          ))}
+        </div>
+      </div>
+      {/* Grid */}
+      <div style={{ padding: '10px 12px 12px' }}>
+        {/* DOW headers */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', marginBottom: 4 }}>
+          {['L','M','M','J','V','S','D'].map((d, i) => (
+            <div key={i} style={{ textAlign: 'center', fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', padding: '2px 0', textTransform: 'uppercase' }}>{d}</div>
+          ))}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2 }}>
+          {cells.map((cell, i) => {
+            const isToday = cell.thisMonth && cell.day === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+            const dotColor = cell.types.includes('exam') ? '#ef4444' : cell.types.includes('deadline') ? '#f59e0b' : cell.types.includes('class') ? '#3b82f6' : cell.types.length > 0 ? '#10b981' : null
+            return (
+              <div key={i} style={{
+                position: 'relative', aspectRatio: '1', display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', borderRadius: 7,
+                fontSize: 11, fontWeight: isToday ? 800 : 500,
+                color: isToday ? '#fff' : cell.thisMonth ? 'var(--text-secondary)' : 'var(--text-muted)',
+                background: isToday ? 'var(--accent)' : 'transparent',
+                opacity: cell.thisMonth ? 1 : 0.35,
+                boxShadow: isToday ? '0 2px 8px rgba(26,86,219,.3)' : 'none',
+              }}>
+                {cell.day}
+                {dotColor && (
+                  <div style={{ position: 'absolute', bottom: 2, width: 4, height: 4, borderRadius: '50%', background: isToday ? 'rgba(255,255,255,.8)' : dotColor }} />
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+      {/* Leyenda */}
+      <div style={{ display: 'flex', gap: 10, padding: '0 12px 12px', flexWrap: 'wrap' }}>
+        {[['#f59e0b','Tarea'],['#ef4444','Examen'],['#3b82f6','Clase'],['#10b981','Foro']].map(([c, l]) => (
+          <div key={l} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'var(--text-muted)' }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: c }} />{l}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, onSync, onPrefChange }: {
+  events: any[]; prefs: any; syncing: boolean; msg: string
+  month: { year: number; month: number }
+  onMonthChange: (m: { year: number; month: number }) => void
+  onSync: () => void
+  onPrefChange: (key: string, val: boolean) => void
+}) {
+  const upcoming = [...events].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()).slice(0, 6)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14, position: 'sticky', top: 20 }}>
+
+      {/* Mini calendario */}
+      <MiniCalendar year={month.year} month={month.month} events={events} onMonthChange={onMonthChange} />
+
+      {/* Botón sincronizar */}
+      <button onClick={onSync} disabled={syncing}
+        style={{ width: '100%', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 0', fontSize: 12, fontWeight: 700, cursor: syncing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: syncing ? 0.7 : 1 }}>
+        {syncing ? '⏳' : '📅'} {syncing ? 'Sincronizando...' : 'Sincronizar calendario universitario'}
+      </button>
+      {msg && <p style={{ margin: '-8px 0 0', fontSize: 12, color: 'var(--text-muted)', textAlign: 'center' }}>{msg}</p>}
+
+      {/* Próximos eventos con countdown */}
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px 10px', borderBottom: '1px solid var(--border-subtle)' }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>⏱ Próximos eventos</span>
+          <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{events.length} pendientes</span>
+        </div>
+
+        {upcoming.length === 0 ? (
+          <div style={{ padding: '24px 14px', textAlign: 'center' }}>
+            <p style={{ fontSize: 22, marginBottom: 6 }}>📭</p>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>Sin eventos próximos.<br/>Sincroniza tu calendario universitario.</p>
+          </div>
+        ) : upcoming.map(ev => {
+          const { label, pct, urgency } = countdown(ev.due_date)
+          const color = urgency === 'urgent' ? '#ef4444' : urgency === 'warning' ? '#f59e0b' : '#10b981'
+          const d = new Date(ev.due_date)
+          const dateStr = d.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+          return (
+            <div key={ev.id} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0, background: (EV_COLOR[ev.event_type] || '#4f8cff') + '18' }}>
+                  {EV_ICON[ev.event_type] || '📋'}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
+                  {ev.course_name && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.course_name}</div>}
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{dateStr}</div>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: color + '18', color, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                  {urgency === 'urgent' ? '🔴' : urgency === 'warning' ? '⚠️' : '🟢'} {label}
+                </span>
+              </div>
+              {/* Barra countdown */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'var(--border)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: color, transition: 'width 0.3s' }} />
+                </div>
+                <span style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}>{label}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Configuración de alertas */}
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '14px' }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 10 }}>🔔 Alertas automáticas</div>
+        {[
+          { key: 'cal_push',  icon: '📱', label: 'Push (app)' },
+          { key: 'cal_inapp', icon: '🔔', label: 'In-app' },
+          { key: 'cal_email', icon: '✉️', label: 'Email' },
+        ].map(({ key, icon, label }) => (
+          <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 0', borderBottom: '1px solid var(--border-subtle)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, color: 'var(--text-secondary)' }}>
+              <span style={{ fontSize: 14 }}>{icon}</span>{label}
+            </div>
+            <button
+              onClick={() => onPrefChange(key, !(prefs as any)[key])}
+              style={{ width: 34, height: 18, borderRadius: 99, border: 'none', cursor: 'pointer', padding: 0, position: 'relative', background: (prefs as any)[key] ? 'var(--accent)' : 'var(--border)', transition: 'background .2s' }}>
+              <div style={{ position: 'absolute', width: 13, height: 13, background: '#fff', borderRadius: '50%', top: 2.5, left: (prefs as any)[key] ? 18.5 : 2.5, transition: 'left .2s', boxShadow: '0 1px 3px rgba(0,0,0,.2)' }} />
+            </button>
+          </div>
+        ))}
+        <div style={{ marginTop: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(26,86,219,.07)', border: '1px solid rgba(26,86,219,.15)', fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+          ℹ️ Tareas y exámenes: <strong>24h antes</strong>. Clases sincrónicas: <strong>15 min antes</strong>.
+        </div>
+      </div>
+
     </div>
   )
 }
