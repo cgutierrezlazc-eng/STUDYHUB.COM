@@ -72,13 +72,37 @@ def _moodle_get_token_from_password(base_url: str, username: str, password: str)
             "password": password,
             "service": "moodle_mobile_app",
         }, timeout=TIMEOUT)
-        data = r.json()
+        # Verificar que la respuesta tenga contenido JSON antes de parsear
+        content_type = r.headers.get("Content-Type", "")
+        if not r.content.strip():
+            raise ValueError(
+                "El servidor del campus virtual no respondió. "
+                "Verifica que la URL sea correcta y que el servicio móvil esté habilitado."
+            )
+        if "text/html" in content_type and "json" not in content_type:
+            raise ValueError(
+                "El campus virtual devolvió una página HTML en lugar de una respuesta de API. "
+                "La URL puede ser incorrecta o el servicio móvil de Moodle no está habilitado. "
+                "Prueba con el método Token."
+            )
+        try:
+            data = r.json()
+        except Exception:
+            raise ValueError(
+                "El campus virtual no devolvió una respuesta válida. "
+                "Verifica que la URL termine en el dominio del campus (ej: https://campusvirtual.tu-universidad.cl) "
+                "y que el servicio web esté habilitado."
+            )
         if "token" in data:
             return data["token"]
         error_msg = data.get("error") or data.get("exception") or "Credenciales inválidas"
         raise ValueError(f"Error de autenticación Moodle: {error_msg}")
     except ValueError:
         raise
+    except requests.exceptions.ConnectionError:
+        raise ValueError("No se pudo conectar al servidor. Verifica que la URL del campus virtual sea correcta.")
+    except requests.exceptions.Timeout:
+        raise ValueError("El servidor tardó demasiado en responder. Intenta de nuevo.")
     except Exception as e:
         raise ValueError(f"No se pudo conectar a Moodle: {str(e)}")
 

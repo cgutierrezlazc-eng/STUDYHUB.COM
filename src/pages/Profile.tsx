@@ -1190,7 +1190,10 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         <span key={p} style={{ fontSize: 12, padding: '4px 10px', borderRadius: 20, background: 'var(--bg-secondary)', border: '1px solid var(--border)', fontWeight: 600 }}>{p}</span>
                       ))}
                     </div>
-                    <button className="btn btn-primary" onClick={() => setLmsShowConnect(true)}>
+                    <button className="btn btn-primary" onClick={() => {
+                      setLmsPlatformName(user?.university || '')
+                      setLmsShowConnect(true)
+                    }}>
                       Conectar Universidad
                     </button>
                   </div>
@@ -1474,7 +1477,10 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                 {/* ── Botón agregar otra conexión ── */}
                 {lmsConnections.length > 0 && !lmsShowConnect && (
                   <button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }}
-                    onClick={() => setLmsShowConnect(true)}>
+                    onClick={() => {
+                      setLmsPlatformName(user?.university || '')
+                      setLmsShowConnect(true)
+                    }}>
                     + Conectar otra plataforma
                   </button>
                 )}
