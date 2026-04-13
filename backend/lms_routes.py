@@ -33,8 +33,16 @@ class ConnectRequest(BaseModel):
     platform_type: str          # moodle | canvas | blackboard | brightspace | sakai | teams | classroom | other
     platform_name: str          # display name, e.g. "U. de Chile"
     api_url: str                # base URL of the institution's LMS
-    api_token: str              # user-generated token / API key
+    api_token: str = ""         # user-generated token / API key
     extra_field: str = ""       # username, secret key, etc. (platform-specific)
+    auth_method: str = "token"  # "token" | "password"
+    username: str = ""          # for password-based auth (Moodle)
+    password: str = ""          # for password-based auth (never stored)
+
+
+class ActivateCoursesRequest(BaseModel):
+    connection_id: str
+    course_ids: list            # list of LMSCourse.id to keep active
 
 
 class LinkCourseRequest(BaseModel):
@@ -53,6 +61,26 @@ class SyncItemRequest(BaseModel):
 
 def _clean_url(url: str) -> str:
     return url.rstrip("/")
+
+
+def _moodle_get_token_from_password(base_url: str, username: str, password: str) -> str:
+    """Obtain a Moodle web service token using username/password via /login/token.php."""
+    url = f"{base_url}/login/token.php"
+    try:
+        r = requests.get(url, params={
+            "username": username,
+            "password": password,
+            "service": "moodle_mobile_app",
+        }, timeout=TIMEOUT)
+        data = r.json()
+        if "token" in data:
+            return data["token"]
+        error_msg = data.get("error") or data.get("exception") or "Credenciales inválidas"
+        raise ValueError(f"Error de autenticación Moodle: {error_msg}")
+    except ValueError:
+        raise
+    except Exception as e:
+        raise ValueError(f"No se pudo conectar a Moodle: {str(e)}")
 
 
 # ── Moodle ────────────────────────────────────────────────────
@@ -301,25 +329,37 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
     platform_type = req.platform_type
     info = {}
 
+    # Resolver token desde usuario/contraseña si se solicita (Moodle)
+    api_token = req.api_token
+    if req.auth_method == "password":
+        if not req.username or not req.password:
+            raise HTTPException(400, "Usuario y contraseña son requeridos para este método de autenticación")
+        try:
+            api_token = _moodle_get_token_from_password(base_url, req.username, req.password)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        if platform_type in ("", "auto", "unknown"):
+            platform_type = "moodle"
+
     # Auto-detect si no se especificó plataforma o si es 'auto'
     if platform_type in ("", "auto", "unknown"):
         try:
-            platform_type, info = _detect_platform(base_url, req.api_token, req.extra_field)
+            platform_type, info = _detect_platform(base_url, api_token, req.extra_field)
         except ValueError as e:
             raise HTTPException(400, str(e))
     else:
         # Verify manually for specified platform
         try:
             if platform_type == "moodle":
-                info = moodle_verify(base_url, req.api_token)
+                info = moodle_verify(base_url, api_token)
             elif platform_type == "canvas":
-                info = canvas_verify(base_url, req.api_token)
+                info = canvas_verify(base_url, api_token)
             elif platform_type == "blackboard":
-                info = blackboard_verify(base_url, req.api_token)
+                info = blackboard_verify(base_url, api_token)
             elif platform_type == "brightspace":
-                info = brightspace_verify(base_url, req.api_token)
+                info = brightspace_verify(base_url, api_token)
             elif platform_type == "sakai":
-                info = sakai_verify(base_url, req.api_token)
+                info = sakai_verify(base_url, api_token)
             elif platform_type in ("teams", "classroom", "other"):
                 # OAuth-based platforms — stored as manual, no verification
                 info = {}
@@ -330,8 +370,8 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
         except Exception as e:
             raise HTTPException(400, f"Error al conectar: {str(e)}")
 
-    # Encode token for storage
-    token_b64 = base64.b64encode(req.api_token.encode()).decode()
+    # Encode token for storage (use resolved api_token, never the raw password)
+    token_b64 = base64.b64encode(api_token.encode()).decode()
     extra_b64 = base64.b64encode(req.extra_field.encode()).decode() if req.extra_field else ""
 
     conn = UniversityConnection(
@@ -349,7 +389,7 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
     db.refresh(conn)
 
     # Immediately fetch courses after connection
-    courses_added = _fetch_and_store_courses(conn, db)
+    courses_added, courses_list = _fetch_and_store_courses(conn, db)
 
     return {
         "id": conn.id,
@@ -358,6 +398,7 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
         "status": "connected",
         "info": info,
         "courses_found": courses_added,
+        "courses": courses_list,
     }
 
 
@@ -440,7 +481,12 @@ def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
 
     conn.last_scan = datetime.utcnow()
     db.commit()
-    return added
+    stored = db.query(LMSCourse).filter(LMSCourse.connection_id == conn.id).all()
+    courses_list = [
+        {"id": c.id, "name": c.name, "short_name": c.short_name or "", "semester": c.semester or "", "year": c.year}
+        for c in stored
+    ]
+    return added, courses_list
 
 
 def _normalize_courses(platform_type: str, raw: list) -> list:
@@ -810,6 +856,38 @@ def get_lms_courses(user: User = Depends(get_current_user), db: Session = Depend
             "pending_items": pending,
         })
     return result
+
+
+@router.post("/activate-courses")
+def activate_courses(
+    req: ActivateCoursesRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Mantiene solo las asignaturas seleccionadas para una conexión.
+    Las no seleccionadas se eliminan; el usuario puede agregarlas luego via re-escaneo.
+    """
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == req.connection_id,
+        UniversityConnection.user_id == user.id,
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión no encontrada")
+
+    all_courses = db.query(LMSCourse).filter(
+        LMSCourse.connection_id == req.connection_id
+    ).all()
+
+    removed = 0
+    for course in all_courses:
+        if course.id not in req.course_ids:
+            db.query(LMSSyncItem).filter(LMSSyncItem.course_id == course.id).delete()
+            db.delete(course)
+            removed += 1
+
+    db.commit()
+    return {"activated": len(all_courses) - removed, "removed": removed}
 
 
 # ── Helpers ───────────────────────────────────────────────────

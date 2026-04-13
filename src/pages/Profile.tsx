@@ -79,6 +79,14 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
   const [lmsScanMsg, setLmsScanMsg] = useState('')
   const [lmsSyncingId, setLmsSyncingId] = useState('')
   const [lmsProjects, setLmsProjects] = useState<any[]>([])
+  const [lmsAuthMethod, setLmsAuthMethod] = useState<'token' | 'password'>('token')
+  const [lmsUsername, setLmsUsername] = useState('')
+  const [lmsPassword, setLmsPassword] = useState('')
+  const [lmsSubjectModal, setLmsSubjectModal] = useState(false)
+  const [lmsDetectedCourses, setLmsDetectedCourses] = useState<{id: string; name: string; short_name: string; semester: string; year: number | null}[]>([])
+  const [lmsSelectedCourses, setLmsSelectedCourses] = useState<Set<string>>(new Set())
+  const [lmsConnectionId, setLmsConnectionId] = useState('')
+  const [lmsActivating, setLmsActivating] = useState(false)
 
   // Institution picker state (for university edit)
   const [uniSearch, setUniSearch] = useState('')
@@ -1227,6 +1235,28 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         </select>
                       </div>
 
+                      {/* Método de autenticación — solo Moodle / auto-detect */}
+                      {(lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') && (
+                        <div style={{ marginBottom: 18 }}>
+                          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 8 }}>Método de autenticación</label>
+                          <div style={{ display: 'flex', gap: 8 }}>
+                            <button type="button" onClick={() => setLmsAuthMethod('token')}
+                              style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: lmsAuthMethod === 'token' ? 'var(--accent, #1a56db)' : 'var(--bg-secondary)', color: lmsAuthMethod === 'token' ? '#fff' : 'var(--text-secondary)', border: `1px solid ${lmsAuthMethod === 'token' ? 'transparent' : 'var(--border)'}` }}>
+                              🔑 Token
+                            </button>
+                            <button type="button" onClick={() => setLmsAuthMethod('password')}
+                              style={{ flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: lmsAuthMethod === 'password' ? 'var(--accent, #1a56db)' : 'var(--bg-secondary)', color: lmsAuthMethod === 'password' ? '#fff' : 'var(--text-secondary)', border: `1px solid ${lmsAuthMethod === 'password' ? 'transparent' : 'var(--border)'}` }}>
+                              👤 Usuario y contraseña
+                            </button>
+                          </div>
+                          {lmsAuthMethod === 'password' && (
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, padding: '8px 12px', background: 'rgba(26,86,219,0.06)', borderRadius: 8, border: '1px solid rgba(26,86,219,0.12)' }}>
+                              ℹ Conniku obtiene un token automáticamente con tus credenciales vía el servicio móvil de Moodle. Tu contraseña no se almacena en ningún momento.
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Universidad + URL en fila */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
                         <div>
@@ -1243,36 +1273,59 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         </div>
                       </div>
 
-                      {/* Token */}
-                      <div style={{ marginBottom: 8 }}>
-                        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Token de acceso</label>
-                        <input type="password" value={lmsToken} onChange={e => setLmsToken(e.target.value)}
-                          placeholder="Pega aquí el token generado en tu campus virtual" className="form-input"
-                          style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
-                      </div>
+                      {/* Credenciales — token o usuario+contraseña */}
+                      {(lmsAuthMethod === 'token' || !(lmsPlatformType === 'auto' || lmsPlatformType === 'moodle')) ? (
+                        <div style={{ marginBottom: 8 }}>
+                          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Token de acceso</label>
+                          <input type="password" value={lmsToken} onChange={e => setLmsToken(e.target.value)}
+                            placeholder="Pega aquí el token generado en tu campus virtual" className="form-input"
+                            style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
+                        </div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 8 }}>
+                          <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Usuario</label>
+                            <input type="text" value={lmsUsername} onChange={e => setLmsUsername(e.target.value)}
+                              placeholder="Tu usuario del campus" className="form-input"
+                              style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} autoComplete="username" />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Contraseña</label>
+                            <input type="password" value={lmsPassword} onChange={e => setLmsPassword(e.target.value)}
+                              placeholder="Tu contraseña del campus" className="form-input"
+                              style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} autoComplete="current-password" />
+                          </div>
+                        </div>
+                      )}
 
-                      {/* Token instructions per platform */}
+                      {/* Instrucciones según plataforma y método */}
                       <div style={{
                         fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)',
                         padding: '12px 16px', borderRadius: 10, marginBottom: 18, lineHeight: 1.7,
                         border: '1px solid var(--border-subtle)',
                       }}>
                         <div style={{ fontWeight: 700, marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                          ¿Cómo obtener el token?
+                          {lmsAuthMethod === 'password' && (lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') ? 'Requisito' : '¿Cómo obtener el token?'}
                         </div>
-                        {(lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') && (
+                        {lmsAuthMethod === 'password' && (lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') ? (
+                          <><strong>Moodle:</strong> El servicio móvil debe estar habilitado en tu institución. Si recibes un error de autenticación, usa el método Token.</>
+                        ) : (
                           <>
-                            <strong>Moodle:</strong> Inicia sesión en tu campus → Perfil → Preferencias → Claves de seguridad → Crear token de servicio web.
-                            <br /><span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Si no ves esta opción, tu universidad puede no tener habilitada la API para estudiantes. Contacta al soporte de tu universidad.</span>
+                            {(lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') && (
+                              <>
+                                <strong>Moodle:</strong> Inicia sesión en tu campus → Perfil → Preferencias → Claves de seguridad → Crear token de servicio web.
+                                <br /><span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Si no ves esta opción, prueba el método Usuario y contraseña.</span>
+                              </>
+                            )}
+                            {lmsPlatformType === 'canvas' && <><strong>Canvas:</strong> Configuración de cuenta → Tokens de acceso aprobado → Generar nuevo token de acceso.</>}
+                            {lmsPlatformType === 'blackboard' && <><strong>Blackboard:</strong> Consulta al departamento de informática de tu universidad para obtener un token de API.</>}
+                            {lmsPlatformType === 'brightspace' && <><strong>Brightspace:</strong> Mi cuenta → Conexiones de cuenta → Gestionar tokens de API.</>}
+                            {lmsPlatformType === 'sakai' && <><strong>Sakai:</strong> Perfil → Preferencias → Clave de sesión (Session Key).</>}
+                            {lmsPlatformType === 'teams' && <><strong>Teams Educativo:</strong> Requiere configuración institucional. Contacta al centro de informática de tu universidad.</>}
+                            {lmsPlatformType === 'classroom' && <><strong>Google Classroom:</strong> Requiere autorización OAuth. Disponible próximamente en Conniku.</>}
+                            {lmsPlatformType === 'other' && <>Consulta la documentación de tu plataforma para obtener un token de API REST.</>}
                           </>
                         )}
-                        {lmsPlatformType === 'canvas' && <><strong>Canvas:</strong> Configuración de cuenta → Tokens de acceso aprobado → Generar nuevo token de acceso.</>}
-                        {lmsPlatformType === 'blackboard' && <><strong>Blackboard:</strong> Consulta al departamento de informática de tu universidad para obtener un token de API.</>}
-                        {lmsPlatformType === 'brightspace' && <><strong>Brightspace:</strong> Mi cuenta → Conexiones de cuenta → Gestionar tokens de API.</>}
-                        {lmsPlatformType === 'sakai' && <><strong>Sakai:</strong> Perfil → Preferencias → Clave de sesión (Session Key).</>}
-                        {lmsPlatformType === 'teams' && <><strong>Teams Educativo:</strong> Requiere configuración institucional. Contacta al centro de informática de tu universidad.</>}
-                        {lmsPlatformType === 'classroom' && <><strong>Google Classroom:</strong> Requiere autorización OAuth. Disponible próximamente en Conniku.</>}
-                        {lmsPlatformType === 'other' && <>Consulta la documentación de tu plataforma para obtener un token de API REST.</>}
                       </div>
 
                       {lmsConnectError && (
@@ -1282,21 +1335,31 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                       )}
 
                       <button className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}
-                        disabled={lmsConnecting || !lmsUrl || !lmsToken}
+                        disabled={lmsConnecting || !lmsUrl || (lmsAuthMethod === 'password' && (lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') ? (!lmsUsername || !lmsPassword) : !lmsToken)}
                         onClick={async () => {
-                          if (!lmsUrl || !lmsToken) return
+                          const usePass = lmsAuthMethod === 'password' && (lmsPlatformType === 'auto' || lmsPlatformType === 'moodle')
+                          if (!lmsUrl || (usePass ? (!lmsUsername || !lmsPassword) : !lmsToken)) return
                           setLmsConnecting(true); setLmsConnectError('')
                           try {
                             const res: any = await api.lmsConnect({
                               platform_type: lmsPlatformType,
                               platform_name: lmsPlatformName,
                               api_url: lmsUrl,
-                              api_token: lmsToken,
+                              ...(usePass
+                                ? { auth_method: 'password', username: lmsUsername, password: lmsPassword }
+                                : { auth_method: 'token', api_token: lmsToken }
+                              ),
                             })
-                            setLmsConnections(prev => [...prev, res])
                             setLmsShowConnect(false)
-                            setLmsUrl(''); setLmsToken(''); setLmsPlatformName('')
-                            setLmsScanMsg(`✅ Conectado — ${res.courses_found} asignatura${res.courses_found !== 1 ? 's' : ''} detectada${res.courses_found !== 1 ? 's' : ''}`)
+                            setLmsUrl(''); setLmsToken(''); setLmsPlatformName(''); setLmsUsername(''); setLmsPassword('')
+                            if (res.courses && res.courses.length > 0) {
+                              setLmsConnectionId(res.id)
+                              setLmsDetectedCourses(res.courses)
+                              setLmsSelectedCourses(new Set(res.courses.map((c: any) => c.id)))
+                              setLmsSubjectModal(true)
+                            } else {
+                              setLmsScanMsg('✅ Conectado — sin asignaturas detectadas aún')
+                            }
                             const conns: any = await api.lmsGetConnections().catch(() => [])
                             setLmsConnections(Array.isArray(conns) ? conns : [])
                             const projs: any = await api.getProjects().catch(() => [])
@@ -1307,6 +1370,107 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         }}>
                         {lmsConnecting ? '⏳ Conectando...' : 'Conectar y verificar'}
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Modal selección de asignaturas ── */}
+                {lmsSubjectModal && (
+                  <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: 16 }}>
+                    <div style={{ background: 'var(--bg-card)', borderRadius: 16, width: '100%', maxWidth: 560, maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.45)' }}>
+                      {/* Header */}
+                      <div style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #1a56db 100%)', padding: '22px 24px' }}>
+                        <h3 style={{ margin: 0, color: '#fff', fontSize: 17, fontWeight: 700 }}>¿Qué asignaturas quieres agregar?</h3>
+                        <p style={{ margin: '6px 0 0', color: 'rgba(255,255,255,0.68)', fontSize: 13 }}>
+                          Selecciona las asignaturas que usarás en Conniku. Las no seleccionadas se pueden agregar manualmente después.
+                        </p>
+                      </div>
+
+                      {/* Toolbar */}
+                      <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                          <strong style={{ color: 'var(--text-primary)' }}>{lmsSelectedCourses.size}</strong> de {lmsDetectedCourses.length} seleccionadas
+                        </span>
+                        <button
+                          onClick={() => {
+                            if (lmsSelectedCourses.size === lmsDetectedCourses.length) {
+                              setLmsSelectedCourses(new Set())
+                            } else {
+                              setLmsSelectedCourses(new Set(lmsDetectedCourses.map(c => c.id)))
+                            }
+                          }}
+                          style={{ fontSize: 12, color: 'var(--accent, #1a56db)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, padding: '4px 8px', borderRadius: 6 }}
+                        >
+                          {lmsSelectedCourses.size === lmsDetectedCourses.length ? 'Deseleccionar todas' : 'Seleccionar todas'}
+                        </button>
+                      </div>
+
+                      {/* Lista de asignaturas */}
+                      <div style={{ overflowY: 'auto', flex: 1, padding: '6px 12px' }}>
+                        {lmsDetectedCourses.length === 0 ? (
+                          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+                            No se detectaron asignaturas en esta plataforma.
+                          </div>
+                        ) : lmsDetectedCourses.map(course => (
+                          <label key={course.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '11px 8px', borderRadius: 8, cursor: 'pointer', borderBottom: '1px solid var(--border-subtle)', background: lmsSelectedCourses.has(course.id) ? 'rgba(26,86,219,0.06)' : 'transparent', transition: 'background 0.1s' }}>
+                            <input
+                              type="checkbox"
+                              checked={lmsSelectedCourses.has(course.id)}
+                              onChange={e => {
+                                const next = new Set(lmsSelectedCourses)
+                                if (e.target.checked) next.add(course.id)
+                                else next.delete(course.id)
+                                setLmsSelectedCourses(next)
+                              }}
+                              style={{ marginTop: 3, accentColor: 'var(--accent)', width: 16, height: 16, flexShrink: 0, cursor: 'pointer' }}
+                            />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{course.name}</div>
+                              {(course.short_name || course.semester) && (
+                                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                                  {[course.short_name, course.semester].filter(Boolean).join(' · ')}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Footer */}
+                      <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end', background: 'var(--bg-secondary)' }}>
+                        <button
+                          onClick={() => {
+                            setLmsSubjectModal(false)
+                            setLmsScanMsg(`✅ Conectado — ${lmsDetectedCourses.length} asignatura${lmsDetectedCourses.length !== 1 ? 's' : ''} agregada${lmsDetectedCourses.length !== 1 ? 's' : ''}`)
+                          }}
+                          className="btn btn-secondary"
+                          style={{ padding: '10px 18px', borderRadius: 10, fontSize: 14 }}
+                        >
+                          Agregar todas
+                        </button>
+                        <button
+                          disabled={lmsActivating || lmsSelectedCourses.size === 0}
+                          onClick={async () => {
+                            setLmsActivating(true)
+                            try {
+                              await api.lmsActivateCourses(lmsConnectionId, Array.from(lmsSelectedCourses))
+                              setLmsSubjectModal(false)
+                              const count = lmsSelectedCourses.size
+                              setLmsScanMsg(`✅ Conectado — ${count} asignatura${count !== 1 ? 's' : ''} agregada${count !== 1 ? 's' : ''}`)
+                              const conns: any = await api.lmsGetConnections().catch(() => [])
+                              setLmsConnections(Array.isArray(conns) ? conns : [])
+                            } catch {
+                              setLmsScanMsg('⚠ Error al guardar la selección de asignaturas')
+                            } finally {
+                              setLmsActivating(false)
+                            }
+                          }}
+                          className="btn btn-primary"
+                          style={{ padding: '10px 20px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}
+                        >
+                          {lmsActivating ? '⏳ Guardando...' : `Agregar seleccionadas${lmsSelectedCourses.size > 0 ? ` (${lmsSelectedCourses.size})` : ''}`}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
