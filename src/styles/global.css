@@ -3660,10 +3660,14 @@ body.touch-device select {
     margin-left: 0 !important;
     width: 100% !important;
     -webkit-overflow-scrolling: touch;
+    /* Espacio para que el nav bar no tape el último contenido */
+    padding-bottom: calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 16px);
   }
 
-  /* Page spacing */
-  .page-body { padding: 12px !important; }
+  /* Page spacing — padding-bottom incluye altura del nav bar */
+  .page-body {
+    padding: 12px 12px calc(var(--bottom-nav-height, 60px) + env(safe-area-inset-bottom, 0px) + 28px) !important;
+  }
   .page-header { padding: 16px !important; }
   .page-header h2 { font-size: 20px !important; }
 
