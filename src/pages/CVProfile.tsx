@@ -428,12 +428,12 @@ export default function CVProfile({ onNavigate }: Props) {
       phone: raw.phone || '',
       availableWorldwide: raw.available_worldwide ?? false,
       openToOffers: raw.open_to_offers ?? raw.open_to_work ?? raw.is_open_to_opportunities ?? false,
-      experience: parseJsonField(raw.experience || raw.cv_experience, []),
-      education: parseJsonField(raw.education, []),
+      experience: normalizeExperience(parseJsonField(raw.experience || raw.cv_experience, [])),
+      education: normalizeEducation(parseJsonField(raw.education, [])),
       certifications: parseJsonField(raw.certifications || raw.cv_certifications, []),
-      skillGroups: parseJsonField(raw.skill_groups || raw.skills || raw.cv_skills, []),
-      differentiators: parseJsonField(raw.differentiators, []),
-      languages: parseJsonField(raw.languages || raw.cv_languages, []),
+      skillGroups: normalizeSkillGroups(parseJsonField(raw.skill_groups || raw.skills || raw.cv_skills, [])),
+      differentiators: normalizeDifferentiators(parseJsonField(raw.differentiators, [])),
+      languages: normalizeLanguages(parseJsonField(raw.languages || raw.cv_languages, [])),
       links: parseJsonField(raw.links || raw.cv_portfolio, []),
       competencies: parseJsonField(raw.competencies, []),
       visibility: raw.visibility || raw.cv_visibility || 'private',
@@ -447,6 +447,74 @@ export default function CVProfile({ onNavigate }: Props) {
       try { return JSON.parse(val) } catch { return fallback }
     }
     return fallback
+  }
+
+  // Normaliza experiencias: acepta formato IA (start_date/bullets) y formato guardado (startDate/description)
+  function normalizeExperience(arr: any[]): Experience[] {
+    return arr.map(exp => ({
+      id: exp.id || genId(),
+      company: exp.company || '',
+      title: exp.title || '',
+      location: exp.location || '',
+      startDate: exp.startDate || exp.start_date || '',
+      endDate: exp.endDate || exp.end_date || '',
+      current: exp.current ?? false,
+      description: exp.description ||
+        (Array.isArray(exp.bullets) ? exp.bullets.join('\n') : exp.bullets || ''),
+    }))
+  }
+
+  // Normaliza educación: acepta start_date/end_date y startYear/endYear
+  function normalizeEducation(arr: any[]): Education[] {
+    return arr.map(edu => ({
+      id: edu.id || genId(),
+      institution: edu.institution || '',
+      degree: edu.degree || '',
+      field: edu.field || '',
+      startYear: edu.startYear || edu.start_date || edu.startDate || '',
+      endYear: edu.endYear || edu.end_date || edu.endDate || '',
+      description: edu.description || '',
+    }))
+  }
+
+  // Normaliza habilidades: acepta items[{name,proficiency}] e skills[{name,level}]
+  function normalizeSkillGroups(arr: any[]): SkillGroup[] {
+    return arr.map(group => ({
+      category: group.category || '',
+      skills: (group.skills || group.items || []).map((s: any) => ({
+        name: s.name || '',
+        level: typeof s.level === 'number' ? s.level : proficiencyToNumber(s.proficiency || s.level),
+      })),
+    }))
+  }
+
+  // Convierte texto de nivel a número 0-100
+  function proficiencyToNumber(p: any): number {
+    if (typeof p === 'number') return p
+    const map: Record<string, number> = {
+      beginner: 25, básico: 25, basico: 25, basic: 25,
+      intermediate: 50, intermedio: 50,
+      advanced: 75, avanzado: 75,
+      expert: 95, experto: 95, nativo: 95, native: 95, bilingüe: 95, bilingual: 95,
+    }
+    return map[(p || '').toLowerCase()] ?? 50
+  }
+
+  // Normaliza idiomas: acepta {language,proficiency} y {name,level}
+  function normalizeLanguages(arr: any[]): { name: string; level: string }[] {
+    return arr.map(lang => ({
+      name: lang.name || lang.language || '',
+      level: lang.level || lang.proficiency || '',
+    }))
+  }
+
+  // Normaliza diferenciadores: acepta strings o {title, description}
+  function normalizeDifferentiators(arr: any[]): string[] {
+    return arr.map(d => {
+      if (typeof d === 'string') return d
+      if (d && d.title) return d.description ? `${d.title}: ${d.description}` : d.title
+      return String(d)
+    }).filter(Boolean)
   }
 
   /* ── Save ── */
