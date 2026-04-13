@@ -76,6 +76,7 @@ const LandingProposals = React.lazy(() => import('./pages/LandingProposals'))
 const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'))
 const ClassRoom = React.lazy(() => import('./pages/ClassRoom'))
 const PublicTutorPage = React.lazy(() => import('./pages/PublicTutorPage'))
+const MiUniversidad = React.lazy(() => import('./pages/MiUniversidad'))
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -353,6 +354,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} onNewProject={() => setShowNewProject(true)} />} />
             <Route path="/project/:id" element={<ProjectView projects={projects} onUpdate={handleUpdateProject} onDelete={handleDeleteProject} />} />
             <Route path="/profile" element={<Navigate to="/my-profile" replace />} />
+            <Route path="/mi-universidad" element={<MiUniversidad onNavigate={(path) => navigate(path)} />} />
             <Route path="/suggestions" element={<Suggestions />} />
             <Route path="/messages" element={<Messages onNavigate={(path) => navigate(path)} />} />
             <Route path="/messages/:convId" element={<Messages conversationId={conversationId} onNavigate={(path) => navigate(path)} />} />

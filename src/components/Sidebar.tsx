@@ -72,6 +72,12 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         {Icons.user(IC.profile)} {t('sidebar.myProfile')}
       </button>
       <button
+        className={`nav-item ${isActive('/mi-universidad') ? 'active' : ''}`}
+        onClick={() => onNavigate('/mi-universidad')}
+      >
+        {Icons.diploma(IC.courses)} Mi Universidad
+      </button>
+      <button
         className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
         onClick={() => onNavigate('/feed')}
       >
@@ -248,14 +254,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       >
         {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
       </button>
-      {user?.isAdmin && (
-        <button
-          className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`}
-          onClick={() => onNavigate('/admin')}
-        >
-          {Icons.settings(IC.admin)} {t('sidebar.admin')}
-        </button>
-      )}
 
       {/* ══ CEO / MI PANEL ══ */}
       {(user?.role === 'owner' || user?.isAdmin || user?.role === 'employee') && (

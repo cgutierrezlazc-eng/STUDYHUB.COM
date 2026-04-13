@@ -45,6 +45,7 @@ export const ADMIN_MODULES: AdminModule[] = [
   { id: 'ai-workflows', label: 'IA Workflows', description: 'Marketing, QA, diseño y comunidad con IA', icon: 'sparkles', category: 'tools', route: '/admin-panel/tools/ai-workflows', status: 'active' },
   { id: 'tutores', label: 'Tutores Externos', description: 'Directorio y gestión de tutores contratados', icon: 'users', category: 'tools', route: '/admin-panel/tools/tutores', status: 'active' },
   { id: 'push-notifications', label: 'Push Notifications', description: 'Notificaciones push masivas a usuarios', icon: 'bell', category: 'tools', route: '/admin-panel/tools/push', status: 'active', isNew: true },
+  { id: 'admin-usuarios', label: 'Administrador de Usuarios', description: 'Gestión avanzada de usuarios, roles y permisos de la plataforma', icon: 'users-cog', category: 'tools', route: '/admin', status: 'active' },
   { id: 'guia-owner', label: 'Guía del Owner', description: 'Guía legal y administrativa para el dueño', icon: 'book-open', category: 'tools', route: '/admin-panel/tools/guia-owner', status: 'active' },
   { id: 'biblioteca', label: 'Biblioteca de Documentos', description: 'Repositorio legal completo — RIOHS, contratos, Ley Karin, reportes DT/SII/TGR', icon: 'archive', category: 'tools', route: '/admin-panel/tools/biblioteca', status: 'active', isNew: true, ownerOnly: true },
 ]

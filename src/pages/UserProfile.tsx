@@ -907,7 +907,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             { id: 'universidad',  label: 'Mi Universidad',      color: '#0d9488' },
             { id: 'appearance',   label: 'Apariencia',          color: '#b45309' },
             { id: 'notifications',label: 'Notificaciones',      color: '#374151' },
-            { id: 'security',     label: 'Seguridad',           color: '#991b1b' },
           ] as { id: string; label: string; color: string }[]).map(tab => (
             <button
               key={tab.id}
