@@ -1194,94 +1194,120 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
 
                 {/* ── Formulario de conexión ── */}
                 {lmsShowConnect && (
-                  <div className="u-card" style={{ padding: 24 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                      <h4 style={{ margin: 0 }}>Conectar plataforma universitaria</h4>
+                  <div className="u-card" style={{ padding: 0, overflow: 'hidden' }}>
+                    {/* Header con gradiente */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #1e3a5f 0%, #1a56db 100%)',
+                      padding: '20px 24px',
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    }}>
+                      <div>
+                        <h4 style={{ margin: 0, color: '#fff', fontSize: 16, fontWeight: 700 }}>Conectar plataforma universitaria</h4>
+                        <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.65)', fontSize: 12 }}>Importa tus cursos y material automáticamente</p>
+                      </div>
                       <button onClick={() => { setLmsShowConnect(false); setLmsConnectError('') }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}>✕</button>
+                        style={{ background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', fontSize: 16, color: '#fff', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
                     </div>
 
-                    <div style={{ marginBottom: 14 }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Plataforma</label>
-                      <select value={lmsPlatformType} onChange={e => setLmsPlatformType(e.target.value)}
-                        style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14 }}>
-                        <option value="auto">🔍 Detectar automáticamente</option>
-                        <option value="moodle">Moodle</option>
-                        <option value="canvas">Canvas LMS</option>
-                        <option value="blackboard">Blackboard Learn</option>
-                        <option value="brightspace">Brightspace (D2L)</option>
-                        <option value="sakai">Sakai</option>
-                        <option value="teams">Microsoft Teams Educativo</option>
-                        <option value="classroom">Google Classroom</option>
-                        <option value="other">Otra plataforma</option>
-                      </select>
-                    </div>
+                    <div style={{ padding: '24px' }}>
+                      {/* Plataforma */}
+                      <div style={{ marginBottom: 18 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Plataforma</label>
+                        <select value={lmsPlatformType} onChange={e => setLmsPlatformType(e.target.value)} className="form-input"
+                          style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14, cursor: 'pointer' }}>
+                          <option value="auto">Detectar automáticamente</option>
+                          <option value="moodle">Moodle</option>
+                          <option value="canvas">Canvas LMS</option>
+                          <option value="blackboard">Blackboard Learn</option>
+                          <option value="brightspace">Brightspace (D2L)</option>
+                          <option value="sakai">Sakai</option>
+                          <option value="teams">Microsoft Teams Educativo</option>
+                          <option value="classroom">Google Classroom</option>
+                          <option value="other">Otra plataforma</option>
+                        </select>
+                      </div>
 
-                    <div style={{ marginBottom: 14 }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Nombre de tu universidad</label>
-                      <input type="text" value={lmsPlatformName} onChange={e => setLmsPlatformName(e.target.value)}
-                        placeholder="Ej: Universidad de Chile" className="pf-input" />
-                    </div>
+                      {/* Universidad + URL en fila */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 18 }}>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Universidad</label>
+                          <input type="text" value={lmsPlatformName} onChange={e => setLmsPlatformName(e.target.value)}
+                            placeholder="Ej: Universidad del Alba" className="form-input"
+                            style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>URL del campus virtual</label>
+                          <input type="url" value={lmsUrl} onChange={e => setLmsUrl(e.target.value)}
+                            placeholder="https://campusvirtual.udalba.cl" className="form-input"
+                            style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
+                        </div>
+                      </div>
 
-                    <div style={{ marginBottom: 14 }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>URL de la plataforma</label>
-                      <input type="url" value={lmsUrl} onChange={e => setLmsUrl(e.target.value)}
-                        placeholder="https://moodle.uchile.cl" className="pf-input" />
-                    </div>
+                      {/* Token */}
+                      <div style={{ marginBottom: 8 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent, #1a56db)', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 6 }}>Token de acceso</label>
+                        <input type="password" value={lmsToken} onChange={e => setLmsToken(e.target.value)}
+                          placeholder="Pega aquí el token generado en tu campus virtual" className="form-input"
+                          style={{ padding: '11px 14px', borderRadius: 10, fontSize: 14 }} />
+                      </div>
 
-                    <div style={{ marginBottom: 6 }}>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Token de acceso</label>
-                      <input type="password" value={lmsToken} onChange={e => setLmsToken(e.target.value)}
-                        placeholder="Token generado en tu perfil de la plataforma" className="pf-input" />
-                    </div>
-
-                    {/* Token instructions per platform */}
-                    {lmsPlatformType !== 'auto' && (
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)', padding: '10px 14px', borderRadius: 8, marginBottom: 16, lineHeight: 1.6 }}>
-                        {lmsPlatformType === 'moodle' && <><strong>Moodle:</strong> Accede a tu cuenta → Perfil → Preferencias → Seguridad → Claves del servicio web → Crear token</>}
-                        {lmsPlatformType === 'canvas' && <><strong>Canvas:</strong> Configuración de cuenta → Tokens de acceso → Generar nuevo token</>}
-                        {lmsPlatformType === 'blackboard' && <><strong>Blackboard:</strong> Consulta a tu institución para obtener un token de API de estudiante</>}
-                        {lmsPlatformType === 'brightspace' && <><strong>Brightspace:</strong> Mi cuenta → Conexiones de cuenta → Gestionar tokens de API</>}
-                        {lmsPlatformType === 'sakai' && <><strong>Sakai:</strong> Perfil → Preferencias → Clave de sesión (Session Key)</>}
-                        {lmsPlatformType === 'teams' && <><strong>Teams Educativo:</strong> Actualmente requiere configuración institucional. Contacta a tu centro de informática.</>}
-                        {lmsPlatformType === 'classroom' && <><strong>Google Classroom:</strong> Actualmente requiere autorización OAuth. Disponible próximamente.</>}
+                      {/* Token instructions per platform */}
+                      <div style={{
+                        fontSize: 12, color: 'var(--text-muted)', background: 'var(--bg-secondary)',
+                        padding: '12px 16px', borderRadius: 10, marginBottom: 18, lineHeight: 1.7,
+                        border: '1px solid var(--border-subtle)',
+                      }}>
+                        <div style={{ fontWeight: 700, marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          ¿Cómo obtener el token?
+                        </div>
+                        {(lmsPlatformType === 'auto' || lmsPlatformType === 'moodle') && (
+                          <>
+                            <strong>Moodle:</strong> Inicia sesión en tu campus → Perfil → Preferencias → Claves de seguridad → Crear token de servicio web.
+                            <br /><span style={{ color: 'var(--text-muted)', fontSize: 11 }}>Si no ves esta opción, tu universidad puede no tener habilitada la API para estudiantes. Contacta al soporte de tu universidad.</span>
+                          </>
+                        )}
+                        {lmsPlatformType === 'canvas' && <><strong>Canvas:</strong> Configuración de cuenta → Tokens de acceso aprobado → Generar nuevo token de acceso.</>}
+                        {lmsPlatformType === 'blackboard' && <><strong>Blackboard:</strong> Consulta al departamento de informática de tu universidad para obtener un token de API.</>}
+                        {lmsPlatformType === 'brightspace' && <><strong>Brightspace:</strong> Mi cuenta → Conexiones de cuenta → Gestionar tokens de API.</>}
+                        {lmsPlatformType === 'sakai' && <><strong>Sakai:</strong> Perfil → Preferencias → Clave de sesión (Session Key).</>}
+                        {lmsPlatformType === 'teams' && <><strong>Teams Educativo:</strong> Requiere configuración institucional. Contacta al centro de informática de tu universidad.</>}
+                        {lmsPlatformType === 'classroom' && <><strong>Google Classroom:</strong> Requiere autorización OAuth. Disponible próximamente en Conniku.</>}
                         {lmsPlatformType === 'other' && <>Consulta la documentación de tu plataforma para obtener un token de API REST.</>}
                       </div>
-                    )}
 
-                    {lmsConnectError && (
-                      <div style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 12, padding: '8px 12px', background: 'rgba(239,68,68,0.08)', borderRadius: 8 }}>
-                        ⚠ {lmsConnectError}
-                      </div>
-                    )}
+                      {lmsConnectError && (
+                        <div style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 14, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)' }}>
+                          ⚠ {lmsConnectError}
+                        </div>
+                      )}
 
-                    <button className="btn btn-primary" style={{ width: '100%' }}
-                      disabled={lmsConnecting || !lmsUrl || !lmsToken}
-                      onClick={async () => {
-                        if (!lmsUrl || !lmsToken) return
-                        setLmsConnecting(true); setLmsConnectError('')
-                        try {
-                          const res: any = await api.lmsConnect({
-                            platform_type: lmsPlatformType,
-                            platform_name: lmsPlatformName,
-                            api_url: lmsUrl,
-                            api_token: lmsToken,
-                          })
-                          setLmsConnections(prev => [...prev, res])
-                          setLmsShowConnect(false)
-                          setLmsUrl(''); setLmsToken(''); setLmsPlatformName('')
-                          setLmsScanMsg(`✅ Conectado — ${res.courses_found} asignatura${res.courses_found !== 1 ? 's' : ''} detectada${res.courses_found !== 1 ? 's' : ''}`)
-                          // Reload connections to get full course list
-                          const conns: any = await api.lmsGetConnections().catch(() => [])
-                          setLmsConnections(Array.isArray(conns) ? conns : [])
-                          const projs: any = await api.getProjects().catch(() => [])
-                          setLmsProjects(Array.isArray(projs) ? projs : [])
-                        } catch (e: any) {
-                          setLmsConnectError(e.message || 'No se pudo conectar. Verifica la URL y el token.')
-                        } finally { setLmsConnecting(false) }
-                      }}>
-                      {lmsConnecting ? '⏳ Conectando...' : 'Conectar y verificar'}
-                    </button>
+                      <button className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: 10, fontSize: 14, fontWeight: 600 }}
+                        disabled={lmsConnecting || !lmsUrl || !lmsToken}
+                        onClick={async () => {
+                          if (!lmsUrl || !lmsToken) return
+                          setLmsConnecting(true); setLmsConnectError('')
+                          try {
+                            const res: any = await api.lmsConnect({
+                              platform_type: lmsPlatformType,
+                              platform_name: lmsPlatformName,
+                              api_url: lmsUrl,
+                              api_token: lmsToken,
+                            })
+                            setLmsConnections(prev => [...prev, res])
+                            setLmsShowConnect(false)
+                            setLmsUrl(''); setLmsToken(''); setLmsPlatformName('')
+                            setLmsScanMsg(`✅ Conectado — ${res.courses_found} asignatura${res.courses_found !== 1 ? 's' : ''} detectada${res.courses_found !== 1 ? 's' : ''}`)
+                            const conns: any = await api.lmsGetConnections().catch(() => [])
+                            setLmsConnections(Array.isArray(conns) ? conns : [])
+                            const projs: any = await api.getProjects().catch(() => [])
+                            setLmsProjects(Array.isArray(projs) ? projs : [])
+                          } catch (e: any) {
+                            setLmsConnectError(e.message || 'No se pudo conectar. Verifica la URL y el token.')
+                          } finally { setLmsConnecting(false) }
+                        }}>
+                        {lmsConnecting ? '⏳ Conectando...' : 'Conectar y verificar'}
+                      </button>
+                    </div>
                   </div>
                 )}
 
