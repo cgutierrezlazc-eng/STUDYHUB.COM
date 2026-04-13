@@ -771,6 +771,34 @@ class JobMatch(Base):
     __table_args__ = (UniqueConstraint("job_id", "user_id", name="uq_job_match"),)
 
 
+# ─── Terms & Conditions Acceptance ─────────────────────────
+
+class TermsAcceptance(Base):
+    __tablename__ = "terms_acceptances"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    terms_version = Column(String(20), default="2.1")
+    context = Column(String(50), default="general")  # cancel_subscription | refund_request | registration
+    accepted_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ─── Refund Requests ────────────────────────────────────────
+
+class RefundRequest(Base):
+    __tablename__ = "refund_requests"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    reason = Column(String(50), nullable=False)  # duplicate_charge|unauthorized|technical_error|service_outage|guarantee_7d|eu_withdrawal|chile_retracto|tutor_noshow|other
+    reason_detail = Column(Text, default="")
+    amount_usd = Column(Float, nullable=True)
+    payment_ref = Column(String(255), default="")   # PayPal/MP transaction ID
+    provider = Column(String(20), default="")        # paypal | mercadopago
+    status = Column(String(20), default="pending")   # pending | approved | rejected | processed
+    admin_notes = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+
+
 # ─── Student CV / Professional Profile ─────────────────────
 
 class StudentCV(Base):

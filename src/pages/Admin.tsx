@@ -8,7 +8,7 @@ import { BarChart3, Users, AlertTriangle, ClipboardList, CheckCircle, XCircle, G
 export default function Admin() {
   const { user } = useAuth()
   const { t } = useI18n()
-  const [tab, setTab] = useState<'stats' | 'users' | 'subscribers' | 'payments' | 'reports' | 'flagged' | 'blocks' | 'logs'>('stats')
+  const [tab, setTab] = useState<'stats' | 'users' | 'subscribers' | 'payments' | 'refunds' | 'reports' | 'flagged' | 'blocks' | 'logs'>('stats')
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [users, setUsers] = useState<any[]>([])
   const [flagged, setFlagged] = useState<any[]>([])
@@ -25,12 +25,15 @@ export default function Admin() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null)
   const [financials, setFinancials] = useState<any | null>(null)
   const [payments, setPayments] = useState<any[]>([])
+  const [refundRequests, setRefundRequests] = useState<any[]>([])
+  const [refundUpdateMsg, setRefundUpdateMsg] = useState('')
 
   useEffect(() => {
     if (tab === 'stats') loadStats()
     if (tab === 'users') loadUsers()
     if (tab === 'subscribers') loadUsers()
     if (tab === 'payments') loadFinancials()
+    if (tab === 'refunds') loadRefunds()
     if (tab === 'flagged') loadFlagged()
     if (tab === 'logs') loadLogs()
     if (tab === 'reports') loadReports()
@@ -87,6 +90,24 @@ export default function Admin() {
       const data = await api.adminGetBlockedUsers(page)
       setBlocks(data.blocks)
     } catch {}
+  }
+
+  const loadRefunds = async () => {
+    try {
+      const data = await api.getAdminRefundRequests()
+      setRefundRequests(data.requests || [])
+    } catch {}
+  }
+
+  const handleRefundUpdate = async (rrId: string, status: string) => {
+    try {
+      await api.updateAdminRefundRequest(rrId, { status })
+      setRefundUpdateMsg(`Solicitud actualizada a: ${status}`)
+      loadRefunds()
+      setTimeout(() => setRefundUpdateMsg(''), 3000)
+    } catch (err: any) {
+      setRefundUpdateMsg(err.message || 'Error al actualizar')
+    }
   }
 
   const handleBan = async (userId: string) => {
@@ -171,6 +192,7 @@ export default function Admin() {
     { id: 'users', label: 'Usuarios', icon: Users({ size: 14 }) },
     { id: 'subscribers', label: 'Suscriptores', icon: Gem({ size: 14 }) },
     ...(user?.role === 'owner' ? [{ id: 'payments', label: 'Pagos/Finanzas', icon: Gem({ size: 14 }) }] : []),
+    { id: 'refunds', label: `Reembolsos${refundRequests.filter((r: any) => r.status === 'pending').length > 0 ? ` (${refundRequests.filter((r: any) => r.status === 'pending').length})` : ''}`, icon: ClipboardList({ size: 14 }) },
     { id: 'reports', label: `Reportes${stats?.pendingReports ? ` (${stats.pendingReports})` : ''}`, icon: AlertTriangle({ size: 14 }) },
     { id: 'flagged', label: 'Mensajes Report.', icon: AlertTriangle({ size: 14 }) },
     { id: 'blocks', label: 'Bloqueos', icon: Shield({ size: 14 }) },
@@ -581,6 +603,86 @@ export default function Admin() {
                 Los recibos de pago se envían automáticamente por email a cada cliente después de cada transacción.
               </p>
             </div>
+          </div>
+        )}
+
+        {/* ─── Refund Requests ─── */}
+        {tab === 'refunds' && (
+          <div className="admin-refunds">
+            {refundUpdateMsg && (
+              <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '8px 14px', marginBottom: 12, fontSize: 13, color: 'var(--accent)' }}>
+                {refundUpdateMsg}
+              </div>
+            )}
+            {refundRequests.length === 0 ? (
+              <div className="msg-empty"><p>No hay solicitudes de reembolso</p></div>
+            ) : (
+              <div className="admin-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Usuario</th>
+                      <th>Motivo</th>
+                      <th>Detalle</th>
+                      <th>Ref. Pago</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {refundRequests.map((r: any) => {
+                      const REASON_LABELS: Record<string, string> = {
+                        duplicate_charge: 'Cargo duplicado',
+                        unauthorized: 'No autorizado',
+                        technical_error: 'Error técnico',
+                        service_outage: 'Interrupción servicio',
+                        guarantee_7d: 'Garantía 7 días',
+                        eu_withdrawal: 'Desistimiento UE',
+                        chile_retracto: 'Retracto Chile',
+                        tutor_noshow: 'Tutor no se presentó',
+                        other: 'Otro',
+                      }
+                      return (
+                        <tr key={r.id}>
+                          <td style={{ whiteSpace: 'nowrap', fontSize: 12 }}>{new Date(r.createdAt).toLocaleDateString('es')}</td>
+                          <td>
+                            <div style={{ fontSize: 13 }}>{r.user?.firstName} {r.user?.lastName}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.user?.email}</div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.user?.subscriptionTier} / {r.user?.subscriptionStatus}</div>
+                          </td>
+                          <td>{REASON_LABELS[r.reason] || r.reason}</td>
+                          <td style={{ maxWidth: 200, fontSize: 12, color: 'var(--text-muted)' }}>{r.reasonDetail || '—'}</td>
+                          <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{r.paymentRef || '—'}</td>
+                          <td>
+                            <span className={`admin-badge ${
+                              r.status === 'pending' ? 'warning' :
+                              r.status === 'approved' ? 'success' :
+                              r.status === 'processed' ? 'info' : 'danger'
+                            }`}>
+                              {r.status === 'pending' ? 'Pendiente' :
+                               r.status === 'approved' ? 'Aprobado' :
+                               r.status === 'processed' ? 'Procesado' : 'Rechazado'}
+                            </span>
+                          </td>
+                          <td>
+                            {r.status === 'pending' && (
+                              <div className="admin-action-group">
+                                <button className="btn btn-primary btn-xs" onClick={() => handleRefundUpdate(r.id, 'approved')}>Aprobar</button>
+                                <button className="btn btn-danger btn-xs" onClick={() => handleRefundUpdate(r.id, 'rejected')}>Rechazar</button>
+                              </div>
+                            )}
+                            {r.status === 'approved' && (
+                              <button className="btn btn-secondary btn-xs" onClick={() => handleRefundUpdate(r.id, 'processed')}>Marcar procesado</button>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
 

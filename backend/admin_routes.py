@@ -4,7 +4,7 @@ Admin routes: user management, moderation, stats.
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
@@ -675,3 +675,69 @@ def list_payments(
         })
 
     return {"payments": result, "total": total, "page": page, "pages": (total + per_page - 1) // per_page}
+
+
+# ─── Refund Requests ─────────────────────────────────────────
+
+def _rr_to_dict(rr, db: Session) -> dict:
+    """Serialize a RefundRequest with user info."""
+    payer = db.query(User).filter(User.id == rr.user_id).first()
+    return {
+        "id": rr.id,
+        "user": {
+            "id": payer.id if payer else "",
+            "email": payer.email if payer else "",
+            "firstName": payer.first_name if payer else "",
+            "lastName": payer.last_name if payer else "",
+            "username": payer.username if payer else "",
+            "subscriptionTier": getattr(payer, "subscription_tier", "") if payer else "",
+            "subscriptionStatus": getattr(payer, "subscription_status", "") if payer else "",
+        } if payer else None,
+        "reason": rr.reason,
+        "reasonDetail": rr.reason_detail or "",
+        "amountUsd": rr.amount_usd,
+        "paymentRef": rr.payment_ref or "",
+        "provider": rr.provider or "",
+        "status": rr.status,
+        "adminNotes": rr.admin_notes or "",
+        "createdAt": rr.created_at.isoformat() if rr.created_at else "",
+        "resolvedAt": rr.resolved_at.isoformat() if rr.resolved_at else None,
+    }
+
+
+@router.get("/refund-requests")
+def list_refund_requests(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    from database import RefundRequest
+    requests = db.query(RefundRequest).order_by(desc(RefundRequest.created_at)).limit(100).all()
+    return {"requests": [_rr_to_dict(r, db) for r in requests]}
+
+
+@router.put("/refund-requests/{rr_id}")
+async def update_refund_request(
+    rr_id: str,
+    request: Request,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    from database import RefundRequest
+    body = await request.json()
+    rr = db.query(RefundRequest).filter(RefundRequest.id == rr_id).first()
+    if not rr:
+        raise HTTPException(404, "Solicitud no encontrada")
+
+    new_status = body.get("status")
+    if new_status and new_status in ("approved", "rejected", "processed", "pending"):
+        rr.status = new_status
+        if new_status in ("approved", "rejected", "processed"):
+            rr.resolved_at = datetime.utcnow()
+
+    admin_notes = body.get("admin_notes")
+    if admin_notes is not None:
+        rr.admin_notes = admin_notes
+
+    db.commit()
+    db.refresh(rr)
+    return _rr_to_dict(rr, db)

@@ -98,10 +98,59 @@ export default function TermsOfService({ onClose }: Props) {
           <p>8.4. En caso de fallo en el cobro automático, el Usuario dispondrá de un período de gracia de tres (3) días hábiles para actualizar su método de pago. Vencido dicho plazo sin pago exitoso, la cuenta será degradada automáticamente al Plan Básico, sin derecho a reembolso por el período parcial transcurrido.</p>
 
           <h3>Artículo 9. Cancelación, Reembolsos y Cambio de Plan</h3>
-          <p>9.1. El Usuario podrá cancelar su suscripción en cualquier momento desde el panel de configuración de su cuenta. La cancelación será efectiva al finalizar el ciclo de facturación vigente. No se realizarán reembolsos parciales, prorrateados ni proporcionales por el tiempo no utilizado dentro del período ya facturado.</p>
-          <p>9.2. En caso de cambio de plan de Pro a Max durante un ciclo de facturación activo, se calculará un pago prorrateado basado en los días calendario restantes del ciclo actual. El Usuario solo pagará la diferencia proporcional.</p>
-          <p>9.3. Conniku se reserva el derecho de ofrecer reembolsos discrecionales en casos excepcionales, evaluados individualmente por el equipo de soporte. Estos reembolsos no generan precedente ni derecho futuro.</p>
-          <p>9.4. En jurisdicciones donde la ley local establezca períodos de retracto o desistimiento (como el derecho de retracto de 10 días hábiles establecido en la Ley del Consumidor de Chile, Art. 3 bis letra b), estos derechos serán respetados conforme a la legislación aplicable.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.1. Cancelación inmediata</h4>
+          <p>9.1.1. El Usuario podrá cancelar su suscripción en cualquier momento directamente desde el panel de suscripción de su cuenta. La cancelación se procesa de forma inmediata en el sistema de Conniku.</p>
+          <p>9.1.2. El acceso a las funciones del plan contratado se mantiene activo hasta la fecha de término del ciclo de facturación ya pagado. Al vencer ese período, la cuenta es degradada automáticamente al Plan Básico (gratuito).</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.2. Política general de reembolsos</h4>
+          <p>9.2.1. Con carácter general, Conniku no realiza reembolsos por períodos de suscripción ya iniciados, dado que el acceso a la plataforma queda disponible desde el momento del pago. No se generan reembolsos parciales ni prorrateados por el tiempo no utilizado dentro de un ciclo ya facturado.</p>
+          <p>9.2.2. Lo anterior no obsta el ejercicio de los derechos específicos descritos en los numerales siguientes, ni los derechos irrenunciables que la legislación aplicable reconozca al Usuario.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.3. Garantía de satisfacción — primeros 7 días</h4>
+          <p>9.3.1. Los nuevos suscriptores que contraten un plan por primera vez podrán solicitar el reembolso íntegro del primer pago dentro de los 7 días calendario siguientes al cargo inicial, siempre que: (a) sea el primer período de facturación del Usuario; (b) el uso de la plataforma haya sido limitado (no se hayan exportado documentos, descargado archivos ni completado cursos con certificado); y (c) la solicitud se presente a través de los canales indicados en el numeral 9.8.</p>
+          <p>9.3.2. La garantía de 7 días no aplica a renovaciones posteriores, planes con descuento, planes de recompensa, períodos de prueba gratuitos ni suscripciones adquiridas a través de promociones especiales.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.4. Derecho de retracto — Chile (Ley 19.496 Art. 3 bis letra b)</h4>
+          <p>9.4.1. Los Usuarios residentes en Chile que hayan contratado una suscripción a distancia (internet) tienen derecho a retractarse dentro de los 10 días hábiles siguientes al pago, conforme al artículo 3 bis letra b) de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores. El reembolso se procesará en el método de pago original.</p>
+          <p>9.4.2. Este derecho no es aplicable cuando el servicio haya sido prestado de forma íntegra antes del vencimiento del plazo de retracto, siempre que el Usuario haya sido informado de ello al momento de la contratación.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.5. Derecho de desistimiento — Unión Europea (Directiva 2011/83/UE)</h4>
+          <p>9.5.1. Los Usuarios residentes en la Unión Europea disponen de un plazo de 14 días calendario desde la suscripción para desistir del contrato sin necesidad de indicar motivo, conforme a la Directiva 2011/83/UE del Parlamento Europeo y del Consejo. La solicitud debe presentarse antes del vencimiento de dicho plazo.</p>
+          <p>9.5.2. El derecho de desistimiento no aplica cuando el suministro de contenido digital haya comenzado con el consentimiento previo y expreso del consumidor y el reconocimiento de que perderá su derecho de desistimiento una vez que el contrato haya sido plenamente ejecutado.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.6. Escenarios que califican para reembolso</h4>
+          <p>9.6.1. <strong>Cargo duplicado:</strong> Si el Usuario es cobrado más de una vez por el mismo período de suscripción, Conniku realizará el reembolso completo del cargo duplicado en un plazo máximo de 5 días hábiles.</p>
+          <p>9.6.2. <strong>Cargo no autorizado o fraude:</strong> En caso de uso no autorizado del método de pago del Usuario, Conniku iniciará una investigación. Previa verificación, se procesará el reembolso completo. El Usuario deberá reportar el caso a contacto@conniku.com y al emisor de su tarjeta.</p>
+          <p>9.6.3. <strong>Error técnico imputable a Conniku:</strong> Si un error en los sistemas de Conniku impidió al Usuario acceder a las funciones del plan durante un período significativo, se otorgará un crédito o reembolso proporcional a los días afectados, a elección del Usuario.</p>
+          <p>9.6.4. <strong>Interrupción del servicio superior a 72 horas:</strong> En caso de indisponibilidad total o grave del servicio por causas imputables a Conniku durante más de 72 horas continuas, el Usuario tendrá derecho a una extensión equivalente del período de suscripción o, a su elección, a un reembolso proporcional.</p>
+          <p>9.6.5. <strong>Error de cobro (monto incorrecto):</strong> Si el monto cobrado no corresponde al plan contratado, la diferencia será corregida o reembolsada en un plazo máximo de 5 días hábiles desde la notificación.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.7. Escenarios que NO califican para reembolso</h4>
+          <p>9.7.1. Cambio de opinión o desinterés en el servicio después de vencido el período de garantía de 7 días o el plazo legal de desistimiento/retracto.</p>
+          <p>9.7.2. Período parcial no utilizado dentro de un ciclo de facturación ya pagado, fuera de los plazos de garantía o legales aplicables.</p>
+          <p>9.7.3. Suscripciones adquiridas mediante planes con descuento, recompensas, referidos, promociones o cortesías, a menos que corresponda un derecho legal irrenunciable.</p>
+          <p>9.7.4. Suspensión o terminación de cuenta por incumplimiento de los presentes Términos y Condiciones imputable al Usuario.</p>
+          <p>9.7.5. Inconformidad con funciones ya utilizadas o con contenido ya descargado o exportado durante el período de suscripción.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.8. Proceso de solicitud de reembolso</h4>
+          <p>9.8.1. <strong>Plazo máximo:</strong> La solicitud de reembolso debe presentarse dentro de los 14 días calendario desde la fecha del cargo, salvo que un plazo legal específico (retracto Chile, desistimiento UE) sea mayor.</p>
+          <p>9.8.2. <strong>Canal:</strong> El Usuario puede presentar la solicitud directamente desde el panel de suscripción de la plataforma (sección "Solicitar reembolso") o enviando un correo a contacto@conniku.com con el asunto "Solicitud de reembolso" y los datos del cargo (referencia de transacción, monto, fecha y motivo).</p>
+          <p>9.8.3. <strong>Tiempo de respuesta:</strong> Conniku responderá la solicitud dentro de los 5 días hábiles siguientes a su recepción.</p>
+          <p>9.8.4. <strong>Procesamiento:</strong> Los reembolsos aprobados se procesan en el método de pago original utilizado en la transacción. El tiempo de acreditación depende del procesador de pagos (PayPal o Mercado Pago) y puede tomar entre 7 y 10 días hábiles adicionales.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.9. Disputas con procesadores de pago</h4>
+          <p>9.9.1. El Usuario puede gestionar disputas directamente ante PayPal o Mercado Pago a través de los mecanismos de resolución de conflictos propios de cada plataforma. Se recomienda contactar a Conniku previamente para resolver la situación de forma directa y expedita.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.10. Clases con tutores</h4>
+          <p>9.10.1. Si un tutor no se presenta a una clase pactada sin previo aviso, el Usuario tiene derecho al reembolso completo del monto pagado por dicha clase.</p>
+          <p>9.10.2. El Usuario puede cancelar una clase reservada con al menos 2 horas de anticipación y recibirá el reembolso íntegro. Cancelaciones con menos de 2 horas de anticipación no califican para reembolso, salvo que el tutor tampoco se haya presentado.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.11. Moneda y método de reembolso</h4>
+          <p>9.11.1. Los reembolsos se procesan en la misma moneda y a través del mismo método de pago utilizado en la transacción original. Conniku no es responsable por diferencias cambiarias que puedan surgir entre la fecha del cobro y la fecha del reembolso.</p>
+
+          <h4 style={{ marginTop: 12, marginBottom: 4 }}>9.12. Cambio de plan</h4>
+          <p>9.12.1. En caso de cambio de plan de Pro a Max durante un ciclo de facturación activo, se calculará un pago prorrateado basado en los días calendario restantes del ciclo actual. El Usuario solo pagará la diferencia proporcional.</p>
 
           <h3>Artículo 10. Impuestos y Obligaciones Tributarias</h3>
           <p>10.1. Los precios mostrados no incluyen impuestos locales aplicables.</p>

@@ -12,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from database import get_db, User, PaymentLog, gen_id
+from database import get_db, User, PaymentLog, gen_id, TermsAcceptance, RefundRequest
 from middleware import get_current_user
 from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
 
@@ -545,9 +545,17 @@ async def cancel_subscription(request: Request, db: Session = Depends(get_db), u
     """Cancel a PayPal subscription."""
     body = await request.json()
     subscription_id = body.get("subscription_id", "")
+    terms_accepted = body.get("terms_accepted", False)
+
+    if not terms_accepted:
+        raise HTTPException(status_code=400, detail="Debes aceptar los Términos y Condiciones para continuar")
 
     if not subscription_id:
         raise HTTPException(status_code=400, detail="subscription_id requerido")
+
+    # Record T&C acceptance
+    acceptance = TermsAcceptance(user_id=user.id, terms_version="2.1", context="cancel_subscription")
+    db.add(acceptance)
 
     token = await _get_access_token()
 
@@ -566,6 +574,86 @@ async def cancel_subscription(request: Request, db: Session = Depends(get_db), u
     db.commit()
 
     return {"status": "cancelled"}
+
+
+# ─── Refund Request ───────────────────────────────────────
+
+@router.post("/refund-request")
+async def submit_refund_request(request: Request, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    """User submits a refund request. Creates a record and notifies CEO."""
+    body = await request.json()
+    reason = body.get("reason", "other")
+    reason_detail = body.get("reason_detail", "")
+    payment_ref = body.get("payment_ref", "")
+    amount_usd = body.get("amount_usd")
+    terms_accepted = body.get("terms_accepted", False)
+
+    if not terms_accepted:
+        raise HTTPException(400, "Debes aceptar los Términos y Condiciones para continuar")
+
+    VALID_REASONS = {
+        "duplicate_charge", "unauthorized", "technical_error",
+        "service_outage", "guarantee_7d", "eu_withdrawal",
+        "chile_retracto", "tutor_noshow", "other"
+    }
+    if reason not in VALID_REASONS:
+        reason = "other"
+
+    # Record T&C acceptance
+    acceptance = TermsAcceptance(user_id=user.id, terms_version="2.1", context="refund_request")
+    db.add(acceptance)
+
+    # Create refund request
+    rr = RefundRequest(
+        user_id=user.id,
+        reason=reason,
+        reason_detail=reason_detail,
+        amount_usd=amount_usd,
+        payment_ref=payment_ref,
+        provider=getattr(user, "provider", "") or "",
+        status="pending",
+    )
+    db.add(rr)
+    db.commit()
+    db.refresh(rr)
+
+    # Notify CEO
+    try:
+        from notifications import _send_email_async, _email_template, CEO_EMAIL
+        reason_labels = {
+            "duplicate_charge": "Cargo duplicado",
+            "unauthorized": "Cargo no autorizado / fraude",
+            "technical_error": "Error técnico de la plataforma",
+            "service_outage": "Interrupción del servicio",
+            "guarantee_7d": "Garantía 7 días (nuevo suscriptor)",
+            "eu_withdrawal": "Derecho de desistimiento UE (14 días)",
+            "chile_retracto": "Derecho de retracto Chile (10 días hábiles)",
+            "tutor_noshow": "Tutor no se presentó a clase",
+            "other": "Otro",
+        }
+        html = _email_template(
+            "Solicitud de Reembolso",
+            f"""
+            <p><strong>Usuario:</strong> {user.first_name} {user.last_name} ({user.email})</p>
+            <p><strong>Razón:</strong> {reason_labels.get(reason, reason)}</p>
+            <p><strong>Detalle:</strong> {reason_detail or 'Sin detalle'}</p>
+            <p><strong>Monto solicitado:</strong> USD {amount_usd if amount_usd is not None else 'No especificado'}</p>
+            <p><strong>Referencia de pago:</strong> {payment_ref or 'No proporcionada'}</p>
+            <p><strong>Plan actual:</strong> {getattr(user, 'subscription_tier', 'N/A')} / {getattr(user, 'subscription_status', 'N/A')}</p>
+            <p style="margin-top:16px">Revisar y procesar en el panel de administración.</p>
+            """
+        )
+        _send_email_async(
+            CEO_EMAIL,
+            f"[Conniku] Solicitud de reembolso — {user.email}",
+            html,
+            email_type="refund_request",
+            from_account="ceo"
+        )
+    except Exception as e:
+        print(f"[Refund] Email error: {e}")
+
+    return {"ok": True, "id": rr.id, "message": "Solicitud recibida. Responderemos dentro de 5 días hábiles."}
 
 
 # ─── Webhook ──────────────────────────────────────────────────

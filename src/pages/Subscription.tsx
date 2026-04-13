@@ -18,6 +18,22 @@ export default function Subscription({ onNavigate }: Props) {
   const [mpPlans, setMpPlans] = useState<any>(null)
   const [selectedTier, setSelectedTier] = useState<'pro' | 'max'>('pro')
 
+  // Cancel gate modal
+  const [showCancelGate, setShowCancelGate] = useState(false)
+  const [cancelTermsRead, setCancelTermsRead] = useState(false)
+  const [cancelError, setCancelError] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
+
+  // Refund flow modal
+  const [showRefundFlow, setShowRefundFlow] = useState(false)
+  const [refundReason, setRefundReason] = useState('other')
+  const [refundDetail, setRefundDetail] = useState('')
+  const [refundPaymentRef, setRefundPaymentRef] = useState('')
+  const [refundTermsRead, setRefundTermsRead] = useState(false)
+  const [refundLoading, setRefundLoading] = useState(false)
+  const [refundError, setRefundError] = useState('')
+  const [refundSuccess, setRefundSuccess] = useState('')
+
   useEffect(() => {
     api.getMpSubscriptionStatus().then(setSubStatus).catch(() => {})
     api.getFinancePrices(user?.country || 'CL').then(setLocalPrices).catch(() => {})
@@ -62,26 +78,47 @@ export default function Subscription({ onNavigate }: Props) {
   }
 
   const handleManageSubscription = async () => {
+    setCancelError('')
+    setCancelLoading(true)
     try {
-      // Check provider and cancel accordingly
       if (subStatus?.provider === 'mercadopago' || subStatus?.hasMercadoPago) {
-        if (confirm(t('sub.cancelConfirm'))) {
-          await api.cancelMpSubscription()
-          alert(t('sub.subscriptionCancelled'))
-          window.location.reload()
-        }
+        await api.cancelMpSubscription(true)
+        setShowCancelGate(false)
+        window.location.reload()
         return
       }
       if (subStatus?.provider === 'paypal' && subStatus?.paypal_subscription_id) {
-        if (confirm(t('sub.cancelPaypalConfirm'))) {
-          await api.cancelPaypalSubscription(subStatus.paypal_subscription_id)
-          alert(t('sub.paypalCancelled'))
-          window.location.reload()
-        }
+        await api.cancelPaypalSubscription(subStatus.paypal_subscription_id, true)
+        setShowCancelGate(false)
+        window.location.reload()
         return
       }
     } catch (err: any) {
-      alert(err.message || t('sub.errorManage'))
+      setCancelError(err.message || 'Error al cancelar la suscripción.')
+    } finally {
+      setCancelLoading(false)
+    }
+  }
+
+  const handleSubmitRefund = async () => {
+    setRefundError('')
+    if (!refundTermsRead) {
+      setRefundError('Debes aceptar los Términos y Condiciones para continuar.')
+      return
+    }
+    setRefundLoading(true)
+    try {
+      await api.submitRefundRequest({
+        reason: refundReason,
+        reason_detail: refundDetail,
+        payment_ref: refundPaymentRef,
+        terms_accepted: true,
+      })
+      setRefundSuccess('Solicitud recibida. Responderemos dentro de 5 días hábiles.')
+    } catch (err: any) {
+      setRefundError(err.message || 'Error al enviar la solicitud.')
+    } finally {
+      setRefundLoading(false)
     }
   }
 
@@ -110,9 +147,17 @@ export default function Subscription({ onNavigate }: Props) {
                 </p>
               </div>
               {isActive && (
-                <button className="btn btn-secondary btn-sm" onClick={handleManageSubscription}>
-                  {t('sub.manageSubscription')}
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setShowCancelGate(true); setCancelTermsRead(false); setCancelError('') }}>
+                    {t('sub.manageSubscription')}
+                  </button>
+                  <button
+                    style={{ fontSize: 12, color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                    onClick={() => { setShowRefundFlow(true); setRefundReason('other'); setRefundDetail(''); setRefundPaymentRef(''); setRefundTermsRead(false); setRefundError(''); setRefundSuccess('') }}
+                  >
+                    Solicitar reembolso
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -297,6 +342,132 @@ export default function Subscription({ onNavigate }: Props) {
           </div>
         )}
       </div>
+
+      {/* ─── Cancel Gate Modal ─── */}
+      {showCancelGate && (
+        <div className="modal-overlay" onClick={() => setShowCancelGate(false)}>
+          <div className="modal" style={{ maxWidth: 480 }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12 }}>Cancelar suscripción</h3>
+            <div style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: 14, marginBottom: 14, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--text-primary)' }}>Antes de continuar, revisa nuestra política:</p>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                <li>La cancelación es <strong>inmediata</strong> y tu acceso al plan se mantiene hasta el fin del ciclo ya pagado.</li>
+                <li><strong>No hay reembolso</strong> por el período parcial no utilizado, salvo dentro de la garantía de 7 días (primer período) o por los derechos legales de retracto/desistimiento aplicables.</li>
+                <li>Si consideras que calificas para un reembolso, puedes solicitarlo usando "Solicitar reembolso" en el panel de suscripción.</li>
+              </ul>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, cursor: 'pointer', marginBottom: 14 }}>
+              <input
+                type="checkbox"
+                checked={cancelTermsRead}
+                onChange={e => setCancelTermsRead(e.target.checked)}
+                style={{ marginTop: 2, flexShrink: 0 }}
+              />
+              <span>He leído y acepto los <a href="/terminos" target="_blank" style={{ color: 'var(--accent)' }}>Términos y Condiciones</a>, incluyendo la política de cancelación y reembolsos (Artículo 9).</span>
+            </label>
+            {cancelError && (
+              <p style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 10 }}>{cancelError}</p>
+            )}
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary btn-sm" onClick={() => setShowCancelGate(false)}>Volver</button>
+              <button
+                className="btn btn-danger btn-sm"
+                disabled={!cancelTermsRead || cancelLoading}
+                onClick={handleManageSubscription}
+              >
+                {cancelLoading ? 'Cancelando...' : 'Confirmar cancelación'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Refund Flow Modal ─── */}
+      {showRefundFlow && (
+        <div className="modal-overlay" onClick={() => setShowRefundFlow(false)}>
+          <div className="modal" style={{ maxWidth: 500 }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ marginBottom: 12 }}>Solicitar reembolso</h3>
+            {refundSuccess ? (
+              <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                <p style={{ color: 'var(--accent-green)', fontWeight: 600, marginBottom: 8 }}>Solicitud enviada</p>
+                <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>{refundSuccess}</p>
+                <button className="btn btn-primary btn-sm" onClick={() => setShowRefundFlow(false)}>Cerrar</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg-secondary)', borderRadius: 8, padding: 12, marginBottom: 14, fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
+                  Las solicitudes de reembolso son evaluadas según la política del Artículo 9 de los Términos y Condiciones. Recibirás respuesta en un plazo de 5 días hábiles.
+                </div>
+
+                <div className="auth-field" style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Motivo del reembolso</label>
+                  <select
+                    className="form-input"
+                    value={refundReason}
+                    onChange={e => setRefundReason(e.target.value)}
+                  >
+                    <option value="guarantee_7d">Garantía 7 días (nuevo suscriptor)</option>
+                    <option value="chile_retracto">Derecho de retracto Chile (10 días hábiles)</option>
+                    <option value="eu_withdrawal">Derecho de desistimiento UE (14 días)</option>
+                    <option value="duplicate_charge">Cargo duplicado</option>
+                    <option value="unauthorized">Cargo no autorizado / fraude</option>
+                    <option value="technical_error">Error técnico de la plataforma</option>
+                    <option value="service_outage">Interrupción del servicio</option>
+                    <option value="tutor_noshow">Tutor no se presentó a clase</option>
+                    <option value="other">Otro</option>
+                  </select>
+                </div>
+
+                <div className="auth-field" style={{ marginBottom: 12 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Detalle (opcional)</label>
+                  <textarea
+                    className="form-input"
+                    rows={3}
+                    value={refundDetail}
+                    onChange={e => setRefundDetail(e.target.value)}
+                    placeholder="Describe brevemente lo ocurrido..."
+                  />
+                </div>
+
+                <div className="auth-field" style={{ marginBottom: 14 }}>
+                  <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 4 }}>Referencia de transacción (opcional)</label>
+                  <input
+                    className="form-input"
+                    value={refundPaymentRef}
+                    onChange={e => setRefundPaymentRef(e.target.value)}
+                    placeholder="ID de transacción PayPal o Mercado Pago"
+                  />
+                </div>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, fontSize: 13, cursor: 'pointer', marginBottom: 14 }}>
+                  <input
+                    type="checkbox"
+                    checked={refundTermsRead}
+                    onChange={e => setRefundTermsRead(e.target.checked)}
+                    style={{ marginTop: 2, flexShrink: 0 }}
+                  />
+                  <span>He leído y acepto los <a href="/terminos" target="_blank" style={{ color: 'var(--accent)' }}>Términos y Condiciones</a>, incluyendo la política de reembolsos (Artículo 9).</span>
+                </label>
+
+                {refundError && (
+                  <p style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 10 }}>{refundError}</p>
+                )}
+
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary btn-sm" onClick={() => setShowRefundFlow(false)}>Cancelar</button>
+                  <button
+                    className="btn btn-primary btn-sm"
+                    disabled={!refundTermsRead || refundLoading}
+                    onClick={handleSubmitRefund}
+                  >
+                    {refundLoading ? 'Enviando...' : 'Enviar solicitud'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </>
   )
 }

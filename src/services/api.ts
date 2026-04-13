@@ -977,8 +977,8 @@ export const api = {
   createMpCheckout: (plan: string) =>
     request('/payments/mp/create-checkout', { method: 'POST', body: JSON.stringify({ plan }) }),
   getMpSubscriptionStatus: () => request('/payments/mp/subscription-status'),
-  cancelMpSubscription: () =>
-    request('/payments/mp/cancel-subscription', { method: 'POST' }),
+  cancelMpSubscription: (termsAccepted = true) =>
+    request('/payments/mp/cancel-subscription', { method: 'POST', body: JSON.stringify({ terms_accepted: termsAccepted }) }),
 
   // ─── PayPal ──────────────────────────────────────────────
   getPaypalHealth: () => request('/payments/paypal/health'),
@@ -989,8 +989,16 @@ export const api = {
     request(`/payments/paypal/capture-order/${order_id}`, { method: 'POST' }),
   createPaypalSubscription: (plan_id: string) =>
     request('/payments/paypal/create-subscription', { method: 'POST', body: JSON.stringify({ plan_id }) }),
-  cancelPaypalSubscription: (subscription_id: string) =>
-    request('/payments/paypal/cancel-subscription', { method: 'POST', body: JSON.stringify({ subscription_id }) }),
+  cancelPaypalSubscription: (subscription_id: string, termsAccepted = true) =>
+    request('/payments/paypal/cancel-subscription', { method: 'POST', body: JSON.stringify({ subscription_id, terms_accepted: termsAccepted }) }),
+
+  submitRefundRequest: (data: any) =>
+    request('/payments/paypal/refund-request', { method: 'POST', body: JSON.stringify(data) }),
+
+  getAdminRefundRequests: () => request('/admin/refund-requests'),
+
+  updateAdminRefundRequest: (id: string, data: any) =>
+    request(`/admin/refund-requests/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   // ─── Tutor Class Payments ─────────────────────────────────
   createMpClassCheckout: (classId: string, applyMaxDiscount?: boolean) =>

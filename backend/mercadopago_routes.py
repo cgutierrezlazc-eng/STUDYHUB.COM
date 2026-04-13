@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from database import get_db, User, PaymentLog, gen_id
+from database import get_db, User, PaymentLog, gen_id, TermsAcceptance
 from middleware import get_current_user
 from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
 
@@ -687,14 +687,27 @@ async def mp_subscription_status(user: User = Depends(get_current_user), db: Ses
 # ─── Cancel Subscription ─────────────────────────────────────
 
 @router.post("/cancel-subscription")
-async def cancel_mp_subscription(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def cancel_mp_subscription(request: Request, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Cancel user's Mercado Pago subscription."""
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    terms_accepted = body.get("terms_accepted", False)
+
+    if not terms_accepted:
+        raise HTTPException(400, "Debes aceptar los Términos y Condiciones para continuar")
+
     if not MP_ACCESS_TOKEN:
         raise HTTPException(503, "Mercado Pago no configurado")
 
     mp_ref = user.stripe_customer_id or ""
     if not mp_ref.startswith("mp_"):
         raise HTTPException(400, "No tienes una suscripcion activa de Mercado Pago")
+
+    # Record T&C acceptance
+    acceptance = TermsAcceptance(user_id=user.id, terms_version="2.1", context="cancel_subscription")
+    db.add(acceptance)
 
     preapproval_id = mp_ref.replace("mp_", "")
 
