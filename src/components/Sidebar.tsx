@@ -21,6 +21,12 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [tutorStatus, setTutorStatus] = useState<string | null>(null)
+  const [adminPanelOpen, setAdminPanelOpen] = useState(currentPath.startsWith('/admin-panel'))
+  const [openAdminCat, setOpenAdminCat] = useState<string | null>(
+    currentPath.startsWith('/admin-panel')
+      ? (ADMIN_MODULES.find(m => currentPath.startsWith(m.route))?.category ?? null)
+      : null
+  )
 
   // Load tutor profile status only if user has mentoring enabled
   useEffect(() => {
@@ -29,61 +35,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       .then((d: any) => setTutorStatus(d?.status || null))
       .catch(() => {})
   }, [user?.id, user?.offersMentoring])
-
-  // ── Active-section detection ─────────────────────────────────
-  const socialPaths   = ['/feed', '/friends', '/communities', '/events', '/messages', '/my-profile']
-  const academicPaths = ['/dashboard', '/study-paths', '/study-rooms', '/gamification', '/search', '/calendar', '/marketplace', '/courses', '/tutores']
-  const supportPaths  = ['/profile', '/subscription', '/suggestions', '/admin', '/admin-panel']
-
-  const isSocialActive   = socialPaths.some(p => currentPath.startsWith(p)) || currentPath.startsWith('/user/')
-  const isAcademicActive = academicPaths.some(p => currentPath.startsWith(p))
-  const isSupportActive  = supportPaths.some(p => currentPath.startsWith(p))
-  const isSubjectsActive = currentPath.startsWith('/project/')
-  const isTutorActive    = currentPath.startsWith('/my-tutor')
-  const isJobsActive     = currentPath.startsWith('/jobs')
-
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    social:      isSocialActive,
-    academic:    isAcademicActive,
-    subjects:    true,
-    support:     isSupportActive,
-    tutor:       isTutorActive,
-    jobs:        isJobsActive,
-    adminPanel:  currentPath.startsWith('/admin-panel'),
-  })
-  const [openAdminCat, setOpenAdminCat] = useState<string | null>(
-    currentPath.startsWith('/admin-panel')
-      ? (ADMIN_MODULES.find(m => currentPath.startsWith(m.route))?.category ?? null)
-      : null
-  )
-
-  // Keep active section open when route changes (rule C)
-  useEffect(() => {
-    setOpenSections(prev => ({
-      ...prev,
-      ...(isSocialActive   && { social:   true }),
-      ...(isAcademicActive && { academic: true }),
-      ...(isSupportActive  && { support:  true }),
-      ...(isSubjectsActive && { subjects: true }),
-      ...(isTutorActive    && { tutor:    true }),
-      ...(isJobsActive     && { jobs:     true }),
-    }))
-  }, [currentPath])
-
-  // Rule C: active section cannot be closed — only toggle non-active ones
-  const activeMap: Record<string, boolean> = {
-    social:      isSocialActive,
-    academic:    isAcademicActive,
-    subjects:    isSubjectsActive,
-    support:     isSupportActive,
-    tutor:       isTutorActive,
-    jobs:        isJobsActive,
-    adminPanel:  currentPath.startsWith('/admin-panel'),
-  }
-  const toggleSection = (key: string) => {
-    if (activeMap[key]) return   // locked — active section stays open
-    setOpenSections(prev => ({ ...prev, [key]: !prev[key] }))
-  }
 
   // Unread messages badge
   useEffect(() => {
@@ -99,18 +50,9 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
   const isActive = (path: string) => currentPath.startsWith(path)
 
-  // ── Section header helper ────────────────────────────────────
-  const SectionHeader = ({ sectionKey, label, extra }: { sectionKey: string; label: string; extra?: React.ReactNode }) => (
-    <button
-      className={`sidebar-section-toggle${activeMap[sectionKey] ? ' section-locked' : ''}`}
-      onClick={() => toggleSection(sectionKey)}
-      aria-expanded={openSections[sectionKey]}
-    >
-      <span className="sidebar-section-label">{label}</span>
-      {extra}
-      <span className="sidebar-section-line" />
-      <ChevronIcon open={!!openSections[sectionKey]} />
-    </button>
+  // ── Static section separator (Option B) ─────────────────
+  const SepLabel = ({ label }: { label: string }) => (
+    <div className="sidebar-sep-label">{label}</div>
   )
 
   return (
@@ -122,229 +64,195 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       )}
 
       {/* ══ SOCIAL ══ */}
-      <div className="sidebar-section">
-        <SectionHeader sectionKey="social" label={t('sidebar.social')} />
-        <div className={`sidebar-section-items${openSections.social ? ' open' : ''}`}>
-          <div className="sidebar-section-items-inner">
-            <button
-              className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`}
-              onClick={() => onNavigate('/my-profile')}
-            >
-              {Icons.user(IC.profile)} {t('sidebar.myProfile')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
-              onClick={() => onNavigate('/feed')}
-            >
-              {Icons.feed(IC.feed)} {t('sidebar.feed')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`}
-              onClick={() => onNavigate('/communities')}
-            >
-              {Icons.globe(IC.globe)} {t('sidebar.communities')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/events') ? 'active' : ''}`}
-              onClick={() => onNavigate('/events')}
-            >
-              {Icons.calendar(IC.events)} {t('sidebar.events')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/messages') ? 'active' : ''}`}
-              onClick={() => onNavigate('/messages')}
-            >
-              {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
-              {unreadMessages > 0 && (
-                <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
+      <SepLabel label={t('sidebar.social')} />
+      <button
+        className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`}
+        onClick={() => onNavigate('/my-profile')}
+      >
+        {Icons.user(IC.profile)} {t('sidebar.myProfile')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
+        onClick={() => onNavigate('/feed')}
+      >
+        {Icons.feed(IC.feed)} {t('sidebar.feed')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`}
+        onClick={() => onNavigate('/communities')}
+      >
+        {Icons.globe(IC.globe)} {t('sidebar.communities')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/events') ? 'active' : ''}`}
+        onClick={() => onNavigate('/events')}
+      >
+        {Icons.calendar(IC.events)} {t('sidebar.events')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/messages') ? 'active' : ''}`}
+        onClick={() => onNavigate('/messages')}
+      >
+        {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
+        {unreadMessages > 0 && (
+          <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
+        )}
+      </button>
 
       {/* ══ ACADÉMICO ══ */}
-      <div className="sidebar-section">
-        <SectionHeader sectionKey="academic" label={t('sidebar.academic')} />
-        <div className={`sidebar-section-items${openSections.academic ? ' open' : ''}`}>
-          <div className="sidebar-section-items-inner">
-            <button
-              className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
-              onClick={() => onNavigate('/dashboard')}
-            >
-              {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`}
-              onClick={() => onNavigate('/study-rooms')}
-            >
-              {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/study-paths') ? 'active' : ''}`}
-              onClick={() => onNavigate('/study-paths')}
-            >
-              {Icons.bookOpen(IC.rooms)} Rutas de Estudio
-            </button>
-            <button
-              className={`nav-item ${isActive('/gamification') ? 'active' : ''}`}
-              onClick={() => onNavigate('/gamification')}
-            >
-              {Icons.sparkles(IC.ai)} Logros
-            </button>
-            <button
-              className={`nav-item ${isActive('/search') ? 'active' : ''}`}
-              onClick={() => onNavigate('/search')}
-            >
-              {Icons.search(IC.search)} {t('sidebar.search')}
-            </button>
-            <button
-              className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`}
-              onClick={() => onNavigate('/calendar')}
-            >
-              {Icons.calendar(IC.calendar)} {t('sidebar.calendar')}
-            </button>
-            <button
-              className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`}
-              onClick={() => onNavigate('/marketplace')}
-            >
-              {Icons.fileText(IC.notes)} {t('sidebar.notes')}
-            </button>
-            <button
-              className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
-              onClick={() => onNavigate('/courses')}
-            >
-              {Icons.diploma(IC.courses)} Cursos
-            </button>
-            <button
-              className={`nav-item ${isActive('/tutores') ? 'active' : ''}`}
-              onClick={() => onNavigate('/tutores')}
-            >
-              {Icons.tutors(IC.tutors)} Tutores
-            </button>
-          </div>
-        </div>
-      </div>
+      <SepLabel label={t('sidebar.academic')} />
+      <button
+        className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
+        onClick={() => onNavigate('/dashboard')}
+      >
+        {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`}
+        onClick={() => onNavigate('/study-rooms')}
+      >
+        {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/study-paths') ? 'active' : ''}`}
+        onClick={() => onNavigate('/study-paths')}
+      >
+        {Icons.bookOpen(IC.rooms)} Rutas de Estudio
+      </button>
+      <button
+        className={`nav-item ${isActive('/gamification') ? 'active' : ''}`}
+        onClick={() => onNavigate('/gamification')}
+      >
+        {Icons.sparkles(IC.ai)} Logros
+      </button>
+      <button
+        className={`nav-item ${isActive('/search') ? 'active' : ''}`}
+        onClick={() => onNavigate('/search')}
+      >
+        {Icons.search(IC.search)} {t('sidebar.search')}
+      </button>
+      <button
+        className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`}
+        onClick={() => onNavigate('/calendar')}
+      >
+        {Icons.calendar(IC.calendar)} {t('sidebar.calendar')}
+      </button>
+      <button
+        className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`}
+        onClick={() => onNavigate('/marketplace')}
+      >
+        {Icons.fileText(IC.notes)} {t('sidebar.notes')}
+      </button>
+      <button
+        className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
+        onClick={() => onNavigate('/courses')}
+      >
+        {Icons.diploma(IC.courses)} Cursos
+      </button>
+      <button
+        className={`nav-item ${isActive('/tutores') ? 'active' : ''}`}
+        onClick={() => onNavigate('/tutores')}
+      >
+        {Icons.tutors(IC.tutors)} Tutores
+      </button>
 
       {/* ══ BOLSA DEL TRABAJO ══ */}
-      <div className="sidebar-section">
-        <SectionHeader sectionKey="jobs" label={t('sidebar.jobBoard')} />
-        <div className={`sidebar-section-items${openSections.jobs ? ' open' : ''}`}>
-          <div className="sidebar-section-items-inner">
-            <button
-              className={`nav-item ${isActive('/jobs') ? 'active' : ''}`}
-              onClick={() => onNavigate('/jobs')}
-            >
-              {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
-            </button>
-          </div>
-        </div>
-      </div>
+      <SepLabel label={t('sidebar.jobBoard')} />
+      <button
+        className={`nav-item ${isActive('/jobs') ? 'active' : ''}`}
+        onClick={() => onNavigate('/jobs')}
+      >
+        {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
+      </button>
 
       {/* ══ MIS ASIGNATURAS ══ */}
-      <div className="sidebar-section sidebar-section-grow">
-        <SectionHeader sectionKey="subjects" label={t('nav.mySubjects')} />
-        <div className={`sidebar-section-items${openSections.subjects ? ' open' : ''}`}>
-          <div className="sidebar-section-items-inner">
-            {projects.map(project => (
-              <button
-                key={project.id}
-                className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`}
-                onClick={() => onNavigate(`/project/${project.id}`)}
-              >
-                <span className="project-dot" style={{ background: project.color }} />
-                {project.name}
-              </button>
-            ))}
-            <button className="nav-item nav-item-add" onClick={onNewProject}>
-              {Icons.plus(IC.plus)} {t('nav.newSubject')}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ══ SOPORTE ══ */}
-      <div className="sidebar-section">
-        <SectionHeader sectionKey="support" label={t('sidebar.support')} />
-        <div className={`sidebar-section-items${openSections.support ? ' open' : ''}`}>
-          <div className="sidebar-section-items-inner">
-            <button
-              className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`}
-              onClick={() => onNavigate('/profile')}
-            >
-              {Icons.settings(IC.settings)} {t('sidebar.configuration')}
-            </button>
-            <button
-              className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`}
-              onClick={() => onNavigate('/subscription')}
-            >
-              {Icons.diamond(IC.diamond)} {t('sidebar.subscription')}
-            </button>
-            <button
-              className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`}
-              onClick={() => onNavigate('/suggestions')}
-            >
-              {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
-            </button>
-            {user?.isAdmin && (
-              <button
-                className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`}
-                onClick={() => onNavigate('/admin')}
-              >
-                {Icons.settings(IC.admin)} {t('sidebar.admin')}
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
+      <SepLabel label={t('nav.mySubjects')} />
+      {projects.map(project => (
+        <button
+          key={project.id}
+          className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`}
+          onClick={() => onNavigate(`/project/${project.id}`)}
+        >
+          <span className="project-dot" style={{ background: project.color }} />
+          {project.name}
+        </button>
+      ))}
+      <button className="nav-item nav-item-add" onClick={onNewProject}>
+        {Icons.plus(IC.plus)} {t('nav.newSubject')}
+      </button>
 
       {/* ══ MI TUTORÍA (solo tutores) ══ */}
       {user?.offersMentoring && tutorStatus && (
-        <div className="sidebar-section">
-          <SectionHeader
-            sectionKey="tutor"
-            label="Mi Tutoría"
-            extra={
-              tutorStatus === 'pending_review' ? (
-                <span style={{ fontSize: 10, background: '#f59e0b', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>Pendiente</span>
-              ) : tutorStatus === 'appealing' ? (
-                <span style={{ fontSize: 10, background: '#8b5cf6', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>Apelación</span>
-              ) : undefined
-            }
-          />
-          <div className={`sidebar-section-items${openSections.tutor ? ' open' : ''}`}>
-            <div className="sidebar-section-items-inner">
+        <>
+          <SepLabel label="Mi Tutoría" />
+          <button
+            className={`nav-item ${currentPath === '/my-tutor' ? 'active' : ''}`}
+            onClick={() => onNavigate('/my-tutor')}
+          >
+            {Icons.bookOpen(IC.rooms)} Panel Tutor
+            {(tutorStatus === 'pending_review' || tutorStatus === 'appealing') && (
+              <span style={{
+                marginLeft: 'auto',
+                fontSize: 9,
+                background: tutorStatus === 'appealing' ? '#8b5cf6' : '#f59e0b',
+                color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700,
+              }}>
+                {tutorStatus === 'appealing' ? 'Apelación' : 'Pendiente'}
+              </span>
+            )}
+          </button>
+          {tutorStatus === 'approved' && (
+            <>
               <button
-                className={`nav-item ${currentPath === '/my-tutor' ? 'active' : ''}`}
-                onClick={() => onNavigate('/my-tutor')}
+                className={`nav-item ${currentPath === '/my-tutor/materias' ? 'active' : ''}`}
+                onClick={() => onNavigate('/my-tutor/materias')}
               >
-                {Icons.bookOpen(IC.rooms)} Panel Tutor
+                {Icons.bookOpen(IC.rooms)} Mis Materias
               </button>
-              {tutorStatus === 'approved' && (
-                <>
-                  <button
-                    className={`nav-item ${currentPath === '/my-tutor/materias' ? 'active' : ''}`}
-                    onClick={() => onNavigate('/my-tutor/materias')}
-                  >
-                    {Icons.bookOpen(IC.rooms)} Mis Materias
-                  </button>
-                  <button
-                    className={`nav-item ${currentPath === '/my-tutor/clases' ? 'active' : ''}`}
-                    onClick={() => onNavigate('/my-tutor/clases')}
-                  >
-                    {Icons.calendar(IC.calendar)} Mis Clases
-                  </button>
-                  <button
-                    className={`nav-item ${currentPath === '/my-tutor/pagos' ? 'active' : ''}`}
-                    onClick={() => onNavigate('/my-tutor/pagos')}
-                  >
-                    {Icons.diamond(IC.diamond)} Mis Pagos
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+              <button
+                className={`nav-item ${currentPath === '/my-tutor/clases' ? 'active' : ''}`}
+                onClick={() => onNavigate('/my-tutor/clases')}
+              >
+                {Icons.calendar(IC.calendar)} Mis Clases
+              </button>
+              <button
+                className={`nav-item ${currentPath === '/my-tutor/pagos' ? 'active' : ''}`}
+                onClick={() => onNavigate('/my-tutor/pagos')}
+              >
+                {Icons.diamond(IC.diamond)} Mis Pagos
+              </button>
+            </>
+          )}
+        </>
+      )}
+
+      {/* ══ SOPORTE ══ */}
+      <SepLabel label={t('sidebar.support')} />
+      <button
+        className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`}
+        onClick={() => onNavigate('/profile')}
+      >
+        {Icons.settings(IC.settings)} {t('sidebar.configuration')}
+      </button>
+      <button
+        className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`}
+        onClick={() => onNavigate('/subscription')}
+      >
+        {Icons.diamond(IC.diamond)} {t('sidebar.subscription')}
+      </button>
+      <button
+        className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`}
+        onClick={() => onNavigate('/suggestions')}
+      >
+        {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
+      </button>
+      {user?.isAdmin && (
+        <button
+          className={`nav-item ${currentPath === '/admin' ? 'active' : ''}`}
+          onClick={() => onNavigate('/admin')}
+        >
+          {Icons.settings(IC.admin)} {t('sidebar.admin')}
+        </button>
       )}
 
       {/* ══ CEO / MI PANEL ══ */}
@@ -361,7 +269,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
           <div style={{ padding: '0 10px 14px' }}>
             {/* Botón CEO / Usuario */}
             <button
-              onClick={() => setOpenSections(prev => ({ ...prev, adminPanel: !prev.adminPanel }))}
+              onClick={() => setAdminPanelOpen(prev => !prev)}
               style={{
                 width: '100%',
                 background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)',
@@ -410,11 +318,11 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
                   </div>
                 </div>
               </div>
-              <ChevronIcon open={!!openSections.adminPanel} />
+              <ChevronIcon open={adminPanelOpen} />
             </button>
 
             {/* Módulos desplegables por categoría */}
-            {openSections.adminPanel && (
+            {adminPanelOpen && (
               <div style={{ marginTop: 10 }}>
                 {Object.entries(CATEGORY_LABELS).map(([catKey, cat]) => {
                   const mods = ADMIN_MODULES.filter(m =>
