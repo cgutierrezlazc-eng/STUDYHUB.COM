@@ -102,21 +102,6 @@ export default function RightPanel({ currentPath, onNavigate }: Props) {
         </div>
       )}
 
-      {/* Showcase Ejecutivo — solo perfil propio, rol owner o tier MAX */}
-      {currentPath.startsWith('/my-profile') && (user?.role === 'owner' || (user as any)?.subscriptionTier === 'max') && (
-        <div className="rp-widget" style={{ border: '1.5px solid rgba(245,158,11,0.35)', background: 'linear-gradient(135deg, var(--bg-card) 0%, rgba(254,243,199,0.07) 100%)' }}>
-          <h4 className="rp-widget-title" style={{ color: '#d97706' }}>★ Showcase Ejecutivo</h4>
-          <p style={{ margin: '4px 0 12px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-            Tu perfil ejecutivo y portafolio profesional.
-          </p>
-          <button
-            onClick={() => onNavigate('/my-profile')}
-            style={{ width: '100%', padding: '7px 0', background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 700 }}
-          >
-            Ver Showcase →
-          </button>
-        </div>
-      )}
 
       {/* Noticias de Educación — páginas de perfil */}
       {(currentPath.startsWith('/my-profile') || currentPath.startsWith('/user/')) && (

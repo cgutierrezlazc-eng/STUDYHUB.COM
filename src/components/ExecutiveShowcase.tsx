@@ -285,12 +285,11 @@ function FilterBar({ active, onChange }: { active: string; onChange: (t: string)
 
 // ── Main ──────────────────────────────────────────────────────
 interface Props {
-  userId:    string
-  isOwner:   boolean
-  isMaxUser: boolean
+  userId:  string
+  isOwner: boolean
 }
 
-export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props) {
+export default function ExecutiveShowcase({ userId, isOwner }: Props) {
   const [items,       setItems]       = useState<ExecutiveShowcaseItem[]>([])
   const [loading,     setLoading]     = useState(true)
   const [saving,      setSaving]      = useState(false)
@@ -299,7 +298,6 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
   const [filterType,  setFilterType]  = useState('')
 
   useEffect(() => {
-    if (!isMaxUser && !isOwner) { setLoading(false); return }
     const req = isOwner
       ? api.getMyExecutiveShowcase()
       : api.getUserExecutiveShowcase(userId)
@@ -307,7 +305,7 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
       .then((d: any) => setItems(d.items || []))
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [userId, isOwner, isMaxUser])
+  }, [userId, isOwner])
 
   const saveItems = async (next: ExecutiveShowcaseItem[]) => {
     setSaving(true)
@@ -330,7 +328,6 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
 
   const visible = filterType ? items.filter(i => i.type === filterType) : items
 
-  if (!isMaxUser && !isOwner) return null
   if (loading) return (
     <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
       Cargando showcase...
@@ -340,17 +337,16 @@ export default function ExecutiveShowcase({ userId, isOwner, isMaxUser }: Props)
   return (
     <div className="sc-root">
 
-      {/* ── Banner premium ── */}
+      {/* ── Banner ── */}
       <div className="sc-banner">
         <div className="sc-banner-left">
           <div className="sc-banner-title">
-            Showcase Ejecutivo
-            <span className="sc-max-badge">◆ MAX</span>
+            🏅 Showcase
           </div>
           <div className="sc-banner-sub">
             {items.length > 0
-              ? `${items.length} publicación${items.length !== 1 ? 'es' : ''} · charla${items.length !== 1 ? 's' : ''} · logro${items.length !== 1 ? 's' : ''}`
-              : 'Tu espacio profesional de alto nivel'}
+              ? `${items.length} item${items.length !== 1 ? 's' : ''} · artículos, charlas, logros y más`
+              : 'Tu portafolio profesional público'}
           </div>
         </div>
         {isOwner && !addingNew && !editingItem && (

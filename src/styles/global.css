@@ -4759,7 +4759,7 @@ body.touch-device select {
   .site-footer-lang-select { display: none; }
 }
 /* ═══════════════════════════════════════════════════════════════
-   EXECUTIVE SHOWCASE — LinkedIn Executive Style (Plan MAX)
+   SHOWCASE — Portafolio profesional público (todos los usuarios)
    ═══════════════════════════════════════════════════════════════ */
 
 .sc-root {
@@ -4801,16 +4801,7 @@ body.touch-device select {
   gap: 8px;
   letter-spacing: -0.01em;
 }
-.sc-max-badge {
-  font-size: 9px;
-  font-weight: 800;
-  background: linear-gradient(90deg, #f59e0b, #f97316);
-  color: #fff;
-  border-radius: 5px;
-  padding: 2px 7px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
+
 .sc-banner-sub {
   font-size: 12px;
   color: var(--text-muted);
