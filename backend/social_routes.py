@@ -567,14 +567,20 @@ def get_wall_posts(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Only friends and self can see wall posts
-    if wall_owner_id != user.id and not are_friends(db, user.id, wall_owner_id):
-        return []
+    is_self = wall_owner_id == user.id
+    is_friend = are_friends(db, user.id, wall_owner_id)
 
     per_page = 20
-    posts = db.query(WallPost).filter(
-        WallPost.wall_owner_id == wall_owner_id
-    ).order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
+    query = db.query(WallPost).filter(WallPost.wall_owner_id == wall_owner_id)
+
+    if not is_self and not is_friend:
+        # Visitante: solo posts públicos + hitos automáticos
+        from sqlalchemy import or_
+        query = query.filter(
+            or_(WallPost.visibility == "public", WallPost.is_milestone == True)
+        )
+
+    posts = query.order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
     result = []
     for post in posts:

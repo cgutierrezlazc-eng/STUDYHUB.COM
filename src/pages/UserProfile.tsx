@@ -1229,9 +1229,33 @@ export default function UserProfile({ userId, onNavigate }: Props) {
 
                   // Post card
                   const post = item as any
+
+                  // ── Milestone config ────────────────────────────
+                  const milestoneConfig: Record<string, { emoji: string; color: string; bg: string; label: string }> = {
+                    course_completed:    { emoji: '🎓', color: '#2D62C8', bg: 'rgba(45,98,200,0.08)',  label: 'Logro académico' },
+                    certificate:         { emoji: '📜', color: '#059669', bg: 'rgba(5,150,105,0.08)',   label: 'Certificado' },
+                    badge:               { emoji: '🏅', color: '#D97706', bg: 'rgba(217,119,6,0.08)',   label: 'Insignia' },
+                    level_up:            { emoji: '⭐', color: '#7C3AED', bg: 'rgba(124,58,237,0.08)',  label: 'Nivel' },
+                    streak:              { emoji: '🔥', color: '#EF4444', bg: 'rgba(239,68,68,0.08)',   label: 'Racha' },
+                    university_change:   { emoji: '🏛', color: '#0891B2', bg: 'rgba(8,145,178,0.08)',   label: 'Nueva institución' },
+                    tutoring_milestone:  { emoji: '👨‍🏫', color: '#D97706', bg: 'rgba(217,119,6,0.08)',  label: 'Mentoría' },
+                    graduated:           { emoji: '🎉', color: '#059669', bg: 'rgba(5,150,105,0.08)',   label: 'Titulación' },
+                  }
+                  const mc = post.isMilestone ? (milestoneConfig[post.milestoneType] || { emoji: '✨', color: 'var(--accent)', bg: 'rgba(99,102,241,0.08)', label: 'Logro' }) : null
+
                   return (
-                    <div key={post.id} className="card fb-post">
-                      <div className="fb-post-header">
+                    <div key={post.id} className="card fb-post" style={mc ? { border: `1.5px solid ${mc.color}30`, overflow: 'hidden' } : {}}>
+
+                      {/* Milestone banner */}
+                      {mc && (
+                        <div style={{ background: mc.bg, borderBottom: `1px solid ${mc.color}20`, padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 20 }}>{mc.emoji}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: mc.color, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{mc.label}</span>
+                          <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--text-muted)' }}>{timeAgo(post.createdAt)}</span>
+                        </div>
+                      )}
+
+                      <div className="fb-post-header" style={mc ? { paddingTop: 12 } : {}}>
                         <div className="fb-post-author" onClick={() => post.author && onNavigate(`/user/${post.author.id}`)}>
                           {post.author?.avatar ? (
                             <img src={post.author.avatar} alt="" className="fb-post-avatar" />
@@ -1242,7 +1266,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                           )}
                           <div>
                             <strong>{post.author?.firstName} {post.author?.lastName}</strong>
-                            <span className="fb-post-time">{timeAgo(post.createdAt)}</span>
+                            {!mc && <span className="fb-post-time">{timeAgo(post.createdAt)}</span>}
                           </div>
                         </div>
                         {(post.author?.id === user?.id || isOwn) && (
@@ -1250,7 +1274,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                         )}
                       </div>
 
-                      <p className="fb-post-content">{post.content}</p>
+                      <p className="fb-post-content" style={mc ? { fontSize: 15, fontWeight: 600, color: mc.color } : {}}>{post.content}</p>
 
                       {post.imageUrl && (
                         <div className="fb-post-image"><img src={post.imageUrl} alt="" /></div>

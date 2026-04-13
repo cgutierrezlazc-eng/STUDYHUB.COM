@@ -645,6 +645,19 @@ def submit_quiz(course_id: str, data: dict,
         except Exception as e:
             print(f"[Cert] Auto-generation on quiz pass error: {e}")
 
+        # Auto-milestone post on wall
+        try:
+            from social_routes import create_milestone_post
+            course_obj = course_obj if 'course_obj' in dir() else db.query(Course).filter(Course.id == course_id).first()
+            course_title = course_obj.title if course_obj else "un curso"
+            create_milestone_post(
+                db, str(user.id), "course_completed",
+                f"¡Completé el curso \"{course_title}\" con {score:.0f}% de nota! 🎓",
+                visibility="public"
+            )
+        except Exception as e:
+            print(f"[Milestone] Course post error: {e}")
+
         # Course-completion rewards use a 12-month rolling window
         from rewards_routes import (grant_reward, REWARD_RULES,
                                     get_course_reward_window, COURSE_REWARD_CYCLE_DAYS)
