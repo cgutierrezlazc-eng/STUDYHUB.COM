@@ -237,12 +237,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       {/* ══ SOPORTE ══ */}
       <SepLabel label={t('sidebar.support')} />
       <button
-        className={`nav-item ${currentPath === '/profile' ? 'active' : ''}`}
-        onClick={() => onNavigate('/profile')}
-      >
-        {Icons.settings(IC.settings)} {t('sidebar.configuration')}
-      </button>
-      <button
         className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`}
         onClick={() => onNavigate('/subscription')}
       >

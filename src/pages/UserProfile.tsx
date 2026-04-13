@@ -632,9 +632,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           height: 150,
         }}>
           {isOwn && (
-            <button className="fb-cover-edit-btn" onClick={() => setShowCoverModal(true)}>
-              {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
-            </button>
+            <div style={{ position: 'absolute', bottom: 12, right: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="fb-cover-edit-btn" style={{ position: 'static' }} onClick={() => setShowCoverModal(true)}>
+                {Camera({ size: 14 })} {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
+              </button>
+              {profile.coverPhoto && (
+                <button
+                  onClick={async () => {
+                    try {
+                      await api.updateMe({ cover_photo: '', cover_type: '' })
+                      setProfile((prev: any) => ({ ...prev, coverPhoto: '', coverType: '' }))
+                    } catch { /* ignorar */ }
+                  }}
+                  style={{ padding: '6px 12px', borderRadius: 'var(--radius-sm)', background: 'rgba(220,38,38,0.82)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: 13, backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', gap: 5 }}
+                >
+                  🗑 Eliminar
+                </button>
+              )}
+            </div>
           )}
         </div>
 
