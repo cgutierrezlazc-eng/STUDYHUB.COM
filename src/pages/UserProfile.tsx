@@ -111,6 +111,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [editInfoSaving, setEditInfoSaving] = useState(false)
   // Config section embedded in social profile (null = show social tabs content)
   const [configSection, setConfigSection] = useState<string | null>(null)
+  // LMS connection indicator (own profile only)
+  const [lmsConnections, setLmsConnections] = useState<any[]>([])
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -122,6 +124,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     if (user && userId === user.id) {
       api.getMyTutorProfile().then(tp => setTutorProfile(tp)).catch(() => setTutorProfile(null))
     }
+  }, [userId, user])
+
+  // Load LMS connections for own profile indicator
+  useEffect(() => {
+    if (!user || userId !== user.id) return
+    api.lmsGetConnections().then((d: any) => setLmsConnections(d?.connections || d || [])).catch(() => {})
   }, [userId, user])
 
   // Compute mutual friends for other users' profiles
@@ -708,6 +716,34 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                   <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--accent)', lineHeight: 1 }}>{((profile as any).xp || 0).toLocaleString()}</span>
                   <span style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 }}>XP</span>
                 </div>
+
+                {/* LMS connection indicator — only on own profile */}
+                {isOwn && (
+                  <>
+                    <div style={{ width: 1, height: 26, background: 'var(--border)' }} />
+                    {lmsConnections.length > 0 ? (
+                      <button
+                        onClick={() => onNavigate('/mi-universidad')}
+                        title="Ver conexión universitaria"
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(13,148,136,0.08)', border: '1px solid rgba(13,148,136,0.25)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer' }}
+                      >
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#0d9488', flexShrink: 0, boxShadow: '0 0 0 2px rgba(13,148,136,0.2)' }} />
+                        <span style={{ fontSize: 11, fontWeight: 600, color: '#0d9488', whiteSpace: 'nowrap' }}>
+                          {lmsConnections[0]?.university_name || lmsConnections[0]?.base_url?.replace(/https?:\/\//, '').split('/')[0] || 'Universidad conectada'}
+                        </span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => onNavigate('/mi-universidad')}
+                        title="Conectar tu universidad"
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(100,116,139,0.06)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer' }}
+                      >
+                        <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#94a3b8', flexShrink: 0 }} />
+                        <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Sin universidad</span>
+                      </button>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* Action buttons */}
