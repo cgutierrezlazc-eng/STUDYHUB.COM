@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo Draft v1 — Conniku</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0F172A; font-family: 'Outfit', -apple-system, sans-serif; padding: 40px 24px; color: #F1F5F9; }
+h1 { text-align:center; font-size:14px; font-weight:600; color:#38BDF8; margin-bottom:6px; text-transform:uppercase; letter-spacing:.08em; }
+.sub { text-align:center; color:#64748B; font-size:11px; margin-bottom:48px; }
+.section { max-width:700px; margin:0 auto 56px; }
+.section-title { font-size:10px; font-weight:700; color:#38BDF8; text-transform:uppercase; letter-spacing:.1em; margin-bottom:16px; }
+.row { display:flex; gap:24px; align-items:flex-start; flex-wrap:wrap; margin-bottom:24px; }
+.card { background:#1E293B; border:1px solid #334155; border-radius:14px; padding:24px 28px; display:flex; flex-direction:column; align-items:center; gap:14px; flex:1; min-width:260px; }
+.card-label { font-size:10px; color:#64748B; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+.card.after { border-color:#38BDF8; }
+.card.after .card-label { color:#38BDF8; }
+
+/* Dark bg card for white logo */
+.card-dark { background:#111827; }
+
+/* Icon size showcase */
+.icon-sizes { display:flex; gap:20px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
+.size-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.size-label { font-size:9px; color:#475569; font-weight:600; text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<h1>Logo Draft v1</h1>
+<p class="sub">Propuestas de modificación · solo ejemplo — no aplicado aún</p>
+
+
+<!-- ══════════════════════════════════════════
+     SECCIÓN 1 — LOGO TEXTO
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">1. Logo texto — i y k pegados</div>
+
+  <div class="row">
+    <!-- ANTES -->
+    <div class="card">
+      <div class="card-label">Antes (original)</div>
+      <!-- Dos elementos text separados — gap entre i y k -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+        <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+        <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+        <text x="56" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" fill="#fff" letter-spacing="-1.5">conni</text>
+        <text x="180" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" fill="#2D62C8" letter-spacing="-1.5">ku</text>
+      </svg>
+      <div style="font-size:11px;color:#475569">Dos ‹text› separados → posible gap entre i y k</div>
+    </div>
+
+    <!-- DESPUÉS -->
+    <div class="card after">
+      <div class="card-label">Propuesta — tspan (i·k pegados)</div>
+      <!-- Un solo elemento text con tspan — las letras se concatenan sin gap -->
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+        <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+        <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+        <text x="56" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" letter-spacing="-1.5">
+          <tspan fill="#fff">conni</tspan><tspan fill="#2D62C8">ku</tspan>
+        </text>
+      </svg>
+      <div style="font-size:11px;color:#38BDF8">Un ‹text› con ‹tspan› → i y k se tocan exactamente</div>
+    </div>
+  </div>
+
+  <!-- Versión blanca (sidebar) -->
+  <div class="row">
+    <div class="card card-dark">
+      <div class="card-label">Logo blanco · antes</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+        <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+        <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+        <text x="56" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" fill="#F5F7F8" letter-spacing="-1.5">conni</text>
+        <text x="180" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" fill="#2D62C8" letter-spacing="-1.5">ku</text>
+      </svg>
+    </div>
+
+    <div class="card card-dark after">
+      <div class="card-label">Logo blanco · propuesta</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="280" height="60">
+        <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+        <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+        <text x="56" y="44" font-family="Outfit, -apple-system, sans-serif" font-size="40" font-weight="700" letter-spacing="-1.5">
+          <tspan fill="#F5F7F8">conni</tspan><tspan fill="#2D62C8">ku</tspan>
+        </text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SECCIÓN 2 — ÍCONO DE APP (reemplazar C por ik)
+════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-title">2. Ícono de app — C reemplazada por ik</div>
+
+  <div class="row" style="justify-content:center">
+    <!-- ANTES -->
+    <div class="card" style="flex:none;width:200px">
+      <div class="card-label">Antes (original)</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="120" height="120">
+        <defs>
+          <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A3A7A"/>
+            <stop offset="100%" stop-color="#2D62C8"/>
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="110" fill="url(#bg1)"/>
+        <!-- C abierta — círculo con trazo que simula la letra C con corte diagonal -->
+        <circle cx="256" cy="256" r="130" fill="none" stroke="#fff" stroke-width="56" stroke-linecap="round" stroke-dasharray="610 210"/>
+      </svg>
+      <div style="font-size:10px;color:#475569;text-align:center">C abierta con corte en diagonal</div>
+    </div>
+
+    <!-- OPCIÓN A: ik centrado, misma fuente -->
+    <div class="card after" style="flex:none;width:200px">
+      <div class="card-label">Propuesta A — ik centrado</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="120" height="120">
+        <defs>
+          <linearGradient id="bg2" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A3A7A"/>
+            <stop offset="100%" stop-color="#2D62C8"/>
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="110" fill="url(#bg2)"/>
+        <!-- ik como texto centrado — mismos colores, sin espacio entre letras -->
+        <text x="256" y="330" font-family="Outfit, -apple-system, sans-serif"
+              font-size="280" font-weight="800" text-anchor="middle"
+              fill="white" letter-spacing="-20">ik</text>
+      </svg>
+      <div style="font-size:10px;color:#38BDF8;text-align:center">ik en blanco, mismo estilo tipográfico</div>
+    </div>
+
+    <!-- OPCIÓN B: ik más pequeño con padding -->
+    <div class="card after" style="flex:none;width:200px">
+      <div class="card-label">Propuesta B — ik con más aire</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="120" height="120">
+        <defs>
+          <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A3A7A"/>
+            <stop offset="100%" stop-color="#2D62C8"/>
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="110" fill="url(#bg3)"/>
+        <!-- ik más pequeño, mejor equilibrio visual -->
+        <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif"
+              font-size="220" font-weight="800" text-anchor="middle"
+              fill="white" letter-spacing="-15">ik</text>
+      </svg>
+      <div style="font-size:10px;color:#38BDF8;text-align:center">ik con mejor equilibrio de márgenes</div>
+    </div>
+  </div>
+
+  <!-- Escala real del ícono -->
+  <div class="card" style="max-width:700px;margin:0 auto">
+    <div class="card-label">Vista a múltiples tamaños (Propuesta B)</div>
+    <div class="icon-sizes">
+      <div class="size-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24">
+          <defs><linearGradient id="bg4" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+          <rect width="512" height="512" rx="110" fill="url(#bg4)"/>
+          <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-15">ik</text>
+        </svg>
+        <span class="size-label">24px</span>
+      </div>
+      <div class="size-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40">
+          <defs><linearGradient id="bg5" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+          <rect width="512" height="512" rx="110" fill="url(#bg5)"/>
+          <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-15">ik</text>
+        </svg>
+        <span class="size-label">40px</span>
+      </div>
+      <div class="size-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="64" height="64">
+          <defs><linearGradient id="bg6" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+          <rect width="512" height="512" rx="110" fill="url(#bg6)"/>
+          <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-15">ik</text>
+        </svg>
+        <span class="size-label">64px</span>
+      </div>
+      <div class="size-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="96" height="96">
+          <defs><linearGradient id="bg7" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+          <rect width="512" height="512" rx="110" fill="url(#bg7)"/>
+          <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-15">ik</text>
+        </svg>
+        <span class="size-label">96px</span>
+      </div>
+      <div class="size-item">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="180" height="180">
+          <defs><linearGradient id="bg8" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+          <rect width="512" height="512" rx="110" fill="url(#bg8)"/>
+          <text x="256" y="310" font-family="Outfit, -apple-system, sans-serif" font-size="220" font-weight="800" text-anchor="middle" fill="white" letter-spacing="-15">ik</text>
+        </svg>
+        <span class="size-label">180px</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center;color:#1e293b;font-size:11px;margin-top:20px">logo-draft-v1.html · solo preview, no modificado aún</p>
+
+</body>
+</html>

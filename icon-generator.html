@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conniku — Icon Generator</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#1a1a2e; font-family:'Helvetica Neue',sans-serif; padding:40px; color:#fff; }
+  h1 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#666; margin-bottom:32px; }
+
+  .controls { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:40px; align-items:flex-end; }
+  .ctrl-group { display:flex; flex-direction:column; gap:6px; }
+  label { font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:#888; }
+  input[type=color] { width:44px; height:32px; border:none; border-radius:6px; cursor:pointer; background:none; }
+  input[type=range] { width:140px; }
+  .val { font-size:11px; color:#aaa; }
+  button.regen {
+    background:#2D62C8; color:#fff; border:none; padding:10px 20px;
+    border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;
+    letter-spacing:0.05em;
+  }
+  button.regen:hover { background:#1D4ED8; }
+
+  /* Grid de previews */
+  .grid { display:flex; gap:24px; flex-wrap:wrap; margin-bottom:48px; align-items:flex-end; }
+  .preview-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .preview-item canvas { display:block; image-rendering:pixelated; }
+  .sz-label { font-size:9px; color:#555; text-transform:uppercase; letter-spacing:0.06em; }
+  .dl-btn {
+    font-size:9px; background:#222; color:#aaa; border:none; padding:3px 8px;
+    border-radius:4px; cursor:pointer; font-family:inherit;
+  }
+  .dl-btn:hover { background:#333; color:#fff; }
+
+  /* Downloads section */
+  .dl-section { border-top:1px solid #222; padding-top:32px; }
+  .dl-grid { display:flex; gap:12px; flex-wrap:wrap; }
+  .dl-big {
+    background:#2D62C8; color:#fff; border:none; padding:10px 18px;
+    border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;
+    font-family:inherit; letter-spacing:0.04em;
+  }
+  .dl-big:hover { background:#1D4ED8; }
+  .dl-big.secondary { background:#1a2a40; color:#8aabdf; }
+  .dl-big.secondary:hover { background:#233654; }
+
+  /* SVG source */
+  .svg-out { background:#111; border-radius:10px; padding:20px; margin-top:24px;
+             font-size:11px; color:#6af; font-family:monospace; white-space:pre-wrap;
+             word-break:break-all; max-height:200px; overflow-y:auto; }
+  .copy-btn { background:#333; color:#aaa; border:none; padding:6px 12px;
+              border-radius:6px; font-size:11px; cursor:pointer; margin-top:8px; }
+  .copy-btn:hover { background:#444; color:#fff; }
+</style>
+</head>
+<body>
+
+<h1>Conniku — Icon Generator · Geométrico (sin fuentes)</h1>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="ctrl-group">
+    <label>Color fondo 1</label>
+    <input type="color" id="bg1" value="#1A3A7A">
+  </div>
+  <div class="ctrl-group">
+    <label>Color fondo 2</label>
+    <input type="color" id="bg2" value="#2D62C8">
+  </div>
+  <div class="ctrl-group">
+    <label>Color i (blanco)</label>
+    <input type="color" id="ci" value="#FFFFFF">
+  </div>
+  <div class="ctrl-group">
+    <label>Color k (azul)</label>
+    <input type="color" id="ck" value="#8FC5FF">
+  </div>
+  <div class="ctrl-group">
+    <label>Tamaño ik (% del cuadrado) <span class="val" id="sizeVal">80%</span></label>
+    <input type="range" id="ikSize" min="60" max="92" value="80"
+           oninput="document.getElementById('sizeVal').textContent=this.value+'%'; renderAll()">
+  </div>
+  <div class="ctrl-group">
+    <label>Grosor trazo (% de altura ik) <span class="val" id="strokeVal">13%</span></label>
+    <input type="range" id="strokePct" min="8" max="20" value="13"
+           oninput="document.getElementById('strokeVal').textContent=this.value+'%'; renderAll()">
+  </div>
+  <div class="ctrl-group">
+    <label>Radio esquinas</label>
+    <input type="range" id="radiusPct" min="0" max="30" value="19">
+    <span class="val" id="radiusVal">19%</span>
+  </div>
+  <button class="regen" onclick="renderAll()">↺ Regenerar</button>
+</div>
+
+<!-- PREVIEW GRID -->
+<div class="grid" id="previewGrid"></div>
+
+<!-- DOWNLOADS -->
+<div class="dl-section">
+  <div style="font-size:11px; color:#888; margin-bottom:16px; text-transform:uppercase; letter-spacing:0.08em;">Exportar</div>
+  <div class="dl-grid" id="dlGrid"></div>
+
+  <div style="margin-top:28px; font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:10px;">
+    SVG fuente (para Figma / edición)
+  </div>
+  <div class="svg-out" id="svgOut"></div>
+  <button class="copy-btn" onclick="copySVG()">Copiar SVG</button>
+</div>
+
+<script>
+// ─── Sizes to generate ───────────────────────────────────────────────────────
+const SIZES = [
+  { size: 1024, label: '1024 (Play Store)' },
+  { size: 512,  label: '512' },
+  { size: 256,  label: '256' },
+  { size: 192,  label: '192 (PWA)' },
+  { size: 180,  label: '180 (iOS)' },
+  { size: 167,  label: '167 (iPad)' },
+  { size: 152,  label: '152' },
+  { size: 144,  label: '144' },
+  { size: 128,  label: '128' },
+  { size: 120,  label: '120 (iOS)' },
+  { size: 96,   label: '96' },
+  { size: 72,   label: '72' },
+  { size: 64,   label: '64' },
+  { size: 48,   label: '48' },
+  { size: 40,   label: '40' },
+  { size: 32,   label: '32' },
+  { size: 29,   label: '29' },
+  { size: 24,   label: '24' },
+  { size: 20,   label: '20' },
+  { size: 16,   label: '16 (favicon)' },
+];
+
+// ─── Core draw function ──────────────────────────────────────────────────────
+function drawIcon(canvas, S, opts) {
+  const {
+    bg1 = '#1A3A7A', bg2 = '#2D62C8',
+    colorI = '#FFFFFF', colorK = '#8FC5FF',
+    ikPct = 0.80, strokePct = 0.13, radiusPct = 0.19,
+  } = opts;
+
+  canvas.width  = S;
+  canvas.height = S;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, S, S);
+
+  const R = Math.round(S * radiusPct);
+
+  // ── Background ──────────────────────────────────────────────────────────────
+  const grad = ctx.createLinearGradient(0, 0, S, S);
+  grad.addColorStop(0, bg1);
+  grad.addColorStop(1, bg2);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.roundRect(0, 0, S, S, R);
+  ctx.clip();
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, S, S);
+  ctx.restore();
+
+  // ── IK geometry ─────────────────────────────────────────────────────────────
+  const H  = Math.round(S * ikPct);       // total height of ik
+  const sw = Math.round(H * strokePct);   // stroke width (stem/bar/dot size)
+  sw === 0 && (sw = 1);
+
+  // i parts
+  const dotH  = sw;                       // square dot height = stroke width
+  const gap   = Math.max(1, Math.round(sw * 0.34)); // gap between dot and stem
+  const stemH = H - dotH - gap;           // stem height
+
+  // k arm params — 45° angle
+  const armH  = H / 2;                   // half height = arm vertical reach
+  const armHR = armH;                    // horizontal reach (45°)
+
+  // total width of ik group
+  const iW    = sw;                      // i is just one column
+  const kBarW = sw;                      // k bar same width
+  const kArmW = Math.round(armHR);       // arm horizontal extent
+  const ikW   = iW + kBarW + kArmW;
+
+  // center horizontally
+  const x0 = Math.round((S - ikW) / 2);
+  const y0 = Math.round((S - H)  / 2);
+
+  // ── Draw i ──────────────────────────────────────────────────────────────────
+  ctx.fillStyle = colorI;
+
+  // square dot
+  ctx.fillRect(x0, y0, sw, dotH);
+
+  // stem
+  ctx.fillRect(x0, y0 + dotH + gap, sw, stemH);
+
+  // ── Draw k ──────────────────────────────────────────────────────────────────
+  const kx = x0 + iW;        // k starts right after i (no gap)
+  const ky = y0;
+
+  // vertical bar
+  ctx.fillStyle = colorK;
+  ctx.fillRect(kx, ky, kBarW, H);
+
+  // arm origin — right edge of bar, at vertical midpoint
+  const armOriginX = kx + kBarW;
+  const armOriginY = ky + H / 2;
+
+  // upper arm
+  ctx.save();
+  ctx.strokeStyle = colorK;
+  ctx.lineWidth   = sw;
+  ctx.lineCap     = 'butt';
+  ctx.beginPath();
+  ctx.moveTo(armOriginX, armOriginY);
+  ctx.lineTo(armOriginX + armHR, ky);
+  ctx.stroke();
+  ctx.restore();
+
+  // lower arm
+  ctx.save();
+  ctx.strokeStyle = colorK;
+  ctx.lineWidth   = sw;
+  ctx.lineCap     = 'butt';
+  ctx.beginPath();
+  ctx.moveTo(armOriginX, armOriginY);
+  ctx.lineTo(armOriginX + armHR, ky + H);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// ─── Generate SVG source ─────────────────────────────────────────────────────
+function generateSVG(S, opts) {
+  const {
+    bg1 = '#1A3A7A', bg2 = '#2D62C8',
+    colorI = '#FFFFFF', colorK = '#8FC5FF',
+    ikPct = 0.80, strokePct = 0.13, radiusPct = 0.19,
+  } = opts;
+
+  const R   = Math.round(S * radiusPct);
+  const H   = Math.round(S * ikPct);
+  const sw  = Math.round(H * strokePct);
+  const dotH = sw;
+  const gap  = Math.max(1, Math.round(sw * 0.34));
+  const stemH = H - dotH - gap;
+  const armH  = H / 2;
+  const armHR = armH;
+  const ikW   = sw + sw + Math.round(armHR);
+  const x0    = Math.round((S - ikW) / 2);
+  const y0    = Math.round((S - H)   / 2);
+  const kx    = x0 + sw;
+  const armOX = kx + sw;
+  const armOY = y0 + H / 2;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${bg1}"/>
+      <stop offset="100%" stop-color="${bg2}"/>
+    </linearGradient>
+    <clipPath id="shape">
+      <rect width="${S}" height="${S}" rx="${R}"/>
+    </clipPath>
+  </defs>
+  <rect width="${S}" height="${S}" rx="${R}" fill="url(#bg)"/>
+  <g clip-path="url(#shape)">
+    <!-- i: dot (square) -->
+    <rect x="${x0}" y="${y0}" width="${sw}" height="${dotH}" fill="${colorI}"/>
+    <!-- i: stem -->
+    <rect x="${x0}" y="${y0 + dotH + gap}" width="${sw}" height="${stemH}" fill="${colorI}"/>
+    <!-- k: vertical bar -->
+    <rect x="${kx}" y="${y0}" width="${sw}" height="${H}" fill="${colorK}"/>
+    <!-- k: upper arm -->
+    <line x1="${armOX}" y1="${armOY}" x2="${armOX + Math.round(armHR)}" y2="${y0}"
+          stroke="${colorK}" stroke-width="${sw}" stroke-linecap="butt"/>
+    <!-- k: lower arm -->
+    <line x1="${armOX}" y1="${armOY}" x2="${armOX + Math.round(armHR)}" y2="${y0 + H}"
+          stroke="${colorK}" stroke-width="${sw}" stroke-linecap="butt"/>
+  </g>
+</svg>`;
+}
+
+// ─── Get current options from controls ───────────────────────────────────────
+function getOpts() {
+  return {
+    bg1:       document.getElementById('bg1').value,
+    bg2:       document.getElementById('bg2').value,
+    colorI:    document.getElementById('ci').value,
+    colorK:    document.getElementById('ck').value,
+    ikPct:     parseInt(document.getElementById('ikSize').value) / 100,
+    strokePct: parseInt(document.getElementById('strokePct').value) / 100,
+    radiusPct: parseInt(document.getElementById('radiusPct').value) / 100,
+  };
+}
+
+// ─── Download helper ──────────────────────────────────────────────────────────
+function downloadCanvas(canvas, filename) {
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = filename;
+  a.click();
+}
+
+// ─── Render all sizes ─────────────────────────────────────────────────────────
+function renderAll() {
+  document.getElementById('radiusVal').textContent =
+    document.getElementById('radiusPct').value + '%';
+
+  const opts = getOpts();
+  const grid = document.getElementById('previewGrid');
+  const dlGrid = document.getElementById('dlGrid');
+  grid.innerHTML = '';
+  dlGrid.innerHTML = '';
+
+  // Preview sizes (visible)
+  const previewSizes = [512, 256, 128, 96, 64, 48, 32, 16];
+
+  SIZES.forEach(({ size, label }) => {
+    const cvs = document.createElement('canvas');
+    cvs.id = `cvs-${size}`;
+    drawIcon(cvs, size, opts);
+
+    // DL button (all sizes)
+    const dlBtn = document.createElement('button');
+    dlBtn.className = 'dl-big secondary';
+    dlBtn.textContent = `↓ icon-${size}.png`;
+    dlBtn.onclick = () => downloadCanvas(cvs, `icon-${size}.png`);
+    dlGrid.appendChild(dlBtn);
+
+    // Preview (only certain sizes)
+    if (previewSizes.includes(size)) {
+      const displaySize = Math.min(size, 128);
+      const wrap = document.createElement('div');
+      wrap.className = 'preview-item';
+
+      const display = document.createElement('canvas');
+      display.width  = displaySize;
+      display.height = displaySize;
+      display.style.width  = displaySize + 'px';
+      display.style.height = displaySize + 'px';
+      drawIcon(display, displaySize, opts);
+
+      const lbl = document.createElement('div');
+      lbl.className = 'sz-label';
+      lbl.textContent = size + 'px';
+
+      const dlSmall = document.createElement('button');
+      dlSmall.className = 'dl-btn';
+      dlSmall.textContent = '↓ PNG';
+      dlSmall.onclick = () => downloadCanvas(cvs, `icon-${size}.png`);
+
+      wrap.appendChild(display);
+      wrap.appendChild(lbl);
+      wrap.appendChild(dlSmall);
+      grid.appendChild(wrap);
+    }
+  });
+
+  // SVG output
+  document.getElementById('svgOut').textContent = generateSVG(512, opts);
+
+  // "Download all" button
+  const dlAll = document.createElement('button');
+  dlAll.className = 'dl-big';
+  dlAll.textContent = '↓ Descargar TODOS los tamaños';
+  dlAll.onclick = () => {
+    SIZES.forEach(({ size }) => {
+      const cvs = document.getElementById(`cvs-${size}`);
+      setTimeout(() => downloadCanvas(cvs, `icon-${size}.png`), 0);
+    });
+  };
+  dlGrid.insertBefore(dlAll, dlGrid.firstChild);
+
+  // SVG download
+  const dlSVG = document.createElement('button');
+  dlSVG.className = 'dl-big';
+  dlSVG.style.background = '#1a3a7a';
+  dlSVG.textContent = '↓ icon-source.svg';
+  dlSVG.onclick = () => {
+    const blob = new Blob([generateSVG(512, opts)], { type: 'image/svg+xml' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'icon-source.svg';
+    a.click();
+  };
+  dlGrid.insertBefore(dlSVG, dlGrid.children[1]);
+}
+
+function copySVG() {
+  navigator.clipboard.writeText(document.getElementById('svgOut').textContent);
+  const btn = document.querySelector('.copy-btn');
+  btn.textContent = '✓ Copiado';
+  setTimeout(() => btn.textContent = 'Copiar SVG', 1500);
+}
+
+// Auto-render on any control change
+document.querySelectorAll('input').forEach(el => el.addEventListener('input', renderAll));
+
+// Initial render
+renderAll();
+</script>
+</body>
+</html>

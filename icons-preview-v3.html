@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conniku — Íconos V3 Relieve</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #C8D2DC;
+    font-family: 'Inter', sans-serif;
+    padding: 40px;
+    display: flex; gap: 28px; flex-wrap: wrap;
+    align-items: flex-start; min-height:100vh;
+  }
+  .col { display:flex; flex-direction:column; gap:10px; min-width:220px; }
+  .style-label { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#546E7A; margin-bottom:2px; line-height:1.6; }
+  .tag { display:inline-block; border-radius:4px; padding:2px 8px; font-size:9px; font-weight:700; letter-spacing:0.05em; margin-left:6px; vertical-align:middle; }
+
+  /* ─── Sidebar shell ─── */
+  .sidebar {
+    width: 214px; border-radius: 16px;
+    padding: 18px 10px 22px;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .brand { font-size:16px; font-weight:800; letter-spacing:-0.04em; padding:4px 10px 14px; margin-bottom:6px; }
+  .brand em { font-style:normal; }
+  .sec { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; padding:10px 10px 4px; }
+  .nav {
+    display:flex; align-items:center; gap:10px;
+    padding:5px 8px 5px 8px; border-radius:10px;
+    font-size:12.5px; font-weight:500;
+    cursor:pointer; transition:all 0.14s ease;
+  }
+  .nav.active { font-weight:600; }
+
+  /* ─── Badge base ─── */
+  .bdg {
+    flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    transition: all 0.14s ease;
+  }
+  .bdg svg { display:block; }
+
+  /* Muted color palette — sofisticada, no arcoíris */
+  .ic-home      { background: #5865C4; }
+  .ic-profile   { background: #7558B0; }
+  .ic-feed      { background: #C07840; }
+  .ic-messages  { background: #2A9890; }
+  .ic-community { background: #A84E7C; }
+  .ic-rooms     { background: #C05048; }
+  .ic-courses   { background: #3A7CC4; }
+  .ic-calendar  { background: #529858; }
+
+  /* ══════════════════════════════════════════════════
+     K — BADGE CUADRADO (relieve negativo sólido)
+     Ícono blanco sobre badge de color redondeado.
+     Activo = pill azul J con badge translúcido.
+  ══════════════════════════════════════════════════ */
+  .sk { background:#FFFFFF; box-shadow:0 4px 28px rgba(0,0,0,0.11); }
+  .sk .brand { color:#0F172A; border-bottom:1px solid #F0F4F8; }
+  .sk .brand em { color:#2D62C8; }
+  .sk .sec { color:#C8D5E0; }
+  .sk .nav { color:#334155; }
+  .sk .nav .bdg {
+    width:30px; height:30px; border-radius:8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.20);
+  }
+  .sk .nav:hover:not(.active) { background:#F4F7FB; }
+  .sk .nav:hover:not(.active) .bdg { transform: translateY(-1px); box-shadow:0 4px 8px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.20); }
+  .sk .nav.active {
+    color:#FFF;
+    background: linear-gradient(135deg, #4A90E8 0%, #2D62C8 100%);
+    box-shadow: 0 4px 16px rgba(45,98,200,0.35);
+  }
+  .sk .nav.active .bdg {
+    background: rgba(255,255,255,0.20) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.20), 0 1px 0 rgba(255,255,255,0.12) !important;
+    border-radius: 7px;
+  }
+
+  /* ══════════════════════════════════════════════════
+     L — BADGE CIRCULAR (relieve negativo redondo)
+     Más suave, estilo iOS / app icon.
+  ══════════════════════════════════════════════════ */
+  .sl { background:#FAFBFE; box-shadow:0 4px 28px rgba(0,0,0,0.10); }
+  .sl .brand { color:#0F172A; border-bottom:1px solid #EEF2F8; }
+  .sl .brand em { color:#2D62C8; }
+  .sl .sec { color:#C8D5E0; }
+  .sl .nav { color:#334155; }
+  .sl .nav .bdg {
+    width:30px; height:30px; border-radius:50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.20), inset 0 1px 0 rgba(255,255,255,0.22);
+  }
+  .sl .nav:hover:not(.active) { background:#EFF6FF; }
+  .sl .nav:hover:not(.active) .bdg { transform: translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.22); }
+  .sl .nav.active {
+    color:#FFF;
+    background: linear-gradient(135deg, #4A90E8 0%, #2D62C8 100%);
+    box-shadow: 0 4px 16px rgba(45,98,200,0.35);
+  }
+  .sl .nav.active .bdg {
+    background: rgba(255,255,255,0.22) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.18) !important;
+    border-radius: 50%;
+  }
+
+  /* ══════════════════════════════════════════════════
+     M — BADGE CUADRADO PEQUEÑO (compacto, sin texto tint)
+     Badge 26px más pequeño, texto neutro, activo J sólido.
+  ══════════════════════════════════════════════════ */
+  .sm { background:#FFFFFF; box-shadow:0 4px 28px rgba(0,0,0,0.11); }
+  .sm .brand { color:#0F172A; border-bottom:1px solid #F0F4F8; }
+  .sm .brand em { color:#2D62C8; }
+  .sm .sec { color:#C8D5E0; }
+  .sm .nav { color:#64748B; }
+  .sm .nav .bdg {
+    width:26px; height:26px; border-radius:7px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .sm .nav:hover:not(.active) { background:#F8FAFC; }
+  .sm .nav.active {
+    color:#FFF;
+    background: linear-gradient(135deg, #4A90E8 0%, #2D62C8 100%);
+    box-shadow: 0 4px 16px rgba(45,98,200,0.35);
+  }
+  .sm .nav.active .bdg {
+    background: rgba(255,255,255,0.20) !important;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.18) !important;
+  }
+
+  /* ══════════════════════════════════════════════════
+     N — DARK + BADGE CUADRADO
+     Sidebar oscuro. Badges coloreados con ícono blanco.
+     El activo = J pill pero en azul brillante.
+  ══════════════════════════════════════════════════ */
+  .sn { background:#141418; box-shadow:0 8px 40px rgba(0,0,0,0.50); }
+  .sn .brand { color:#F0F2F8; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .sn .brand em { color:#7AABF0; }
+  .sn .sec { color:#383840; }
+  .sn .nav { color:#5A6070; }
+  .sn .nav .bdg {
+    width:30px; height:30px; border-radius:8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.40), inset 0 1px 0 rgba(255,255,255,0.15);
+    opacity: 0.75;
+  }
+  .sn .nav:hover:not(.active) { background:rgba(255,255,255,0.04); }
+  .sn .nav:hover:not(.active) .bdg { opacity:1; transform:translateY(-1px); }
+  .sn .nav.active { color:#FFF; }
+  .sn .nav.active .bdg {
+    background: linear-gradient(135deg, #4A90E8, #2D62C8) !important;
+    box-shadow: 0 3px 12px rgba(45,98,200,0.50), inset 0 1px 0 rgba(255,255,255,0.20) !important;
+    border-radius:8px; opacity:1;
+    width:30px; height:30px;
+  }
+  /* For dark, active has NO pill — only the badge turns blue */
+  .sn .nav.active-row {
+    background: rgba(255,255,255,0.05);
+    border-radius:10px;
+    color:#F0F2F8;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     K — Badge Cuadrado / Relieve Negativo
+════════════════════════════════════ -->
+<div class="col">
+  <div class="style-label">K — Badge cuadrado · relieve negativo<span class="tag" style="background:#DBEAFE;color:#1E40AF;">Activo = Pill Azul</span></div>
+  <div class="sidebar sk">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav active">
+      <div class="bdg ic-home">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none">
+          <path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z"/>
+        </svg>
+      </div>
+      Inicio
+    </div>
+    <div class="nav">
+      <div class="bdg ic-profile">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="4" fill="white" fill-opacity="0.9" stroke="none"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="white" stroke-width="2"/>
+        </svg>
+      </div>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <div class="bdg ic-feed">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Feed
+    </div>
+    <div class="nav">
+      <div class="bdg ic-messages">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none">
+          <path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mensajes
+    </div>
+    <div class="nav">
+      <div class="bdg ic-community">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fill-opacity="0.9"/>
+          <circle cx="17" cy="8" r="3" fill="white" fill-opacity="0.6"/>
+          <path d="M21 21v-1.5a4 4 0 00-4-4" stroke="white" stroke-width="1.5" fill="none" fill-opacity="0" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Comunidad
+    </div>
+
+    <div class="sec">Estudio</div>
+
+    <div class="nav">
+      <div class="bdg ic-rooms">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="5" width="14" height="14" rx="2" fill="white" fill-opacity="0.9"/>
+          <polygon points="23 7 16 12 23 17 23 7" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Salas
+    </div>
+    <div class="nav">
+      <div class="bdg ic-courses">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fill-opacity="0.9"/>
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20" stroke="white" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      Cursos
+    </div>
+    <div class="nav">
+      <div class="bdg ic-calendar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" fill="white" fill-opacity="0.9"/>
+          <rect x="3" y="4" width="18" height="6" rx="2" fill="white" fill-opacity="0.5"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <rect x="7" y="13" width="3" height="3" rx="0.5" fill="white" fill-opacity="0.4"/>
+          <rect x="11" y="13" width="3" height="3" rx="0.5" fill="white" fill-opacity="0.4"/>
+        </svg>
+      </div>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     L — Badge Circular / Estilo App
+════════════════════════════════════ -->
+<div class="col">
+  <div class="style-label">L — Badge circular · estilo app icon<span class="tag" style="background:#F3E8FF;color:#6B21A8;">Activo = Pill Azul</span></div>
+  <div class="sidebar sl">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav">
+      <div class="bdg circle ic-home">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white" stroke="none">
+          <path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z"/>
+        </svg>
+      </div>
+      Inicio
+    </div>
+    <div class="nav">
+      <div class="bdg circle ic-profile">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="white" fill-opacity="0.9" stroke="none"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mi Perfil
+    </div>
+    <div class="nav active">
+      <div class="bdg circle ic-feed">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Feed
+    </div>
+    <div class="nav">
+      <div class="bdg circle ic-messages">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+          <path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mensajes
+    </div>
+    <div class="nav">
+      <div class="bdg circle ic-community">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fill-opacity="0.9"/>
+          <circle cx="17" cy="8" r="3" fill="white" fill-opacity="0.6"/>
+          <path d="M21 21v-1.5a4 4 0 00-4-4" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Comunidad
+    </div>
+
+    <div class="sec">Estudio</div>
+
+    <div class="nav">
+      <div class="bdg circle ic-rooms">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="5" width="14" height="14" rx="2" fill="white" fill-opacity="0.9"/>
+          <polygon points="23 7 16 12 23 17 23 7" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Salas
+    </div>
+    <div class="nav">
+      <div class="bdg circle ic-courses">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Cursos
+    </div>
+    <div class="nav">
+      <div class="bdg circle ic-calendar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" fill="white" fill-opacity="0.9"/>
+          <rect x="3" y="4" width="18" height="6" rx="2" fill="white" fill-opacity="0.5"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     M — Badge compacto + texto sutil
+════════════════════════════════════ -->
+<div class="col">
+  <div class="style-label">M — Badge pequeño · compacto<span class="tag" style="background:#DCFCE7;color:#166534;">Limpio</span></div>
+  <div class="sidebar sm">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav">
+      <div class="bdg ic-home">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+          <path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z"/>
+        </svg>
+      </div>
+      Inicio
+    </div>
+    <div class="nav">
+      <div class="bdg ic-profile">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <div class="bdg ic-feed">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Feed
+    </div>
+    <div class="nav active">
+      <div class="bdg ic-messages">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+          <path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mensajes
+    </div>
+    <div class="nav">
+      <div class="bdg ic-community">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fill-opacity="0.9"/>
+          <circle cx="17" cy="8" r="3" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Comunidad
+    </div>
+
+    <div class="sec">Estudio</div>
+
+    <div class="nav">
+      <div class="bdg ic-rooms">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="5" width="14" height="14" rx="2" fill="white" fill-opacity="0.9"/>
+          <polygon points="23 7 16 12 23 17 23 7" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Salas
+    </div>
+    <div class="nav">
+      <div class="bdg ic-courses">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Cursos
+    </div>
+    <div class="nav">
+      <div class="bdg ic-calendar">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" fill="white" fill-opacity="0.9"/>
+          <rect x="3" y="4" width="18" height="6" rx="2" fill="white" fill-opacity="0.4"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════
+     N — DARK + Badge · activo azul brillante
+════════════════════════════════════ -->
+<div class="col">
+  <div class="style-label">N — Dark sidebar · badge + activo azul<span class="tag" style="background:#1E1E2A;color:#7AABF0;">Premium Dark</span></div>
+  <div class="sidebar sn">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav">
+      <div class="bdg ic-home">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+          <path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Inicio
+    </div>
+    <div class="nav">
+      <div class="bdg ic-profile">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <div class="bdg ic-feed">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+          <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.5"/>
+          <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Feed
+    </div>
+    <div class="nav active-row">
+      <div class="bdg sn-active">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="white">
+          <path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fill-opacity="0.95"/>
+        </svg>
+      </div>
+      Mensajes
+    </div>
+    <div class="nav">
+      <div class="bdg ic-community">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" fill="white" fill-opacity="0.9"/>
+          <path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fill-opacity="0.9"/>
+          <circle cx="17" cy="8" r="3" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Comunidad
+    </div>
+
+    <div class="sec">Estudio</div>
+
+    <div class="nav">
+      <div class="bdg ic-rooms">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="2" y="5" width="14" height="14" rx="2" fill="white" fill-opacity="0.9"/>
+          <polygon points="23 7 16 12 23 17 23 7" fill="white" fill-opacity="0.6"/>
+        </svg>
+      </div>
+      Salas
+    </div>
+    <div class="nav">
+      <div class="bdg ic-courses">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      Cursos
+    </div>
+    <div class="nav">
+      <div class="bdg ic-calendar">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="18" rx="2" fill="white" fill-opacity="0.9"/>
+          <rect x="3" y="4" width="18" height="6" rx="2" fill="white" fill-opacity="0.4"/>
+          <line x1="8" y1="2" x2="8" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          <line x1="16" y1="2" x2="16" y2="6" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      Calendario
+    </div>
+  </div>
+</div>
+
+<!-- ═══ STYLE N active fix ═══ -->
+<style>
+  .sn .nav.active-row .bdg.sn-active,
+  .sn .nav .bdg.sn-active {
+    background: linear-gradient(135deg, #4A90E8, #2358B8) !important;
+    box-shadow: 0 4px 16px rgba(45,98,200,0.60), inset 0 1px 0 rgba(255,255,255,0.20) !important;
+    width:30px; height:30px; border-radius:8px; opacity:1;
+  }
+  .sn .nav.active-row { color:#F0F2F8 !important; background:rgba(255,255,255,0.05); }
+</style>
+
+<!-- ─── Leyenda ─── -->
+<div style="width:100%;margin-top:8px;">
+  <div style="background:white;border-radius:12px;padding:18px 24px;max-width:900px;">
+    <p style="font-size:9px;font-weight:700;letter-spacing:0.10em;color:#94A3B8;text-transform:uppercase;margin-bottom:12px;">Concepto: Relieve Negativo vs Positivo</p>
+    <div style="display:flex;gap:32px;font-size:11.5px;color:#374151;line-height:1.7;">
+      <div>
+        <strong style="display:block;color:#1E293B;margin-bottom:4px;">🔳 Relieve Negativo (inactivo)</strong>
+        Ícono blanco <em>recortado</em> sobre un badge de color. El color identifica la sección. Cada ícono tiene su propio color sobrio.<br>
+        <span style="color:#64748B;font-size:10.5px;">— Paleta muted: índigo, violeta, ámbar, teal, rosa, coral, azul, verde</span>
+      </div>
+      <div>
+        <strong style="display:block;color:#2D62C8;margin-bottom:4px;">🟦 Relieve Positivo (activo)</strong>
+        El ítem activo toma el <em>pill azul sólido</em> de estilo J con glow. El badge se vuelve translúcido. El texto se vuelve blanco.<br>
+        <span style="color:#64748B;font-size:10.5px;">— Azul #2D62C8 → #4A90E8 con sombra 30% opacity</span>
+      </div>
+      <div>
+        <strong style="display:block;color:#334155;margin-bottom:4px;">Variantes</strong>
+        K = cuadrado 30px · L = círculo 30px · M = compacto 26px · N = dark sidebar
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

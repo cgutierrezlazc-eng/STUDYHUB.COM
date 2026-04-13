@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Profile Layout — Ejemplo</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a1628;
+    font-family: 'Sora', sans-serif;
+    padding: 40px;
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.1em; color: #4a6fa5; margin-bottom: 12px;
+  }
+
+  /* ─── CARD BASE ─────────────────────────────── */
+  .card {
+    background: #111e33;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 520px;
+  }
+
+  /* ─── COVER ─────────────────────────────────── */
+  .cover {
+    width: 100%;
+    height: 130px;
+    background: linear-gradient(135deg, #1a3a7a 0%, #0f2a5e 100%);
+    position: relative;
+  }
+  .cover-btn {
+    position: absolute; top: 10px; right: 12px;
+    background: rgba(0,0,0,0.45); color: #fff; border: none;
+    border-radius: 8px; padding: 6px 12px; font-size: 11px;
+    font-family: 'Sora', sans-serif; cursor: pointer; display: flex;
+    align-items: center; gap: 5px;
+  }
+
+  /* ══════════════════════════════════════════════
+     OPCIÓN A — Actual (foto izquierda, texto derecha)
+  ══════════════════════════════════════════════ */
+  .layout-a .photo-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    padding: 0 20px;
+    margin-top: -52px;
+    position: relative;
+    z-index: 2;
+  }
+  .layout-a .avatar {
+    width: 104px; height: 104px; border-radius: 12px;
+    border: 4px solid #111e33; overflow: hidden; flex-shrink: 0;
+    background: #1e3a6e;
+  }
+  .layout-a .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .layout-a .identity { flex: 1; padding-bottom: 12px; }
+  .layout-a .name { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-top: 8px; }
+  .layout-a .career { font-size: 13px; color: #7a9cc8; margin-top: 3px; }
+  .layout-a .uni { font-size: 11px; color: #4a6fa5; margin-top: 2px; }
+  .layout-a .stats { display: flex; gap: 14px; margin-top: 10px; }
+  .layout-a .stat-val { font-size: 16px; font-weight: 700; color: #fff; line-height: 1; }
+  .layout-a .stat-lbl { font-size: 9px; color: #4a6fa5; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .layout-a .divider { width: 1px; height: 24px; background: #1e3a6e; }
+  .layout-a .btns { display: flex; gap: 8px; margin-top: 10px; padding: 0 20px 16px; }
+  .btn-primary { background: #2D62C8; color: #fff; border: none; border-radius: 99px; padding: 8px 18px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; }
+  .btn-secondary { background: transparent; color: #fff; border: 1px solid #2a3f5f; border-radius: 99px; padding: 8px 18px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: 'Sora', sans-serif; }
+
+  /* ══════════════════════════════════════════════
+     OPCIÓN B — Foto arriba, texto abajo (centrado)
+  ══════════════════════════════════════════════ */
+  .layout-b .photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 20px 20px;
+    margin-top: -56px;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+  }
+  .layout-b .avatar {
+    width: 112px; height: 112px; border-radius: 12px;
+    border: 4px solid #111e33; overflow: hidden;
+    background: #1e3a6e;
+  }
+  .layout-b .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .layout-b .name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-top: 14px; }
+  .layout-b .career { font-size: 13px; color: #7a9cc8; margin-top: 4px; font-weight: 500; }
+  .layout-b .uni { font-size: 11px; color: #4a6fa5; margin-top: 3px; }
+  .layout-b .stats { display: flex; gap: 24px; margin-top: 14px; justify-content: center; }
+  .layout-b .stat-val { font-size: 18px; font-weight: 700; color: #fff; line-height: 1; }
+  .layout-b .stat-lbl { font-size: 9px; color: #4a6fa5; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 3px; }
+  .layout-b .divider { width: 1px; height: 28px; background: #1e3a6e; }
+  .layout-b .btns { display: flex; gap: 8px; margin-top: 16px; justify-content: center; }
+
+  /* ══════════════════════════════════════════════
+     OPCIÓN C — Foto arriba izquierda, texto debajo izquierda
+  ══════════════════════════════════════════════ */
+  .layout-c .photo-section {
+    padding: 0 20px 20px;
+    margin-top: -56px;
+    position: relative;
+    z-index: 2;
+  }
+  .layout-c .avatar {
+    width: 112px; height: 112px; border-radius: 12px;
+    border: 4px solid #111e33; overflow: hidden;
+    background: #1e3a6e;
+  }
+  .layout-c .avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .layout-c .name { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.02em; margin-top: 14px; }
+  .layout-c .career { font-size: 13px; color: #7a9cc8; margin-top: 4px; font-weight: 500; }
+  .layout-c .uni { font-size: 11px; color: #4a6fa5; margin-top: 3px; }
+  .layout-c .stats { display: flex; gap: 14px; margin-top: 12px; align-items: center; }
+  .layout-c .stat-val { font-size: 17px; font-weight: 700; color: #fff; line-height: 1; }
+  .layout-c .stat-lbl { font-size: 9px; color: #4a6fa5; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+  .layout-c .divider { width: 1px; height: 26px; background: #1e3a6e; }
+  .layout-c .btns { display: flex; gap: 8px; margin-top: 14px; }
+
+  .tag-new {
+    display: inline-block; background: rgba(56,189,248,0.15);
+    border: 1px solid rgba(56,189,248,0.3); color: #38bdf8;
+    font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 99px;
+    text-transform: uppercase; letter-spacing: 0.06em; margin-left: 6px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<!-- OPCIÓN A — ACTUAL -->
+<div>
+  <div class="label">A — Actual (foto izquierda, texto derecha)</div>
+  <div class="card layout-a">
+    <div class="cover">
+      <button class="cover-btn">📷 Cambiar portada</button>
+    </div>
+    <div class="photo-row">
+      <div class="avatar">
+        <img src="https://i.pravatar.cc/200?u=cristian" alt="">
+      </div>
+      <div class="identity">
+        <div class="name">Cristian Gutierrez Lazcano</div>
+        <div class="career">Ingenieria Comercial ADVANCE</div>
+        <div class="uni">Universidad del Alba · Semestre 8</div>
+        <div class="stats">
+          <div><div class="stat-val">0</div><div class="stat-lbl">Conexiones</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-val">1</div><div class="stat-lbl">Posts</div></div>
+          <div class="divider"></div>
+          <div><div class="stat-val" style="color:#2D62C8">0</div><div class="stat-lbl">XP</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="btns layout-a">
+      <button class="btn-primary">✏️ Editar perfil</button>
+      <button class="btn-secondary">👥 Encontrar amigos</button>
+    </div>
+  </div>
+</div>
+
+<!-- OPCIÓN B — FOTO ARRIBA CENTRADA -->
+<div>
+  <div class="label">B — Foto arriba, texto debajo (centrado) <span class="tag-new">nuevo</span></div>
+  <div class="card layout-b">
+    <div class="cover">
+      <button class="cover-btn">📷 Cambiar portada</button>
+    </div>
+    <div class="photo-section">
+      <div class="avatar">
+        <img src="https://i.pravatar.cc/200?u=cristian" alt="">
+      </div>
+      <div class="name">Cristian Gutierrez Lazcano</div>
+      <div class="career">Ingenieria Comercial ADVANCE</div>
+      <div class="uni">Universidad del Alba · Semestre 8</div>
+      <div class="stats">
+        <div><div class="stat-val">0</div><div class="stat-lbl">Conexiones</div></div>
+        <div class="divider"></div>
+        <div><div class="stat-val">1</div><div class="stat-lbl">Posts</div></div>
+        <div class="divider"></div>
+        <div><div class="stat-val" style="color:#2D62C8">0</div><div class="stat-lbl">XP</div></div>
+      </div>
+      <div class="btns">
+        <button class="btn-primary">✏️ Editar perfil</button>
+        <button class="btn-secondary">👥 Encontrar amigos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- OPCIÓN C — FOTO ARRIBA IZQUIERDA -->
+<div>
+  <div class="label">C — Foto arriba izquierda, texto debajo izquierda <span class="tag-new">nuevo</span></div>
+  <div class="card layout-c">
+    <div class="cover">
+      <button class="cover-btn">📷 Cambiar portada</button>
+    </div>
+    <div class="photo-section">
+      <div class="avatar">
+        <img src="https://i.pravatar.cc/200?u=cristian" alt="">
+      </div>
+      <div class="name">Cristian Gutierrez Lazcano</div>
+      <div class="career">Ingenieria Comercial ADVANCE</div>
+      <div class="uni">Universidad del Alba · Semestre 8</div>
+      <div class="stats">
+        <div><div class="stat-val">0</div><div class="stat-lbl">Conexiones</div></div>
+        <div class="divider"></div>
+        <div><div class="stat-val">1</div><div class="stat-lbl">Posts</div></div>
+        <div class="divider"></div>
+        <div><div class="stat-val" style="color:#2D62C8">0</div><div class="stat-lbl">XP</div></div>
+      </div>
+      <div class="btns">
+        <button class="btn-primary">✏️ Editar perfil</button>
+        <button class="btn-secondary">👥 Encontrar amigos</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

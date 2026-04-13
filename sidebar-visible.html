@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sidebar — Siempre Visible</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#B8C4CE; font-family:'Inter',sans-serif; padding:44px; display:flex; gap:32px; flex-wrap:wrap; align-items:flex-start; }
+  .col { display:flex; flex-direction:column; gap:10px; }
+  .lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.13em; color:#546E7A; margin-bottom:2px; line-height:1.7; }
+  .tag { display:inline-block; border-radius:4px; padding:2px 8px; font-size:9px; font-weight:700; margin-left:6px; vertical-align:middle; }
+
+  /* Badge icons (nuevo estilo aplicado) */
+  .bdg {
+    width:28px; height:28px; border-radius:8px; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    box-shadow:0 2px 5px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.22);
+  }
+  .bdg svg { display:block; }
+
+  /* Active pill */
+  .nav.active {
+    background: linear-gradient(155deg, #1E54C0 0%, #3A82EE 100%) !important;
+    color: #FFFFFF !important;
+    font-weight: 600 !important;
+    box-shadow: 0 5px 16px rgba(30,84,192,0.38), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .nav.active .bdg {
+    background: rgba(0,0,50,0.22) !important;
+    box-shadow: inset 0 2px 5px rgba(0,0,80,0.45) !important;
+  }
+  .nav.active .bdg svg {
+    filter: drop-shadow(0 2px 3px rgba(0,10,80,0.55)) drop-shadow(0 -1px 0 rgba(180,210,255,0.4));
+  }
+
+  /* Sidebar shells */
+  .sb { width:220px; border-radius:16px; padding:16px 8px 18px; background:#FFF; box-shadow:0 4px 24px rgba(0,0,0,0.11); overflow:hidden; }
+  .brand { font-size:15px; font-weight:800; letter-spacing:-0.04em; padding:2px 10px 12px; border-bottom:1px solid #F0F4F8; margin-bottom:6px; }
+  .brand em { font-style:normal; color:#2D62C8; }
+  .sec { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; padding:8px 10px 3px; }
+  .nav { display:flex; align-items:center; gap:10px; padding:6px 10px; border-radius:9px; font-size:12px; font-weight:500; cursor:pointer; color:#475569; }
+  .nav:hover:not(.active) { background:#F1F5F9; }
+
+  /* ── OPCIÓN A: Mantener sección con toggle (ACTUAL) ── */
+  .tgl { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 3px; cursor:pointer; }
+  .tgl span { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; color:#B0BEC5; }
+  .tgl svg { opacity:0.4; }
+
+  /* ── OPCIÓN B: Label estático, items visible, sin toggle ── */
+  .sec-b { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.12em; padding:10px 10px 3px; color:#B0BEC5; }
+
+  /* ── OPCIÓN C: Separador visual con línea, sin texto ── */
+  .sep { height:1px; background:linear-gradient(90deg,transparent,#DDE4EE,transparent); margin:8px 10px 4px; }
+
+  /* ── OPCIÓN D: Categorías como chips horizontales ── */
+  .chips { display:flex; gap:4px; padding:6px 10px 2px; flex-wrap:wrap; }
+  .chip {
+    font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em;
+    padding:3px 8px; border-radius:20px; cursor:pointer;
+    background:#F1F5F9; color:#94A3B8; border:none;
+    transition:all 0.12s;
+  }
+  .chip.active-chip { background:#1E54C0; color:#FFF; }
+
+  /* IC colors */
+  .ic-home     { background:#5865C4; }  .ic-profile  { background:#7558B0; }
+  .ic-feed     { background:#C07840; }  .ic-msgs     { background:#2A9890; }
+  .ic-comm     { background:#A84E7C; }  .ic-salas    { background:#C05048; }
+  .ic-cursos   { background:#3A7CC4; }  .ic-cal      { background:#529858; }
+  .ic-jobs     { background:#2A9890; }  .ic-sett     { background:#64748B; }
+</style>
+</head>
+<body>
+
+<!-- ══ A: Actual — con toggle (referencia) ══ -->
+<div class="col">
+  <div class="lbl">A — Actual · con toggle collapse<span class="tag" style="background:#FEE2E2;color:#991B1B;">Referencia</span></div>
+  <div class="sb">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="tgl"><span>Social</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div class="nav active"><div class="bdg ic-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z" fillOpacity="0.9"/></svg></div> Inicio</div>
+    <div class="nav"><div class="bdg ic-profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fillOpacity="0.9"/></svg></div> Mi Perfil</div>
+    <div class="nav"><div class="bdg ic-msgs"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fillOpacity="0.9"/></svg></div> Mensajes</div>
+    <div class="tgl"><span>Estudio</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div style="padding:6px 10px 4px;font-size:11px;color:#94A3B8;font-style:italic;">— sección colapsada —</div>
+    <div class="tgl"><span>Bolsa trabajo</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></div>
+    <div style="padding:6px 10px 4px;font-size:11px;color:#94A3B8;font-style:italic;">— sección colapsada —</div>
+  </div>
+</div>
+
+<!-- ══ B: Labels estáticos · todo visible, sin toggle ══ -->
+<div class="col">
+  <div class="lbl">B — Labels estáticos · todo visible<span class="tag" style="background:#DCFCE7;color:#166534;">Sin toggle</span></div>
+  <div class="sb" style="max-height:520px;overflow-y:auto;">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec-b">Social</div>
+    <div class="nav active"><div class="bdg ic-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z" fillOpacity="0.9"/></svg></div> Inicio</div>
+    <div class="nav"><div class="bdg ic-profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fillOpacity="0.9"/></svg></div> Mi Perfil</div>
+    <div class="nav"><div class="bdg ic-feed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/></svg></div> Feed</div>
+    <div class="nav"><div class="bdg ic-msgs"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fillOpacity="0.9"/></svg></div> Mensajes</div>
+    <div class="nav"><div class="bdg ic-comm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="white" fillOpacity="0.9"/><path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fillOpacity="0.9"/><circle cx="17" cy="8" r="3" fill="white" fillOpacity="0.6"/></svg></div> Comunidad</div>
+
+    <div class="sec-b">Estudio</div>
+    <div class="nav"><div class="bdg ic-salas"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="14" height="14" rx="2" fill="white" fillOpacity="0.9"/><polygon points="23 7 16 12 23 17 23 7" fill="white" fillOpacity="0.6"/></svg></div> Salas</div>
+    <div class="nav"><div class="bdg ic-cursos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fillOpacity="0.9"/></svg></div> Cursos</div>
+    <div class="nav"><div class="bdg ic-cal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" fill="white" fillOpacity="0.9"/><rect x="3" y="4" width="18" height="6" rx="2" fill="white" fillOpacity="0.4"/><line x1="8" y1="2" x2="8" y2="6" stroke="white" strokeWidth="2" strokeLinecap="round"/><line x1="16" y1="2" x2="16" y2="6" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg></div> Calendario</div>
+
+    <div class="sec-b">Bolsa de trabajo</div>
+    <div class="nav"><div class="bdg ic-jobs"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" fill="white" fillOpacity="0.9"/><path d="M16 7V5a2 2 0 00-4 0v2" stroke="white" strokeWidth="2" fill="none"/></svg></div> Bolsa de Trabajo</div>
+
+    <div class="sec-b">Soporte</div>
+    <div class="nav"><div class="bdg ic-sett"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3" fill="white" fillOpacity="0.4"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06A1.65 1.65 0 0015 19.4a1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div> Configuración</div>
+  </div>
+</div>
+
+<!-- ══ C: Separadores visuales · sin texto de sección ══ -->
+<div class="col">
+  <div class="lbl">C — Separador visual · sin labels de sección<span class="tag" style="background:#EDE9FE;color:#4338CA;">Minimalista</span></div>
+  <div class="sb" style="max-height:520px;overflow-y:auto;">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="nav active"><div class="bdg ic-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z" fillOpacity="0.9"/></svg></div> Inicio</div>
+    <div class="nav"><div class="bdg ic-profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fillOpacity="0.9"/></svg></div> Mi Perfil</div>
+    <div class="nav"><div class="bdg ic-feed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/></svg></div> Feed</div>
+    <div class="nav"><div class="bdg ic-msgs"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fillOpacity="0.9"/></svg></div> Mensajes</div>
+    <div class="nav"><div class="bdg ic-comm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="white" fillOpacity="0.9"/><path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fillOpacity="0.9"/></svg></div> Comunidad</div>
+    <div class="sep"></div>
+    <div class="nav"><div class="bdg ic-salas"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="5" width="14" height="14" rx="2" fill="white" fillOpacity="0.9"/><polygon points="23 7 16 12 23 17 23 7" fill="white" fillOpacity="0.6"/></svg></div> Salas</div>
+    <div class="nav"><div class="bdg ic-cursos"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 19.5A2.5 2.5 0 016.5 17H20V3H6.5A2.5 2.5 0 004 5.5V19.5z" fill="white" fillOpacity="0.9"/></svg></div> Cursos</div>
+    <div class="nav"><div class="bdg ic-cal"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" fill="white" fillOpacity="0.9"/><rect x="3" y="4" width="18" height="6" rx="2" fill="white" fillOpacity="0.4"/></svg></div> Calendario</div>
+    <div class="sep"></div>
+    <div class="nav"><div class="bdg ic-jobs"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="2" y="7" width="20" height="14" rx="2" fill="white" fillOpacity="0.9"/><path d="M16 7V5a2 2 0 00-4 0v2" stroke="white" strokeWidth="2" fill="none"/></svg></div> Bolsa de Trabajo</div>
+    <div class="sep"></div>
+    <div class="nav"><div class="bdg ic-sett"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3" fill="white" fillOpacity="0.4"/></svg></div> Configuración</div>
+  </div>
+</div>
+
+<!-- ══ D: Chips horizontales de categoría ══ -->
+<div class="col">
+  <div class="lbl">D — Chips de sección · filtran la vista<span class="tag" style="background:#FEF3C7;color:#92400E;">Innovador</span></div>
+  <div class="sb">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="chips">
+      <button class="chip active-chip">Social</button>
+      <button class="chip">Estudio</button>
+      <button class="chip">Trabajo</button>
+      <button class="chip">Config</button>
+    </div>
+    <div style="height:6px;"></div>
+    <!-- solo muestra la sección activa del chip -->
+    <div class="nav active"><div class="bdg ic-home"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M12 3L3 10V21H9V15H15V21H21V10L12 3Z" fillOpacity="0.9"/></svg></div> Inicio</div>
+    <div class="nav"><div class="bdg ic-profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" fill="white" fillOpacity="0.9"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="white" fillOpacity="0.9"/></svg></div> Mi Perfil</div>
+    <div class="nav"><div class="bdg ic-feed"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5" fill="white" fillOpacity="0.9"/></svg></div> Feed</div>
+    <div class="nav"><div class="bdg ic-msgs"><svg width="13" height="13" viewBox="0 0 24 24" fill="white"><path d="M20 2H4C3 2 2 3 2 4V16C2 17 3 18 4 18H7L12 23L17 18H20C21 18 22 17 22 16V4C22 3 21 2 20 2Z" fillOpacity="0.9"/></svg></div> Mensajes</div>
+    <div class="nav"><div class="bdg ic-comm"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="7" r="4" fill="white" fillOpacity="0.9"/><path d="M3 21v-2a5 5 0 0110 0v2" fill="white" fillOpacity="0.9"/></svg></div> Comunidad</div>
+    <div style="padding:14px 10px 4px;font-size:10.5px;color:#94A3B8;font-style:italic;">Al seleccionar otro chip, la lista cambia</div>
+  </div>
+</div>
+
+<!-- leyenda -->
+<div style="width:100%;margin-top:4px;">
+  <div style="background:white;border-radius:12px;padding:18px 24px;max-width:960px;">
+    <p style="font-size:9px;font-weight:700;letter-spacing:0.10em;color:#94A3B8;text-transform:uppercase;margin-bottom:12px;">Pregunta: ¿cómo organizar el sidebar cuando todo está visible?</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;font-size:11.5px;color:#374151;line-height:1.65;">
+      <div><strong style="display:block;color:#991B1B;margin-bottom:3px;">A — Con toggle (referencia)</strong>Secciones colapsables. El usuario decide qué ver. Más largo cuando todo abierto.</div>
+      <div><strong style="display:block;color:#166534;margin-bottom:3px;">B — Labels estáticos</strong>Todas las secciones siempre visibles con sus labels. El sidebar tiene scroll si el contenido es largo.</div>
+      <div><strong style="display:block;color:#4338CA;margin-bottom:3px;">C — Separadores visuales</strong>Sin texto de sección — solo una línea entre grupos. Más limpio, pero menos orientación.</div>
+      <div><strong style="display:block;color:#92400E;margin-bottom:3px;">D — Chips de categoría</strong>Chips arriba filtran qué sección ves. Sidebar compacto, solo muestra una sección a la vez.</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

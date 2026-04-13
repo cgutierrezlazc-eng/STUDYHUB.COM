@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Opciones Foto de Perfil — Conniku</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0F172A;
+  color: #F1F5F9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 32px 20px;
+}
+h1 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #F1F5F9;
+}
+.subtitle {
+  text-align: center;
+  color: #64748B;
+  font-size: 14px;
+  margin-bottom: 48px;
+}
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.option-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.option-num {
+  background: #38BDF8;
+  color: #0F172A;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.option-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #F1F5F9;
+}
+.option-desc {
+  font-size: 12px;
+  color: #64748B;
+  margin-top: 2px;
+}
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 99px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.badge-new { background: #34D39920; color: #34D399; border: 1px solid #34D39940; }
+.badge-bold { background: #FBBF2420; color: #FBBF24; border: 1px solid #FBBF2440; }
+
+/* ── Mock profile card ── */
+.profile-mock {
+  background: #1E293B;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+.mock-cover {
+  width: 100%;
+  height: 110px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0c2340 100%);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.mock-cover-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(56,189,248,0.12) 0%, transparent 60%),
+    linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.3) 100%);
+}
+.mock-info {
+  padding: 10px 20px 16px;
+}
+.mock-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: #F1F5F9;
+  margin-bottom: 2px;
+}
+.mock-handle {
+  font-size: 12px;
+  color: #64748B;
+  margin-bottom: 6px;
+}
+.mock-bio {
+  font-size: 12px;
+  color: #94A3B8;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.mock-stats {
+  display: flex;
+  gap: 16px;
+}
+.mock-stat { font-size: 12px; color: #64748B; }
+.mock-stat strong { color: #F1F5F9; font-weight: 600; }
+
+/* Placeholder user photo — gradient avatar */
+.photo-placeholder {
+  background: linear-gradient(135deg, #1D4ED8 0%, #7C3AED 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; font-weight: 800; color: #fff;
+  letter-spacing: -1px;
+  width: 100%; height: 100%;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 1 — Squircle (cuadrado redondeado)
+─────────────────────────────────────────── */
+.opt1-photo-wrap {
+  position: relative;
+  z-index: 2;
+  margin-top: -55px;
+  margin-left: 20px;
+  width: 110px;
+  height: 110px;
+  border-radius: 22px;
+  overflow: hidden;
+  border: 4px solid #1E293B;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.opt1-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -55px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 2 — Tarjeta vertical (Card embed)
+─────────────────────────────────────────── */
+.opt2-photo-wrap {
+  position: relative;
+  z-index: 2;
+  margin-top: -70px;
+  margin-left: 20px;
+  width: 90px;
+  height: 126px; /* 3:4 ratio — portrait */
+  border-radius: 14px;
+  overflow: hidden;
+  border: 3px solid #1E293B;
+  flex-shrink: 0;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.15);
+}
+.opt2-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -70px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 3 — Hexágono
+─────────────────────────────────────────── */
+.opt3-photo-outer {
+  position: relative;
+  z-index: 2;
+  margin-top: -58px;
+  margin-left: 20px;
+  width: 108px;
+  height: 108px;
+  flex-shrink: 0;
+}
+.opt3-hex-bg {
+  width: 108px;
+  height: 108px;
+  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+  background: #38BDF8;
+  display: flex; align-items: center; justify-content: center;
+}
+.opt3-hex-inner {
+  width: 98px;
+  height: 98px;
+  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+  overflow: hidden;
+}
+.opt3-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -58px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 4 — Glassmorphism frame
+─────────────────────────────────────────── */
+.opt4-photo-outer {
+  position: relative;
+  z-index: 2;
+  margin-top: -62px;
+  margin-left: 20px;
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
+}
+.opt4-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.35), rgba(124,58,237,0.25));
+  filter: blur(8px);
+  z-index: 0;
+}
+.opt4-glass-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.3) 0%, rgba(124,58,237,0.2) 100%);
+  padding: 3px;
+  z-index: 1;
+}
+.opt4-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
+  overflow: hidden;
+  background: #1E293B;
+}
+.opt4-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -62px;
+  position: relative;
+  z-index: 2;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 5 — Banner panorámico (full-width)
+─────────────────────────────────────────── */
+.opt5-banner {
+  position: relative;
+  width: 100%;
+  height: 80px;
+  overflow: hidden;
+  margin-top: 0;
+  border-bottom: 2px solid rgba(56,189,248,0.2);
+}
+.opt5-banner-img {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1D4ED8 0%, #7C3AED 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 800; color: #fff;
+  letter-spacing: -1px;
+  object-fit: cover;
+}
+.opt5-banner-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(30,41,59,0.85) 0%, transparent 60%);
+}
+.opt5-name-over {
+  position: absolute;
+  left: 16px;
+  bottom: 10px;
+  z-index: 2;
+}
+.opt5-name-over .mock-name { font-size: 16px; text-shadow: 0 1px 4px rgba(0,0,0,0.7); }
+.opt5-name-over .mock-handle { margin-bottom: 0; }
+.opt5-section {
+  padding: 12px 20px 16px;
+}
+
+/* ───────────────────────────────────────────
+   OPCIÓN 6 — Rombo (Diamond)
+─────────────────────────────────────────── */
+.opt6-photo-outer {
+  position: relative;
+  z-index: 2;
+  margin-top: -56px;
+  margin-left: 28px;
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+}
+.opt6-diamond-bg {
+  width: 100px;
+  height: 100px;
+  transform: rotate(45deg);
+  border-radius: 10px;
+  background: #38BDF8;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(56,189,248,0.25), 0 0 0 3px #1E293B;
+}
+.opt6-diamond-inner {
+  width: 92px;
+  height: 92px;
+  transform: rotate(0deg);
+  overflow: hidden;
+}
+.opt6-diamond-inner-img {
+  width: 142px;
+  height: 142px;
+  transform: rotate(-45deg) translate(-14%, -14%);
+  object-fit: cover;
+}
+.opt6-section {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 20px;
+  margin-top: -56px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Shared adjustments */
+.opt-info {
+  padding-top: 8px;
+  padding-bottom: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Comparison section */
+.comparison {
+  max-width: 1200px;
+  margin: 48px auto 0;
+  background: #1E293B;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #334155;
+}
+.comparison h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 8px 12px;
+  color: #64748B;
+  font-weight: 600;
+  border-bottom: 1px solid #334155;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+td {
+  padding: 10px 12px;
+  color: #94A3B8;
+  border-bottom: 1px solid #1E293B;
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+td:first-child { color: #F1F5F9; font-weight: 600; }
+.dot-green { color: #34D399; }
+.dot-yellow { color: #FBBF24; }
+.dot-red { color: #FB7185; }
+</style>
+</head>
+<body>
+
+<h1>Opciones Foto de Perfil — Conniku</h1>
+<p class="subtitle">6 estilos modernos para reemplazar el círculo tradicional · Tema Océano</p>
+
+<div class="options-grid">
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 1 — Squircle
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">1</div>
+      <div>
+        <div class="option-name">Squircle &nbsp;<span class="badge badge-new">Recomendado</span></div>
+        <div class="option-desc">Cuadrado con bordes muy redondeados · iOS/Discord style</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:12px; padding:0 20px; margin-top:-55px; position:relative; z-index:2;">
+        <div class="opt1-photo-wrap" style="margin-top:0; margin-left:0;">
+          <div class="photo-placeholder">CG</div>
+        </div>
+        <div class="opt-info">
+          <div class="mock-name">Cristian Gutiérrez</div>
+          <div class="mock-handle">@cgutierrez · CEO</div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:8px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 2 — Tarjeta vertical (Portrait card)
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">2</div>
+      <div>
+        <div class="option-name">Tarjeta Vertical &nbsp;<span class="badge badge-new">Único</span></div>
+        <div class="option-desc">Proporción 3:4 tipo carnet/ID · más espacio para la cara</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:12px; padding:0 20px; margin-top:-70px; position:relative; z-index:2;">
+        <div class="opt2-photo-wrap" style="margin-top:0; margin-left:0;">
+          <div class="photo-placeholder" style="font-size:22px;">CG</div>
+        </div>
+        <div class="opt-info">
+          <div class="mock-name">Cristian Gutiérrez</div>
+          <div class="mock-handle">@cgutierrez · CEO</div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:8px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 3 — Hexágono
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">3</div>
+      <div>
+        <div class="option-name">Hexágono</div>
+        <div class="option-desc">Clip-path hexagonal · tech/gaming aesthetic</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:12px; padding:0 20px; margin-top:-58px; position:relative; z-index:2;">
+        <div class="opt3-photo-outer" style="margin-top:0; margin-left:0;">
+          <div class="opt3-hex-bg">
+            <div class="opt3-hex-inner">
+              <div class="photo-placeholder" style="font-size:24px;">CG</div>
+            </div>
+          </div>
+        </div>
+        <div class="opt-info">
+          <div class="mock-name">Cristian Gutiérrez</div>
+          <div class="mock-handle">@cgutierrez · CEO</div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:8px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 4 — Glassmorphism con glow
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">4</div>
+      <div>
+        <div class="option-name">Glassmorphism Glow &nbsp;<span class="badge badge-bold">Premium</span></div>
+        <div class="option-desc">Marco con gradiente y glow blur · se adapta al tipo de cuenta MAX</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:12px; padding:0 20px; margin-top:-62px; position:relative; z-index:2;">
+        <div class="opt4-photo-outer" style="margin-top:0; margin-left:0;">
+          <div class="opt4-glow"></div>
+          <div class="opt4-glass-border">
+            <div class="opt4-inner">
+              <div class="photo-placeholder" style="font-size:26px; border-radius:15px;">CG</div>
+            </div>
+          </div>
+        </div>
+        <div class="opt-info">
+          <div class="mock-name">Cristian Gutiérrez</div>
+          <div class="mock-handle">@cgutierrez · CEO &nbsp;◆&nbsp;<span style="color:#38BDF8;">MAX</span></div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:8px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 5 — Banner panorámico (YouTube/Twitch)
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">5</div>
+      <div>
+        <div class="option-name">Banner Panorámico &nbsp;<span class="badge badge-bold">Radical</span></div>
+        <div class="option-desc">La foto ocupa todo el ancho como banner · nombre encima</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover" style="height:90px;">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="position:relative; overflow:hidden; width:100%; height:88px; margin-top:0; border-bottom: 1px solid rgba(56,189,248,0.2);">
+        <div style="width:100%; height:100%; background:linear-gradient(135deg,#1D4ED8 0%,#7C3AED 100%); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#fff;">
+          CG
+        </div>
+        <div style="position:absolute; inset:0; background:linear-gradient(to right, rgba(30,41,59,0.85) 0%, transparent 60%);"></div>
+        <div style="position:absolute; left:16px; bottom:10px; z-index:2;">
+          <div class="mock-name" style="font-size:15px; text-shadow:0 1px 4px rgba(0,0,0,0.7);">Cristian Gutiérrez</div>
+          <div class="mock-handle" style="margin-bottom:0;">@cgutierrez · CEO</div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:12px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════
+       OPCIÓN 6 — Rombo (Diamond)
+  ════════════════════════════════════════ -->
+  <div class="option-wrap">
+    <div class="option-label">
+      <div class="option-num">6</div>
+      <div>
+        <div class="option-name">Rombo / Diamond</div>
+        <div class="option-desc">Forma rotada 45° · muy distintivo y geométrico</div>
+      </div>
+    </div>
+    <div class="profile-mock">
+      <div class="mock-cover">
+        <div class="mock-cover-overlay"></div>
+      </div>
+      <div style="display:flex; align-items:flex-end; gap:14px; padding:0 20px; margin-top:-56px; position:relative; z-index:2;">
+        <div style="position:relative; z-index:2; width:100px; height:100px; flex-shrink:0; margin-top:0;">
+          <div style="width:100px; height:100px; transform:rotate(45deg); border-radius:10px; overflow:hidden; box-shadow:0 8px 24px rgba(56,189,248,0.25), 0 0 0 3px #1E293B; border: 3px solid #38BDF820;">
+            <div style="width:142px; height:142px; transform:rotate(-45deg) translate(-15%, -15%); background:linear-gradient(135deg,#1D4ED8 0%,#7C3AED 100%); display:flex; align-items:center; justify-content:center;">
+              <span style="font-size:26px; font-weight:800; color:#fff; transform:rotate(45deg);">CG</span>
+            </div>
+          </div>
+        </div>
+        <div class="opt-info">
+          <div class="mock-name">Cristian Gutiérrez</div>
+          <div class="mock-handle">@cgutierrez · CEO</div>
+        </div>
+      </div>
+      <div class="mock-info" style="padding-top:8px;">
+        <div class="mock-bio">Fundador de Conniku · Transformando la educación universitaria en Chile.</div>
+        <div class="mock-stats">
+          <div class="mock-stat"><strong>142</strong> amigos</div>
+          <div class="mock-stat"><strong>38</strong> publicaciones</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════════════
+     Tabla comparativa
+════════════════════════════════════════ -->
+<div class="comparison">
+  <h2>Comparación rápida</h2>
+  <table>
+    <tr>
+      <th>#</th>
+      <th>Estilo</th>
+      <th>Tamaño foto</th>
+      <th>Dificultad impl.</th>
+      <th>Encaja con Conniku</th>
+      <th>Nota</th>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>Squircle</td>
+      <td>110×110 px</td>
+      <td><span class="dot-green">●</span> Fácil</td>
+      <td><span class="dot-green">●</span> Muy bien</td>
+      <td>El más limpio y universal. iOS, Discord, Linear lo usan.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Tarjeta Vertical</td>
+      <td>90×126 px</td>
+      <td><span class="dot-green">●</span> Fácil</td>
+      <td><span class="dot-green">●</span> Muy bien</td>
+      <td>Muestra mejor la cara. Único en plataformas educativas.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Hexágono</td>
+      <td>108×108 px</td>
+      <td><span class="dot-yellow">●</span> Medio</td>
+      <td><span class="dot-yellow">●</span> Bien</td>
+      <td>Muy llamativo. Funciona mejor con fotos cuadradas.</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Glassmorphism Glow</td>
+      <td>110×110 px</td>
+      <td><span class="dot-yellow">●</span> Medio</td>
+      <td><span class="dot-green">●</span> Excelente</td>
+      <td>Puede variar el color del glow por plan (PRO/MAX). Premium visual.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Banner Panorámico</td>
+      <td>100% ancho</td>
+      <td><span class="dot-red">●</span> Complejo</td>
+      <td><span class="dot-yellow">●</span> Diferente</td>
+      <td>Radical — elimina la foto separada. Requiere foto horizontal.</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Rombo / Diamond</td>
+      <td>100×100 px</td>
+      <td><span class="dot-yellow">●</span> Medio</td>
+      <td><span class="dot-yellow">●</span> Bien</td>
+      <td>Muy distinto. Puede ser difícil para fotos de perfil estándar.</td>
+    </tr>
+  </table>
+</div>
+
+<p style="text-align:center; color:#334155; font-size:12px; margin-top:32px;">
+  conniku.com · profile-photo-options.html · 2026-04-12
+</p>
+
+</body>
+</html>

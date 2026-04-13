@@ -6,19 +6,15 @@
       <stop offset="100%" stop-color="#2D62C8"/>
     </linearGradient>
   </defs>
-  <!-- Background -->
+  <!-- Background — mismo gradiente, mismos bordes redondeados -->
   <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <!-- Main person (head) -->
-  <circle cx="230" cy="185" r="58" fill="none" stroke="#fff" stroke-width="16"/>
-  <!-- Main person (body) -->
-  <path d="M230 243 C168 243 135 290 135 340 L325 340 C325 290 292 243 230 243Z" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- Secondary person (head) -->
-  <circle cx="330" cy="170" r="40" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="12"/>
-  <!-- Secondary person (body) -->
-  <path d="M330 210 C286 210 262 240 258 270" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="12" stroke-linecap="round"/>
-  <!-- Connection dots -->
-  <circle cx="290" cy="200" r="6" fill="rgba(255,255,255,0.4)"/>
-  <circle cx="280" cy="220" r="4" fill="rgba(255,255,255,0.3)"/>
-  <!-- Text: conniku -->
-  <text x="256" y="420" font-family="Inter, -apple-system, Helvetica, Arial, sans-serif" font-size="72" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="-3">conniku</text>
+  <!-- ik bicolor: i blanco, k azul claro — pegados, centrados -->
+  <text
+    font-family="Outfit, -apple-system, Helvetica, Arial, sans-serif"
+    font-size="290"
+    font-weight="800"
+    text-anchor="middle"
+    y="340">
+    <tspan x="256" fill="#FFFFFF">i</tspan><tspan fill="#8FC5FF">k</tspan>
+  </text>
 </svg>

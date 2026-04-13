@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Logo Draft v2 — Conniku</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+* { box-sizing:border-box; margin:0; padding:0; }
+body { background:#0F172A; font-family:'Outfit',-apple-system,sans-serif; padding:40px 24px; color:#F1F5F9; }
+h1 { text-align:center; font-size:14px; font-weight:600; color:#38BDF8; margin-bottom:6px; text-transform:uppercase; letter-spacing:.1em; }
+.sub { text-align:center; color:#64748B; font-size:11px; margin-bottom:48px; }
+.section { max-width:720px; margin:0 auto 52px; }
+.section-title { font-size:10px; font-weight:700; color:#38BDF8; text-transform:uppercase; letter-spacing:.1em; margin-bottom:14px; }
+.row { display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px; }
+.card { background:#1E293B; border:1px solid #334155; border-radius:14px; padding:24px 28px; display:flex; flex-direction:column; align-items:center; gap:12px; flex:1; min-width:240px; }
+.card-label { font-size:10px; color:#64748B; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
+.card.ok { border-color:#38BDF8; }
+.card.ok .card-label { color:#38BDF8; }
+.bg-sidebar { background:#1E293B; border-radius:8px; padding:12px 16px; }
+.bg-light { background:#F5F3EF; border-radius:8px; padding:12px 16px; }
+.size-row { display:flex; gap:20px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
+.size-item { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.size-lbl { font-size:9px; color:#475569; font-weight:600; text-transform:uppercase; }
+.note { font-size:10px; color:#64748B; text-align:center; margin-top:10px; font-style:italic; }
+</style>
+</head>
+<body>
+
+<h1>Logo Draft v2 — ik CUSTOM</h1>
+<p class="sub">i y k misma altura total · punto cuadrado · pegadas · i blanca · k azul · 80% del cuadro</p>
+
+<!-- ══ LOGO TEXTO ══ -->
+<div class="section">
+  <div class="section-title">Logo texto — conniku (i·k pegadas)</div>
+
+  <div class="row">
+    <div class="card ok">
+      <div class="card-label">Fondo oscuro</div>
+      <div class="bg-sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="220" height="47">
+          <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+          <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+          <text x="56" y="44" font-family="Outfit,-apple-system,sans-serif" font-size="40" font-weight="700" letter-spacing="-2">
+            <tspan fill="#F5F7F8">conni</tspan><tspan fill="#2D62C8" dx="-4">ku</tspan>
+          </text>
+        </svg>
+      </div>
+    </div>
+    <div class="card ok">
+      <div class="card-label">Fondo claro</div>
+      <div class="bg-light">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 60" width="220" height="47">
+          <rect x="2" y="8" width="44" height="44" rx="12" fill="#2D62C8"/>
+          <circle cx="24" cy="30" r="12" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="56 19"/>
+          <text x="56" y="44" font-family="Outfit,-apple-system,sans-serif" font-size="40" font-weight="700" letter-spacing="-2">
+            <tspan fill="#151B1E">conni</tspan><tspan fill="#2D62C8" dx="-4">ku</tspan>
+          </text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ÍCONO APP — TOTALMENTE CUSTOM ══ -->
+<!--
+  Diseño:
+  - Fondo: gradiente #1A3A7A → #2D62C8, rx=96 (igual que tema)
+  - "i" y "k" misma altura total: 410px (80% de 512)
+  - Centro vertical en y=256, top en y=51, bottom en y=461
+  - Ancho del trazo (stem): W=44px para ambas letras
+  - "i": barra vertical + punto CUADRADO 44×44 arriba (gap=16px)
+    - Stem: rect(127, 111, 44, 350) — bottom=461, top=111
+    - Gap: 111-95=16px
+    - Dot:  rect(127, 51, 44, 44)  — bottom=95, top=51
+  - "k": barra vertical (misma altura total 410px) + dos brazos diagonales
+    - Bar:  rect(171, 51, 44, 410)
+    - Brazos con líneas 46px de ancho, stroke-linecap=butt, desde (193,256) a top-right y bottom-right
+-->
+<div class="section">
+  <div class="section-title">Ícono de app — ik custom · misma altura · punto cuadrado · 80% del cuadro</div>
+
+  <div class="row" style="justify-content:center">
+
+    <!-- 180px -->
+    <div class="card ok" style="flex:none;width:220px">
+      <div class="card-label">180px</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="180" height="180">
+        <defs>
+          <linearGradient id="bgA" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A3A7A"/>
+            <stop offset="100%" stop-color="#2D62C8"/>
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="96" fill="url(#bgA)"/>
+        <!-- i: barra + punto cuadrado (44×44 = mismo ancho que barra) -->
+        <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+        <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+        <!-- k: barra vertical completa (misma altura que i) -->
+        <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+        <!-- k: brazo superior — desde junction(193,256) hacia top-right -->
+        <line x1="193" y1="256" x2="370" y2="51" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+        <!-- k: brazo inferior — desde junction(193,256) hacia bottom-right -->
+        <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+      </svg>
+    </div>
+
+    <!-- 96px -->
+    <div class="card ok" style="flex:none;width:220px">
+      <div class="card-label">96px</div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="96" height="96">
+        <defs>
+          <linearGradient id="bgB" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1A3A7A"/>
+            <stop offset="100%" stop-color="#2D62C8"/>
+          </linearGradient>
+        </defs>
+        <rect width="512" height="512" rx="96" fill="url(#bgB)"/>
+        <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+        <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+        <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+        <line x1="193" y1="256" x2="370" y2="51"  stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+        <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+      </svg>
+    </div>
+
+    <!-- Tamaños pequeños -->
+    <div class="card ok" style="flex:none;width:220px">
+      <div class="card-label">48 · 40 · 24px</div>
+      <div class="size-row">
+        <div class="size-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="48" height="48">
+            <defs><linearGradient id="bgC" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+            <rect width="512" height="512" rx="96" fill="url(#bgC)"/>
+            <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+            <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+            <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+            <line x1="193" y1="256" x2="370" y2="51"  stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+            <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+          </svg>
+          <span class="size-lbl">48</span>
+        </div>
+        <div class="size-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="40" height="40">
+            <defs><linearGradient id="bgD" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+            <rect width="512" height="512" rx="96" fill="url(#bgD)"/>
+            <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+            <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+            <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+            <line x1="193" y1="256" x2="370" y2="51"  stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+            <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+          </svg>
+          <span class="size-lbl">40</span>
+        </div>
+        <div class="size-item">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="24" height="24">
+            <defs><linearGradient id="bgE" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1A3A7A"/><stop offset="100%" stop-color="#2D62C8"/></linearGradient></defs>
+            <rect width="512" height="512" rx="96" fill="url(#bgE)"/>
+            <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+            <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+            <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+            <line x1="193" y1="256" x2="370" y2="51"  stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+            <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+          </svg>
+          <span class="size-lbl">24</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zoom del ícono -->
+  <div class="card" style="max-width:720px;margin:20px auto 0">
+    <div class="card-label">Zoom — estructura del ícono (i y k misma altura)</div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="60 30 400 460" width="380" height="437">
+      <defs>
+        <linearGradient id="bgZoom" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#1A3A7A"/>
+          <stop offset="100%" stop-color="#2D62C8"/>
+        </linearGradient>
+      </defs>
+      <rect width="512" height="512" rx="96" fill="url(#bgZoom)"/>
+      <!-- i -->
+      <rect x="127" y="111" width="44" height="350" fill="#FFFFFF"/>
+      <rect x="127" y="51"  width="44" height="44"  fill="#FFFFFF"/>
+      <!-- k -->
+      <rect x="171" y="51"  width="44" height="410" fill="#8FC5FF"/>
+      <line x1="193" y1="256" x2="370" y2="51"  stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+      <line x1="193" y1="256" x2="370" y2="461" stroke="#8FC5FF" stroke-width="46" stroke-linecap="butt"/>
+    </svg>
+    <p class="note">i: stem 44px + punto cuadrado 44×44 · k: barra 44px + 2 brazos · Misma altura total (410px = 80% de 512)</p>
+  </div>
+</div>
+
+<p style="text-align:center;color:#1e293b;font-size:11px;margin-top:20px">logo-draft-v2.html</p>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diseños de Perfil — Conniku</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #fff; padding: 32px; }
+  h1 { text-align: center; font-size: 22px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 40px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; max-width: 1200px; margin: 0 auto; }
+  .option { background: #1a1d27; border-radius: 16px; overflow: hidden; border: 2px solid transparent; transition: border 0.2s; }
+  .option:hover { border-color: #4f6ef7; }
+  .option-label { padding: 10px 16px; background: #0f1117; display: flex; align-items: center; justify-content: space-between; }
+  .option-label span { font-size: 13px; font-weight: 700; color: #fff; }
+  .option-label em { font-size: 11px; color: #666; font-style: normal; }
+
+  /* ── Diseño 1: Hero Banner ── */
+  .d1 { font-size: 12px; }
+  .d1-cover { height: 80px; background: linear-gradient(135deg, #2563eb, #7c3aed); position: relative; }
+  .d1-avatar { width: 56px; height: 56px; border-radius: 50%; background: #4f6ef7; border: 3px solid #1a1d27; position: absolute; bottom: -28px; left: 20px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; }
+  .d1-body { padding: 36px 20px 16px; }
+  .d1-name { font-size: 15px; font-weight: 700; }
+  .d1-role { font-size: 11px; color: #888; margin: 2px 0 10px; }
+  .d1-stats { display: flex; gap: 16px; }
+  .d1-stat { text-align: center; }
+  .d1-stat strong { display: block; font-size: 14px; font-weight: 700; color: #4f6ef7; }
+  .d1-stat span { font-size: 10px; color: #666; }
+  .d1-tabs { display: flex; gap: 0; border-top: 1px solid #2a2d3a; margin-top: 12px; }
+  .d1-tab { flex: 1; text-align: center; padding: 8px; font-size: 10px; color: #666; border-bottom: 2px solid transparent; cursor: pointer; }
+  .d1-tab.active { color: #4f6ef7; border-bottom-color: #4f6ef7; }
+
+  /* ── Diseño 2: Sidebar Clásico ── */
+  .d2 { display: flex; min-height: 200px; font-size: 12px; }
+  .d2-side { width: 90px; background: #141620; padding: 16px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .d2-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #4f6ef7, #a855f7); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; }
+  .d2-nav { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .d2-nav-item { padding: 7px 6px; border-radius: 8px; font-size: 10px; color: #666; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .d2-nav-item.active { background: #4f6ef720; color: #4f6ef7; }
+  .d2-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+  .d2-main { flex: 1; padding: 16px; }
+  .d2-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+  .d2-role { font-size: 10px; color: #888; margin-bottom: 12px; }
+  .d2-field { margin-bottom: 8px; }
+  .d2-field label { display: block; font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+  .d2-field input { width: 100%; background: #0f1117; border: 1px solid #2a2d3a; border-radius: 6px; padding: 5px 8px; font-size: 11px; color: #ccc; }
+
+  /* ── Diseño 3: Tarjeta Compacta ── */
+  .d3 { font-size: 12px; padding: 20px; }
+  .d3-top { display: flex; gap: 14px; align-items: center; margin-bottom: 16px; }
+  .d3-avatar { width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, #059669, #0891b2); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+  .d3-info { flex: 1; }
+  .d3-name { font-size: 15px; font-weight: 700; }
+  .d3-role { font-size: 11px; color: #888; margin: 2px 0 6px; }
+  .d3-badge { display: inline-flex; align-items: center; gap: 4px; background: #05966915; color: #059669; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; border: 1px solid #05966930; }
+  .d3-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .d3-chip { background: #2a2d3a; padding: 4px 10px; border-radius: 20px; font-size: 10px; color: #aaa; }
+  .d3-progress { margin-bottom: 6px; }
+  .d3-progress label { display: flex; justify-content: space-between; font-size: 10px; color: #888; margin-bottom: 3px; }
+  .d3-bar { height: 4px; background: #2a2d3a; border-radius: 99px; overflow: hidden; }
+  .d3-fill { height: 100%; border-radius: 99px; }
+
+  /* ── Diseño 4: Minimalista Líneas ── */
+  .d4 { font-size: 12px; padding: 20px; }
+  .d4-header { text-align: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #2a2d3a; }
+  .d4-avatar { width: 56px; height: 56px; border-radius: 50%; background: #1e2030; border: 2px solid #3a3d4a; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .d4-name { font-size: 16px; font-weight: 700; }
+  .d4-role { font-size: 11px; color: #666; margin-top: 2px; }
+  .d4-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #1e2030; }
+  .d4-row span:first-child { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: .5px; }
+  .d4-row span:last-child { font-size: 11px; color: #ccc; }
+  .d4-edit-btn { display: block; width: 100%; margin-top: 14px; background: none; border: 1px solid #3a3d4a; color: #888; padding: 7px; border-radius: 8px; font-size: 11px; cursor: pointer; text-align: center; }
+
+  /* ── Diseño 5: Glassmorphism ── */
+  .d5 { background: linear-gradient(135deg, #1a1060 0%, #0d2460 50%, #1a0a3a 100%) !important; padding: 0; overflow: hidden; }
+  .d5-inner { padding: 20px; backdrop-filter: blur(10px); }
+  .d5-glow { position: absolute; width: 100px; height: 100px; border-radius: 50%; background: #4f6ef730; filter: blur(30px); top: 10px; right: 10px; }
+  .d5-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 14px; margin-bottom: 10px; backdrop-filter: blur(10px); }
+  .d5-top { display: flex; gap: 12px; align-items: center; }
+  .d5-avatar { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #4f6ef7, #a855f7); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+  .d5-name { font-size: 14px; font-weight: 700; }
+  .d5-role { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .d5-stats { display: flex; gap: 8px; }
+  .d5-stat { flex: 1; background: rgba(255,255,255,0.05); border-radius: 10px; padding: 8px; text-align: center; border: 1px solid rgba(255,255,255,0.08); }
+  .d5-stat strong { display: block; font-size: 14px; font-weight: 700; background: linear-gradient(135deg, #4f6ef7, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .d5-stat span { font-size: 9px; color: rgba(255,255,255,0.4); }
+
+  /* ── Diseño 6: Split Dashboard ── */
+  .d6 { font-size: 12px; padding: 0; }
+  .d6-header { background: linear-gradient(90deg, #4f6ef7, #7c3aed); padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+  .d6-avatar { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+  .d6-hname { font-size: 13px; font-weight: 700; }
+  .d6-hrole { font-size: 10px; opacity: 0.7; }
+  .d6-body { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .d6-section { background: #141620; border-radius: 10px; padding: 10px; }
+  .d6-section h4 { font-size: 9px; text-transform: uppercase; letter-spacing: .5px; color: #555; margin-bottom: 8px; }
+  .d6-kv { display: flex; justify-content: space-between; margin-bottom: 5px; }
+  .d6-kv span:first-child { color: #555; font-size: 10px; }
+  .d6-kv span:last-child { color: #ccc; font-size: 10px; }
+  .d6-xp-bar { height: 4px; background: #2a2d3a; border-radius: 99px; overflow: hidden; margin-top: 6px; }
+  .d6-xp-fill { height: 100%; background: linear-gradient(90deg, #4f6ef7, #a855f7); border-radius: 99px; width: 65%; }
+  .d6-achievements { display: flex; gap: 4px; flex-wrap: wrap; }
+  .d6-ach { width: 28px; height: 28px; border-radius: 8px; background: #2a2d3a; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<h1>6 Diseños para Mi Perfil</h1>
+<p class="subtitle">Elige el que más te guste — todos incluyen foto, datos personales, stats y CV</p>
+
+<div class="grid">
+
+  <!-- 1. Hero Banner -->
+  <div class="option">
+    <div class="option-label">
+      <span>1. Hero Banner</span>
+      <em>Instagram / LinkedIn</em>
+    </div>
+    <div class="d1">
+      <div class="d1-cover">
+        <div class="d1-avatar">CG</div>
+      </div>
+      <div class="d1-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div class="d1-name">Cristian G.</div>
+            <div class="d1-role">CEO · Conniku SpA</div>
+          </div>
+          <button style="background:#4f6ef7;border:none;color:#fff;padding:5px 12px;border-radius:8px;font-size:10px;cursor:pointer">Editar</button>
+        </div>
+        <div class="d1-stats">
+          <div class="d1-stat"><strong>12</strong><span>Materias</span></div>
+          <div class="d1-stat"><strong>47h</strong><span>Estudiadas</span></div>
+          <div class="d1-stat"><strong>Nv.8</strong><span>Nivel</span></div>
+          <div class="d1-stat"><strong>14🔥</strong><span>Racha</span></div>
+        </div>
+      </div>
+      <div class="d1-tabs">
+        <div class="d1-tab active">Perfil</div>
+        <div class="d1-tab">Académico</div>
+        <div class="d1-tab">CV</div>
+        <div class="d1-tab">Config</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Sidebar Clásico -->
+  <div class="option">
+    <div class="option-label">
+      <span>2. Sidebar Clásico</span>
+      <em>Dashboard / Admin</em>
+    </div>
+    <div class="d2">
+      <div class="d2-side">
+        <div class="d2-avatar">CG</div>
+        <div class="d2-nav">
+          <div class="d2-nav-item active"><div class="d2-dot"></div>Perfil</div>
+          <div class="d2-nav-item"><div class="d2-dot"></div>Académico</div>
+          <div class="d2-nav-item"><div class="d2-dot"></div>CV</div>
+          <div class="d2-nav-item"><div class="d2-dot"></div>Seguridad</div>
+          <div class="d2-nav-item"><div class="d2-dot"></div>Config</div>
+        </div>
+      </div>
+      <div class="d2-main">
+        <div class="d2-name">Cristian G.</div>
+        <div class="d2-role">CEO · Conniku SpA</div>
+        <div class="d2-field"><label>Nombre</label><input value="Cristian" /></div>
+        <div class="d2-field"><label>Universidad</label><input value="USACH" /></div>
+        <div class="d2-field"><label>Carrera</label><input value="Ingeniería" /></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Tarjeta Compacta -->
+  <div class="option">
+    <div class="option-label">
+      <span>3. Tarjeta Compacta</span>
+      <em>Moderno / Clean</em>
+    </div>
+    <div class="d3">
+      <div class="d3-top">
+        <div class="d3-avatar">CG</div>
+        <div class="d3-info">
+          <div class="d3-name">Cristian G.</div>
+          <div class="d3-role">CEO · Conniku SpA</div>
+          <div class="d3-badge">✓ Verificado</div>
+        </div>
+      </div>
+      <div class="d3-chips">
+        <div class="d3-chip">Ingeniería</div>
+        <div class="d3-chip">USACH</div>
+        <div class="d3-chip">4° año</div>
+        <div class="d3-chip">Santiago</div>
+      </div>
+      <div class="d3-progress">
+        <label><span>Nivel XP</span><span>65%</span></label>
+        <div class="d3-bar"><div class="d3-fill" style="width:65%;background:linear-gradient(90deg,#4f6ef7,#a855f7)"></div></div>
+      </div>
+      <div class="d3-progress">
+        <label><span>Perfil completo</span><span>80%</span></label>
+        <div class="d3-bar"><div class="d3-fill" style="width:80%;background:#059669"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Minimalista Líneas -->
+  <div class="option">
+    <div class="option-label">
+      <span>4. Minimalista</span>
+      <em>Simple / Elegante</em>
+    </div>
+    <div class="d4">
+      <div class="d4-header">
+        <div class="d4-avatar">CG</div>
+        <div class="d4-name">Cristian G.</div>
+        <div class="d4-role">CEO · Conniku SpA</div>
+      </div>
+      <div class="d4-row"><span>Nombre</span><span>Cristian García</span></div>
+      <div class="d4-row"><span>Universidad</span><span>USACH</span></div>
+      <div class="d4-row"><span>Carrera</span><span>Ingeniería Civil</span></div>
+      <div class="d4-row"><span>Año</span><span>4° año</span></div>
+      <div class="d4-row"><span>Nivel</span><span>🏆 Nivel 8 · 650 XP</span></div>
+      <div class="d4-edit-btn">✏️ Editar perfil</div>
+    </div>
+  </div>
+
+  <!-- 5. Glassmorphism -->
+  <div class="option">
+    <div class="option-label">
+      <span>5. Glassmorphism</span>
+      <em>Futurista / Premium</em>
+    </div>
+    <div class="d5" style="position:relative">
+      <div class="d5-glow"></div>
+      <div class="d5-inner" style="position:relative;z-index:1">
+        <div class="d5-card">
+          <div class="d5-top">
+            <div class="d5-avatar">CG</div>
+            <div>
+              <div class="d5-name">Cristian G.</div>
+              <div class="d5-role">CEO · Conniku SpA</div>
+            </div>
+            <button style="margin-left:auto;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:4px 10px;border-radius:8px;font-size:10px;cursor:pointer">Editar</button>
+          </div>
+        </div>
+        <div class="d5-stats">
+          <div class="d5-stat"><strong>12</strong><span>Materias</span></div>
+          <div class="d5-stat"><strong>47h</strong><span>Estudio</span></div>
+          <div class="d5-stat"><strong>Nv8</strong><span>Nivel</span></div>
+          <div class="d5-stat"><strong>14🔥</strong><span>Racha</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Split Dashboard -->
+  <div class="option">
+    <div class="option-label">
+      <span>6. Split Dashboard</span>
+      <em>Completo / Informativo</em>
+    </div>
+    <div class="d6">
+      <div class="d6-header">
+        <div class="d6-avatar">CG</div>
+        <div>
+          <div class="d6-hname">Cristian G.</div>
+          <div class="d6-hrole">CEO · Conniku SpA</div>
+        </div>
+        <button style="margin-left:auto;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:5px 10px;border-radius:7px;font-size:10px;cursor:pointer">✏️ Editar</button>
+      </div>
+      <div class="d6-body">
+        <div class="d6-section">
+          <h4>Datos personales</h4>
+          <div class="d6-kv"><span>Universidad</span><span>USACH</span></div>
+          <div class="d6-kv"><span>Carrera</span><span>Ing. Civil</span></div>
+          <div class="d6-kv"><span>Año</span><span>4°</span></div>
+          <div class="d6-kv"><span>Ciudad</span><span>Santiago</span></div>
+        </div>
+        <div class="d6-section">
+          <h4>Progreso XP</h4>
+          <div class="d6-kv"><span>Nivel</span><span style="color:#4f6ef7;font-weight:700">🏆 8</span></div>
+          <div class="d6-kv"><span>XP Total</span><span>650 pts</span></div>
+          <div class="d6-xp-bar"><div class="d6-xp-fill"></div></div>
+          <div style="margin-top:8px">
+            <h4 style="margin-bottom:5px">Logros</h4>
+            <div class="d6-achievements">
+              <div class="d6-ach">🔥</div>
+              <div class="d6-ach">📚</div>
+              <div class="d6-ach">⭐</div>
+              <div class="d6-ach">🏅</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align:center;color:#555;font-size:12px;margin-top:32px">¿Cuál prefieres? Dile a Claude el número y lo implementamos.</p>
+
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conniku — V1 + V3 combinadas</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #DDE1E7; font-family: 'Sora', sans-serif; padding: 40px; }
+
+  .page-title { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase;
+                letter-spacing: 0.12em; margin-bottom: 8px; }
+  .page-sub { font-size: 12px; color: #555; margin-bottom: 40px; line-height: 1.6; }
+
+  .cols { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .col { display: flex; flex-direction: column; gap: 20px; }
+
+  .option-tag { font-size: 10px; font-weight: 700; text-transform: uppercase;
+                letter-spacing: 0.1em; margin-bottom: 10px; display: flex;
+                align-items: center; justify-content: space-between; }
+  .tag { border-radius: 4px; padding: 2px 8px; font-size: 9px; }
+
+  /* ─── APP SHELL ─── */
+  .app { width: 520px; border-radius: 18px; overflow: hidden;
+         box-shadow: 0 12px 48px rgba(0,0,0,0.14); }
+
+  .topbar { height: 50px; display: flex; align-items: center;
+            padding: 0 18px; gap: 12px;
+            border-bottom: 1px solid var(--b); background: var(--card); }
+  .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+  .search { flex: 1; height: 30px; border-radius: 8px; background: var(--bg2);
+            display: flex; align-items: center; padding: 0 10px; gap: 6px;
+            font-size: 11px; color: var(--muted); border: 1px solid var(--b); }
+  .av { width: 28px; height: 28px; border-radius: 6px; display: flex;
+        align-items: center; justify-content: center; font-size: 11px;
+        font-weight: 700; color: #fff; flex-shrink: 0; }
+
+  .body { display: flex; height: 320px; background: var(--bg); }
+
+  .sidebar { width: 150px; flex-shrink: 0; padding: 14px 10px;
+             display: flex; flex-direction: column; gap: 2px;
+             background: var(--card); border-right: 1px solid var(--b); }
+  .nav-lbl { font-size: 9px; font-weight: 700; text-transform: uppercase;
+             letter-spacing: 0.08em; color: var(--muted); padding: 8px 8px 4px; }
+  .nav-item { height: 30px; border-radius: 7px; display: flex; align-items: center;
+              padding: 0 8px; font-size: 11px; font-weight: 500; gap: 7px;
+              color: var(--sub); cursor: pointer; }
+  .nav-item.active { font-weight: 700; }
+  .nav-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .main { flex: 1; padding: 14px; display: flex; gap: 10px; overflow: hidden; }
+  .feed { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+
+  .card { border-radius: 10px; padding: 12px; background: var(--card);
+          border: 1px solid var(--b); }
+  .card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .c-av { width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0; }
+  .c-name { height: 7px; border-radius: 3px; flex: 1; background: var(--txt); }
+  .c-line { height: 6px; border-radius: 2px; background: var(--b); margin-bottom: 5px; }
+  .c-line.s { width: 60%; }
+  .c-line.xs { width: 35%; }
+  .c-foot { display: flex; gap: 6px; margin-top: 8px; }
+  .c-btn { height: 22px; border-radius: 6px; padding: 0 10px; font-size: 9px;
+           font-weight: 700; border: none; cursor: pointer; font-family: 'Sora', sans-serif; }
+
+  .aside { width: 96px; display: flex; flex-direction: column; gap: 8px; }
+  .widget { border-radius: 10px; padding: 10px; background: var(--card);
+            border: 1px solid var(--b); }
+  .w-line { height: 6px; border-radius: 2px; margin-bottom: 5px; }
+  .w-line.accent1 { background: var(--a1); }
+  .w-line.accent2 { background: var(--a2); }
+  .w-line.muted { background: var(--b); }
+
+  /* ─── PROFILE ─── */
+  .profile { width: 520px; border-radius: 18px; overflow: hidden;
+             box-shadow: 0 12px 48px rgba(0,0,0,0.14); background: var(--card); }
+  .p-cover { height: 85px; }
+  .p-body { padding: 0 18px 18px; }
+  .p-photo { width: 68px; height: 68px; border-radius: 10px;
+             margin-top: -34px; border: 3px solid var(--card);
+             overflow: hidden; margin-bottom: 10px; background: var(--a1); }
+  .p-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .p-name { font-size: 17px; font-weight: 800; letter-spacing: -0.02em;
+            color: var(--txt); margin-bottom: 3px; }
+  .p-career { font-size: 11px; color: var(--sub); margin-bottom: 10px; }
+  .p-stats { display: flex; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .p-val { font-size: 15px; font-weight: 700; line-height: 1; color: var(--txt); }
+  .p-lbl { font-size: 8px; text-transform: uppercase; letter-spacing: 0.06em;
+           margin-top: 2px; color: var(--muted); }
+  .p-div { width: 1px; height: 22px; background: var(--b); }
+  .p-btns { display: flex; gap: 8px; }
+  .p-btn { height: 30px; border-radius: 99px; padding: 0 14px; font-size: 11px;
+           font-weight: 700; border: none; cursor: pointer; font-family: 'Sora', sans-serif; }
+
+  /* ─── SWATCHES ─── */
+  .swatches { display: flex; height: 22px; }
+  .sw { flex: 1; }
+  .sw:first-child { border-radius: 0 0 0 10px; }
+  .sw:last-child  { border-radius: 0 0 10px 0; }
+
+  /* ─── THEME VARS ─── */
+  /* V1+V3 Combinación A: dorado como acción, azul como info */
+  .theme-ab {
+    --bg:   #F1F5F9;
+    --bg2:  #F8FAFC;
+    --card: #FFFFFF;
+    --txt:  #0C0C0C;
+    --sub:  #374151;
+    --muted:#9CA3AF;
+    --b:    #E5E7EB;
+    --a1:   #D97706;   /* amber — CTAs, activo */
+    --a2:   #2D62C8;   /* azul — links, info */
+    --a1l:  #FEF3C7;   /* amber claro */
+    --a2l:  #EFF6FF;   /* azul claro */
+  }
+  /* V1+V3 Combinación B: azul sidebar, dorado CTAs */
+  .theme-ba {
+    --bg:   #F1F5F9;
+    --bg2:  #F8FAFC;
+    --card: #FFFFFF;
+    --txt:  #0C0C0C;
+    --sub:  #374151;
+    --muted:#9CA3AF;
+    --b:    #E5E7EB;
+    --a1:   #2D62C8;   /* azul — sidebar activo */
+    --a2:   #D97706;   /* dorado — CTAs */
+    --a1l:  #EFF6FF;
+    --a2l:  #FEF3C7;
+  }
+  /* V1+V3 Combinación C: fondo más cálido, combinación equilibrada */
+  .theme-cc {
+    --bg:   #FAF8F4;
+    --bg2:  #FFFFFF;
+    --card: #FFFFFF;
+    --txt:  #111827;
+    --sub:  #4B5563;
+    --muted:#9CA3AF;
+    --b:    #E9E6E0;
+    --a1:   #D97706;
+    --a2:   #2D62C8;
+    --a1l:  #FFFBEB;
+    --a2l:  #EFF6FF;
+  }
+</style>
+</head>
+<body>
+
+<div class="page-title">V1 × V3 — 3 combinaciones</div>
+<div class="page-sub">
+  V1 = Pizarra Dorada (amber) · V3 = Pizarra Conniku (azul marca)<br>
+  Las 3 variaciones usan ambos colores, cambiando el rol de cada uno.
+</div>
+
+<div class="cols">
+
+  <!-- ══════════════════════════
+       COMBINACIÓN A
+       Amber = activo/CTA · Azul = info/links
+  ══════════════════════════ -->
+  <div class="col theme-ab">
+    <div class="option-tag" style="color:var(--txt);">
+      A — Dorado activo, Azul info
+      <span class="tag" style="background:var(--a1l); color:#92400E;">Amber lidera</span>
+    </div>
+
+    <div class="app">
+      <div class="topbar">
+        <div class="logo-text" style="color:var(--txt);">conni<span style="color:#2D62C8;">ku</span></div>
+        <div class="search">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar...
+        </div>
+        <div class="av" style="background:var(--a1);">C</div>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-lbl">Menú</div>
+          <div class="nav-item active" style="background:var(--a1l); color:#92400E;">
+            <div class="nav-dot" style="background:var(--a1);"></div> Inicio
+          </div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Perfil</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Cursos</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Mensajes</div>
+          <div class="nav-lbl" style="margin-top:6px;">Admin</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> HR</div>
+        </div>
+        <div class="main">
+          <div class="feed">
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--a1);"></div>
+                <div class="c-name"></div>
+                <span style="font-size:9px; color:var(--a2); font-weight:600;">@user</span>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line s"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a1); color:#fff;">👍 Me gusta</button>
+                <button class="c-btn" style="background:var(--bg2); color:var(--sub); border:1px solid var(--b);">Comentar</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--a2);"></div>
+                <div class="c-name" style="background:var(--b);"></div>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line xs" style="background:var(--a2l);"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a1); color:#fff;">👍</button>
+                <button class="c-btn" style="color:var(--a2); background:var(--a2l);">Ver más</button>
+              </div>
+            </div>
+          </div>
+          <div class="aside">
+            <div class="widget">
+              <div class="w-line accent1" style="width:70%;"></div>
+              <div class="w-line muted"></div>
+              <div class="w-line muted" style="width:55%;"></div>
+            </div>
+            <div class="widget" style="background:var(--a2l); border-color:#BFDBFE;">
+              <div class="w-line accent2"></div>
+              <div class="w-line" style="background:#BFDBFE; width:60%;"></div>
+            </div>
+            <div class="widget" style="background:var(--a1l); border-color:#FDE68A;">
+              <div class="w-line accent1" style="width:50%;"></div>
+              <div class="w-line" style="background:#FDE68A;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="sw" style="background:var(--bg);"></div>
+        <div class="sw" style="background:var(--card);"></div>
+        <div class="sw" style="background:var(--a1);"></div>
+        <div class="sw" style="background:var(--a2);"></div>
+        <div class="sw" style="background:var(--txt);"></div>
+      </div>
+    </div>
+
+    <div class="profile theme-ab">
+      <div class="p-cover" style="background: linear-gradient(135deg, #D97706 0%, #F59E0B 40%, #2D62C8 100%);"></div>
+      <div class="p-body">
+        <div class="p-photo"><img src="https://i.pravatar.cc/150?u=cg3" alt=""></div>
+        <div class="p-name">Cristian Gutierrez Lazcano</div>
+        <div class="p-career">Ingeniería Comercial ADVANCE</div>
+        <div class="p-stats">
+          <div><div class="p-val">0</div><div class="p-lbl">Conexiones</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val">1</div><div class="p-lbl">Posts</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val" style="color:var(--a2);">0</div><div class="p-lbl">XP</div></div>
+        </div>
+        <div class="p-btns">
+          <button class="p-btn" style="background:var(--a1); color:#fff;">✏️ Editar perfil</button>
+          <button class="p-btn" style="background:var(--bg2); color:var(--sub); border:1px solid var(--b);">👥 Amigos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       COMBINACIÓN B
+       Azul = sidebar/activo · Dorado = CTAs
+  ══════════════════════════ -->
+  <div class="col theme-ba">
+    <div class="option-tag" style="color:var(--txt);">
+      B — Azul sidebar, Dorado CTA
+      <span class="tag" style="background:var(--a1l); color:#1D4ED8;">Azul lidera</span>
+    </div>
+
+    <div class="app">
+      <div class="topbar">
+        <div class="logo-text" style="color:var(--txt);">conni<span style="color:#2D62C8;">ku</span></div>
+        <div class="search">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar...
+        </div>
+        <div class="av" style="background:var(--a1);">C</div>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-lbl">Menú</div>
+          <div class="nav-item active" style="background:var(--a1l); color:#1D4ED8;">
+            <div class="nav-dot" style="background:var(--a1);"></div> Inicio
+          </div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Perfil</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Cursos</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Mensajes</div>
+          <div class="nav-lbl" style="margin-top:6px;">Admin</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> HR</div>
+        </div>
+        <div class="main">
+          <div class="feed">
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--a1);"></div>
+                <div class="c-name"></div>
+                <span style="font-size:9px; color:var(--a1); font-weight:600;">@user</span>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line s"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a2); color:#fff;">👍 Me gusta</button>
+                <button class="c-btn" style="background:var(--bg2); color:var(--sub); border:1px solid var(--b);">Comentar</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--txt);"></div>
+                <div class="c-name" style="background:var(--b);"></div>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line xs" style="background:var(--a1l);"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a2); color:#fff;">👍</button>
+                <button class="c-btn" style="color:#92400E; background:var(--a2l);">Destacado</button>
+              </div>
+            </div>
+          </div>
+          <div class="aside">
+            <div class="widget">
+              <div class="w-line accent1"></div>
+              <div class="w-line muted" style="width:60%;"></div>
+              <div class="w-line muted" style="width:40%;"></div>
+            </div>
+            <div class="widget" style="background:var(--a2l); border-color:#FDE68A;">
+              <div class="w-line accent2"></div>
+              <div class="w-line" style="background:#FDE68A; width:60%;"></div>
+            </div>
+            <div class="widget" style="background:var(--a1l); border-color:#BFDBFE;">
+              <div class="w-line accent1" style="width:55%;"></div>
+              <div class="w-line" style="background:#BFDBFE;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="sw" style="background:var(--bg);"></div>
+        <div class="sw" style="background:var(--card);"></div>
+        <div class="sw" style="background:var(--a1);"></div>
+        <div class="sw" style="background:var(--a2);"></div>
+        <div class="sw" style="background:var(--txt);"></div>
+      </div>
+    </div>
+
+    <div class="profile theme-ba">
+      <div class="p-cover" style="background: linear-gradient(135deg, #2D62C8 0%, #1D4ED8 40%, #D97706 100%);"></div>
+      <div class="p-body">
+        <div class="p-photo"><img src="https://i.pravatar.cc/150?u=cg3" alt=""></div>
+        <div class="p-name">Cristian Gutierrez Lazcano</div>
+        <div class="p-career">Ingeniería Comercial ADVANCE</div>
+        <div class="p-stats">
+          <div><div class="p-val">0</div><div class="p-lbl">Conexiones</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val">1</div><div class="p-lbl">Posts</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val" style="color:var(--a1);">0</div><div class="p-lbl">XP</div></div>
+        </div>
+        <div class="p-btns">
+          <button class="p-btn" style="background:var(--a2); color:#fff;">✏️ Editar perfil</button>
+          <button class="p-btn" style="background:var(--bg2); color:var(--sub); border:1px solid var(--b);">👥 Amigos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       COMBINACIÓN C
+       Fondo más cálido, equilibrio total
+  ══════════════════════════ -->
+  <div class="col theme-cc">
+    <div class="option-tag" style="color:var(--txt);">
+      C — Equilibrada, fondo cálido
+      <span class="tag" style="background:#FFFBEB; color:#78350F;">50/50</span>
+    </div>
+
+    <div class="app">
+      <div class="topbar">
+        <div class="logo-text" style="color:var(--txt);">conni<span style="color:#2D62C8;">ku</span></div>
+        <div class="search">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Buscar...
+        </div>
+        <div class="av" style="background:var(--a1);">C</div>
+      </div>
+      <div class="body">
+        <div class="sidebar">
+          <div class="nav-lbl">Menú</div>
+          <div class="nav-item active" style="background:var(--a2l); color:#1D4ED8;">
+            <div class="nav-dot" style="background:var(--a2);"></div> Inicio
+          </div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Perfil</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Cursos</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> Mensajes</div>
+          <div class="nav-lbl" style="margin-top:6px;">Admin</div>
+          <div class="nav-item"><div class="nav-dot" style="background:var(--b);"></div> HR</div>
+        </div>
+        <div class="main">
+          <div class="feed">
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--a2);"></div>
+                <div class="c-name"></div>
+                <span style="font-size:9px; color:var(--a1); font-weight:600;">nuevo</span>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line s"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a1); color:#fff;">👍 Me gusta</button>
+                <button class="c-btn" style="background:var(--a2l); color:#1D4ED8;">Comentar</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <div class="c-av" style="background:var(--a1);"></div>
+                <div class="c-name" style="background:var(--b);"></div>
+              </div>
+              <div class="c-line"></div>
+              <div class="c-line xs" style="background:var(--a1l);"></div>
+              <div class="c-foot">
+                <button class="c-btn" style="background:var(--a2); color:#fff;">👍</button>
+                <button class="c-btn" style="color:#92400E; background:var(--a1l);">Ver más</button>
+              </div>
+            </div>
+          </div>
+          <div class="aside">
+            <div class="widget">
+              <div class="w-line accent2"></div>
+              <div class="w-line muted" style="width:55%;"></div>
+            </div>
+            <div class="widget" style="background:var(--a1l); border-color:#FDE68A;">
+              <div class="w-line accent1" style="width:65%;"></div>
+              <div class="w-line" style="background:#FDE68A;"></div>
+            </div>
+            <div class="widget" style="background:var(--a2l); border-color:#BFDBFE;">
+              <div class="w-line accent2; width:45%;"></div>
+              <div class="w-line" style="background:#BFDBFE; width:70%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swatches">
+        <div class="sw" style="background:var(--bg);"></div>
+        <div class="sw" style="background:var(--card);"></div>
+        <div class="sw" style="background:var(--a1);"></div>
+        <div class="sw" style="background:var(--a2);"></div>
+        <div class="sw" style="background:var(--txt);"></div>
+      </div>
+    </div>
+
+    <div class="profile theme-cc">
+      <div class="p-cover" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 50%, #EFF6FF 100%); border-bottom: 1px solid #E9E6E0;"></div>
+      <div class="p-body">
+        <div class="p-photo"><img src="https://i.pravatar.cc/150?u=cg3" alt=""></div>
+        <div class="p-name">Cristian Gutierrez Lazcano</div>
+        <div class="p-career">Ingeniería Comercial ADVANCE</div>
+        <div class="p-stats">
+          <div><div class="p-val">0</div><div class="p-lbl">Conexiones</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val">1</div><div class="p-lbl">Posts</div></div>
+          <div class="p-div"></div>
+          <div><div class="p-val" style="color:var(--a2);">0</div><div class="p-lbl">XP</div></div>
+        </div>
+        <div class="p-btns">
+          <button class="p-btn" style="background:var(--a2); color:#fff;">✏️ Editar perfil</button>
+          <button class="p-btn" style="background:var(--a1l); color:#92400E; border:1px solid #FDE68A;">👥 Amigos</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="margin-top:48px; font-size:11px; color:#666; line-height:1.9;">
+  <strong style="color:#333;">A</strong> — Dorado lidera los CTAs y el nav activo. Azul para links/info. Más energético.<br>
+  <strong style="color:#333;">B</strong> — Azul lidera sidebar y nav. Dorado para botones de acción. Más corporativo.<br>
+  <strong style="color:#333;">C</strong> — Fondo ligeramente cálido. Azul nav, dorado CTAs, ambos en widgets. Más equilibrado.<br><br>
+  Dime cuál quieres aplicar.
+</div>
+</body>
+</html>

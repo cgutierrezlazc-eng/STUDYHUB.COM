@@ -112,6 +112,26 @@ function renderMarkdown(text: string): string {
   return s
 }
 
+// ─── Nodo Konni — ícono unificado ────────────────────────────────────────────
+function NodoKonniIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none">
+      {/* líneas de conexión */}
+      <line x1="14" y1="14" x2="7"  y2="8"  stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="14" y1="14" x2="21" y2="8"  stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="14" y1="14" x2="14" y2="22" stroke="rgba(255,255,255,0.55)" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="7"  y1="8"  x2="21" y2="8"  stroke="rgba(255,255,255,0.18)" strokeWidth="1"   strokeLinecap="round"/>
+      {/* nodos satélite */}
+      <circle cx="7"  cy="8"  r="3.2" fill="rgba(255,255,255,0.18)" stroke="white" strokeWidth="1.2"/>
+      <circle cx="21" cy="8"  r="3.2" fill="rgba(255,255,255,0.18)" stroke="white" strokeWidth="1.2"/>
+      <circle cx="14" cy="22" r="3.2" fill="rgba(255,255,255,0.18)" stroke="white" strokeWidth="1.2"/>
+      {/* nodo central */}
+      <circle cx="14" cy="14" r="4.8" fill="rgba(255,255,255,0.22)" stroke="white" strokeWidth="1.8"/>
+      <circle cx="14" cy="14" r="2.2" fill="white"/>
+    </svg>
+  )
+}
+
 export default function SupportChat() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -124,8 +144,8 @@ export default function SupportChat() {
   const isAdmin = user?.role === 'owner' && location.pathname.startsWith('/admin-panel')
 
   const theme = isAdmin
-    ? { gradient: 'linear-gradient(135deg, #7C3AED, #A78BFA)', shadow: 'rgba(124,58,237,0.4)', shadowHover: 'rgba(124,58,237,0.5)', btnFill: 'rgba(167,139,250,0.2)', accent: '#7C3AED' }
-    : { gradient: 'linear-gradient(135deg, #2D62C8, #4f8cff)', shadow: 'rgba(45,98,200,0.4)', shadowHover: 'rgba(45,98,200,0.5)', btnFill: 'rgba(255,255,255,0.2)', accent: 'var(--accent)' }
+    ? { gradient: 'linear-gradient(135deg, #1E0A4E 0%, #3B0E8C 50%, #5B21B6 100%)', shadow: 'rgba(30,10,78,0.55)', shadowHover: 'rgba(30,10,78,0.7)', btnFill: 'rgba(167,139,250,0.2)', accent: '#5B21B6' }
+    : { gradient: 'linear-gradient(135deg, #5B21B6 0%, #7C3AED 60%, #A78BFA 100%)', shadow: 'rgba(124,58,237,0.4)', shadowHover: 'rgba(124,58,237,0.55)', btnFill: 'rgba(255,255,255,0.2)', accent: '#7C3AED' }
 
   const [open, setOpen]             = useState(false)
   const [messages, setMessages]     = useState<Message[]>([])
@@ -268,9 +288,7 @@ export default function SupportChat() {
           onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.1)'; e.currentTarget.style.boxShadow = `0 6px 24px ${theme.shadowHover}` }}
           onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = `0 4px 16px ${theme.shadow}` }}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill={theme.btnFill} />
-          </svg>
+          <NodoKonniIcon size={26} />
         </button>
         {jobBadge && (
           <div style={{
@@ -291,19 +309,11 @@ export default function SupportChat() {
       display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
     }}>
       <div style={{
-        width: 36, height: 36, borderRadius: '50%',
-        background: 'rgba(255,255,255,0.2)',
+        width: 36, height: 36, borderRadius: '10px',
+        background: 'rgba(255,255,255,0.15)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        {isAdmin ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
-          </svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 40 40">
-            <circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
-          </svg>
-        )}
+        <NodoKonniIcon size={22} />
       </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontWeight: 700, fontSize: 14 }}>{isAdmin ? 'Konni Admin' : 'Konni — Soporte'}</div>
@@ -482,7 +492,7 @@ export default function SupportChat() {
                 maxWidth: '85%', padding: '10px 14px',
                 borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
                 background: msg.role === 'user'
-                  ? (isAdmin ? '#7C3AED' : 'var(--accent)')
+                  ? theme.gradient
                   : 'var(--bg-secondary)',
                 color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
                 fontSize: 13, lineHeight: 1.5, wordBreak: 'break-word',

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draft Perfil v4 — Conniku</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0F172A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 28px 16px; color: #F1F5F9; }
+h1 { text-align:center; font-size:16px; margin-bottom:4px; }
+.sub { text-align:center; color:#64748B; font-size:11px; margin-bottom:36px; }
+.section-label {
+  font-size:10px; font-weight:700; color:#38BDF8;
+  text-transform:uppercase; letter-spacing:.08em;
+  margin-bottom:10px; max-width:580px; margin-left:auto; margin-right:auto;
+}
+
+/* ── Card base ── */
+.profile-card {
+  max-width: 580px;
+  margin: 0 auto 40px;
+  background: #1E293B;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid #334155;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+}
+.cover {
+  width: 100%;
+  height: 150px;
+  position: relative;
+  overflow: visible;
+}
+
+/* Foto — común a todos los drafts */
+.avatar-wrap {
+  position: absolute;
+  left: 0;
+  /* bottom se define por variante */
+  z-index: 4;
+  overflow: hidden;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 15%;
+  display: block;
+}
+
+/* Info block */
+.profile-body { padding: 14px 20px 20px; }
+.profile-name { font-size: 19px; font-weight: 800; color: #F1F5F9; letter-spacing: -0.03em; line-height:1.2; margin-bottom: 2px; }
+.profile-username { font-size: 12px; color: #38BDF8; margin-bottom: 12px; display:flex; align-items:center; gap:6px; }
+.badge-role { background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.25); color:#38BDF8; font-size:9px; font-weight:700; padding:1px 6px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; }
+.profile-meta { display:grid; grid-template-columns:1fr 1fr; gap:6px 14px; margin-bottom:12px; }
+.meta-item { display:flex; flex-direction:column; gap:1px; }
+.meta-label { font-size:9px; color:#475569; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+.meta-value { font-size:12px; color:#94A3B8; font-weight:500; }
+.profile-stats { display:flex; gap:18px; border-top:1px solid #334155; padding-top:12px; margin-bottom:12px; }
+.stat { display:flex; flex-direction:column; gap:1px; }
+.stat-num { font-size:15px; font-weight:700; color:#F1F5F9; line-height:1; }
+.stat-lbl { font-size:10px; color:#475569; }
+.profile-actions { display:flex; gap:7px; flex-wrap:wrap; }
+.btn-p { background:linear-gradient(135deg,#2D62C8,#5B8DEF); color:#fff; border:none; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; flex:1; min-width:80px; }
+.btn-s { background:#334155; color:#94A3B8; border:1px solid #475569; border-radius:8px; padding:8px 12px; font-size:12px; font-weight:600; cursor:pointer; }
+
+/* Template selector */
+.tpl-row { display:flex; gap:6px; flex-wrap:wrap; max-width:580px; margin:0 auto 10px; }
+.tpl-chip { padding:4px 10px; border-radius:99px; font-size:10px; font-weight:600; border:2px solid transparent; cursor:pointer; color:#fff; }
+.tpl-chip.active { border-color:#38BDF8; }
+
+/* ══════════════════════════════════════════
+   VARIANTE A — fade corto, cubierta visible brevemente
+══════════════════════════════════════════ */
+.varA .avatar-wrap {
+  bottom: -52px;
+  width: 46%;    /* termina aprox a la mitad del apellido */
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 0 12px 12px 0;
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.25) 15%,
+    rgba(0,0,0,0.75) 28%,
+    black 40%,
+    black 100%
+  );
+  mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.25) 15%,
+    rgba(0,0,0,0.75) 28%,
+    black 40%,
+    black 100%
+  );
+}
+.varA .profile-body { padding-top: 58px; }
+
+/* ══════════════════════════════════════════
+   VARIANTE B — fade más suave, más zona de portada visible
+══════════════════════════════════════════ */
+.varB .avatar-wrap {
+  bottom: -52px;
+  width: 48%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 0 12px 12px 0;
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.10) 10%,
+    rgba(0,0,0,0.40) 22%,
+    rgba(0,0,0,0.85) 35%,
+    black 48%,
+    black 100%
+  );
+  mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.10) 10%,
+    rgba(0,0,0,0.40) 22%,
+    rgba(0,0,0,0.85) 35%,
+    black 48%,
+    black 100%
+  );
+}
+.varB .profile-body { padding-top: 58px; }
+
+/* ══════════════════════════════════════════
+   VARIANTE C — fade muy largo, la portada "abraza" la foto
+══════════════════════════════════════════ */
+.varC .avatar-wrap {
+  bottom: -52px;
+  width: 50%;
+  aspect-ratio: 1 / 1;
+  height: auto;
+  border-radius: 0 12px 12px 0;
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.05) 8%,
+    rgba(0,0,0,0.20) 18%,
+    rgba(0,0,0,0.55) 32%,
+    rgba(0,0,0,0.88) 46%,
+    black 58%,
+    black 100%
+  );
+  mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.05) 8%,
+    rgba(0,0,0,0.20) 18%,
+    rgba(0,0,0,0.55) 32%,
+    rgba(0,0,0,0.88) 46%,
+    black 58%,
+    black 100%
+  );
+}
+.varC .profile-body { padding-top: 58px; }
+
+/* ══════════════════════════════════════════
+   EDITOR MOCK — crop / zoom / pan
+══════════════════════════════════════════ */
+.editor-modal {
+  max-width: 580px;
+  margin: 0 auto 40px;
+  background: #1E293B;
+  border-radius: 18px;
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+.editor-header {
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid #334155;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.editor-title { font-size: 14px; font-weight: 700; color: #F1F5F9; }
+.editor-close { background: #334155; border: none; color: #94A3B8; width: 28px; height: 28px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.editor-canvas {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1/1;
+  background: #0f172a;
+  overflow: hidden;
+  cursor: grab;
+  user-select: none;
+}
+.editor-photo {
+  position: absolute;
+  width: 130%;
+  height: 130%;
+  top: -10%;
+  left: -10%;
+  object-fit: cover;
+  object-position: center 10%;
+  pointer-events: none;
+}
+/* Overlay: muestra solo la zona cuadrada final */
+.editor-overlay {
+  position: absolute;
+  inset: 0;
+  border: 3px dashed rgba(56,189,248,0.6);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.editor-overlay::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  border-radius: 4px;
+}
+/* Líneas de cuadrícula 3x3 */
+.editor-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  gap: 0;
+}
+.editor-grid div { border: 0.5px solid rgba(56,189,248,0.18); }
+
+.editor-toolbar {
+  padding: 14px 20px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  border-top: 1px solid #334155;
+}
+.tool-group { display: flex; flex-direction:column; gap:4px; flex:1; min-width:80px; }
+.tool-label { font-size:9px; color:#475569; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; }
+.tool-row { display:flex; gap:4px; }
+.tool-btn {
+  background: #334155;
+  border: 1px solid #475569;
+  color: #94A3B8;
+  border-radius: 7px;
+  padding: 6px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  font-weight: 500;
+}
+.tool-btn:hover { background: #3d5166; color: #F1F5F9; }
+.zoom-slider-wrap { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 120px; }
+.zoom-slider {
+  -webkit-appearance: none;
+  flex: 1; height: 4px;
+  background: linear-gradient(to right, #38BDF8 60%, #334155 60%);
+  border-radius: 2px; outline: none; cursor: pointer;
+}
+.zoom-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%; background: #38BDF8; cursor: pointer;
+}
+.zoom-val { font-size: 11px; color: #38BDF8; font-weight: 600; min-width: 32px; }
+.editor-actions {
+  padding: 0 20px 16px;
+  display: flex;
+  gap: 8px;
+}
+.btn-cancel { background: #334155; color: #94A3B8; border: none; border-radius: 8px; padding: 9px 16px; font-size: 12px; font-weight: 600; cursor: pointer; flex:1; }
+.btn-save { background: linear-gradient(135deg, #2D62C8, #5B8DEF); color: #fff; border: none; border-radius: 8px; padding: 9px 16px; font-size: 12px; font-weight: 600; cursor: pointer; flex:2; }
+</style>
+</head>
+<body>
+
+<h1>Drafts — Foto de perfil v4</h1>
+<p class="sub">Foto cuadrada (1:1) · ancha y baja · fade con portada visible · 3 variantes de difuminado</p>
+
+<!-- Template selector (compartido) -->
+<div class="tpl-row" id="tplRow">
+  <div class="tpl-chip active" style="background:linear-gradient(135deg,#1a3a6e,#2D62C8)" onclick="setTpl(this,'linear-gradient(135deg,#1a3a6e 0%,#2D62C8 50%,#5B8DEF 100%)')">Conniku</div>
+  <div class="tpl-chip" style="background:linear-gradient(135deg,#0f0c29,#302b63)" onclick="setTpl(this,'linear-gradient(135deg,#0f0c29 0%,#302b63 40%,#24243e 100%)')">Cosmos</div>
+  <div class="tpl-chip" style="background:linear-gradient(135deg,#0d0d2b,#6b21a8)" onclick="setTpl(this,'linear-gradient(135deg,#0d0d2b 0%,#1d1b70 40%,#6b21a8 70%,#c026d3 100%)')">Aurora</div>
+  <div class="tpl-chip" style="background:linear-gradient(135deg,#7c2d12,#f97316)" onclick="setTpl(this,'linear-gradient(135deg,#7c2d12 0%,#c2410c 40%,#f97316 70%,#fbbf24 100%)')">Atardecer</div>
+  <div class="tpl-chip" style="background:linear-gradient(135deg,#052e16,#4ade80)" onclick="setTpl(this,'linear-gradient(135deg,#052e16 0%,#166534 50%,#4ade80 100%)')">Bosque</div>
+  <div class="tpl-chip" style="background:linear-gradient(135deg,#0c4a6e,#38bdf8)" onclick="setTpl(this,'linear-gradient(135deg,#0c4a6e 0%,#0284c7 50%,#38bdf8 100%)')">Ciencias</div>
+</div>
+
+<!-- ══ VARIANTE A ══ -->
+<div class="section-label">A — Fade corto · portada visible brevemente</div>
+<div class="profile-card varA">
+  <div class="cover" id="coverA" style="background:linear-gradient(135deg,#1a3a6e 0%,#2D62C8 50%,#5B8DEF 100%)">
+    <div class="avatar-wrap">
+      <img class="avatar-img" src="https://randomuser.me/api/portraits/men/75.jpg" alt=""/>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div class="profile-name">Cristian Gutiérrez Lazcano</div>
+    <div class="profile-username">@cgutierrez <span class="badge-role">CEO</span></div>
+    <div class="profile-meta">
+      <div class="meta-item"><span class="meta-label">Universidad</span><span class="meta-value">U. de Santiago</span></div>
+      <div class="meta-item"><span class="meta-label">Carrera</span><span class="meta-value">Ing. Comercial</span></div>
+      <div class="meta-item"><span class="meta-label">Semestre</span><span class="meta-value">8°</span></div>
+      <div class="meta-item"><span class="meta-label">País</span><span class="meta-value">🇨🇱 Chile</span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat"><span class="stat-num">142</span><span class="stat-lbl">Amigos</span></div>
+      <div class="stat"><span class="stat-num">38</span><span class="stat-lbl">Posts</span></div>
+      <div class="stat"><span class="stat-num">1,240</span><span class="stat-lbl">XP</span></div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-p">Agregar amigo</button>
+      <button class="btn-p" style="background:linear-gradient(135deg,#059669,#34d399)">Mensaje</button>
+      <button class="btn-s">···</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VARIANTE B ══ -->
+<div class="section-label">B — Fade medio · más portada visible</div>
+<div class="profile-card varB">
+  <div class="cover" id="coverB" style="background:linear-gradient(135deg,#1a3a6e 0%,#2D62C8 50%,#5B8DEF 100%)">
+    <div class="avatar-wrap">
+      <img class="avatar-img" src="https://randomuser.me/api/portraits/women/44.jpg" alt=""/>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div class="profile-name">Cristian Gutiérrez Lazcano</div>
+    <div class="profile-username">@cgutierrez <span class="badge-role">CEO</span></div>
+    <div class="profile-meta">
+      <div class="meta-item"><span class="meta-label">Universidad</span><span class="meta-value">U. de Santiago</span></div>
+      <div class="meta-item"><span class="meta-label">Carrera</span><span class="meta-value">Ing. Comercial</span></div>
+      <div class="meta-item"><span class="meta-label">Semestre</span><span class="meta-value">8°</span></div>
+      <div class="meta-item"><span class="meta-label">País</span><span class="meta-value">🇨🇱 Chile</span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat"><span class="stat-num">142</span><span class="stat-lbl">Amigos</span></div>
+      <div class="stat"><span class="stat-num">38</span><span class="stat-lbl">Posts</span></div>
+      <div class="stat"><span class="stat-num">1,240</span><span class="stat-lbl">XP</span></div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-p">Agregar amigo</button>
+      <button class="btn-p" style="background:linear-gradient(135deg,#059669,#34d399)">Mensaje</button>
+      <button class="btn-s">···</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VARIANTE C ══ -->
+<div class="section-label">C — Fade largo · portada se funde con la foto</div>
+<div class="profile-card varC">
+  <div class="cover" id="coverC" style="background:linear-gradient(135deg,#1a3a6e 0%,#2D62C8 50%,#5B8DEF 100%)">
+    <div class="avatar-wrap">
+      <img class="avatar-img" src="https://randomuser.me/api/portraits/men/32.jpg" alt=""/>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div class="profile-name">Cristian Gutiérrez Lazcano</div>
+    <div class="profile-username">@cgutierrez <span class="badge-role">CEO</span></div>
+    <div class="profile-meta">
+      <div class="meta-item"><span class="meta-label">Universidad</span><span class="meta-value">U. de Santiago</span></div>
+      <div class="meta-item"><span class="meta-label">Carrera</span><span class="meta-value">Ing. Comercial</span></div>
+      <div class="meta-item"><span class="meta-label">Semestre</span><span class="meta-value">8°</span></div>
+      <div class="meta-item"><span class="meta-label">País</span><span class="meta-value">🇨🇱 Chile</span></div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat"><span class="stat-num">142</span><span class="stat-lbl">Amigos</span></div>
+      <div class="stat"><span class="stat-num">38</span><span class="stat-lbl">Posts</span></div>
+      <div class="stat"><span class="stat-num">1,240</span><span class="stat-lbl">XP</span></div>
+    </div>
+    <div class="profile-actions">
+      <button class="btn-p">Agregar amigo</button>
+      <button class="btn-p" style="background:linear-gradient(135deg,#059669,#34d399)">Mensaje</button>
+      <button class="btn-s">···</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDITOR DE FOTO ══ -->
+<div class="section-label" style="margin-top:8px;">Editor de foto de perfil — zoom · pan · recorte 1:1</div>
+<div class="editor-modal">
+  <div class="editor-header">
+    <div class="editor-title">✂ Editar foto de perfil</div>
+    <button class="editor-close">✕</button>
+  </div>
+
+  <div class="editor-canvas" title="Arrastra para mover">
+    <img class="editor-photo" src="https://randomuser.me/api/portraits/men/75.jpg" alt=""/>
+    <div class="editor-grid">
+      <div></div><div></div><div></div>
+      <div></div><div></div><div></div>
+      <div></div><div></div><div></div>
+    </div>
+    <div class="editor-overlay"></div>
+  </div>
+
+  <div class="editor-toolbar">
+    <!-- Zoom -->
+    <div class="tool-group" style="flex:2; min-width:140px;">
+      <div class="tool-label">Zoom</div>
+      <div class="zoom-slider-wrap">
+        <span style="font-size:12px;">🔍−</span>
+        <input type="range" class="zoom-slider" min="100" max="200" value="120"/>
+        <span style="font-size:12px;">🔍+</span>
+        <span class="zoom-val">1.2×</span>
+      </div>
+    </div>
+    <!-- Mover -->
+    <div class="tool-group">
+      <div class="tool-label">Mover</div>
+      <div class="tool-row">
+        <button class="tool-btn">← →</button>
+        <button class="tool-btn">↑ ↓</button>
+      </div>
+    </div>
+    <!-- Rotar -->
+    <div class="tool-group">
+      <div class="tool-label">Rotar</div>
+      <div class="tool-row">
+        <button class="tool-btn">↺ −90°</button>
+        <button class="tool-btn">↻ +90°</button>
+      </div>
+    </div>
+    <!-- Voltear -->
+    <div class="tool-group">
+      <div class="tool-label">Voltear</div>
+      <div class="tool-row">
+        <button class="tool-btn">⇔</button>
+        <button class="tool-btn">⇕</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="editor-actions">
+    <button class="btn-cancel">Cancelar</button>
+    <button class="btn-save">Guardar foto de perfil →</button>
+  </div>
+</div>
+
+<script>
+// Sync covers
+function setTpl(el, gradient) {
+  document.querySelectorAll('.tpl-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  ['coverA','coverB','coverC'].forEach(id => {
+    document.getElementById(id).style.background = gradient;
+  });
+}
+// Zoom slider feedback
+const slider = document.querySelector('.zoom-slider');
+const zoomVal = document.querySelector('.zoom-val');
+slider.addEventListener('input', () => {
+  const v = (slider.value / 100).toFixed(1);
+  zoomVal.textContent = v + '×';
+  slider.style.background = `linear-gradient(to right, #38BDF8 ${slider.value - 100}%, #334155 ${slider.value - 100}%)`;
+  document.querySelector('.editor-photo').style.width = slider.value + '%';
+  document.querySelector('.editor-photo').style.height = slider.value + '%';
+});
+</script>
+</body>
+</html>

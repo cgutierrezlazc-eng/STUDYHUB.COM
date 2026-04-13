@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Concepto Foto Perfil</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0F172A; font-family: -apple-system, sans-serif; padding: 40px 20px; color: #F1F5F9; }
+h1 { text-align: center; font-size: 18px; margin-bottom: 8px; }
+.sub { text-align: center; color: #64748B; font-size: 13px; margin-bottom: 48px; }
+
+.demo-wrap {
+  max-width: 600px;
+  margin: 0 auto 48px;
+  background: #1E293B;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+/* ── Cover photo ── */
+.cover {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #0c1a2e 0%, #1a3a6e 40%, #0d2a5c 70%, #091525 100%);
+  position: relative;
+  overflow: visible;
+}
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 60%, rgba(56,189,248,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 30%, rgba(124,58,237,0.08) 0%, transparent 50%);
+}
+
+/* ── Profile photo — el concepto ── */
+.profile-photo-wrap {
+  position: absolute;
+  bottom: -30px;     /* sobresale hacia abajo */
+  left: 0px;         /* pegado al vértice izquierdo */
+  width: 160px;
+  height: 120px;
+  /* Aquí está la magia: máscara gradiente izq→der */
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 20%, rgba(0,0,0,0.7) 40%, black 65%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 20%, rgba(0,0,0,0.7) 40%, black 65%);
+}
+.profile-photo-img {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1D4ED8 0%, #7C3AED 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #fff;
+  border-radius: 0 14px 14px 0; /* solo bordes derechos redondeados */
+}
+
+/* Info section */
+.info-section {
+  padding: 44px 20px 20px 170px; /* left padding para no solapar con foto */
+  min-height: 80px;
+}
+.name { font-size: 18px; font-weight: 700; color: #F1F5F9; margin-bottom: 2px; }
+.handle { font-size: 12px; color: #64748B; }
+
+/* ─── Versión 2: más extrema — foto más alta ─── */
+.cover2 {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #0c1a2e 0%, #1a3a6e 40%, #0d2a5c 70%, #091525 100%);
+  position: relative;
+}
+.profile-photo-wrap2 {
+  position: absolute;
+  bottom: -50px;
+  left: 0px;
+  width: 200px;
+  height: 170px;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.6) 35%, black 60%);
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.15) 15%, rgba(0,0,0,0.6) 35%, black 60%);
+}
+.profile-photo-img2 {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, #1e3a8a 0%, #6d28d9 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.9);
+  border-radius: 0 16px 16px 0;
+}
+.info-section2 {
+  padding: 64px 20px 20px 210px;
+  min-height: 90px;
+}
+
+/* ─── Versión 3: fade más suave, foto cuadrada perfecta ─── */
+.cover3 {
+  width: 100%;
+  height: 160px;
+  background: linear-gradient(135deg, #0c1a2e 0%, #1a3a6e 40%, #0d2a5c 70%, #091525 100%);
+  position: relative;
+}
+.profile-photo-wrap3 {
+  position: absolute;
+  bottom: -45px;
+  left: 0px;
+  width: 180px;
+  height: 180px;
+  /* gradiente más suave con más pasos */
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.05) 8%,
+    rgba(0,0,0,0.20) 18%,
+    rgba(0,0,0,0.50) 30%,
+    rgba(0,0,0,0.80) 45%,
+    black 60%);
+  mask-image: linear-gradient(to right,
+    transparent 0%,
+    rgba(0,0,0,0.05) 8%,
+    rgba(0,0,0,0.20) 18%,
+    rgba(0,0,0,0.50) 30%,
+    rgba(0,0,0,0.80) 45%,
+    black 60%);
+}
+.profile-photo-img3 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: linear-gradient(160deg, #1e3a8a 0%, #6d28d9 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  border-radius: 0 16px 16px 0;
+  overflow: hidden;
+}
+.avatar-inner {
+  width: 100%; height: 100%;
+  background: linear-gradient(160deg, #1D4ED8 0%, #7C3AED 100%);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 38px; font-weight: 800; color: #fff;
+}
+.info-section3 {
+  padding: 52px 20px 20px 190px;
+  min-height: 90px;
+}
+
+.label {
+  font-size: 12px; color: #38BDF8; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 12px;
+}
+</style>
+</head>
+<body>
+
+<h1>Concepto: Foto de perfil que "emerge" de la portada</h1>
+<p class="sub">3 variantes del mismo efecto — más o menos intenso</p>
+
+<!-- ══ VARIANTE A ══ -->
+<div style="max-width:600px; margin: 0 auto 48px;">
+  <div class="label">Variante A — fade corto, foto pequeña</div>
+  <div class="demo-wrap">
+    <div class="cover">
+      <div class="cover-overlay"></div>
+      <div class="profile-photo-wrap">
+        <div class="profile-photo-img">CG</div>
+      </div>
+    </div>
+    <div class="info-section">
+      <div class="name">Cristian Gutiérrez</div>
+      <div class="handle">@cgutierrez · CEO</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VARIANTE B ══ -->
+<div style="max-width:600px; margin: 0 auto 48px;">
+  <div class="label">Variante B — foto más alta, más protagonismo</div>
+  <div class="demo-wrap">
+    <div class="cover2">
+      <div class="cover-overlay"></div>
+      <div class="profile-photo-wrap2">
+        <div class="profile-photo-img2">CG</div>
+      </div>
+    </div>
+    <div class="info-section2">
+      <div class="name">Cristian Gutiérrez</div>
+      <div class="handle">@cgutierrez · CEO</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VARIANTE C ══ -->
+<div style="max-width:600px; margin: 0 auto 48px;">
+  <div class="label">Variante C — fade muy suave, cuadrado grande, el más premium</div>
+  <div class="demo-wrap">
+    <div class="cover3">
+      <div class="cover-overlay"></div>
+      <div class="profile-photo-wrap3">
+        <div class="avatar-inner">CG</div>
+      </div>
+    </div>
+    <div class="info-section3">
+      <div class="name">Cristian Gutiérrez</div>
+      <div class="handle">@cgutierrez · CEO</div>
+    </div>
+  </div>
+</div>
+
+<p style="text-align:center; color:#1e293b; font-size:11px; margin-top:16px;">profile-photo-concept.html</p>
+
+</body>
+</html>

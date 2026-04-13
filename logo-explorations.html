@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conniku — Logo sin fondo</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@800&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #e8eaed; font-family: sans-serif; padding: 40px; }
+  h1 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 40px; letter-spacing: -0.01em; }
+  .section { margin-bottom: 52px; }
+  .label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 18px; font-weight: 700; }
+  .row { display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start; }
+  .item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .sublabel { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Preview backgrounds */
+  .bg-dark   { background: #0f1b2d; border-radius: 12px; padding: 24px 32px; }
+  .bg-light  { background: #ffffff; border-radius: 12px; padding: 24px 32px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .bg-mid    { background: #f0f2f5; border-radius: 12px; padding: 24px 32px; border: 1px solid #ddd; }
+  .bg-trans  { background:
+    repeating-conic-gradient(#ccc 0% 25%, #fff 0% 50%)
+    0 0 / 16px 16px;
+    border-radius: 12px; padding: 24px 32px; }
+
+  canvas { display: block; }
+  .btn-dl {
+    margin-top: 8px;
+    background: #2D62C8; color: #fff; border: none;
+    padding: 6px 14px; border-radius: 6px; font-size: 11px;
+    cursor: pointer; font-weight: 600; letter-spacing: 0.04em;
+  }
+  .btn-dl:hover { background: #1a4a9a; }
+
+  /* Divider */
+  hr { border: none; border-top: 1px solid #d0d0d0; margin: 48px 0; }
+</style>
+</head>
+<body>
+
+<h1>Conniku — Logo como imagen, fondo transparente, i·k pegadas</h1>
+
+<!-- VERSIÓN OSCURA (para topbar / fondo oscuro) -->
+<div class="section">
+  <div class="label">Versión oscura — sobre fondo oscuro (uso en app)</div>
+  <div class="row">
+    <div class="item">
+      <div class="bg-dark"><canvas id="dark-lg"></canvas></div>
+      <div class="sublabel">Grande · 52px</div>
+      <button class="btn-dl" onclick="download('dark-lg','conniku-dark-52.png')">↓ PNG</button>
+    </div>
+    <div class="item">
+      <div class="bg-dark"><canvas id="dark-md"></canvas></div>
+      <div class="sublabel">Mediano · 36px</div>
+      <button class="btn-dl" onclick="download('dark-md','conniku-dark-36.png')">↓ PNG</button>
+    </div>
+    <div class="item">
+      <div class="bg-dark"><canvas id="dark-sm"></canvas></div>
+      <div class="sublabel">Pequeño · 22px</div>
+      <button class="btn-dl" onclick="download('dark-sm','conniku-dark-22.png')">↓ PNG</button>
+    </div>
+    <!-- Transparente - checkerboard -->
+    <div class="item">
+      <div class="bg-trans"><canvas id="dark-trans"></canvas></div>
+      <div class="sublabel">Transparente (fondo real)</div>
+      <button class="btn-dl" onclick="download('dark-trans','conniku-transparent.png')">↓ PNG transparente</button>
+    </div>
+  </div>
+</div>
+
+<!-- VERSIÓN CLARA (para documentos / fondo blanco) -->
+<div class="section">
+  <div class="label">Versión clara — sobre fondo blanco (documentos, presentaciones)</div>
+  <div class="row">
+    <div class="item">
+      <div class="bg-light"><canvas id="light-lg"></canvas></div>
+      <div class="sublabel">Grande · 52px</div>
+      <button class="btn-dl" onclick="download('light-lg','conniku-light-52.png')">↓ PNG</button>
+    </div>
+    <div class="item">
+      <div class="bg-light"><canvas id="light-md"></canvas></div>
+      <div class="sublabel">Mediano · 36px</div>
+      <button class="btn-dl" onclick="download('light-md','conniku-light-36.png')">↓ PNG</button>
+    </div>
+    <div class="item">
+      <div class="bg-mid"><canvas id="light-trans"></canvas></div>
+      <div class="sublabel">Transparente</div>
+      <button class="btn-dl" onclick="download('light-trans','conniku-dark-transparent.png')">↓ PNG transparente</button>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- CON ÍCONO -->
+<div class="section">
+  <div class="label">Con ícono — igual al topbar actual</div>
+  <div class="row">
+    <div class="item">
+      <div class="bg-dark"><canvas id="icon-dark"></canvas></div>
+      <div class="sublabel">Oscuro</div>
+      <button class="btn-dl" onclick="download('icon-dark','conniku-icon-dark.png')">↓ PNG</button>
+    </div>
+    <div class="item">
+      <div class="bg-light"><canvas id="icon-light"></canvas></div>
+      <div class="sublabel">Claro</div>
+      <button class="btn-dl" onclick="download('icon-light','conniku-icon-light.png')">↓ PNG</button>
+    </div>
+  </div>
+</div>
+
+<hr>
+
+<!-- ALTA RESOLUCIÓN @3x -->
+<div class="section">
+  <div class="label">Alta resolución @3x — para exportar / imprimir</div>
+  <div class="row">
+    <div class="item">
+      <div class="bg-dark" style="padding:16px 24px;"><canvas id="hires-dark" style="width:280px;height:auto;"></canvas></div>
+      <div class="sublabel">@3x · 840px ancho</div>
+      <button class="btn-dl" onclick="download('hires-dark','conniku-hires-dark.png')">↓ PNG @3x</button>
+    </div>
+    <div class="item">
+      <div class="bg-light" style="padding:16px 24px;"><canvas id="hires-light" style="width:280px;height:auto;"></canvas></div>
+      <div class="sublabel">@3x · 840px ancho</div>
+      <button class="btn-dl" onclick="download('hires-light','conniku-hires-light.png')">↓ PNG @3x</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Measurement helper ──────────────────────────────────────────────────────
+function measureSplit(ctx, fontStr, partA, partB) {
+  ctx.font = fontStr;
+  const mA     = ctx.measureText(partA);
+  const mFirst = ctx.measureText(partB[0]);
+  const mB     = ctx.measureText(partB);
+
+  const rightInkA = mA.actualBoundingBoxRight;
+  const leftInkB  = -mFirst.actualBoundingBoxLeft;   // convert to "offset from origin"
+  const kX        = rightInkA - leftInkB;            // position where partB should start
+
+  return { kX, widthB: mB.width, totalW: kX + mB.width };
+}
+
+// ─── Core draw ───────────────────────────────────────────────────────────────
+function drawLogo({
+  id,
+  fontSize    = 44,
+  scale       = 2,           // retina
+  colorA      = '#ffffff',
+  colorB      = '#5B9EFF',
+  hasBg       = false,
+  bgColor     = null,
+  withIcon    = false,
+  font        = 'Plus Jakarta Sans',
+}) {
+  const cvs = document.getElementById(id);
+  if (!cvs) return;
+
+  const fs   = fontSize * scale;
+  const pad  = Math.round(fs * 0.5);
+  const fontStr = `800 ${fs}px "${font}"`;
+
+  const partA = 'conni';
+  const partB = 'ku';
+
+  // Temp canvas for measurement
+  const tmp = document.createElement('canvas');
+  tmp.width = 4000; tmp.height = 400;
+  const t = tmp.getContext('2d');
+  const { kX, totalW } = measureSplit(t, fontStr, partA, partB);
+
+  // Icon dimensions
+  const iconSize  = withIcon ? Math.round(fs * 0.85) : 0;
+  const iconGap   = withIcon ? Math.round(fs * 0.25) : 0;
+
+  const W = Math.round(iconSize + iconGap + totalW + pad * 2);
+  const H = Math.round(fs * 1.5);
+  const y = Math.round(fs * 1.1);
+
+  cvs.width  = W;
+  cvs.height = H;
+
+  const ctx = cvs.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  // Background (optional)
+  if (hasBg && bgColor) {
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    const r = Math.round(14 * scale);
+    ctx.roundRect(0, 0, W, H, r);
+    ctx.fill();
+  }
+
+  // ── Icon ──────────────────────────────────────────────────────────────────
+  if (withIcon) {
+    const ix = pad;
+    const iy = Math.round((H - iconSize) / 2);
+    const ir = Math.round(8 * scale);
+
+    // Blue square
+    ctx.fillStyle = '#2D62C8';
+    ctx.beginPath();
+    ctx.roundRect(ix, iy, iconSize, iconSize, ir);
+    ctx.fill();
+
+    // White "C" arc inside
+    const cx = ix + iconSize / 2;
+    const cy = iy + iconSize / 2;
+    const rad = iconSize * 0.3;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rad, 0.35, Math.PI * 2 - 0.35);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = iconSize * 0.12;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  }
+
+  // ── Text ──────────────────────────────────────────────────────────────────
+  const textX = pad + iconSize + iconGap;
+  ctx.font = fontStr;
+
+  // "conni" — color A
+  ctx.fillStyle = colorA;
+  ctx.fillText(partA, textX, y);
+
+  // "ku" — color B, at exact ink-touching position
+  ctx.fillStyle = colorB;
+  ctx.fillText(partB, textX + kX, y);
+}
+
+// ─── Download helper ─────────────────────────────────────────────────────────
+function download(id, filename) {
+  const cvs = document.getElementById(id);
+  const a   = document.createElement('a');
+  a.href    = cvs.toDataURL('image/png');
+  a.download = filename;
+  a.click();
+}
+
+// ─── Render all on font load ─────────────────────────────────────────────────
+document.fonts.ready.then(() => {
+
+  // Versión oscura (blanco + azul, sin bg)
+  drawLogo({ id: 'dark-lg',    fontSize: 52, colorA: '#ffffff', colorB: '#5B9EFF' });
+  drawLogo({ id: 'dark-md',    fontSize: 36, colorA: '#ffffff', colorB: '#5B9EFF' });
+  drawLogo({ id: 'dark-sm',    fontSize: 22, colorA: '#ffffff', colorB: '#5B9EFF' });
+  drawLogo({ id: 'dark-trans', fontSize: 44, colorA: '#ffffff', colorB: '#5B9EFF' });
+
+  // Versión clara (oscuro + azul, sin bg)
+  drawLogo({ id: 'light-lg',    fontSize: 52, colorA: '#0f1b2d', colorB: '#2D62C8' });
+  drawLogo({ id: 'light-md',    fontSize: 36, colorA: '#0f1b2d', colorB: '#2D62C8' });
+  drawLogo({ id: 'light-trans', fontSize: 44, colorA: '#0f1b2d', colorB: '#2D62C8' });
+
+  // Con ícono
+  drawLogo({ id: 'icon-dark',  fontSize: 34, colorA: '#ffffff', colorB: '#5B9EFF', withIcon: true });
+  drawLogo({ id: 'icon-light', fontSize: 34, colorA: '#0f1b2d', colorB: '#2D62C8', withIcon: true });
+
+  // Alta resolución @3x
+  drawLogo({ id: 'hires-dark',  fontSize: 52, scale: 3, colorA: '#ffffff', colorB: '#5B9EFF' });
+  drawLogo({ id: 'hires-light', fontSize: 52, scale: 3, colorA: '#0f1b2d', colorB: '#2D62C8' });
+
+});
+</script>
+</body>
+</html>

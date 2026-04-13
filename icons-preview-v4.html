@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Conniku — Íconos V4 Incrustado</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: #BEC8D4;
+    font-family: 'Inter', sans-serif;
+    padding: 44px;
+    display: flex; gap: 32px; flex-wrap: wrap;
+    align-items: flex-start; min-height: 100vh;
+  }
+  .col { display:flex; flex-direction:column; gap:10px; }
+  .lbl {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.13em; color: #546E7A; margin-bottom: 2px; line-height: 1.7;
+  }
+  .tag {
+    display: inline-block; border-radius: 4px; padding: 2px 8px;
+    font-size: 9px; font-weight: 700; margin-left: 6px; vertical-align: middle;
+  }
+
+  /* ── Sidebar base ── */
+  .sb {
+    width: 210px; border-radius: 16px;
+    padding: 18px 10px 22px;
+    display: flex; flex-direction: column; gap: 1px;
+  }
+  .brand {
+    font-size: 16px; font-weight: 800; letter-spacing: -0.04em;
+    padding: 4px 10px 14px; margin-bottom: 6px;
+  }
+  .brand em { font-style: normal; }
+  .sec {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.12em; padding: 10px 10px 4px;
+  }
+  .nav {
+    display: flex; align-items: center; gap: 11px;
+    padding: 8px 12px; border-radius: 10px;
+    font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: all 0.13s ease;
+  }
+  .nav svg { flex-shrink: 0; display: block; }
+  .nav.active { font-weight: 650; }
+
+
+  /* ══════════════════════════════════════════════════
+     ESTILO O — Azul sólido · ícono grabado suave
+     Inactive: ícono muted color sobrio, stroke fino
+     Active:   pill azul elevado · ícono blanco incrustado
+               con sombra interior simulada (grabado)
+  ══════════════════════════════════════════════════ */
+  .so {
+    background: #FFFFFF;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.11);
+  }
+  .so .brand { color: #0F172A; border-bottom: 1px solid #F0F4F8; }
+  .so .brand em { color: #2D62C8; }
+  .so .sec { color: #C5D2E0; }
+  .so .nav { color: #475569; }
+  .so .nav:hover:not(.active) { background: #F1F5F9; }
+
+  /* Pill azul elevado */
+  .so .nav.active {
+    color: #FFFFFF;
+    background: linear-gradient(160deg, #1E54C0 0%, #3A82EE 100%);
+    box-shadow:
+      0 5px 16px rgba(30, 84, 192, 0.42),
+      0 1px 4px rgba(0,0,0,0.20),
+      inset 0 1px 0 rgba(255,255,255,0.18);  /* borde superior iluminado */
+  }
+  /* Ícono grabado en el azul: sombra de profundidad + borde de talla */
+  .so .nav.active svg {
+    filter:
+      drop-shadow(0 2px 3px rgba(0, 10, 80, 0.55))
+      drop-shadow(0 -1px 0px rgba(180, 210, 255, 0.40));
+  }
+
+
+  /* ══════════════════════════════════════════════════
+     ESTILO P — Azul profundo · grabado pronunciado
+     Pill más oscuro/profundo · sombra interna más fuerte
+  ══════════════════════════════════════════════════ */
+  .sp {
+    background: #F8FAFD;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.10);
+  }
+  .sp .brand { color: #0F172A; border-bottom: 1px solid #EEF2F8; }
+  .sp .brand em { color: #2D62C8; }
+  .sp .sec { color: #C5D2E0; }
+  .sp .nav { color: #475569; }
+  .sp .nav:hover:not(.active) { background: #EFF6FF; color: #1E40AF; }
+
+  .sp .nav.active {
+    color: #E8F2FF;
+    background: linear-gradient(160deg, #1442A8 0%, #2563EB 100%);
+    box-shadow:
+      0 6px 20px rgba(20, 66, 168, 0.50),
+      0 2px 6px rgba(0,0,0,0.25),
+      inset 0 1px 0 rgba(255,255,255,0.14),
+      inset 0 -1px 0 rgba(0,0,40,0.20);
+  }
+  /* Más pronunciado: sombra más oscura + borde luz intenso */
+  .sp .nav.active svg {
+    filter:
+      drop-shadow(0 2.5px 4px rgba(0, 0, 100, 0.65))
+      drop-shadow(0 -1.5px 0px rgba(150, 200, 255, 0.50));
+    opacity: 0.95;
+  }
+
+
+  /* ══════════════════════════════════════════════════
+     ESTILO Q — Íconos con color inactivo · grabado al activar
+     Cada ícono en su propio color (sin badge) cuando inactivo.
+     Al activar: pill azul + ícono blanco grabado.
+  ══════════════════════════════════════════════════ */
+  .sq {
+    background: #FFFFFF;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.11);
+  }
+  .sq .brand { color: #0F172A; border-bottom: 1px solid #F0F4F8; }
+  .sq .brand em { color: #2D62C8; }
+  .sq .sec { color: #C5D2E0; }
+  .sq .nav { color: #475569; }
+  .sq .nav:hover:not(.active) { background: #F8FAFC; }
+
+  .sq .nav.active {
+    color: #FFFFFF;
+    background: linear-gradient(160deg, #1E54C0 0%, #3A82EE 100%);
+    box-shadow:
+      0 5px 16px rgba(30, 84, 192, 0.42),
+      0 1px 4px rgba(0,0,0,0.20),
+      inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .sq .nav.active svg {
+    filter:
+      drop-shadow(0 2px 3px rgba(0, 10, 80, 0.55))
+      drop-shadow(0 -1px 0px rgba(180, 210, 255, 0.40));
+  }
+
+  /* Colores inactivos por ícono */
+  .sq .i-home     { color: #5865C4; }
+  .sq .i-profile  { color: #7558B0; }
+  .sq .i-feed     { color: #C07840; }
+  .sq .i-messages { color: #2A9890; }
+  .sq .i-community{ color: #A84E7C; }
+  .sq .i-rooms    { color: #C05048; }
+  .sq .i-courses  { color: #3A7CC4; }
+  .sq .i-calendar { color: #529858; }
+
+
+  /* ══════════════════════════════════════════════════
+     ESTILO R — DARK · ícono grabado en azul brillante
+     Sidebar oscuro. Inactivos blancos suaves.
+     Activo: azul neón sólido · ícono grabado brillante.
+  ══════════════════════════════════════════════════ */
+  .sr {
+    background: #111318;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+  }
+  .sr .brand { color: #E8EEFF; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .sr .brand em { color: #6FA3F8; }
+  .sr .sec { color: #30363F; }
+  .sr .nav { color: #4A5568; }
+  .sr .nav:hover:not(.active) { background: rgba(255,255,255,0.04); color: #8898AA; }
+
+  .sr .nav.active {
+    color: #EEF5FF;
+    background: linear-gradient(160deg, #1442A8 0%, #2D6EF0 100%);
+    box-shadow:
+      0 5px 20px rgba(30, 80, 220, 0.55),
+      0 2px 6px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(100,180,255,0.22),
+      inset 0 -1px 0 rgba(0,0,40,0.30);
+  }
+  .sr .nav.active svg {
+    filter:
+      drop-shadow(0 2.5px 4px rgba(0, 0, 120, 0.70))
+      drop-shadow(0 -1px 0px rgba(120, 180, 255, 0.55));
+    opacity: 0.96;
+  }
+
+  /* Muted icon colors on dark */
+  .sr .nav svg { opacity: 0.35; }
+  .sr .nav:hover:not(.active) svg { opacity: 0.60; }
+  .sr .nav.active svg { opacity: 1; }
+</style>
+</head>
+<body>
+
+
+<!-- ════ O: Azul sólido, grabado suave ════ -->
+<div class="col">
+  <div class="lbl">O — Azul sólido · grabado suave<span class="tag" style="background:#DBEAFE;color:#1E40AF;">Equilibrado</span></div>
+  <div class="sb so">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H15v-6H9v6H4a1 1 0 01-1-1V9.5z" fill="currentColor" fill-opacity="0.18"/>
+      </svg>
+      Inicio
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Feed
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 2H4a1 1 0 00-1 1v13a1 1 0 001 1h3l4 4 4-4h5a1 1 0 001-1V3a1 1 0 00-1-1z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Mensajes
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <path d="M21 21v-1.5a3.5 3.5 0 00-2.5-3.4M16 3a3.5 3.5 0 010 6.8"/>
+      </svg>
+      Comunidad
+    </div>
+    <div class="sec">Estudio</div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="14" height="14" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <polygon points="23 7 16 12 23 17 23 7"/>
+      </svg>
+      Salas
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Cursos
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <rect x="7" y="14" width="3.5" height="3.5" rx="0.5" fill="currentColor" fill-opacity="0.18"/>
+      </svg>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ P: Azul profundo, grabado pronunciado ════ -->
+<div class="col">
+  <div class="lbl">P — Azul profundo · grabado fuerte<span class="tag" style="background:#1E3A8A;color:#BFDBFE;">Premium</span></div>
+  <div class="sb sp">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H15v-6H9v6H4a1 1 0 01-1-1V9.5z" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Inicio
+    </div>
+    <div class="nav active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4" fill="currentColor" fill-opacity="0.20"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Feed
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 2H4a1 1 0 00-1 1v13a1 1 0 001 1h3l4 4 4-4h5a1 1 0 001-1V3a1 1 0 00-1-1z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Mensajes
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <path d="M21 21v-1.5a3.5 3.5 0 00-2.5-3.4M16 3a3.5 3.5 0 010 6.8"/>
+      </svg>
+      Comunidad
+    </div>
+    <div class="sec">Estudio</div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="14" height="14" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <polygon points="23 7 16 12 23 17 23 7"/>
+      </svg>
+      Salas
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Cursos
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <rect x="7" y="14" width="3.5" height="3.5" rx="0.5" fill="currentColor" fill-opacity="0.18"/>
+      </svg>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ Q: Íconos coloreados inactivos + grabado al activar ════ -->
+<div class="col">
+  <div class="lbl">Q — Íconos color sobrio · grabado al activar<span class="tag" style="background:#F0FDF4;color:#166534;">Color + Incrustado</span></div>
+  <div class="sb sq">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav i-home">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H15v-6H9v6H4a1 1 0 01-1-1V9.5z" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Inicio
+    </div>
+    <div class="nav i-profile">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4" fill="currentColor" fill-opacity="0.12"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      Mi Perfil
+    </div>
+    <div class="nav i-feed active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.22"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.22"/>
+      </svg>
+      Feed
+    </div>
+    <div class="nav i-messages">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 2H4a1 1 0 00-1 1v13a1 1 0 001 1h3l4 4 4-4h5a1 1 0 001-1V3a1 1 0 00-1-1z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Mensajes
+    </div>
+    <div class="nav i-community">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <path d="M21 21v-1.5a3.5 3.5 0 00-2.5-3.4M16 3a3.5 3.5 0 010 6.8"/>
+      </svg>
+      Comunidad
+    </div>
+    <div class="sec">Estudio</div>
+    <div class="nav i-rooms">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="14" height="14" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <polygon points="23 7 16 12 23 17 23 7"/>
+      </svg>
+      Salas
+    </div>
+    <div class="nav i-courses">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Cursos
+    </div>
+    <div class="nav i-calendar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <rect x="7" y="14" width="3.5" height="3.5" rx="0.5" fill="currentColor" fill-opacity="0.18"/>
+      </svg>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ════ R: Dark premium · grabado en azul brillante ════ -->
+<div class="col">
+  <div class="lbl">R — Dark premium · grabado azul neón<span class="tag" style="background:#0F172A;color:#60A5FA;">Dark</span></div>
+  <div class="sb sr">
+    <div class="brand">conni<em>ku</em></div>
+    <div class="sec">Principal</div>
+
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9.5L12 3l9 6.5V21a1 1 0 01-1 1H15v-6H9v6H4a1 1 0 01-1-1V9.5z" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Inicio
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      Mi Perfil
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+        <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" fill-opacity="0.12"/>
+      </svg>
+      Feed
+    </div>
+    <div class="nav active">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 2H4a1 1 0 00-1 1v13a1 1 0 001 1h3l4 4 4-4h5a1 1 0 001-1V3a1 1 0 00-1-1z" fill="currentColor" fill-opacity="0.22"/>
+      </svg>
+      Mensajes
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="7" r="4"/><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+        <path d="M21 21v-1.5a3.5 3.5 0 00-2.5-3.4M16 3a3.5 3.5 0 010 6.8"/>
+      </svg>
+      Comunidad
+    </div>
+    <div class="sec">Estudio</div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="14" height="14" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <polygon points="23 7 16 12 23 17 23 7"/>
+      </svg>
+      Salas
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" fill="currentColor" fill-opacity="0.10"/>
+      </svg>
+      Cursos
+    </div>
+    <div class="nav">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="18" rx="2" fill="currentColor" fill-opacity="0.10"/>
+        <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+        <line x1="3" y1="10" x2="21" y2="10"/>
+        <rect x="7" y="14" width="3.5" height="3.5" rx="0.5" fill="currentColor" fill-opacity="0.20"/>
+      </svg>
+      Calendario
+    </div>
+  </div>
+</div>
+
+
+<!-- ── Leyenda ── -->
+<div style="width:100%;margin-top:8px;">
+  <div style="background:white;border-radius:12px;padding:18px 24px;max-width:940px;">
+    <p style="font-size:9px;font-weight:700;letter-spacing:0.10em;color:#94A3B8;text-transform:uppercase;margin-bottom:12px;">Técnica: Ícono sin cuadrado · grabado en superficie azul</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;font-size:11.5px;color:#374151;line-height:1.65;">
+      <div>
+        <strong style="display:block;color:#1E40AF;margin-bottom:3px;">O — Grabado Suave</strong>
+        Azul luminoso, pill elevado con borde iluminado arriba. Ícono blanco con sombra de profundidad y reflejo de talla.
+      </div>
+      <div>
+        <strong style="display:block;color:#1E3A8A;margin-bottom:3px;">P — Grabado Pronunciado</strong>
+        Azul más oscuro y profundo. Sombras más fuertes. La talla del ícono es más visible y dramática.
+      </div>
+      <div>
+        <strong style="display:block;color:#166534;margin-bottom:3px;">Q — Color + Grabado</strong>
+        Cada ícono en su color sobrio cuando está inactivo. Al activar: el azul toma la fila y el ícono se incrusta en blanco.
+      </div>
+      <div>
+        <strong style="display:block;color:#1D4ED8;margin-bottom:3px;">R — Dark + Neón</strong>
+        Sidebar oscuro. Íconos muy suaves en reposo. Activo: azul brillante con ícono grabado con reflejo neón.
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
