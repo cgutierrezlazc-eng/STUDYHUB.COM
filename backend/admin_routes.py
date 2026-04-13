@@ -1,7 +1,7 @@
 """
 Admin routes: user management, moderation, stats.
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -323,6 +323,35 @@ def admin_delete_message(msg_id: str, admin: User = Depends(require_admin), db: 
 
     db.commit()
     return {"deleted": True}
+
+
+# ─── Online Users ─────────────────────────────────────────────────
+
+@router.get("/online-users")
+def online_users(admin: User = Depends(require_admin), db: Session = Depends(get_db)):
+    """Users active in the last 5 minutes."""
+    cutoff = datetime.utcnow() - timedelta(minutes=5)
+    users = (
+        db.query(User)
+        .filter(User.last_seen >= cutoff)
+        .order_by(desc(User.last_seen))
+        .limit(100)
+        .all()
+    )
+    return {
+        "count": len(users),
+        "users": [
+            {
+                "id": u.id,
+                "name": f"{u.first_name} {u.last_name}",
+                "email": u.email,
+                "avatar": u.avatar,
+                "role": u.role,
+                "last_seen": u.last_seen.isoformat() if u.last_seen else None,
+            }
+            for u in users
+        ],
+    }
 
 
 # ─── Stats ───────────────────────────────────────────────────────

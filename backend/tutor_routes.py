@@ -5,6 +5,7 @@ Students pay Conniku -> Conniku takes 10% commission -> pays tutor 90% gross.
 Tutor is responsible for their own SII tax retention (13.75%).
 All monetary values are in CLP unless otherwise noted.
 """
+import base64 as _b64
 import json
 import os
 import random
@@ -185,7 +186,9 @@ class TutorDocument(Base):
     tutor_id = Column(String(16), ForeignKey("tutor_profiles.id", ondelete="CASCADE"), nullable=False, index=True)
     document_type = Column(String(30), default="otro")  # cedula/titulo/certificado_alumno/antecedentes/cv/boleta_honorarios/otro
     name = Column(String(255), nullable=False)
-    file_path = Column(Text, nullable=False)
+    file_path = Column(Text, nullable=False, default="")   # legacy (filesystem) — kept for backward compat
+    file_content = Column(Text, nullable=True)              # base64-encoded file content (preferred on Render)
+    file_mime = Column(String(100), nullable=True)          # MIME type of stored file
     verified = Column(Boolean, default=False)
     verified_at = Column(DateTime, nullable=True)
     notes = Column(Text, default="")
@@ -953,23 +956,18 @@ async def upload_tutor_document(
     if len(contents) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Archivo excede el limite de 10MB")
 
-    # Save file
     doc_id = gen_id()
-    ext = os.path.splitext(file.filename or "file")[1] or ".pdf"
-    safe_name = f"{profile.id}_{doc_id}{ext}"
-    file_dir = TUTOR_UPLOADS_DIR / profile.id
-    file_dir.mkdir(exist_ok=True)
-    file_path = file_dir / safe_name
-
-    with open(file_path, "wb") as f:
-        f.write(contents)
+    mime = file.content_type or "application/octet-stream"
+    b64_content = _b64.b64encode(contents).decode("utf-8")
 
     doc = TutorDocument(
         id=doc_id,
         tutor_id=profile.id,
         document_type=document_type,
         name=name or file.filename or "Documento",
-        file_path=str(file_path),
+        file_path="",          # legacy field — not used on Render
+        file_content=b64_content,
+        file_mime=mime,
     )
     db.add(doc)
     db.commit()
@@ -2181,6 +2179,67 @@ def get_my_payments(
     }
 
 
+@router.get("/my-boletas")
+def get_my_boletas(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """List all boletas de honorarios submitted by the current tutor."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    docs = (
+        db.query(TutorDocument)
+        .filter(
+            TutorDocument.tutor_id == profile.id,
+            TutorDocument.document_type == "boleta_honorarios",
+        )
+        .order_by(desc(TutorDocument.created_at))
+        .all()
+    )
+
+    # Enrich each doc with payment info
+    result = []
+    for doc in docs:
+        payment = db.query(TutorPayment).filter(TutorPayment.boleta_document_id == doc.id).first()
+        result.append({
+            **_document_to_dict(doc),
+            "has_file": bool(doc.file_content),
+            "payment": _payment_to_dict(payment) if payment else None,
+        })
+
+    return {"boletas": result}
+
+
+@router.get("/my-boletas/{doc_id}/download")
+def download_my_boleta(
+    doc_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return base64 content + MIME so the frontend can trigger a download."""
+    profile = db.query(TutorProfile).filter(TutorProfile.user_id == user.id).first()
+    if not profile:
+        raise HTTPException(status_code=404, detail="No tienes un perfil de tutor")
+
+    doc = db.query(TutorDocument).filter(
+        TutorDocument.id == doc_id,
+        TutorDocument.tutor_id == profile.id,
+    ).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+
+    if not doc.file_content:
+        raise HTTPException(status_code=404, detail="El archivo no está disponible")
+
+    return {
+        "name": doc.name,
+        "mime": doc.file_mime or "application/pdf",
+        "content_b64": doc.file_content,
+    }
+
+
 @router.get("/my-payslips")
 def get_my_payslips(
     user: User = Depends(get_current_user),
@@ -2229,28 +2288,25 @@ async def upload_boleta(
             detail=f"El monto de la boleta (${boleta_amount:,.0f}) no coincide con el monto a pagar (${payment.tutor_amount:,.0f}). Diferencia maxima permitida: $100",
         )
 
-    # Save file
+    # Read and store file as base64 (Render has ephemeral filesystem)
     contents = await file.read()
     if len(contents) > 10 * 1024 * 1024:
         raise HTTPException(status_code=400, detail="Archivo excede el limite de 10MB")
 
     doc_id = gen_id()
+    mime = file.content_type or "application/pdf"
     ext = os.path.splitext(file.filename or "boleta")[1] or ".pdf"
-    safe_name = f"boleta_{payment.id}_{doc_id}{ext}"
-    file_dir = TUTOR_UPLOADS_DIR / profile.id
-    file_dir.mkdir(exist_ok=True)
-    file_path = file_dir / safe_name
+    b64_content = _b64.b64encode(contents).decode("utf-8")
 
-    with open(file_path, "wb") as f:
-        f.write(contents)
-
-    # Create document record
+    # Create document record (base64 storage)
     doc = TutorDocument(
         id=doc_id,
         tutor_id=profile.id,
         document_type="boleta_honorarios",
-        name=f"Boleta N {boleta_number}",
-        file_path=str(file_path),
+        name=f"Boleta N° {boleta_number}",
+        file_path="",
+        file_content=b64_content,
+        file_mime=mime,
     )
     db.add(doc)
     db.flush()
@@ -2265,9 +2321,43 @@ async def upload_boleta(
     db.commit()
     db.refresh(payment)
 
+    # Send email to CEO with PDF attachment (async — never blocks response)
+    try:
+        from notifications import _send_email_with_attachment_async, _email_template, CEO_EMAIL
+        tutor_user = db.query(User).filter(User.id == profile.user_id).first()
+        tutor_name = f"{tutor_user.first_name} {tutor_user.last_name}" if tutor_user else profile.id
+        tutor_email = tutor_user.email if tutor_user else ""
+        attachment_filename = f"boleta_{boleta_number}_{profile.id}{ext}"
+        body_html = _email_template(
+            "📄 Nueva Boleta de Honorarios Recibida",
+            f"""
+            <p><strong>Tutor:</strong> {tutor_name} ({tutor_email})</p>
+            <p><strong>N° Boleta:</strong> {boleta_number}</p>
+            <p><strong>Monto Boleta:</strong> ${boleta_amount:,.0f} CLP</p>
+            <p><strong>Monto Neto Tutor:</strong> ${payment.tutor_amount:,.0f} CLP</p>
+            <p><strong>Clase:</strong> {payment.id}</p>
+            <p style="margin-top:16px">El tutor solicita pago en un plazo máximo de <strong>7 días hábiles</strong>
+            desde la confirmación de la boleta.</p>
+            <p>Este documento debe ser registrado en <strong>Contabilidad → Gastos</strong>
+            como <em>Boleta de Honorarios</em>, con retención 13,75%.</p>
+            """
+        )
+        _send_email_with_attachment_async(
+            to_email=CEO_EMAIL,
+            subject=f"[Conniku] Boleta honorarios — {tutor_name} — N° {boleta_number}",
+            html_body=body_html,
+            attachment_content=contents,
+            attachment_name=attachment_filename,
+            attachment_mime=mime,
+            email_type="boleta_honorarios",
+            from_account="ceo",
+        )
+    except Exception as e:
+        logger.warning(f"[Boleta email] Failed to send CEO notification: {e}")
+
     return {
         "ok": True,
-        "message": "Boleta subida exitosamente. El pago sera procesado en 7 dias habiles.",
+        "message": "Boleta enviada a Conniku. El pago será procesado en 7 días hábiles.",
         "payment": _payment_to_dict(payment),
     }
 
@@ -3486,6 +3576,18 @@ def get_my_own_classes(
                 "tutor_rating_of_student": e.tutor_rating_of_student,
                 "tutor_review_of_student": e.tutor_review_of_student,
             })
+        # Find a pending payment for this class (via enrollment)
+        pending_payment = None
+        for e in enrollments:
+            if e.payment_id:
+                payment = db.query(TutorPayment).filter(
+                    TutorPayment.id == e.payment_id,
+                    TutorPayment.payment_status.in_(["pending_boleta", "rejected"]),
+                ).first()
+                if payment:
+                    pending_payment = _payment_to_dict(payment)
+                    break
+
         results.append({
             "id": cls.id,
             "title": cls.title,
@@ -3494,6 +3596,7 @@ def get_my_own_classes(
             "category": cls.category,
             "enrollments": students,
             "total_enrolled": len(students),
+            "pending_payment": pending_payment,   # payment awaiting boleta, if any
         })
 
     return {"classes": results, "total": len(results)}

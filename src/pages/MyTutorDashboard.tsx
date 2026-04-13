@@ -4,7 +4,7 @@ import { api } from '../services/api'
 
 interface Props {
   onNavigate: (path: string) => void
-  subPath?: 'clases' | 'pagos' | 'materias'
+  subPath?: 'clases' | 'pagos' | 'materias' | 'boletas'
 }
 
 const STATUS_META: Record<string, { label: string; color: string; icon: string; desc: string }> = {
@@ -23,8 +23,17 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
   const [classes, setClasses] = useState<any[]>([])
   const [payments, setPayments] = useState<any[]>([])
   const [subjects, setSubjects] = useState<any[]>([])
+  const [boletas, setBoletas] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [tab, setTab] = useState<'overview' | 'clases' | 'pagos' | 'materias'>(subPath || 'overview')
+  const [tab, setTab] = useState<'overview' | 'clases' | 'pagos' | 'materias' | 'boletas'>(subPath || 'overview')
+
+  // Boleta upload modal
+  const [boletaModal, setBoletaModal] = useState<{ paymentId: string; tutorAmount: number; classTitle: string } | null>(null)
+  const [boletaNum, setBoletaNum] = useState('')
+  const [boletaAmount, setBoletaAmount] = useState('')
+  const [boletaFile, setBoletaFile] = useState<File | null>(null)
+  const [boletaSending, setBoletaSending] = useState(false)
+  const [boletaSuccess, setBoletaSuccess] = useState(false)
   const [appealText, setAppealText] = useState('')
   const [appealSending, setAppealSending] = useState(false)
   const [appealSent, setAppealSent] = useState(false)
@@ -64,6 +73,11 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
     if (tab === 'materias') {
       api.getMyTutorSubjects()
         .then((d: any) => setSubjects(d?.subjects || []))
+        .catch(() => {})
+    }
+    if (tab === 'boletas') {
+      api.getMyBoletas()
+        .then((d: any) => setBoletas(d?.boletas || []))
         .catch(() => {})
     }
   }, [tab])
@@ -132,6 +146,53 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
       alert(err.message || 'Error al calificar')
     } finally {
       setRatingSaving(false)
+    }
+  }
+
+  const handleUploadBoleta = async () => {
+    if (!boletaModal || !boletaFile || !boletaNum.trim() || !boletaAmount.trim()) return
+    setBoletaSending(true)
+    try {
+      const fd = new FormData()
+      fd.append('boleta_number', boletaNum.trim())
+      fd.append('boleta_amount', boletaAmount.trim())
+      fd.append('file', boletaFile)
+      await api.uploadBoletaHonorarios(boletaModal.paymentId, fd)
+      setBoletaSuccess(true)
+      // Refresh payments + boletas
+      const pd: any = await api.getMyTutorPayments()
+      setPayments(Array.isArray(pd) ? pd : pd?.payments || [])
+      const bd: any = await api.getMyBoletas()
+      setBoletas(bd?.boletas || [])
+    } catch (e: any) {
+      alert(e?.message || 'Error al enviar boleta')
+    } finally {
+      setBoletaSending(false)
+    }
+  }
+
+  const closeBoletaModal = () => {
+    setBoletaModal(null)
+    setBoletaNum('')
+    setBoletaAmount('')
+    setBoletaFile(null)
+    setBoletaSuccess(false)
+  }
+
+  const downloadBoleta = async (docId: string, name: string) => {
+    try {
+      const res: any = await api.downloadMyBoleta(docId)
+      if (!res.content_b64) return
+      const byteStr = atob(res.content_b64)
+      const arr = new Uint8Array(byteStr.length)
+      for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i)
+      const blob = new Blob([arr], { type: res.mime || 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = name || 'boleta.pdf'; a.click()
+      URL.revokeObjectURL(url)
+    } catch (e: any) {
+      alert(e?.message || 'No se pudo descargar el archivo')
     }
   }
 
@@ -248,6 +309,7 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
             { id: 'materias', label: `📚 Mis Materias${subjects.length > 0 ? ` (${subjects.length})` : ''}` },
             { id: 'clases', label: '📅 Mis Clases' },
             { id: 'pagos', label: '💰 Mis Pagos' },
+            { id: 'boletas', label: '🧾 Mis Boletas' },
           ] : []),
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id as any)} style={{
@@ -445,13 +507,20 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
                 const enrollments: any[] = cls.enrollments || []
                 const unrated = enrollments.filter((e: any) => e.payment_status === 'paid' && !e.tutor_rating_of_student)
                 const canRate = cls.status === 'completed' && unrated.length > 0
+                const pendingPayment = cls.pending_payment
+                const needsBoleta = !!pendingPayment
                 return (
                   <div key={cls.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1, minWidth: 140 }}>
                       <div style={{ fontWeight: 700, marginBottom: 4 }}>{cls.subject || cls.title || 'Clase'}</div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                         {fmtDate(cls.scheduled_at)} · {enrollments.length || cls.enrolled_count || 0} estudiante{(enrollments.length || cls.enrolled_count || 0) !== 1 ? 's' : ''}
                       </div>
+                      {needsBoleta && (
+                        <div style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700, marginTop: 4 }}>
+                          ⏳ Boleta pendiente · {fmtClp(pendingPayment.tutor_amount)}
+                        </div>
+                      )}
                     </div>
                     <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: sc.bg, color: sc.color }}>
                       {statusLabels[cls.status] || cls.status}
@@ -468,6 +537,13 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
                         onClick={() => { setRatingModal({ classId: cls.id, className: cls.title || cls.subject || 'Clase', unratedCount: unrated.length }); setRatingValue(5); setRatingComment('') }}
                         style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#f59e0b', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
                         ⭐ Calificar ({unrated.length})
+                      </button>
+                    )}
+                    {needsBoleta && (
+                      <button
+                        onClick={() => { setBoletaModal({ paymentId: pendingPayment.id, tutorAmount: pendingPayment.tutor_amount, classTitle: cls.title || cls.subject || 'Clase' }); setBoletaNum(''); setBoletaAmount(String(Math.round(pendingPayment.tutor_amount))); setBoletaFile(null); setBoletaSuccess(false) }}
+                        style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                        🧾 Enviar Boleta
                       </button>
                     )}
                   </div>
@@ -617,27 +693,158 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
             </div>
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
-              {payments.map((p: any) => (
-                <div key={p.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, marginBottom: 4 }}>Clase del {fmtDate(p.class_date || p.created_at)}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      Bruto: {fmtClp(p.tutor_amount_clp || p.amount_clp)} · Comisión Conniku: {fmtClp(p.commission_clp)} · Neto: {fmtClp(p.net_clp)}
+              {payments.map((p: any) => {
+                const payStatusMeta: Record<string, { label: string; color: string }> = {
+                  pending_boleta:  { label: '⏳ Boleta pendiente', color: '#f59e0b' },
+                  boleta_received: { label: '📨 Boleta recibida',  color: '#3b82f6' },
+                  processing:      { label: '⚙ Procesando',       color: '#8b5cf6' },
+                  paid:            { label: '✓ Pagado',            color: '#22c55e' },
+                  rejected:        { label: '✗ Rechazado',         color: '#ef4444' },
+                }
+                const psm = payStatusMeta[p.payment_status] || { label: p.payment_status, color: '#6b7280' }
+                return (
+                  <div key={p.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>Pago · {fmtDate(p.created_at)}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        Bruto: {fmtClp(p.gross_amount)} · Comisión: {fmtClp(p.conniku_commission)} · <strong>Neto: {fmtClp(p.tutor_amount)}</strong>
+                      </div>
                     </div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
-                      Estado: <strong>{p.payment_status}</strong>
-                    </div>
+                    <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: psm.color + '22', color: psm.color }}>
+                      {psm.label}
+                    </span>
+                    {(p.payment_status === 'pending_boleta' || p.payment_status === 'rejected') && (
+                      <button
+                        onClick={() => { setBoletaModal({ paymentId: p.id, tutorAmount: p.tutor_amount, classTitle: `Pago ${fmtDate(p.created_at)}` }); setBoletaNum(''); setBoletaAmount(String(Math.round(p.tutor_amount))); setBoletaFile(null); setBoletaSuccess(false) }}
+                        style={{ padding: '7px 14px', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>
+                        🧾 Enviar Boleta
+                      </button>
+                    )}
                   </div>
-                  {p.payment_status === 'pending_boleta' && !p.boleta_path && (
-                    <span style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700 }}>⏳ Sube tu boleta</span>
-                  )}
-                  {p.payment_status === 'paid' && (
-                    <span style={{ fontSize: 11, color: '#22c55e', fontWeight: 700 }}>✓ Pagado</span>
-                  )}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── Boletas tab ─── */}
+      {tab === 'boletas' && (
+        <div>
+          <div style={{ marginBottom: 12, padding: '12px 16px', borderRadius: 10, background: 'var(--bg-card)', border: '1px solid var(--border)', fontSize: 13, color: 'var(--text-muted)' }}>
+            🧾 Aquí aparecen todas las boletas de honorarios que has enviado a Conniku.
+            Cada vez que envías una boleta, una copia llega automáticamente al equipo para procesar tu pago en máx. <strong>7 días hábiles</strong>.
+          </div>
+          {boletas.length === 0 ? (
+            <div className="card" style={{ padding: 40, textAlign: 'center' }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🧾</div>
+              <h3>Sin boletas enviadas</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Cuando termines una clase y envíes tu boleta, aparecerá aquí.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gap: 10 }}>
+              {boletas.map((b: any) => {
+                const pmt = b.payment
+                const statusBoleta = pmt?.payment_status || 'boleta_received'
+                const statusMeta: Record<string, { label: string; color: string }> = {
+                  pending_boleta:  { label: 'Pendiente',     color: '#f59e0b' },
+                  boleta_received: { label: 'Recibida',      color: '#3b82f6' },
+                  processing:      { label: 'Procesando',    color: '#8b5cf6' },
+                  paid:            { label: 'Pagado ✓',      color: '#22c55e' },
+                  rejected:        { label: 'Rechazada',     color: '#ef4444' },
+                }
+                const sm = statusMeta[statusBoleta] || { label: statusBoleta, color: '#6b7280' }
+                return (
+                  <div key={b.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: 160 }}>
+                      <div style={{ fontWeight: 700, marginBottom: 4 }}>{b.name}</div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                        {fmtDate(b.created_at)}
+                        {pmt && <> · Monto: <strong>{fmtClp(pmt.tutor_amount || pmt.boleta_amount)}</strong></>}
+                      </div>
+                    </div>
+                    <span style={{ padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700, background: sm.color + '22', color: sm.color }}>
+                      {sm.label}
+                    </span>
+                    {b.has_file && (
+                      <button onClick={() => downloadBoleta(b.id, b.name + '.pdf')}
+                        style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                        ⬇ Descargar
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Boleta Upload Modal ─── */}
+      {boletaModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={e => { if (e.target === e.currentTarget && !boletaSending) closeBoletaModal() }}>
+          <div className="card" style={{ width: '100%', maxWidth: 480, padding: 28 }}>
+            {boletaSuccess ? (
+              <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
+                <h3 style={{ margin: '0 0 8px' }}>¡Boleta enviada!</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 20 }}>
+                  Tu boleta fue recibida por Conniku. El pago se procesará en máx. 7 días hábiles.
+                  Una copia fue enviada automáticamente al equipo.
+                </p>
+                <button onClick={() => { closeBoletaModal(); setTab('boletas') }}
+                  style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  Ver mis boletas
+                </button>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700 }}>🧾 Enviar Boleta de Honorarios</h3>
+                <p style={{ margin: '0 0 20px', fontSize: 13, color: 'var(--text-muted)' }}>{boletaModal.classTitle}</p>
+
+                <div style={{ padding: '10px 14px', borderRadius: 8, background: '#8b5cf611', border: '1px solid #8b5cf633', marginBottom: 20, fontSize: 13 }}>
+                  💡 Emite la boleta electrónica en <strong>sii.cl</strong> a nombre de <strong>Conniku SpA, RUT 78.395.702-7</strong>
+                  por el monto de <strong>{fmtClp(boletaModal.tutorAmount)}</strong>.
+                  Luego sube el PDF aquí.
+                </div>
+
+                <div style={{ display: 'grid', gap: 14 }}>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>N° de Boleta *</label>
+                    <input value={boletaNum} onChange={e => setBoletaNum(e.target.value)}
+                      placeholder="ej. 123"
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Monto Boleta (CLP) *</label>
+                    <input type="number" value={boletaAmount} onChange={e => setBoletaAmount(e.target.value)}
+                      placeholder={String(Math.round(boletaModal.tutorAmount))}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box' }} />
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>Monto a pagar: {fmtClp(boletaModal.tutorAmount)} (tolerancia máx. $100)</div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Archivo PDF de la Boleta *</label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 8, border: `2px dashed ${boletaFile ? '#8b5cf6' : 'var(--border)'}`, background: boletaFile ? '#8b5cf611' : 'var(--bg-secondary)', cursor: 'pointer', fontSize: 13, color: boletaFile ? '#8b5cf6' : 'var(--text-muted)' }}>
+                      <span>{boletaFile ? `✓ ${boletaFile.name}` : '📎 Haz clic para seleccionar PDF'}</span>
+                      <input type="file" accept=".pdf,application/pdf" style={{ display: 'none' }} onChange={e => setBoletaFile(e.target.files?.[0] || null)} />
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 24 }}>
+                  <button onClick={closeBoletaModal} disabled={boletaSending}
+                    style={{ padding: '9px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-primary)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                    Cancelar
+                  </button>
+                  <button onClick={handleUploadBoleta} disabled={boletaSending || !boletaNum.trim() || !boletaAmount || !boletaFile}
+                    style={{ padding: '9px 20px', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontWeight: 700, fontSize: 13, cursor: 'pointer', opacity: (!boletaNum.trim() || !boletaAmount || !boletaFile || boletaSending) ? 0.6 : 1 }}>
+                    {boletaSending ? 'Enviando...' : '🧾 Enviar a Conniku'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 

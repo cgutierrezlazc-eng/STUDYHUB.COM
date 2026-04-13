@@ -55,7 +55,9 @@ async function _tryRefreshToken(): Promise<string | null> {
 
 async function request(endpoint: string, options?: RequestInit) {
   const token = getToken();
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  // Don't set Content-Type for FormData — let the browser set it with the multipart boundary
+  const isFormData = options?.body instanceof FormData;
+  const headers: Record<string, string> = isFormData ? {} : { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const res = await fetch(`${API_BASE}${endpoint}`, {
@@ -80,7 +82,9 @@ async function request(endpoint: string, options?: RequestInit) {
     }
 
     if (newToken) {
-      const retryHeaders: Record<string, string> = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${newToken}` };
+      const retryHeaders: Record<string, string> = isFormData
+        ? { 'Authorization': `Bearer ${newToken}` }
+        : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${newToken}` };
       const retryRes = await fetch(`${API_BASE}${endpoint}`, { headers: retryHeaders, ...options });
       if (!retryRes.ok) {
         const errData = await retryRes.json().catch(() => ({}));
@@ -425,6 +429,7 @@ export const api = {
   adminDeleteMessage: (id: string) =>
     request(`/admin/messages/${id}`, { method: 'DELETE' }),
   adminGetStats: () => request('/admin/stats'),
+  getOnlineUsers: () => request('/admin/online-users'),
   adminGetModerationLogs: (page: number = 1) =>
     request(`/admin/moderation-logs?page=${page}`),
 
@@ -1331,7 +1336,10 @@ export const api = {
   reportClassNoshow: (id: string, data: any) => request(`/tutors/classes/${id}/report-noshow`, { method: 'POST', body: JSON.stringify(data) }),
   getMyTutorPayments: (params?: string) => request(`/tutors/my-payments${params ? `?${params}` : ''}`),
   getMyTutorPayslips: (params?: string) => request(`/tutors/my-payslips${params ? `?${params}` : ''}`),
-  uploadBoletaHonorarios: (paymentId: string, data: any) => request(`/tutors/my-payments/${paymentId}/upload-boleta`, { method: 'POST', body: JSON.stringify(data) }),
+  uploadBoletaHonorarios: (paymentId: string, formData: FormData) =>
+    request(`/tutors/my-payments/${paymentId}/upload-boleta`, { method: 'POST', body: formData }),
+  getMyBoletas: () => request('/tutors/my-boletas'),
+  downloadMyBoleta: (docId: string) => request(`/tutors/my-boletas/${docId}/download`),
   getAdminTutorPayments: (params?: string) => request(`/tutors/admin/payments${params ? `?${params}` : ''}`),
   processAdminTutorPayment: (id: string) => request(`/tutors/admin/payments/${id}/process`, { method: 'PUT' }),
   markAdminTutorPaymentPaid: (id: string, data: any) => request(`/tutors/admin/payments/${id}/paid`, { method: 'PUT', body: JSON.stringify(data) }),

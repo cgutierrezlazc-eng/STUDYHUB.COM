@@ -157,6 +157,7 @@ class User(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime, default=datetime.utcnow)
+    last_seen = Column(DateTime, nullable=True)   # updated on every authenticated request (throttled)
 
     # Relationships
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="Message.sender_id")
@@ -1419,6 +1420,11 @@ def _ensure_columns():
         ("tutor_class_enrollments", "tutor_rating_of_student", "INTEGER"),
         ("tutor_class_enrollments", "tutor_review_of_student", "TEXT"),
         ("tutor_class_enrollments", "tutor_rated_at", "TIMESTAMP"),
+        # tutor_documents — base64 content storage (Render ephemeral filesystem fix)
+        ("tutor_documents", "file_content", "TEXT"),
+        ("tutor_documents", "file_mime", "VARCHAR(100)"),
+        # users — last_seen for online presence
+        ("users", "last_seen", "TIMESTAMP"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:

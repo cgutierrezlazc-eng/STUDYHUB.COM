@@ -90,6 +90,16 @@ async def get_current_user(
     if user.is_banned:
         raise HTTPException(status_code=403, detail=f"Account banned: {user.ban_reason or 'Policy violation'}")
 
+    # Throttled last_seen update — only write if > 2 minutes since last update
+    now = datetime.utcnow()
+    last = getattr(user, "last_seen", None)
+    if last is None or (now - last).total_seconds() > 120:
+        try:
+            user.last_seen = now
+            db.commit()
+        except Exception:
+            db.rollback()
+
     return user
 
 

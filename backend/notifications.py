@@ -3,10 +3,12 @@ All emails consolidated through ceo@conniku.com (single account).
 Future: expand to separate noreply@, contacto@, ceo@ when more accounts are purchased.
 """
 import os
+import base64
 import smtplib
 import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from datetime import datetime, date
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -92,6 +94,73 @@ def _send_email_async(to_email: str, subject: str, html_body: str, reply_to: str
                 error_msg = str(e)
 
         # Log email in database
+        try:
+            from database import SessionLocal, EmailLog, gen_id
+            db = SessionLocal()
+            log = EmailLog(
+                id=gen_id(), from_email=send_from, to_email=to_email,
+                subject=subject, body_html=html_body, email_type=email_type,
+                status=status, error_message=error_msg, reply_to=reply_to or CONTACT_EMAIL,
+            )
+            db.add(log)
+            db.commit()
+            db.close()
+        except Exception as log_err:
+            print(f"[Email Log Error] {log_err}")
+
+    thread = threading.Thread(target=_send, daemon=True)
+    thread.start()
+
+
+def _send_email_with_attachment_async(
+    to_email: str,
+    subject: str,
+    html_body: str,
+    attachment_content: bytes,
+    attachment_name: str,
+    attachment_mime: str = "application/pdf",
+    reply_to: str = None,
+    email_type: str = "notification",
+    from_account: str = None,
+):
+    """Send email with binary attachment in background thread.
+    attachment_content: raw bytes of the file.
+    attachment_name: filename shown in the email (e.g. 'boleta_12345.pdf').
+    attachment_mime: MIME type of the attachment.
+    """
+    send_from, account_pass, sender_name = _get_account_config(from_account)
+
+    def _send():
+        status = "sent"
+        error_msg = None
+        if not account_pass:
+            print(f"[Email] SMTP password not configured for {send_from}. Would send to {to_email}: {subject}")
+            status = "failed"
+            error_msg = f"SMTP password not configured for {send_from}"
+        else:
+            try:
+                msg = MIMEMultipart("mixed")
+                msg["From"] = f"{sender_name} <{send_from}>"
+                msg["To"] = to_email
+                msg["Subject"] = subject
+                msg["Reply-To"] = reply_to or (CONTACT_EMAIL if from_account != "ceo" else CEO_EMAIL)
+                msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+                # Attach file
+                part = MIMEApplication(attachment_content, _subtype=attachment_mime.split("/")[-1])
+                part.add_header("Content-Disposition", "attachment", filename=attachment_name)
+                msg.attach(part)
+
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
+                    server.starttls()
+                    server.login(send_from, account_pass)
+                    server.sendmail(send_from, to_email, msg.as_string())
+                print(f"[Email] Sent with attachment from {send_from} to {to_email}: {subject}")
+            except Exception as e:
+                print(f"[Email Error] from={send_from} to={to_email}: {e}")
+                status = "failed"
+                error_msg = str(e)
+
         try:
             from database import SessionLocal, EmailLog, gen_id
             db = SessionLocal()
