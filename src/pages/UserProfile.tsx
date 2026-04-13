@@ -940,7 +940,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
             { id: 'cv',           label: 'CV Profesional',      color: '#6d28d9' },
             { id: 'projects',     label: 'Proyectos',           color: '#0369a1' },
             { id: 'publications', label: 'Publicaciones',       color: '#0891b2' },
-            { id: 'universidad',  label: 'Mi Universidad',      color: '#0d9488' },
             { id: 'appearance',   label: 'Apariencia',          color: '#b45309' },
             { id: 'notifications',label: 'Notificaciones',      color: '#374151' },
           ] as { id: string; label: string; color: string }[]).map(tab => (

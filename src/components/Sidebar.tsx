@@ -21,6 +21,7 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
   const { t } = useI18n()
   const [unreadMessages, setUnreadMessages] = useState(0)
   const [tutorStatus, setTutorStatus] = useState<string | null>(null)
+  const [uniExpanded, setUniExpanded] = useState(true)
   const [adminPanelOpen, setAdminPanelOpen] = useState(currentPath.startsWith('/admin-panel'))
   const [openAdminCat, setOpenAdminCat] = useState<string | null>(
     currentPath.startsWith('/admin-panel')
@@ -72,12 +73,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         {Icons.user(IC.profile)} {t('sidebar.myProfile')}
       </button>
       <button
-        className={`nav-item ${isActive('/mi-universidad') ? 'active' : ''}`}
-        onClick={() => onNavigate('/mi-universidad')}
-      >
-        {Icons.diploma(IC.courses)} Mi Universidad
-      </button>
-      <button
         className={`nav-item ${isActive('/feed') ? 'active' : ''}`}
         onClick={() => onNavigate('/feed')}
       >
@@ -108,21 +103,54 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       {/* ══ ACADÉMICO ══ */}
       <SepLabel label={t('sidebar.academic')} />
 
-      {/* ── Mis Asignaturas (sub-carpetas) ── */}
-      <SepLabel label={t('nav.mySubjects')} />
-      {projects.map(project => (
-        <button
-          key={project.id}
-          className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
-          onClick={() => onNavigate(`/project/${project.id}`)}
-        >
-          <span className="project-dot" style={{ background: project.color }} />
-          {project.name}
-        </button>
-      ))}
-      <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
-        {Icons.plus(IC.plus)} {t('nav.newSubject')}
+      {/* ── Mi Universidad (acordeón con asignaturas) ── */}
+      <button
+        className={`nav-item ${isActive('/mi-universidad') ? 'active' : ''}`}
+        onClick={() => setUniExpanded(prev => !prev)}
+        style={{ justifyContent: 'space-between' }}
+      >
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {Icons.diploma(IC.courses)} Mi Universidad
+          {projects.length > 0 && (
+            <span style={{ fontSize: 10, background: 'var(--accent, #1a56db)', color: '#fff', borderRadius: 10, padding: '1px 6px', fontWeight: 700 }}>
+              {projects.length}
+            </span>
+          )}
+        </span>
+        <ChevronIcon open={uniExpanded} />
       </button>
+
+      {uniExpanded && (
+        <div style={{ marginBottom: 2 }}>
+          {/* Enlace a configuración de Mi Universidad */}
+          <button
+            className={`nav-item nav-item-sub ${currentPath === '/mi-universidad' ? 'active' : ''}`}
+            onClick={() => onNavigate('/mi-universidad')}
+            style={{ fontSize: 11, color: 'var(--text-muted)', paddingTop: 4, paddingBottom: 4 }}
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            Conectar / Configurar
+          </button>
+
+          {/* Asignaturas como sub-carpetas */}
+          {projects.map(project => (
+            <button
+              key={project.id}
+              className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
+              onClick={() => onNavigate(`/project/${project.id}`)}
+            >
+              <span className="project-dot" style={{ background: project.color }} />
+              {project.name}
+            </button>
+          ))}
+          <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
+            {Icons.plus(IC.plus)} {t('nav.newSubject')}
+          </button>
+        </div>
+      )}
 
       {/* ── Resto del académico ── */}
       <button
