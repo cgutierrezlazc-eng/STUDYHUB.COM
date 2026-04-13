@@ -84,6 +84,7 @@ export default function Biblioteca({ onNavigate }: Props) {
 
   const [selected, setSelected] = useState<LibDoc | null>(null)
   const [reading, setReading] = useState<LibDoc | null>(null)
+  const [iframeLoaded, setIframeLoaded] = useState(false)
 
   // Carga datos comunidad
   const loadDocs = useCallback(async () => {
@@ -134,11 +135,16 @@ export default function Biblioteca({ onNavigate }: Props) {
 
   const openReader = (doc: LibDoc) => {
     setSelected(null)
+    setIframeLoaded(false)
     setReading(doc)
   }
 
   const getViewUrl = (doc: LibDoc): string => {
     if (doc.has_file) return `${API_BASE}/biblioteca/${doc.id}/file`
+    // Libros de Gutenberg: usar proxy propio para evitar X-Frame-Options
+    if (doc.source_type === 'gutenberg' && doc.embed_url) {
+      return `${API_BASE}/biblioteca/gutenberg-read?url=${encodeURIComponent(doc.embed_url)}`
+    }
     if (doc.embed_url) return doc.embed_url
     return ''
   }
@@ -510,13 +516,38 @@ export default function Biblioteca({ onNavigate }: Props) {
             </div>
           </div>
 
-          {/* Iframe */}
-          <iframe
-            src={getViewUrl(reading)}
-            style={{ flex: 1, border: 'none', width: '100%' }}
-            title={reading.title}
-            allowFullScreen
-          />
+          {/* Iframe con loading state */}
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            {!iframeLoaded && (
+              <div style={{
+                position: 'absolute', inset: 0, background: '#0D1526',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, zIndex: 1,
+              }}>
+                <div style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
+                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0 }}>
+                  Cargando libro desde Project Gutenberg…
+                </p>
+                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
+                  Esto puede tardar algunos segundos
+                </p>
+                <a
+                  href={`https://www.gutenberg.org/ebooks/${(reading as any).gutenberg_id || ''}`}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{ marginTop: 8, color: '#60a5fa', fontSize: 12, textDecoration: 'underline' }}
+                >
+                  ¿Tarda mucho? Abrir en Gutenberg →
+                </a>
+              </div>
+            )}
+            <iframe
+              key={getViewUrl(reading)}
+              src={getViewUrl(reading)}
+              style={{ width: '100%', height: '100%', border: 'none', display: iframeLoaded ? 'block' : 'block', background: '#0D1526' }}
+              title={reading.title}
+              allowFullScreen
+              onLoad={() => setIframeLoaded(true)}
+            />
+          </div>
         </div>
       )}
     </>

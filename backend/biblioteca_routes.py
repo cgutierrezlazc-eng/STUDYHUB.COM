@@ -265,6 +265,76 @@ async def public_domain_search(
     }
 
 
+# ─── GET /biblioteca/gutenberg-read ──────────────────────────
+# Proxy del HTML de Gutenberg para evitar X-Frame-Options blockeo
+@router.get("/gutenberg-read")
+async def gutenberg_proxy(
+    url: str = Query(..., description="URL del archivo HTML en Gutenberg"),
+    user: User = Depends(get_current_user),
+):
+    """
+    Descarga el HTML del libro desde Gutenberg y lo sirve desde nuestro dominio,
+    reescribiendo URLs relativas para que los recursos (CSS, imágenes) carguen correctamente.
+    """
+    # Validar que la URL sea de Gutenberg (seguridad básica)
+    allowed_origins = ("https://www.gutenberg.org", "http://www.gutenberg.org",
+                       "https://gutenberg.org", "http://gutenberg.org")
+    if not any(url.startswith(o) for o in allowed_origins):
+        raise HTTPException(400, "Solo se permiten URLs de Project Gutenberg")
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+            resp = await client.get(url, headers={
+                "User-Agent": "Conniku/1.0 (educational reader; +https://conniku.com)"
+            })
+            resp.raise_for_status()
+            content_type = resp.headers.get("content-type", "text/html")
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(e.response.status_code, f"Gutenberg respondió con error {e.response.status_code}")
+    except httpx.RequestError:
+        raise HTTPException(503, "No se pudo conectar con Project Gutenberg")
+
+    # Calcular base URL para reescribir recursos relativos
+    from urllib.parse import urljoin
+    import re as _re
+    base_url = url.rsplit("/", 1)[0] + "/"
+
+    html = resp.text
+
+    # Reescribir href/src relativos para que apunten a Gutenberg directamente
+    def make_abs(match: _re.Match) -> str:
+        attr, quote, val = match.group(1), match.group(2), match.group(3)
+        if val.startswith(("http://", "https://", "//", "#", "data:", "javascript:")):
+            return match.group(0)
+        abs_val = urljoin(base_url, val)
+        return f'{attr}={quote}{abs_val}{quote}'
+
+    html = _re.sub(r'(href|src)=(["\'])(?!http|//|#|data:|javascript:)([^"\']+)\2',
+                   make_abs, html, flags=_re.IGNORECASE)
+
+    # Inyectar estilos básicos de lectura si es HTML puro sin body styling
+    reading_styles = """
+<style>
+  body { max-width: 820px; margin: 0 auto; padding: 24px 20px 60px;
+         font-family: Georgia, 'Times New Roman', serif; font-size: 17px;
+         line-height: 1.75; color: #e8eeff; background: #0d1526; }
+  a { color: #60a5fa; }
+  h1,h2,h3,h4 { color: #fff; }
+  img { max-width: 100%; height: auto; }
+  pre, code { font-size: 14px; white-space: pre-wrap; }
+</style>
+"""
+    if "</head>" in html:
+        html = html.replace("</head>", reading_styles + "</head>", 1)
+    elif "<body" in html:
+        html = html.replace("<body", reading_styles + "<body", 1)
+    else:
+        html = reading_styles + html
+
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(content=html, media_type="text/html; charset=utf-8")
+
+
 # ─── GET /biblioteca/{doc_id}/file ────────────────────────────
 
 @router.get("/{doc_id}/file")
