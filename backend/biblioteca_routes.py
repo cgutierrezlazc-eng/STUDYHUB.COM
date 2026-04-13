@@ -4,6 +4,7 @@ Biblioteca Conniku — Rutas de la biblioteca académica.
 Fuentes de documentos:
 - user_shared: PDFs/docs que los usuarios comparten desde sus asignaturas (copia independiente)
 - open_library: libros embebidos vía archive.org (visualización dentro de Conniku)
+- gutenberg: libros de dominio público vía Project Gutenberg (gutendex.com API)
 
 Principio: todo se visualiza DENTRO de Conniku. Si un libro no permite embed, no se incluye.
 """
@@ -13,6 +14,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -310,3 +312,102 @@ def rate_document(
 
     db.commit()
     return {"success": True}
+
+
+# ─── GET /biblioteca/public-search ────────────────────────────
+
+def _gutenberg_book_to_dict(b: dict) -> dict:
+    """Convierte un resultado de gutendex.com al formato LibDoc."""
+    formats = b.get("formats", {})
+    # Prefiere HTML para lectura inline; fallback a texto plano
+    read_url = (
+        formats.get("text/html")
+        or formats.get("text/html; charset=utf-8")
+        or formats.get("text/html; charset=us-ascii")
+        or formats.get("text/plain; charset=utf-8")
+        or ""
+    )
+    cover_url = formats.get("image/jpeg") or ""
+    authors = ", ".join(a.get("name", "") for a in b.get("authors", []))
+    # Inferir categoría desde subjects
+    subjects = b.get("subjects", [])
+    category = ""
+    sub_lower = " ".join(subjects).lower()
+    if any(k in sub_lower for k in ["math", "algebra", "calcul", "geometr"]):
+        category = "matematicas"
+    elif any(k in sub_lower for k in ["science", "physics", "chemistry", "biology"]):
+        category = "ciencias"
+    elif any(k in sub_lower for k in ["fiction", "novel", "poetry", "drama"]):
+        category = "humanidades"
+    elif any(k in sub_lower for k in ["law", "jurisprud"]):
+        category = "derecho"
+    elif any(k in sub_lower for k in ["medicine", "medical", "health"]):
+        category = "medicina"
+    elif any(k in sub_lower for k in ["philosophy", "ethics"]):
+        category = "humanidades"
+    elif any(k in sub_lower for k in ["history"]):
+        category = "humanidades"
+
+    return {
+        "id": f"gutenberg-{b['id']}",
+        "title": b.get("title", "Sin título"),
+        "author": authors or "Autor desconocido",
+        "description": "; ".join(subjects[:3]) if subjects else "",
+        "category": category,
+        "source_type": "gutenberg",
+        "has_file": False,
+        "embed_url": read_url,
+        "cover_url": cover_url,
+        "language": ", ".join(b.get("languages", [])),
+        "is_saved": False,
+        "views": b.get("download_count", 0),
+        "rating": 0,
+        "rating_count": 0,
+        "tags": subjects[:5],
+        "year": None,
+        "pages": None,
+        "gutenberg_id": b["id"],
+    }
+
+
+@router.get("/public-search")
+async def public_domain_search(
+    q: str = Query(default=""),
+    lang: str = Query(default=""),
+    page: int = Query(default=1, ge=1),
+    user: User = Depends(get_current_user),
+):
+    """
+    Busca libros de dominio público en Project Gutenberg vía gutendex.com.
+    No almacena datos, es una búsqueda en tiempo real.
+    """
+    params: dict = {"page": page}
+    if q.strip():
+        params["search"] = q.strip()
+    if lang:
+        params["languages"] = lang
+    # Ordenar por popularidad (descargas) cuando no hay query
+    if not q.strip():
+        params["sort"] = "popular"
+
+    try:
+        async with httpx.AsyncClient(timeout=12.0) as client:
+            resp = await client.get("https://gutendex.com/books/", params=params)
+            resp.raise_for_status()
+            data = resp.json()
+    except httpx.HTTPError:
+        raise HTTPException(503, "No se pudo conectar con Project Gutenberg. Intenta de nuevo.")
+
+    books = data.get("results", [])
+    # Filtrar libros sin URL de lectura (no sirven para visualización)
+    books = [b for b in books if any(
+        k.startswith("text/html") or k.startswith("text/plain")
+        for k in b.get("formats", {})
+    )]
+
+    return {
+        "items": [_gutenberg_book_to_dict(b) for b in books],
+        "total": data.get("count", 0),
+        "page": page,
+        "next": data.get("next"),
+    }

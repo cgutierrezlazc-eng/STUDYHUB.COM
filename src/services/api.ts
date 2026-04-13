@@ -1521,6 +1521,13 @@ export const api = {
     request(`/biblioteca/${docId}/save`, { method: 'POST' }),
   rateBibliotecaDoc: (docId: string, rating: number) =>
     request(`/biblioteca/${docId}/rate`, { method: 'POST', body: JSON.stringify({ rating }) }),
+  getPublicDomainBooks: (params?: { q?: string; lang?: string; page?: number }) => {
+    const p = new URLSearchParams()
+    if (params?.q) p.set('q', params.q)
+    if (params?.lang) p.set('lang', params.lang)
+    if (params?.page) p.set('page', String(params.page))
+    return request(`/biblioteca/public-search?${p.toString()}`)
+  },
 };
 
 // ─── Push Notifications ─────────────────────────────────────────
