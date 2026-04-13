@@ -485,6 +485,53 @@ class SharedDocument(Base):
     author = relationship("User", foreign_keys=[user_id])
 
 
+# ─── Biblioteca Conniku ────────────────────────────────────────
+
+class LibraryDocument(Base):
+    __tablename__ = "library_documents"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    title = Column(String(500), nullable=False)
+    author = Column(String(255), default="")
+    description = Column(Text, default="")
+    category = Column(String(50), default="")
+    cover_url = Column(Text, default="")
+    language = Column(String(50), default="Español")
+    year = Column(Integer, nullable=True)
+    pages = Column(Integer, nullable=True)
+    # user_shared | open_library | gutenberg
+    source_type = Column(String(20), default="user_shared")
+    file_path = Column(Text, nullable=True)    # docs subidos por usuarios
+    embed_url = Column(Text, nullable=True)    # URL embebida para libros online
+    tags = Column(Text, default="[]")          # JSON array
+    views = Column(Integer, default=0)
+    rating_sum = Column(Float, default=0.0)
+    rating_count = Column(Integer, default=0)
+    shared_by_user_id = Column(String(16), ForeignKey("users.id"), nullable=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    shared_by = relationship("User", foreign_keys=[shared_by_user_id])
+
+
+class LibraryDocumentSave(Base):
+    __tablename__ = "library_document_saves"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    document_id = Column(String(16), ForeignKey("library_documents.id"), nullable=False)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("document_id", "user_id"),)
+
+
+class LibraryDocumentRating(Base):
+    __tablename__ = "library_document_ratings"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    document_id = Column(String(16), ForeignKey("library_documents.id"), nullable=False)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    rating = Column(Integer, nullable=False)   # 1-5
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("document_id", "user_id"),)
+
+
 class DocumentRating(Base):
     __tablename__ = "document_ratings"
     id = Column(String(16), primary_key=True, default=gen_id)

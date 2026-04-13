@@ -115,6 +115,12 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [uploadingFileName, setUploadingFileName] = useState('')
 
+  // ─── Biblioteca sharing prompt ─────────────────────────────
+  const [sharePrompt, setSharePrompt] = useState<{ docId: string; docName: string } | null>(null)
+  const [shareForm, setShareForm] = useState<{ title: string; description: string; category: string } | null>(null)
+  const [shareLoading, setShareLoading] = useState(false)
+  const [shareSuccess, setShareSuccess] = useState(false)
+
   // ─── Math Panel ────────────────────────────────────────────────────────────
   type MathPanelMode = 'hidden' | 'solve' | 'verify' | 'graph'
   const [mathPanelMode, setMathPanelMode] = useState<MathPanelMode>('hidden')
@@ -217,6 +223,11 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
         if (doc) {
           doc.processed = true
           doc.id = result.id || doc.id
+        }
+        // Preguntar si quiere compartir con la Biblioteca (solo PDFs y docs)
+        const ext = file.name.split('.').pop()?.toLowerCase() || ''
+        if (['pdf', 'docx', 'doc', 'txt'].includes(ext) && doc) {
+          setSharePrompt({ docId: doc.id, docName: file.name })
         }
       } catch (err: any) {
         if (doc) {
@@ -568,6 +579,41 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
     setMessages(prev => [...prev, msg])
     setMathPanelMode('hidden')
     setTab('chat')
+  }
+
+  // ─── Share to Biblioteca ─────────────────────────────────────
+  const BIBLIOTECA_CATEGORIES = [
+    { value: 'matematicas', label: 'Matemáticas' },
+    { value: 'ciencias', label: 'Ciencias' },
+    { value: 'programacion', label: 'Programación' },
+    { value: 'ingenieria', label: 'Ingeniería' },
+    { value: 'medicina', label: 'Medicina' },
+    { value: 'derecho', label: 'Derecho' },
+    { value: 'negocios', label: 'Negocios' },
+    { value: 'humanidades', label: 'Humanidades' },
+    { value: 'idiomas', label: 'Idiomas' },
+    { value: 'arte', label: 'Arte y Diseño' },
+    { value: 'psicologia', label: 'Psicología' },
+  ]
+
+  const handleShareToBiblioteca = async () => {
+    if (!shareForm || !sharePrompt || !project) return
+    if (!shareForm.title.trim() || !shareForm.category) return
+    setShareLoading(true)
+    try {
+      await api.shareToBiblioteca({
+        project_id: project.id,
+        doc_id: sharePrompt.docId,
+        title: shareForm.title.trim(),
+        description: shareForm.description,
+        category: shareForm.category,
+      })
+      setShareSuccess(true)
+      setTimeout(() => { setSharePrompt(null); setShareForm(null); setShareSuccess(false) }, 2500)
+    } catch {
+      setShareLoading(false)
+    }
+    setShareLoading(false)
   }
 
   return (
@@ -2590,6 +2636,108 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 }).catch(() => alert('Error al renombrar'))
               }}>Guardar</button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ── Prompt: Compartir con Biblioteca ── */}
+      {sharePrompt && !shareForm && !shareSuccess && (
+        <div className="modal-overlay" onClick={() => setSharePrompt(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📚</div>
+            <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>¿Compartir con la Biblioteca Conniku?</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 20px' }}>
+              <strong>{sharePrompt.docName}</strong> puede ayudar a otros estudiantes.<br />
+              Si lo compartes, quedará en la biblioteca aunque lo elimines de esta asignatura.
+            </p>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+                onClick={() => setShareForm({ title: sharePrompt.docName.replace(/\.[^.]+$/, ''), description: '', category: '' })}
+              >
+                Sí, compartir
+              </button>
+              <button className="btn btn-secondary" onClick={() => setSharePrompt(null)}>No, gracias</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Formulario de Compartir ── */}
+      {sharePrompt && shareForm && !shareSuccess && (
+        <div className="modal-overlay" onClick={() => { setSharePrompt(null); setShareForm(null) }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: 16 }}>📚 Compartir con la Biblioteca</h3>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+                  Título *
+                </label>
+                <input
+                  value={shareForm.title}
+                  onChange={e => setShareForm(f => f ? { ...f, title: e.target.value } : f)}
+                  placeholder="Nombre del documento"
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+                  Categoría *
+                </label>
+                <select
+                  value={shareForm.category}
+                  onChange={e => setShareForm(f => f ? { ...f, category: e.target.value } : f)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }}
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {BIBLIOTECA_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>
+                  Descripción (opcional)
+                </label>
+                <textarea
+                  value={shareForm.description}
+                  onChange={e => setShareForm(f => f ? { ...f, description: e.target.value } : f)}
+                  placeholder="¿De qué trata este documento? ¿Para qué curso sirve?"
+                  rows={3}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13, resize: 'vertical', boxSizing: 'border-box' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1 }}
+                disabled={!shareForm.title.trim() || !shareForm.category || shareLoading}
+                onClick={handleShareToBiblioteca}
+              >
+                {shareLoading ? 'Compartiendo...' : '✓ Publicar en Biblioteca'}
+              </button>
+              <button className="btn btn-secondary" onClick={() => { setSharePrompt(null); setShareForm(null) }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirmación exitosa ── */}
+      {shareSuccess && (
+        <div className="modal-overlay">
+          <div className="modal" style={{ maxWidth: 360, textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
+            <h3 style={{ margin: '0 0 8px' }}>¡Documento compartido!</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              Ya está disponible en la Biblioteca Conniku para todos los estudiantes.
+            </p>
           </div>
         </div>
       )}

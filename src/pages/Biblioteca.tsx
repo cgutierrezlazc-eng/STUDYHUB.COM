@@ -1,380 +1,482 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { BookOpen, Search, Star, Download, Clock, CheckCircle, Globe, Lock } from '../components/Icons'
+import { BookOpen, Search, Star, X, ChevronRight } from '../components/Icons'
 
 interface Props {
   onNavigate: (path: string) => void
 }
 
-interface Book {
+interface LibDoc {
   id: string
   title: string
   author: string
   category: string
   description: string
-  coverUrl?: string
+  cover_url?: string
   pages?: number
   year?: number
   language?: string
   rating?: number
-  downloadUrl?: string
-  isFree: boolean
-  addedAt?: string
+  rating_count?: number
+  source_type: 'user_shared' | 'open_library' | 'gutenberg'
+  has_file: boolean
+  embed_url?: string
+  tags?: string[]
+  views?: number
+  is_saved: boolean
+  shared_by?: string
 }
 
 const CATEGORIES = [
   { value: '', label: 'Todas', icon: '📚' },
-  { value: 'matematicas', label: 'Matematicas', icon: '📐' },
+  { value: 'matematicas', label: 'Matemáticas', icon: '📐' },
   { value: 'ciencias', label: 'Ciencias', icon: '🔬' },
-  { value: 'programacion', label: 'Programacion', icon: '💻' },
-  { value: 'ingenieria', label: 'Ingenieria', icon: '⚙️' },
+  { value: 'programacion', label: 'Programación', icon: '💻' },
+  { value: 'ingenieria', label: 'Ingeniería', icon: '⚙️' },
   { value: 'medicina', label: 'Medicina', icon: '🏥' },
   { value: 'derecho', label: 'Derecho', icon: '⚖️' },
   { value: 'negocios', label: 'Negocios', icon: '📊' },
   { value: 'humanidades', label: 'Humanidades', icon: '📜' },
   { value: 'idiomas', label: 'Idiomas', icon: '🌍' },
-  { value: 'arte', label: 'Arte y Diseno', icon: '🎨' },
-  { value: 'psicologia', label: 'Psicologia', icon: '🧠' },
+  { value: 'arte', label: 'Arte y Diseño', icon: '🎨' },
+  { value: 'psicologia', label: 'Psicología', icon: '🧠' },
 ]
 
-// Placeholder books until backend API is ready
-const SAMPLE_BOOKS: Book[] = [
-  { id: '1', title: 'Calculo de una variable', author: 'James Stewart', category: 'matematicas', description: 'Texto clasico de calculo diferencial e integral para estudiantes universitarios.', pages: 1200, year: 2021, language: 'Espanol', rating: 4.8, isFree: false },
-  { id: '2', title: 'Fundamentos de Programacion con Python', author: 'Allen Downey', category: 'programacion', description: 'Introduccion a la programacion usando Python. Ideal para principiantes.', pages: 320, year: 2023, language: 'Espanol', rating: 4.5, isFree: true },
-  { id: '3', title: 'Fisica Universitaria Vol. 1', author: 'Sears & Zemansky', category: 'ciencias', description: 'Mecanica, ondas y termodinamica para cursos introductorios de fisica.', pages: 900, year: 2020, language: 'Espanol', rating: 4.7, isFree: false },
-  { id: '4', title: 'Anatomia Humana', author: 'Netter', category: 'medicina', description: 'Atlas de anatomia humana con ilustraciones detalladas.', pages: 640, year: 2022, language: 'Espanol', rating: 4.9, isFree: false },
-  { id: '5', title: 'Introduccion al Derecho', author: 'Garcia Maynez', category: 'derecho', description: 'Conceptos fundamentales del derecho para estudiantes de primer ano.', pages: 450, year: 2019, language: 'Espanol', rating: 4.3, isFree: true },
-  { id: '6', title: 'Administracion Estrategica', author: 'Fred David', category: 'negocios', description: 'Conceptos y casos de administracion estrategica empresarial.', pages: 680, year: 2021, language: 'Espanol', rating: 4.4, isFree: false },
-  { id: '7', title: 'Algebra Lineal', author: 'Grossman', category: 'matematicas', description: 'Curso completo de algebra lineal con aplicaciones.', pages: 750, year: 2020, language: 'Espanol', rating: 4.6, isFree: true },
-  { id: '8', title: 'Psicologia General', author: 'Charles Morris', category: 'psicologia', description: 'Introduccion a los principales temas de la psicologia moderna.', pages: 580, year: 2022, language: 'Espanol', rating: 4.5, isFree: false },
-  { id: '9', title: 'Estructuras de Datos en Java', author: 'Mark Allen Weiss', category: 'programacion', description: 'Implementacion de estructuras de datos y algoritmos en Java.', pages: 520, year: 2023, language: 'Espanol', rating: 4.7, isFree: true },
-  { id: '10', title: 'Resistencia de Materiales', author: 'Ferdinand Beer', category: 'ingenieria', description: 'Mecanica de materiales para ingenieria civil y mecanica.', pages: 800, year: 2021, language: 'Espanol', rating: 4.6, isFree: false },
-  { id: '11', title: 'Historia del Arte', author: 'H.W. Janson', category: 'arte', description: 'Panorama completo de la historia del arte occidental.', pages: 960, year: 2020, language: 'Espanol', rating: 4.4, isFree: false },
-  { id: '12', title: 'English Grammar in Use', author: 'Raymond Murphy', category: 'idiomas', description: 'Gramatica inglesa de nivel intermedio con ejercicios practicos.', pages: 380, year: 2022, language: 'Ingles', rating: 4.8, isFree: true },
-]
+function getCategoryColor(cat: string): string {
+  const map: Record<string, string> = {
+    matematicas: '#2D62C8', ciencias: '#0891B2', programacion: '#7C3AED',
+    ingenieria: '#D97706', medicina: '#DC2626', derecho: '#4338CA',
+    negocios: '#059669', humanidades: '#92400E', idiomas: '#0284C7',
+    arte: '#DB2777', psicologia: '#7C3AED',
+  }
+  return map[cat] || '#64748B'
+}
+
+function stars(r: number) {
+  const full = Math.floor(r)
+  return '★'.repeat(full) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r))
+}
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com'
 
 export default function Biblioteca({ onNavigate }: Props) {
   const { user } = useAuth()
-  const [books, setBooks] = useState<Book[]>(SAMPLE_BOOKS)
+
+  const [docs, setDocs] = useState<LibDoc[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const [category, setCategory] = useState('')
   const [view, setView] = useState<'grid' | 'list'>('grid')
-  const [selectedBook, setSelectedBook] = useState<Book | null>(null)
-  const [savedBooks, setSavedBooks] = useState<Set<string>>(() => {
+  const [page, setPage] = useState(1)
+
+  const [selected, setSelected] = useState<LibDoc | null>(null)
+  const [reading, setReading] = useState<LibDoc | null>(null)
+
+  // Carga datos
+  const loadDocs = useCallback(async () => {
+    setLoading(true)
     try {
-      const saved = localStorage.getItem('conniku_saved_books')
-      return saved ? new Set(JSON.parse(saved)) : new Set()
-    } catch { return new Set() }
-  })
-
-  const toggleSave = (bookId: string) => {
-    setSavedBooks(prev => {
-      const next = new Set(prev)
-      if (next.has(bookId)) next.delete(bookId); else next.add(bookId)
-      localStorage.setItem('conniku_saved_books', JSON.stringify([...next]))
-      return next
-    })
-  }
-
-  const filtered = books.filter(b => {
-    if (category && b.category !== category) return false
-    if (search) {
-      const q = search.toLowerCase()
-      return b.title.toLowerCase().includes(q) || b.author.toLowerCase().includes(q) || b.description.toLowerCase().includes(q)
+      const res = await api.getBiblioteca({ q: search, category, page })
+      setDocs(res.items || [])
+      setTotal(res.total || 0)
+    } catch {
+      setDocs([])
     }
-    return true
-  })
+    setLoading(false)
+  }, [search, category, page])
 
-  const stars = (rating: number) => {
-    const full = Math.floor(rating)
-    return '★'.repeat(full) + (rating % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(rating))
+  useEffect(() => { loadDocs() }, [loadDocs])
+
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1) }, 350)
+    return () => clearTimeout(t)
+  }, [searchInput])
+
+  const handleCategoryChange = (val: string) => { setCategory(val); setPage(1) }
+
+  const toggleSave = async (doc: LibDoc, e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    try {
+      const res = await api.toggleBibliotecaSave(doc.id)
+      setDocs(prev => prev.map(d => d.id === doc.id ? { ...d, is_saved: res.saved } : d))
+      if (selected?.id === doc.id) setSelected(s => s ? { ...s, is_saved: res.saved } : s)
+    } catch { /* offline */ }
   }
+
+  const openReader = (doc: LibDoc) => {
+    setSelected(null)
+    setReading(doc)
+  }
+
+  const getViewUrl = (doc: LibDoc): string => {
+    if (doc.has_file) return `${API_BASE}/biblioteca/${doc.id}/file`
+    if (doc.embed_url) return doc.embed_url
+    return ''
+  }
+
+  const pages_total = Math.ceil(total / 24)
 
   return (
     <>
+      {/* ── Header ── */}
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>{BookOpen({ size: 22 })} Biblioteca</h2>
-            <p>Recursos academicos y libros de texto para tu carrera</p>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {BookOpen({ size: 22 })} Biblioteca
+            </h2>
+            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
+              {total > 0 ? `${total} recurso${total !== 1 ? 's' : ''} disponibles` : 'Recursos académicos compartidos por la comunidad'}
+            </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               className={`btn btn-sm ${view === 'grid' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setView('grid')}
-              title="Vista cuadricula"
+              onClick={() => setView('grid')} title="Cuadrícula"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+              </svg>
             </button>
             <button
               className={`btn btn-sm ${view === 'list' ? 'btn-primary' : 'btn-secondary'}`}
-              onClick={() => setView('list')}
-              title="Vista lista"
+              onClick={() => setView('list')} title="Lista"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+                <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+              </svg>
             </button>
           </div>
         </div>
 
-        {/* Search + Filter */}
-        <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-          <div style={{ flex: 1, position: 'relative' }}>
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Buscar por titulo, autor o tema..."
-              style={{
-                width: '100%', padding: '10px 14px 10px 36px', borderRadius: 8,
-                border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
-                color: 'var(--text-primary)', fontSize: 14,
-              }}
-            />
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>
-              {Search({ size: 16 })}
-            </span>
-          </div>
+        {/* Search */}
+        <div style={{ position: 'relative', marginTop: 16 }}>
+          <input
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            placeholder="Buscar por título, autor o tema..."
+            style={{
+              width: '100%', padding: '10px 14px 10px 38px', borderRadius: 8,
+              border: '1px solid var(--border-color)', background: 'var(--bg-secondary)',
+              color: 'var(--text-primary)', fontSize: 14, boxSizing: 'border-box',
+            }}
+          />
+          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.45 }}>
+            {Search({ size: 16 })}
+          </span>
         </div>
 
-        {/* Category Pills */}
+        {/* Categorías */}
         <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
           {CATEGORIES.map(c => (
             <button
               key={c.value}
-              onClick={() => setCategory(c.value)}
+              onClick={() => handleCategoryChange(c.value)}
               style={{
-                padding: '6px 14px', borderRadius: 20, border: '1px solid',
+                padding: '5px 13px', borderRadius: 20, border: '1px solid',
                 borderColor: category === c.value ? 'var(--accent)' : 'var(--border-color)',
-                background: category === c.value ? 'rgba(37,99,235,0.08)' : 'transparent',
+                background: category === c.value ? 'rgba(37,99,235,0.09)' : 'transparent',
                 color: category === c.value ? 'var(--accent)' : 'var(--text-secondary)',
-                fontSize: 13, fontWeight: 500, cursor: 'pointer', transition: 'all 0.15s',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer',
                 display: 'flex', alignItems: 'center', gap: 4,
               }}
             >
-              <span style={{ fontSize: 14 }}>{c.icon}</span> {c.label}
+              <span>{c.icon}</span> {c.label}
             </button>
           ))}
         </div>
       </div>
 
+      {/* ── Body ── */}
       <div className="page-body">
-        {/* Results count */}
-        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
-          {filtered.length} {filtered.length === 1 ? 'recurso encontrado' : 'recursos encontrados'}
-          {category && ` en ${CATEGORIES.find(c => c.value === category)?.label}`}
-        </div>
-
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
+            Cargando biblioteca...
+          </div>
+        ) : docs.length === 0 ? (
           <div className="empty-state" style={{ padding: 60 }}>
             <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
             <h3>No se encontraron recursos</h3>
-            <p>Intenta con otros terminos de busqueda o categoria</p>
+            <p>
+              {search || category
+                ? 'Intenta con otros términos o categoría'
+                : 'Sé el primero en compartir un documento desde tus asignaturas'}
+            </p>
             {(search || category) && (
-              <button className="btn btn-secondary" style={{ marginTop: 12 }} onClick={() => { setSearch(''); setCategory('') }}>
+              <button className="btn btn-secondary" style={{ marginTop: 12 }}
+                onClick={() => { setSearchInput(''); setSearch(''); setCategory('') }}>
                 Limpiar filtros
               </button>
             )}
           </div>
         ) : view === 'grid' ? (
-          /* Grid View */
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-            {filtered.map(book => (
-              <div
-                key={book.id}
-                className="u-card"
-                style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
-                onClick={() => setSelectedBook(book)}
-                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
-                onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
-              >
-                {/* Book cover placeholder */}
-                <div style={{
-                  height: 140, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: `linear-gradient(135deg, ${getCategoryColor(book.category)}15, ${getCategoryColor(book.category)}30)`,
-                  borderBottom: '1px solid var(--border-color)',
-                }}>
-                  {book.coverUrl ? (
-                    <img src={book.coverUrl} alt="" style={{ height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ textAlign: 'center' }}>
-                      <span style={{ fontSize: 36 }}>{CATEGORIES.find(c => c.value === book.category)?.icon || '📖'}</span>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{book.pages} paginas</div>
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ padding: 16 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
-                    <h4 style={{ margin: 0, fontSize: 14, fontWeight: 600, lineHeight: 1.3, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                      {book.title}
-                    </h4>
-                    <button
-                      onClick={e => { e.stopPropagation(); toggleSave(book.id) }}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, flexShrink: 0 }}
-                      title={savedBooks.has(book.id) ? 'Quitar de guardados' : 'Guardar'}
-                    >
-                      <Star size={16} fill={savedBooks.has(book.id) ? '#F59E0B' : 'none'} color={savedBooks.has(book.id) ? '#F59E0B' : 'var(--text-muted)'} />
-                    </button>
-                  </div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{book.author}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
-                    {book.rating && (
-                      <span style={{ fontSize: 12, color: '#F59E0B', letterSpacing: -1 }}>
-                        {stars(book.rating)}
-                      </span>
-                    )}
-                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{book.rating}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 8 }}>
-                    <span style={{
-                      fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 10,
-                      background: book.isFree ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                      color: book.isFree ? '#10B981' : '#EF4444',
-                    }}>
-                      {book.isFree ? 'Gratis' : 'Pro'}
-                    </span>
-                    {book.year && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{book.year}</span>}
-                    {book.language && <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{book.language}</span>}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+            {docs.map(doc => <BookCard key={doc.id} doc={doc} onOpen={() => setSelected(doc)} onSave={e => toggleSave(doc, e)} />)}
           </div>
         ) : (
-          /* List View */
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {filtered.map(book => (
-              <div
-                key={book.id}
-                className="u-card"
-                style={{ padding: 16, cursor: 'pointer', display: 'flex', gap: 16, alignItems: 'center' }}
-                onClick={() => setSelectedBook(book)}
-              >
-                <div style={{
-                  width: 48, height: 48, borderRadius: 8, flexShrink: 0,
-                  background: `${getCategoryColor(book.category)}15`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
-                }}>
-                  {CATEGORIES.find(c => c.value === book.category)?.icon || '📖'}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14 }}>{book.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{book.author} · {book.year} · {book.pages} pag.</div>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-                  {book.rating && <span style={{ fontSize: 12, color: '#F59E0B' }}>★ {book.rating}</span>}
-                  <span style={{
-                    fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 10,
-                    background: book.isFree ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                    color: book.isFree ? '#10B981' : '#EF4444',
-                  }}>
-                    {book.isFree ? 'Gratis' : 'Pro'}
-                  </span>
-                  <button
-                    onClick={e => { e.stopPropagation(); toggleSave(book.id) }}
-                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-                  >
-                    <Star size={16} fill={savedBooks.has(book.id) ? '#F59E0B' : 'none'} color={savedBooks.has(book.id) ? '#F59E0B' : 'var(--text-muted)'} />
-                  </button>
-                </div>
-              </div>
-            ))}
+            {docs.map(doc => <BookRow key={doc.id} doc={doc} onOpen={() => setSelected(doc)} onSave={e => toggleSave(doc, e)} />)}
+          </div>
+        )}
+
+        {/* Paginación */}
+        {pages_total > 1 && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+            <button className="btn btn-secondary btn-sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Anterior</button>
+            <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+              Pág. {page} / {pages_total}
+            </span>
+            <button className="btn btn-secondary btn-sm" disabled={page >= pages_total} onClick={() => setPage(p => p + 1)}>Siguiente →</button>
           </div>
         )}
       </div>
 
-      {/* Book Detail Modal */}
-      {selectedBook && (
-        <div className="modal-overlay" onClick={() => setSelectedBook(null)}>
+      {/* ── Modal Detalle ── */}
+      {selected && (
+        <div className="modal-overlay" onClick={() => setSelected(null)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 560 }}>
+            <button
+              onClick={() => setSelected(null)}
+              style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}
+            >×</button>
+
             <div style={{ display: 'flex', gap: 20 }}>
-              {/* Cover */}
+              {/* Portada */}
               <div style={{
-                width: 120, height: 160, borderRadius: 8, flexShrink: 0,
-                background: `linear-gradient(135deg, ${getCategoryColor(selectedBook.category)}20, ${getCategoryColor(selectedBook.category)}40)`,
+                width: 110, height: 150, borderRadius: 8, flexShrink: 0,
+                background: `linear-gradient(135deg, ${getCategoryColor(selected.category)}25, ${getCategoryColor(selected.category)}45)`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                border: '1px solid var(--border-color)',
+                border: '1px solid var(--border-color)', fontSize: 44,
               }}>
-                <span style={{ fontSize: 48 }}>{CATEGORIES.find(c => c.value === selectedBook.category)?.icon || '📖'}</span>
+                {selected.cover_url
+                  ? <img src={selected.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                  : CATEGORIES.find(c => c.value === selected.category)?.icon || '📖'}
               </div>
 
-              {/* Info */}
               <div style={{ flex: 1 }}>
-                <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700 }}>{selectedBook.title}</h3>
-                <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 8 }}>{selectedBook.author}</div>
-
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-                  <span style={{
-                    fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 10,
-                    background: selectedBook.isFree ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
-                    color: selectedBook.isFree ? '#10B981' : '#EF4444',
-                  }}>
-                    {selectedBook.isFree ? 'Acceso gratuito' : 'Requiere Pro'}
-                  </span>
-                  <span style={{ fontSize: 12, padding: '3px 10px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-secondary)' }}>
-                    {CATEGORIES.find(c => c.value === selectedBook.category)?.label}
-                  </span>
+                <h3 style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 700, paddingRight: 24 }}>{selected.title}</h3>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>
+                  {selected.author}
+                  {selected.year && ` · ${selected.year}`}
                 </div>
 
-                {selectedBook.rating && (
+                {/* Badges */}
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 10,
+                    background: selected.source_type === 'user_shared' ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.12)',
+                    color: selected.source_type === 'user_shared' ? '#10B981' : '#2563EB',
+                  }}>
+                    {selected.source_type === 'user_shared' ? 'Comunidad' : 'Biblioteca Online'}
+                  </span>
+                  <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                    {CATEGORIES.find(c => c.value === selected.category)?.label || selected.category}
+                  </span>
+                  {selected.language && (
+                    <span style={{ fontSize: 11, padding: '2px 9px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                      {selected.language}
+                    </span>
+                  )}
+                </div>
+
+                {selected.rating !== undefined && selected.rating > 0 && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
-                    <span style={{ color: '#F59E0B', fontSize: 14 }}>{stars(selectedBook.rating)}</span>
-                    <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBook.rating}</span>
+                    <span style={{ color: '#F59E0B', fontSize: 13 }}>{stars(selected.rating)}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600 }}>{selected.rating}</span>
+                    {selected.rating_count !== undefined && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>({selected.rating_count} reseñas)</span>
+                    )}
                   </div>
                 )}
 
-                <div style={{ fontSize: 13, color: 'var(--text-muted)', display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                  {selectedBook.pages && <span>{selectedBook.pages} paginas</span>}
-                  {selectedBook.year && <span>{selectedBook.year}</span>}
-                  {selectedBook.language && <span>{selectedBook.language}</span>}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  {selected.pages && <span>{selected.pages} págs.</span>}
+                  {selected.views !== undefined && <span>{selected.views} vistas</span>}
+                  {selected.shared_by && <span>Por {selected.shared_by}</span>}
                 </div>
               </div>
             </div>
 
-            <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 16 }}>
-              {selectedBook.description}
-            </p>
+            {selected.description && (
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginTop: 16 }}>
+                {selected.description}
+              </p>
+            )}
+
+            {selected.tags && selected.tags.length > 0 && (
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+                {selected.tags.map(t => (
+                  <span key={t} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 10, background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
+                    #{t}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
+              {(selected.has_file || selected.embed_url) && (
+                <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => openReader(selected)}>
+                  {BookOpen({ size: 14 })} Leer dentro de Conniku
+                </button>
+              )}
               <button
-                className="btn btn-primary"
-                style={{ flex: 1 }}
-                onClick={() => {
-                  if (!selectedBook.isFree && user?.subscriptionStatus !== 'active' && user?.subscriptionStatus !== 'owner') {
-                    onNavigate('/subscription')
-                  } else {
-                    alert('Recurso disponible proximamente. Estamos trabajando en la integracion.')
-                  }
-                }}
+                className={`btn ${selected.is_saved ? 'btn-primary' : 'btn-secondary'}`}
+                onClick={() => toggleSave(selected)}
               >
-                {selectedBook.isFree || user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'owner'
-                  ? <>{BookOpen({ size: 14 })} Leer</>
-                  : <>{Lock({ size: 14 })} Desbloquear con Pro</>
-                }
+                <Star size={14} fill={selected.is_saved ? 'currentColor' : 'none'} />
+                {selected.is_saved ? 'Guardado' : 'Guardar'}
+              </button>
+              <button className="btn btn-secondary" onClick={() => setSelected(null)}>Cerrar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Visor Embebido (full-screen overlay) ── */}
+      {reading && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          background: 'rgba(0,0,0,0.95)',
+          display: 'flex', flexDirection: 'column',
+        }}>
+          {/* Toolbar */}
+          <div style={{
+            height: 48, background: '#0F172A', display: 'flex', alignItems: 'center',
+            justifyContent: 'space-between', padding: '0 16px', flexShrink: 0,
+          }}>
+            <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{reading.title}</span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => toggleSave(reading)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: reading.is_saved ? '#F59E0B' : '#94A3B8', fontSize: 13 }}
+              >
+                <Star size={16} fill={reading.is_saved ? 'currentColor' : 'none'} /> {reading.is_saved ? 'Guardado' : 'Guardar'}
               </button>
               <button
-                className={`btn ${savedBooks.has(selectedBook.id) ? 'btn-primary' : 'btn-secondary'}`}
-                onClick={() => toggleSave(selectedBook.id)}
+                onClick={() => setReading(null)}
+                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: 6, padding: '4px 12px', cursor: 'pointer', fontSize: 13 }}
               >
-                {Star({ size: 14 })} {savedBooks.has(selectedBook.id) ? 'Guardado' : 'Guardar'}
-              </button>
-              <button className="btn btn-secondary" onClick={() => setSelectedBook(null)}>
-                Cerrar
+                ✕ Cerrar
               </button>
             </div>
           </div>
+
+          {/* Iframe */}
+          <iframe
+            src={getViewUrl(reading)}
+            style={{ flex: 1, border: 'none', width: '100%' }}
+            title={reading.title}
+            allowFullScreen
+          />
         </div>
       )}
     </>
   )
 }
 
-function getCategoryColor(category: string): string {
-  const colors: Record<string, string> = {
-    matematicas: '#2D62C8', ciencias: '#0891B2', programacion: '#7C3AED',
-    ingenieria: '#D97706', medicina: '#DC2626', derecho: '#4338CA',
-    negocios: '#059669', humanidades: '#92400E', idiomas: '#0284C7',
-    arte: '#DB2777', psicologia: '#7C3AED',
-  }
-  return colors[category] || '#64748B'
+/* ── Sub-components ────────────────────────────────────────── */
+
+function BookCard({ doc, onOpen, onSave }: { doc: LibDoc; onOpen: () => void; onSave: (e: React.MouseEvent) => void }) {
+  const catColor = getCategoryColor(doc.category)
+  const catIcon = CATEGORIES.find(c => c.value === doc.category)?.icon || '📖'
+  return (
+    <div
+      className="u-card"
+      style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
+      onClick={onOpen}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)' }}
+      onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = '' }}
+    >
+      {/* Cover */}
+      <div style={{
+        height: 130, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: `linear-gradient(135deg, ${catColor}15, ${catColor}30)`,
+        borderBottom: '1px solid var(--border-color)', position: 'relative',
+      }}>
+        {doc.cover_url
+          ? <img src={doc.cover_url} alt="" style={{ height: '100%', width: '100%', objectFit: 'cover' }} />
+          : <div style={{ textAlign: 'center' }}>
+              <span style={{ fontSize: 34 }}>{catIcon}</span>
+              {doc.pages && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{doc.pages} págs.</div>}
+            </div>
+        }
+        <span style={{
+          position: 'absolute', top: 8, left: 8, fontSize: 10, fontWeight: 600,
+          padding: '2px 7px', borderRadius: 8,
+          background: doc.source_type === 'user_shared' ? 'rgba(16,185,129,0.9)' : 'rgba(37,99,235,0.9)',
+          color: '#fff',
+        }}>
+          {doc.source_type === 'user_shared' ? 'Comunidad' : 'Online'}
+        </span>
+      </div>
+
+      <div style={{ padding: 14 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
+          <h4 style={{
+            margin: 0, fontSize: 13, fontWeight: 600, lineHeight: 1.35, flex: 1,
+            overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box',
+            WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>
+            {doc.title}
+          </h4>
+          <button onClick={onSave} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, flexShrink: 0 }}>
+            <Star size={15} fill={doc.is_saved ? '#F59E0B' : 'none'} color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'} />
+          </button>
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3 }}>{doc.author}</div>
+        {doc.rating !== undefined && doc.rating > 0 && (
+          <div style={{ fontSize: 11, color: '#F59E0B', marginTop: 6 }}>
+            {stars(doc.rating)} <span style={{ color: 'var(--text-muted)' }}>{doc.rating}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BookRow({ doc, onOpen, onSave }: { doc: LibDoc; onOpen: () => void; onSave: (e: React.MouseEvent) => void }) {
+  const catIcon = CATEGORIES.find(c => c.value === doc.category)?.icon || '📖'
+  const catColor = getCategoryColor(doc.category)
+  return (
+    <div
+      className="u-card"
+      style={{ padding: 14, cursor: 'pointer', display: 'flex', gap: 14, alignItems: 'center' }}
+      onClick={onOpen}
+    >
+      <div style={{
+        width: 44, height: 44, borderRadius: 8, flexShrink: 0, fontSize: 22,
+        background: `${catColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {catIcon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.title}</div>
+        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+          {doc.author}{doc.year ? ` · ${doc.year}` : ''}{doc.pages ? ` · ${doc.pages} págs.` : ''}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+        {doc.rating !== undefined && doc.rating > 0 && (
+          <span style={{ fontSize: 12, color: '#F59E0B' }}>★ {doc.rating}</span>
+        )}
+        <span style={{
+          fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 8,
+          background: doc.source_type === 'user_shared' ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.12)',
+          color: doc.source_type === 'user_shared' ? '#10B981' : '#2563EB',
+        }}>
+          {doc.source_type === 'user_shared' ? 'Comunidad' : 'Online'}
+        </span>
+        <button onClick={onSave} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+          <Star size={14} fill={doc.is_saved ? '#F59E0B' : 'none'} color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'} />
+        </button>
+      </div>
+    </div>
+  )
 }

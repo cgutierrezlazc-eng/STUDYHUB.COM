@@ -1493,6 +1493,26 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ filename, content_b64, file_type: file_type || '' }),
     }),
+  // ─── Biblioteca ──────────────────────────────────────────────
+  getBiblioteca: (params?: { q?: string; category?: string; source_type?: string; page?: number }) => {
+    const p = new URLSearchParams()
+    if (params?.q) p.set('q', params.q)
+    if (params?.category) p.set('category', params.category)
+    if (params?.source_type) p.set('source_type', params.source_type)
+    if (params?.page) p.set('page', String(params.page))
+    return request(`/biblioteca?${p.toString()}`)
+  },
+  getBibliotecaSaved: () => request('/biblioteca/user/saved'),
+  getBibliotecaDoc: (docId: string) => request(`/biblioteca/${docId}`),
+  shareToBiblioteca: (data: {
+    project_id: string; doc_id: string; title: string;
+    description?: string; category: string; author?: string;
+    year?: number; tags?: string[]
+  }) => request('/biblioteca/share', { method: 'POST', body: JSON.stringify(data) }),
+  toggleBibliotecaSave: (docId: string) =>
+    request(`/biblioteca/${docId}/save`, { method: 'POST' }),
+  rateBibliotecaDoc: (docId: string, rating: number) =>
+    request(`/biblioteca/${docId}/rate`, { method: 'POST', body: JSON.stringify({ rating }) }),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────
