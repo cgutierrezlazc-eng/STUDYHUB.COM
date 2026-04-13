@@ -27,7 +27,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      # Email notifications
+      # Email notifications — Zoho Mail (cada cuenta necesita su propia contraseña)
       - key: SMTP_HOST
         value: smtp.zoho.com
       - key: SMTP_PORT
@@ -36,6 +36,20 @@ services:
         sync: false
       - key: SMTP_PASS
         sync: false
+      # Contraseñas por cuenta — configurar en Render Dashboard
+      - key: SMTP_PASS_NOREPLY
+        sync: false
+      - key: SMTP_PASS_CONTACTO
+        sync: false
+      - key: SMTP_PASS_CEO
+        sync: false
+      # Direcciones por cuenta
+      - key: NOREPLY_EMAIL
+        value: noreply@conniku.com
+      - key: CONTACT_EMAIL
+        value: contacto@conniku.com
+      - key: CEO_EMAIL
+        value: ceo@conniku.com
       - key: SMTP_FROM
         value: ceo@conniku.com
       - key: FRONTEND_URL
