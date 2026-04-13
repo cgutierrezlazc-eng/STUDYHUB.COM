@@ -36,6 +36,7 @@ android/build/
 android/app/build.old/
 android/.kotlin/
 android/*.keystore
+!android/conniku-release.keystore
 ios/App/Pods/
 
 # Logs
