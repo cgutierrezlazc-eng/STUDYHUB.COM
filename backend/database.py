@@ -1502,6 +1502,8 @@ def _ensure_columns():
         ("users", "last_seen", "TIMESTAMP"),
         # lms_courses — link to conniku project
         ("lms_courses", "conniku_project_id", "VARCHAR(255)"),
+        # lms_courses — nombre personalizado por el usuario (sync usa .name interno)
+        ("lms_courses", "display_name", "VARCHAR(500)"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
@@ -1555,6 +1557,7 @@ class LMSCourse(Base):
     enddate = Column(Integer, server_default="0")         # Unix timestamp (0 = sin fecha de término)
     is_active = Column(Boolean, server_default="true")    # usuario ha activado esta asignatura
     conniku_project_id = Column(String(255), nullable=True)  # linked Conniku project
+    display_name = Column(String(500), nullable=True)         # nombre personalizado (sync usa .name)
     last_checked = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

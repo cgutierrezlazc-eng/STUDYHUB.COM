@@ -35,7 +35,7 @@ const Marketplace = lazy(() => import('./pages/Marketplace'))
 const UserProfile = lazy(() => import('./pages/UserProfile'))
 const Subscription = lazy(() => import('./pages/Subscription'))
 const Checkout = lazy(() => import('./pages/Checkout'))
-const Feed = lazy(() => import('./pages/Feed'))
+
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'))
@@ -351,7 +351,7 @@ export default function App() {
             <SEORouter />
             <Routes>
             <Route path="/" element={<Navigate to="/my-profile" replace />} />
-            <Route path="/feed" element={<Feed onNavigate={(path) => navigate(path)} />} />
+            <Route path="/feed" element={<Navigate to="/my-profile" replace />} />
             <Route path="/my-profile" element={user ? <UserProfile userId={user.id} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/dashboard" element={<Dashboard projects={projects} onNavigate={(path) => navigate(path)} onNewProject={() => setShowNewProject(true)} />} />
             <Route path="/project/:id" element={<ProjectView projects={projects} onUpdate={handleUpdateProject} onDelete={handleDeleteProject} />} />

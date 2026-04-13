@@ -200,7 +200,17 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   }
 
   const loadPosts = async () => {
-    try { setPosts(await api.getWallPosts(userId)) } catch (err: any) { console.error('Failed to load posts:', err) }
+    try {
+      if (user?.id === userId) {
+        // Perfil propio → feed consolidado (amigos + carrera + universidad + propios)
+        const data: any = await api.getFeed(1, 'recent', 'all')
+        setPosts(data?.posts ?? (Array.isArray(data) ? data : []))
+      } else {
+        // Perfil ajeno → solo los posts de ese usuario
+        const data: any = await api.getWallPosts(userId)
+        setPosts(data?.posts ?? (Array.isArray(data) ? data : []))
+      }
+    } catch (err: any) { console.error('Failed to load posts:', err) }
   }
 
   const loadFriends = async () => {

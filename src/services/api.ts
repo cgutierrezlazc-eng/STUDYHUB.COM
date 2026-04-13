@@ -1499,6 +1499,8 @@ export const api = {
   lmsGetHub: () => request('/lms/hub'),
   lmsMarkVisited: () => request('/lms/mark-visited', { method: 'POST' }),
   lmsGetTopics: (courseId: string) => request(`/lms/courses/${courseId}/topics`),
+  lmsRenameCourse: (courseId: string, displayName: string) =>
+    request(`/lms/courses/${courseId}/rename`, { method: 'PATCH', body: JSON.stringify({ display_name: displayName }) }),
   lmsGetAvailable: (connId: string) => request(`/lms/courses/available/${connId}`),
   lmsAddCourses: (connectionId: string, courseIds: string[]) =>
     request('/lms/courses/add', { method: 'POST', body: JSON.stringify({ connection_id: connectionId, course_ids: courseIds }) }),

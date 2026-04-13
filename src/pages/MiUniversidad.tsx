@@ -12,6 +12,7 @@ interface Props {
 interface CourseItem {
   id: string
   name: string
+  display_name: string
   short_name: string
   semester: string
   startdate: number
@@ -137,9 +138,14 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [adding, setAdding] = useState(false)
   const [addProgress, setAddProgress] = useState<string[]>([])
 
-  // Novedades
+  // Novedades + secciones colapsables
   const [novedadesOpen, setNovedadesOpen] = useState(true)
   const [pastOpen, setPastOpen] = useState(false)
+  const [openNovedades, setOpenNovedades] = useState<Set<string>>(new Set())
+
+  // Renombrar asignatura (inline)
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
 
   // ── Carga hub ───────────────────────────────────────────────
   const loadHub = useCallback(async () => {
@@ -278,6 +284,22 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const markNewSeen = async () => {
     await api.lmsMarkVisited().catch(() => {})
     setHub(prev => prev ? { ...prev, new_items_by_course: {}, total_new: 0 } : prev)
+  }
+
+  // ── Renombrar asignatura ────────────────────────────────────
+  const handleRename = async (courseId: string) => {
+    const trimmed = renameValue.trim()
+    if (!trimmed) return
+    try {
+      await api.lmsRenameCourse(courseId, trimmed)
+      setHub(prev => {
+        if (!prev) return prev
+        const update = (list: CourseItem[]) =>
+          list.map(c => c.id === courseId ? { ...c, display_name: trimmed } : c)
+        return { ...prev, current_courses: update(prev.current_courses), past_courses: update(prev.past_courses) }
+      })
+    } catch { /* silencioso */ }
+    setRenamingId(null)
   }
 
   // ──────────────────────────────────────────────────────────────
@@ -452,51 +474,19 @@ export default function MiUniversidad({ onNavigate }: Props) {
         </div>
       )}
 
-      {/* ── Novedades ─────────────────────────────────────────── */}
-      {total_new > 0 && (
-        <div style={{ background: 'linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(99,102,241,0.04) 100%)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
-          <button onClick={() => setNovedadesOpen(p => !p)}
-            style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
-              <span style={{ background: '#3b82f6', color: '#fff', borderRadius: 20, padding: '2px 9px', fontSize: 12, fontWeight: 700 }}>{total_new}</span>
-              🔔 Material nuevo desde tu última visita
-            </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: 12, transform: novedadesOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
-          </button>
-
-          {novedadesOpen && (
-            <div style={{ padding: '0 18px 16px' }}>
-              {Object.values(new_items_by_course).map((group) => (
-                <div key={group.course_name} style={{ marginBottom: 14 }}>
-                  <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
-                    📘 {group.course_name} <span style={{ fontWeight: 400, color: 'var(--text-muted)' }}>({group.items.length} nuevo{group.items.length !== 1 ? 's' : ''})</span>
-                  </p>
-                  {group.items.map(item => (
-                    <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0', borderBottom: '1px solid var(--border)' }}>
-                      <span style={{ fontSize: 14 }}>{TYPE_ICON[item.item_type] || '📄'}</span>
-                      <span style={{ fontSize: 13, color: 'var(--text-primary)', flex: 1 }}>{item.item_name}</span>
-                      {item.topic_name && <span style={{ fontSize: 11, color: 'var(--text-muted)', background: 'var(--bg-secondary)', borderRadius: 6, padding: '2px 6px' }}>{item.topic_name}</span>}
-                    </div>
-                  ))}
-                </div>
-              ))}
-              <button onClick={markNewSeen}
-                style={{ marginTop: 8, background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 14px', fontSize: 12, cursor: 'pointer', color: 'var(--text-muted)' }}>
-                ✓ Marcar todo como visto
-              </button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Asignaturas en curso ───────────────────────────────── */}
-      <div style={{ marginBottom: 24 }}>
+      {/* ── Semestre actual: Asignaturas ──────────────────────── */}
+      <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            📚 Asignaturas en curso
-          </h2>
+          <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            📅 Semestre actual — en curso
+            {current_courses.length > 0 && (
+              <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 8px', borderRadius: 99 }}>
+                {current_courses.length}
+              </span>
+            )}
+          </div>
           <button onClick={openAddModal}
-            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '7px 16px', fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+            style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 9, padding: '6px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
             + Agregar
           </button>
         </div>
@@ -505,34 +495,153 @@ export default function MiUniversidad({ onNavigate }: Props) {
           <div style={{ background: 'var(--bg-card)', border: '2px dashed var(--border)', borderRadius: 14, padding: '36px 24px', textAlign: 'center' }}>
             <p style={{ fontSize: 28, margin: '0 0 8px' }}>🎓</p>
             <p style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 6px' }}>Aquí van tus asignaturas</p>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>Agrega las asignaturas del semestre actual para acceder a todo tu material.</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>Agrega las asignaturas del semestre actual para ver su material organizado.</p>
             <button onClick={openAddModal}
               style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 22px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
-              + Agregar asignaturas en curso
+              + Agregar asignaturas
             </button>
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
-            {current_courses.map(c => <CourseCard key={c.id} course={c} onClick={() => openCourse(c)} />)}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
+            {current_courses.map(c => (
+              <CourseCard
+                key={c.id}
+                course={c}
+                onClick={() => openCourse(c)}
+                renamingId={renamingId}
+                renameValue={renameValue}
+                onStartRename={(id, current) => { setRenamingId(id); setRenameValue(current) }}
+                onRenameChange={setRenameValue}
+                onRenameSubmit={handleRename}
+                onRenameCancel={() => setRenamingId(null)}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* ── Asignaturas anteriores ─────────────────────────────── */}
+      {/* ── Semestres anteriores (colapsable) ─────────────────── */}
       {past_courses.length > 0 && (
-        <div>
+        <div style={{ marginBottom: 28 }}>
           <button onClick={() => setPastOpen(p => !p)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0', marginBottom: pastOpen ? 12 : 0 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-              Asignaturas anteriores ({past_courses.length})
+            style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 0', marginBottom: pastOpen ? 12 : 0, width: '100%' }}>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+              🗂 Semestres anteriores ({past_courses.length})
             </span>
-            <span style={{ color: 'var(--text-muted)', fontSize: 11, transform: pastOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>▼</span>
+            <span style={{ color: 'var(--text-muted)', fontSize: 11, marginLeft: 4, transform: pastOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', display: 'inline-block' }}>▼</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)', marginLeft: 8 }} />
           </button>
           {pastOpen && (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-              {past_courses.map(c => <CourseCard key={c.id} course={c} onClick={() => openCourse(c)} muted />)}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+              {past_courses.map(c => (
+                <CourseCard
+                  key={c.id}
+                  course={c}
+                  onClick={() => openCourse(c)}
+                  muted
+                  renamingId={renamingId}
+                  renameValue={renameValue}
+                  onStartRename={(id, current) => { setRenamingId(id); setRenameValue(current) }}
+                  onRenameChange={setRenameValue}
+                  onRenameSubmit={handleRename}
+                  onRenameCancel={() => setRenamingId(null)}
+                />
+              ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── Material nuevo detectado (agrupado por asignatura) ── */}
+      {total_new > 0 && (
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
+              📥 Material nuevo detectado
+              <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 8px', borderRadius: 99 }}>
+                {total_new} archivo{total_new !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <button onClick={markNewSeen}
+              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 7, padding: '4px 12px', fontSize: 11, cursor: 'pointer', color: 'var(--text-muted)' }}>
+              ✓ Marcar todo visto
+            </button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {Object.entries(new_items_by_course).map(([courseId, group]) => {
+              const linkedCourse = [...current_courses, ...past_courses].find(c => c.id === courseId)
+              const isLinked = !!(linkedCourse?.conniku_project_id)
+              const isOpen = openNovedades.has(courseId)
+              const displayLabel = linkedCourse?.display_name || linkedCourse?.name || group.course_name
+              return (
+                <div key={courseId} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 13, overflow: 'hidden' }}>
+                  {/* Header del grupo */}
+                  <button
+                    onClick={() => setOpenNovedades(prev => { const s = new Set(prev); s.has(courseId) ? s.delete(courseId) : s.add(courseId); return s })}
+                    style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', padding: '13px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                      <span style={{ fontSize: 16 }}>📘</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{displayLabel}</span>
+                      <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99 }}>
+                        {group.items.length} nuevo{group.items.length !== 1 ? 's' : ''}
+                      </span>
+                      {group.items[0]?.detected_at && (
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          {new Date(group.items[0].detected_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })}
+                        </span>
+                      )}
+                    </div>
+                    <span style={{ color: 'var(--text-muted)', fontSize: 11, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', display: 'inline-block' }}>▼</span>
+                  </button>
+
+                  {/* Cuerpo del grupo */}
+                  {isOpen && (
+                    <div style={{ padding: '0 16px 14px' }}>
+                      {/* Preview de archivos (máx 4) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
+                        {group.items.slice(0, 4).map(item => (
+                          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '6px 10px', borderRadius: 8, background: 'var(--bg-secondary)' }}>
+                            <span style={{ fontSize: 14, flexShrink: 0 }}>{TYPE_ICON[item.item_type] || '📄'}</span>
+                            <span style={{ fontSize: 12, color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.item_name}</span>
+                            {item.topic_name && (
+                              <span style={{ fontSize: 10, color: 'var(--text-muted)', background: 'var(--bg-card)', borderRadius: 5, padding: '1px 6px', flexShrink: 0 }}>{item.topic_name}</span>
+                            )}
+                          </div>
+                        ))}
+                        {group.items.length > 4 && (
+                          <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', padding: '4px 10px', fontStyle: 'italic' }}>
+                            + {group.items.length - 4} archivo{group.items.length - 4 !== 1 ? 's' : ''} más...
+                          </p>
+                        )}
+                      </div>
+                      {/* Botones de acción */}
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        {isLinked ? (
+                          <button
+                            onClick={() => linkedCourse && openCourse(linkedCourse)}
+                            style={{ flex: 1, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                            📌 Actualizar {displayLabel}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => linkedCourse && openCourse(linkedCourse)}
+                            style={{ flex: 1, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--accent-orange, #f97316)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
+                            🚀 Importar asignatura
+                          </button>
+                        )}
+                        <button
+                          onClick={() => linkedCourse && openCourse(linkedCourse)}
+                          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+                          Ver todos
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 
@@ -631,31 +740,150 @@ export default function MiUniversidad({ onNavigate }: Props) {
 
 // ── Sub-componentes ────────────────────────────────────────────────────────────
 
-function CourseCard({ course, onClick, muted }: { course: CourseItem; onClick: () => void; muted?: boolean }) {
+function CourseCard({
+  course, onClick, muted,
+  renamingId, renameValue,
+  onStartRename, onRenameChange, onRenameSubmit, onRenameCancel,
+}: {
+  course: CourseItem
+  onClick: () => void
+  muted?: boolean
+  renamingId: string | null
+  renameValue: string
+  onStartRename: (id: string, current: string) => void
+  onRenameChange: (val: string) => void
+  onRenameSubmit: (id: string) => void
+  onRenameCancel: () => void
+}) {
+  const isRenaming = renamingId === course.id
+  const isLinked = !!course.conniku_project_id
+  const displayLabel = course.display_name || course.name
+  const showOriginal = !!(course.display_name && course.display_name !== course.name)
+
   return (
-    <button onClick={onClick}
-      style={{ background: 'var(--bg-card)', border: `1px solid ${course.new_items > 0 ? 'rgba(59,130,246,0.4)' : 'var(--border)'}`, borderRadius: 14, padding: '16px', textAlign: 'left', cursor: 'pointer', width: '100%', transition: 'box-shadow 0.15s', opacity: muted ? 0.7 : 1 }}
-      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.1)')}
-      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 10 }}>
-        <span style={{ fontSize: 26 }}>📘</span>
-        {course.new_items > 0 && (
-          <span style={{ background: '#3b82f6', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-            {course.new_items} nuevo{course.new_items !== 1 ? 's' : ''}
-          </span>
+    <div
+      style={{
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderLeft: `4px solid ${isLinked ? '#10b981' : '#f97316'}`,
+        borderRadius: 14,
+        overflow: 'hidden',
+        opacity: muted ? 0.75 : 1,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        transition: 'box-shadow 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.12)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)')}
+    >
+      {/* Cuerpo de la card */}
+      <div style={{ padding: '14px 14px 10px', flex: 1 }}>
+
+        {/* Fila superior: ícono + badges */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+          <span style={{ fontSize: 22 }}>📘</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {course.new_items > 0 && (
+              <span style={{ background: '#3b82f6', color: '#fff', borderRadius: 20, padding: '2px 8px', fontSize: 10, fontWeight: 700 }}>
+                {course.new_items} nuevo{course.new_items !== 1 ? 's' : ''}
+              </span>
+            )}
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+              background: isLinked ? 'rgba(16,185,129,0.12)' : 'rgba(249,115,22,0.12)',
+              color: isLinked ? '#10b981' : '#f97316',
+            }}>
+              {isLinked ? '✓ Vinculada' : '⚡ Sin importar'}
+            </span>
+          </div>
+        </div>
+
+        {/* Nombre / input renombrar */}
+        {isRenaming ? (
+          <div style={{ marginBottom: 6 }}>
+            <input
+              autoFocus
+              value={renameValue}
+              onChange={e => onRenameChange(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') onRenameSubmit(course.id)
+                if (e.key === 'Escape') onRenameCancel()
+              }}
+              onClick={e => e.stopPropagation()}
+              style={{
+                width: '100%', padding: '6px 10px', borderRadius: 8,
+                border: '1.5px solid var(--accent)', background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)', fontSize: 13, fontWeight: 600,
+                boxSizing: 'border-box', outline: 'none',
+              }}
+            />
+            <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <button
+                onClick={e => { e.stopPropagation(); onRenameSubmit(course.id) }}
+                style={{ flex: 1, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 7, padding: '5px', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>
+                Guardar
+              </button>
+              <button
+                onClick={e => { e.stopPropagation(); onRenameCancel() }}
+                style={{ flex: 1, background: 'var(--bg-secondary)', color: 'var(--text-muted)', border: '1px solid var(--border)', borderRadius: 7, padding: '5px', fontSize: 11, cursor: 'pointer' }}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginBottom: 4 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.35, flex: 1 }}>
+              {displayLabel.length > 50 ? displayLabel.slice(0, 50) + '…' : displayLabel}
+            </p>
+            <button
+              onClick={e => { e.stopPropagation(); onStartRename(course.id, displayLabel) }}
+              title="Renombrar asignatura"
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-muted)', padding: '1px 3px', borderRadius: 4,
+                fontSize: 12, lineHeight: 1, flexShrink: 0, marginTop: 1, opacity: 0.55,
+              }}>
+              ✎
+            </button>
+          </div>
+        )}
+
+        {/* Nombre original (clave de sync) — sólo si el usuario renombró */}
+        {!isRenaming && showOriginal && (
+          <p style={{
+            margin: '0 0 6px', fontSize: 10, color: 'var(--text-muted)',
+            fontFamily: 'monospace', letterSpacing: '0.01em',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            🔗 {course.name}
+          </p>
+        )}
+
+        {/* Stats */}
+        {!isRenaming && (
+          <div style={{ display: 'flex', gap: 10, fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+            <span>📄 {course.total_items} arch.</span>
+            {course.last_checked && <span>↻ {timeAgo(course.last_checked)}</span>}
+          </div>
         )}
       </div>
-      <p style={{ margin: '0 0 4px', fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>
-        {course.name.length > 42 ? course.name.slice(0, 42) + '…' : course.name}
-      </p>
-      {course.short_name && (
-        <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--text-muted)' }}>{course.short_name}</p>
+
+      {/* Botón de acción inferior */}
+      {!isRenaming && (
+        <button
+          onClick={onClick}
+          style={{
+            width: '100%', border: 'none', borderTop: '1px solid var(--border)',
+            background: isLinked ? 'rgba(16,185,129,0.07)' : 'rgba(249,115,22,0.07)',
+            color: isLinked ? '#10b981' : '#f97316',
+            padding: '9px 14px', fontSize: 12, fontWeight: 700, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          }}>
+          {isLinked ? 'Ver asignatura →' : '🚀 Importar'}
+        </button>
       )}
-      <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--text-muted)' }}>
-        <span>📄 {course.total_items} archivos</span>
-        {course.last_checked && <span>↻ {timeAgo(course.last_checked)}</span>}
-      </div>
-    </button>
+    </div>
   )
 }
 

@@ -1058,7 +1058,8 @@ class AddCoursesRequest(BaseModel):
 def _course_to_dict(c: LMSCourse, new_count: int, total_items: int) -> dict:
     return {
         "id": c.id,
-        "name": c.name,
+        "name": c.name,                                   # nombre original de la universidad (sync key)
+        "display_name": c.display_name or "",             # nombre personalizado por el usuario
         "short_name": c.short_name or "",
         "semester": c.semester or "",
         "external_id": c.external_id,
@@ -1070,6 +1071,23 @@ def _course_to_dict(c: LMSCourse, new_count: int, total_items: int) -> dict:
         "last_checked": c.last_checked.isoformat() if c.last_checked else None,
         "conniku_project_id": c.conniku_project_id,
     }
+
+
+@router.patch("/courses/{course_id}/rename")
+def rename_course(course_id: str, body: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Actualiza el display_name de un curso. El name original se mantiene para sync."""
+    course = db.query(LMSCourse).filter(
+        LMSCourse.id == course_id,
+        LMSCourse.user_id == user.id
+    ).first()
+    if not course:
+        raise HTTPException(status_code=404, detail="Curso no encontrado")
+    new_name = (body.get("display_name") or "").strip()
+    if not new_name:
+        raise HTTPException(status_code=400, detail="El nombre no puede estar vacío")
+    course.display_name = new_name
+    db.commit()
+    return {"ok": True, "display_name": new_name}
 
 
 @router.get("/hub")
