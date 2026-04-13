@@ -6,6 +6,7 @@ import { formatPriceDisplay } from '../utils/currency'
 import CoverPhotoModal, { getCoverStyle, getTemplateById, COVER_TEMPLATES } from '../components/CoverPhotoModal'
 import { Camera, Hourglass, MessageSquare, AlertTriangle, BookOpen, Calendar, Pencil, Image, Lock, Users, FileText, Heart, CheckCircle, GraduationCap, Globe, Zap, XCircle, EyeOff, Award, Medal, Trophy, Upload, FileUp } from '../components/Icons'
 import ExecutiveShowcase from '../components/ExecutiveShowcase'
+import Profile from './Profile'
 
 interface Props {
   userId: string
@@ -108,6 +109,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [showEditInfoModal, setShowEditInfoModal] = useState(false)
   const [editInfoForm, setEditInfoForm] = useState({ career: '', university: '', semester: 1, academicStatus: 'estudiante', professionalTitle: '', bio: '' })
   const [editInfoSaving, setEditInfoSaving] = useState(false)
+  // Config section embedded in social profile (null = show social tabs content)
+  const [configSection, setConfigSection] = useState<string | null>(null)
   const postImageRef = useRef<HTMLInputElement>(null)
   const coverPhotoRef = useRef<HTMLInputElement>(null)
   const coverUploadRef = useRef<HTMLInputElement>(null)
@@ -821,24 +824,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* Profile Tabs — 4 visible + Más dropdown */}
-      <div className="fb-profile-tabs" style={{ marginBottom: 16, borderRadius: 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', position: 'relative' }}>
-        <button className={`fb-tab ${activeTab === 'wall' ? 'active' : ''}`} onClick={() => setActiveTab('wall')}>
+      {/* ─── Fila 1: Social Tabs ─── */}
+      <div className="fb-profile-tabs" style={{ marginBottom: isOwn ? 0 : 16, borderRadius: isOwn ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)', background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderBottom: isOwn ? 'none' : undefined, position: 'relative' }}>
+        <button className={`fb-tab ${!configSection && activeTab === 'wall' ? 'active' : ''}`} onClick={() => { setActiveTab('wall'); setConfigSection(null) }}>
           {t('userprofile.tabPosts')}
         </button>
-        <button className={`fb-tab ${activeTab === 'about' ? 'active' : ''}`} onClick={() => setActiveTab('about')}>
+        <button className={`fb-tab ${!configSection && activeTab === 'about' ? 'active' : ''}`} onClick={() => { setActiveTab('about'); setConfigSection(null) }}>
           {t('userprofile.tabInfo')}
         </button>
-        <button className={`fb-tab ${activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends() }}>
+        <button className={`fb-tab ${!configSection && activeTab === 'friends' ? 'active' : ''}`} onClick={() => { setActiveTab('friends'); loadFriends(); setConfigSection(null) }}>
           {t('userprofile.tabFriends')}
         </button>
-        <button className={`fb-tab ${activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses() }}>
+        <button className={`fb-tab ${!configSection && activeTab === 'courses' ? 'active' : ''}`} onClick={() => { setActiveTab('courses'); loadCompletedCourses(); setConfigSection(null) }}>
           {t('userprofile.tabCourses')}
         </button>
         {/* Más dropdown */}
         <div style={{ position: 'relative', marginLeft: 'auto' }}>
           <button
-            className={`fb-tab ${['photos','cv','servicios','tutorias','showcase'].includes(activeTab) ? 'active' : ''}`}
+            className={`fb-tab ${!configSection && ['photos','cv','servicios','tutorias','showcase'].includes(activeTab) ? 'active' : ''}`}
             onClick={() => setShowMoreTabs(v => !v)}
             style={{ display: 'flex', alignItems: 'center', gap: 4 }}
           >
@@ -846,24 +849,24 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           </button>
           {showMoreTabs && (
             <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, minWidth: 160, zIndex: 100, boxShadow: '0 8px 24px rgba(0,0,0,0.2)', overflow: 'hidden' }} onClick={() => setShowMoreTabs(false)}>
-              <button className={`fb-tab ${activeTab === 'photos' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => setActiveTab('photos')}>
+              <button className={`fb-tab ${!configSection && activeTab === 'photos' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('photos'); setConfigSection(null) }}>
                 {t('userprofile.tabPhotos')}
               </button>
-              <button className={`fb-tab ${activeTab === 'cv' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('cv'); loadCV() }}>
+              <button className={`fb-tab ${!configSection && activeTab === 'cv' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('cv'); loadCV(); setConfigSection(null) }}>
                 {t('userprofile.tabCV')}
               </button>
               {isOwn && tutorProfile && (
-                <button className={`fb-tab ${activeTab === 'servicios' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('servicios'); loadTutorData() }}>
+                <button className={`fb-tab ${!configSection && activeTab === 'servicios' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('servicios'); loadTutorData(); setConfigSection(null) }}>
                   {t('userprofile.tabServices')}
                 </button>
               )}
               {isOwn && (
-                <button className={`fb-tab ${activeTab === 'tutorias' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData() }}>
+                <button className={`fb-tab ${!configSection && activeTab === 'tutorias' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13 }} onClick={() => { setActiveTab('tutorias'); loadStudentTutoringData(); setConfigSection(null) }}>
                   {GraduationCap({ size: 13 })} {t('userprofile.tabTutoring')}
                 </button>
               )}
               {(isOwn || (profile as any).subscriptionTier === 'max' || profile.role === 'owner') && (
-                <button className={`fb-tab ${activeTab === 'showcase' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13, color: '#d97706' }} onClick={() => setActiveTab('showcase')}>
+                <button className={`fb-tab ${!configSection && activeTab === 'showcase' ? 'active' : ''}`} style={{ width: '100%', textAlign: 'left', borderBottom: 'none', padding: '10px 16px', fontSize: 13, color: '#d97706' }} onClick={() => { setActiveTab('showcase'); setConfigSection(null) }}>
                   ★ Showcase
                 </button>
               )}
@@ -872,8 +875,58 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
+      {/* ─── Fila 2: Config Tabs (solo propietario del perfil) ─── */}
+      {isOwn && (
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px',
+          background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+          borderTop: '1px solid var(--border)', borderRadius: '0 0 var(--radius) var(--radius)',
+          marginBottom: 16,
+        }}>
+          {([
+            { id: 'profile',      label: 'Mi Perfil',          color: '#1a3a6e' },
+            { id: 'academic',     label: 'Académico',           color: '#1e40af' },
+            { id: 'cv',           label: 'CV Profesional',      color: '#6d28d9' },
+            { id: 'projects',     label: 'Proyectos',           color: '#0369a1' },
+            { id: 'publications', label: 'Publicaciones',       color: '#0891b2' },
+            { id: 'universidad',  label: 'Mi Universidad',      color: '#0d9488' },
+            { id: 'appearance',   label: 'Apariencia',          color: '#b45309' },
+            { id: 'notifications',label: 'Notificaciones',      color: '#374151' },
+            { id: 'security',     label: 'Seguridad',           color: '#991b1b' },
+            ...(user?.role === 'owner' ? [{ id: 'email', label: 'Correo Corp.', color: '#1d4ed8' }] : []),
+          ] as { id: string; label: string; color: string }[]).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setConfigSection(configSection === tab.id ? null : tab.id)}
+              style={{
+                padding: '5px 12px',
+                borderRadius: 20,
+                border: '2px solid',
+                borderColor: configSection === tab.id ? tab.color : 'transparent',
+                background: configSection === tab.id ? tab.color : `${tab.color}22`,
+                color: configSection === tab.id ? '#fff' : tab.color,
+                fontSize: 12,
+                fontWeight: configSection === tab.id ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                letterSpacing: 0.3,
+              }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ─── Módulo de Configuración embebido ─── */}
+      {configSection && isOwn && (
+        <div style={{ marginBottom: 16 }}>
+          <Profile key={configSection} embedded initialSection={configSection} onNavigate={onNavigate} />
+        </div>
+      )}
+
       {/* Tab Content */}
-      <div className="fb-profile-content">
+      <div className="fb-profile-content" style={{ display: configSection ? 'none' : undefined }}>
         <div className={activeTab === 'wall' ? "fb-wall-layout" : ""}>
           {/* Right sidebar — Academic Info + Friends */}
           {activeTab === 'wall' && (
@@ -2984,8 +3037,8 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         currentCoverType={profile?.coverType || 'template'}
         currentPositionY={profile?.coverPositionY ?? 50}
         onSaved={(coverPhoto, coverType, positionY) => {
+          // api.updateCoverPhoto ya guardó en backend — solo actualizar estado local
           setProfile((prev: any) => ({ ...prev, coverPhoto, coverType, coverPositionY: positionY }))
-          updateProfile({ coverPhoto, coverType } as any)
         }}
       />
 

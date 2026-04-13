@@ -10,12 +10,12 @@ import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationC
 
 type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv' | 'projects' | 'publications' | 'universidad'
 
-interface ProfileProps { onNavigate?: (path: string) => void }
+interface ProfileProps { onNavigate?: (path: string) => void; embedded?: boolean; initialSection?: string }
 
-export default function Profile({ onNavigate }: ProfileProps = {}) {
+export default function Profile({ onNavigate, embedded = false, initialSection }: ProfileProps = {}) {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
-  const [activeSection, setActiveSection] = useState<Section>('profile')
+  const [activeSection, setActiveSection] = useState<Section>((initialSection as Section) || 'profile')
   const [currentTheme, setCurrentTheme] = useState<string>(localStorage.getItem('conniku_theme') || 'equilibrado')
   const [isEditing, setIsEditing] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -265,79 +265,85 @@ export default function Profile({ onNavigate }: ProfileProps = {}) {
 
   return (
     <>
-      <div className="page-header page-enter">
-        <h2>{t('profile.settings')}</h2>
-        <p>{t('profile.settingsDesc')}</p>
-      </div>
-      <div className="page-body">
+      {!embedded && (
+        <div className="page-header page-enter">
+          <h2>{t('profile.settings')}</h2>
+          <p>{t('profile.settingsDesc')}</p>
+        </div>
+      )}
+      <div className={embedded ? undefined : "page-body"}>
         {saved && <div className="profile-toast">{t('profile.saved')}</div>}
 
         {/* Header Card — Avatar + Identity */}
-        <div className="pf-header-card">
-          <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            <div className="pf-header-avatar" onClick={() => fileInputRef.current?.click()}>
-              {user.avatar ? (
-                <img src={user.avatar} alt="" className="pf-avatar-img" />
-              ) : (
-                <div className="pf-avatar-initials">{initials || '?'}</div>
-              )}
-              <div className="pf-avatar-edit">{t('profile.editAvatar')}</div>
+        {!embedded && (
+          <div className="pf-header-card">
+            <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+              <div className="pf-header-avatar" onClick={() => fileInputRef.current?.click()}>
+                {user.avatar ? (
+                  <img src={user.avatar} alt="" className="pf-avatar-img" />
+                ) : (
+                  <div className="pf-avatar-initials">{initials || '?'}</div>
+                )}
+                <div className="pf-avatar-edit">{t('profile.editAvatar')}</div>
+              </div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 120, lineHeight: 1.3 }}>
+                {t('profile.avatarHint')}
+              </span>
             </div>
-            <span style={{ fontSize: 10, color: 'var(--text-muted)', textAlign: 'center', maxWidth: 120, lineHeight: 1.3 }}>
-              {t('profile.avatarHint')}
-            </span>
+            <div className="pf-header-info">
+              <h2 className="pf-header-name">{user.firstName} {user.lastName}</h2>
+              <div className="pf-header-meta">
+                {editingUsername ? (
+                  <div className="pf-username-edit">
+                    <span>@</span>
+                    <input value={newUsername} onChange={e => setNewUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))} placeholder={user.username} />
+                    <button className="btn btn-primary btn-xs" onClick={handleChangeUsername}>{t('profile.saveBtn')}</button>
+                    <button className="btn btn-secondary btn-xs" onClick={() => setEditingUsername(false)}>{t('profile.cancelBtn')}</button>
+                    {usernameError && <span style={{ color: 'var(--accent-red)', fontSize: 12 }}>{usernameError}</span>}
+                  </div>
+                ) : (
+                  <span className="pf-username" onClick={() => { setNewUsername(user.username); setEditingUsername(true) }}>
+                    @{user.username} <span className="pf-user-number">#{String(user.userNumber || 0).padStart(4, '0')}</span>
+                  </span>
+                )}
+                <span className="pf-header-dot">·</span>
+                <span>{user.career || t('profile.student')}</span>
+                <span className="pf-header-dot">·</span>
+                <span>{user.university || t('profile.noUni')}</span>
+              </div>
+              <div className="pf-header-badges">
+                {user.emailVerified ? (
+                  <span className="pf-badge pf-badge-green">✓ {t('profile.emailVerified')}</span>
+                ) : (
+                  <span className="pf-badge pf-badge-orange">{AlertTriangle({ size: 14 })} {t('profile.emailNotVerified')}</span>
+                )}
+                {user.role === 'owner' && <span className="pf-badge pf-badge-blue">Owner / CEO</span>}
+                {user.isAdmin && user.role !== 'owner' && <span className="pf-badge pf-badge-purple">{t('profile.admin')}</span>}
+                <span className="pf-badge">{t('reg.semester')} {user.semester}</span>
+              </div>
+            </div>
           </div>
-          <div className="pf-header-info">
-            <h2 className="pf-header-name">{user.firstName} {user.lastName}</h2>
-            <div className="pf-header-meta">
-              {editingUsername ? (
-                <div className="pf-username-edit">
-                  <span>@</span>
-                  <input value={newUsername} onChange={e => setNewUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.]/g, ''))} placeholder={user.username} />
-                  <button className="btn btn-primary btn-xs" onClick={handleChangeUsername}>{t('profile.saveBtn')}</button>
-                  <button className="btn btn-secondary btn-xs" onClick={() => setEditingUsername(false)}>{t('profile.cancelBtn')}</button>
-                  {usernameError && <span style={{ color: 'var(--accent-red)', fontSize: 12 }}>{usernameError}</span>}
-                </div>
-              ) : (
-                <span className="pf-username" onClick={() => { setNewUsername(user.username); setEditingUsername(true) }}>
-                  @{user.username} <span className="pf-user-number">#{String(user.userNumber || 0).padStart(4, '0')}</span>
-                </span>
-              )}
-              <span className="pf-header-dot">·</span>
-              <span>{user.career || t('profile.student')}</span>
-              <span className="pf-header-dot">·</span>
-              <span>{user.university || t('profile.noUni')}</span>
-            </div>
-            <div className="pf-header-badges">
-              {user.emailVerified ? (
-                <span className="pf-badge pf-badge-green">✓ {t('profile.emailVerified')}</span>
-              ) : (
-                <span className="pf-badge pf-badge-orange">{AlertTriangle({ size: 14 })} {t('profile.emailNotVerified')}</span>
-              )}
-              {user.role === 'owner' && <span className="pf-badge pf-badge-blue">Owner / CEO</span>}
-              {user.isAdmin && user.role !== 'owner' && <span className="pf-badge pf-badge-purple">{t('profile.admin')}</span>}
-              <span className="pf-badge">{t('reg.semester')} {user.semester}</span>
-            </div>
-          </div>
-        </div>
+        )}
 
         {/* Settings Layout — Sidebar + Content */}
-        <div className="pf-settings-layout">
+        <div className={embedded ? undefined : "pf-settings-layout"}>
           {/* Navigation Sidebar */}
-          <nav className="pf-settings-nav">
-            {SECTIONS.map(s => (
-              <button key={s.id} className={`pf-nav-item ${activeSection === s.id ? 'active' : ''}`}
-                onClick={() => setActiveSection(s.id)}>
-                <span className="pf-nav-icon">{s.icon}</span>
-                {s.label}
+          {!embedded && (
+            <nav className="pf-settings-nav">
+              {SECTIONS.map(s => (
+                <button key={s.id} className={`pf-nav-item ${activeSection === s.id ? 'active' : ''}`}
+                  onClick={() => setActiveSection(s.id)}>
+                  <span className="pf-nav-icon">{s.icon}</span>
+                  {s.label}
+                </button>
+              ))}
+              <div className="pf-nav-divider" />
+              <button className="pf-nav-item pf-nav-danger" onClick={logout}>
+                {t('profile.logout')}
               </button>
-            ))}
-            <div className="pf-nav-divider" />
-            <button className="pf-nav-item pf-nav-danger" onClick={logout}>
-              {t('profile.logout')}
-            </button>
-          </nav>
+            </nav>
+          )}
 
           {/* Content Panel */}
           <div className="pf-settings-content">

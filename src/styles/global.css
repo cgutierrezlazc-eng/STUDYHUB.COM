@@ -680,6 +680,19 @@ h1, h2, h3,
   flex-shrink: 0;
 }
 
+/* ── Sub-items dentro de sección académica (asignaturas) ── */
+.nav-item-sub {
+  padding-left: 20px;
+  font-size: 13px;
+  border-left: 2px solid transparent;
+}
+.nav-item-sub:hover {
+  border-left-color: var(--accent, #1a56db);
+}
+.nav-item-sub.active {
+  border-left-color: rgba(255,255,255,0.6);
+}
+
 /* ─── TopBar ────────────────────────────────────────────── */
 .topbar {
   position: fixed;
@@ -3055,6 +3068,7 @@ h1, h2, h3,
   padding: 6px 12px; border-radius: var(--radius-sm);
   background: rgba(0,0,0,0.5); color: #fff; border: none;
   cursor: pointer; font-size: 13px; backdrop-filter: blur(4px);
+  z-index: 3;
 }
 .fb-cover-edit-btn:hover { background: rgba(0,0,0,0.7); }
 

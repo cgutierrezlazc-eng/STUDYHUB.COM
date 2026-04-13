@@ -101,11 +101,29 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
 
       {/* ══ ACADÉMICO ══ */}
       <SepLabel label={t('sidebar.academic')} />
+
+      {/* ── Mis Asignaturas (sub-carpetas) ── */}
+      <SepLabel label={t('nav.mySubjects')} />
+      {projects.map(project => (
+        <button
+          key={project.id}
+          className={`nav-item nav-item-sub ${activeProjectId === project.id ? 'active' : ''}`}
+          onClick={() => onNavigate(`/project/${project.id}`)}
+        >
+          <span className="project-dot" style={{ background: project.color }} />
+          {project.name}
+        </button>
+      ))}
+      <button className="nav-item nav-item-sub nav-item-add" onClick={onNewProject}>
+        {Icons.plus(IC.plus)} {t('nav.newSubject')}
+      </button>
+
+      {/* ── Resto del académico ── */}
       <button
-        className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
-        onClick={() => onNavigate('/dashboard')}
+        className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
+        onClick={() => onNavigate('/courses')}
       >
-        {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
+        {Icons.diploma(IC.courses)} Cursos
       </button>
       <button
         className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`}
@@ -144,12 +162,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         {Icons.fileText(IC.notes)} {t('sidebar.notes')}
       </button>
       <button
-        className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
-        onClick={() => onNavigate('/courses')}
-      >
-        {Icons.diploma(IC.courses)} Cursos
-      </button>
-      <button
         className={`nav-item ${isActive('/biblioteca') ? 'active' : ''}`}
         onClick={() => onNavigate('/biblioteca')}
       >
@@ -161,6 +173,12 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
       >
         {Icons.tutors(IC.tutors)} Tutores
       </button>
+      <button
+        className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
+        onClick={() => onNavigate('/dashboard')}
+      >
+        {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
+      </button>
 
       {/* ══ BOLSA DEL TRABAJO ══ */}
       <SepLabel label={t('sidebar.jobBoard')} />
@@ -169,22 +187,6 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         onClick={() => onNavigate('/jobs')}
       >
         {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
-      </button>
-
-      {/* ══ MIS ASIGNATURAS ══ */}
-      <SepLabel label={t('nav.mySubjects')} />
-      {projects.map(project => (
-        <button
-          key={project.id}
-          className={`nav-item ${activeProjectId === project.id ? 'active' : ''}`}
-          onClick={() => onNavigate(`/project/${project.id}`)}
-        >
-          <span className="project-dot" style={{ background: project.color }} />
-          {project.name}
-        </button>
-      ))}
-      <button className="nav-item nav-item-add" onClick={onNewProject}>
-        {Icons.plus(IC.plus)} {t('nav.newSubject')}
       </button>
 
       {/* ══ MI TUTORÍA (solo tutores) ══ */}
