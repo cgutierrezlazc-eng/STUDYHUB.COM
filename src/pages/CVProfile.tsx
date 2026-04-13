@@ -386,6 +386,7 @@ export default function CVProfile({ onNavigate }: Props) {
   const [editMode, setEditMode] = useState(false)
   const [activeTab, setActiveTab] = useState('sobre')
   const [uploadMsg, setUploadMsg] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const tabs = [
@@ -762,7 +763,7 @@ export default function CVProfile({ onNavigate }: Props) {
         <div style={styles.headerCard} className="cv-header-card">
           {/* Top-right edit/save */}
           {isOwnProfile && (
-            <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', gap: 8 }} className="cv-no-print">
+            <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', gap: 8, alignItems: 'center' }} className="cv-no-print">
               {editMode ? (
                 <>
                   {saveError && (
@@ -780,6 +781,15 @@ export default function CVProfile({ onNavigate }: Props) {
                   {Pencil({ style: { width: 16, height: 16 } })} Editar Perfil
                 </button>
               )}
+              {/* Preview toggle */}
+              <button
+                style={{ ...styles.btnSecondary, background: showPreview ? '#1e56a0' : undefined, color: showPreview ? '#fff' : undefined, borderColor: showPreview ? '#1e56a0' : undefined }}
+                className="cv-btn"
+                onClick={() => setShowPreview(p => !p)}
+                title="Vista previa en formato Conniku"
+              >
+                {Eye({ style: { width: 16, height: 16 } })} Vista Previa
+              </button>
             </div>
           )}
 
@@ -1441,6 +1451,179 @@ export default function CVProfile({ onNavigate }: Props) {
           </div>
         </div>
       </div>
+
+      {/* ══ CV PREVIEW PANEL — lateral Conniku format ══ */}
+      {showPreview && (
+        <>
+          {/* Overlay */}
+          <div onClick={() => setShowPreview(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.28)', zIndex: 1100 }} className="cv-no-print" />
+
+          {/* Panel */}
+          <div style={{
+            position: 'fixed', top: 0, right: 0, width: 420, height: '100vh',
+            background: '#f8f9fb', borderLeft: '1px solid #e0e4ea',
+            zIndex: 1101, display: 'flex', flexDirection: 'column',
+            boxShadow: '-6px 0 28px rgba(0,0,0,0.14)', overflowY: 'auto',
+          }} className="cv-no-print">
+
+            {/* Panel header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#fff', borderBottom: '1px solid #e8eaed', flexShrink: 0, position: 'sticky', top: 0, zIndex: 2 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg viewBox="0 0 40 40" width={18} height={18}>
+                  <circle cx="20" cy="20" r="12" fill="none" stroke="#2D62C8" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
+                </svg>
+                <span style={{ fontWeight: 700, fontSize: 13, color: '#2D62C8', letterSpacing: '0.02em' }}>Vista Previa — Formato Conniku</span>
+              </div>
+              <button onClick={() => setShowPreview(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 20, lineHeight: 1, padding: 4 }}>×</button>
+            </div>
+
+            {/* CV Document */}
+            <div style={{ padding: '20px 20px 40px', flex: 1 }}>
+              {/* Document card */}
+              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', overflow: 'hidden', border: '1px solid #e8eaed' }}>
+
+                {/* Document header — blue Conniku stripe */}
+                <div style={{ background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)', padding: '22px 22px 18px', color: '#fff' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: user?.avatar ? `url(${user.avatar}) center/cover` : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.4)', flexShrink: 0 }}>
+                      {!user?.avatar && `${(user?.firstName || '?')[0]}${(user?.lastName || '')[0]}`.toUpperCase()}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                        {user?.firstName} {user?.lastName}
+                      </div>
+                      {cv.headline && <div style={{ fontSize: 12, marginTop: 4, opacity: 0.85, lineHeight: 1.3 }}>{cv.headline}</div>}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, opacity: 0.8 }}>
+                    {cv.email && <span>✉ {cv.email}</span>}
+                    {cv.phone && <span>📞 {cv.phone}</span>}
+                    {cv.location && <span>📍 {cv.location}</span>}
+                    {cv.openToOffers && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 8, padding: '2px 8px', fontWeight: 600 }}>✓ Abierto a ofertas</span>}
+                  </div>
+                  {/* Conniku watermark */}
+                  <div style={{ marginTop: 12, fontSize: 9, opacity: 0.45, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                    Generado con Conniku · conniku.com
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                  {/* Summary */}
+                  {cv.summary && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Resumen</div>
+                      <p style={{ fontSize: 12, color: '#444', lineHeight: 1.6, margin: 0 }}>{cv.summary}</p>
+                    </div>
+                  )}
+
+                  {/* Competencies */}
+                  {cv.competencies.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Competencias Clave</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                        {cv.competencies.map((c, i) => (
+                          <span key={i} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 12, background: 'rgba(26,86,219,0.08)', color: '#1a56db', border: '1px solid rgba(26,86,219,0.18)', fontWeight: 500 }}>{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Experience */}
+                  {cv.experience.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Experiencia</div>
+                      {cv.experience.map((exp, i) => (
+                        <div key={exp.id} style={{ marginBottom: i < cv.experience.length - 1 ? 10 : 0, paddingBottom: i < cv.experience.length - 1 ? 10 : 0, borderBottom: i < cv.experience.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>{exp.title}</div>
+                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>{exp.company}{exp.location ? ` · ${exp.location}` : ''}</div>
+                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{exp.startDate}{exp.endDate ? ` – ${exp.endDate}` : exp.current ? ' – Actualidad' : ''}</div>
+                          {exp.description && <p style={{ fontSize: 11, color: '#555', margin: '4px 0 0', lineHeight: 1.5 }}>{exp.description}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Education */}
+                  {cv.education.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Educación</div>
+                      {cv.education.map((edu, i) => (
+                        <div key={edu.id} style={{ marginBottom: i < cv.education.length - 1 ? 8 : 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>{edu.degree}{edu.field ? ` en ${edu.field}` : ''}</div>
+                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>{edu.institution}</div>
+                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{edu.startYear}{edu.endYear ? ` – ${edu.endYear}` : ''}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Skills */}
+                  {cv.skillGroups.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Habilidades</div>
+                      {cv.skillGroups.map((sg, i) => (
+                        <div key={i} style={{ marginBottom: 8 }}>
+                          <div style={{ fontSize: 10, fontWeight: 600, color: '#555', marginBottom: 4 }}>{sg.category}</div>
+                          {sg.skills.map((sk, j) => (
+                            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <span style={{ fontSize: 11, color: '#444', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sk.name}</span>
+                              <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#e8eaed', overflow: 'hidden' }}>
+                                <div style={{ width: `${(sk.level / 5) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #1a56db, #3b82f6)', borderRadius: 2 }} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Languages */}
+                  {cv.languages.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Idiomas</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {cv.languages.map((l, i) => (
+                          <span key={i} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: '#f3f4f6', color: '#333', fontWeight: 500 }}>{l.name} · {l.level}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certifications */}
+                  {cv.certifications.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Certificaciones</div>
+                      {cv.certifications.map((cert, i) => (
+                        <div key={cert.id} style={{ marginBottom: i < cv.certifications.length - 1 ? 6 : 0, fontSize: 11 }}>
+                          <span style={{ fontWeight: 600, color: '#1a2e4a' }}>{cert.name}</span>
+                          {cert.issuer && <span style={{ color: '#888' }}> · {cert.issuer}</span>}
+                          {cert.date && <span style={{ color: '#888' }}> · {cert.date}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Links */}
+                  {cv.links.length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Links</div>
+                      {cv.links.map((lnk, i) => (
+                        <div key={i} style={{ fontSize: 11, marginBottom: 3 }}>
+                          <span style={{ color: '#1a56db', fontWeight: 500 }}>{lnk.label || lnk.url}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
     </div>
   )
 }
