@@ -469,6 +469,12 @@ export const api = {
   sendSuggestion: (type: string, subject: string, message: string) =>
     request('/auth/me/suggestion', { method: 'POST', body: JSON.stringify({ type, subject, message }) }),
 
+  // ─── Bio automática ─────────────────────────────────────────
+  generateBio: () =>
+    request('/auth/me/bio/generate', { method: 'POST' }),
+  toggleBioAuto: (enabled: boolean) =>
+    request('/auth/me/bio/auto', { method: 'POST', body: JSON.stringify({ enabled }) }),
+
   // ─── AI Auto-tag ────────────────────────────────────────────
   autoTag: (text: string) =>
     request('/ai/auto-tag', { method: 'POST', body: JSON.stringify({ text }) }),
@@ -805,6 +811,10 @@ export const api = {
   },
   getMyJobListings: () => request('/jobs/my-listings'),
   getMyApplications: () => request('/jobs/my-applications'),
+  getMyJobMatches: () => request('/jobs/my-matches'),
+  updateJobMatchStatus: (matchId: string, status: 'viewed' | 'interested' | 'declined') =>
+    request(`/jobs/matches/${matchId}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  getJobListingMatches: (jobId: string) => request(`/jobs/listings/${jobId}/matches`),
 
   // ─── Courses ──────────────────────────────────────────────
   getCourses: (category?: string) =>

@@ -1140,6 +1140,18 @@ def create_milestone_post(db, user_id, milestone_type, content, visibility="frie
     )
     db.add(post)
     db.commit()
+
+    # Auto-update bio if user has bio_auto enabled
+    try:
+        user_obj = db.query(User).filter(User.id == user_id).first()
+        if user_obj and getattr(user_obj, "bio_auto", False):
+            from auth_routes import _generate_bio_text
+            new_bio = _generate_bio_text(user_obj, db)
+            if new_bio:
+                user_obj.bio = new_bio
+                db.commit()
+    except Exception as e:
+        pass  # Never block milestone creation
     return post
 
 

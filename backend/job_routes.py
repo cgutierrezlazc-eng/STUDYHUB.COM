@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 
 from database import (get_db, User, JobListing, JobApplication, UserCareerStatus,
-                      AcademicMilestone, WallPost, StudentCV, KonniBroadcast, gen_id)
+                      AcademicMilestone, WallPost, StudentCV, KonniBroadcast, JobMatch, gen_id)
 from middleware import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -188,6 +188,125 @@ def job_to_dict(j, poster=None, applied=False):
     }
 
 
+# ─── Matching Engine ────────────────────────────────────────
+
+def _compute_match_score(user: User, job: JobListing, career_status) -> int:
+    """Return a 0-100 compatibility score between a user and a job."""
+    score = 0
+
+    # Base: user must be open to opportunities
+    if not career_status or not career_status.is_open_to_opportunities:
+        return 0
+
+    # Career / field overlap (40 pts)
+    career_field_lower = (job.career_field or "").lower()
+    user_career_lower = (user.career or "").lower()
+    user_skills_lower = (getattr(user, "cv_skills", "") or "").lower()
+    user_headline_lower = (getattr(user, "cv_headline", "") or "").lower()
+    combined_user_text = f"{user_career_lower} {user_skills_lower} {user_headline_lower}"
+
+    if career_field_lower and career_field_lower in combined_user_text:
+        score += 40
+    elif career_field_lower:
+        # Partial word overlap
+        field_words = [w for w in career_field_lower.split() if len(w) > 3]
+        matches = sum(1 for w in field_words if w in combined_user_text)
+        score += min(30, int(matches / max(len(field_words), 1) * 30))
+
+    # Education level fit (20 pts)
+    edu = job.education_level or "any"
+    if edu == "any":
+        score += 20
+    elif edu == "bachelor":
+        academic = (getattr(user, "academic_status", "estudiante") or "estudiante").lower()
+        if academic in ("estudiante", "egresado", "titulado", "licenciado"):
+            score += 20
+        elif academic in ("egresado",):
+            score += 10
+
+    # Experience level fit (20 pts)
+    exp = job.experience_level or "any"
+    if exp in ("entry", "any"):
+        score += 20
+    elif exp == "mid":
+        cv_exp = (getattr(user, "cv_experience", "") or "").lower()
+        if cv_exp:
+            score += 15
+
+    # Job type preference match (20 pts)
+    if career_status.preferred_job_types:
+        try:
+            prefs = json.loads(career_status.preferred_job_types)
+            if job.job_type in prefs:
+                score += 20
+            else:
+                score += 5  # partial credit
+        except Exception:
+            score += 10
+    else:
+        score += 10  # no preference = neutral
+
+    return min(100, score)
+
+
+def _run_job_matching(db: Session, job: JobListing, max_matches: int = 50):
+    """Find best-matching open-to-work users for a job and notify them."""
+    from notification_routes import create_notification
+
+    # Get all users who are open to opportunities
+    open_statuses = db.query(UserCareerStatus).filter(
+        UserCareerStatus.is_open_to_opportunities == True
+    ).all()
+
+    if not open_statuses:
+        return
+
+    scored = []
+    for cs in open_statuses:
+        if cs.user_id == job.posted_by:
+            continue  # Don't match the poster to their own job
+        # Skip if already matched
+        existing = db.query(JobMatch).filter(
+            JobMatch.job_id == job.id, JobMatch.user_id == cs.user_id
+        ).first()
+        if existing:
+            continue
+        u = db.query(User).filter(User.id == cs.user_id, User.is_banned == False).first()
+        if not u:
+            continue
+        s = _compute_match_score(u, job, cs)
+        if s >= 30:  # Minimum threshold to be suggested
+            scored.append((s, u))
+
+    # Take top N by score
+    scored.sort(key=lambda x: x[0], reverse=True)
+    top = scored[:max_matches]
+
+    for score, candidate in top:
+        match = JobMatch(
+            id=gen_id(), job_id=job.id, user_id=candidate.id,
+            score=score, status="pending", notified=False,
+        )
+        db.add(match)
+        db.flush()
+
+        # Notify candidate
+        try:
+            create_notification(
+                db, candidate.id, "job_match",
+                f"Conniku te presentó a {job.company_name}",
+                body=f"Tu perfil fue sugerido al reclutador para el cargo \"{job.job_title}\"",
+                link=f"/jobs?tab=matches",
+                reference_id=match.id,
+            )
+            match.notified = True
+        except Exception as e:
+            print(f"[JobMatch] Notify error for {candidate.id}: {e}")
+
+    db.commit()
+    print(f"[JobMatch] Created {len(top)} matches for job {job.id}")
+
+
 @router.post("/listings")
 def create_job_listing(req: JobListingRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     deadline = None
@@ -219,6 +338,12 @@ def create_job_listing(req: JobListingRequest, user: User = Depends(get_current_
             for uid in user_ids
         ])
         db.commit()
+
+    # Auto-run profile matching in background (never blocks response)
+    try:
+        _run_job_matching(db, job)
+    except Exception as e:
+        print(f"[JobMatch] Matching error: {e}")
 
     return job_to_dict(job, user)
 
@@ -300,9 +425,98 @@ def delete_job(job_id: str, user: User = Depends(get_current_user), db: Session 
     if not job:
         raise HTTPException(403, "No tienes permiso")
     db.query(JobApplication).filter(JobApplication.job_id == job_id).delete(synchronize_session=False)
+    db.query(JobMatch).filter(JobMatch.job_id == job_id).delete(synchronize_session=False)
     db.delete(job)
     db.commit()
     return {"status": "deleted"}
+
+
+# ─── Job Matches ────────────────────────────────────────────
+
+@router.get("/my-matches")
+def get_my_matches(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Return jobs the system suggested the current user for."""
+    matches = db.query(JobMatch).filter(
+        JobMatch.user_id == user.id
+    ).order_by(desc(JobMatch.created_at)).limit(50).all()
+
+    result = []
+    for m in matches:
+        job = db.query(JobListing).filter(JobListing.id == m.job_id).first()
+        if not job:
+            continue
+        poster = db.query(User).filter(User.id == job.posted_by).first()
+        result.append({
+            "matchId": m.id,
+            "score": m.score,
+            "status": m.status,
+            "createdAt": m.created_at.isoformat() if m.created_at else "",
+            "job": job_to_dict(job, poster),
+        })
+
+    return result
+
+
+@router.put("/matches/{match_id}/status")
+def update_match_status(match_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Candidate responds to a match: interested or declined."""
+    match = db.query(JobMatch).filter(JobMatch.id == match_id, JobMatch.user_id == user.id).first()
+    if not match:
+        raise HTTPException(404, "Match no encontrado")
+    status = data.get("status", "")
+    if status not in ("viewed", "interested", "declined"):
+        raise HTTPException(400, "Estado inválido")
+    match.status = status
+
+    # If interested, notify the recruiter
+    if status == "interested":
+        job = db.query(JobListing).filter(JobListing.id == match.job_id).first()
+        if job:
+            from notification_routes import create_notification
+            create_notification(
+                db, job.posted_by, "match_interested",
+                f"{user.first_name} {user.last_name} está interesado en tu oferta",
+                body=f"Perfil sugerido por Conniku para el cargo \"{job.job_title}\"",
+                link=f"/jobs/{job.id}/applications",
+                actor_id=user.id, reference_id=match.id,
+            )
+    db.commit()
+    return {"status": match.status}
+
+
+@router.get("/listings/{job_id}/matches")
+def get_job_matches(job_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Recruiter sees candidates suggested by Conniku for their job."""
+    job = db.query(JobListing).filter(JobListing.id == job_id, JobListing.posted_by == user.id).first()
+    if not job:
+        raise HTTPException(403, "No tienes permiso")
+
+    matches = db.query(JobMatch).filter(
+        JobMatch.job_id == job_id
+    ).order_by(desc(JobMatch.score)).all()
+
+    result = []
+    for m in matches:
+        candidate = db.query(User).filter(User.id == m.user_id).first()
+        if not candidate:
+            continue
+        cs = db.query(UserCareerStatus).filter(UserCareerStatus.user_id == m.user_id).first()
+        result.append({
+            "matchId": m.id,
+            "score": m.score,
+            "status": m.status,
+            "createdAt": m.created_at.isoformat() if m.created_at else "",
+            "candidate": {
+                **user_brief(candidate),
+                "bio": candidate.bio or "",
+                "cvHeadline": getattr(candidate, "cv_headline", "") or "",
+                "cvSkills": getattr(candidate, "cv_skills", "") or "",
+                "isOpenToWork": cs.is_open_to_opportunities if cs else False,
+                "headline": cs.headline if cs else "",
+            },
+        })
+
+    return result
 
 
 # ─── Job Applications ───────────────────────────────────────

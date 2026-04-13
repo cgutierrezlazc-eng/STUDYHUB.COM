@@ -907,6 +907,123 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
     return result
 
 
+# ─── Bio automática ───────────────────────────────────────────────────────────
+
+def _generate_bio_text(user: User, db) -> str:
+    """Call Claude to generate a professional bio from user profile, CV data, and completed courses."""
+    import os, json as _json
+    import anthropic as _anthropic
+    from database import WallPost, UserCourseProgress, Course
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return ""
+
+    # Gather context
+    academic_status_labels = {"estudiante": "Estudiante", "egresado": "Egresado", "titulado": "Titulado"}
+    status_label = academic_status_labels.get(getattr(user, "academic_status", "estudiante"), "Estudiante")
+
+    cv_headline       = getattr(user, "cv_headline", "") or ""
+    cv_summary        = getattr(user, "cv_summary", "") or ""
+    cv_skills_raw     = getattr(user, "cv_skills", "") or ""
+    cv_experience_raw = getattr(user, "cv_experience", "") or ""
+
+    # Completed courses (with titles and categories)
+    try:
+        completed_progress = db.query(UserCourseProgress).filter(
+            UserCourseProgress.user_id == user.id,
+            UserCourseProgress.completed == True
+        ).limit(10).all()
+        if completed_progress:
+            course_ids = [p.course_id for p in completed_progress]
+            courses = db.query(Course).filter(Course.id.in_(course_ids)).all()
+            course_map = {c.id: c for c in courses}
+            completed_courses_text = "\n".join(
+                f"- {course_map[p.course_id].title} ({course_map[p.course_id].category.replace('_', ' ')})"
+                for p in completed_progress if p.course_id in course_map
+            )
+        else:
+            completed_courses_text = "Ninguno completado aún"
+    except Exception:
+        completed_courses_text = "No disponible"
+
+    # Recent milestones from wall posts
+    try:
+        milestone_posts = db.query(WallPost).filter(
+            WallPost.author_id == user.id,
+            WallPost.is_milestone == True
+        ).order_by(WallPost.created_at.desc()).limit(3).all()
+        milestones_text = "\n".join(f"- {p.content}" for p in milestone_posts) if milestone_posts else "Ninguno aún"
+    except Exception:
+        milestones_text = "Ninguno aún"
+
+    prompt = f"""Eres un redactor profesional de perfiles. Escribe una bio de 2 a 4 oraciones en español para esta persona.
+
+REGLAS:
+- Solo párrafo corrido, sin puntos, sin listas, sin títulos ni comillas
+- Natural y convincente — como una presentación de LinkedIn de alto nivel
+- No menciones números ni porcentajes de cursos
+- Analiza CÓMO los cursos completados COMPLEMENTAN su carrera y experiencia profesional
+- Si los cursos son de liderazgo y la persona es ingeniero, menciona capacidad de liderar proyectos
+- Si los cursos son de habilidades blandas y la persona trabaja en atención al cliente, menciona eso
+- Proyecta potencial si es estudiante. Destaca expertise si ya se tituló.
+- Menciona sus herramientas/habilidades técnicas específicas si están disponibles
+
+PERFIL:
+- Universidad: {getattr(user, 'university', '') or 'No especificada'}
+- Carrera: {getattr(user, 'career', '') or 'No especificada'}
+- Estado: {status_label}
+- Título profesional: {getattr(user, 'professional_title', '') or 'No aplica'}
+
+CV:
+- Titular: {cv_headline or 'No disponible'}
+- Resumen: {cv_summary[:400] if cv_summary else 'No disponible'}
+- Habilidades: {cv_skills_raw[:300] if cv_skills_raw else 'No disponible'}
+- Experiencia: {cv_experience_raw[:400] if cv_experience_raw else 'No disponible'}
+
+CURSOS COMPLETADOS EN CONNIKU:
+{completed_courses_text}
+
+LOGROS RECIENTES:
+{milestones_text}
+
+BIO PROFESIONAL:"""
+
+    try:
+        client = _anthropic.Anthropic(api_key=api_key)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=400,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return resp.content[0].text.strip()
+    except Exception as e:
+        logging.warning(f"[Bio] Generation error: {e}")
+        return ""
+
+
+@router.post("/me/bio/generate")
+def generate_bio(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Generate a professional bio from user profile + CV data. Does not save automatically."""
+    bio = _generate_bio_text(user, db)
+    if not bio:
+        raise HTTPException(503, "No se pudo generar la bio en este momento. Intenta más tarde.")
+    return {"bio": bio}
+
+
+@router.post("/me/bio/auto")
+def toggle_bio_auto(
+    body: dict = Body(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Enable/disable auto-update of bio on milestones."""
+    enabled = bool(body.get("enabled", False))
+    user.bio_auto = enabled
+    db.commit()
+    return {"bioAuto": enabled}
+
+
 @router.post("/profile/cover")
 async def update_cover_photo(
     file: UploadFile = File(None),
@@ -915,28 +1032,21 @@ async def update_cover_photo(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Update user cover photo: either upload a custom image or select a template."""
-    from database import DATA_DIR
+    """Update user cover photo: upload a custom image (stored as base64) or select a template."""
+    import base64 as _b64
     if file:
         # Validate file type
         allowed_types = {"image/jpeg", "image/png", "image/webp", "image/gif"}
-        if file.content_type not in allowed_types:
+        content_type = file.content_type or "image/jpeg"
+        if content_type not in allowed_types:
             raise HTTPException(400, "Formato de imagen no soportado. Usa JPG, PNG, WebP o GIF.")
-        # Read and check size (max 5MB)
+        # Read and check size (max 3MB — base64 will be ~4MB in DB)
         content = await file.read()
-        if len(content) > 5 * 1024 * 1024:
-            raise HTTPException(400, "La imagen no puede superar 5MB.")
-        # Save file using DATA_DIR (same persistent path as server.py COVERS_DIR)
-        ext = file.filename.rsplit(".", 1)[-1] if "." in file.filename else "jpg"
-        covers_dir = DATA_DIR / "uploads" / "covers"
-        covers_dir.mkdir(parents=True, exist_ok=True)
-        file_path = covers_dir / f"{user.id}.{ext}"
-        # Remove old cover files for this user
-        for old_file in covers_dir.glob(f"{user.id}.*"):
-            old_file.unlink(missing_ok=True)
-        with open(file_path, "wb") as f:
-            f.write(content)
-        user.cover_photo = f"/uploads/covers/{user.id}.{ext}"
+        if len(content) > 3 * 1024 * 1024:
+            raise HTTPException(400, "La imagen no puede superar 3MB.")
+        # Encode as base64 data URI — stored directly in DB (no filesystem needed)
+        b64_data = _b64.b64encode(content).decode("utf-8")
+        user.cover_photo = f"data:{content_type};base64,{b64_data}"
         user.cover_type = "custom"
     elif template_id:
         user.cover_photo = template_id

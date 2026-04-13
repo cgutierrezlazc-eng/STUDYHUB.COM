@@ -10,7 +10,9 @@ import { Bell, AlertTriangle, MessageSquare, CheckCircle, Hourglass, GraduationC
 
 type Section = 'profile' | 'academic' | 'appearance' | 'notifications' | 'security' | 'email' | 'cv' | 'projects' | 'publications'
 
-export default function Profile() {
+interface ProfileProps { onNavigate?: (path: string) => void }
+
+export default function Profile({ onNavigate }: ProfileProps = {}) {
   const { user, updateProfile, logout } = useAuth()
   const { t } = useI18n()
   const [activeSection, setActiveSection] = useState<Section>('profile')
@@ -46,6 +48,11 @@ export default function Profile() {
   const [confirmPw, setConfirmPw] = useState('')
   const [pwError, setPwError] = useState('')
   const [pwSuccess, setPwSuccess] = useState(false)
+  const [bioGenerating, setBioGenerating] = useState(false)
+  const [bioPreview, setBioPreview] = useState<string | null>(null)
+  const [bioAuto, setBioAuto] = useState<boolean>((user as any).bioAuto || false)
+  const [bioTogglingAuto, setBioTogglingAuto] = useState(false)
+
   const [projects, setProjects] = useState<any[]>([])
   const [publications, setPublications] = useState<any[]>([])
   const [projectsLoaded, setProjectsLoaded] = useState(false)
@@ -80,11 +87,52 @@ export default function Profile() {
         })
       }
       setCvUploadMsg(res.message || t('profile.cvProcessed'))
+      // Auto-generate bio after CV upload if user has bio-auto enabled, or show preview
+      try {
+        const bioRes = await api.generateBio()
+        if (bioRes.bio) {
+          if (bioAuto) {
+            // Auto-accept and save via profile update
+            await updateProfile({ bio: bioRes.bio })
+          } else {
+            // Show preview so user can decide
+            setBioPreview(bioRes.bio)
+          }
+        }
+      } catch (_) {}
     } catch (err: any) {
       setCvUploadMsg(err.message || t('profile.cvUploadError'))
     } finally {
       setCvUploading(false)
     }
+  }
+
+  const handleGenerateBio = async () => {
+    setBioGenerating(true)
+    setBioPreview(null)
+    try {
+      const res = await api.generateBio()
+      if (res.bio) setBioPreview(res.bio)
+    } catch (err: any) {
+      setBioPreview(null)
+    } finally {
+      setBioGenerating(false)
+    }
+  }
+
+  const handleAcceptBio = () => {
+    if (!bioPreview) return
+    update('bio', bioPreview)
+    setBioPreview(null)
+  }
+
+  const handleToggleBioAuto = async (enabled: boolean) => {
+    setBioTogglingAuto(true)
+    try {
+      await api.toggleBioAuto(enabled)
+      setBioAuto(enabled)
+    } catch (_) {}
+    finally { setBioTogglingAuto(false) }
   }
 
   const update = (field: string, value: string | number) => {
@@ -290,11 +338,110 @@ export default function Profile() {
 
                 <div className="pf-divider" />
 
-                <h3>{t('profile.bio')}</h3>
+                {/* ── Bio section ── */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <h3 style={{ margin: 0 }}>{t('profile.bio')}</h3>
+                  {!isEditing && (
+                    <button
+                      className="btn btn-secondary btn-xs"
+                      onClick={() => { setForm({ ...user }); setIsEditing(true) }}
+                      style={{ fontSize: 12 }}
+                    >
+                      {t('profile.editBtn')}
+                    </button>
+                  )}
+                </div>
+
                 {isEditing ? (
-                  <textarea className="form-input" rows={3} value={form.bio || ''} onChange={e => update('bio', e.target.value)} placeholder={t('profile.bioPlaceholder')} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <textarea
+                      className="form-input"
+                      rows={3}
+                      value={form.bio || ''}
+                      onChange={e => update('bio', e.target.value)}
+                      placeholder={t('profile.bioPlaceholder')}
+                    />
+
+                    {/* Generate bio button */}
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      onClick={handleGenerateBio}
+                      disabled={bioGenerating}
+                      style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                      {bioGenerating ? (
+                        <>
+                          <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+                          Generando...
+                        </>
+                      ) : (
+                        <>✨ Generar bio con mi perfil</>
+                      )}
+                    </button>
+
+                    {/* Preview card */}
+                    {bioPreview && (
+                      <div style={{
+                        background: 'rgba(45,98,200,0.06)',
+                        border: '1px solid rgba(45,98,200,0.2)',
+                        borderRadius: 10,
+                        padding: '12px 14px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 10,
+                      }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                          Vista previa — bio generada por Conniku
+                        </div>
+                        <p style={{ margin: 0, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>{bioPreview}</p>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            className="btn btn-primary btn-xs"
+                            onClick={handleAcceptBio}
+                          >
+                            ✓ Usar esta bio
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-xs"
+                            onClick={() => setBioPreview(null)}
+                          >
+                            Mantener la mía
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Auto-update toggle */}
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px',
+                      background: 'var(--bg-secondary)', borderRadius: 10, cursor: 'pointer', gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                          Actualizar bio automáticamente con mis logros
+                        </div>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                          Conniku actualizará tu bio cada vez que alcances un nuevo hito académico
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        className="pf-checkbox"
+                        checked={bioAuto}
+                        disabled={bioTogglingAuto}
+                        onChange={e => handleToggleBioAuto(e.target.checked)}
+                      />
+                    </label>
+                  </div>
                 ) : (
-                  <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>{user.bio || t('profile.bioEmpty')}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0 }}>
+                      {user.bio || t('profile.bioEmpty')}
+                    </p>
+                    {bioAuto && (
+                      <span style={{ fontSize: 11, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        ✦ Bio se actualiza automáticamente con tus logros
+                      </span>
+                    )}
+                  </div>
                 )}
 
                 <div className="pf-footer-meta">
@@ -499,28 +646,132 @@ export default function Profile() {
             )}
 
             {/* ─── Curriculum Vitae (redirect to Jobs) ─── */}
+            {/* ─── CV / Perfil Profesional ─── */}
             {activeSection === 'cv' && (
-              <div className="pf-section" style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, #2563eb, #1d4ed8)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
-                  </svg>
+              <div className="pf-section">
+                <div className="pf-section-header">
+                  <h3>📄 Perfil Profesional</h3>
                 </div>
-                <h3 style={{ margin: '0 0 8px', fontSize: 20 }}>{t('profile.professionalProfile')}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24, maxWidth: 400, margin: '0 auto 24px' }}>
-                  {t('profile.professionalProfileDesc')}
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 20 }}>
+                  Elige cómo quieres construir tu perfil profesional. Puedes llenarlo manualmente con todo el detalle, o subir tu CV y Conniku se encargará de analizarlo y construir tu perfil automáticamente.
                 </p>
-                <button
-                  onClick={() => window.location.href = '/jobs'}
-                  style={{
-                    padding: '12px 32px', background: '#2563eb', color: '#fff', border: 'none',
-                    borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 15,
-                    display: 'inline-flex', alignItems: 'center', gap: 8,
-                    boxShadow: '0 4px 12px rgba(37,99,235,0.3)',
+
+                {/* Two paths */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 28 }}>
+                  {/* Manual */}
+                  <div style={{ border: '1.5px solid var(--border)', borderRadius: 14, padding: 20,
+                    background: 'var(--bg-card)', cursor: 'pointer', transition: 'border-color .2s' }}
+                    onClick={() => onNavigate?.('/jobs')}
+                  >
+                    <div style={{ fontSize: 30, marginBottom: 10 }}>✏️</div>
+                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Completar manualmente</div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                      Ingresa tu experiencia, habilidades y logros paso a paso desde tu perfil laboral.
+                    </p>
+                    <div style={{ marginTop: 14 }}>
+                      <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>Ir a Perfil Laboral →</span>
+                    </div>
+                  </div>
+
+                  {/* Upload */}
+                  <div style={{ border: '1.5px solid var(--accent)', borderRadius: 14, padding: 20,
+                    background: 'rgba(45,98,200,0.04)', cursor: 'pointer' }}
+                  >
+                    <div style={{ fontSize: 30, marginBottom: 10 }}>📂</div>
+                    <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>Subir mi CV</div>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.4 }}>
+                      Conniku analiza tu CV en profundidad, llena tu perfil y genera tu bio profesional automáticamente.
+                    </p>
+                    <div style={{ marginTop: 14 }}>
+                      <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>Recomendado ✦</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Upload zone */}
+                <div
+                  style={{ background: 'var(--bg-secondary)', borderRadius: 14, padding: 28,
+                    border: '2px dashed var(--border)', textAlign: 'center', transition: 'border-color .2s' }}
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--accent)' }}
+                  onDragLeave={e => { e.currentTarget.style.borderColor = 'var(--border)' }}
+                  onDrop={e => {
+                    e.preventDefault()
+                    e.currentTarget.style.borderColor = 'var(--border)'
+                    const f = e.dataTransfer.files?.[0]
+                    if (f) handleCvUpload(f)
                   }}
                 >
-                  {t('profile.goToProfessionalProfile')}
-                </button>
+                  <input
+                    ref={cvFileRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx,.txt"
+                    style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleCvUpload(f) }}
+                  />
+                  {cvUploading ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 36, height: 36, border: '3px solid var(--accent)', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                      <div style={{ fontWeight: 600, fontSize: 15 }}>Analizando tu CV...</div>
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>
+                        Conniku está extrayendo tu experiencia, habilidades y formación académica
+                      </p>
+                    </div>
+                  ) : cvUploadMsg ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                      <div style={{ fontSize: 36 }}>✅</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--accent-green)' }}>¡CV analizado con éxito!</div>
+                      <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0 }}>{cvUploadMsg}</p>
+                      {bioPreview && (
+                        <div style={{ marginTop: 12, width: '100%', background: 'rgba(45,98,200,0.06)',
+                          border: '1px solid rgba(45,98,200,0.2)', borderRadius: 10, padding: '14px 16px', textAlign: 'left' }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>
+                            ✦ Bio profesional generada por Conniku
+                          </div>
+                          <p style={{ margin: 0, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.65 }}>{bioPreview}</p>
+                          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                            <button className="btn btn-primary btn-xs" onClick={() => {
+                              handleAcceptBio()
+                              setActiveSection('profile')
+                            }}>✓ Usar esta bio</button>
+                            <button className="btn btn-secondary btn-xs" onClick={() => setBioPreview(null)}>Descartar</button>
+                          </div>
+                        </div>
+                      )}
+                      <button className="btn btn-secondary btn-sm" style={{ marginTop: 8 }}
+                        onClick={() => { setCvUploadMsg(''); cvFileRef.current?.click() }}>
+                        Subir otro CV
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>📋</div>
+                      <div style={{ fontWeight: 600, fontSize: 16, marginBottom: 6 }}>Arrastra tu CV aquí</div>
+                      <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 18 }}>
+                        PDF, Word o texto plano · máx. 10MB
+                      </p>
+                      <button className="btn btn-primary btn-sm" onClick={() => cvFileRef.current?.click()}>
+                        Seleccionar archivo
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* What gets filled */}
+                <div style={{ marginTop: 20, padding: 16, background: 'var(--bg-secondary)', borderRadius: 12 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, color: 'var(--text-primary)' }}>
+                    Qué analiza Conniku en tu CV:
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                    {[
+                      '✦ Experiencia laboral', '✦ Habilidades técnicas',
+                      '✦ Formación académica', '✦ Certificaciones',
+                      '✦ Idiomas', '✦ Portfolio & proyectos',
+                      '✦ Bio profesional contextual', '✦ Titular de perfil',
+                    ].map(item => (
+                      <div key={item} style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item}</div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 

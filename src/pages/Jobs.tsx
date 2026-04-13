@@ -72,11 +72,12 @@ const EXP_LEVEL_KEYS: Record<string, string> = {
   entry: 'jobs.expJunior', mid: 'jobs.expMid', senior: 'jobs.expSenior', any: 'jobs.expAny',
 }
 
-type TabKey = 'profile' | 'listings' | 'cvs' | 'cv-coach' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter'
+type TabKey = 'profile' | 'listings' | 'cvs' | 'cv-coach' | 'candidates' | 'my-apps' | 'my-listings' | 'tutoring' | 'recruiter' | 'matches'
 
 const TAB_CONFIG_KEYS: { key: TabKey; labelKey: string; icon: (p?: any) => React.ReactNode }[] = [
   { key: 'profile', labelKey: 'jobs.tabProfile', icon: (p) => FileText(p) },
   { key: 'listings', labelKey: 'jobs.tabListings', icon: (p) => ClipboardList(p) },
+  { key: 'matches', labelKey: 'jobs.tabMatches', icon: (p) => Sparkles(p) },
   { key: 'cvs', labelKey: 'jobs.tabCvs', icon: (p) => FileText(p) },
   { key: 'cv-coach', labelKey: 'jobs.tabCvCoach', icon: (p) => Sparkles(p) },
   { key: 'tutoring', labelKey: 'jobs.tabTutoring', icon: (p) => GraduationCap(p) },
@@ -195,6 +196,10 @@ export default function Jobs({ onNavigate }: Props) {
   const [recruiterListLoading, setRecruiterListLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Job matches (system-suggested)
+  const [myMatches, setMyMatches] = useState<any[]>([])
+  const [matchesLoading, setMatchesLoading] = useState(false)
+
   // CV Coach state
   const [coachText, setCoachText] = useState('')
   const [coachRole, setCoachRole] = useState('')
@@ -251,6 +256,12 @@ export default function Jobs({ onNavigate }: Props) {
 
   const loadMyApps = async () => {
     try { setMyApps(await api.getMyApplications()) } catch (err: any) { console.error('Failed to load applications:', err) }
+  }
+
+  const loadMyMatches = async () => {
+    setMatchesLoading(true)
+    try { setMyMatches(await api.getMyJobMatches()) } catch (err: any) { console.error('Failed to load matches:', err) }
+    setMatchesLoading(false)
   }
 
   const loadTutorings = async () => {
@@ -569,6 +580,7 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
     if (t === 'cvs') loadPublicCVs()
     if (t === 'candidates') loadCandidates()
     if (t === 'my-apps') loadMyApps()
+    if (t === 'matches') loadMyMatches()
     if (t === 'tutoring') loadTutorings()
     if (t === 'recruiter') loadRecruiter()
   }
@@ -1155,6 +1167,147 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
           </div>
           )
         })()}
+
+        {/* ── Mis Matchings ── */}
+        {tab === 'matches' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* Explanation banner */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(45,98,200,0.08), rgba(99,102,241,0.06))',
+              border: '1.5px solid rgba(45,98,200,0.2)', borderRadius: 16, padding: 20,
+              display: 'flex', alignItems: 'flex-start', gap: 14,
+            }}>
+              <span style={{ fontSize: 28, lineHeight: 1 }}>✦</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--accent)', marginBottom: 4 }}>
+                  Conniku te presenta ante los reclutadores
+                </div>
+                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  Cuando una empresa publica una oferta, el sistema analiza tu perfil académico y profesional y, si hay compatibilidad,
+                  te presenta automáticamente al reclutador. Aquí puedes ver las oportunidades donde ya fuiste sugerido.
+                  Para aparecer en más matchings, activa <strong>«Abierto a oportunidades»</strong> en tu perfil profesional.
+                </p>
+              </div>
+            </div>
+
+            {matchesLoading ? (
+              [1,2,3].map(i => <div key={i} className="skeleton skeleton-card" style={{ height: 90 }} />)
+            ) : myMatches.length === 0 ? (
+              <div className="empty-state" style={{ padding: 48 }}>
+                <div style={{ fontSize: 48 }}>🎯</div>
+                <h3 style={{ marginTop: 12 }}>Aún no hay matchings para ti</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
+                  Activa «Abierto a oportunidades» y mantén tu perfil actualizado para ser sugerido.
+                </p>
+                <button className="btn btn-primary btn-sm" onClick={() => handleTabChange('profile')}>
+                  Completar mi perfil
+                </button>
+              </div>
+            ) : (
+              myMatches.map((m: any) => {
+                const job = m.job
+                const score = m.score || 0
+                const scoreColor = score >= 70 ? '#059669' : score >= 40 ? '#D97706' : '#6B7280'
+                const scoreBg = score >= 70 ? 'rgba(5,150,105,0.08)' : score >= 40 ? 'rgba(217,119,6,0.08)' : 'rgba(107,114,128,0.08)'
+
+                return (
+                  <div key={m.matchId} className="u-card" style={{ padding: 18, position: 'relative', border: m.status === 'interested' ? '1.5px solid rgba(5,150,105,0.3)' : undefined }}>
+                    {/* Conniku badge */}
+                    <div style={{
+                      position: 'absolute', top: 14, right: 14,
+                      fontSize: 10, fontWeight: 700, letterSpacing: 0.4,
+                      color: 'var(--accent)', background: 'rgba(45,98,200,0.08)',
+                      padding: '3px 8px', borderRadius: 20,
+                    }}>
+                      ✦ CONNIKU TE PRESENTÓ
+                    </div>
+
+                    <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                      {/* Company logo */}
+                      <div style={{ width: 48, height: 48, borderRadius: 10, background: 'var(--bg-tertiary)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                        {job?.companyLogo
+                          ? <img src={job.companyLogo} alt="" style={{ width: 48, height: 48, objectFit: 'cover' }} />
+                          : <span style={{ fontSize: 22 }}>🏢</span>}
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2, paddingRight: 110 }}>{job?.jobTitle}</div>
+                        <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 8 }}>
+                          {job?.companyName} {job?.location ? `· ${job.location}` : ''} {job?.isRemote ? '· Remoto' : ''}
+                        </div>
+
+                        {/* Score pill */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: scoreColor,
+                            background: scoreBg, padding: '3px 10px', borderRadius: 12 }}>
+                            {score}% compatibilidad
+                          </span>
+                          {job?.jobType && (
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)',
+                              background: 'var(--bg-tertiary)', padding: '3px 10px', borderRadius: 12 }}>
+                              {job.jobType === 'full_time' ? 'Tiempo completo' : job.jobType === 'part_time' ? 'Medio tiempo' : job.jobType === 'internship' ? 'Práctica' : job.jobType}
+                            </span>
+                          )}
+                          {m.status === 'interested' && (
+                            <span style={{ fontSize: 12, fontWeight: 700, color: '#059669',
+                              background: 'rgba(5,150,105,0.1)', padding: '3px 10px', borderRadius: 12 }}>
+                              ✓ Marcaste interés
+                            </span>
+                          )}
+                          {m.status === 'declined' && (
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)',
+                              padding: '3px 10px', borderRadius: 12 }}>
+                              Descartado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    {m.status === 'pending' && (
+                      <div style={{ display: 'flex', gap: 8, marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          style={{ fontSize: 13 }}
+                          onClick={async () => {
+                            await api.updateJobMatchStatus(m.matchId, 'interested')
+                            setMyMatches(prev => prev.map(x => x.matchId === m.matchId ? { ...x, status: 'interested' } : x))
+                          }}
+                        >
+                          ✓ Me interesa
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: 13 }}
+                          onClick={async () => {
+                            await api.updateJobMatchStatus(m.matchId, 'declined')
+                            setMyMatches(prev => prev.map(x => x.matchId === m.matchId ? { ...x, status: 'declined' } : x))
+                          }}
+                        >
+                          No me interesa
+                        </button>
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: 13, marginLeft: 'auto' }}
+                          onClick={() => setSelectedJob(job)}
+                        >
+                          Ver oferta
+                        </button>
+                      </div>
+                    )}
+                    {(m.status === 'interested' || m.status === 'declined') && (
+                      <div style={{ marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button className="btn btn-secondary btn-xs" onClick={() => setSelectedJob(job)}>Ver oferta</button>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+        )}
 
         {/* Tutoring Tab */}
         {tab === 'tutoring' && (

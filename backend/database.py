@@ -82,9 +82,10 @@ class User(Base):
     mentoring_price_per_hour = Column(Float, nullable=True)  # Price per hour if paid
     mentoring_currency = Column(String(5), default="USD")  # Currency for price (stored in USD)
     professional_title = Column(String(255), default="")  # e.g. "Ingeniero Civil Industrial"
-    cover_photo = Column(String(500), default="")  # URL or template ID
+    cover_photo = Column(Text, default="")  # template ID, URL or base64 data URI
     cover_type = Column(String(20), default="template")  # "template" or "custom"
     cover_position_y = Column(Integer, default=50)  # 0-100, vertical position %
+    bio_auto = Column(Boolean, default=False)  # Auto-update bio on milestones
     provider = Column(String(20), default="email")  # email | google
 
     # CV / Resume fields
@@ -754,6 +755,21 @@ class UserCareerStatus(Base):
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ─── Job Matching (system-suggested pairings) ───────────────
+
+class JobMatch(Base):
+    """System-generated match between a job listing and a candidate."""
+    __tablename__ = "job_matches"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    job_id = Column(String(16), ForeignKey("job_listings.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    score = Column(Integer, default=0)          # 0-100 compatibility score
+    status = Column(String(20), default="pending")  # pending, viewed, interested, declined
+    notified = Column(Boolean, default=False)   # notification sent to candidate
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("job_id", "user_id", name="uq_job_match"),)
+
+
 # ─── Student CV / Professional Profile ─────────────────────
 
 class StudentCV(Base):
@@ -1364,6 +1380,7 @@ def _ensure_columns():
         ("users", "cover_photo", "VARCHAR(500) DEFAULT ''"),
         ("users", "cover_type", "VARCHAR(20) DEFAULT 'template'"),
         ("users", "cover_position_y", "INTEGER DEFAULT 50"),
+        ("users", "bio_auto", "BOOLEAN DEFAULT FALSE"),
         ("users", "provider", "VARCHAR(20) DEFAULT 'email'"),
         # users — CV fields
         ("users", "cv_headline", "VARCHAR(255) DEFAULT ''"),
@@ -1411,6 +1428,15 @@ def _ensure_columns():
             if col not in existing:
                 conn.execute(_t(f'ALTER TABLE {table} ADD COLUMN {col} {col_type}'))
                 print(f"Migration: added {table}.{col}")
+
+        # One-time: widen cover_photo to TEXT so base64 data URIs fit (Postgres only)
+        try:
+            db_url = str(engine.url)
+            if "postgresql" in db_url or "postgres" in db_url:
+                conn.execute(_t("ALTER TABLE users ALTER COLUMN cover_photo TYPE TEXT"))
+                print("Migration: cover_photo widened to TEXT")
+        except Exception:
+            pass  # Already TEXT or not applicable
 
 
 # ─── Blog Thread (hilo público de opiniones) ──────────────────
