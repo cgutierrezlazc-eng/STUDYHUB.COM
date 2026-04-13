@@ -1233,51 +1233,48 @@ export default function Courses({ onNavigate }: Props) {
             : courses
 
           // Course card component (inline)
-          const CourseCard = ({ course }: { course: any }) => {
+          const CourseRow = ({ course }: { course: any }) => {
             const cc = CATEGORY_COLORS[course.category] || '#2D62C8'
             const progressPct = course.progress?.started && course.lessonCount > 0
               ? Math.round((course.progress.completedLessons / course.lessonCount) * 100)
               : 0
             return (
               <div
-                className="u-card hover-lift"
-                style={{ padding: 18, cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', display: 'flex', flexDirection: 'column', gap: 10 }}
+                className="u-card"
+                style={{ padding: '12px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, transition: 'background 0.12s', borderRadius: 10 }}
                 onClick={() => openCourse(course.id)}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 18px rgba(0,0,0,0.08)' }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ''; (e.currentTarget as HTMLDivElement).style.boxShadow = '' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)' }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '' }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <CourseIcon category={course.category} size={26} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h4 style={{ margin: '0 0 4px', fontSize: 14, lineHeight: 1.35, color: 'var(--text-primary)' }}>{course.title}</h4>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{course.lessonCount} lecciones · ~{course.estimatedMinutes} min</span>
-                      {course.difficulty === 'intermediate' && (
-                        <span style={{ background: `${cc}15`, color: cc, padding: '1px 7px', borderRadius: 20, fontSize: 10, fontWeight: 600 }}>Intermedio</span>
-                      )}
-                      {course.progress?.completed && (
-                        <span style={{ background: 'rgba(5,150,105,0.1)', color: '#059669', padding: '1px 7px', borderRadius: 20, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}>
-                          {Medal({ size: 10 })} Completado
-                        </span>
-                      )}
-                    </div>
+                {/* Icon */}
+                <CourseIcon category={course.category} size={22} />
+
+                {/* Main info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%' }}>{course.title}</span>
+                    {course.isFeatured && <span style={{ fontSize: 9, background: `${cc}15`, color: cc, padding: '1px 6px', borderRadius: 8, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5, flexShrink: 0 }}>★ Destacado</span>}
+                    {course.progress?.completed && <span style={{ fontSize: 9, background: 'rgba(5,150,105,0.1)', color: '#059669', padding: '1px 6px', borderRadius: 8, fontWeight: 700, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 3 }}>{Medal({ size: 9 })} Completado</span>}
                   </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2, flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{course.lessonCount} lecciones · ~{course.estimatedMinutes} min</span>
+                    {course.difficulty === 'intermediate' && <span style={{ fontSize: 10, background: `${cc}12`, color: cc, padding: '0 6px', borderRadius: 6, fontWeight: 600 }}>Intermedio</span>}
+                  </div>
+                  {/* Inline progress bar */}
+                  {course.progress?.started && !course.progress?.completed && (
+                    <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ flex: 1, height: 3, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+                        <div style={{ width: `${progressPct}%`, height: '100%', borderRadius: 2, background: cc }} />
+                      </div>
+                      <span style={{ fontSize: 10, color: cc, fontWeight: 700, flexShrink: 0 }}>{progressPct}%</span>
+                    </div>
+                  )}
                 </div>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, lineHeight: 1.55, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as any }}>
-                  {course.description}
-                </p>
-                {/* Progress bar */}
-                {course.progress?.started && !course.progress?.completed && (
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--text-muted)', marginBottom: 3 }}>
-                      <span>Progreso</span>
-                      <span style={{ color: cc, fontWeight: 600 }}>{progressPct}%</span>
-                    </div>
-                    <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
-                      <div style={{ width: `${progressPct}%`, height: '100%', borderRadius: 2, background: cc, transition: 'width 0.4s ease' }} />
-                    </div>
-                  </div>
-                )}
+
+                {/* Chevron */}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
               </div>
             )
           }
@@ -1292,16 +1289,16 @@ export default function Courses({ onNavigate }: Props) {
             )
           }
 
-          // When a specific category is selected → flat grid
+          // When a specific category is selected → flat list
           if (selectedCategory) {
             return (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
-                {filtered.map(c => <CourseCard key={c.id} course={c} />)}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {filtered.map(c => <CourseRow key={c.id} course={c} />)}
               </div>
             )
           }
 
-          // "Todos" → group by category, each with its own row
+          // "Todos" → group by category, each with its own list
           const grouped: Record<string, any[]> = {}
           for (const c of filtered) {
             const cat = c.category || 'other'
@@ -1314,12 +1311,12 @@ export default function Courses({ onNavigate }: Props) {
           return (
             <>
               {featured.length > 0 && !q && (
-                <div style={{ marginBottom: 28 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)' }}>
-                    {Star({ size: 15 })} Cursos Destacados
+                <div style={{ marginBottom: 24 }}>
+                  <h3 style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    {Star({ size: 14 })} Cursos Destacados
                   </h3>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: 14 }}>
-                    {featured.map(c => <CourseCard key={c.id} course={c} />)}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {featured.map(c => <CourseRow key={c.id} course={c} />)}
                   </div>
                 </div>
               )}
@@ -1328,12 +1325,12 @@ export default function Courses({ onNavigate }: Props) {
                 const label = categories[cat] || cat
                 const cc = CATEGORY_COLORS[cat] || '#64748B'
                 return (
-                  <div key={cat} style={{ marginBottom: 28 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                      <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)' }}>
-                        <CategoryIcon category={cat} size={16} color={cc} />
+                  <div key={cat} style={{ marginBottom: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                      <h3 style={{ fontSize: 13, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        <CategoryIcon category={cat} size={14} color={cc} />
                         {label}
-                        <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-muted)' }}>{list.length} cursos</span>
+                        <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)', textTransform: 'none', letterSpacing: 0 }}>{list.length} cursos</span>
                       </h3>
                       <button
                         className="btn btn-secondary btn-xs"
@@ -1342,8 +1339,8 @@ export default function Courses({ onNavigate }: Props) {
                         Ver todos →
                       </button>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
-                      {list.map(c => <CourseCard key={c.id} course={c} />)}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {list.map(c => <CourseRow key={c.id} course={c} />)}
                     </div>
                   </div>
                 )
