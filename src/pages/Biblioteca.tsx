@@ -86,6 +86,12 @@ export default function Biblioteca({ onNavigate }: Props) {
   const [reading, setReading] = useState<LibDoc | null>(null)
   const [iframeLoaded, setIframeLoaded] = useState(false)
 
+  // ── Clone-to-workspace state ──
+  const [cloneDoc, setCloneDoc] = useState<LibDoc | null>(null)
+  const [projects, setProjects] = useState<{ id: string; name: string; color?: string }[]>([])
+  const [cloneLoading, setCloneLoading] = useState(false)
+  const [cloneSuccess, setCloneSuccess] = useState('')
+
   // Carga datos comunidad
   const loadDocs = useCallback(async () => {
     setLoading(true)
@@ -137,6 +143,28 @@ export default function Biblioteca({ onNavigate }: Props) {
     setSelected(null)
     setIframeLoaded(false)
     setReading(doc)
+  }
+
+  const openCloneModal = async (doc: LibDoc) => {
+    setCloneDoc(doc)
+    setCloneSuccess('')
+    try {
+      const list = await api.getProjects()
+      setProjects(Array.isArray(list) ? list : [])
+    } catch { setProjects([]) }
+  }
+
+  const executeClone = async (projectId: string) => {
+    if (!cloneDoc || cloneLoading) return
+    setCloneLoading(true)
+    try {
+      const res = await api.cloneBibliotecaDoc(cloneDoc.id, projectId)
+      setCloneSuccess(res.project_name || 'tu asignatura')
+      setTimeout(() => { setCloneDoc(null); setCloneSuccess('') }, 2000)
+    } catch (err: any) {
+      alert(err?.message || 'Error al agregar documento')
+    }
+    setCloneLoading(false)
   }
 
   const getViewUrl = (doc: LibDoc): string => {
@@ -481,8 +509,98 @@ export default function Biblioteca({ onNavigate }: Props) {
                   {selected.is_saved ? 'Guardado' : 'Guardar'}
                 </button>
               )}
+              {(selected.has_file || selected.embed_url) && (
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => openCloneModal(selected)}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  {ChevronRight({ size: 14 })} Agregar a mi asignatura
+                </button>
+              )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>Cerrar</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal Selector de Proyecto (Clone) ── */}
+      {cloneDoc && (
+        <div className="modal-overlay" onClick={() => !cloneLoading && setCloneDoc(null)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 420 }}>
+            <button
+              onClick={() => !cloneLoading && setCloneDoc(null)}
+              style={{ position: 'absolute', top: 12, right: 12, background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}
+            >×</button>
+
+            {cloneSuccess ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>Documento agregado</h3>
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
+                  Agregado a <strong>{cloneSuccess}</strong>. Ya puedes estudiarlo con la IA.
+                </p>
+              </div>
+            ) : (
+              <>
+                <h3 style={{ margin: '0 0 4px', fontSize: 16 }}>Agregar a mi asignatura</h3>
+                <p style={{ margin: '0 0 16px', color: 'var(--text-muted)', fontSize: 13 }}>
+                  Selecciona dónde agregar "<strong>{cloneDoc.title}</strong>"
+                </p>
+
+                {projects.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--text-muted)', fontSize: 13 }}>
+                    No tienes asignaturas creadas aún.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 300, overflowY: 'auto' }}>
+                    {projects.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => executeClone(p.id)}
+                        disabled={cloneLoading}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '10px 14px', borderRadius: 8,
+                          border: '1px solid var(--border-color)',
+                          background: 'var(--bg-secondary)',
+                          cursor: cloneLoading ? 'wait' : 'pointer',
+                          textAlign: 'left', width: '100%',
+                          opacity: cloneLoading ? 0.6 : 1,
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => { if (!cloneLoading) e.currentTarget.style.background = 'var(--bg-hover)' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg-secondary)' }}
+                      >
+                        <div style={{
+                          width: 32, height: 32, borderRadius: 6, flexShrink: 0,
+                          background: p.color || 'var(--accent)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#fff', fontSize: 14, fontWeight: 700,
+                        }}>
+                          {(p.name || '?')[0].toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--text-primary)' }}>
+                            {p.name}
+                          </div>
+                        </div>
+                        {ChevronRight({ size: 14 })}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => setCloneDoc(null)}
+                  disabled={cloneLoading}
+                  style={{ marginTop: 14, width: '100%' }}
+                >
+                  Cancelar
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}

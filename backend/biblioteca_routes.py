@@ -10,6 +10,7 @@ Principio: todo se visualiza DENTRO de Conniku. Si un libro no permite embed, no
 """
 import json
 import shutil
+import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -33,6 +34,27 @@ LIBRARY_DIR = DATA_DIR / "biblioteca"
 LIBRARY_DIR.mkdir(exist_ok=True)
 
 PROJECTS_DIR = DATA_DIR / "projects"
+
+
+# ─── Project helpers (mirrored from server.py to avoid circular import) ───
+
+def _get_project_dir(project_id: str) -> Path:
+    return PROJECTS_DIR / project_id
+
+def _get_project_docs_dir(project_id: str) -> Path:
+    d = _get_project_dir(project_id) / "documents"
+    d.mkdir(exist_ok=True)
+    return d
+
+def _get_project_meta(project_id: str) -> dict:
+    meta_file = _get_project_dir(project_id) / "meta.json"
+    if meta_file.exists():
+        return json.loads(meta_file.read_text())
+    return {}
+
+def _save_project_meta(project_id: str, meta: dict):
+    meta_file = _get_project_dir(project_id) / "meta.json"
+    meta_file.write_text(json.dumps(meta, indent=2))
 
 
 # ─── Helpers ───────────────────────────────────────────────────
@@ -469,3 +491,143 @@ def rate_document(
 
     db.commit()
     return {"success": True}
+
+
+# ─── POST /biblioteca/{doc_id}/clone ─────────────────────────
+# Clona un documento de la biblioteca al proyecto del usuario
+
+class CloneRequest(BaseModel):
+    project_id: str
+
+
+@router.post("/{doc_id}/clone")
+async def clone_to_project(
+    doc_id: str,
+    payload: CloneRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Clona un documento de la biblioteca a un proyecto del usuario.
+    - user_shared: copia el archivo PDF/doc al proyecto
+    - gutenberg: descarga el HTML, extrae texto plano, guarda como .txt
+    El documento queda indexado en el AI engine para chat.
+    """
+    # 1. Validar proyecto del usuario
+    meta = _get_project_meta(payload.project_id)
+    if not meta or meta.get("user_id") != user.id:
+        raise HTTPException(403, "Sin acceso al proyecto")
+
+    # 2. Obtener documento de biblioteca
+    doc = db.query(LibraryDocument).filter(
+        LibraryDocument.id == doc_id,
+        LibraryDocument.is_active == True,
+    ).first()
+    if not doc:
+        raise HTTPException(404, "Documento no encontrado en la biblioteca")
+
+    docs_dir = _get_project_docs_dir(payload.project_id)
+    doc_id_new = uuid.uuid4().hex[:12]
+    file_name = ""
+    file_path = None
+    file_size = 0
+
+    # 3. Según source_type, obtener el archivo
+    if doc.source_type == "user_shared" and doc.file_path:
+        # Copiar archivo existente
+        src = Path(doc.file_path)
+        if not src.exists():
+            raise HTTPException(404, "Archivo original no encontrado en disco")
+        file_name = src.name
+        file_path = docs_dir / file_name
+        # Evitar colisión de nombres
+        if file_path.exists():
+            file_name = f"{doc_id_new}_{src.name}"
+            file_path = docs_dir / file_name
+        shutil.copy2(src, file_path)
+        file_size = file_path.stat().st_size
+
+    elif doc.source_type == "gutenberg" and doc.embed_url:
+        # Descargar HTML de Gutenberg y extraer texto plano
+        allowed_origins = (
+            "https://www.gutenberg.org", "http://www.gutenberg.org",
+            "https://gutenberg.org", "http://gutenberg.org",
+        )
+        if not any(doc.embed_url.startswith(o) for o in allowed_origins):
+            raise HTTPException(400, "URL de origen no permitida")
+
+        try:
+            async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                resp = await client.get(doc.embed_url, headers={
+                    "User-Agent": "Conniku/1.0 (educational reader; +https://conniku.com)"
+                })
+                resp.raise_for_status()
+                html = resp.text
+        except httpx.HTTPError:
+            raise HTTPException(503, "No se pudo descargar el libro de Gutenberg")
+
+        # Extraer texto plano del HTML
+        import re
+        text_content = re.sub(r'<[^>]+>', '', html)
+        text_content = re.sub(r'\s+', ' ', text_content).strip()
+
+        # Guardar como .txt
+        safe_title = re.sub(r'[^\w\s-]', '', doc.title or "libro")[:80].strip()
+        file_name = f"{safe_title}.txt"
+        file_path = docs_dir / file_name
+        if file_path.exists():
+            file_name = f"{doc_id_new}_{file_name}"
+            file_path = docs_dir / file_name
+        file_path.write_text(text_content, encoding="utf-8")
+        file_size = file_path.stat().st_size
+
+    else:
+        raise HTTPException(400, "Este documento no se puede clonar (sin archivo ni URL)")
+
+    # 4. Extraer texto e indexar en AI engine
+    from document_processor import DocumentProcessor
+    from ai_engine import AIEngine
+
+    processor = DocumentProcessor()
+    engine = AIEngine()
+
+    text = processor.extract_text(str(file_path))
+    engine.add_document(payload.project_id, doc_id_new, file_name, text)
+
+    # 5. Determinar tipo de archivo
+    ext = file_path.suffix.lower().lstrip('.')
+    type_map = {
+        'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx',
+        'xls': 'xlsx', 'xlsx': 'xlsx', 'ppt': 'pptx', 'pptx': 'pptx',
+        'txt': 'txt', 'csv': 'csv',
+        'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'gif': 'image',
+    }
+    doc_type = type_map.get(ext, 'other')
+
+    # 6. Actualizar meta.json del proyecto
+    meta.setdefault("documents", []).append({
+        "id": doc_id_new,
+        "name": file_name,
+        "path": str(file_path),
+        "size": file_size,
+        "type": doc_type,
+        "uploadedAt": datetime.utcnow().isoformat() + "Z",
+        "processed": True,
+        "source": "biblioteca",
+    })
+    _save_project_meta(payload.project_id, meta)
+
+    # 7. Actualizar storage del usuario
+    user.storage_used_bytes = (user.storage_used_bytes or 0) + file_size
+    db.commit()
+
+    return {
+        "success": True,
+        "document": {
+            "id": doc_id_new,
+            "name": file_name,
+            "type": doc_type,
+            "size": file_size,
+        },
+        "project_name": meta.get("name", ""),
+    }

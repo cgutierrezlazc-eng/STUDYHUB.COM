@@ -1548,6 +1548,8 @@ export const api = {
     if (params?.page) p.set('page', String(params.page))
     return request(`/biblioteca/public-search?${p.toString()}`)
   },
+  cloneBibliotecaDoc: (docId: string, projectId: string) =>
+    request(`/biblioteca/${docId}/clone`, { method: 'POST', body: JSON.stringify({ project_id: projectId }) }),
 
   // ─── Collaborative Documents (Trabajos Grupales) ────────────────
   collabList: (status = 'active') => request(`/collab?status=${status}`),
