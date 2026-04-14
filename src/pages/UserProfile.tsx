@@ -1424,7 +1424,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 <ExecutiveShowcase
                   userId={profile.id}
                   isOwner={!!isOwn}
-                  isMaxUser={(profile as any).subscriptionTier === 'max' || profile.role === 'owner'}
                 />
               </div>
             )}

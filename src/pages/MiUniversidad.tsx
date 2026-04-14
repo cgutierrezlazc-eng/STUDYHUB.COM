@@ -127,7 +127,11 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicsLoading, setTopicsLoading] = useState(false)
   const [openTopics, setOpenTopics] = useState<Set<string>>(new Set())
-  const [courseTab, setCourseTab] = useState<'modulos' | 'todo'>('modulos')
+  const [courseTab, setCourseTab] = useState<'modulos' | 'todo' | 'chat'>('modulos')
+  // Chat de asignatura
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
 
   // Modal agregar asignaturas
   const [showAddModal, setShowAddModal] = useState(false)
@@ -297,6 +301,36 @@ export default function MiUniversidad({ onNavigate }: Props) {
     }
   }
 
+  // ── Chat de asignatura ─────────────────────────────────────
+  // Si la asignatura tiene proyecto Conniku vinculado: usa /projects/{id}/chat (Claude + documentos del curso)
+  // Si no: usa /support/chat con contexto de asignatura (Konni con detección automática de intención)
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || chatLoading || !selectedCourse) return
+    const msg = chatInput.trim()
+    setChatInput('')
+    const newHistory: { role: 'user' | 'assistant'; content: string }[] = [
+      ...chatMessages, { role: 'user', content: msg }
+    ]
+    setChatMessages(newHistory)
+    setChatLoading(true)
+    try {
+      let reply = ''
+      if (selectedCourse.conniku_project_id) {
+        const res: any = await api.chat(selectedCourse.conniku_project_id, msg)
+        reply = res?.reply || res?.message || ''
+      } else {
+        const history = chatMessages.map(m => ({ role: m.role, content: m.content }))
+        const res: any = await api.supportChat(msg, history, `asignatura:${selectedCourse.display_name || selectedCourse.name}`)
+        reply = res?.reply || res?.message || ''
+      }
+      setChatMessages([...newHistory, { role: 'assistant', content: reply || 'Sin respuesta del servidor.' }])
+    } catch {
+      setChatMessages([...newHistory, { role: 'assistant', content: '⚠ No se pudo procesar tu consulta. Intenta nuevamente.' }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
   // ── Marcar novedades como vistas ───────────────────────────
   const markNewSeen = async () => {
     await api.lmsMarkVisited().catch(() => {})
@@ -440,13 +474,17 @@ export default function MiUniversidad({ onNavigate }: Props) {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, width: 'fit-content' }}>
-          {(['modulos', 'todo'] as const).map(t => (
-            <button key={t} onClick={() => setCourseTab(t)}
-              style={{ padding: '7px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: courseTab === t ? 600 : 400,
-                background: courseTab === t ? 'var(--bg-card)' : 'transparent',
-                color: courseTab === t ? 'var(--text-primary)' : 'var(--text-muted)',
-                boxShadow: courseTab === t ? '0 1px 4px rgba(0,0,0,0.1)' : 'none' }}>
-              {t === 'modulos' ? '📚 Por módulo' : '📋 Todo el material'}
+          {([
+            { key: 'modulos', label: '📚 Por módulo' },
+            { key: 'todo',    label: '📋 Todo el material' },
+            { key: 'chat',    label: '💬 Chat' },
+          ] as const).map(({ key, label }) => (
+            <button key={key} onClick={() => { setCourseTab(key); if (key === 'chat' && chatMessages.length === 0) setChatMessages([]) }}
+              style={{ padding: '7px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: courseTab === key ? 600 : 400,
+                background: courseTab === key ? 'var(--bg-card)' : 'transparent',
+                color: courseTab === key ? 'var(--text-primary)' : 'var(--text-muted)',
+                boxShadow: courseTab === key ? '0 1px 4px rgba(0,0,0,0.1)' : 'none' }}>
+              {label}
             </button>
           ))}
         </div>
@@ -477,12 +515,86 @@ export default function MiUniversidad({ onNavigate }: Props) {
                 })} />
             ))}
           </div>
-        ) : (
+        ) : courseTab === 'todo' ? (
           // Vista "todo el material" — lista plana
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
             {topics.flatMap(t => t.items).map((item, idx) => (
               <ItemRow key={item.id} item={item} borderTop={idx > 0} />
             ))}
+          </div>
+        ) : (
+          // Vista Chat — consulta sobre el material de la asignatura
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 420 }}>
+            {/* Header */}
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border-subtle)', display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 20 }}>💬</span>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Chat — {selectedCourse.display_name || selectedCourse.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
+                  {selectedCourse.conniku_project_id
+                    ? 'Responde usando el material sincronizado de esta asignatura'
+                    : 'Consulta sobre esta asignatura — vincula el curso para respuestas más precisas'}
+                </div>
+              </div>
+            </div>
+
+            {/* Mensajes */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 280 }}>
+              {chatMessages.length === 0 && (
+                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '40px 20px' }}>
+                  <p style={{ fontSize: 28, marginBottom: 10 }}>💬</p>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>¿En qué te puedo ayudar?</p>
+                  <p style={{ fontSize: 12, lineHeight: 1.6 }}>Pregunta sobre el contenido de la asignatura,<br/>pide que te explique un tema, o consulta sobre las tareas.</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginTop: 16 }}>
+                    {['Explícame el tema más reciente', 'Resume los conceptos clave', '¿Qué entra en el próximo examen?'].map(q => (
+                      <button key={q} onClick={() => { setChatInput(q) }}
+                        style={{ padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', fontSize: 11, cursor: 'pointer' }}>
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {chatMessages.map((m, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{
+                    maxWidth: '80%', padding: '10px 14px', borderRadius: m.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                    background: m.role === 'user' ? 'var(--accent)' : 'var(--bg-secondary)',
+                    color: m.role === 'user' ? '#fff' : 'var(--text-primary)',
+                    fontSize: 13, lineHeight: 1.55,
+                    border: m.role === 'assistant' ? '1px solid var(--border-subtle)' : 'none',
+                    whiteSpace: 'pre-wrap',
+                  }}>
+                    {m.content}
+                  </div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <div style={{ padding: '10px 14px', borderRadius: '14px 14px 14px 4px', background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', display: 'flex', gap: 4, alignItems: 'center' }}>
+                    {[0, 1, 2].map(i => (
+                      <div key={i} style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--text-muted)', animation: `bounce 1.2s infinite ${i * 0.2}s` }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Input */}
+            <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+              <textarea
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage() } }}
+                placeholder="Escribe tu consulta…"
+                rows={1}
+                style={{ flex: 1, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '9px 12px', fontSize: 13, color: 'var(--text-primary)', resize: 'none', outline: 'none', lineHeight: 1.5, fontFamily: 'inherit' }}
+              />
+              <button onClick={sendChatMessage} disabled={chatLoading || !chatInput.trim()}
+                style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 16px', fontSize: 13, fontWeight: 700, cursor: chatLoading || !chatInput.trim() ? 'not-allowed' : 'pointer', opacity: chatLoading || !chatInput.trim() ? 0.5 : 1, flexShrink: 0 }}>
+                ↑ Enviar
+              </button>
+            </div>
           </div>
         )}
       </div>
