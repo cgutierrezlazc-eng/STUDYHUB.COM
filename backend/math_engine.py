@@ -532,7 +532,8 @@ class MathEngine:
         if "eigenvalor" in low or "eigenvalue" in low or "valor propio" in low:
             evs = mat.eigenvals()
             results["eigenvalues"] = {str(latex(k)): v for k, v in evs.items()}
-            steps.append(f"Eigenvalores: {', '.join(f'$\\lambda={latex(k)}$ (mult. {v})' for k, v in evs.items())}")
+            ev_parts = [f'$\\lambda={latex(k)}$ (mult. {v})' for k, v in evs.items()]
+            steps.append(f"Eigenvalores: {', '.join(ev_parts)}")
 
         if "rango" in low or "rank" in low:
             r = mat.rank()

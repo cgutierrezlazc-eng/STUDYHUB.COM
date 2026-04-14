@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tab Clases v2 — CONNIKU Preview</title>
+<style>
+  :root {
+    --bg-primary: #0f1117;
+    --bg-secondary: #161b27;
+    --bg-card: #1e2538;
+    --bg-card-hover: #252d42;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --accent-dim: rgba(99,102,241,0.13);
+    --success: #22c55e;
+    --success-dim: rgba(34,197,94,0.1);
+    --warning: #f59e0b;
+    --warning-dim: rgba(245,158,11,0.1);
+    --danger: #ef4444;
+    --danger-dim: rgba(239,68,68,0.1);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --border: #2d3748;
+    --radius: 10px;
+    --radius-sm: 7px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 210px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 18px 10px;
+    display: flex; flex-direction: column; gap: 3px;
+    flex-shrink: 0;
+  }
+  .logo { font-size: 17px; font-weight: 700; color: var(--accent-light); padding: 6px 12px 18px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 12px; border-radius: var(--radius-sm);
+    color: var(--text-secondary); cursor: pointer; font-size: 13px;
+  }
+  .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent-light); font-weight: 500; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    height: 52px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; gap: 12px;
+  }
+  .topbar-back {
+    background: var(--bg-card); border: none; color: var(--text-secondary);
+    padding: 5px 11px; border-radius: 6px; cursor: pointer; font-size: 12.5px;
+  }
+  .topbar-title { font-weight: 600; font-size: 14.5px; }
+  .topbar-sub { color: var(--text-secondary); font-size: 11.5px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* Course header compact */
+  .course-header {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .c-icon { font-size: 20px; }
+  .c-name { font-weight: 600; font-size: 14.5px; }
+  .c-meta { color: var(--text-secondary); font-size: 11.5px; display: flex; gap: 12px; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs {
+    display: flex; gap: 2px; background: var(--bg-card);
+    border-radius: var(--radius-sm); padding: 3px; margin-bottom: 18px;
+    border: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1; text-align: center; padding: 7px 4px;
+    border-radius: 5px; cursor: pointer; font-size: 12px;
+    color: var(--text-secondary); font-weight: 500;
+  }
+  .tab:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+  .tab.active { background: var(--accent); color: white; }
+
+  /* ── SECCIÓN PRINCIPAL ── */
+  .clases-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  /* Acción compacta */
+  .action-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .action-card:hover { border-color: var(--accent); background: var(--bg-card-hover); transform: translateY(-1px); }
+  .action-card.primary { border-color: rgba(99,102,241,0.35); background: var(--accent-dim); }
+  .action-card.primary:hover { border-color: var(--accent); }
+  .ac-icon { font-size: 24px; flex-shrink: 0; }
+  .ac-title { font-weight: 600; font-size: 13.5px; margin-bottom: 2px; }
+  .ac-desc { color: var(--text-secondary); font-size: 11.5px; line-height: 1.5; }
+
+  /* ── Upload panel (inline, se expande) ── */
+  .upload-panel {
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .upload-panel.visible { display: block; }
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 24px;
+    margin-bottom: 14px;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .upload-zone-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-zone-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .upload-zone-sub { color: var(--text-secondary); font-size: 12px; }
+  .upload-formats {
+    display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px;
+  }
+  .fmt-badge {
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--text-secondary);
+  }
+  .upload-options {
+    display: flex; gap: 10px; margin-bottom: 14px;
+  }
+  .upload-opt {
+    flex: 1; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    display: flex; gap: 8px; align-items: flex-start; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .upload-opt:hover { border-color: var(--accent); }
+  .upload-opt.sel { border-color: var(--accent); background: var(--accent-dim); }
+  .uo-icon { font-size: 18px; flex-shrink: 0; }
+  .uo-label { font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+  .uo-desc { font-size: 11px; color: var(--text-secondary); }
+
+  /* OR divider */
+  .or-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .or-line { flex: 1; height: 1px; background: var(--border); }
+  .or-text { color: var(--text-muted); font-size: 11px; }
+
+  /* URL input */
+  .url-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .url-input {
+    flex: 1; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary);
+    font-size: 13px;
+  }
+  .url-input:focus { outline: none; border-color: var(--accent); }
+  .url-input::placeholder { color: var(--text-muted); }
+
+  .btn-sm {
+    background: var(--accent); color: white; border: none;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap;
+  }
+  .btn-sm-outline {
+    background: transparent; color: var(--text-secondary);
+    border: 1px solid var(--border);
+    padding: 8px 14px; border-radius: var(--radius-sm);
+    font-size: 13px; cursor: pointer;
+  }
+
+  .info-row {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--success-dim); border: 1px solid rgba(34,197,94,0.2);
+    border-radius: 7px; padding: 9px 12px; font-size: 12.5px; color: var(--text-secondary);
+  }
+  .info-row span { color: var(--success); }
+
+  /* ── Procesando ── */
+  .processing-bar {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px 16px;
+    display: none; margin-bottom: 18px; align-items: center; gap: 12px;
+  }
+  .processing-bar.visible { display: flex; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .proc-label { font-size: 13.5px; font-weight: 500; flex: 1; }
+  .proc-sub { font-size: 11.5px; color: var(--text-secondary); margin-top: 1px; }
+  .proc-prog { color: var(--accent-light); font-size: 13px; font-weight: 600; }
+
+  /* ── Grabando en vivo ── */
+  .live-bar {
+    background: var(--danger-dim); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: var(--radius); padding: 12px 16px;
+    display: none; margin-bottom: 16px;
+  }
+  .live-bar.visible { display: block; }
+  .live-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .rec-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--danger); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+  .live-label { font-weight: 600; font-size: 13px; color: var(--danger); }
+  .live-timer { font-size: 16px; font-weight: 700; margin-left: auto; font-variant-numeric: tabular-nums; }
+  .live-text-box {
+    background: var(--bg-card); border-radius: 7px; padding: 10px 12px;
+    font-size: 12.5px; color: var(--text-secondary); min-height: 60px;
+    max-height: 100px; overflow-y: auto; margin-bottom: 10px; line-height: 1.7;
+  }
+  .cursor { display: inline-block; width: 2px; height: 13px; background: var(--accent); animation: blink 0.8s infinite; vertical-align: text-bottom; margin-left: 2px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .live-controls { display: flex; gap: 8px; }
+  .btn-stop-sm {
+    background: var(--danger); color: white; border: none;
+    padding: 7px 16px; border-radius: 6px; font-size: 12.5px;
+    font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
+  }
+  .btn-pause-sm {
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-secondary); padding: 7px 14px; border-radius: 6px;
+    font-size: 12.5px; cursor: pointer;
+  }
+
+  /* ── Sección de ideas adicionales ── */
+  .section-title {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; margin-top: 4px;
+  }
+  .ideas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .idea-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 13px;
+    transition: all 0.15s; cursor: default;
+  }
+  .idea-card:hover { border-color: var(--accent-light); }
+  .idea-icon { font-size: 18px; margin-bottom: 6px; }
+  .idea-title { font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
+  .idea-desc { font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; }
+  .idea-badge {
+    display: inline-block; margin-top: 5px;
+    font-size: 10.5px; padding: 1px 7px; border-radius: 20px; font-weight: 500;
+  }
+  .badge-now { background: var(--success-dim); color: var(--success); }
+  .badge-easy { background: var(--accent-dim); color: var(--accent-light); }
+  .badge-future { background: var(--bg-secondary); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* ── Historial ── */
+  .history-item {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 11px 14px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .hi-icon { font-size: 16px; flex-shrink: 0; }
+  .hi-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .hi-meta { color: var(--text-secondary); font-size: 11px; display: flex; gap: 10px; }
+  .hi-src { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 10px; color: var(--text-muted); }
+  .hi-actions { margin-left: auto; display: flex; gap: 5px; }
+  .hi-btn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 3px 9px; border-radius: 4px; font-size: 11.5px; cursor: pointer; }
+  .hi-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+
+  /* Demo nav */
+  .demo-nav {
+    position: fixed; bottom: 16px; right: 16px;
+    display: flex; flex-direction: column; gap: 5px; z-index: 200;
+  }
+  .demo-btn {
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-secondary); padding: 6px 12px; border-radius: 6px;
+    cursor: pointer; font-size: 11.5px; white-space: nowrap; transition: all 0.15s;
+  }
+  .demo-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+  .demo-label { font-size: 10px; color: var(--text-muted); text-align: right; padding: 0 3px; }
+
+  /* Modal source */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 100; display: none; align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal-box {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; width: 420px; max-width: 95vw;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .modal-sub { color: var(--text-secondary); font-size: 12.5px; margin-bottom: 16px; }
+  .modal-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .modal-opt {
+    background: var(--bg-secondary); border: 2px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    cursor: pointer; display: flex; align-items: flex-start; gap: 12px; transition: all 0.15s;
+  }
+  .modal-opt:hover, .modal-opt.sel { border-color: var(--accent); background: var(--accent-dim); }
+  .mo-icon { font-size: 20px; flex-shrink: 0; }
+  .mo-label { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .mo-desc { font-size: 11.5px; color: var(--text-secondary); }
+  .save-opt {
+    background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: 7px; padding: 10px 12px; margin-bottom: 16px; font-size: 12.5px;
+  }
+  .save-opt label { display: flex; align-items: center; gap: 6px; cursor: pointer; margin-top: 4px; font-size: 12.5px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+  .btn-cancel { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  .btn-confirm { background: var(--accent); border: none; color: white; padding: 7px 18px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+  /* Done toast */
+  .done-toast {
+    background: var(--success-dim); border: 1px solid rgba(34,197,94,0.3);
+    border-radius: var(--radius); padding: 12px 16px;
+    display: none; margin-bottom: 18px; align-items: center; gap: 10px;
+  }
+  .done-toast.visible { display: flex; }
+  .dt-icon { font-size: 20px; }
+  .dt-title { font-weight: 600; font-size: 13.5px; color: var(--success); }
+  .dt-sub { font-size: 12px; color: var(--text-secondary); }
+  .dt-actions { margin-left: auto; display: flex; gap: 6px; }
+  .btn-doc-sm {
+    background: var(--accent-dim); border: 1px solid var(--accent);
+    color: var(--accent-light); padding: 5px 12px; border-radius: 6px;
+    cursor: pointer; font-size: 12px; font-weight: 500;
+  }
+  .btn-dl-sm {
+    background: var(--bg-card); border: 1px solid var(--border);
+    color: var(--text-secondary); padding: 5px 10px; border-radius: 6px;
+    cursor: pointer; font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">⬡ CONNIKU</div>
+    <div class="nav-item"><span>🏠</span> Inicio</div>
+    <div class="nav-item active"><span>🎓</span> Mi Universidad</div>
+    <div class="nav-item"><span>📚</span> Biblioteca</div>
+    <div class="nav-item"><span>💬</span> Mensajes</div>
+    <div class="nav-item"><span>📅</span> Calendario</div>
+    <div class="nav-item"><span>👤</span> Perfil</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="topbar-back">← Mis asignaturas</button>
+      <div>
+        <div class="topbar-title">Cálculo Diferencial e Integral</div>
+        <div class="topbar-sub">Universidad de Chile · Semestre 1, 2026</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Course header -->
+      <div class="course-header">
+        <div class="c-icon">📐</div>
+        <div>
+          <div class="c-name">Cálculo Diferencial e Integral</div>
+          <div class="c-meta">
+            <span>👨‍🏫 Prof. Rodrigo Fuentes</span>
+            <span>📅 Mar / Jue 10:00–11:30</span>
+            <span>🔗 Zoom</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab">📚 Módulos</div>
+        <div class="tab">📋 Todo el material</div>
+        <div class="tab">💬 Chat</div>
+        <div class="tab">🧩 Quizzes</div>
+        <div class="tab active">🎙 Clases</div>
+      </div>
+
+      <!-- Toast éxito (oculto hasta que se procesa) -->
+      <div class="done-toast" id="done-toast">
+        <div class="dt-icon">✅</div>
+        <div>
+          <div class="dt-title">Transcripción guardada</div>
+          <div class="dt-sub">Clase 08 · 4,320 palabras · agregada a tus documentos. El archivo de video fue eliminado.</div>
+        </div>
+        <div class="dt-actions">
+          <button class="btn-doc-sm">📂 Ver en documentos</button>
+          <button class="btn-dl-sm">⬇ .txt</button>
+        </div>
+      </div>
+
+      <!-- Barra grabando en vivo -->
+      <div class="live-bar" id="live-bar">
+        <div class="live-top">
+          <div class="rec-dot"></div>
+          <div class="live-label">GRABANDO EN VIVO</div>
+          <div style="color:var(--text-muted);font-size:11px;margin-left:8px;">🎤 Micrófono del sistema</div>
+          <div class="live-timer" id="live-timer">00:00:00</div>
+        </div>
+        <div class="live-text-box" id="live-text">
+          <span style="color:var(--text-muted);font-style:italic;">Esperando audio...</span>
+        </div>
+        <div class="live-controls">
+          <button class="btn-stop-sm" onclick="stopLive()">⏹ Finalizar y transcribir</button>
+          <button class="btn-pause-sm">⏸ Pausar</button>
+          <span style="color:var(--text-muted);font-size:11.5px;margin-left:6px;align-self:center;">La versión final se corregirá automáticamente al terminar</span>
+        </div>
+      </div>
+
+      <!-- Barra procesando -->
+      <div class="processing-bar" id="proc-bar-el">
+        <div class="spinner"></div>
+        <div>
+          <div class="proc-label" id="proc-label">Transcribiendo audio...</div>
+          <div class="proc-sub" id="proc-sub">Procesando con Whisper · Esto tarda 1–2 min según la duración</div>
+        </div>
+        <div class="proc-prog" id="proc-prog">38%</div>
+      </div>
+
+      <!-- Acciones compactas -->
+      <div class="clases-grid" id="action-grid">
+        <div class="action-card primary" onclick="showModal()">
+          <div class="ac-icon">🎙</div>
+          <div>
+            <div class="ac-title">Grabar clase en vivo</div>
+            <div class="ac-desc">Transcripción en tiempo real durante la sesión Zoom</div>
+          </div>
+        </div>
+        <div class="action-card" onclick="toggleUpload()">
+          <div class="ac-icon">📁</div>
+          <div>
+            <div class="ac-title">Subir grabación</div>
+            <div class="ac-desc">Video, audio o URL · Se transcribe y el archivo se elimina</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel de subida (se expande al hacer click en "Subir grabación") -->
+      <div class="upload-panel" id="upload-panel">
+
+        <!-- Destino -->
+        <div class="upload-options">
+          <div class="upload-opt sel" id="opt-conniku" onclick="selUploadOpt('conniku')">
+            <span class="uo-icon">☁️</span>
+            <div>
+              <div class="uo-label">Solo transcripción en Conniku</div>
+              <div class="uo-desc">El video se elimina automáticamente al terminar. Sin uso de almacenamiento.</div>
+            </div>
+          </div>
+          <div class="upload-opt" id="opt-both" onclick="selUploadOpt('both')">
+            <span class="uo-icon">💻</span>
+            <div>
+              <div class="uo-label">Transcripción + .txt en mi PC</div>
+              <div class="uo-desc">También descarga el archivo de texto a tu computador.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Zona de arrastre -->
+        <div class="upload-zone" onclick="simulateUpload()">
+          <div class="upload-zone-icon">⬆️</div>
+          <div class="upload-zone-title">Arrastra tu archivo aquí o haz clic para buscar</div>
+          <div class="upload-zone-sub">El archivo se procesa y se elimina — no ocupa espacio permanente</div>
+          <div class="upload-formats">
+            <span class="fmt-badge">MP4</span>
+            <span class="fmt-badge">MKV</span>
+            <span class="fmt-badge">MOV</span>
+            <span class="fmt-badge">WEBM</span>
+            <span class="fmt-badge">MP3</span>
+            <span class="fmt-badge">M4A</span>
+            <span class="fmt-badge">WAV</span>
+          </div>
+        </div>
+
+        <!-- OR url -->
+        <div class="or-row">
+          <div class="or-line"></div>
+          <div class="or-text">O pega un enlace</div>
+          <div class="or-line"></div>
+        </div>
+        <div class="url-row">
+          <input class="url-input" placeholder="Zoom, Google Drive, YouTube, OneDrive..." id="url-input"/>
+          <button class="btn-sm" onclick="simulateUrl()">Transcribir</button>
+          <button class="btn-sm-outline" onclick="toggleUpload()">Cancelar</button>
+        </div>
+
+        <div class="info-row">
+          <span>✅</span> El archivo original se elimina una vez terminada la transcripción · Solo se guarda el texto
+        </div>
+      </div>
+
+      <!-- Ideas adicionales -->
+      <div class="section-title">Más herramientas de la clase</div>
+      <div class="ideas-grid">
+
+        <div class="idea-card">
+          <div class="idea-icon">🎧</div>
+          <div class="idea-title">Solo audio</div>
+          <div class="idea-desc">Sube un archivo de audio (grabadora, teléfono) en lugar de video. Más rápido de subir.</div>
+          <span class="idea-badge badge-now">Incluido</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">📋</div>
+          <div class="idea-title">Resumen automático</div>
+          <div class="idea-desc">Después de transcribir, genera un resumen de los temas principales con los puntos clave.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">🏷️</div>
+          <div class="idea-title">Índice por temas</div>
+          <div class="idea-desc">Detecta cambios de tema y marca timestamps en la transcripción para navegar rápido.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">🔍</div>
+          <div class="idea-title">Búsqueda en clases</div>
+          <div class="idea-desc">Busca una palabra o concepto en todas las transcripciones de la asignatura.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">🗒️</div>
+          <div class="idea-title">Notas de voz</div>
+          <div class="idea-desc">Graba un memo corto (idea, duda) directamente desde el tab y se transcribe en segundos.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">📤</div>
+          <div class="idea-title">Exportar como PDF</div>
+          <div class="idea-desc">Descarga la transcripción formateada como PDF con fecha, asignatura y timestamps.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">🔗</div>
+          <div class="idea-title">Vincular a módulo</div>
+          <div class="idea-desc">Asocia la transcripción a un módulo específico del curso para mejor organización.</div>
+          <span class="idea-badge badge-easy">Fácil de agregar</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">📊</div>
+          <div class="idea-title">Estadísticas del curso</div>
+          <div class="idea-desc">Clases grabadas, horas transcritas, temas más frecuentes por semestre.</div>
+          <span class="idea-badge badge-future">Post-lanzamiento</span>
+        </div>
+
+        <div class="idea-card">
+          <div class="idea-icon">🌐</div>
+          <div class="idea-title">Transcripción desde URL</div>
+          <div class="idea-desc">Pega un enlace de Zoom Cloud, Drive o YouTube. El backend descarga solo el audio y transcribe.</div>
+          <span class="idea-badge badge-now">Incluido</span>
+        </div>
+
+      </div>
+
+      <!-- Historial -->
+      <div class="section-title">Transcripciones de esta asignatura</div>
+
+      <div class="history-item">
+        <div class="hi-icon">📄</div>
+        <div style="flex:1">
+          <div class="hi-name">Clase 08 — Regla de la cadena y derivadas implícitas</div>
+          <div class="hi-meta">
+            <span>📅 10 abr 2026</span>
+            <span>⏱ 1h 28min</span>
+            <span>📝 4,320 palabras</span>
+            <span class="hi-src">🎙 En vivo</span>
+          </div>
+        </div>
+        <div class="hi-actions">
+          <button class="hi-btn">👁 Ver</button>
+          <button class="hi-btn">⬇ .txt</button>
+        </div>
+      </div>
+
+      <div class="history-item">
+        <div class="hi-icon">📄</div>
+        <div style="flex:1">
+          <div class="hi-name">Clase 07 — Derivadas de orden superior</div>
+          <div class="hi-meta">
+            <span>📅 08 abr 2026</span>
+            <span>⏱ 1h 15min</span>
+            <span>📝 3,850 palabras</span>
+            <span class="hi-src">📁 Video subido</span>
+          </div>
+        </div>
+        <div class="hi-actions">
+          <button class="hi-btn">👁 Ver</button>
+          <button class="hi-btn">⬇ .txt</button>
+        </div>
+      </div>
+
+      <div class="history-item">
+        <div class="hi-icon">📄</div>
+        <div style="flex:1">
+          <div class="hi-name">Clase 06 — Reglas de derivación</div>
+          <div class="hi-meta">
+            <span>📅 03 abr 2026</span>
+            <span>⏱ 1h 32min</span>
+            <span>📝 4,700 palabras</span>
+            <span class="hi-src">🔗 Desde enlace</span>
+          </div>
+        </div>
+        <div class="hi-actions">
+          <button class="hi-btn">👁 Ver</button>
+          <button class="hi-btn">⬇ .txt</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modal fuente de audio (grabación en vivo) -->
+<div class="modal-overlay" id="modal-live">
+  <div class="modal-box">
+    <div class="modal-title">🎙 Grabar clase en vivo</div>
+    <div class="modal-sub">¿Qué audio capturar durante la sesión?</div>
+    <div class="modal-options">
+      <div class="modal-opt sel" id="mo-mic" onclick="selModal('mic')">
+        <span class="mo-icon">🎤</span>
+        <div>
+          <div class="mo-label">Micrófono del sistema</div>
+          <div class="mo-desc">Funciona con Zoom app, navegador o cualquier plataforma. Recomendado.</div>
+        </div>
+      </div>
+      <div class="modal-opt" id="mo-tab" onclick="selModal('tab')">
+        <span class="mo-icon">🌐</span>
+        <div>
+          <div class="mo-label">Audio de pestaña del navegador</div>
+          <div class="mo-desc">Solo si usas Zoom en el navegador. Captura todas las voces con más claridad.</div>
+        </div>
+      </div>
+    </div>
+    <div class="save-opt">
+      <div style="font-size:12.5px;font-weight:600;margin-bottom:4px;">Guardar transcripción en:</div>
+      <label><input type="checkbox" checked style="accent-color:var(--accent)"> Documentos de la asignatura</label>
+      <label style="margin-top:4px"><input type="checkbox" style="accent-color:var(--accent)"> También en mi computador (.txt)</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="startLive()">🎙 Comenzar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Demo nav -->
+<div class="demo-nav">
+  <div class="demo-label">Estados demo:</div>
+  <button class="demo-btn" onclick="resetAll()">① Estado inicial</button>
+  <button class="demo-btn" onclick="toggleUpload()">② Subir grabación</button>
+  <button class="demo-btn" onclick="showModal()">③ Modal en vivo</button>
+  <button class="demo-btn" onclick="startLive()">④ Grabando</button>
+  <button class="demo-btn" onclick="simulateUpload()">⑤ Procesando</button>
+  <button class="demo-btn" onclick="showDone()">⑥ Transcripción lista</button>
+</div>
+
+<script>
+  let timerInt = null, secs = 0;
+  let textInt = null, txIdx = 0, txAccum = "";
+  const txParts = [
+    "Muy buenos días. Hoy vamos a continuar con integrales...",
+    " Recuerden que en la clase anterior vimos los límites.",
+    " Ahora el objetivo es encontrar la función primitiva.",
+    " Vamos al ejemplo: si f(x) = 3x², entonces F(x) = x³ + C.",
+    " La constante C es fundamental — no la olviden nunca...",
+  ];
+
+  function showModal() { document.getElementById('modal-live').classList.add('visible'); }
+  function closeModal() { document.getElementById('modal-live').classList.remove('visible'); }
+
+  function selModal(opt) {
+    ['mic','tab'].forEach(o => document.getElementById('mo-'+o).classList.remove('sel'));
+    document.getElementById('mo-'+opt).classList.add('sel');
+  }
+
+  function toggleUpload() {
+    const p = document.getElementById('upload-panel');
+    p.classList.toggle('visible');
+  }
+
+  function selUploadOpt(opt) {
+    ['conniku','both'].forEach(o => document.getElementById('opt-'+o).classList.remove('sel'));
+    document.getElementById('opt-'+opt).classList.add('sel');
+  }
+
+  function startLive() {
+    closeModal();
+    document.getElementById('live-bar').classList.add('visible');
+    document.getElementById('upload-panel').classList.remove('visible');
+    document.getElementById('done-toast').classList.remove('visible');
+    secs = 0; txIdx = 0; txAccum = "";
+    document.getElementById('live-text').innerHTML = '<span style="color:var(--text-muted);font-style:italic;">Esperando audio...</span>';
+    clearInterval(timerInt);
+    timerInt = setInterval(() => {
+      secs++;
+      const h = String(Math.floor(secs/3600)).padStart(2,'0');
+      const m = String(Math.floor((secs%3600)/60)).padStart(2,'0');
+      const s = String(secs%60).padStart(2,'0');
+      document.getElementById('live-timer').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+    clearInterval(textInt);
+    textInt = setInterval(() => {
+      if (txIdx < txParts.length) {
+        txAccum += txParts[txIdx++];
+        document.getElementById('live-text').innerHTML = txAccum + '<span class="cursor"></span>';
+      }
+    }, 2600);
+  }
+
+  function stopLive() {
+    clearInterval(timerInt); clearInterval(textInt);
+    document.getElementById('live-bar').classList.remove('visible');
+    showProcessing();
+  }
+
+  function simulateUpload() {
+    document.getElementById('upload-panel').classList.remove('visible');
+    showProcessing();
+  }
+
+  function simulateUrl() {
+    const v = document.getElementById('url-input').value;
+    document.getElementById('upload-panel').classList.remove('visible');
+    showProcessing("Descargando audio desde enlace...", "Extrayendo audio · El video no se almacena");
+  }
+
+  let procInt = null, procPct = 0;
+  function showProcessing(label, sub) {
+    const el = document.getElementById('proc-bar-el');
+    el.classList.add('visible');
+    document.getElementById('proc-label').textContent = label || "Transcribiendo audio...";
+    document.getElementById('proc-sub').textContent = sub || "Procesando con Whisper · Esto tarda 1–2 min según la duración";
+    procPct = 5;
+    clearInterval(procInt);
+    procInt = setInterval(() => {
+      procPct = Math.min(procPct + Math.random()*8, 95);
+      document.getElementById('proc-prog').textContent = Math.round(procPct) + "%";
+      if (procPct >= 95) { clearInterval(procInt); setTimeout(showDone, 800); }
+    }, 400);
+  }
+
+  function showDone() {
+    document.getElementById('proc-bar-el').classList.remove('visible');
+    document.getElementById('done-toast').classList.add('visible');
+  }
+
+  function resetAll() {
+    clearInterval(timerInt); clearInterval(textInt); clearInterval(procInt);
+    ['live-bar','proc-bar-el','done-toast'].forEach(id => document.getElementById(id).classList.remove('visible'));
+    document.getElementById('upload-panel').classList.remove('visible');
+    document.getElementById('modal-live').classList.remove('visible');
+  }
+</script>
+</body>
+</html>

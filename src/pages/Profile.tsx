@@ -1339,9 +1339,36 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                         )}
                       </div>
 
+                      {/* ── Requisitos previos ── */}
+                      <div style={{ background: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 10, padding: '12px 14px', marginBottom: 16, fontSize: 12, lineHeight: 1.7 }}>
+                        <div style={{ fontWeight: 700, color: '#f59e0b', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>
+                          Antes de conectar — verifica que:
+                        </div>
+                        <div style={{ color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                          <span>✔ Puedes abrir tu campus virtual normalmente en este navegador</span>
+                          <span>✔ Tu campus es accesible desde fuera de la red universitaria (sin VPN)</span>
+                          <span>✔ El servicio web de tu plataforma está habilitado por tu institución</span>
+                        </div>
+                        <div style={{ marginTop: 8, color: 'var(--text-muted)', fontSize: 11 }}>
+                          Si tu campus requiere VPN o solo funciona dentro de la red universitaria, Conniku no podrá sincronizarse automáticamente.
+                        </div>
+                      </div>
+
                       {lmsConnectError && (
-                        <div style={{ color: 'var(--accent-red)', fontSize: 13, marginBottom: 14, padding: '10px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)' }}>
-                          ⚠ {lmsConnectError}
+                        <div style={{ fontSize: 13, marginBottom: 14, padding: '12px 14px', background: 'rgba(239,68,68,0.08)', borderRadius: 10, border: '1px solid rgba(239,68,68,0.2)', color: 'var(--accent-red)' }}>
+                          {lmsConnectError.toLowerCase().includes('failed to fetch') ? (
+                            <div>
+                              <div style={{ fontWeight: 600, marginBottom: 4 }}>⚠ No se pudo conectar con el servidor</div>
+                              <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                                Posibles causas:
+                                <br />• El servidor puede estar iniciando — <strong>intenta nuevamente en 30 segundos</strong>
+                                <br />• Tu campus virtual requiere estar en la red universitaria (VPN)
+                                <br />• La URL ingresada no es correcta o el campus está caído
+                              </div>
+                            </div>
+                          ) : (
+                            <span>⚠ {lmsConnectError}</span>
+                          )}
                         </div>
                       )}
 

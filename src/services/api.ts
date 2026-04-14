@@ -215,7 +215,7 @@ export const api = {
       body: JSON.stringify({ path: filePath }),
     }),
 
-  // ─── AI Workflows (Gemini — free) ──────────────────────────
+  // ─── AI Workflows (GPT-4o-mini) ────────────────────────────
   aiMarketing: (data: any) =>
     request('/ai-workflows/marketing/generate', { method: 'POST', body: JSON.stringify(data) }),
   aiMarketingCalendar: (data: any) =>

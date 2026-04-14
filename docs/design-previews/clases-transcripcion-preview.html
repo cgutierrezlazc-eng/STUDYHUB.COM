@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tab Clases — Transcripción Híbrida — CONNIKU Preview</title>
+<style>
+  :root {
+    --bg-primary: #0f1117;
+    --bg-secondary: #161b27;
+    --bg-card: #1e2538;
+    --bg-card-hover: #252d42;
+    --accent: #6366f1;
+    --accent-light: #818cf8;
+    --accent-dim: rgba(99,102,241,0.15);
+    --success: #22c55e;
+    --success-dim: rgba(34,197,94,0.12);
+    --warning: #f59e0b;
+    --warning-dim: rgba(245,158,11,0.12);
+    --danger: #ef4444;
+    --danger-dim: rgba(239,68,68,0.12);
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --border: #2d3748;
+    --border-light: #374151;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Layout ── */
+  .layout { display: flex; height: 100vh; overflow: hidden; }
+
+  .sidebar {
+    width: 220px;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    padding: 20px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .logo {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent-light);
+    padding: 8px 12px 20px;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 13.5px;
+    transition: all 0.15s;
+  }
+  .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent-light); font-weight: 500; }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  .topbar {
+    height: 56px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  .topbar-back {
+    background: var(--bg-card);
+    border: none;
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .topbar-title { font-weight: 600; color: var(--text-primary); font-size: 15px; }
+  .topbar-sub { color: var(--text-secondary); font-size: 12px; }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  /* ── Course Header ── */
+  .course-header {
+    background: linear-gradient(135deg, #1e2538 0%, #1a2033 100%);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .course-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-dim);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .course-name { font-size: 17px; font-weight: 600; margin-bottom: 3px; }
+  .course-meta { color: var(--text-secondary); font-size: 12.5px; display: flex; gap: 16px; }
+  .course-meta span { display: flex; align-items: center; gap: 4px; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    font-weight: 500;
+  }
+  .tab:hover { color: var(--text-primary); background: var(--bg-card-hover); }
+  .tab.active { background: var(--accent); color: white; }
+
+  /* ── Estado 0: Listo para grabar ── */
+  #state-ready .ready-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .ready-icon { font-size: 56px; margin-bottom: 16px; }
+  .ready-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .ready-desc { color: var(--text-secondary); font-size: 14px; max-width: 420px; margin: 0 auto 28px; line-height: 1.7; }
+  .ready-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .feature-pill {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .feature-pill .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .feature-pill .label { font-size: 12.5px; font-weight: 500; color: var(--text-primary); }
+  .feature-pill .desc { font-size: 11.5px; color: var(--text-secondary); margin-top: 2px; }
+  .btn-start {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 36px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  }
+  .btn-start:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(99,102,241,0.5); }
+
+  /* ── Modal de fuente de audio ── */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 460px;
+    max-width: 95vw;
+  }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .modal-sub { color: var(--text-secondary); font-size: 13px; margin-bottom: 20px; }
+  .modal-options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .modal-option {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: all 0.15s;
+  }
+  .modal-option:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .modal-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .modal-option .opt-icon { font-size: 24px; flex-shrink: 0; }
+  .modal-option .opt-label { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .modal-option .opt-desc { color: var(--text-secondary); font-size: 12.5px; line-height: 1.5; }
+  .modal-option .opt-badge {
+    margin-top: 5px;
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: var(--success-dim);
+    color: var(--success);
+    font-weight: 500;
+  }
+  .modal-option .opt-badge.warn {
+    background: var(--warning-dim);
+    color: var(--warning);
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 9px 20px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13.5px;
+  }
+  .btn-confirm {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 9px 22px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  /* ── Estado 1: Grabando ── */
+  #state-recording { display: none; }
+  .recording-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .rec-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: pulse 1.2s infinite;
+    flex-shrink: 0;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+  .rec-label { font-weight: 600; font-size: 14px; color: var(--danger); }
+  .rec-timer { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: 1px; margin-left: auto; }
+  .rec-source { color: var(--text-secondary); font-size: 12px; display: flex; align-items: center; gap: 5px; margin-left: 12px; }
+
+  .waveform {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    height: 32px;
+  }
+  .bar {
+    width: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+  }
+  .bar:nth-child(2) { animation-delay: 0.1s; }
+  .bar:nth-child(3) { animation-delay: 0.2s; }
+  .bar:nth-child(4) { animation-delay: 0.3s; }
+  .bar:nth-child(5) { animation-delay: 0.4s; }
+  .bar:nth-child(6) { animation-delay: 0.5s; }
+  .bar:nth-child(7) { animation-delay: 0.35s; }
+  .bar:nth-child(8) { animation-delay: 0.15s; }
+  @keyframes wave {
+    0%, 100% { height: 6px; opacity: 0.4; }
+    50% { height: 28px; opacity: 1; }
+  }
+
+  .live-transcript-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    min-height: 220px;
+    position: relative;
+  }
+  .transcript-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .live-badge {
+    background: var(--danger-dim);
+    color: var(--danger);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .live-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+    animation: pulse 1.2s infinite;
+    display: inline-block;
+  }
+  .accuracy-note { color: var(--text-muted); font-size: 11.5px; margin-left: auto; }
+  .transcript-text {
+    color: var(--text-primary);
+    font-size: 14px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+  }
+  .transcript-cursor {
+    display: inline-block;
+    width: 2px;
+    height: 16px;
+    background: var(--accent);
+    margin-left: 2px;
+    animation: blink 0.8s infinite;
+    vertical-align: text-bottom;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .interim-text { color: var(--text-muted); font-style: italic; }
+
+  .rec-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .btn-stop {
+    background: var(--danger);
+    color: white;
+    border: none;
+    padding: 11px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-stop:hover { background: #dc2626; }
+  .btn-pause {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 11px 18px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .rec-note { color: var(--text-muted); font-size: 12px; margin-left: auto; }
+
+  /* ── Estado 2: Procesando con Whisper ── */
+  #state-processing { display: none; }
+  .processing-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  .processing-icon { font-size: 48px; margin-bottom: 16px; }
+  .processing-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .processing-sub { color: var(--text-secondary); font-size: 13.5px; margin-bottom: 24px; }
+  .progress-bar-wrap {
+    background: var(--bg-secondary);
+    border-radius: 20px;
+    height: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+    border-radius: 20px;
+    animation: progressAnim 3s ease-out forwards;
+  }
+  @keyframes progressAnim { from { width: 5%; } to { width: 90%; } }
+  .progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    text-align: left;
+  }
+  .p-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .p-step.done { color: var(--success); }
+  .p-step.active { color: var(--text-primary); font-weight: 500; }
+  .p-step-icon { width: 20px; text-align: center; font-size: 14px; }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Estado 3: Completado ── */
+  #state-done { display: none; }
+  .done-header {
+    background: var(--success-dim);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .done-icon-big { font-size: 28px; }
+  .done-title { font-weight: 600; color: var(--success); font-size: 15px; }
+  .done-sub { color: var(--text-secondary); font-size: 13px; }
+  .done-actions { display: flex; gap: 8px; margin-left: auto; }
+  .btn-doc {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    color: var(--accent-light);
+    padding: 7px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-download {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 7px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .transcript-result {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .transcript-result-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .transcript-result-header .doc-icon { font-size: 20px; }
+  .doc-name { font-weight: 600; font-size: 14px; }
+  .doc-meta { color: var(--text-secondary); font-size: 12px; display: flex; gap: 12px; margin-top: 2px; }
+  .transcript-result-body {
+    padding: 18px;
+    max-height: 280px;
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: var(--text-primary);
+  }
+  .ts-para { margin-bottom: 12px; }
+  .ts-time { color: var(--text-muted); font-size: 11px; margin-right: 8px; font-variant-numeric: tabular-nums; }
+
+  .result-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-val { font-size: 22px; font-weight: 700; color: var(--accent-light); margin-bottom: 3px; }
+  .stat-label { color: var(--text-secondary); font-size: 11.5px; }
+
+  /* ── Historial ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+  .history-list { display: flex; flex-direction: column; gap: 8px; }
+  .history-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .history-item:hover { border-color: var(--accent); background: var(--bg-card-hover); }
+  .hi-icon { font-size: 18px; flex-shrink: 0; }
+  .hi-name { font-size: 13.5px; font-weight: 500; margin-bottom: 2px; }
+  .hi-meta { color: var(--text-secondary); font-size: 12px; display: flex; gap: 10px; }
+  .hi-actions { margin-left: auto; display: flex; gap: 6px; }
+  .hi-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .hi-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+
+  /* ── Flujo demo buttons ── */
+  .demo-nav {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 200;
+  }
+  .demo-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    padding: 8px 14px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .demo-btn:hover { border-color: var(--accent); color: var(--accent-light); }
+  .demo-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    padding: 0 4px;
+  }
+
+  /* ── Modal audio source ── */
+  #modal-source { display: none; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">⬡ CONNIKU</div>
+    <div class="nav-item"><span class="nav-icon">🏠</span> Inicio</div>
+    <div class="nav-item active"><span class="nav-icon">🎓</span> Mi Universidad</div>
+    <div class="nav-item"><span class="nav-icon">📚</span> Biblioteca</div>
+    <div class="nav-item"><span class="nav-icon">💬</span> Mensajes</div>
+    <div class="nav-item"><span class="nav-icon">📅</span> Calendario</div>
+    <div class="nav-item"><span class="nav-icon">👤</span> Perfil</div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Topbar -->
+    <div class="topbar">
+      <button class="topbar-back">← Mis asignaturas</button>
+      <div>
+        <div class="topbar-title">Cálculo Diferencial e Integral</div>
+        <div class="topbar-sub">Universidad de Chile · Semestre 1, 2026</div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <!-- Course Header -->
+      <div class="course-header">
+        <div class="course-icon">📐</div>
+        <div>
+          <div class="course-name">Cálculo Diferencial e Integral</div>
+          <div class="course-meta">
+            <span>👨‍🏫 Prof. Rodrigo Fuentes</span>
+            <span>📅 Mar / Jue 10:00–11:30</span>
+            <span>🔗 Zoom</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab">📚 Módulos</div>
+        <div class="tab">📋 Todo el material</div>
+        <div class="tab">💬 Chat</div>
+        <div class="tab">🧩 Quizzes</div>
+        <div class="tab active">🎙 Clases</div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ESTADO 0: Listo para grabar        -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="state-ready">
+        <div class="ready-card">
+          <div class="ready-icon">🎙</div>
+          <div class="ready-title">Transcripción de Clases</div>
+          <div class="ready-desc">
+            Graba y transcribe tu clase en tiempo real. La transcripción se guarda automáticamente en los documentos de esta asignatura.
+          </div>
+
+          <div class="ready-features">
+            <div class="feature-pill">
+              <div class="icon">⚡</div>
+              <div>
+                <div class="label">En tiempo real</div>
+                <div class="desc">Texto en pantalla mientras habla el profesor</div>
+              </div>
+            </div>
+            <div class="feature-pill">
+              <div class="icon">🤖</div>
+              <div>
+                <div class="label">IA Whisper al final</div>
+                <div class="desc">Versión corregida y precisa al terminar</div>
+              </div>
+            </div>
+            <div class="feature-pill">
+              <div class="icon">📄</div>
+              <div>
+                <div class="label">Guardado automático</div>
+                <div class="desc">Va directo a tus documentos de la asignatura</div>
+              </div>
+            </div>
+            <div class="feature-pill">
+              <div class="icon">💻</div>
+              <div>
+                <div class="label">Guardar en tu PC</div>
+                <div class="desc">Opción de descarga local también disponible</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-start" onclick="showModal()">
+            🎙 Iniciar Grabación
+          </button>
+        </div>
+
+        <!-- Historial previo -->
+        <div class="section-title">Transcripciones anteriores</div>
+        <div class="history-list">
+          <div class="history-item">
+            <div class="hi-icon">📄</div>
+            <div>
+              <div class="hi-name">Clase 08 — Regla de la cadena y derivadas implícitas</div>
+              <div class="hi-meta">
+                <span>📅 10 abr 2026</span>
+                <span>⏱ 1h 28min</span>
+                <span>📝 4,320 palabras</span>
+              </div>
+            </div>
+            <div class="hi-actions">
+              <button class="hi-btn">👁 Ver</button>
+              <button class="hi-btn">⬇ .txt</button>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="hi-icon">📄</div>
+            <div>
+              <div class="hi-name">Clase 07 — Derivadas de orden superior</div>
+              <div class="hi-meta">
+                <span>📅 08 abr 2026</span>
+                <span>⏱ 1h 15min</span>
+                <span>📝 3,850 palabras</span>
+              </div>
+            </div>
+            <div class="hi-actions">
+              <button class="hi-btn">👁 Ver</button>
+              <button class="hi-btn">⬇ .txt</button>
+            </div>
+          </div>
+          <div class="history-item">
+            <div class="hi-icon">📄</div>
+            <div>
+              <div class="hi-name">Clase 06 — Reglas de derivación</div>
+              <div class="hi-meta">
+                <span>📅 03 abr 2026</span>
+                <span>⏱ 1h 32min</span>
+                <span>📝 4,700 palabras</span>
+              </div>
+            </div>
+            <div class="hi-actions">
+              <button class="hi-btn">👁 Ver</button>
+              <button class="hi-btn">⬇ .txt</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ESTADO 1: Grabando                 -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="state-recording">
+        <!-- Barra de estado -->
+        <div class="recording-header">
+          <div class="rec-dot"></div>
+          <div class="rec-label">GRABANDO</div>
+          <div class="waveform">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            <div class="bar"></div><div class="bar"></div>
+          </div>
+          <div class="rec-source">🎤 Micrófono del sistema</div>
+          <div class="rec-timer" id="timer">00:00:00</div>
+        </div>
+
+        <!-- Transcripción en vivo -->
+        <div class="live-transcript-box">
+          <div class="transcript-header">
+            <span class="live-badge">EN VIVO</span>
+            <span style="font-size:13px; font-weight:500; color: var(--text-secondary);">Transcripción en tiempo real</span>
+            <span class="accuracy-note">⚠️ Borrador — Whisper corregirá al finalizar</span>
+          </div>
+          <div class="transcript-text" id="live-text">
+            <span style="color: var(--text-muted); font-style: italic;">Esperando audio...</span>
+          </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="rec-controls">
+          <button class="btn-stop" onclick="stopRecording()">⏹ Finalizar y Transcribir</button>
+          <button class="btn-pause">⏸ Pausar</button>
+          <div class="rec-note">💡 El audio se guardará y Whisper generará la versión final precisa</div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ESTADO 2: Procesando con Whisper   -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="state-processing">
+        <div class="processing-card">
+          <div class="processing-icon">🤖</div>
+          <div class="processing-title">Procesando con Whisper IA</div>
+          <div class="processing-sub">Generando transcripción precisa de la clase. Esto tarda 1–2 minutos según la duración.</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="proc-bar"></div>
+          </div>
+          <div class="progress-steps">
+            <div class="p-step done" id="ps1">
+              <span class="p-step-icon">✅</span> Audio capturado (12.4 MB)
+            </div>
+            <div class="p-step done" id="ps2">
+              <span class="p-step-icon">✅</span> Audio comprimido para envío
+            </div>
+            <div class="p-step active" id="ps3">
+              <span class="p-step-icon"><span class="spinner"></span></span> Enviando a Whisper API...
+            </div>
+            <div class="p-step" id="ps4">
+              <span class="p-step-icon">⬜</span> Formateando transcripción
+            </div>
+            <div class="p-step" id="ps5">
+              <span class="p-step-icon">⬜</span> Guardando en documentos de la asignatura
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════ -->
+      <!-- ESTADO 3: Completado               -->
+      <!-- ═══════════════════════════════════ -->
+      <div id="state-done">
+        <!-- Banner éxito -->
+        <div class="done-header">
+          <div class="done-icon-big">✅</div>
+          <div>
+            <div class="done-title">Transcripción guardada en tus documentos</div>
+            <div class="done-sub">Clase 09 · 13 abr 2026 · 1h 22min · 4,108 palabras</div>
+          </div>
+          <div class="done-actions">
+            <button class="btn-doc">📂 Ver en Documentos</button>
+            <button class="btn-download">⬇ Descargar .txt</button>
+          </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="result-stats" style="margin-bottom: 16px;">
+          <div class="stat-card">
+            <div class="stat-val">1h 22m</div>
+            <div class="stat-label">Duración</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">4,108</div>
+            <div class="stat-label">Palabras</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">98%</div>
+            <div class="stat-label">Confianza Whisper</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val">es-CL</div>
+            <div class="stat-label">Idioma detectado</div>
+          </div>
+        </div>
+
+        <!-- Vista previa transcripción -->
+        <div class="transcript-result">
+          <div class="transcript-result-header">
+            <span class="doc-icon">📄</span>
+            <div>
+              <div class="doc-name">Clase 09 — Integrales indefinidas · 13 abr 2026</div>
+              <div class="doc-meta">
+                <span>Versión Whisper IA</span>
+                <span>Guardado en Documentos de la asignatura</span>
+              </div>
+            </div>
+          </div>
+          <div class="transcript-result-body">
+            <div class="ts-para">
+              <span class="ts-time">[00:00]</span>Buenos días a todos, vamos a comenzar con la clase de hoy. El tema de hoy es integrales indefinidas, que es uno de los conceptos más importantes del cálculo y que vamos a estar utilizando durante todo el resto del semestre.
+            </div>
+            <div class="ts-para">
+              <span class="ts-time">[02:14]</span>Recuerden que la derivada nos dice cómo cambia una función en un punto determinado. La integral, en cambio, es básicamente el proceso inverso. Si yo tengo una función f de x, quiero encontrar otra función F mayúscula, tal que la derivada de F sea igual a f.
+            </div>
+            <div class="ts-para">
+              <span class="ts-time">[05:38]</span>Esto es lo que llamamos la antiderivada o primitiva. Y aquí es donde entra el Teorema Fundamental del Cálculo, que establece la conexión profunda entre derivadas e integrales. Este teorema lo veremos la próxima clase en detalle, hoy nos concentramos en la mecánica.
+            </div>
+            <div class="ts-para">
+              <span class="ts-time">[08:21]</span>Vamos al pizarrón. Si derivamos x al cuadrado, obtenemos 2x. Entonces la integral de 2x sería x al cuadrado. Pero ojo, hay que agregar la constante de integración C, porque al derivar cualquier constante el resultado es cero, así que hay infinitas funciones cuya derivada es 2x...
+            </div>
+            <div style="color: var(--text-muted); font-style: italic; font-size: 12px; margin-top: 8px;">
+              ... 4,012 palabras más · Ver completo en Documentos →
+            </div>
+          </div>
+        </div>
+
+        <!-- Nuevo botón -->
+        <div style="text-align: center; margin-top: 8px;">
+          <button class="btn-start" onclick="resetAll()" style="box-shadow: none; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary);">
+            🎙 Nueva grabación
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- MODAL: ¿Qué audio capturar?               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-source">
+  <div class="modal-box">
+    <div class="modal-title">🎙 Configurar grabación</div>
+    <div class="modal-sub">Elige qué audio capturar durante la clase. Puedes cambiar esto después.</div>
+
+    <div class="modal-options">
+      <div class="modal-option selected" id="opt-mic" onclick="selectOption('mic')">
+        <span class="opt-icon">🎤</span>
+        <div>
+          <div class="opt-label">Micrófono del sistema</div>
+          <div class="opt-desc">Captura lo que escuchas por los parlantes/audífonos más tu propia voz. Funciona con Zoom app, navegador o cualquier plataforma.</div>
+          <span class="opt-badge">✅ Recomendado — funciona siempre</span>
+        </div>
+      </div>
+
+      <div class="modal-option" id="opt-tab" onclick="selectOption('tab')">
+        <span class="opt-icon">🌐</span>
+        <div>
+          <div class="opt-label">Audio de pestaña del navegador</div>
+          <div class="opt-desc">Captura todo el audio de la pestaña de Zoom web. Más limpio, sin ruido ambiente. Solo funciona si usas Zoom en el navegador.</div>
+          <span class="opt-badge warn">⚠️ Solo Zoom web — no funciona con app desktop</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px;">
+      <span style="font-size: 18px;">💾</span>
+      <div>
+        <div style="font-size: 13px; font-weight: 600; margin-bottom: 4px;">¿Dónde guardar la transcripción?</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="checkbox" checked style="accent-color: var(--accent);"> En Conniku (documentos de la asignatura)
+          </label>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+            <input type="checkbox" style="accent-color: var(--accent);"> También en mi computador (.txt)
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-confirm" onclick="startRecording()">🎙 Comenzar ahora</button>
+    </div>
+  </div>
+</div>
+
+<!-- Demo nav -->
+<div class="demo-nav">
+  <div class="demo-label">Vista previa estados:</div>
+  <button class="demo-btn" onclick="showState('ready')">① Listo</button>
+  <button class="demo-btn" onclick="showModal()">② Modal audio</button>
+  <button class="demo-btn" onclick="startRecording()">③ Grabando</button>
+  <button class="demo-btn" onclick="stopRecording()">④ Procesando</button>
+  <button class="demo-btn" onclick="showState('done')">⑤ Completado</button>
+</div>
+
+<script>
+  let timerInterval = null;
+  let seconds = 0;
+  let textInterval = null;
+  let selectedAudio = 'mic';
+
+  const liveTranscriptParts = [
+    "Buenos días a todos, hoy vamos a ver el tema de integrales indefinidas...",
+    " Este es uno de los conceptos más importantes del cálculo.",
+    " Recuerden que la derivada nos dice cómo cambia una función.",
+    " La integral es el proceso inverso — buscamos la antiderivada.",
+    " Vamos al pizarrón... si derivamos x al cuadrado obtenemos 2x.",
+    " Por lo tanto la integral de 2x es x cuadrado más la constante C.",
+    " Ojo, la constante C es fundamental — no olviden agregarla...",
+  ];
+  let transcriptIndex = 0;
+  let currentText = "";
+
+  function showState(state) {
+    ['ready', 'recording', 'processing', 'done'].forEach(s => {
+      document.getElementById('state-' + s).style.display = 'none';
+    });
+    document.getElementById('state-' + state).style.display = 'block';
+    document.getElementById('modal-source').style.display = 'none';
+  }
+
+  function showModal() {
+    document.getElementById('modal-source').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-source').style.display = 'none';
+  }
+
+  function selectOption(opt) {
+    selectedAudio = opt;
+    document.getElementById('opt-mic').classList.remove('selected');
+    document.getElementById('opt-tab').classList.remove('selected');
+    document.getElementById('opt-' + opt).classList.add('selected');
+  }
+
+  function startRecording() {
+    closeModal();
+    showState('recording');
+    // Timer
+    seconds = 0;
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      seconds++;
+      const h = String(Math.floor(seconds / 3600)).padStart(2,'0');
+      const m = String(Math.floor((seconds % 3600) / 60)).padStart(2,'0');
+      const s = String(seconds % 60).padStart(2,'0');
+      document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    // Simulated live transcript
+    currentText = "";
+    transcriptIndex = 0;
+    document.getElementById('live-text').innerHTML = '<span class="transcript-cursor"></span>';
+    clearInterval(textInterval);
+    textInterval = setInterval(() => {
+      if (transcriptIndex < liveTranscriptParts.length) {
+        currentText += liveTranscriptParts[transcriptIndex];
+        transcriptIndex++;
+        document.getElementById('live-text').innerHTML =
+          currentText + '<span class="interim-text"> ...</span><span class="transcript-cursor"></span>';
+      }
+    }, 2800);
+  }
+
+  function stopRecording() {
+    clearInterval(timerInterval);
+    clearInterval(textInterval);
+    showState('processing');
+
+    // Simulate processing steps
+    setTimeout(() => {
+      document.getElementById('ps3').className = 'p-step done';
+      document.getElementById('ps3').querySelector('.p-step-icon').textContent = '✅';
+      document.getElementById('ps3').innerHTML = document.getElementById('ps3').innerHTML.replace('Enviando a Whisper API...', 'Enviado a Whisper API');
+      document.getElementById('ps4').className = 'p-step active';
+      document.getElementById('ps4').querySelector('.p-step-icon').innerHTML = '<span class="spinner"></span>';
+    }, 2000);
+    setTimeout(() => {
+      document.getElementById('ps4').className = 'p-step done';
+      document.getElementById('ps4').querySelector('.p-step-icon').textContent = '✅';
+      document.getElementById('ps5').className = 'p-step active';
+      document.getElementById('ps5').querySelector('.p-step-icon').innerHTML = '<span class="spinner"></span>';
+    }, 4000);
+    setTimeout(() => {
+      document.getElementById('ps5').className = 'p-step done';
+      document.getElementById('ps5').querySelector('.p-step-icon').textContent = '✅';
+    }, 5500);
+    setTimeout(() => {
+      showState('done');
+    }, 6500);
+  }
+
+  function resetAll() {
+    clearInterval(timerInterval);
+    clearInterval(textInterval);
+    seconds = 0;
+    currentText = "";
+    transcriptIndex = 0;
+    showState('ready');
+  }
+
+  // Init
+  showState('ready');
+</script>
+</body>
+</html>
