@@ -65,7 +65,7 @@ Before EVERY action, Claude MUST complete these checks silently. If any check fa
 ## Workflow Protocol (MANDATORY)
 
 ### Planificar antes de ejecutar
-- Tareas no-triviales: usar Plan Mode ANTES de escribir codigo
+- Tareas no-triviales: explicar el plan en el mensaje antes de ejecutar (NO usar Plan Mode formal)
 - Cuando el plan este solido, preguntar a Cristian si proceder con ejecucion
 - No escribir codigo sin plan aprobado en tareas que toquen mas de 2 archivos
 
