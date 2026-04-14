@@ -78,14 +78,13 @@ export default function Messages({ conversationId, onNavigate }: Props) {
 
     const unsubConnection = wsService.onConnection((connected) => {
       setWsConnected(connected)
-      if (connected) {
-        // Stop polling when WS reconnects
-        if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
-      } else {
-        // WS disconnected — restart polling for active conversation
-        if (activeConv && !pollRef.current) {
-          pollRef.current = setInterval(() => loadMessages(activeConv), 5000)
-        }
+      // Adjust polling speed: fast (5s) when WS down, slow (30s) when WS up
+      if (activeConv) {
+        if (pollRef.current) clearInterval(pollRef.current)
+        pollRef.current = setInterval(
+          () => loadMessages(activeConv),
+          connected ? 30000 : 5000
+        )
       }
     })
 
@@ -222,11 +221,13 @@ export default function Messages({ conversationId, onNavigate }: Props) {
       wsService.subscribeConversation(activeConv)
       prevConvRef.current = activeConv
 
-      // Fallback polling only if WS is not connected
-      if (!wsService.connected) {
-        if (pollRef.current) clearInterval(pollRef.current)
-        pollRef.current = setInterval(() => loadMessages(activeConv), 5000)
-      }
+      // Always poll as safety net — WS delivers instantly, polling catches anything missed.
+      // Fast poll (5s) when WS is down, slow poll (30s) when WS is up.
+      if (pollRef.current) clearInterval(pollRef.current)
+      pollRef.current = setInterval(
+        () => loadMessages(activeConv),
+        wsService.connected ? 30000 : 5000
+      )
     }
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
   }, [activeConv])
@@ -282,24 +283,20 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     if (textareaRef2.current) { textareaRef2.current.style.height = '36px' }
 
     // Send typing stop
-    wsService.sendStopTyping(activeConv)
+    if (wsService.connected) wsService.sendStopTyping(activeConv)
 
-    if (wsService.connected) {
-      // Real-time path: send via WebSocket
-      wsService.sendMessage(activeConv, content, 'text', replyTo || undefined)
-    } else {
-      // Fallback: send via REST API
-      setSending(true)
-      try {
-        await api.sendMessage(activeConv, { content, reply_to_id: replyTo?.id })
-        await loadMessages(activeConv)
-        await loadConversations()
-      } catch (err: any) {
-        alert(err.message || t('msg.errorSend'))
-        setNewMsg(content) // Restore message on error
-      }
-      setSending(false)
+    // Always send via REST — reliable with error handling.
+    // Recipients get the message in real-time via WebSocket broadcast from backend.
+    setSending(true)
+    try {
+      await api.sendMessage(activeConv, { content, reply_to_id: replyTo?.id })
+      await loadMessages(activeConv)
+      await loadConversations()
+    } catch (err: any) {
+      alert(err.message || t('msg.errorSend'))
+      setNewMsg(content) // Restore message on error
     }
+    setSending(false)
     setReplyTo(null)
   }
 
