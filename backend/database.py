@@ -1630,6 +1630,58 @@ class BlogThread(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# ─── Collaborative Documents (Trabajos Grupales) ──────────────
+
+class CollabDocument(Base):
+    __tablename__ = "collab_documents"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    title = Column(String(500), nullable=False)
+    description = Column(Text, default="")
+    content = Column(Text, default="")  # HTML content from Tiptap editor
+    owner_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    status = Column(String(20), default="active")  # active | archived
+    university = Column(String(255), default="")
+    career = Column(String(255), default="")
+    course_name = Column(String(255), default="")
+    color = Column(String(7), default="#2D62C8")  # hex color for UI
+    icon = Column(String(50), default="file-text")  # lucide icon name
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    owner = relationship("User", foreign_keys=[owner_id])
+    members = relationship("CollabDocumentMember", back_populates="document", cascade="all, delete-orphan")
+    versions = relationship("CollabDocumentVersion", back_populates="document", cascade="all, delete-orphan")
+
+
+class CollabDocumentMember(Base):
+    __tablename__ = "collab_document_members"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    document_id = Column(String(16), ForeignKey("collab_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    role = Column(String(20), default="editor")  # owner | editor | viewer
+    joined_at = Column(DateTime, default=datetime.utcnow)
+
+    document = relationship("CollabDocument", back_populates="members")
+    user = relationship("User")
+
+    __table_args__ = (
+        UniqueConstraint("document_id", "user_id", name="uq_collab_doc_user"),
+    )
+
+
+class CollabDocumentVersion(Base):
+    __tablename__ = "collab_document_versions"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    document_id = Column(String(16), ForeignKey("collab_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    content = Column(Text, nullable=False)  # HTML snapshot
+    version_number = Column(Integer, nullable=False)
+    created_by = Column(String(16), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    document = relationship("CollabDocument", back_populates="versions")
+    author = relationship("User", foreign_keys=[created_by])
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()

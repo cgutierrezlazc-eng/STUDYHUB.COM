@@ -1542,6 +1542,20 @@ export const api = {
     if (params?.page) p.set('page', String(params.page))
     return request(`/biblioteca/public-search?${p.toString()}`)
   },
+
+  // ─── Collaborative Documents (Trabajos Grupales) ────────────────
+  collabList: (status = 'active') => request(`/collab?status=${status}`),
+  collabGet: (id: string) => request(`/collab/${id}`),
+  collabCreate: (data: any) => request('/collab', { method: 'POST', body: JSON.stringify(data) }),
+  collabUpdate: (id: string, data: any) => request(`/collab/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  collabDelete: (id: string) => request(`/collab/${id}`, { method: 'DELETE' }),
+  collabAddMember: (docId: string, data: any) => request(`/collab/${docId}/members`, { method: 'POST', body: JSON.stringify(data) }),
+  collabRemoveMember: (docId: string, userId: string) => request(`/collab/${docId}/members/${userId}`, { method: 'DELETE' }),
+  collabUpdateRole: (docId: string, userId: string, data: any) => request(`/collab/${docId}/members/${userId}/role`, { method: 'PUT', body: JSON.stringify(data) }),
+  collabVersions: (docId: string) => request(`/collab/${docId}/versions`),
+  collabSaveVersion: (docId: string) => request(`/collab/${docId}/versions`, { method: 'POST' }),
+  collabGetVersion: (docId: string, versionId: string) => request(`/collab/${docId}/versions/${versionId}`),
+  collabSearchUsers: (q: string) => request(`/collab/users/search?q=${encodeURIComponent(q)}`),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

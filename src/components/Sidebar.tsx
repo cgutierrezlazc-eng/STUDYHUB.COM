@@ -337,6 +337,12 @@ export default function Sidebar({ projects, activeProjectId, currentPath, onNavi
         {Icons.bookOpen(IC.rooms)} Biblioteca
       </button>
       <button
+        className={`nav-item ${isActive('/group-docs') ? 'active' : ''}`}
+        onClick={() => onNavigate('/group-docs')}
+      >
+        {Icons.fileText(IC.notes)} Trabajos Grupales
+      </button>
+      <button
         className={`nav-item ${isActive('/tutores') ? 'active' : ''}`}
         onClick={() => onNavigate('/tutores')}
       >
