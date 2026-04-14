@@ -1397,6 +1397,41 @@ def canvas_get_calendar_events(base_url: str, token: str,
         return []
 
 
+def _moodle_get_submission_status(base_url: str, token: str, assign_id: int) -> str:
+    """Consulta mod_assign_get_submission_status y retorna: submitted | draft | nosubmission | unknown."""
+    try:
+        data = _moodle_call(base_url, token, "mod_assign_get_submission_status",
+                            {"assignid": assign_id})
+        last = data.get("lastattempt") or {}
+        sub  = last.get("submission") or {}
+        status = sub.get("status", "")
+        if status == "submitted":
+            return "submitted"
+        if status == "draft":
+            return "draft"
+        # "new", "reopened", empty → no submission
+        return "nosubmission"
+    except Exception as e:
+        log.debug(f"[LMS] submission_status error (assign {assign_id}): {e}")
+        return "unknown"
+
+
+def _canvas_get_submission_status(base_url: str, token: str,
+                                   course_ext_id: str, assign_ext_id: str) -> str:
+    """Consulta Canvas submission self-status: submitted | nosubmission | unknown."""
+    try:
+        path = f"/courses/{course_ext_id}/assignments/{assign_ext_id}/submissions/self"
+        result = canvas_get(base_url, token, path, {})
+        if isinstance(result, dict):
+            ws = result.get("workflow_state", "")
+            if ws in ("submitted", "graded", "pending_review"):
+                return "submitted"
+            return "nosubmission"
+    except Exception as e:
+        log.debug(f"[LMS] canvas submission_status error: {e}")
+    return "unknown"
+
+
 def _create_alert_notification(db, user_id: str, title: str, body: str,
                                 link: str = "/calendar") -> None:
     notif = InAppNotification(
@@ -1466,15 +1501,16 @@ def get_lms_calendar(user: User = Depends(get_current_user),
     return {
         "events": [
             {
-                "id":            e.id,
-                "title":         e.title,
-                "event_type":    e.event_type,
-                "due_date":      e.due_date.isoformat() + "Z",
-                "color":         e.color,
-                "course_name":   e.lms_course_name or "",
-                "completed":     e.completed,
-                "item_url":      e.item_url or "",
-                "lms_course_id": e.lms_course_id or "",
+                "id":                e.id,
+                "title":             e.title,
+                "event_type":        e.event_type,
+                "due_date":          e.due_date.isoformat() + "Z",
+                "color":             e.color,
+                "course_name":       e.lms_course_name or "",
+                "completed":         e.completed,
+                "item_url":          e.item_url or "",
+                "lms_course_id":     e.lms_course_id or "",
+                "submission_status": e.submission_status or "",
             }
             for e in events
         ],
@@ -1535,6 +1571,7 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
             course_info    = ev.get("course") or {}
             course_n       = course_info.get("fullname", "")
             course_ext_id  = str(course_info.get("id", ""))
+            instance_id    = ev.get("instance")          # ID del assign/quiz en Moodle
             # URL directa: primero action.url, luego url top-level
             item_url       = (ev.get("action") or {}).get("url") or ev.get("url") or ""
         else:  # canvas
@@ -1550,6 +1587,7 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
                 pass
             course_n       = (ev.get("context_name") or "")
             course_ext_id  = str((ev.get("context_code") or "").replace("course_", ""))
+            instance_id    = ev.get("assignment_id") or ev.get("id")
             item_url       = ev.get("html_url") or ev.get("url") or ""
 
         if not ts or not lms_id:
@@ -1558,6 +1596,21 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
         due_dt     = datetime.utcfromtimestamp(ts)
         event_type = _map_event_type(modname)
         color      = _event_color(event_type)
+
+        # Estado de entrega — solo para tareas y exámenes con instance ID
+        submission_status = None
+        if event_type in ("deadline", "exam") and instance_id:
+            try:
+                if conn.platform_type == "moodle":
+                    submission_status = _moodle_get_submission_status(
+                        conn.api_url, token, int(instance_id)
+                    )
+                elif conn.platform_type == "canvas":
+                    submission_status = _canvas_get_submission_status(
+                        conn.api_url, token, course_ext_id, str(instance_id)
+                    )
+            except Exception as e:
+                log.debug(f"[LMS] submission check skipped: {e}")
 
         # Resolver ID interno del curso Conniku (para navegación frontend)
         lms_course_id = None
@@ -1585,6 +1638,8 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
                 existing.item_url    = item_url
             if lms_course_id:
                 existing.lms_course_id = lms_course_id
+            if submission_status:
+                existing.submission_status = submission_status
             updated += 1
         else:
             new_ev = CalendarEvent(
@@ -1600,6 +1655,7 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
                 lms_course_name=course_n,
                 item_url=item_url,
                 lms_course_id=lms_course_id,
+                submission_status=submission_status,
             )
             db.add(new_ev)
             created += 1

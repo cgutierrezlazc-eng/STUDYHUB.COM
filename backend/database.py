@@ -559,8 +559,9 @@ class CalendarEvent(Base):
     source = Column(String(20), default="manual")       # manual | lms
     lms_event_id = Column(String(200), nullable=True)   # Moodle/Canvas event ID (dedup)
     lms_course_name = Column(String(500), nullable=True) # nombre de la asignatura origen
-    item_url = Column(String(1000), nullable=True)       # URL directa a la actividad en el LMS
-    lms_course_id = Column(String(16), nullable=True)    # ID interno LMSCourse (para navegar)
+    item_url = Column(String(1000), nullable=True)          # URL directa a la actividad en el LMS
+    lms_course_id = Column(String(16), nullable=True)       # ID interno LMSCourse (para navegar)
+    submission_status = Column(String(30), nullable=True)   # submitted | draft | nosubmission | unknown
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -1526,6 +1527,7 @@ def _ensure_columns():
         ("calendar_events", "lms_course_name", "VARCHAR(500)"),
         ("calendar_events", "item_url", "VARCHAR(1000)"),
         ("calendar_events", "lms_course_id", "VARCHAR(16)"),
+        ("calendar_events", "submission_status", "VARCHAR(30)"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:

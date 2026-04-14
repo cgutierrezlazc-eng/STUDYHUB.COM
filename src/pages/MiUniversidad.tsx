@@ -973,6 +973,47 @@ function CourseCard({
 const EV_ICON: Record<string, string> = { deadline: '📝', exam: '🧩', class: '🎥', forum: '💬', task: '📋' }
 const EV_COLOR: Record<string, string> = { deadline: '#f59e0b', exam: '#ef4444', class: '#3b82f6', forum: '#10b981', task: '#4f8cff' }
 
+// ── Detección de plataforma para botón branded ─────────────────
+type Platform = 'zoom' | 'bbb' | 'teams' | 'meet' | null
+function detectPlatform(url: string): Platform {
+  if (!url) return null
+  const u = url.toLowerCase()
+  if (u.includes('zoom.us') || u.includes('zoom.com')) return 'zoom'
+  if (u.includes('bigbluebutton') || u.includes('/bbb/') || u.includes('bbb.')) return 'bbb'
+  if (u.includes('teams.microsoft') || u.includes('teams.live.com')) return 'teams'
+  if (u.includes('meet.google') || u.includes('meet.jit.si')) return 'meet'
+  return null
+}
+const PLATFORM_LABEL: Record<NonNullable<Platform>, string> = {
+  zoom:  '🎥 Unirse a Zoom',
+  bbb:   '🎥 Unirse a BigBlueButton',
+  teams: '🎥 Unirse a Teams',
+  meet:  '🎥 Unirse a Meet',
+}
+const PLATFORM_COLOR: Record<NonNullable<Platform>, string> = {
+  zoom:  '#2D8CFF',
+  bbb:   '#467fcf',
+  teams: '#5059C9',
+  meet:  '#00897B',
+}
+
+// ── Badge de estado de entrega ─────────────────────────────────
+function SubmissionBadge({ status }: { status: string }) {
+  if (!status || status === 'unknown') return null
+  const cfg: Record<string, { label: string; bg: string; color: string }> = {
+    submitted:    { label: '✓ Entregado',    bg: 'rgba(16,185,129,.15)',  color: '#10b981' },
+    draft:        { label: '📝 Borrador',    bg: 'rgba(245,158,11,.14)',  color: '#f59e0b' },
+    nosubmission: { label: '✗ Sin entregar', bg: 'rgba(239,68,68,.12)',   color: '#ef4444' },
+  }
+  const c = cfg[status]
+  if (!c) return null
+  return (
+    <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: c.bg, color: c.color, flexShrink: 0, whiteSpace: 'nowrap' }}>
+      {c.label}
+    </span>
+  )
+}
+
 function countdown(isoDate: string): { label: string; pct: number; urgency: 'urgent' | 'warning' | 'ok' } {
   const ms = new Date(isoDate).getTime() - Date.now()
   if (ms <= 0) return { label: 'Vencido', pct: 100, urgency: 'urgent' }
@@ -1125,7 +1166,15 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
           const d = new Date(ev.due_date)
           const dateStr = d.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
           const isClickable = !!(ev.item_url || (ev.event_type === 'class' && ev.lms_course_id))
-          const actionLabel = ev.event_type === 'class' ? '🎥 Unirse a clase' : ev.event_type === 'deadline' ? '📤 Entregar' : ev.event_type === 'exam' ? '🧩 Ir al examen' : ev.event_type === 'forum' ? '💬 Participar' : '🔗 Ver'
+          // ① Detección de plataforma para clases
+          const platform = ev.event_type === 'class' ? detectPlatform(ev.item_url || '') : null
+          const btnBg    = platform ? PLATFORM_COLOR[platform] : (EV_COLOR[ev.event_type] || '#4f8cff')
+          const btnLabel = platform ? PLATFORM_LABEL[platform]
+            : ev.event_type === 'deadline' ? '📤 Ir a entregar'
+            : ev.event_type === 'exam'     ? '🧩 Ir al examen'
+            : ev.event_type === 'forum'    ? '💬 Participar'
+            : '🔗 Ver actividad'
+          const isBrandedBtn = !!platform  // fondo sólido vs translúcido
           return (
             <div key={ev.id} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
@@ -1133,12 +1182,16 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
                   {EV_ICON[ev.event_type] || '📋'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Título clickeable */}
-                  <div
-                    onClick={() => isClickable && onEventClick(ev)}
-                    title={isClickable ? (ev.event_type === 'class' ? 'Ir a la asignatura y unirse a la clase' : 'Abrir en el campus virtual') : undefined}
-                    style={{ fontSize: 12, fontWeight: 600, color: isClickable ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: isClickable ? 'pointer' : 'default', textDecoration: isClickable ? 'underline' : 'none', textDecorationColor: 'var(--accent)', textUnderlineOffset: 2 }}>
-                    {ev.title}{isClickable && ' ↗'}
+                  {/* Título clickeable + ② badge de entrega */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 2 }}>
+                    <div
+                      onClick={() => isClickable && onEventClick(ev)}
+                      title={isClickable ? (ev.event_type === 'class' ? 'Ir a la asignatura y unirse a la clase' : 'Abrir en el campus virtual') : undefined}
+                      style={{ fontSize: 12, fontWeight: 600, color: isClickable ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: isClickable ? 'pointer' : 'default', textDecoration: isClickable ? 'underline' : 'none', textDecorationColor: 'var(--accent)', textUnderlineOffset: 2, flex: 1, minWidth: 0 }}>
+                      {ev.title}{isClickable && ' ↗'}
+                    </div>
+                    {/* ② Badge estado de entrega */}
+                    <SubmissionBadge status={ev.submission_status || ''} />
                   </div>
                   {ev.course_name && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.course_name}</div>}
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{dateStr}</div>
@@ -1154,12 +1207,12 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
                 </div>
                 <span style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}>{label}</span>
               </div>
-              {/* Botón de acción directo */}
-              {isClickable && (
+              {/* ① Botón branded (sólido para plataformas, translúcido para el resto) */}
+              {isClickable && ev.submission_status !== 'submitted' && (
                 <button
                   onClick={() => onEventClick(ev)}
-                  style={{ width: '100%', padding: '5px 0', borderRadius: 7, border: 'none', background: (EV_COLOR[ev.event_type] || '#4f8cff') + '22', color: EV_COLOR[ev.event_type] || '#4f8cff', fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.01em' }}>
-                  {actionLabel}
+                  style={{ width: '100%', padding: '5px 0', borderRadius: 7, border: 'none', background: isBrandedBtn ? btnBg : btnBg + '22', color: isBrandedBtn ? '#fff' : btnBg, fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.01em' }}>
+                  {btnLabel}
                 </button>
               )}
             </div>
