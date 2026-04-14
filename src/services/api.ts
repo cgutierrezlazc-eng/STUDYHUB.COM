@@ -1558,6 +1558,14 @@ export const api = {
   collabSearchUsers: (q: string) => request(`/collab/users/search?q=${encodeURIComponent(q)}`),
   collabChatMessages: (docId: string) => request(`/collab/${docId}/chat`),
   collabSendChat: (docId: string, content: string) => request(`/collab/${docId}/chat`, { method: 'POST', body: JSON.stringify({ content }) }),
+  collabExportPdf: (docId: string) => {
+    const token = localStorage.getItem('conniku_token')
+    return fetch(`${getApiBase()}/collab/${docId}/export/pdf`, { headers: { Authorization: `Bearer ${token}` } })
+  },
+  collabExportDocx: (docId: string) => {
+    const token = localStorage.getItem('conniku_token')
+    return fetch(`${getApiBase()}/collab/${docId}/export/docx`, { headers: { Authorization: `Bearer ${token}` } })
+  },
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

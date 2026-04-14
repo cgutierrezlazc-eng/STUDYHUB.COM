@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { Users, Clock, ChevronLeft, Plus, Trash2, X, Search, Check, Crown, MessageSquare, Send } from '../components/Icons'
+import { Users, Clock, ChevronLeft, Plus, Trash2, X, Search, Check, Crown, MessageSquare, Send, Download } from '../components/Icons'
 
 const CollabEditor = lazy(() => import('../components/CollabEditor'))
 
@@ -272,6 +272,63 @@ export default function GroupDocEditor({ onNavigate }: Props) {
         {/* Actions */}
         <div style={{ display: 'flex', gap: 4 }}>
           {/* Save version */}
+          {/* Export */}
+          <div style={{ position: 'relative' }}>
+            <button
+              onClick={() => {
+                const menu = document.getElementById('export-menu')
+                if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block'
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
+                background: 'transparent', color: 'var(--text-secondary)',
+                fontSize: 12, cursor: 'pointer',
+              }}
+            >
+              {Download({ size: 14 })} Exportar
+            </button>
+            <div id="export-menu" style={{
+              display: 'none', position: 'absolute', top: '100%', right: 0,
+              background: 'var(--bg-secondary)', border: '1px solid var(--border)',
+              borderRadius: 8, marginTop: 4, zIndex: 20, minWidth: 160,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            }}>
+              <button
+                onClick={async () => {
+                  document.getElementById('export-menu')!.style.display = 'none'
+                  if (pendingContent.current && docId) await saveContent(pendingContent.current)
+                  const res = await api.collabExportPdf(docId!)
+                  if (res.ok) {
+                    const blob = await res.blob()
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a'); a.href = url; a.download = `${doc?.title || 'documento'}.pdf`; a.click()
+                    URL.revokeObjectURL(url)
+                  } else { alert('Error exportando PDF') }
+                }}
+                style={{ width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer', textAlign: 'left', borderBottom: '1px solid var(--border)' }}
+              >
+                Descargar PDF
+              </button>
+              <button
+                onClick={async () => {
+                  document.getElementById('export-menu')!.style.display = 'none'
+                  if (pendingContent.current && docId) await saveContent(pendingContent.current)
+                  const res = await api.collabExportDocx(docId!)
+                  if (res.ok) {
+                    const blob = await res.blob()
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a'); a.href = url; a.download = `${doc?.title || 'documento'}.docx`; a.click()
+                    URL.revokeObjectURL(url)
+                  } else { alert('Error exportando DOCX') }
+                }}
+                style={{ width: '100%', padding: '10px 14px', border: 'none', background: 'transparent', color: 'var(--text-primary)', fontSize: 13, cursor: 'pointer', textAlign: 'left' }}
+              >
+                Descargar Word
+              </button>
+            </div>
+          </div>
+
           {canEdit && (
             <button
               onClick={handleSaveVersion}

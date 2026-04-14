@@ -448,3 +448,137 @@ async def send_chat_message(
         pass  # WS broadcast is best-effort
 
     return msg_data
+
+
+# ─── Export (PDF / DOCX) ─────────────────────────────────────────
+
+@router.get("/{doc_id}/export/pdf")
+def export_pdf(doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    doc, _ = _check_access(doc_id, user, db)
+    html_content = doc.content or "<p>Documento vacio</p>"
+
+    import io
+    from xhtml2pdf import pisa
+
+    # Wrap in a full HTML page with styling
+    full_html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+  body {{ font-family: Helvetica, Arial, sans-serif; font-size: 12px; line-height: 1.6; color: #1a1a1a; margin: 40px; }}
+  h1 {{ font-size: 24px; font-weight: bold; margin: 20px 0 10px; }}
+  h2 {{ font-size: 20px; font-weight: bold; margin: 18px 0 8px; }}
+  h3 {{ font-size: 16px; font-weight: bold; margin: 14px 0 6px; }}
+  p {{ margin: 0 0 8px; }}
+  ul, ol {{ padding-left: 24px; margin: 8px 0; }}
+  blockquote {{ border-left: 3px solid #2D62C8; padding-left: 12px; color: #555; font-style: italic; }}
+  table {{ border-collapse: collapse; width: 100%; margin: 10px 0; }}
+  th, td {{ border: 1px solid #ddd; padding: 6px 10px; text-align: left; }}
+  th {{ background: #f5f5f5; font-weight: bold; }}
+  code {{ background: #f0f0f0; padding: 1px 4px; border-radius: 3px; font-size: 11px; }}
+  pre {{ background: #f0f0f0; padding: 10px; border-radius: 4px; font-size: 11px; overflow-x: auto; }}
+  mark {{ background: #FBBF24; padding: 0 2px; }}
+  img {{ max-width: 100%; }}
+</style>
+</head><body>
+<h1 style="text-align:center; margin-bottom:4px;">{doc.title}</h1>
+<p style="text-align:center; color:#888; font-size:10px; margin-bottom:30px;">
+  {doc.course_name or ''} &mdash; Conniku
+</p>
+<hr style="border:none; border-top:1px solid #ddd; margin-bottom:20px;">
+{html_content}
+</body></html>"""
+
+    buffer = io.BytesIO()
+    pisa_status = pisa.CreatePDF(full_html, dest=buffer, encoding='utf-8')
+    if pisa_status.err:
+        raise HTTPException(500, "Error generando PDF")
+
+    buffer.seek(0)
+    from fastapi.responses import StreamingResponse
+    safe_title = "".join(c for c in doc.title if c.isalnum() or c in " -_").strip()[:60]
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{safe_title}.pdf"'},
+    )
+
+
+@router.get("/{doc_id}/export/docx")
+def export_docx(doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    doc, _ = _check_access(doc_id, user, db)
+    html_content = doc.content or ""
+
+    import io
+    import re
+    from docx import Document as DocxDocument
+    from docx.shared import Pt, Inches, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+
+    document = DocxDocument()
+
+    # Title
+    title_para = document.add_heading(doc.title, level=0)
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    if doc.course_name:
+        sub = document.add_paragraph(doc.course_name)
+        sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        sub.runs[0].font.color.rgb = RGBColor(0x88, 0x88, 0x88)
+        sub.runs[0].font.size = Pt(10)
+
+    document.add_paragraph("")  # Spacer
+
+    # Simple HTML to DOCX conversion
+    # Strip tags and process basic elements
+    text = html_content
+    # Convert <br> to newlines
+    text = re.sub(r'<br\s*/?>', '\n', text)
+    # Convert headers
+    for level in [3, 2, 1]:
+        pattern = rf'<h{level}[^>]*>(.*?)</h{level}>'
+        for match in re.finditer(pattern, text, re.DOTALL):
+            heading_text = re.sub(r'<[^>]+>', '', match.group(1)).strip()
+            if heading_text:
+                document.add_heading(heading_text, level=level)
+        text = re.sub(pattern, '', text, flags=re.DOTALL)
+
+    # Convert lists
+    for match in re.finditer(r'<li[^>]*>(.*?)</li>', text, re.DOTALL):
+        item_text = re.sub(r'<[^>]+>', '', match.group(1)).strip()
+        if item_text:
+            document.add_paragraph(item_text, style='List Bullet')
+    text = re.sub(r'</?[uo]l[^>]*>', '', text)
+    text = re.sub(r'<li[^>]*>.*?</li>', '', text, flags=re.DOTALL)
+
+    # Convert paragraphs and remaining text
+    text = re.sub(r'</?(?:div|section|article|span)[^>]*>', '', text)
+    paragraphs = re.split(r'</?p[^>]*>', text)
+    for p_text in paragraphs:
+        clean = re.sub(r'<[^>]+>', '', p_text).strip()
+        if clean:
+            para = document.add_paragraph()
+            # Handle bold/italic inline
+            parts = re.split(r'(<(?:strong|b|em|i|u)>.*?</(?:strong|b|em|i|u)>)', p_text)
+            for part in parts:
+                clean_part = re.sub(r'<[^>]+>', '', part).strip()
+                if not clean_part:
+                    continue
+                run = para.add_run(clean_part)
+                if '<strong>' in part or '<b>' in part:
+                    run.bold = True
+                if '<em>' in part or '<i>' in part:
+                    run.italic = True
+                if '<u>' in part:
+                    run.underline = True
+
+    buffer = io.BytesIO()
+    document.save(buffer)
+    buffer.seek(0)
+
+    from fastapi.responses import StreamingResponse
+    safe_title = "".join(c for c in doc.title if c.isalnum() or c in " -_").strip()[:60]
+    return StreamingResponse(
+        buffer,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f'attachment; filename="{safe_title}.docx"'},
+    )
