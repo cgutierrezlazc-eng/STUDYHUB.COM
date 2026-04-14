@@ -1466,13 +1466,15 @@ def get_lms_calendar(user: User = Depends(get_current_user),
     return {
         "events": [
             {
-                "id":          e.id,
-                "title":       e.title,
-                "event_type":  e.event_type,
-                "due_date":    e.due_date.isoformat() + "Z",
-                "color":       e.color,
-                "course_name": e.lms_course_name or "",
-                "completed":   e.completed,
+                "id":            e.id,
+                "title":         e.title,
+                "event_type":    e.event_type,
+                "due_date":      e.due_date.isoformat() + "Z",
+                "color":         e.color,
+                "course_name":   e.lms_course_name or "",
+                "completed":     e.completed,
+                "item_url":      e.item_url or "",
+                "lms_course_id": e.lms_course_id or "",
             }
             for e in events
         ],
@@ -1526,23 +1528,29 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
     for ev in raw_events:
         # Extraer campos según plataforma
         if conn.platform_type == "moodle":
-            lms_id   = str(ev.get("id", ""))
-            title    = ev.get("name", "Evento")
-            modname  = ev.get("modulename", "")
-            ts       = ev.get("timesort") or ev.get("timestart") or 0
-            course_n = (ev.get("course") or {}).get("fullname", "")
+            lms_id         = str(ev.get("id", ""))
+            title          = ev.get("name", "Evento")
+            modname        = ev.get("modulename", "")
+            ts             = ev.get("timesort") or ev.get("timestart") or 0
+            course_info    = ev.get("course") or {}
+            course_n       = course_info.get("fullname", "")
+            course_ext_id  = str(course_info.get("id", ""))
+            # URL directa: primero action.url, luego url top-level
+            item_url       = (ev.get("action") or {}).get("url") or ev.get("url") or ""
         else:  # canvas
-            lms_id   = str(ev.get("id", ""))
-            title    = ev.get("title", ev.get("name", "Evento"))
-            modname  = "assign"
-            ts       = 0
+            lms_id         = str(ev.get("id", ""))
+            title          = ev.get("title", ev.get("name", "Evento"))
+            modname        = "assign"
+            ts             = 0
             try:
                 ts = int(datetime.fromisoformat(
                     (ev.get("end_at") or ev.get("start_at") or "").rstrip("Z")
                 ).timestamp())
             except Exception:
                 pass
-            course_n = (ev.get("context_name") or "")
+            course_n       = (ev.get("context_name") or "")
+            course_ext_id  = str((ev.get("context_code") or "").replace("course_", ""))
+            item_url       = ev.get("html_url") or ev.get("url") or ""
 
         if not ts or not lms_id:
             continue
@@ -1551,18 +1559,32 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
         event_type = _map_event_type(modname)
         color      = _event_color(event_type)
 
+        # Resolver ID interno del curso Conniku (para navegación frontend)
+        lms_course_id = None
+        if course_ext_id:
+            course_obj = db.query(LMSCourse).filter(
+                LMSCourse.user_id    == user.id,
+                LMSCourse.external_id == course_ext_id,
+            ).first()
+            if course_obj:
+                lms_course_id = course_obj.id
+
         # Buscar evento existente (dedup por lms_event_id)
         existing = db.query(CalendarEvent).filter(
-            CalendarEvent.user_id    == user.id,
+            CalendarEvent.user_id      == user.id,
             CalendarEvent.lms_event_id == lms_id,
         ).first()
 
         if existing:
-            existing.title          = title
-            existing.due_date       = due_dt
-            existing.event_type     = event_type
-            existing.color          = color
+            existing.title           = title
+            existing.due_date        = due_dt
+            existing.event_type      = event_type
+            existing.color           = color
             existing.lms_course_name = course_n
+            if item_url:
+                existing.item_url    = item_url
+            if lms_course_id:
+                existing.lms_course_id = lms_course_id
             updated += 1
         else:
             new_ev = CalendarEvent(
@@ -1576,6 +1598,8 @@ def sync_lms_calendar(user: User = Depends(get_current_user),
                 source="lms",
                 lms_event_id=lms_id,
                 lms_course_name=course_n,
+                item_url=item_url,
+                lms_course_id=lms_course_id,
             )
             db.add(new_ev)
             created += 1

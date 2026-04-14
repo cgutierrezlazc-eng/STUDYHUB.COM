@@ -343,6 +343,23 @@ export default function MiUniversidad({ onNavigate }: Props) {
     await api.lmsUpdateCalendarPrefs({ [key]: val }).catch(() => {})
   }
 
+  // ── Click en evento del calendario ─────────────────────────
+  // Clases (Zoom/BBB): navega a la asignatura + abre el link de la sala
+  // Resto (tareas, exámenes, etc.): abre directamente el URL del LMS
+  const handleCalEventClick = useCallback((ev: any) => {
+    if (ev.event_type === 'class') {
+      // Navegar a la asignatura dentro de Conniku
+      if (ev.lms_course_id) {
+        const course = hub?.current_courses.find((c: CourseItem) => c.id === ev.lms_course_id)
+        if (course) openCourse(course)
+      }
+      // También abrir el link de la sala si existe
+      if (ev.item_url) window.open(ev.item_url, '_blank', 'noopener,noreferrer')
+    } else if (ev.item_url) {
+      window.open(ev.item_url, '_blank', 'noopener,noreferrer')
+    }
+  }, [hub, openCourse])
+
   // ──────────────────────────────────────────────────────────────
   // RENDER
   // ──────────────────────────────────────────────────────────────
@@ -702,6 +719,7 @@ export default function MiUniversidad({ onNavigate }: Props) {
         onMonthChange={setCalMonth}
         onSync={handleSyncCalendar}
         onPrefChange={updatePref}
+        onEventClick={handleCalEventClick}
       />
 
       </div>{/* /grid */}
@@ -1066,12 +1084,13 @@ function MiniCalendar({ year, month, events, onMonthChange }: {
   )
 }
 
-function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, onSync, onPrefChange }: {
+function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, onSync, onPrefChange, onEventClick }: {
   events: any[]; prefs: any; syncing: boolean; msg: string
   month: { year: number; month: number }
   onMonthChange: (m: { year: number; month: number }) => void
   onSync: () => void
   onPrefChange: (key: string, val: boolean) => void
+  onEventClick: (ev: any) => void
 }) {
   const upcoming = [...events].sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime()).slice(0, 6)
 
@@ -1105,6 +1124,8 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
           const color = urgency === 'urgent' ? '#ef4444' : urgency === 'warning' ? '#f59e0b' : '#10b981'
           const d = new Date(ev.due_date)
           const dateStr = d.toLocaleDateString('es-CL', { weekday: 'short', day: 'numeric', month: 'short' }) + ' ' + d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+          const isClickable = !!(ev.item_url || (ev.event_type === 'class' && ev.lms_course_id))
+          const actionLabel = ev.event_type === 'class' ? '🎥 Unirse a clase' : ev.event_type === 'deadline' ? '📤 Entregar' : ev.event_type === 'exam' ? '🧩 Ir al examen' : ev.event_type === 'forum' ? '💬 Participar' : '🔗 Ver'
           return (
             <div key={ev.id} style={{ padding: '10px 14px', borderBottom: '1px solid var(--border-subtle)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
@@ -1112,7 +1133,13 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
                   {EV_ICON[ev.event_type] || '📋'}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.title}</div>
+                  {/* Título clickeable */}
+                  <div
+                    onClick={() => isClickable && onEventClick(ev)}
+                    title={isClickable ? (ev.event_type === 'class' ? 'Ir a la asignatura y unirse a la clase' : 'Abrir en el campus virtual') : undefined}
+                    style={{ fontSize: 12, fontWeight: 600, color: isClickable ? 'var(--accent)' : 'var(--text-primary)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: isClickable ? 'pointer' : 'default', textDecoration: isClickable ? 'underline' : 'none', textDecorationColor: 'var(--accent)', textUnderlineOffset: 2 }}>
+                    {ev.title}{isClickable && ' ↗'}
+                  </div>
                   {ev.course_name && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ev.course_name}</div>}
                   <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 1 }}>{dateStr}</div>
                 </div>
@@ -1121,12 +1148,20 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
                 </span>
               </div>
               {/* Barra countdown */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isClickable ? 8 : 0 }}>
                 <div style={{ flex: 1, height: 4, borderRadius: 99, background: 'var(--border)', overflow: 'hidden' }}>
                   <div style={{ height: '100%', width: `${pct}%`, borderRadius: 99, background: color, transition: 'width 0.3s' }} />
                 </div>
                 <span style={{ fontSize: 10, fontWeight: 700, color, flexShrink: 0 }}>{label}</span>
               </div>
+              {/* Botón de acción directo */}
+              {isClickable && (
+                <button
+                  onClick={() => onEventClick(ev)}
+                  style={{ width: '100%', padding: '5px 0', borderRadius: 7, border: 'none', background: (EV_COLOR[ev.event_type] || '#4f8cff') + '22', color: EV_COLOR[ev.event_type] || '#4f8cff', fontSize: 11, fontWeight: 700, cursor: 'pointer', letterSpacing: '0.01em' }}>
+                  {actionLabel}
+                </button>
+              )}
             </div>
           )
         })}
