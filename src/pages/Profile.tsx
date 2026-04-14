@@ -1388,12 +1388,19 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                             ),
                           }
                           try {
+                            // Pre-wake: ping health to wake server before the real request
+                            try {
+                              setLmsConnectError('⏳ Conectando con el servidor...')
+                              await fetch(`${(await import('../services/api')).getApiBase()}/health`, { method: 'GET' }).catch(() => {})
+                              await new Promise(r => setTimeout(r, 1000))
+                            } catch {}
+                            setLmsConnectError('')
                             let res: any
-                            const delays = [0, 4000, 8000]
+                            const delays = [0, 5000, 10000]
                             for (let attempt = 0; attempt < delays.length; attempt++) {
                               try {
                                 if (attempt > 0) {
-                                  setLmsConnectError(`⏳ Servidor iniciando... reintento ${attempt}/2`)
+                                  setLmsConnectError(`⏳ Reintentando conexión... (${attempt}/2)`)
                                   await new Promise(r => setTimeout(r, delays[attempt]))
                                 }
                                 res = await api.lmsConnect(payload)
