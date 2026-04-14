@@ -13,21 +13,22 @@ from pathlib import Path
 from typing import Optional
 
 import requests
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import (
     get_db, DATA_DIR, User, UniversityConnection, LMSCourse, LMSSyncItem,
-    CalendarEvent, UserNotificationPrefs, InAppNotification, gen_id
+    CalendarEvent, UserNotificationPrefs, InAppNotification, gen_id,
+    SessionLocal,
 )
 from middleware import get_current_user, get_current_user_optional, decode_token as jwt_decode
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/lms", tags=["lms"])
 
-TIMEOUT = 12  # seconds for outbound HTTP calls
+TIMEOUT = 8  # seconds for outbound HTTP calls
 
 
 # ──────────────────────────────────────────────────────────────
@@ -383,10 +384,15 @@ def _detect_platform(api_url: str, token: str, extra_field: str) -> tuple[str, d
 # ──────────────────────────────────────────────────────────────
 
 @router.post("/connect")
-def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def connect_lms(
+    req: ConnectRequest,
+    background_tasks: BackgroundTasks,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
     Guarda credenciales, detecta plataforma y verifica conexión.
-    Si platform_type == 'auto', intenta detectar automáticamente.
+    Los cursos se obtienen en segundo plano para evitar timeout.
     """
     base_url = _clean_url(req.api_url)
     platform_type = req.platform_type
@@ -451,20 +457,41 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
     db.commit()
     db.refresh(conn)
 
-    # Immediately fetch courses after connection
-    courses_added, courses_list = _fetch_and_store_courses(conn, db)
-    db.refresh(conn)
+    # Fetch courses in background to avoid timeout (Render 30s limit)
+    moodle_userid = info.get("userid", 0) if platform_type == "moodle" else 0
+    background_tasks.add_task(_bg_fetch_courses, conn.id, moodle_userid)
 
     return {
         "id": conn.id,
         "platform_type": platform_type,
         "platform_name": conn.platform_name,
-        "status": conn.status,
+        "status": "connected",
         "info": info,
-        "courses_found": courses_added,
-        "courses": courses_list,
-        "error_msg": conn.error_msg or None,
+        "courses_found": 0,
+        "courses": [],
+        "syncing": True,
+        "error_msg": None,
     }
+
+
+def _bg_fetch_courses(conn_id: str, moodle_userid: int = 0):
+    """Background task: fetch courses with its own DB session."""
+    db = SessionLocal()
+    try:
+        conn = db.query(UniversityConnection).filter(UniversityConnection.id == conn_id).first()
+        if conn and conn.status == "connected":
+            _fetch_and_store_courses(conn, db, moodle_userid=moodle_userid)
+    except Exception as e:
+        log.warning(f"[LMS] bg_fetch_courses error: {e}")
+        try:
+            conn = db.query(UniversityConnection).filter(UniversityConnection.id == conn_id).first()
+            if conn:
+                conn.error_msg = str(e)
+                db.commit()
+        except Exception:
+            pass
+    finally:
+        db.close()
 
 
 def _build_platform_name(platform_type: str, info: dict) -> str:
@@ -494,7 +521,7 @@ def _decode_token(conn: UniversityConnection) -> tuple[str, str]:
     return token, extra
 
 
-def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
+def _fetch_and_store_courses(conn: UniversityConnection, db: Session, moodle_userid: int = 0) -> int:
     """Fetch courses from the platform and store new ones. Returns count added."""
     token, extra = _decode_token(conn)
     base_url = conn.api_url
@@ -502,8 +529,10 @@ def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
 
     try:
         if conn.platform_type == "moodle":
-            info = moodle_verify(base_url, token)
-            userid = info.get("userid", 0)
+            userid = moodle_userid
+            if not userid:
+                info = moodle_verify(base_url, token)
+                userid = info.get("userid", 0)
             raw_courses = moodle_get_courses(base_url, token, userid)
         elif conn.platform_type == "canvas":
             raw_courses = canvas_get_courses(base_url, token)

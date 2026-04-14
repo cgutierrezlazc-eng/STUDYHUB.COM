@@ -1414,7 +1414,31 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                             }
                             setLmsShowConnect(false)
                             setLmsUrl(''); setLmsToken(''); setLmsPlatformName(''); setLmsUsername(''); setLmsPassword('')
-                            if (res.courses && res.courses.length > 0) {
+
+                            // Courses load in background — poll until ready
+                            if (res.syncing) {
+                              setLmsScanMsg('⏳ Conectado — cargando asignaturas...')
+                              const connId = res.id
+                              // Poll every 3s, up to 5 times (15s)
+                              for (let poll = 0; poll < 5; poll++) {
+                                await new Promise(r => setTimeout(r, 3000))
+                                try {
+                                  const connsNow: any = await api.lmsGetConnections().catch(() => [])
+                                  const arr = Array.isArray(connsNow) ? connsNow : []
+                                  setLmsConnections(arr)
+                                  const found = arr.find((c: any) => c.id === connId)
+                                  if (found?.courses?.length > 0) {
+                                    setLmsConnectionId(connId)
+                                    setLmsDetectedCourses(found.courses)
+                                    setLmsSelectedCourses(new Set(found.courses.map((c: any) => c.id)))
+                                    setLmsSubjectModal(true)
+                                    setLmsScanMsg('')
+                                    break
+                                  }
+                                } catch {}
+                              }
+                              if (!lmsSubjectModal) setLmsScanMsg('✅ Conectado — las asignaturas se cargarán en breve')
+                            } else if (res.courses && res.courses.length > 0) {
                               setLmsConnectionId(res.id)
                               setLmsDetectedCourses(res.courses)
                               setLmsSelectedCourses(new Set(res.courses.map((c: any) => c.id)))
