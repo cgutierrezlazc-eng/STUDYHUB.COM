@@ -19,9 +19,9 @@ const styles = {
     gap: 6,
     padding: '8px 16px',
     borderRadius: 8,
-    border: '1px solid #d1d5db',
-    background: '#f9fafb',
-    color: '#374151',
+    border: '1px solid var(--border)',
+    background: 'var(--bg-secondary)',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     fontSize: 14,
     fontWeight: 500,
@@ -32,11 +32,11 @@ const styles = {
     fontSize: 30,
     fontWeight: 700,
     marginBottom: 8,
-    color: '#111827',
+    color: 'var(--text-primary)',
   } as React.CSSProperties,
   date: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'var(--text-muted)',
     marginBottom: 32,
   } as React.CSSProperties,
   h2: {
@@ -44,16 +44,16 @@ const styles = {
     fontWeight: 600,
     marginTop: 36,
     marginBottom: 12,
-    color: '#111827',
+    color: 'var(--text-primary)',
   } as React.CSSProperties,
   p: {
     fontSize: 15,
     marginBottom: 12,
-    color: '#374151',
+    color: 'var(--text-secondary)',
   } as React.CSSProperties,
   stepCard: {
-    background: '#f9fafb',
-    border: '1px solid #e5e7eb',
+    background: 'var(--bg-secondary)',
+    border: '1px solid var(--border)',
     borderRadius: 10,
     padding: '16px 20px',
     marginBottom: 12,
@@ -81,12 +81,12 @@ const styles = {
   stepTitle: {
     fontWeight: 600,
     fontSize: 15,
-    color: '#111827',
+    color: 'var(--text-primary)',
     marginBottom: 4,
   } as React.CSSProperties,
   stepDesc: {
     fontSize: 14,
-    color: '#6b7280',
+    color: 'var(--text-muted)',
   } as React.CSSProperties,
   alertBox: {
     background: '#fef3c7',
@@ -117,16 +117,16 @@ const styles = {
   th: {
     textAlign: 'left' as const,
     padding: '10px 12px',
-    borderBottom: '2px solid #e5e7eb',
-    color: '#111827',
+    borderBottom: '2px solid var(--border)',
+    color: 'var(--text-primary)',
     fontWeight: 600,
     fontSize: 14,
-    background: '#f9fafb',
+    background: 'var(--bg-secondary)',
   } as React.CSSProperties,
   td: {
     padding: '10px 12px',
-    borderBottom: '1px solid #e5e7eb',
-    color: '#374151',
+    borderBottom: '1px solid var(--border)',
+    color: 'var(--text-secondary)',
     fontSize: 14,
     verticalAlign: 'top' as const,
   } as React.CSSProperties,
@@ -355,7 +355,7 @@ export default function DeleteAccount({ onNavigate }: Props) {
       {/* Contacto */}
       <h2 style={styles.h2}>Contacto</h2>
       <p style={styles.p}>Para cualquier duda sobre el proceso de eliminación de cuenta:</p>
-      <ul style={{ paddingLeft: 24, color: '#374151', fontSize: 15 }}>
+      <ul style={{ paddingLeft: 24, color: 'var(--text-secondary)', fontSize: 15 }}>
         <li>
           Privacidad y datos:{' '}
           <a href="mailto:privacidad@conniku.com" style={{ color: '#2D62C8' }}>
@@ -394,8 +394,8 @@ export default function DeleteAccount({ onNavigate }: Props) {
         para conocer todos tus derechos sobre tus datos personales.
       </p>
 
-      <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid #e5e7eb' }}>
-        <p style={{ fontSize: 13, fontStyle: 'italic', color: '#6b7280' }}>
+      <div style={{ marginTop: 40, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+        <p style={{ fontSize: 13, fontStyle: 'italic', color: 'var(--text-muted)' }}>
           Conniku SpA · RUT 78.395.702-7 · Santiago, Chile · privacidad@conniku.com · Versión 1.0 —
           Abril 2026
         </p>

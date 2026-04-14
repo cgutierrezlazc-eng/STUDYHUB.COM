@@ -1239,7 +1239,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
               display: 'flex',
               gap: 28,
               fontSize: 13,
-              color: vars.textSecondary,
+              color: 'rgba(255,255,255,0.7)',
               fontWeight: 500,
             }}
           >
@@ -1273,7 +1273,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
             style={{
               background: 'none',
               border: 'none',
-              color: vars.textSecondary,
+              color: 'rgba(255,255,255,0.8)',
               fontSize: 13,
               fontWeight: 500,
               cursor: 'pointer',
@@ -1285,8 +1285,8 @@ export default function Landing({ onLogin, onRegister }: Props) {
           <button
             onClick={onRegister}
             style={{
-              background: vars.textPrimary,
-              color: vars.bgSecondary,
+              background: '#fff',
+              color: '#0f172a',
               padding: compact ? '8px 16px' : '8px 20px',
               borderRadius: 8,
               fontSize: 13,
@@ -2601,7 +2601,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
           <div
             style={{
               fontSize: 12,
-              color: '#475569',
+              color: '#94a3b8',
               maxWidth: 260,
               textAlign: compact ? 'left' : 'right',
               lineHeight: 1.5,
@@ -2640,7 +2640,7 @@ export default function Landing({ onLogin, onRegister }: Props) {
           padding: '16px 40px',
           textAlign: 'center',
           fontSize: 11,
-          color: '#334155',
+          color: '#64748b',
         }}
       >
         <a href="/terms" style={{ color: 'inherit', textDecoration: 'none' }}>

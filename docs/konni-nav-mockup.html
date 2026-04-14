@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku — Propuesta Konni Nav Center</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', -apple-system, sans-serif; background: #0d1117; color: #e6edf3; padding: 20px; }
+  h1 { font-size: 24px; margin-bottom: 8px; color: #fff; }
+  h2 { font-size: 18px; margin: 40px 0 16px; color: #58a6ff; border-bottom: 1px solid #21262d; padding-bottom: 8px; }
+  h3 { font-size: 14px; color: #8b949e; margin-bottom: 12px; font-weight: 500; }
+  p.desc { color: #8b949e; font-size: 13px; margin-bottom: 32px; }
+
+  .mockup-row { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 40px; }
+  .mockup { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid #30363d; }
+  .label { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); color: #58a6ff; font-size: 10px; padding: 2px 8px; border-radius: 8px; font-weight: 600; z-index: 10; }
+
+  /* ─── Mobile mockup ─── */
+  .phone { width: 320px; height: 580px; background: #161b22; display: flex; flex-direction: column; }
+  .phone-status { height: 28px; background: #0d1117; display: flex; align-items: center; justify-content: flex-end; padding: 0 12px; font-size: 10px; color: #8b949e; }
+  .phone-content { flex: 1; display: flex; flex-direction: column; }
+  .phone-header { height: 48px; background: #161b22; border-bottom: 1px solid #21262d; display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .phone-header .logo { font-weight: 800; font-size: 16px; }
+  .phone-header .logo span { color: #2D62C8; }
+  .phone-body { flex: 1; padding: 16px; overflow: hidden; }
+
+  /* Chat area mockup */
+  .chat-msg { margin-bottom: 8px; }
+  .chat-bubble { display: inline-block; padding: 8px 14px; border-radius: 16px; font-size: 13px; max-width: 220px; }
+  .chat-bubble.sent { background: #2D62C8; color: #fff; margin-left: auto; display: block; text-align: right; }
+  .chat-bubble.received { background: #21262d; color: #e6edf3; }
+  .chat-time { font-size: 9px; color: #484f58; margin-top: 2px; }
+
+  /* Chat input */
+  .chat-input-area { display: flex; align-items: center; padding: 8px 12px; border-top: 1px solid #21262d; gap: 8px; background: #161b22; }
+  .chat-input { flex: 1; background: #21262d; border: 1px solid #30363d; border-radius: 20px; padding: 8px 14px; color: #e6edf3; font-size: 13px; outline: none; }
+  .chat-send { width: 34px; height: 34px; border-radius: 50%; background: #2D62C8; border: none; color: #fff; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+  /* ─── Bottom Nav (current state) ─── */
+  .bottom-nav { display: flex; align-items: center; justify-content: space-around; height: 56px; background: #161b22; border-top: 1px solid #21262d; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #484f58; min-width: 56px; }
+  .nav-item.active { color: #2D62C8; }
+  .nav-item svg { width: 20px; height: 20px; }
+  .nav-icon-placeholder { width: 20px; height: 20px; border: 1.5px solid currentColor; border-radius: 4px; }
+
+  /* Konni center button */
+  .nav-konni { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 10px; color: #8b949e; font-weight: 600; }
+  .konni-btn { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 60%, #A78BFA 100%); display: flex; align-items: center; justify-content: center; margin-top: -16px; box-shadow: 0 4px 14px rgba(124,58,237,0.45); color: #fff; }
+  .konni-icon { font-size: 18px; }
+
+  /* Floating bubble (for comparison) */
+  .floating-bubble { position: absolute; bottom: 70px; right: 16px; width: 52px; height: 52px; border-radius: 50%; background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 60%, #A78BFA 100%); box-shadow: 0 4px 16px rgba(124,58,237,0.4); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 20px; z-index: 5; }
+
+  /* ─── Tablet mockup ─── */
+  .tablet { width: 520px; height: 380px; background: #161b22; display: flex; }
+  .tablet-sidebar { width: 56px; background: #0d1117; border-right: 1px solid #21262d; display: flex; flex-direction: column; align-items: center; padding-top: 12px; gap: 16px; }
+  .tablet-sidebar .sb-item { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #484f58; font-size: 11px; }
+  .tablet-sidebar .sb-item.active { background: rgba(45,98,200,0.15); color: #2D62C8; }
+  .tablet-sidebar .sb-konni { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #5B21B6, #7C3AED, #A78BFA); color: #fff; display: flex; align-items: center; justify-content: center; margin-top: auto; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(124,58,237,0.3); font-size: 16px; }
+  .tablet-content { flex: 1; display: flex; flex-direction: column; }
+  .tablet-topbar { height: 44px; background: #161b22; border-bottom: 1px solid #21262d; display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .tablet-topbar .logo { font-weight: 800; font-size: 15px; }
+  .tablet-topbar .logo span { color: #2D62C8; }
+  .tablet-body { flex: 1; padding: 16px; overflow: hidden; }
+
+  /* ─── Desktop mockup ─── */
+  .desktop { width: 700px; height: 400px; background: #161b22; display: flex; }
+  .desktop-sidebar { width: 200px; background: #0d1117; border-right: 1px solid #21262d; display: flex; flex-direction: column; padding: 12px 0; }
+  .desktop-sidebar .ds-logo { font-weight: 800; font-size: 18px; padding: 4px 16px 16px; }
+  .desktop-sidebar .ds-logo span { color: #2D62C8; }
+  .desktop-sidebar .ds-item { display: flex; align-items: center; gap: 10px; padding: 10px 16px; color: #484f58; font-size: 13px; font-weight: 500; }
+  .desktop-sidebar .ds-item.active { color: #e6edf3; background: rgba(45,98,200,0.1); border-right: 3px solid #2D62C8; }
+  .desktop-sidebar .ds-item .ds-icon { width: 18px; height: 18px; border: 1.5px solid currentColor; border-radius: 4px; flex-shrink: 0; }
+  .ds-konni-container { margin-top: auto; padding: 12px 16px; border-top: 1px solid #21262d; }
+  .ds-konni { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: linear-gradient(135deg, rgba(91,33,182,0.15), rgba(124,58,237,0.15)); color: #A78BFA; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid rgba(124,58,237,0.2); }
+  .ds-konni-dot { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #5B21B6, #7C3AED); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; flex-shrink: 0; }
+  .desktop-content { flex: 1; display: flex; flex-direction: column; }
+  .desktop-topbar { height: 48px; background: #161b22; border-bottom: 1px solid #21262d; display: flex; align-items: center; padding: 0 20px; gap: 16px; }
+  .desktop-body { flex: 1; padding: 20px; overflow: hidden; }
+
+  /* Comparison label */
+  .comparison { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+  .vs-label { background: #21262d; color: #8b949e; font-size: 11px; padding: 4px 12px; border-radius: 8px; display: inline-block; margin-bottom: 8px; }
+  .vs-label.good { background: rgba(46,160,67,0.15); color: #3fb950; }
+  .vs-label.bad { background: rgba(248,81,73,0.15); color: #f85149; }
+
+  /* Annotation arrows */
+  .annotation { color: #f0883e; font-size: 11px; font-weight: 600; position: absolute; }
+
+  /* Tag */
+  .tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .tag-purple { background: rgba(124,58,237,0.15); color: #A78BFA; }
+  .tag-blue { background: rgba(45,98,200,0.15); color: #58a6ff; }
+  .tag-green { background: rgba(46,160,67,0.15); color: #3fb950; }
+</style>
+</head>
+<body>
+
+<h1>Propuesta: Konni Nav Center</h1>
+<p class="desc">Konni se integra como botón central fijo en la barra de navegación. El floating bubble desaparece en mobile. En desktop, Konni vive al final de la sidebar.</p>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>1. Mobile — Antes vs Después</h2>
+
+<div class="comparison">
+  <!-- BEFORE -->
+  <div>
+    <div class="vs-label bad">ANTES — Konni tapa el enviar</div>
+    <div class="mockup phone" style="height: 360px">
+      <div class="label">Mobile · Actual</div>
+      <div class="phone-content">
+        <div class="phone-body" style="justify-content: flex-end; display: flex; flex-direction: column;">
+          <div class="chat-msg"><div class="chat-bubble received">Hola, cómo estás?</div></div>
+          <div class="chat-msg"><div class="chat-bubble sent">Todo bien! Estudiando para el exam</div></div>
+        </div>
+        <div class="chat-input-area">
+          <div style="display: flex; gap: 6px;">
+            <span style="font-size: 16px; color: #484f58">🖼</span>
+            <span style="font-size: 16px">😊</span>
+            <span style="font-size: 16px; color: #484f58">🎤</span>
+          </div>
+          <input class="chat-input" placeholder="Escribe un mensaje..." readonly>
+          <div class="chat-send">➤</div>
+        </div>
+        <!-- Floating bubble BLOCKING send area -->
+        <div class="floating-bubble" style="bottom: 60px; right: 12px;">✦</div>
+        <div class="annotation" style="bottom: 115px; right: 8px;">↑ BLOQUEA</div>
+        <div class="bottom-nav">
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Estudio</div>
+          <div class="nav-item active"><div class="nav-icon-placeholder" style="border-color: #2D62C8"></div>Chat</div>
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Perfil</div>
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Mas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AFTER -->
+  <div>
+    <div class="vs-label good">DESPUÉS — Konni integrado al centro</div>
+    <div class="mockup phone" style="height: 360px">
+      <div class="label">Mobile · Propuesta</div>
+      <div class="phone-content">
+        <div class="phone-body" style="justify-content: flex-end; display: flex; flex-direction: column;">
+          <div class="chat-msg"><div class="chat-bubble received">Hola, cómo estás?</div></div>
+          <div class="chat-msg"><div class="chat-bubble sent">Todo bien! Estudiando para el exam</div></div>
+        </div>
+        <div class="chat-input-area">
+          <div style="display: flex; gap: 6px;">
+            <span style="font-size: 16px; color: #484f58">🖼</span>
+            <span style="font-size: 16px">😊</span>
+            <span style="font-size: 16px; color: #484f58">🎤</span>
+          </div>
+          <input class="chat-input" placeholder="Escribe un mensaje..." readonly>
+          <div class="chat-send">➤</div>
+        </div>
+        <!-- NO floating bubble — clean! -->
+        <div class="bottom-nav">
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Estudio</div>
+          <div class="nav-item active"><div class="nav-icon-placeholder" style="border-color: #2D62C8"></div>Chat</div>
+          <div class="nav-konni"><div class="konni-btn"><span class="konni-icon">✦</span></div>Konni</div>
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Perfil</div>
+          <div class="nav-item"><div class="nav-icon-placeholder"></div>Mas</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>2. Mobile — Todas las páginas</h2>
+<h3>Konni siempre visible, centrado, nunca bloquea contenido</h3>
+
+<div class="mockup-row">
+  <!-- Feed -->
+  <div class="mockup phone" style="height: 340px">
+    <div class="label">Feed</div>
+    <div class="phone-content">
+      <div class="phone-header"><div class="logo">conni<span>ku</span></div></div>
+      <div class="phone-body">
+        <div style="background: #21262d; border-radius: 12px; padding: 12px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #30363d;"></div>
+            <div style="font-size: 12px; font-weight: 600;">María González</div>
+          </div>
+          <div style="font-size: 12px; color: #8b949e;">Aprobé el examen de Cálculo III 🎉</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #30363d;"></div>
+            <div style="font-size: 12px; font-weight: 600;">Carlos Muñoz</div>
+          </div>
+          <div style="font-size: 12px; color: #8b949e;">Alguien tiene los apuntes de Física?</div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><div class="nav-icon-placeholder" style="border-color: #2D62C8"></div>Estudio</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Chat</div>
+        <div class="nav-konni"><div class="konni-btn"><span class="konni-icon">✦</span></div>Konni</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Perfil</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Mas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile -->
+  <div class="mockup phone" style="height: 340px">
+    <div class="label">Perfil</div>
+    <div class="phone-content">
+      <div style="height: 80px; background: linear-gradient(135deg, #1a3a6e, #2D62C8);"></div>
+      <div style="padding: 0 16px; margin-top: -24px;">
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: #30363d; border: 3px solid #161b22;"></div>
+        <div style="font-size: 14px; font-weight: 700; margin-top: 6px;">Cristian Gutiérrez</div>
+        <div style="font-size: 11px; color: #8b949e;">@cristian.ceo · Ingeniería</div>
+        <div style="display: flex; gap: 6px; margin-top: 10px;">
+          <span class="tag tag-purple">CEO</span>
+          <span class="tag tag-blue">Mentor</span>
+        </div>
+      </div>
+      <div style="flex: 1;"></div>
+      <div class="bottom-nav">
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Estudio</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Chat</div>
+        <div class="nav-konni"><div class="konni-btn"><span class="konni-icon">✦</span></div>Konni</div>
+        <div class="nav-item active"><div class="nav-icon-placeholder" style="border-color: #2D62C8"></div>Perfil</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Mas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Study -->
+  <div class="mockup phone" style="height: 340px">
+    <div class="label">Estudio</div>
+    <div class="phone-content">
+      <div class="phone-header"><div class="logo">conni<span>ku</span></div></div>
+      <div class="phone-body">
+        <div style="font-size: 13px; font-weight: 700; margin-bottom: 10px;">Mis Cursos</div>
+        <div style="background: #21262d; border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;">
+          <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #0d4e4e, #2dd4bf); flex-shrink: 0;"></div>
+          <div>
+            <div style="font-size: 12px; font-weight: 600;">Anatomía Humana</div>
+            <div style="font-size: 10px; color: #8b949e;">72% completado</div>
+          </div>
+        </div>
+        <div style="background: #21262d; border-radius: 10px; padding: 10px; display: flex; gap: 10px; align-items: center;">
+          <div style="width: 40px; height: 40px; border-radius: 8px; background: linear-gradient(135deg, #1e1b4b, #6366f1); flex-shrink: 0;"></div>
+          <div>
+            <div style="font-size: 12px; font-weight: 600;">Cálculo III</div>
+            <div style="font-size: 10px; color: #8b949e;">45% completado</div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><div class="nav-icon-placeholder" style="border-color: #2D62C8"></div>Estudio</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Chat</div>
+        <div class="nav-konni"><div class="konni-btn"><span class="konni-icon">✦</span></div>Konni</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Perfil</div>
+        <div class="nav-item"><div class="nav-icon-placeholder"></div>Mas</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>3. Tablet — Konni en sidebar inferior</h2>
+<h3>En tablet con sidebar colapsada, Konni aparece como botón redondo al final de la sidebar</h3>
+
+<div class="mockup tablet">
+  <div class="label">Tablet · 768px+</div>
+  <div class="tablet-sidebar">
+    <div class="sb-item active" style="font-size: 14px;">📖</div>
+    <div class="sb-item" style="font-size: 14px;">💬</div>
+    <div class="sb-item" style="font-size: 14px;">👤</div>
+    <div class="sb-item" style="font-size: 14px;">🔔</div>
+    <div class="sb-item" style="font-size: 14px;">☰</div>
+    <div class="tablet-sidebar sb-konni">✦</div>
+  </div>
+  <div class="tablet-content">
+    <div class="tablet-topbar">
+      <div class="logo">conni<span>ku</span></div>
+      <div style="flex: 1;"></div>
+      <div style="font-size: 12px; color: #3fb950;">● 2 en línea</div>
+      <div style="font-size: 14px; color: #484f58;">🔔</div>
+      <div style="font-size: 14px; color: #484f58;">⚙</div>
+    </div>
+    <div class="tablet-body">
+      <div style="font-size: 15px; font-weight: 700; margin-bottom: 12px;">Dashboard de Estudio</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div style="background: #21262d; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">Cursos activos</div>
+          <div style="font-size: 22px; font-weight: 700; color: #2D62C8;">4</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">Horas esta semana</div>
+          <div style="font-size: 22px; font-weight: 700; color: #3fb950;">12.5</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">Racha de estudio</div>
+          <div style="font-size: 22px; font-weight: 700; color: #f0883e;">🔥 7</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 16px;">
+          <div style="font-size: 11px; color: #8b949e; margin-bottom: 4px;">Notificaciones</div>
+          <div style="font-size: 22px; font-weight: 700;">3</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>4. Desktop — Konni en sidebar expandida</h2>
+<h3>Konni aparece como botón estilizado al final de la sidebar, siempre accesible</h3>
+
+<div class="mockup desktop">
+  <div class="label">Desktop · 1024px+</div>
+  <div class="desktop-sidebar">
+    <div class="ds-logo">conni<span>ku</span></div>
+    <div class="ds-item active"><div class="ds-icon" style="border-color: #2D62C8"></div>Estudio</div>
+    <div class="ds-item"><div class="ds-icon"></div>Mensajes</div>
+    <div class="ds-item"><div class="ds-icon"></div>Comunidades</div>
+    <div class="ds-item"><div class="ds-icon"></div>Calendario</div>
+    <div class="ds-item"><div class="ds-icon"></div>Perfil</div>
+    <div class="ds-item"><div class="ds-icon"></div>Configuración</div>
+    <div class="ds-konni-container">
+      <div class="ds-konni">
+        <div class="ds-konni-dot">✦</div>
+        <div>
+          <div style="font-size: 13px;">Konni</div>
+          <div style="font-size: 10px; opacity: 0.6;">Asistente</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="desktop-content">
+    <div class="desktop-topbar">
+      <div style="font-size: 14px; font-weight: 600;">Dashboard de Estudio</div>
+      <div style="flex: 1;"></div>
+      <div style="font-size: 12px; color: #3fb950;">● 5 en línea</div>
+      <div style="font-size: 16px; color: #484f58;">🔔</div>
+      <div style="width: 28px; height: 28px; border-radius: 50%; background: #30363d;"></div>
+    </div>
+    <div class="desktop-body">
+      <div style="font-size: 18px; font-weight: 700; margin-bottom: 16px;">Bienvenido, Cristian</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+        <div style="background: #21262d; border-radius: 12px; padding: 20px;">
+          <div style="font-size: 12px; color: #8b949e; margin-bottom: 6px;">Cursos en progreso</div>
+          <div style="font-size: 28px; font-weight: 700; color: #2D62C8;">4</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 20px;">
+          <div style="font-size: 12px; color: #8b949e; margin-bottom: 6px;">Certificados</div>
+          <div style="font-size: 28px; font-weight: 700; color: #3fb950;">2</div>
+        </div>
+        <div style="background: #21262d; border-radius: 12px; padding: 20px;">
+          <div style="font-size: 12px; color: #8b949e; margin-bottom: 6px;">Proyectos</div>
+          <div style="font-size: 28px; font-weight: 700; color: #A78BFA;">7</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>5. Resumen de posición por plataforma</h2>
+
+<table style="width: 100%; max-width: 700px; border-collapse: collapse; margin-top: 12px; font-size: 13px;">
+  <thead>
+    <tr style="border-bottom: 2px solid #21262d;">
+      <th style="text-align: left; padding: 8px 12px; color: #8b949e;">Plataforma</th>
+      <th style="text-align: left; padding: 8px 12px; color: #8b949e;">Posición de Konni</th>
+      <th style="text-align: left; padding: 8px 12px; color: #8b949e;">Comportamiento</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom: 1px solid #21262d;">
+      <td style="padding: 8px 12px;"><span class="tag tag-blue">Mobile App</span></td>
+      <td style="padding: 8px 12px;">Centro del bottom nav bar</td>
+      <td style="padding: 8px 12px;">Botón elevado, gradiente púrpura, siempre visible</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #21262d;">
+      <td style="padding: 8px 12px;"><span class="tag tag-purple">Tablet</span></td>
+      <td style="padding: 8px 12px;">Final de la sidebar colapsada</td>
+      <td style="padding: 8px 12px;">Botón circular al fondo de los iconos</td>
+    </tr>
+    <tr style="border-bottom: 1px solid #21262d;">
+      <td style="padding: 8px 12px;"><span class="tag tag-green">Desktop</span></td>
+      <td style="padding: 8px 12px;">Final de la sidebar expandida</td>
+      <td style="padding: 8px 12px;">Card con icono + texto "Konni — Asistente"</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 12px;"><span class="tag" style="background: rgba(248,81,73,0.15); color: #f85149;">Floating bubble</span></td>
+      <td style="padding: 8px 12px;">Eliminado en mobile</td>
+      <td style="padding: 8px 12px;">Solo visible en desktop si no hay sidebar</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top: 40px; padding: 16px; background: #161b22; border: 1px solid #30363d; border-radius: 12px; max-width: 700px;">
+  <div style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Estado de implementación</div>
+  <div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+    <div>✅ <strong>Mobile bottom nav</strong> — Konni centrado, implementado</div>
+    <div>✅ <strong>Floating bubble oculto</strong> — mobile usa nav, desktop mantiene bubble</div>
+    <div>⏳ <strong>Desktop sidebar</strong> — pendiente aprobación de Cristian</div>
+    <div>⏳ <strong>Tablet sidebar</strong> — pendiente aprobación de Cristian</div>
+  </div>
+</div>
+
+</body>
+</html>

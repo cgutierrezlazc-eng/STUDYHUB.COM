@@ -82,6 +82,47 @@ const NavIcon = ({ type }: { type: string }) => {
   }
 };
 
+// Konni icon (simplified nodo/network icon for nav)
+const KonniNavIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+    <line
+      x1="14"
+      y1="14"
+      x2="7"
+      y2="8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+    <line
+      x1="14"
+      y1="14"
+      x2="21"
+      y2="8"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+    <line
+      x1="14"
+      y1="14"
+      x2="14"
+      y2="22"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      opacity="0.6"
+    />
+    <circle cx="7" cy="8" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <circle cx="21" cy="8" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <circle cx="14" cy="22" r="2.5" fill="none" stroke="currentColor" strokeWidth="1.2" />
+    <circle cx="14" cy="14" r="4" fill="none" stroke="currentColor" strokeWidth="1.8" />
+    <circle cx="14" cy="14" r="1.8" fill="currentColor" />
+  </svg>
+);
+
 const moreMenuItems = [
   { icon: 'community', label: 'Comunidades', path: '/communities' },
   { icon: 'calendar', label: 'Calendario', path: '/calendar' },
@@ -117,11 +158,17 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
     [onNavigate]
   );
 
+  const handleKonniClick = useCallback(() => {
+    setShowMore(false);
+    window.dispatchEvent(new CustomEvent('toggle-konni'));
+  }, []);
+
   const items = [
     { icon: 'book', label: 'Estudio', path: '/dashboard' },
     { icon: 'chat', label: 'Chat', path: '/messages' },
-    { icon: 'user', label: 'Perfil', path: '/my-profile' },
   ];
+
+  const itemsAfter = [{ icon: 'user', label: 'Perfil', path: '/my-profile' }];
 
   return (
     <>
@@ -156,6 +203,7 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
         }}
       >
         <nav className="mobile-bottom-nav">
+          {/* Left items: Estudio, Chat */}
           {items.map((item) => {
             const isActive = currentPath.startsWith(item.path);
             return (
@@ -174,6 +222,40 @@ export default function MobileBottomNav({ currentPath, onNavigate }: Props) {
               </button>
             );
           })}
+
+          {/* Center: Konni button */}
+          <button
+            className="mobile-nav-item mobile-nav-konni"
+            onClick={handleKonniClick}
+            aria-label="Abrir Konni"
+          >
+            <span className="mobile-nav-konni-btn">
+              <KonniNavIcon />
+            </span>
+            <span className="mobile-nav-label">Konni</span>
+          </button>
+
+          {/* Right items: Perfil */}
+          {itemsAfter.map((item) => {
+            const isActive = currentPath.startsWith(item.path);
+            return (
+              <button
+                key={item.path}
+                className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+                onClick={() => {
+                  setShowMore(false);
+                  onNavigate(item.path);
+                }}
+              >
+                <span className="mobile-nav-icon">
+                  <NavIcon type={item.icon} />
+                </span>
+                <span className="mobile-nav-label">{item.label}</span>
+              </button>
+            );
+          })}
+
+          {/* Más */}
           <button
             className={`mobile-nav-item ${showMore ? 'active' : ''}`}
             onClick={() => setShowMore(!showMore)}

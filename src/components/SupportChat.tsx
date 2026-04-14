@@ -375,6 +375,14 @@ export default function SupportChat() {
       };
 
   const [open, setOpen] = useState(false);
+
+  // Listen for toggle event from MobileBottomNav Konni button
+  useEffect(() => {
+    const handleToggle = () => setOpen((prev) => !prev);
+    window.addEventListener('toggle-konni', handleToggle);
+    return () => window.removeEventListener('toggle-konni', handleToggle);
+  }, []);
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -594,10 +602,18 @@ export default function SupportChat() {
     setAdminChat(true);
   };
 
-  // ── Floating button ──────────────────────────────────────────────────────
+  // ── Floating button (hidden on mobile — nav button replaces it) ──────────
   if (!open) {
     return (
-      <div style={{ position: 'fixed', bottom: bottomOffset, right: 24, zIndex: 10000 }}>
+      <div
+        style={{
+          position: 'fixed',
+          bottom: bottomOffset,
+          right: 24,
+          zIndex: 10000,
+          display: isMobile ? 'none' : 'block',
+        }}
+      >
         <button
           onClick={() => setOpen(true)}
           aria-label="Abrir soporte"

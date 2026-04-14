@@ -3093,10 +3093,15 @@ h1, h2, h3,
 }
 .cover-modal-close:hover { color: var(--text-primary); background: var(--bg-hover); }
 .cover-modal-preview {
-  height: 140px; display: flex; align-items: center; justify-content: center;
+  height: 200px; display: flex; align-items: center; justify-content: center;
   background: var(--bg-hover); margin: 16px 20px 0; border-radius: 10px;
   background-size: cover; background-position: center;
 }
+.cover-upload-swatch {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; background: var(--bg-hover);
+}
+.cover-upload-card:hover .cover-upload-swatch { background: var(--accent); }
 .cover-modal-tabs {
   display: flex; gap: 0; margin: 16px 20px 0; border-bottom: 2px solid var(--border);
 }
@@ -3158,7 +3163,7 @@ h1, h2, h3,
   .cover-modal-overlay { align-items: flex-end; padding: 0; }
   .cover-modal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 85vh; }
   .cover-templates-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-  .cover-modal-preview { height: 100px; }
+  .cover-modal-preview { height: 140px; }
   .cover-filter-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
   .cover-filter-chip { white-space: nowrap; flex-shrink: 0; }
 }

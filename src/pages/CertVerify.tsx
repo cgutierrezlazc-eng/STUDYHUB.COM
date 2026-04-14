@@ -57,7 +57,7 @@ export default function CertVerify() {
     <div
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f0f4ff 0%, #e8eef8 100%)',
+        background: 'linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-primary) 100%)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -107,7 +107,7 @@ export default function CertVerify() {
               fontFamily: "'Outfit', -apple-system, sans-serif",
               fontSize: 22,
               fontWeight: 700,
-              color: '#1e293b',
+              color: 'var(--text-primary)',
               letterSpacing: '-0.04em',
               lineHeight: 1,
             }}
@@ -115,19 +115,21 @@ export default function CertVerify() {
             conni<span style={{ color: '#2D62C8' }}>ku</span>
           </span>
         </div>
-        <p style={{ color: '#64748b', fontSize: 14, margin: 0 }}>Verificación de Certificados</p>
+        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>
+          Verificación de Certificados
+        </p>
       </div>
 
       {/* Card */}
       <div
         style={{
-          background: '#fff',
+          background: 'var(--bg-card)',
           borderRadius: 20,
           padding: '40px 36px',
           maxWidth: 520,
           width: '100%',
           boxShadow: '0 8px 40px rgba(0,0,0,0.10)',
-          border: '1px solid #e2e8f0',
+          border: '1px solid var(--border)',
         }}
       >
         {loading && (
@@ -137,23 +139,23 @@ export default function CertVerify() {
                 width: 48,
                 height: 48,
                 borderRadius: '50%',
-                border: '3px solid #e2e8f0',
+                border: '3px solid var(--border)',
                 borderTopColor: '#2D62C8',
                 margin: '0 auto 16px',
                 animation: 'spin 0.8s linear infinite',
               }}
             />
-            <p style={{ color: '#64748b', fontSize: 15 }}>Verificando certificado...</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 15 }}>Verificando certificado...</p>
           </div>
         )}
 
         {!loading && error && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ marginBottom: 16 }}>{XCircle({ size: 56, color: '#ef4444' })}</div>
-            <h2 style={{ color: '#1e293b', marginBottom: 8, fontSize: 20 }}>
+            <h2 style={{ color: 'var(--text-primary)', marginBottom: 8, fontSize: 20 }}>
               Certificado no válido
             </h2>
-            <p style={{ color: '#64748b', fontSize: 14, lineHeight: 1.6 }}>
+            <p style={{ color: 'var(--text-muted)', fontSize: 14, lineHeight: 1.6 }}>
               Este código no corresponde a ningún certificado emitido por Conniku, o el certificado
               no es público.
             </p>
@@ -223,7 +225,7 @@ export default function CertVerify() {
             <h1
               style={{
                 textAlign: 'center',
-                color: '#1e293b',
+                color: 'var(--text-primary)',
                 fontSize: 22,
                 fontWeight: 800,
                 marginBottom: 4,
@@ -231,7 +233,14 @@ export default function CertVerify() {
             >
               {cert.studentName}
             </h1>
-            <p style={{ textAlign: 'center', color: '#64748b', fontSize: 14, marginBottom: 28 }}>
+            <p
+              style={{
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                fontSize: 14,
+                marginBottom: 28,
+              }}
+            >
               ha completado satisfactoriamente
             </p>
 
@@ -262,18 +271,18 @@ export default function CertVerify() {
             >
               <div
                 style={{
-                  background: '#f8fafc',
+                  background: 'var(--bg-primary)',
                   borderRadius: 10,
                   padding: '14px 16px',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  {Calendar({ size: 14, color: '#64748b' })}
+                  {Calendar({ size: 14, color: 'var(--text-muted)' })}
                   <span
                     style={{
                       fontSize: 11,
-                      color: '#64748b',
+                      color: 'var(--text-muted)',
                       textTransform: 'uppercase',
                       letterSpacing: 0.5,
                     }}
@@ -281,24 +290,24 @@ export default function CertVerify() {
                     Emitido
                   </span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {issuedDate}
                 </span>
               </div>
               <div
                 style={{
-                  background: '#f8fafc',
+                  background: 'var(--bg-primary)',
                   borderRadius: 10,
                   padding: '14px 16px',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  {BookOpen({ size: 14, color: '#64748b' })}
+                  {BookOpen({ size: 14, color: 'var(--text-muted)' })}
                   <span
                     style={{
                       fontSize: 11,
-                      color: '#64748b',
+                      color: 'var(--text-muted)',
                       textTransform: 'uppercase',
                       letterSpacing: 0.5,
                     }}
@@ -306,25 +315,25 @@ export default function CertVerify() {
                     Duración
                   </span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {cert.hoursCompleted}h
                 </span>
               </div>
               {cert.finalGrade != null && (
                 <div
                   style={{
-                    background: '#f8fafc',
+                    background: 'var(--bg-primary)',
                     borderRadius: 10,
                     padding: '14px 16px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid var(--border)',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                    {Star({ size: 14, color: '#64748b' })}
+                    {Star({ size: 14, color: 'var(--text-muted)' })}
                     <span
                       style={{
                         fontSize: 11,
-                        color: '#64748b',
+                        color: 'var(--text-muted)',
                         textTransform: 'uppercase',
                         letterSpacing: 0.5,
                       }}
@@ -332,25 +341,25 @@ export default function CertVerify() {
                       Calificación
                     </span>
                   </div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                     {cert.finalGrade}/100
                   </span>
                 </div>
               )}
               <div
                 style={{
-                  background: '#f8fafc',
+                  background: 'var(--bg-primary)',
                   borderRadius: 10,
                   padding: '14px 16px',
-                  border: '1px solid #e2e8f0',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  {GraduationCap({ size: 14, color: '#64748b' })}
+                  {GraduationCap({ size: 14, color: 'var(--text-muted)' })}
                   <span
                     style={{
                       fontSize: 11,
-                      color: '#64748b',
+                      color: 'var(--text-muted)',
                       textTransform: 'uppercase',
                       letterSpacing: 0.5,
                     }}
@@ -358,7 +367,7 @@ export default function CertVerify() {
                     Institución
                   </span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 600, color: '#1e293b' }}>
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
                   {cert.institution}
                 </span>
               </div>
@@ -369,15 +378,15 @@ export default function CertVerify() {
               style={{
                 textAlign: 'center',
                 padding: '14px',
-                background: '#f1f5f9',
+                background: 'var(--bg-primary)',
                 borderRadius: 10,
-                border: '1px solid #e2e8f0',
+                border: '1px solid var(--border)',
               }}
             >
               <p
                 style={{
                   fontSize: 11,
-                  color: '#94a3b8',
+                  color: 'var(--text-muted)',
                   margin: '0 0 4px',
                   textTransform: 'uppercase',
                   letterSpacing: 0.5,
@@ -385,7 +394,14 @@ export default function CertVerify() {
               >
                 Código de verificación
               </p>
-              <code style={{ fontSize: 14, fontWeight: 700, color: '#475569', letterSpacing: 2 }}>
+              <code
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: 'var(--text-secondary)',
+                  letterSpacing: 2,
+                }}
+              >
                 {cert.code}
               </code>
             </div>
@@ -393,7 +409,7 @@ export default function CertVerify() {
         )}
       </div>
 
-      <p style={{ marginTop: 20, color: '#94a3b8', fontSize: 12, textAlign: 'center' }}>
+      <p style={{ marginTop: 20, color: 'var(--text-muted)', fontSize: 12, textAlign: 'center' }}>
         conniku.com — Plataforma educativa para universitarios
       </p>
 

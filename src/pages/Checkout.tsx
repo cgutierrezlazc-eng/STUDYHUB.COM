@@ -43,7 +43,7 @@ export default function Checkout({ onNavigate }: Props) {
   const styles: Record<string, React.CSSProperties> = {
     page: {
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e9f2 100%)',
+      background: 'var(--bg-primary)',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -61,7 +61,7 @@ export default function Checkout({ onNavigate }: Props) {
       position: 'absolute' as const,
       top: '24px',
       left: '24px',
-      color: '#6366f1',
+      color: 'var(--accent)',
       cursor: 'pointer',
       fontSize: '14px',
       fontWeight: 600,
@@ -75,7 +75,7 @@ export default function Checkout({ onNavigate }: Props) {
     // LEFT: Order summary
     summaryCard: {
       flex: '1 1 320px',
-      background: '#fff',
+      background: 'var(--bg-card)',
       borderRadius: '16px',
       padding: '32px',
       boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
@@ -84,7 +84,7 @@ export default function Checkout({ onNavigate }: Props) {
     summaryTitle: {
       fontSize: '14px',
       fontWeight: 600,
-      color: '#94a3b8',
+      color: 'var(--text-muted)',
       textTransform: 'uppercase' as const,
       letterSpacing: '0.05em',
       margin: '0 0 20px 0',
@@ -109,24 +109,24 @@ export default function Checkout({ onNavigate }: Props) {
     planName: {
       fontSize: '18px',
       fontWeight: 700,
-      color: '#1e293b',
+      color: 'var(--text-primary)',
       margin: 0,
     },
     planSub: {
       fontSize: '14px',
-      color: '#64748b',
+      color: 'var(--text-muted)',
       margin: '2px 0 0 0',
     },
     divider: {
       height: '1px',
-      background: '#e2e8f0',
+      background: 'var(--border)',
       margin: '20px 0',
     },
     lineItem: {
       display: 'flex',
       justifyContent: 'space-between',
       fontSize: '14px',
-      color: '#475569',
+      color: 'var(--text-secondary)',
       marginBottom: '10px',
     },
     totalRow: {
@@ -134,7 +134,7 @@ export default function Checkout({ onNavigate }: Props) {
       justifyContent: 'space-between',
       fontSize: '18px',
       fontWeight: 700,
-      color: '#1e293b',
+      color: 'var(--text-primary)',
     },
     trialBadge: {
       display: 'inline-flex',
@@ -151,7 +151,7 @@ export default function Checkout({ onNavigate }: Props) {
     // RIGHT: Payment form
     paymentCard: {
       flex: '1 1 420px',
-      background: '#fff',
+      background: 'var(--bg-card)',
       borderRadius: '16px',
       padding: '32px',
       boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
@@ -159,7 +159,7 @@ export default function Checkout({ onNavigate }: Props) {
     paymentTitle: {
       fontSize: '20px',
       fontWeight: 700,
-      color: '#1e293b',
+      color: 'var(--text-primary)',
       margin: '0 0 24px 0',
     },
     tabs: {
@@ -168,7 +168,7 @@ export default function Checkout({ onNavigate }: Props) {
       marginBottom: '24px',
       borderRadius: '10px',
       overflow: 'hidden',
-      border: '1px solid #e2e8f0',
+      border: '1px solid var(--border)',
     },
     tab: {
       flex: 1,
@@ -177,8 +177,8 @@ export default function Checkout({ onNavigate }: Props) {
       fontWeight: 600,
       cursor: 'pointer',
       border: 'none',
-      background: '#f8fafc',
-      color: '#64748b',
+      background: 'var(--bg-primary)',
+      color: 'var(--text-muted)',
       transition: 'all 0.2s',
       display: 'flex',
       alignItems: 'center',
@@ -207,20 +207,20 @@ export default function Checkout({ onNavigate }: Props) {
       display: 'block',
       fontSize: '13px',
       fontWeight: 600,
-      color: '#475569',
+      color: 'var(--text-secondary)',
       marginBottom: '6px',
     },
     input: {
       width: '100%',
       padding: '12px 14px',
       fontSize: '15px',
-      border: '1.5px solid #e2e8f0',
+      border: '1.5px solid var(--border)',
       borderRadius: '10px',
       outline: 'none',
       transition: 'border-color 0.2s',
       boxSizing: 'border-box' as const,
-      color: '#1e293b',
-      background: '#fafbfc',
+      color: 'var(--text-primary)',
+      background: 'var(--bg-primary)',
     },
     row: {
       display: 'flex',
@@ -243,11 +243,11 @@ export default function Checkout({ onNavigate }: Props) {
     },
     termsText: {
       fontSize: '13px',
-      color: '#64748b',
+      color: 'var(--text-muted)',
       lineHeight: '1.5',
     },
     termsLink: {
-      color: '#6366f1',
+      color: 'var(--accent)',
       textDecoration: 'underline',
       cursor: 'pointer',
     },
@@ -289,7 +289,7 @@ export default function Checkout({ onNavigate }: Props) {
       alignItems: 'center',
       gap: '6px',
       fontSize: '12px',
-      color: '#94a3b8',
+      color: 'var(--text-muted)',
       fontWeight: 500,
     },
     paypalContainer: {
@@ -298,7 +298,7 @@ export default function Checkout({ onNavigate }: Props) {
     },
     paypalInfo: {
       fontSize: '14px',
-      color: '#64748b',
+      color: 'var(--text-muted)',
       marginTop: '12px',
     },
   };
@@ -344,7 +344,14 @@ export default function Checkout({ onNavigate }: Props) {
             <span>✓</span>7 dias gratis, luego $5 USD/mes
           </div>
 
-          <div style={{ marginTop: '24px', fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
+          <div
+            style={{
+              marginTop: '24px',
+              fontSize: '13px',
+              color: 'var(--text-muted)',
+              lineHeight: '1.6',
+            }}
+          >
             <p style={{ margin: '0 0 6px 0' }}>Incluye:</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Consultas ilimitadas sobre tu material</p>
             <p style={{ margin: '0 0 4px 0' }}>✦ Resúmenes y flashcards</p>

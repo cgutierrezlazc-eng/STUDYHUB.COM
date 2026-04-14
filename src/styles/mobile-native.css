@@ -160,6 +160,35 @@ body.keyboard-open .mobile-bottom-nav-wrapper {
   white-space: nowrap;
 }
 
+/* ─── Konni center button ───────────────────────────────────── */
+.mobile-nav-konni {
+  color: var(--text-secondary);
+}
+.mobile-nav-konni .mobile-nav-label {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+.mobile-nav-konni-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #5B21B6 0%, #7C3AED 60%, #A78BFA 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  margin-top: -18px;
+  box-shadow: 0 4px 14px rgba(124,58,237,0.4);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.mobile-nav-konni:active .mobile-nav-konni-btn {
+  transform: scale(0.92);
+  box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+}
+.mobile-nav-konni .mobile-nav-label {
+  margin-top: 0;
+}
+
 .mobile-nav-badge {
   position: absolute;
   top: 2px;

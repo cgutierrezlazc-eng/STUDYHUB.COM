@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { api, getApiBase } from '../services/api';
 
 // ── Templates ────────────────────────────────────────────────
@@ -140,6 +141,7 @@ interface Props {
   currentCoverType?: string;
   currentPositionY?: number;
   onSaved: (coverPhoto: string, coverType: string, positionY: number) => void;
+  onDelete?: () => void;
 }
 
 export default function CoverPhotoModal({
@@ -149,20 +151,32 @@ export default function CoverPhotoModal({
   currentCoverType,
   currentPositionY = 50,
   onSaved,
+  onDelete,
 }: Props) {
-  const [tab, setTab] = useState<'templates' | 'upload'>('templates');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<string | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [positionY, setPositionY] = useState(currentPositionY);
   const [saving, setSaving] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const uploadRef = useRef<HTMLInputElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const dragState = useRef<{ startY: number; startPos: number } | null>(null);
 
-  if (!isOpen) return null;
+  // Reset state each time modal opens
+  React.useEffect(() => {
+    if (isOpen) {
+      setPositionY(currentPositionY);
+      setSelectedTemplate(null);
+      setPreviewFile(null);
+      setCoverFile(null);
+      setConfirmDelete(false);
+    }
+  }, [isOpen, currentPositionY]);
 
-  const isCustomPreview = tab === 'upload' && !!previewFile;
+  const isCustomPreview = !!previewFile;
+  const canDrag = isCustomPreview || currentCoverType === 'custom';
+
   const previewStyle: React.CSSProperties = isCustomPreview
     ? {
         backgroundImage: `url(${previewFile})`,
@@ -173,8 +187,9 @@ export default function CoverPhotoModal({
       ? { background: getTemplateById(selectedTemplate)?.gradient || 'var(--bg-hover)' }
       : getCoverStyle(currentCover || '', currentCoverType || 'template', positionY);
 
+  // ── Drag-to-reposition ──────────────────────────────────────
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isCustomPreview && !(currentCoverType === 'custom')) return;
+    if (!canDrag) return;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     dragState.current = { startY: clientY, startPos: positionY };
     e.preventDefault();
@@ -196,6 +211,7 @@ export default function CoverPhotoModal({
   }, []);
 
   React.useEffect(() => {
+    if (!isOpen) return;
     window.addEventListener('mousemove', handleDragMove);
     window.addEventListener('mouseup', handleDragEnd);
     window.addEventListener('touchmove', handleDragMove);
@@ -206,8 +222,9 @@ export default function CoverPhotoModal({
       window.removeEventListener('touchmove', handleDragMove);
       window.removeEventListener('touchend', handleDragEnd);
     };
-  }, [handleDragMove, handleDragEnd]);
+  }, [isOpen, handleDragMove, handleDragEnd]);
 
+  // ── File upload ─────────────────────────────────────────────
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -217,15 +234,16 @@ export default function CoverPhotoModal({
     reader.readAsDataURL(file);
     setSelectedTemplate(null);
     setPositionY(50);
-    setTab('upload');
+    setConfirmDelete(false);
     if (e.target) e.target.value = '';
   };
 
+  // ── Save ────────────────────────────────────────────────────
   const handleSave = async () => {
     setSaving(true);
     try {
       const formData = new FormData();
-      if (tab === 'upload' && coverFile) {
+      if (coverFile) {
         formData.append('file', coverFile);
         formData.append('position_y', String(positionY));
       } else if (selectedTemplate) {
@@ -237,10 +255,6 @@ export default function CoverPhotoModal({
       }
       const result = await api.updateCoverPhoto(formData);
       onSaved(result.coverPhoto, result.coverType, result.coverPositionY ?? positionY);
-      setSelectedTemplate(null);
-      setPreviewFile(null);
-      setCoverFile(null);
-      setTab('templates');
       onClose();
     } catch (err: any) {
       alert(err.message || 'Error al guardar portada. Intenta de nuevo.');
@@ -249,158 +263,176 @@ export default function CoverPhotoModal({
     }
   };
 
+  // ── Delete (two-click: arm → confirm) ───────────────────────
+  const handleDelete = () => {
+    if (!confirmDelete) {
+      setConfirmDelete(true);
+      return;
+    }
+    onDelete?.();
+    onClose();
+  };
+
   const canSave = !saving && (!!selectedTemplate || !!coverFile);
+  const hasCover = !!currentCover && !!onDelete;
 
   return (
-    <div className="modal-overlay cover-modal-overlay" onClick={onClose}>
-      <div className="cover-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="cover-modal-header">
-          <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Foto de portada</h3>
-          <button
-            className="cover-modal-close"
-            onClick={onClose}
-            aria-label="Cerrar"
-            style={{ fontSize: 18, lineHeight: 1 }}
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Preview */}
-        <div
-          ref={previewRef}
-          className="cover-modal-preview"
-          style={{
-            ...previewStyle,
-            cursor: isCustomPreview ? 'ns-resize' : 'default',
-            userSelect: 'none',
-          }}
-          onMouseDown={handleDragStart}
-          onTouchStart={handleDragStart}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="modal-overlay cover-modal-overlay"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
         >
-          {isCustomPreview ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <span
-                style={{
-                  color: '#fff',
-                  fontSize: 11,
-                  textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-                  background: 'rgba(0,0,0,0.4)',
-                  padding: '3px 10px',
-                  borderRadius: 12,
-                }}
-              >
-                Arrastra para ajustar la posición
-              </span>
-              <span style={{ color: '#fff', fontSize: 10, opacity: 0.7 }}>↕ {positionY}%</span>
+          <motion.div
+            className="cover-modal"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+          >
+            {/* Header */}
+            <div className="cover-modal-header">
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Foto de portada</h3>
+              <button className="cover-modal-close" onClick={onClose} aria-label="Cerrar">
+                ✕
+              </button>
             </div>
-          ) : (
-            <span
+
+            {/* Large Preview */}
+            <div
+              ref={previewRef}
+              className="cover-modal-preview"
               style={{
-                color: '#fff',
-                fontSize: 12,
-                textShadow: '0 1px 4px rgba(0,0,0,0.6)',
-                opacity: 0.8,
+                ...previewStyle,
+                cursor: canDrag ? 'ns-resize' : 'default',
+                userSelect: 'none',
               }}
+              onMouseDown={handleDragStart}
+              onTouchStart={handleDragStart}
             >
-              Vista previa
-            </span>
-          )}
-        </div>
-
-        {/* Tabs */}
-        <div className="cover-modal-tabs">
-          <button
-            className={`cover-modal-tab ${tab === 'templates' ? 'active' : ''}`}
-            onClick={() => setTab('templates')}
-          >
-            Plantillas
-          </button>
-          <button
-            className={`cover-modal-tab ${tab === 'upload' ? 'active' : ''}`}
-            onClick={() => setTab('upload')}
-          >
-            Subir foto
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="cover-modal-body">
-          {tab === 'templates' && (
-            <div className="cover-templates-grid">
-              {COVER_TEMPLATES.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  className={`cover-template-card ${selectedTemplate === tpl.id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedTemplate(tpl.id);
-                    setPreviewFile(null);
-                    setCoverFile(null);
+              {canDrag ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 4,
                   }}
-                  title={tpl.name}
                 >
-                  <div className="cover-template-swatch" style={{ background: tpl.gradient }} />
-                  <span className="cover-template-name">{tpl.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {tab === 'upload' && (
-            <div className="cover-upload-area">
-              <input
-                ref={uploadRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp,image/gif"
-                style={{ display: 'none' }}
-                onChange={handleFileChange}
-              />
-              {previewFile ? (
-                <div style={{ textAlign: 'center', width: '100%' }}>
-                  <img
-                    src={previewFile}
-                    alt="Vista previa"
+                  <span
                     style={{
-                      maxWidth: '100%',
-                      maxHeight: 160,
-                      borderRadius: 8,
-                      marginBottom: 12,
-                      objectFit: 'cover',
+                      color: '#fff',
+                      fontSize: 12,
+                      textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+                      background: 'rgba(0,0,0,0.45)',
+                      padding: '4px 14px',
+                      borderRadius: 14,
                     }}
-                  />
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => uploadRef.current?.click()}
                   >
-                    Cambiar imagen
-                  </button>
+                    Arrastra para ajustar posición
+                  </span>
+                  <span style={{ color: '#fff', fontSize: 10, opacity: 0.7 }}>↕ {positionY}%</span>
                 </div>
               ) : (
-                <button className="cover-upload-btn" onClick={() => uploadRef.current?.click()}>
-                  <span style={{ fontSize: 28 }}>📷</span>
-                  <span style={{ fontWeight: 600, fontSize: 14 }}>
-                    Seleccionar desde dispositivo
-                  </span>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    JPG, PNG, WebP o GIF — máx. 5 MB
-                  </span>
-                </button>
+                <span
+                  style={{
+                    color: '#fff',
+                    fontSize: 12,
+                    textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+                    opacity: 0.8,
+                  }}
+                >
+                  Vista previa
+                </span>
               )}
             </div>
-          )}
-        </div>
 
-        {/* Footer */}
-        <div className="cover-modal-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Cancelar
-          </button>
-          <button className="btn btn-primary" disabled={!canSave} onClick={handleSave}>
-            {saving ? 'Aplicando...' : 'Aplicar'}
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* Unified Grid — upload card + templates */}
+            <div className="cover-modal-body">
+              <div className="cover-templates-grid">
+                {/* Upload card as first item */}
+                <button
+                  className={`cover-template-card cover-upload-card ${previewFile ? 'selected' : ''}`}
+                  onClick={() => uploadRef.current?.click()}
+                  title="Subir foto"
+                >
+                  <div className="cover-template-swatch cover-upload-swatch">
+                    <span style={{ fontSize: 20 }}>📷</span>
+                    <span style={{ fontSize: 10, fontWeight: 600 }}>Subir foto</span>
+                  </div>
+                  <span className="cover-template-name">
+                    {previewFile ? 'Cambiar' : 'Dispositivo'}
+                  </span>
+                </button>
+
+                {/* Template cards */}
+                {COVER_TEMPLATES.map((tpl) => (
+                  <motion.button
+                    key={tpl.id}
+                    className={`cover-template-card ${selectedTemplate === tpl.id ? 'selected' : ''}`}
+                    onClick={() => {
+                      setSelectedTemplate(tpl.id);
+                      setPreviewFile(null);
+                      setCoverFile(null);
+                      setConfirmDelete(false);
+                    }}
+                    title={tpl.name}
+                    whileTap={{ scale: 0.96 }}
+                    transition={{ duration: 0.1 }}
+                  >
+                    <div className="cover-template-swatch" style={{ background: tpl.gradient }} />
+                    <span className="cover-template-name">{tpl.name}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              ref={uploadRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              style={{ display: 'none' }}
+              onChange={handleFileChange}
+            />
+
+            {/* Footer */}
+            <div className="cover-modal-footer">
+              {hasCover && (
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    marginRight: 'auto',
+                    padding: '6px 14px',
+                    background: confirmDelete ? 'rgba(220,38,38,0.1)' : 'none',
+                    border: confirmDelete
+                      ? '1px solid rgba(220,38,38,0.3)'
+                      : '1px solid transparent',
+                    borderRadius: 'var(--radius-sm)',
+                    color: confirmDelete ? '#dc2626' : 'var(--text-muted)',
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {confirmDelete ? 'Confirmar eliminación' : 'Eliminar portada'}
+                </button>
+              )}
+              <button className="btn btn-secondary" onClick={onClose}>
+                Cancelar
+              </button>
+              <button className="btn btn-primary" disabled={!canSave} onClick={handleSave}>
+                {saving ? 'Aplicando...' : 'Aplicar'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

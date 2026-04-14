@@ -3,11 +3,7 @@ import { useAuth } from '../services/auth';
 import { useI18n } from '../services/i18n';
 import { api } from '../services/api';
 import { formatPriceDisplay } from '../utils/currency';
-import CoverPhotoModal, {
-  getCoverStyle,
-  getTemplateById,
-  COVER_TEMPLATES,
-} from '../components/CoverPhotoModal';
+import CoverPhotoModal, { getCoverStyle } from '../components/CoverPhotoModal';
 import {
   Camera,
   Hourglass,
@@ -89,12 +85,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [tutoringLoading, setTutoringLoading] = useState(false);
   const [tutoringSuccess, setTutoringSuccess] = useState(false);
   const [showCoverModal, setShowCoverModal] = useState(false);
-  const [coverModalTab, setCoverModalTab] = useState<'templates' | 'upload'>('templates');
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
-  const [coverPreviewFile, setCoverPreviewFile] = useState<string | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
-  const [coverSaving, setCoverSaving] = useState(false);
-  const [coverFilter, setCoverFilter] = useState<string>('all');
   const [tutorProfile, setTutorProfile] = useState<any>(null);
   const [tutorClasses, setTutorClasses] = useState<any[]>([]);
   const [tutorPayments, setTutorPayments] = useState<any>(null);
@@ -161,8 +151,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   // LMS connection indicator (own profile only)
   const [lmsConnections, setLmsConnections] = useState<any[]>([]);
   const postImageRef = useRef<HTMLInputElement>(null);
-  const coverPhotoRef = useRef<HTMLInputElement>(null);
-  const coverUploadRef = useRef<HTMLInputElement>(null);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -671,46 +659,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setCoverFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => setCoverPreviewFile(reader.result as string);
-    reader.readAsDataURL(file);
-    setSelectedTemplate(null);
-    setCoverModalTab('upload');
-  };
-
-  const handleSaveCover = async () => {
-    setCoverSaving(true);
-    try {
-      const formData = new FormData();
-      if (coverModalTab === 'upload' && coverFile) {
-        formData.append('file', coverFile);
-      } else if (selectedTemplate) {
-        formData.append('template_id', selectedTemplate);
-      } else {
-        setCoverSaving(false);
-        return;
-      }
-      const result = await api.updateCoverPhoto(formData);
-      setProfile((prev: any) => ({
-        ...prev,
-        coverPhoto: result.coverPhoto,
-        coverType: result.coverType,
-      }));
-      updateProfile({ coverPhoto: result.coverPhoto, coverType: result.coverType } as any);
-      setShowCoverModal(false);
-      setSelectedTemplate(null);
-      setCoverPreviewFile(null);
-      setCoverFile(null);
-    } catch (err: any) {
-      alert(err.message || 'Error al guardar portada');
-    }
-    setCoverSaving(false);
-  };
-
   const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -827,7 +775,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
               profile.coverType || 'template',
               profile.coverPositionY ?? 50
             ),
-            height: 150,
+            height: 220,
           }}
         >
           {isOwn && (
@@ -849,33 +797,27 @@ export default function UserProfile({ userId, onNavigate }: Props) {
                 {Camera({ size: 14 })}{' '}
                 {profile.coverPhoto ? t('userprofile.changeCover') : t('userprofile.addCover')}
               </button>
-              {profile.coverPhoto && (
-                <button
-                  onClick={async () => {
-                    try {
-                      await api.updateMe({ cover_photo: '', cover_type: '' });
-                      setProfile((prev: any) => ({ ...prev, coverPhoto: '', coverType: '' }));
-                    } catch {
-                      /* ignorar */
-                    }
-                  }}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: 'var(--radius-sm)',
-                    background: 'rgba(220,38,38,0.82)',
-                    color: '#fff',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    backdropFilter: 'blur(4px)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 5,
-                  }}
+              <button
+                className="fb-cover-edit-btn"
+                style={{ position: 'static' }}
+                onClick={() => setConfigSection(configSection ? null : 'profile')}
+                aria-label="Configuración del perfil"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 >
-                  🗑 Eliminar
-                </button>
-              )}
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>{' '}
+                Configuración
+              </button>
             </div>
           )}
         </div>
@@ -1734,17 +1676,15 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         </div>
       </div>
 
-      {/* ─── Fila 1: Social Tabs — todos visibles, sin "Más" ─── */}
+      {/* ─── Social Tabs ─── */}
       <div
         className="fb-profile-tabs"
         style={{
-          marginBottom: isOwn ? 0 : 16,
-          borderRadius: isOwn ? 'var(--radius) var(--radius) 0 0' : 'var(--radius)',
+          marginBottom: 16,
+          borderRadius: 'var(--radius)',
           background: 'var(--bg-card)',
           border: '1px solid var(--border-subtle)',
-          borderBottom: isOwn ? 'none' : undefined,
           position: 'relative',
-          flexWrap: 'wrap',
         }}
       >
         <button
@@ -1807,55 +1747,6 @@ export default function UserProfile({ userId, onNavigate }: Props) {
           Fotos
         </button>
       </div>
-
-      {/* ─── Fila 2: Config Tabs (solo propietario del perfil) ─── */}
-      {isOwn && (
-        <div
-          style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 6,
-            padding: '8px 12px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-subtle)',
-            borderTop: '1px solid var(--border)',
-            borderRadius: '0 0 var(--radius) var(--radius)',
-            marginBottom: 16,
-          }}
-        >
-          {(
-            [
-              { id: 'profile', label: 'Mi Perfil', color: '#1a3a6e' },
-              { id: 'academic', label: 'Académico', color: '#1e40af' },
-              { id: 'cv', label: 'CV Profesional', color: '#6d28d9' },
-              { id: 'projects', label: 'Proyectos', color: '#0369a1' },
-              { id: 'publications', label: 'Publicaciones', color: '#0891b2' },
-              { id: 'appearance', label: 'Apariencia', color: '#b45309' },
-              { id: 'notifications', label: 'Notificaciones', color: '#374151' },
-            ] as { id: string; label: string; color: string }[]
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setConfigSection(configSection === tab.id ? null : tab.id)}
-              style={{
-                padding: '5px 12px',
-                borderRadius: 20,
-                border: '2px solid',
-                borderColor: configSection === tab.id ? tab.color : 'transparent',
-                background: configSection === tab.id ? tab.color : `${tab.color}22`,
-                color: configSection === tab.id ? '#fff' : tab.color,
-                fontSize: 12,
-                fontWeight: configSection === tab.id ? 700 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                letterSpacing: 0.3,
-              }}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* ─── Módulo de Configuración embebido ─── */}
       {configSection && isOwn && (
@@ -6176,13 +6067,25 @@ export default function UserProfile({ userId, onNavigate }: Props) {
         currentCoverType={profile?.coverType || 'template'}
         currentPositionY={profile?.coverPositionY ?? 50}
         onSaved={(coverPhoto, coverType, positionY) => {
-          // api.updateCoverPhoto ya guardó en backend — solo actualizar estado local
           setProfile((prev: any) => ({
             ...prev,
             coverPhoto,
             coverType,
             coverPositionY: positionY,
           }));
+        }}
+        onDelete={async () => {
+          try {
+            await api.updateMe({ cover_photo: '', cover_type: '' });
+            setProfile((prev: any) => ({
+              ...prev,
+              coverPhoto: '',
+              coverType: '',
+              coverPositionY: 50,
+            }));
+          } catch {
+            /* ignorar */
+          }
         }}
       />
     </div>
