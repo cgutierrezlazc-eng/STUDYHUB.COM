@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react'
-import { Employee } from '../shared/types'
-import { CHILE_LABOR } from '../shared/ChileLaborConstants'
-import { COMPANY } from '../shared/constants'
-import { btnPrimary, btnSecondary, btnSmall, fmt } from '../shared/styles'
+import React, { useState, useEffect } from 'react';
+import { Employee } from '../shared/types';
+import { CHILE_LABOR } from '../shared/ChileLaborConstants';
+import { COMPANY } from '../shared/constants';
+import { btnPrimary, btnSecondary, btnSmall, fmt } from '../shared/styles';
 import {
-  Shield, FileText, Globe, AlertTriangle, Download, CheckCircle, UserPlus,
-} from 'lucide-react'
-import { api } from '../../services/api'
+  Shield,
+  FileText,
+  Globe,
+  AlertTriangle,
+  Download,
+  CheckCircle,
+  UserPlus,
+} from 'lucide-react';
+import { api } from '../../services/api';
 
 // ─── Document generation helpers ───
 const openDoc = (html: string) => {
-  const w = window.open('', '_blank')
-  if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500) }
-}
+  const w = window.open('', '_blank');
+  if (w) {
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  }
+};
 
 const DOC_STYLES = `
   @page { size: letter; margin: 2.5cm 3cm; }
@@ -33,7 +43,7 @@ const DOC_STYLES = `
   td.amount { text-align: right; font-family: 'Courier New', monospace; }
   tr.total td { border-top: 2px solid #000; font-weight: 800; font-size: 12pt; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
-`
+`;
 
 function generateFiniquitoHTML(
   emp: Employee,
@@ -42,10 +52,18 @@ function generateFiniquitoHTML(
   pendingVacationDays: number,
   avisoPrevio: boolean
 ): string {
-  const today = new Date()
-  const dateStr = today.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const hireDate = new Date(emp.hireDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const terminationDate = dateStr
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const hireDate = new Date(emp.hireDate).toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const terminationDate = dateStr;
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -135,7 +153,7 @@ ${result.recargo > 0 ? `<tr><td>Recargo legal (${result.recargoPercent}% — Art
 <div style="margin-top: 40pt; padding: 12pt; border: 1px solid #ccc; font-size: 9pt; color: #666; line-height: 1.6;">
 <strong>Nota Legal — Art. 177 del Codigo del Trabajo:</strong> El finiquito debidamente ratificado por el trabajador ante un Inspector del Trabajo o un Notario Publico, o firmado por el trabajador y el presidente del sindicato, tendra merito ejecutivo respecto de las obligaciones pendientes que se hubieren consignado en el. El finiquito no puede ser firmado con anterioridad a la fecha de termino de la relacion laboral.
 </div>
-</body></html>`
+</body></html>`;
 }
 
 function generateCartaDespidoHTML(
@@ -144,21 +162,33 @@ function generateCartaDespidoHTML(
   hechos: string,
   fechaDespido: string
 ): string {
-  const today = new Date()
-  const dateStr = today.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const hireDate = new Date(emp.hireDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const plazo = causal === 'art161' ? '6 dias habiles' : '3 dias habiles'
-  const causalText = causal === 'art161'
-    ? 'Articulo 161 del Codigo del Trabajo — Necesidades de la empresa'
-    : 'Articulo 159 del Codigo del Trabajo — Vencimiento del plazo convenido / Mutuo acuerdo / Conclusion de la obra'
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const hireDate = new Date(emp.hireDate).toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const plazo = causal === 'art161' ? '6 dias habiles' : '3 dias habiles';
+  const causalText =
+    causal === 'art161'
+      ? 'Articulo 161 del Codigo del Trabajo — Necesidades de la empresa'
+      : 'Articulo 159 del Codigo del Trabajo — Vencimiento del plazo convenido / Mutuo acuerdo / Conclusion de la obra';
 
-  const hire = new Date(emp.hireDate)
-  const now = new Date()
-  const yearsWorked = Math.min(Math.floor((now.getTime() - hire.getTime()) / (365.25 * 24 * 60 * 60 * 1000)), 11)
-  const topeMensual = 90 * CHILE_LABOR.UF.value
-  const salaryForCalc = Math.min(emp.grossSalary, topeMensual)
-  const indemnizacionAnos = causal === 'art161' ? salaryForCalc * yearsWorked : 0
-  const indemnizacionAviso = causal === 'art161' ? salaryForCalc : 0
+  const hire = new Date(emp.hireDate);
+  const now = new Date();
+  const yearsWorked = Math.min(
+    Math.floor((now.getTime() - hire.getTime()) / (365.25 * 24 * 60 * 60 * 1000)),
+    11
+  );
+  const topeMensual = 90 * CHILE_LABOR.UF.value;
+  const salaryForCalc = Math.min(emp.grossSalary, topeMensual);
+  const indemnizacionAnos = causal === 'art161' ? salaryForCalc * yearsWorked : 0;
+  const indemnizacionAviso = causal === 'art161' ? salaryForCalc : 0;
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -199,7 +229,9 @@ ${emp.address}<br/>
 <p>${hechos || '[Describir los hechos concretos que fundamentan la causal de termino invocada]'}</p>
 </div>
 
-${causal === 'art161' ? `
+${
+  causal === 'art161'
+    ? `
 <div class="clause">
 <h2>Indemnizaciones Ofrecidas</h2>
 <p>En virtud de lo dispuesto en los articulos 162 y 163 del Codigo del Trabajo, se ofrecen las siguientes indemnizaciones:</p>
@@ -212,12 +244,14 @@ ${causal === 'art161' ? `
 </table>
 <p class="legal-ref">Nota: Las indemnizaciones se calculan con tope de 90 UF mensual ($${fmt(topeMensual)}) y maximo 11 anos de servicio (Art. 163 y 172 CT).</p>
 </div>
-` : `
+`
+    : `
 <div class="clause">
 <h2>Indemnizaciones</h2>
 <p>Atendida la causal invocada (Art. 159), no corresponde el pago de indemnizacion por anos de servicio ni indemnizacion sustitutiva del aviso previo, salvo pacto en contrario.</p>
 </div>
-`}
+`
+}
 
 <div class="clause">
 <h2>Estado de Cotizaciones Previsionales</h2>
@@ -245,7 +279,7 @@ ${causal === 'art161' ? `
 <div style="margin-top: 20pt; font-size: 9pt; color: #999; text-align: center;">
 c.c.: Inspeccion del Trabajo — Carpeta personal del trabajador
 </div>
-</body></html>`
+</body></html>`;
 }
 
 function generateCartaAmonestacionHTML(
@@ -255,11 +289,18 @@ function generateCartaAmonestacionHTML(
   fecha: string,
   articuloRI: string
 ): string {
-  const today = new Date()
-  const dateStr = today.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const tipoLabel = tipo === 'verbal' ? 'Amonestacion Verbal (registro interno)'
-    : tipo === 'escrita' ? 'Amonestacion Escrita'
-    : 'Amonestacion Escrita con Copia a la Direccion del Trabajo'
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const tipoLabel =
+    tipo === 'verbal'
+      ? 'Amonestacion Verbal (registro interno)'
+      : tipo === 'escrita'
+        ? 'Amonestacion Escrita'
+        : 'Amonestacion Escrita con Copia a la Direccion del Trabajo';
 
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8">
@@ -299,12 +340,16 @@ function generateCartaAmonestacionHTML(
 <p>${descripcion || '[Describir detalladamente los hechos que motivan la presente amonestacion, incluyendo fecha, hora, lugar y circunstancias]'}</p>
 </div>
 
-${articuloRI ? `
+${
+  articuloRI
+    ? `
 <div class="clause">
 <h2>Norma Infringida</h2>
 <p>Los hechos descritos constituyen una infraccion al <strong>Articulo ${articuloRI} del Reglamento Interno de Orden, Higiene y Seguridad</strong> de CONNIKU SpA.</p>
 </div>
-` : ''}
+`
+    : ''
+}
 
 <div class="clause">
 <h2>Consecuencias</h2>
@@ -330,40 +375,66 @@ ${articuloRI ? `
   </div>
 </div>
 
-${tipo === 'con_copia_dt' ? `
+${
+  tipo === 'con_copia_dt'
+    ? `
 <div style="margin-top: 30pt; font-size: 9pt; color: #999; text-align: center;">
 c.c.: Inspeccion del Trabajo — Carpeta personal del trabajador
 </div>
-` : ''}
-</body></html>`
+`
+    : ''
+}
+</body></html>`;
 }
 
-function generateCertificadoHTML(emp: Employee, tipo: 'antiguedad' | 'remuneraciones' | 'vacaciones'): string {
-  const today = new Date()
-  const dateStr = today.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const hireDate = new Date(emp.hireDate)
-  const hireDateStr = hireDate.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const diffMs = today.getTime() - hireDate.getTime()
-  const yearsWorked = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000))
-  const monthsExtra = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
+function generateCertificadoHTML(
+  emp: Employee,
+  tipo: 'antiguedad' | 'remuneraciones' | 'vacaciones'
+): string {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const hireDate = new Date(emp.hireDate);
+  const hireDateStr = hireDate.toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const diffMs = today.getTime() - hireDate.getTime();
+  const yearsWorked = Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000));
+  const monthsExtra = Math.floor(
+    (diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000)
+  );
 
-  let titulo = ''
-  let contenido = ''
+  let titulo = '';
+  let contenido = '';
 
   if (tipo === 'antiguedad') {
-    titulo = 'Certificado de Antiguedad Laboral'
+    titulo = 'Certificado de Antiguedad Laboral';
     contenido = `
 <div class="clause">
 <p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT ${COMPANY.rut}, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa desde el <strong>${hireDateStr}</strong>, desempenandose actualmente como <strong>${emp.position}</strong> en el departamento de <strong>${emp.department}</strong>.</p>
 <p>A la fecha del presente certificado, el trabajador cuenta con una antiguedad de <strong>${yearsWorked} anos y ${monthsExtra} meses</strong> de servicio continuo.</p>
 <p>Su contrato de trabajo es de tipo <strong>${emp.contractType}</strong>, con una jornada de <strong>${emp.weeklyHours} horas semanales</strong>.</p>
 <p>Se extiende el presente certificado a solicitud del interesado, para los fines que estime convenientes.</p>
-</div>`
+</div>`;
   } else if (tipo === 'remuneraciones') {
-    titulo = 'Certificado de Remuneraciones'
-    const mes1 = new Date(today.getFullYear(), today.getMonth() - 1, 1).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
-    const mes2 = new Date(today.getFullYear(), today.getMonth() - 2, 1).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
-    const mes3 = new Date(today.getFullYear(), today.getMonth() - 3, 1).toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
+    titulo = 'Certificado de Remuneraciones';
+    const mes1 = new Date(today.getFullYear(), today.getMonth() - 1, 1).toLocaleDateString(
+      'es-CL',
+      { month: 'long', year: 'numeric' }
+    );
+    const mes2 = new Date(today.getFullYear(), today.getMonth() - 2, 1).toLocaleDateString(
+      'es-CL',
+      { month: 'long', year: 'numeric' }
+    );
+    const mes3 = new Date(today.getFullYear(), today.getMonth() - 3, 1).toLocaleDateString(
+      'es-CL',
+      { month: 'long', year: 'numeric' }
+    );
     contenido = `
 <div class="clause">
 <p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT ${COMPANY.rut}, certifica que don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, presta servicios para esta empresa como <strong>${emp.position}</strong> y ha percibido las siguientes remuneraciones en los ultimos tres meses:</p>
@@ -379,11 +450,11 @@ function generateCertificadoHTML(emp: Employee, tipo: 'antiguedad' | 'remuneraci
 </table>
 <p>Las remuneraciones indicadas corresponden al sueldo base bruto mensual pactado en el contrato de trabajo, mas las asignaciones de colacion y movilizacion (no imponibles).</p>
 <p>Se extiende el presente certificado a solicitud del interesado, para los fines que estime convenientes.</p>
-</div>`
+</div>`;
   } else if (tipo === 'vacaciones') {
-    titulo = 'Constancia de Vacaciones'
-    const diasBase = 15
-    const diasAcumulados = yearsWorked * diasBase
+    titulo = 'Constancia de Vacaciones';
+    const diasBase = 15;
+    const diasAcumulados = yearsWorked * diasBase;
     contenido = `
 <div class="clause">
 <p>Por medio del presente, <strong>CONNIKU SpA</strong>, RUT ${COMPANY.rut}, deja constancia del registro de feriado anual (vacaciones) de don(a) <strong>${emp.firstName} ${emp.lastName}</strong>, RUT ${emp.rut}, quien presta servicios desde el <strong>${hireDateStr}</strong>.</p>
@@ -399,7 +470,7 @@ function generateCertificadoHTML(emp: Employee, tipo: 'antiguedad' | 'remuneraci
 
 <p class="legal-ref">Conforme al Art. 67 del Codigo del Trabajo, todo trabajador con mas de un ano de servicio tiene derecho a un feriado anual de 15 dias habiles con remuneracion integra. El feriado podra acumularse hasta por dos periodos consecutivos (Art. 70). El trabajador cuyo contrato termine antes de completar el ano de servicio tiene derecho a la remuneracion por feriado proporcional (Art. 73).</p>
 <p>Se extiende la presente constancia para los fines que el interesado estime convenientes.</p>
-</div>`
+</div>`;
   }
 
   return `<!DOCTYPE html>
@@ -421,82 +492,213 @@ ${contenido}
     RUT: ${COMPANY.rut}
   </div>
 </div>
-</body></html>`
+</body></html>`;
 }
 
 // ─── Main Component ───
 export default function InspeccionTrabajoTab() {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [checklist, setChecklist] = useState<Record<string, boolean>>({})
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [checklist, setChecklist] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    api.getEmployees().then((data: any) => setEmployees(Array.isArray(data) ? data : [])).catch(() => {})
-  }, [])
-  const toggle = (key: string) => setChecklist(prev => ({ ...prev, [key]: !prev[key] }))
+    api
+      .getEmployees()
+      .then((data: any) => setEmployees(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+  const toggle = (key: string) => setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
 
   // Document generation state
-  const [finiquitoEmp, setFiniquitoEmp] = useState<string>('')
-  const [despidoEmp, setDespidoEmp] = useState<string>('')
-  const [despidoHechos, setDespidoHechos] = useState('')
-  const [amonestacionEmp, setAmonestacionEmp] = useState<string>('')
-  const [amonestacionTipo, setAmonestacionTipo] = useState('escrita')
-  const [amonestacionDesc, setAmonestacionDesc] = useState('')
-  const [amonestacionArt, setAmonestacionArt] = useState('')
-  const [certificadoEmp, setCertificadoEmp] = useState<string>('')
+  const [finiquitoEmp, setFiniquitoEmp] = useState<string>('');
+  const [despidoEmp, setDespidoEmp] = useState<string>('');
+  const [despidoHechos, setDespidoHechos] = useState('');
+  const [amonestacionEmp, setAmonestacionEmp] = useState<string>('');
+  const [amonestacionTipo, setAmonestacionTipo] = useState('escrita');
+  const [amonestacionDesc, setAmonestacionDesc] = useState('');
+  const [amonestacionArt, setAmonestacionArt] = useState('');
+  const [certificadoEmp, setCertificadoEmp] = useState<string>('');
 
-  const selectStyle: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 13, fontFamily: 'inherit' }
-  const textareaStyle: React.CSSProperties = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 13, fontFamily: 'inherit', minHeight: 60, resize: 'vertical' as const }
-  const inputStyle: React.CSSProperties = { padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 13, fontFamily: 'inherit' }
+  const selectStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-primary)',
+    color: 'var(--text-primary)',
+    fontSize: 13,
+    fontFamily: 'inherit',
+  };
+  const textareaStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 12px',
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-primary)',
+    color: 'var(--text-primary)',
+    fontSize: 13,
+    fontFamily: 'inherit',
+    minHeight: 60,
+    resize: 'vertical' as const,
+  };
+  const inputStyle: React.CSSProperties = {
+    padding: '6px 12px',
+    borderRadius: 8,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-primary)',
+    color: 'var(--text-primary)',
+    fontSize: 13,
+    fontFamily: 'inherit',
+  };
 
   const sections = [
     {
       title: 'Documentacion Obligatoria del Empleador',
       ref: 'Art. 9, 10, 154, 155 Codigo del Trabajo',
       items: [
-        { key: 'contratos_firmados', label: 'Contratos de trabajo firmados y entregados al trabajador (copia)', ref: 'Art. 9 CT — Plazo: 15 dias (indefinido) o 5 dias (plazo fijo)' },
-        { key: 'reglamento_interno', label: 'Reglamento Interno de Orden, Higiene y Seguridad (obligatorio con 10+ trabajadores)', ref: 'Art. 153-157 CT' },
-        { key: 'registro_asistencia', label: 'Registro de asistencia y control de jornada (reloj control o libro)', ref: 'Art. 33 CT — Obligatorio salvo Art. 22 inc. 2' },
-        { key: 'libro_remuneraciones', label: 'Libro auxiliar de remuneraciones (timbrado por SII)', ref: 'Art. 62 CT' },
-        { key: 'comprobantes_pago', label: 'Comprobantes de pago de remuneraciones (liquidaciones firmadas)', ref: 'Art. 54 CT' },
-        { key: 'cotizaciones_dia', label: 'Cotizaciones previsionales al dia (AFP, Salud, AFC)', ref: 'Art. 58 CT, Ley Bustos Art. 162' },
-        { key: 'certificado_cotizaciones', label: 'Certificados de cotizaciones Previred actualizados', ref: 'DL 3.500' },
-        { key: 'comite_paritario', label: 'Comite Paritario de Higiene y Seguridad (obligatorio con 25+ trabajadores)', ref: 'Art. 66 Ley 16.744, DS 54' },
-        { key: 'seguro_accidentes', label: 'Seguro de accidentes del trabajo y enfermedades profesionales (Mutual/ISL)', ref: 'Ley 16.744' },
-        { key: 'derecho_saber', label: 'Obligacion de Informar riesgos laborales (ODI) firmado por cada trabajador', ref: 'DS 40 Art. 21 — "Derecho a Saber"' },
-        { key: 'protocolo_acoso', label: 'Protocolo de prevencion de acoso laboral y sexual', ref: 'Ley 20.607, Ley 21.643 (Ley Karin)' },
-        { key: 'politica_inclusion', label: 'Politica de inclusion y no discriminacion', ref: 'Ley 20.609 (Ley Zamudio)' },
-        { key: 'registro_vacaciones', label: 'Registro de feriado anual (vacaciones tomadas y pendientes)', ref: 'Art. 67-76 CT' },
-        { key: 'horas_extra_pactadas', label: 'Pactos de horas extraordinarias por escrito (max 3 meses)', ref: 'Art. 32 CT' },
-        { key: 'finiquitos_archivados', label: 'Finiquitos ratificados ante Ministro de Fe archivados', ref: 'Art. 177 CT' },
-        { key: 'carpetas_personales', label: 'Carpetas personales por trabajador (documentos, certificados, anexos)', ref: 'Buena practica laboral' },
-      ]
+        {
+          key: 'contratos_firmados',
+          label: 'Contratos de trabajo firmados y entregados al trabajador (copia)',
+          ref: 'Art. 9 CT — Plazo: 15 dias (indefinido) o 5 dias (plazo fijo)',
+        },
+        {
+          key: 'reglamento_interno',
+          label:
+            'Reglamento Interno de Orden, Higiene y Seguridad (obligatorio con 10+ trabajadores)',
+          ref: 'Art. 153-157 CT',
+        },
+        {
+          key: 'registro_asistencia',
+          label: 'Registro de asistencia y control de jornada (reloj control o libro)',
+          ref: 'Art. 33 CT — Obligatorio salvo Art. 22 inc. 2',
+        },
+        {
+          key: 'libro_remuneraciones',
+          label: 'Libro auxiliar de remuneraciones (timbrado por SII)',
+          ref: 'Art. 62 CT',
+        },
+        {
+          key: 'comprobantes_pago',
+          label: 'Comprobantes de pago de remuneraciones (liquidaciones firmadas)',
+          ref: 'Art. 54 CT',
+        },
+        {
+          key: 'cotizaciones_dia',
+          label: 'Cotizaciones previsionales al dia (AFP, Salud, AFC)',
+          ref: 'Art. 58 CT, Ley Bustos Art. 162',
+        },
+        {
+          key: 'certificado_cotizaciones',
+          label: 'Certificados de cotizaciones Previred actualizados',
+          ref: 'DL 3.500',
+        },
+        {
+          key: 'comite_paritario',
+          label: 'Comite Paritario de Higiene y Seguridad (obligatorio con 25+ trabajadores)',
+          ref: 'Art. 66 Ley 16.744, DS 54',
+        },
+        {
+          key: 'seguro_accidentes',
+          label: 'Seguro de accidentes del trabajo y enfermedades profesionales (Mutual/ISL)',
+          ref: 'Ley 16.744',
+        },
+        {
+          key: 'derecho_saber',
+          label: 'Obligacion de Informar riesgos laborales (ODI) firmado por cada trabajador',
+          ref: 'DS 40 Art. 21 — "Derecho a Saber"',
+        },
+        {
+          key: 'protocolo_acoso',
+          label: 'Protocolo de prevencion de acoso laboral y sexual',
+          ref: 'Ley 20.607, Ley 21.643 (Ley Karin)',
+        },
+        {
+          key: 'politica_inclusion',
+          label: 'Politica de inclusion y no discriminacion',
+          ref: 'Ley 20.609 (Ley Zamudio)',
+        },
+        {
+          key: 'registro_vacaciones',
+          label: 'Registro de feriado anual (vacaciones tomadas y pendientes)',
+          ref: 'Art. 67-76 CT',
+        },
+        {
+          key: 'horas_extra_pactadas',
+          label: 'Pactos de horas extraordinarias por escrito (max 3 meses)',
+          ref: 'Art. 32 CT',
+        },
+        {
+          key: 'finiquitos_archivados',
+          label: 'Finiquitos ratificados ante Ministro de Fe archivados',
+          ref: 'Art. 177 CT',
+        },
+        {
+          key: 'carpetas_personales',
+          label: 'Carpetas personales por trabajador (documentos, certificados, anexos)',
+          ref: 'Buena practica laboral',
+        },
+      ],
     },
     {
       title: 'Obligaciones Periodicas',
       ref: 'Varias normas',
       items: [
-        { key: 'previred_mensual', label: 'Declaracion y pago Previred (antes del dia 13 de cada mes)', ref: 'DL 3.500, Ley 19.728' },
-        { key: 'f29_mensual', label: 'Formulario 29 — Declaracion mensual de impuestos (IVA, retenciones)', ref: 'Art. 64 Codigo Tributario' },
-        { key: 'dj1887', label: 'DJ 1887 — Declaracion jurada anual de sueldos (marzo de cada ano)', ref: 'Res. SII' },
-        { key: 'actualizacion_contratos', label: 'Actualizacion de contratos por cambios de condiciones (anexos)', ref: 'Art. 11 CT' },
-        { key: 'evaluacion_riesgos', label: 'Evaluacion de riesgos laborales anual', ref: 'DS 594' },
-        { key: 'capacitacion_seguridad', label: 'Capacitaciones de seguridad laboral registradas', ref: 'Ley 16.744' },
-      ]
-    }
-  ]
+        {
+          key: 'previred_mensual',
+          label: 'Declaracion y pago Previred (antes del dia 13 de cada mes)',
+          ref: 'DL 3.500, Ley 19.728',
+        },
+        {
+          key: 'f29_mensual',
+          label: 'Formulario 29 — Declaracion mensual de impuestos (IVA, retenciones)',
+          ref: 'Art. 64 Codigo Tributario',
+        },
+        {
+          key: 'dj1887',
+          label: 'DJ 1887 — Declaracion jurada anual de sueldos (marzo de cada ano)',
+          ref: 'Res. SII',
+        },
+        {
+          key: 'actualizacion_contratos',
+          label: 'Actualizacion de contratos por cambios de condiciones (anexos)',
+          ref: 'Art. 11 CT',
+        },
+        {
+          key: 'evaluacion_riesgos',
+          label: 'Evaluacion de riesgos laborales anual',
+          ref: 'DS 594',
+        },
+        {
+          key: 'capacitacion_seguridad',
+          label: 'Capacitaciones de seguridad laboral registradas',
+          ref: 'Ley 16.744',
+        },
+      ],
+    },
+  ];
 
-  const completedCount = Object.values(checklist).filter(Boolean).length
-  const totalCount = sections.reduce((s, sec) => s + sec.items.length, 0)
+  const completedCount = Object.values(checklist).filter(Boolean).length;
+  const totalCount = sections.reduce((s, sec) => s + sec.items.length, 0);
 
   return (
     <div>
       {/* Header */}
-      <div className="card" style={{ padding: 20, marginBottom: 16, background: 'linear-gradient(135deg, #1e3a5f, #2d62c8)', color: '#fff', borderRadius: 16 }}>
+      <div
+        className="card"
+        style={{
+          padding: 20,
+          marginBottom: 16,
+          background: 'linear-gradient(135deg, #1e3a5f, #2d62c8)',
+          color: '#fff',
+          borderRadius: 16,
+        }}
+      >
         <h3 style={{ margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Shield size={20} /> Inspeccion del Trabajo — Preparacion y Compliance
         </h3>
         <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>
-          Checklist de documentacion y obligaciones legales para estar preparado ante una fiscalizacion de la Direccion del Trabajo (DT). Multas por incumplimiento: 1 a 60 UTM (${CHILE_LABOR.UTM.value.toLocaleString('es-CL')} a ${(CHILE_LABOR.UTM.value * 60).toLocaleString('es-CL')}).
+          Checklist de documentacion y obligaciones legales para estar preparado ante una
+          fiscalizacion de la Direccion del Trabajo (DT). Multas por incumplimiento: 1 a 60 UTM ($
+          {CHILE_LABOR.UTM.value.toLocaleString('es-CL')} a $
+          {(CHILE_LABOR.UTM.value * 60).toLocaleString('es-CL')}).
         </p>
       </div>
 
@@ -504,18 +706,56 @@ export default function InspeccionTrabajoTab() {
       <div className="card" style={{ padding: 16, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Cumplimiento</div>
-            <div style={{ height: 8, background: 'var(--bg-tertiary)', borderRadius: 4, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${totalCount > 0 ? (completedCount / totalCount * 100) : 0}%`, background: completedCount === totalCount ? '#22c55e' : '#3b82f6', borderRadius: 4, transition: 'width 0.3s' }} />
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
+              Cumplimiento
+            </div>
+            <div
+              style={{
+                height: 8,
+                background: 'var(--bg-tertiary)',
+                borderRadius: 4,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  height: '100%',
+                  width: `${totalCount > 0 ? (completedCount / totalCount) * 100 : 0}%`,
+                  background: completedCount === totalCount ? '#22c55e' : '#3b82f6',
+                  borderRadius: 4,
+                  transition: 'width 0.3s',
+                }}
+              />
             </div>
           </div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>{completedCount}/{totalCount}</div>
-          <span style={{
-            padding: '4px 12px', borderRadius: 12, fontSize: 11, fontWeight: 600,
-            background: completedCount === totalCount ? 'rgba(34,197,94,0.15)' : completedCount > totalCount * 0.7 ? 'rgba(59,130,246,0.15)' : 'rgba(245,158,11,0.15)',
-            color: completedCount === totalCount ? '#22c55e' : completedCount > totalCount * 0.7 ? '#3b82f6' : '#f59e0b',
-          }}>
-            {completedCount === totalCount ? 'Listo para fiscalizacion' : completedCount > totalCount * 0.7 ? 'Avanzado' : 'Pendiente'}
+          <div style={{ fontWeight: 700, fontSize: 18 }}>
+            {completedCount}/{totalCount}
+          </div>
+          <span
+            style={{
+              padding: '4px 12px',
+              borderRadius: 12,
+              fontSize: 11,
+              fontWeight: 600,
+              background:
+                completedCount === totalCount
+                  ? 'rgba(34,197,94,0.15)'
+                  : completedCount > totalCount * 0.7
+                    ? 'rgba(59,130,246,0.15)'
+                    : 'rgba(245,158,11,0.15)',
+              color:
+                completedCount === totalCount
+                  ? '#22c55e'
+                  : completedCount > totalCount * 0.7
+                    ? '#3b82f6'
+                    : '#f59e0b',
+            }}
+          >
+            {completedCount === totalCount
+              ? 'Listo para fiscalizacion'
+              : completedCount > totalCount * 0.7
+                ? 'Avanzado'
+                : 'Pendiente'}
           </span>
         </div>
       </div>
@@ -524,14 +764,42 @@ export default function InspeccionTrabajoTab() {
       {sections.map((section, si) => (
         <div key={si} className="card" style={{ padding: 16, marginBottom: 16 }}>
           <h4 style={{ margin: '0 0 4px', fontSize: 14 }}>{section.title}</h4>
-          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>{section.ref}</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 12 }}>
+            {section.ref}
+          </div>
           <div style={{ display: 'grid', gap: 6 }}>
-            {section.items.map(item => (
-              <label key={item.key} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, padding: '8px 10px', background: checklist[item.key] ? 'rgba(34,197,94,0.08)' : 'var(--bg-secondary)', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>
-                <input type="checkbox" checked={!!checklist[item.key]} onChange={() => toggle(item.key)} style={{ marginTop: 2 }} />
+            {section.items.map((item) => (
+              <label
+                key={item.key}
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  padding: '8px 10px',
+                  background: checklist[item.key] ? 'rgba(34,197,94,0.08)' : 'var(--bg-secondary)',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!checklist[item.key]}
+                  onChange={() => toggle(item.key)}
+                  style={{ marginTop: 2 }}
+                />
                 <div>
-                  <div style={{ textDecoration: checklist[item.key] ? 'line-through' : undefined, color: checklist[item.key] ? 'var(--text-muted)' : undefined }}>{item.label}</div>
-                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{item.ref}</div>
+                  <div
+                    style={{
+                      textDecoration: checklist[item.key] ? 'line-through' : undefined,
+                      color: checklist[item.key] ? 'var(--text-muted)' : undefined,
+                    }}
+                  >
+                    {item.label}
+                  </div>
+                  <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {item.ref}
+                  </div>
                 </div>
               </label>
             ))}
@@ -546,19 +814,50 @@ export default function InspeccionTrabajoTab() {
         </h4>
 
         {/* Finiquito */}
-        <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Finiquito (Art. 177 CT)</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}>
-            Documento que pone termino a la relacion laboral. Debe ser:<br/>
-            • <strong>Firmado ante Ministro de Fe</strong> (Notario Publico, Inspector del Trabajo, o Presidente del Sindicato)<br/>
-            • <strong>Cotizaciones al dia</strong> — Sin cotizaciones pagadas, el finiquito es NULO (Ley Bustos, Art. 162)<br/>
-            • <strong>Pago al momento de la firma</strong> — Plazo maximo: 10 dias habiles desde el termino<br/>
-            • <strong>Copia al trabajador</strong> — Obligatorio entregar copia firmada<br/>
-            • <strong>Reserva de derechos</strong> — El trabajador puede reservar el derecho a reclamar ante tribunales
+        <div
+          style={{
+            padding: 16,
+            background: 'var(--bg-secondary)',
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
+            Finiquito (Art. 177 CT)
           </div>
-          <div style={{ padding: 10, background: 'var(--bg-tertiary)', borderRadius: 6, fontSize: 12, marginBottom: 12 }}>
+          <div
+            style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}
+          >
+            Documento que pone termino a la relacion laboral. Debe ser:
+            <br />• <strong>Firmado ante Ministro de Fe</strong> (Notario Publico, Inspector del
+            Trabajo, o Presidente del Sindicato)
+            <br />• <strong>Cotizaciones al dia</strong> — Sin cotizaciones pagadas, el finiquito es
+            NULO (Ley Bustos, Art. 162)
+            <br />• <strong>Pago al momento de la firma</strong> — Plazo maximo: 10 dias habiles
+            desde el termino
+            <br />• <strong>Copia al trabajador</strong> — Obligatorio entregar copia firmada
+            <br />• <strong>Reserva de derechos</strong> — El trabajador puede reservar el derecho a
+            reclamar ante tribunales
+          </div>
+          <div
+            style={{
+              padding: 10,
+              background: 'var(--bg-tertiary)',
+              borderRadius: 6,
+              fontSize: 12,
+              marginBottom: 12,
+            }}
+          >
             <strong>Contenido obligatorio del finiquito:</strong>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4, marginTop: 6, color: 'var(--text-muted)' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 4,
+                marginTop: 6,
+                color: 'var(--text-muted)',
+              }}
+            >
               <span>• Causal de termino invocada</span>
               <span>• Fecha de inicio y termino de la relacion laboral</span>
               <span>• Ultima remuneracion mensual</span>
@@ -571,64 +870,127 @@ export default function InspeccionTrabajoTab() {
               <span>• Certificado de AFP y AFC</span>
             </div>
           </div>
-          {employees.filter(e => e.status === 'active').length > 0 && (
+          {employees.filter((e) => e.status === 'active').length > 0 && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <select value={finiquitoEmp} onChange={e => setFiniquitoEmp(e.target.value)} style={selectStyle}>
+              <select
+                value={finiquitoEmp}
+                onChange={(e) => setFiniquitoEmp(e.target.value)}
+                style={selectStyle}
+              >
                 <option value="">Seleccionar trabajador...</option>
-                {employees.filter(e => e.status === 'active').map(e => (
-                  <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
-                ))}
+                {employees
+                  .filter((e) => e.status === 'active')
+                  .map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.firstName} {e.lastName}
+                    </option>
+                  ))}
               </select>
               <button
                 style={{ ...btnPrimary, opacity: finiquitoEmp ? 1 : 0.5 }}
                 disabled={!finiquitoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === finiquitoEmp)
-                  if (!emp) return
-                  const hire = new Date(emp.hireDate)
-                  const now = new Date()
-                  const diffMs = now.getTime() - hire.getTime()
-                  const years = Math.min(Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000)), 11)
-                  const months = Math.floor((diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000))
-                  const topeMensual = 90 * CHILE_LABOR.UF.value
-                  const salaryForCalc = Math.min(emp.grossSalary, topeMensual)
-                  const indemnizacionAnos = salaryForCalc * years
-                  const indemnizacionAviso = salaryForCalc
-                  const dailySalary = emp.grossSalary / 30
-                  const vacaciones = dailySalary * 15
-                  const gratificacionMensual = Math.min(emp.grossSalary * 0.25, (500000 * 4.75) / 12)
-                  const gratificacionProp = gratificacionMensual * (months / 12)
-                  const diasTrabajados = dailySalary * 15
-                  const totalBruto = indemnizacionAnos + indemnizacionAviso + vacaciones + gratificacionProp + diasTrabajados
-                  const result = { indemnizacionAnos, indemnizacionAviso, recargo: 0, recargoPercent: 0, vacaciones, gratificacionProp, diasTrabajados, totalBruto, yearsApplied: years, topeMensualApplied: emp.grossSalary > topeMensual }
-                  openDoc(generateFiniquitoHTML(emp, result, 'Art. 161 — Necesidades de la empresa', 15, true))
+                  const emp = employees.find((e) => e.id === finiquitoEmp);
+                  if (!emp) return;
+                  const hire = new Date(emp.hireDate);
+                  const now = new Date();
+                  const diffMs = now.getTime() - hire.getTime();
+                  const years = Math.min(Math.floor(diffMs / (365.25 * 24 * 60 * 60 * 1000)), 11);
+                  const months = Math.floor(
+                    (diffMs % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000)
+                  );
+                  const topeMensual = 90 * CHILE_LABOR.UF.value;
+                  const salaryForCalc = Math.min(emp.grossSalary, topeMensual);
+                  const indemnizacionAnos = salaryForCalc * years;
+                  const indemnizacionAviso = salaryForCalc;
+                  const dailySalary = emp.grossSalary / 30;
+                  const vacaciones = dailySalary * 15;
+                  const gratificacionMensual = Math.min(
+                    emp.grossSalary * 0.25,
+                    (500000 * 4.75) / 12
+                  );
+                  const gratificacionProp = gratificacionMensual * (months / 12);
+                  const diasTrabajados = dailySalary * 15;
+                  const totalBruto =
+                    indemnizacionAnos +
+                    indemnizacionAviso +
+                    vacaciones +
+                    gratificacionProp +
+                    diasTrabajados;
+                  const result = {
+                    indemnizacionAnos,
+                    indemnizacionAviso,
+                    recargo: 0,
+                    recargoPercent: 0,
+                    vacaciones,
+                    gratificacionProp,
+                    diasTrabajados,
+                    totalBruto,
+                    yearsApplied: years,
+                    topeMensualApplied: emp.grossSalary > topeMensual,
+                  };
+                  openDoc(
+                    generateFiniquitoHTML(
+                      emp,
+                      result,
+                      'Art. 161 — Necesidades de la empresa',
+                      15,
+                      true
+                    )
+                  );
                 }}
-              ><Download size={14} /> Generar Finiquito</button>
+              >
+                <Download size={14} /> Generar Finiquito
+              </button>
             </div>
           )}
         </div>
 
         {/* Carta de Despido */}
-        <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Carta de Despido (Art. 162 CT)</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}>
-            Comunicacion formal de termino del contrato. Requisitos:<br/>
-            • <strong>Por escrito</strong> — Entrega personal o por carta certificada al domicilio del trabajador<br/>
-            • <strong>Plazo</strong> — Dentro de los 3 dias habiles siguientes a la separacion (6 dias si es Art. 161)<br/>
-            • <strong>Copia a la Inspeccion del Trabajo</strong> — Obligatorio enviar copia dentro del mismo plazo<br/>
-            • <strong>Contenido</strong> — Causal invocada, hechos que la fundamentan, monto de indemnizaciones ofrecidas, estado de cotizaciones<br/>
-            • <strong>Cotizaciones</strong> — Si no estan al dia, adjuntar certificado de la AFP con el monto adeudado
+        <div
+          style={{
+            padding: 16,
+            background: 'var(--bg-secondary)',
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
+            Carta de Despido (Art. 162 CT)
+          </div>
+          <div
+            style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}
+          >
+            Comunicacion formal de termino del contrato. Requisitos:
+            <br />• <strong>Por escrito</strong> — Entrega personal o por carta certificada al
+            domicilio del trabajador
+            <br />• <strong>Plazo</strong> — Dentro de los 3 dias habiles siguientes a la separacion
+            (6 dias si es Art. 161)
+            <br />• <strong>Copia a la Inspeccion del Trabajo</strong> — Obligatorio enviar copia
+            dentro del mismo plazo
+            <br />• <strong>Contenido</strong> — Causal invocada, hechos que la fundamentan, monto
+            de indemnizaciones ofrecidas, estado de cotizaciones
+            <br />• <strong>Cotizaciones</strong> — Si no estan al dia, adjuntar certificado de la
+            AFP con el monto adeudado
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <select value={despidoEmp} onChange={e => setDespidoEmp(e.target.value)} style={selectStyle}>
+            <select
+              value={despidoEmp}
+              onChange={(e) => setDespidoEmp(e.target.value)}
+              style={selectStyle}
+            >
               <option value="">Seleccionar trabajador...</option>
-              {employees.filter(e => e.status === 'active').map(e => (
-                <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
-              ))}
+              {employees
+                .filter((e) => e.status === 'active')
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.firstName} {e.lastName}
+                  </option>
+                ))}
             </select>
             <textarea
               value={despidoHechos}
-              onChange={e => setDespidoHechos(e.target.value)}
+              onChange={(e) => setDespidoHechos(e.target.value)}
               placeholder="Hechos que fundamentan el despido..."
               style={textareaStyle}
             />
@@ -637,42 +999,96 @@ export default function InspeccionTrabajoTab() {
                 style={{ ...btnSecondary, opacity: despidoEmp ? 1 : 0.5 }}
                 disabled={!despidoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === despidoEmp)
-                  if (!emp) return
-                  openDoc(generateCartaDespidoHTML(emp, 'art159', despidoHechos, new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })))
+                  const emp = employees.find((e) => e.id === despidoEmp);
+                  if (!emp) return;
+                  openDoc(
+                    generateCartaDespidoHTML(
+                      emp,
+                      'art159',
+                      despidoHechos,
+                      new Date().toLocaleDateString('es-CL', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    )
+                  );
                 }}
-              ><FileText size={14} /> Generar Carta Art. 159 (Vencimiento/Mutuo Acuerdo)</button>
+              >
+                <FileText size={14} /> Generar Carta Art. 159 (Vencimiento/Mutuo Acuerdo)
+              </button>
               <button
                 style={{ ...btnSecondary, opacity: despidoEmp ? 1 : 0.5 }}
                 disabled={!despidoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === despidoEmp)
-                  if (!emp) return
-                  openDoc(generateCartaDespidoHTML(emp, 'art161', despidoHechos, new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })))
+                  const emp = employees.find((e) => e.id === despidoEmp);
+                  if (!emp) return;
+                  openDoc(
+                    generateCartaDespidoHTML(
+                      emp,
+                      'art161',
+                      despidoHechos,
+                      new Date().toLocaleDateString('es-CL', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })
+                    )
+                  );
                 }}
-              ><FileText size={14} /> Generar Carta Art. 161 (Necesidades Empresa)</button>
+              >
+                <FileText size={14} /> Generar Carta Art. 161 (Necesidades Empresa)
+              </button>
             </div>
           </div>
         </div>
 
         {/* Carta de Amonestacion */}
-        <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, marginBottom: 12 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Carta de Amonestacion</div>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}>
-            Registro formal de incumplimiento del trabajador. No esta regulada expresamente en el CT, pero es una buena practica laboral y sirve como evidencia ante eventuales despidos por Art. 160.<br/>
-            • <strong>Tipos:</strong> Amonestacion verbal (registro interno), amonestacion escrita (firmada por el trabajador), amonestacion con copia a la DT<br/>
-            • <strong>Contenido:</strong> Descripcion del hecho, fecha, articulo del reglamento interno infringido, consecuencias<br/>
-            • <strong>Importante:</strong> 3 amonestaciones escritas pueden configurar causal de despido por "incumplimiento grave" (Art. 160 N°7)
+        <div
+          style={{
+            padding: 16,
+            background: 'var(--bg-secondary)',
+            borderRadius: 8,
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
+            Carta de Amonestacion
+          </div>
+          <div
+            style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12, lineHeight: 1.8 }}
+          >
+            Registro formal de incumplimiento del trabajador. No esta regulada expresamente en el
+            CT, pero es una buena practica laboral y sirve como evidencia ante eventuales despidos
+            por Art. 160.
+            <br />• <strong>Tipos:</strong> Amonestacion verbal (registro interno), amonestacion
+            escrita (firmada por el trabajador), amonestacion con copia a la DT
+            <br />• <strong>Contenido:</strong> Descripcion del hecho, fecha, articulo del
+            reglamento interno infringido, consecuencias
+            <br />• <strong>Importante:</strong> 3 amonestaciones escritas pueden configurar causal
+            de despido por "incumplimiento grave" (Art. 160 N°7)
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <select value={amonestacionEmp} onChange={e => setAmonestacionEmp(e.target.value)} style={selectStyle}>
+              <select
+                value={amonestacionEmp}
+                onChange={(e) => setAmonestacionEmp(e.target.value)}
+                style={selectStyle}
+              >
                 <option value="">Seleccionar trabajador...</option>
-                {employees.filter(e => e.status === 'active').map(e => (
-                  <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
-                ))}
+                {employees
+                  .filter((e) => e.status === 'active')
+                  .map((e) => (
+                    <option key={e.id} value={e.id}>
+                      {e.firstName} {e.lastName}
+                    </option>
+                  ))}
               </select>
-              <select value={amonestacionTipo} onChange={e => setAmonestacionTipo(e.target.value)} style={selectStyle}>
+              <select
+                value={amonestacionTipo}
+                onChange={(e) => setAmonestacionTipo(e.target.value)}
+                style={selectStyle}
+              >
                 <option value="verbal">Verbal (registro interno)</option>
                 <option value="escrita">Escrita</option>
                 <option value="con_copia_dt">Con copia a la DT</option>
@@ -680,14 +1096,14 @@ export default function InspeccionTrabajoTab() {
             </div>
             <textarea
               value={amonestacionDesc}
-              onChange={e => setAmonestacionDesc(e.target.value)}
+              onChange={(e) => setAmonestacionDesc(e.target.value)}
               placeholder="Descripcion del incumplimiento o falta..."
               style={textareaStyle}
             />
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <input
                 value={amonestacionArt}
-                onChange={e => setAmonestacionArt(e.target.value)}
+                onChange={(e) => setAmonestacionArt(e.target.value)}
                 placeholder="Art. del Reglamento Interno (ej: 15)"
                 style={{ ...inputStyle, flex: 1 }}
               />
@@ -695,11 +1111,25 @@ export default function InspeccionTrabajoTab() {
                 style={{ ...btnSecondary, opacity: amonestacionEmp ? 1 : 0.5 }}
                 disabled={!amonestacionEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === amonestacionEmp)
-                  if (!emp) return
-                  openDoc(generateCartaAmonestacionHTML(emp, amonestacionTipo, amonestacionDesc, new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }), amonestacionArt))
+                  const emp = employees.find((e) => e.id === amonestacionEmp);
+                  if (!emp) return;
+                  openDoc(
+                    generateCartaAmonestacionHTML(
+                      emp,
+                      amonestacionTipo,
+                      amonestacionDesc,
+                      new Date().toLocaleDateString('es-CL', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      }),
+                      amonestacionArt
+                    )
+                  );
                 }}
-              ><FileText size={14} /> Generar Carta de Amonestacion</button>
+              >
+                <FileText size={14} /> Generar Carta de Amonestacion
+              </button>
             </div>
           </div>
         </div>
@@ -708,40 +1138,60 @@ export default function InspeccionTrabajoTab() {
         <div style={{ padding: 16, background: 'var(--bg-secondary)', borderRadius: 8 }}>
           <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Otros Documentos</div>
           <div style={{ marginTop: 8 }}>
-            <select value={certificadoEmp} onChange={e => setCertificadoEmp(e.target.value)} style={{ ...selectStyle, marginBottom: 8 }}>
+            <select
+              value={certificadoEmp}
+              onChange={(e) => setCertificadoEmp(e.target.value)}
+              style={{ ...selectStyle, marginBottom: 8 }}
+            >
               <option value="">Seleccionar trabajador...</option>
-              {employees.filter(e => e.status === 'active').map(e => (
-                <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>
-              ))}
+              {employees
+                .filter((e) => e.status === 'active')
+                .map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.firstName} {e.lastName}
+                  </option>
+                ))}
             </select>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
               <button
                 style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
                 disabled={!certificadoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === certificadoEmp)
-                  if (emp) openDoc(generateCertificadoHTML(emp, 'antiguedad'))
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (emp) openDoc(generateCertificadoHTML(emp, 'antiguedad'));
                 }}
-              ><FileText size={14} /> Certificado de Antiguedad</button>
+              >
+                <FileText size={14} /> Certificado de Antiguedad
+              </button>
               <button
                 style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
                 disabled={!certificadoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === certificadoEmp)
-                  if (emp) openDoc(generateCertificadoHTML(emp, 'remuneraciones'))
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (emp) openDoc(generateCertificadoHTML(emp, 'remuneraciones'));
                 }}
-              ><FileText size={14} /> Certificado de Remuneraciones</button>
+              >
+                <FileText size={14} /> Certificado de Remuneraciones
+              </button>
               <button
                 style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
                 disabled={!certificadoEmp}
                 onClick={() => {
-                  const emp = employees.find(e => e.id === certificadoEmp)
-                  if (emp) openDoc(generateCertificadoHTML(emp, 'vacaciones'))
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (emp) openDoc(generateCertificadoHTML(emp, 'vacaciones'));
                 }}
-              ><FileText size={14} /> Constancia de Vacaciones</button>
-              <button style={btnSmall}><FileText size={14} /> Anexo de Contrato</button>
-              <button style={btnSmall}><FileText size={14} /> Pacto de Horas Extra</button>
-              <button style={btnSmall}><FileText size={14} /> Autorizacion de Descuento Voluntario</button>
+              >
+                <FileText size={14} /> Constancia de Vacaciones
+              </button>
+              <button style={btnSmall}>
+                <FileText size={14} /> Anexo de Contrato
+              </button>
+              <button style={btnSmall}>
+                <FileText size={14} /> Pacto de Horas Extra
+              </button>
+              <button style={btnSmall}>
+                <FileText size={14} /> Autorizacion de Descuento Voluntario
+              </button>
             </div>
           </div>
         </div>
@@ -754,40 +1204,115 @@ export default function InspeccionTrabajoTab() {
         </h4>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           {[
-            { name: 'Direccion del Trabajo (DT)', url: 'https://www.dt.gob.cl', desc: 'Portal principal. Consultas laborales, denuncias, dictamenes.' },
-            { name: 'Mi DT — Tramites en Linea', url: 'https://mi.dt.gob.cl', desc: 'Finiquitos electronicos, certificados, registro de contratos, fiscalizacion.' },
-            { name: 'Previred', url: 'https://www.previred.com', desc: 'Declaracion y pago de cotizaciones previsionales. Plazo: dia 13 del mes siguiente.' },
-            { name: 'SII — Servicio de Impuestos', url: 'https://www.sii.cl', desc: 'F29, DJ 1887, boletas, facturacion electronica.' },
-            { name: 'AFC Chile (Seguro Cesantia)', url: 'https://www.afcchile.cl', desc: 'Consulta de saldo, simulacion de prestaciones, certificados.' },
-            { name: 'Superintendencia de Pensiones', url: 'https://www.spensiones.cl', desc: 'Regulacion AFP, APV, topes imponibles, tasas vigentes.' },
-            { name: 'Superintendencia de Salud', url: 'https://www.supersalud.gob.cl', desc: 'Fonasa, Isapres, licencias medicas, COMPIN.' },
-            { name: 'ISL — Instituto de Seguridad Laboral', url: 'https://www.isl.gob.cl', desc: 'Seguro de accidentes (empresas sin mutual adherida).' },
-            { name: 'SUSESO', url: 'https://www.suseso.cl', desc: 'Superintendencia de Seguridad Social. Accidentes laborales, licencias.' },
-            { name: 'Biblioteca del Congreso — Leyes', url: 'https://www.bcn.cl/leychile', desc: 'Texto actualizado del Codigo del Trabajo y leyes laborales.' },
+            {
+              name: 'Direccion del Trabajo (DT)',
+              url: 'https://www.dt.gob.cl',
+              desc: 'Portal principal. Consultas laborales, denuncias, dictamenes.',
+            },
+            {
+              name: 'Mi DT — Tramites en Linea',
+              url: 'https://mi.dt.gob.cl',
+              desc: 'Finiquitos electronicos, certificados, registro de contratos, fiscalizacion.',
+            },
+            {
+              name: 'Previred',
+              url: 'https://www.previred.com',
+              desc: 'Declaracion y pago de cotizaciones previsionales. Plazo: dia 13 del mes siguiente.',
+            },
+            {
+              name: 'SII — Servicio de Impuestos',
+              url: 'https://www.sii.cl',
+              desc: 'F29, DJ 1887, boletas, facturacion electronica.',
+            },
+            {
+              name: 'AFC Chile (Seguro Cesantia)',
+              url: 'https://www.afcchile.cl',
+              desc: 'Consulta de saldo, simulacion de prestaciones, certificados.',
+            },
+            {
+              name: 'Superintendencia de Pensiones',
+              url: 'https://www.spensiones.cl',
+              desc: 'Regulacion AFP, APV, topes imponibles, tasas vigentes.',
+            },
+            {
+              name: 'Superintendencia de Salud',
+              url: 'https://www.supersalud.gob.cl',
+              desc: 'Fonasa, Isapres, licencias medicas, COMPIN.',
+            },
+            {
+              name: 'ISL — Instituto de Seguridad Laboral',
+              url: 'https://www.isl.gob.cl',
+              desc: 'Seguro de accidentes (empresas sin mutual adherida).',
+            },
+            {
+              name: 'SUSESO',
+              url: 'https://www.suseso.cl',
+              desc: 'Superintendencia de Seguridad Social. Accidentes laborales, licencias.',
+            },
+            {
+              name: 'Biblioteca del Congreso — Leyes',
+              url: 'https://www.bcn.cl/leychile',
+              desc: 'Texto actualizado del Codigo del Trabajo y leyes laborales.',
+            },
           ].map((link, i) => (
-            <div key={i} style={{ padding: 12, background: 'var(--bg-secondary)', borderRadius: 8, cursor: 'pointer' }} onClick={() => window.open(link.url, '_blank')}>
-              <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent)', marginBottom: 2 }}>{link.name}</div>
+            <div
+              key={i}
+              style={{
+                padding: 12,
+                background: 'var(--bg-secondary)',
+                borderRadius: 8,
+                cursor: 'pointer',
+              }}
+              onClick={() => window.open(link.url, '_blank')}
+            >
+              <div
+                style={{ fontWeight: 700, fontSize: 13, color: 'var(--accent)', marginBottom: 2 }}
+              >
+                {link.name}
+              </div>
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{link.desc}</div>
-              <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, opacity: 0.7 }}>{link.url}</div>
+              <div style={{ fontSize: 10, color: 'var(--accent)', marginTop: 4, opacity: 0.7 }}>
+                {link.url}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Ley Karin */}
-      <div className="card" style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid #EF4444' }}>
+      <div
+        className="card"
+        style={{ padding: 20, marginBottom: 16, borderLeft: '4px solid #EF4444' }}
+      >
         <h4 style={{ margin: '0 0 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <AlertTriangle size={16} color="#EF4444" /> Ley Karin (Ley 21.643) — Vigente desde 01-Ago-2024
+          <AlertTriangle size={16} color="#EF4444" /> Ley Karin (Ley 21.643) — Vigente desde
+          01-Ago-2024
         </h4>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-          <p>Modifica el Codigo del Trabajo en materia de prevencion, investigacion y sancion del <strong>acoso laboral, sexual y violencia en el trabajo</strong>.</p>
-          <p><strong>Obligaciones del empleador:</strong></p>
-          <p>• Elaborar un <strong>protocolo de prevencion</strong> del acoso laboral, sexual y violencia en el trabajo.<br/>
-          • Informar semestralmente sobre los canales de denuncia y el protocolo.<br/>
-          • Implementar un <strong>procedimiento de investigacion</strong> (max 30 dias) con imparcialidad y confidencialidad.<br/>
-          • Adoptar medidas de resguardo para el denunciante (separacion de espacios, reasignacion, teletrabajo).<br/>
-          • Sanciones: amonestacion, multa (25% remuneracion diaria x dias), o despido (Art. 160 N°1).</p>
-          <p><strong>El acoso laboral por una sola vez ya es sancionable</strong> (se elimino el requisito de "reiteracion").</p>
+          <p>
+            Modifica el Codigo del Trabajo en materia de prevencion, investigacion y sancion del{' '}
+            <strong>acoso laboral, sexual y violencia en el trabajo</strong>.
+          </p>
+          <p>
+            <strong>Obligaciones del empleador:</strong>
+          </p>
+          <p>
+            • Elaborar un <strong>protocolo de prevencion</strong> del acoso laboral, sexual y
+            violencia en el trabajo.
+            <br />
+            • Informar semestralmente sobre los canales de denuncia y el protocolo.
+            <br />• Implementar un <strong>procedimiento de investigacion</strong> (max 30 dias) con
+            imparcialidad y confidencialidad.
+            <br />
+            • Adoptar medidas de resguardo para el denunciante (separacion de espacios,
+            reasignacion, teletrabajo).
+            <br />• Sanciones: amonestacion, multa (25% remuneracion diaria x dias), o despido (Art.
+            160 N°1).
+          </p>
+          <p>
+            <strong>El acoso laboral por una sola vez ya es sancionable</strong> (se elimino el
+            requisito de "reiteracion").
+          </p>
         </div>
       </div>
 
@@ -814,22 +1339,31 @@ export default function InspeccionTrabajoTab() {
                 { desc: 'Incumplimiento normas higiene y seguridad', utm: '1-60', mult: 60 },
                 { desc: 'No implementar protocolo Ley Karin', utm: '5-60', mult: 60 },
                 { desc: 'Practicas antisindicales', utm: '10-150', mult: 150 },
-                { desc: 'Simulacion de contratacion (subcontratacion ilegal)', utm: '5-100', mult: 100 },
+                {
+                  desc: 'Simulacion de contratacion (subcontratacion ilegal)',
+                  utm: '5-100',
+                  mult: 100,
+                },
               ].map((row, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '6px 8px' }}>{row.desc}</td>
-                  <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>{row.utm}</td>
-                  <td style={{ padding: '6px 8px', textAlign: 'right', color: '#EF4444' }}>${(CHILE_LABOR.UTM.value * row.mult).toLocaleString('es-CL')}</td>
+                  <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: 600 }}>
+                    {row.utm}
+                  </td>
+                  <td style={{ padding: '6px 8px', textAlign: 'right', color: '#EF4444' }}>
+                    ${(CHILE_LABOR.UTM.value * row.mult).toLocaleString('es-CL')}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
           <div style={{ marginTop: 8, fontSize: 11 }}>
-            * Montos aproximados basados en UTM ${CHILE_LABOR.UTM.value.toLocaleString('es-CL')}. Multas pueden aumentar por reincidencia o gravedad.
-            Microempresas (1-9 trabajadores): multa reducida al 50%. Pequenas empresas (10-49): multa al 75%.
+            * Montos aproximados basados en UTM ${CHILE_LABOR.UTM.value.toLocaleString('es-CL')}.
+            Multas pueden aumentar por reincidencia o gravedad. Microempresas (1-9 trabajadores):
+            multa reducida al 50%. Pequenas empresas (10-49): multa al 75%.
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,44 +1,44 @@
-import React, { useState } from 'react'
-import { useAuth } from '../services/auth'
-import { Star, Lock } from '../components/Icons'
+import React, { useState } from 'react';
+import { useAuth } from '../services/auth';
+import { Star, Lock } from '../components/Icons';
 
 interface Props {
-  onNavigate: (path: string) => void
+  onNavigate: (path: string) => void;
 }
 
 export default function Checkout({ onNavigate }: Props) {
-  const { user } = useAuth()
-  const [paymentTab, setPaymentTab] = useState<'card' | 'paypal'>('card')
-  const [cardNumber, setCardNumber] = useState('')
-  const [expiration, setExpiration] = useState('')
-  const [cvc, setCvc] = useState('')
-  const [cardName, setCardName] = useState('')
-  const [acceptTerms, setAcceptTerms] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { user } = useAuth();
+  const [paymentTab, setPaymentTab] = useState<'card' | 'paypal'>('card');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiration, setExpiration] = useState('');
+  const [cvc, setCvc] = useState('');
+  const [cardName, setCardName] = useState('');
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!acceptTerms) {
-      alert('Debes aceptar los términos de servicio para continuar.')
-      return
+      alert('Debes aceptar los términos de servicio para continuar.');
+      return;
     }
-    setIsLoading(true)
+    setIsLoading(true);
     setTimeout(() => {
-      setIsLoading(false)
-      alert('Procesador de pagos en configuración. Contacta soporte@conniku.com')
-    }, 600)
-  }
+      setIsLoading(false);
+      alert('Procesador de pagos en configuración. Contacta soporte@conniku.com');
+    }, 600);
+  };
 
   const formatCardNumber = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 16)
-    return digits.replace(/(.{4})/g, '$1 ').trim()
-  }
+    const digits = value.replace(/\D/g, '').slice(0, 16);
+    return digits.replace(/(.{4})/g, '$1 ').trim();
+  };
 
   const formatExpiration = (value: string) => {
-    const digits = value.replace(/\D/g, '').slice(0, 4)
-    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2)
-    return digits
-  }
+    const digits = value.replace(/\D/g, '').slice(0, 4);
+    if (digits.length >= 3) return digits.slice(0, 2) + '/' + digits.slice(2);
+    return digits;
+  };
 
   const styles: Record<string, React.CSSProperties> = {
     page: {
@@ -301,7 +301,7 @@ export default function Checkout({ onNavigate }: Props) {
       color: '#64748b',
       marginTop: '12px',
     },
-  }
+  };
 
   return (
     <div style={styles.page}>
@@ -341,8 +341,7 @@ export default function Checkout({ onNavigate }: Props) {
           </div>
 
           <div style={styles.trialBadge}>
-            <span>✓</span>
-            7 dias gratis, luego $5 USD/mes
+            <span>✓</span>7 dias gratis, luego $5 USD/mes
           </div>
 
           <div style={{ marginTop: '24px', fontSize: '13px', color: '#94a3b8', lineHeight: '1.6' }}>
@@ -429,11 +428,7 @@ export default function Checkout({ onNavigate }: Props) {
 
             {paymentTab === 'paypal' && (
               <div style={styles.paypalContainer}>
-                <button
-                  type="button"
-                  style={styles.paypalBtn}
-                  onClick={handleSubmit as any}
-                >
+                <button type="button" style={styles.paypalBtn} onClick={handleSubmit as any}>
                   Pagar con PayPal
                 </button>
                 <p style={styles.paypalInfo}>
@@ -452,20 +447,14 @@ export default function Checkout({ onNavigate }: Props) {
                 id="terms-checkbox"
               />
               <label htmlFor="terms-checkbox" style={styles.termsText}>
-                Acepto los{' '}
-                <span style={styles.termsLink}>terminos de servicio</span>{' '}
-                y la{' '}
+                Acepto los <span style={styles.termsLink}>terminos de servicio</span> y la{' '}
                 <span style={styles.termsLink}>politica de privacidad</span>
               </label>
             </div>
 
             {/* Submit */}
             {paymentTab === 'card' && (
-              <button
-                type="submit"
-                style={styles.submitBtn}
-                disabled={isLoading}
-              >
+              <button type="submit" style={styles.submitBtn} disabled={isLoading}>
                 {isLoading ? 'Procesando...' : 'Comenzar prueba gratis'}
               </button>
             )}
@@ -486,5 +475,5 @@ export default function Checkout({ onNavigate }: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 }

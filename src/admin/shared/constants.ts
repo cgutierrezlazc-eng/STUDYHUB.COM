@@ -3,17 +3,17 @@
 // ─── Datos legales de la empresa ─────────────────────────────────
 // Fuente: SII — inscripción 08-04-2026 + Escritura constitución CONNIKU SpA
 export const COMPANY = {
-  name:        'CONNIKU SpA',
-  rut:         '78.395.702-7',
-  giro:        'Portales y Plataformas Web',                      // Código SII 631200
-  address:     'Avenida Argentina N°01805, Depto. 502',           // Según escritura constitución
-  commune:     'Antofagasta',
-  city:        'Antofagasta',
-  cityHeader:  'Antofagasta, Chile',                              // Para encabezados
-  region:      'II Región de Antofagasta',
-  repName:     'Cristian Andrés Gutiérrez Lazcano',               // Gerente General — según CI y escritura
-  repRut:      '14.112.896-5',                                    // Según CI y escritura constitución
-} as const
+  name: 'CONNIKU SpA',
+  rut: '78.395.702-7',
+  giro: 'Portales y Plataformas Web', // Código SII 631200
+  address: 'Avenida Argentina N°01805, Depto. 502', // Según escritura constitución
+  commune: 'Antofagasta',
+  city: 'Antofagasta',
+  cityHeader: 'Antofagasta, Chile', // Para encabezados
+  region: 'II Región de Antofagasta',
+  repName: 'Cristian Andrés Gutiérrez Lazcano', // Gerente General — según CI y escritura
+  repRut: '14.112.896-5', // Según CI y escritura constitución
+} as const;
 
 export const AFP_OPTIONS = [
   { value: 'capital', label: 'Capital', rate: 11.44 },
@@ -23,30 +23,49 @@ export const AFP_OPTIONS = [
   { value: 'planvital', label: 'PlanVital', rate: 10.41 },
   { value: 'provida', label: 'ProVida', rate: 11.45 },
   { value: 'uno', label: 'Uno', rate: 10.69 },
-]
+];
 
 export const HEALTH_OPTIONS = [
   { value: 'fonasa', label: 'Fonasa (7%)' },
   { value: 'isapre', label: 'Isapre' },
-]
+];
 
 export const CONTRACT_TYPES = [
   { value: 'indefinido', label: 'Indefinido' },
   { value: 'plazo_fijo', label: 'Plazo Fijo' },
   { value: 'por_obra', label: 'Por Obra o Faena' },
   { value: 'honorarios', label: 'Honorarios' },
-]
+];
 
 export const DEPARTMENTS = [
-  'Tecnologia', 'Diseno', 'Marketing', 'Ventas', 'Operaciones',
-  'Finanzas', 'Legal', 'Recursos Humanos', 'Soporte', 'Direccion'
-]
+  'Tecnologia',
+  'Diseno',
+  'Marketing',
+  'Ventas',
+  'Operaciones',
+  'Finanzas',
+  'Legal',
+  'Recursos Humanos',
+  'Soporte',
+  'Direccion',
+];
 
 export const BANKS = [
-  'Banco de Chile', 'Banco Estado', 'Banco Santander', 'BCI', 'Scotiabank',
-  'Banco Itau', 'Banco BICE', 'Banco Security', 'Banco Falabella',
-  'Banco Ripley', 'MACH', 'Cuenta RUT', 'Mercado Pago', 'Tenpo'
-]
+  'Banco de Chile',
+  'Banco Estado',
+  'Banco Santander',
+  'BCI',
+  'Scotiabank',
+  'Banco Itau',
+  'Banco BICE',
+  'Banco Security',
+  'Banco Falabella',
+  'Banco Ripley',
+  'MACH',
+  'Cuenta RUT',
+  'Mercado Pago',
+  'Tenpo',
+];
 
 export const EXPENSE_CATEGORIES = [
   { value: 'suscripcion', label: 'Suscripciones y Software' },
@@ -62,4 +81,4 @@ export const EXPENSE_CATEGORIES = [
   { value: 'viajes', label: 'Viajes y Representacion' },
   { value: 'seguros', label: 'Seguros' },
   { value: 'otro', label: 'Otro' },
-]
+];

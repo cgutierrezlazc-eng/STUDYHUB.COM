@@ -1,14 +1,15 @@
-import { useEffect } from 'react'
+import { useEffect } from 'react';
 
 interface SEOProps {
-  title?: string
-  description?: string
-  path?: string
+  title?: string;
+  description?: string;
+  path?: string;
 }
 
-const DEFAULT_TITLE = 'Conniku — Plataforma de estudio para universitarios'
-const DEFAULT_DESC = 'Cursos, comunidad, bolsa de trabajo y herramientas de estudio para universitarios en Latinoamerica.'
-const BASE_URL = 'https://conniku.com'
+const DEFAULT_TITLE = 'Conniku — Plataforma de estudio para universitarios';
+const DEFAULT_DESC =
+  'Cursos, comunidad, bolsa de trabajo y herramientas de estudio para universitarios en Latinoamerica.';
+const BASE_URL = 'https://conniku.com';
 
 /**
  * Lightweight SEO head manager — updates document title and meta tags per page.
@@ -17,62 +18,65 @@ const BASE_URL = 'https://conniku.com'
 export default function SEOHead({ title, description, path }: SEOProps) {
   useEffect(() => {
     // Title
-    const fullTitle = title ? `${title} — Conniku` : DEFAULT_TITLE
-    document.title = fullTitle
+    const fullTitle = title ? `${title} — Conniku` : DEFAULT_TITLE;
+    document.title = fullTitle;
 
     // Description
-    const desc = description || DEFAULT_DESC
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', desc)
+    const desc = description || DEFAULT_DESC;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', desc);
 
     // Open Graph
     const setOG = (prop: string, value: string) => {
-      let el = document.querySelector(`meta[property="og:${prop}"]`)
-      if (el) el.setAttribute('content', value)
-    }
-    setOG('title', fullTitle)
-    setOG('description', desc)
-    if (path) setOG('url', `${BASE_URL}${path}`)
+      let el = document.querySelector(`meta[property="og:${prop}"]`);
+      if (el) el.setAttribute('content', value);
+    };
+    setOG('title', fullTitle);
+    setOG('description', desc);
+    if (path) setOG('url', `${BASE_URL}${path}`);
 
     // Twitter
     const setTW = (name: string, value: string) => {
-      let el = document.querySelector(`meta[name="twitter:${name}"]`)
-      if (el) el.setAttribute('content', value)
-    }
-    setTW('title', fullTitle)
-    setTW('description', desc)
-    if (path) setTW('url', `${BASE_URL}${path}`)
+      let el = document.querySelector(`meta[name="twitter:${name}"]`);
+      if (el) el.setAttribute('content', value);
+    };
+    setTW('title', fullTitle);
+    setTW('description', desc);
+    if (path) setTW('url', `${BASE_URL}${path}`);
 
     // Canonical
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement
-    if (canonical && path) canonical.href = `${BASE_URL}${path}`
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (canonical && path) canonical.href = `${BASE_URL}${path}`;
 
     // Cleanup: restore defaults on unmount
     return () => {
-      document.title = DEFAULT_TITLE
-      const metaDesc = document.querySelector('meta[name="description"]')
-      if (metaDesc) metaDesc.setAttribute('content', DEFAULT_DESC)
-    }
-  }, [title, description, path])
+      document.title = DEFAULT_TITLE;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) metaDesc.setAttribute('content', DEFAULT_DESC);
+    };
+  }, [title, description, path]);
 
-  return null
+  return null;
 }
 
 /** Page SEO presets */
 export const PAGE_SEO: Record<string, SEOProps> = {
   landing: {
     title: undefined, // Uses default
-    description: 'Conniku es la plataforma integral para estudiantes universitarios en Latinoamerica. Cursos, comunidad, bolsa de trabajo y desarrollo profesional.',
+    description:
+      'Conniku es la plataforma integral para estudiantes universitarios en Latinoamerica. Cursos, comunidad, bolsa de trabajo y desarrollo profesional.',
     path: '/',
   },
   login: {
     title: 'Iniciar Sesion',
-    description: 'Inicia sesion en Conniku para acceder a tus cursos, comunidad y herramientas de estudio.',
+    description:
+      'Inicia sesion en Conniku para acceder a tus cursos, comunidad y herramientas de estudio.',
     path: '/login',
   },
   register: {
     title: 'Crear Cuenta',
-    description: 'Registrate gratis en Conniku. Accede a cursos, comunidad universitaria, bolsa de trabajo y mas.',
+    description:
+      'Registrate gratis en Conniku. Accede a cursos, comunidad universitaria, bolsa de trabajo y mas.',
     path: '/register',
   },
   dashboard: {
@@ -82,12 +86,14 @@ export const PAGE_SEO: Record<string, SEOProps> = {
   },
   courses: {
     title: 'Cursos',
-    description: 'Cursos gratuitos de habilidades blandas y desarrollo profesional para universitarios.',
+    description:
+      'Cursos gratuitos de habilidades blandas y desarrollo profesional para universitarios.',
     path: '/courses',
   },
   jobs: {
     title: 'Bolsa de Trabajo',
-    description: 'Oportunidades laborales y curriculums de estudiantes universitarios en Latinoamerica.',
+    description:
+      'Oportunidades laborales y curriculums de estudiantes universitarios en Latinoamerica.',
     path: '/jobs',
   },
   communities: {
@@ -149,4 +155,4 @@ export const PAGE_SEO: Record<string, SEOProps> = {
     title: 'Pagina no encontrada',
     description: 'La pagina que buscas no existe. Vuelve al inicio de Conniku.',
   },
-}
+};

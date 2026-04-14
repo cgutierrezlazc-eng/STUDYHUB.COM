@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import { Language, Gender } from '../types'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { Language, Gender } from '../types';
 
 const translations: Partial<Record<Language, Record<string, string>>> = {
   es: {
@@ -28,7 +28,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.studyTime': 'Tiempo de Estudio',
     'dash.projects': 'Asignaturas',
     'dash.noProjects': 'Aún no tienes asignaturas',
-    'dash.noProjectsHint': 'Crea tu primera asignatura y sube tus apuntes para que Conniku te ayude a estudiar de forma personalizada',
+    'dash.noProjectsHint':
+      'Crea tu primera asignatura y sube tus apuntes para que Conniku te ayude a estudiar de forma personalizada',
     'dash.empty': 'No tienes asignaturas todavía',
     'dash.emptyHint': 'Crea tu primera asignatura para empezar a estudiar de forma interactiva',
 
@@ -52,7 +53,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Guide
     'guide.title': 'Genera una guía de estudio',
-    'guide.hint': 'Conniku analizará todos los documentos y creará material de estudio personalizado',
+    'guide.hint':
+      'Conniku analizará todos los documentos y creará material de estudio personalizado',
     'guide.generate': 'Generar Guía de Estudio',
     'guide.generating': 'Generando...',
     'guide.regenerate': 'Regenerar',
@@ -190,7 +192,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'profile.professionalTitle': 'Título profesional',
     'profile.professionalTitlePlaceholder': 'Ej: Ingeniero Civil Industrial',
     'profile.helpStudents': 'Ayuda a otros estudiantes',
-    'profile.helpStudentsDesc': 'Selecciona los servicios que quieres ofrecer. La coordinación se realiza por el chat de la plataforma.',
+    'profile.helpStudentsDesc':
+      'Selecciona los servicios que quieres ofrecer. La coordinación se realiza por el chat de la plataforma.',
     'profile.mentorAssistance': 'Ayudantías',
     'profile.mentorCourses': 'Cursos',
     'profile.mentorPrivate': 'Clases particulares',
@@ -198,14 +201,16 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'profile.mentorChatPlatform': 'chat de la plataforma',
     'profile.mentorChatSecurity': 'para garantizar seguridad.',
     'profile.coverPhoto': 'Foto de Portada',
-    'profile.coverPhotoHint': 'Personaliza la portada de tu perfil con una plantilla o imagen propia',
+    'profile.coverPhotoHint':
+      'Personaliza la portada de tu perfil con una plantilla o imagen propia',
     'profile.changeCover': 'Cambiar foto de portada',
     'profile.visualTheme': 'Tema Visual',
     'profile.visualThemeHint': 'Elige la apariencia que prefieras para Conniku',
     'profile.platformLanguage': 'Idioma de la Plataforma',
     'profile.platformLanguageHint': 'Elige el idioma en que Conniku se comunica contigo',
     'profile.additionalLanguages': 'Idiomas Adicionales',
-    'profile.additionalLanguagesHint': 'Selecciona hasta 3 idiomas adicionales que hablas. Conniku adaptará el contenido y las interacciones.',
+    'profile.additionalLanguagesHint':
+      'Selecciona hasta 3 idiomas adicionales que hablas. Conniku adaptará el contenido y las interacciones.',
     'profile.maxLanguages': 'Máximo 3 idiomas adicionales seleccionados',
     'profile.privacy': 'Privacidad',
     'profile.privateProfile': 'Perfil privado',
@@ -236,15 +241,19 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'profile.passwordMin': 'Mínimo 6 caracteres',
     'profile.passwordMismatch': 'Las contraseñas no coinciden',
     'profile.savePassword': 'Guardar contraseña',
-    'profile.googleSignIn': 'Tu cuenta usa inicio de sesión con Google. No puedes cambiar la contraseña aquí.',
+    'profile.googleSignIn':
+      'Tu cuenta usa inicio de sesión con Google. No puedes cambiar la contraseña aquí.',
     'profile.deleteAccount': 'Eliminar Cuenta',
-    'profile.deleteAccountDesc': 'Una vez que elimines tu cuenta, se borrarán permanentemente todos tus datos, proyectos, mensajes y publicaciones. Esta acción no se puede deshacer.',
+    'profile.deleteAccountDesc':
+      'Una vez que elimines tu cuenta, se borrarán permanentemente todos tus datos, proyectos, mensajes y publicaciones. Esta acción no se puede deshacer.',
     'profile.deleteAccountBtn': 'Eliminar mi cuenta permanentemente',
     'profile.professionalProfile': 'Perfil Profesional',
-    'profile.professionalProfileDesc': 'Tu CV profesional completo se gestiona desde la Bolsa de Trabajo, donde puedes editar competencias, experiencia, habilidades, subir documentos y compartir con reclutadores.',
+    'profile.professionalProfileDesc':
+      'Tu CV profesional completo se gestiona desde la Bolsa de Trabajo, donde puedes editar competencias, experiencia, habilidades, subir documentos y compartir con reclutadores.',
     'profile.goToProfessionalProfile': 'Ir a Mi Perfil Profesional →',
     'profile.emailAccounts': 'Cuentas de Correo Corporativo',
-    'profile.emailAccountsHint': 'Administra las cuentas de correo electrónico de Conniku. Configura estas cuentas en tu cliente de correo (Outlook, Gmail, etc.) usando los datos IMAP/SMTP de tu proveedor de dominio.',
+    'profile.emailAccountsHint':
+      'Administra las cuentas de correo electrónico de Conniku. Configura estas cuentas en tu cliente de correo (Outlook, Gmail, etc.) usando los datos IMAP/SMTP de tu proveedor de dominio.',
     'profile.active': 'Activa',
     'profile.pending': 'Pendiente',
     'profile.createEmail': '+ Crear nueva cuenta de correo',
@@ -342,7 +351,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'userprofile.perHour': 'USD por hora',
     'userprofile.approxConversion': 'conversión aprox.',
     'userprofile.loadingCourses': 'Cargando cursos...',
-    'userprofile.noCoursesOwn': 'Aun no has completado ningun curso. Comienza uno en la seccion de Cursos.',
+    'userprofile.noCoursesOwn':
+      'Aun no has completado ningun curso. Comienza uno en la seccion de Cursos.',
     'userprofile.noCoursesOther': 'Este usuario aun no ha completado cursos.',
     'userprofile.coursesCompleted': 'cursos completados',
     'userprofile.clickToSeeCert': 'Haz clic en un curso para ver el certificado',
@@ -487,7 +497,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'msg.noGroupsDesc': 'Crea un grupo de estudio con tus compañeros de asignatura',
     'msg.createGroupBtn': 'Crear grupo',
     'msg.noRequests': 'Sin solicitudes',
-    'msg.noRequestsDesc': 'Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí',
+    'msg.noRequestsDesc':
+      'Cuando alguien que no es tu contacto te envíe un mensaje, aparecerá aquí',
     'msg.received': 'Recibidas',
     'msg.sent': 'Enviadas',
     'msg.wantsToMessage': 'quiere enviarte un mensaje',
@@ -533,13 +544,17 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Onboarding
     'onb.dashboardTitle': 'Tu Dashboard',
-    'onb.dashboardDesc': 'En el inicio verás tu resumen diario personalizado, actividad reciente, estadísticas de estudio y accesos rápidos a todo.',
+    'onb.dashboardDesc':
+      'En el inicio verás tu resumen diario personalizado, actividad reciente, estadísticas de estudio y accesos rápidos a todo.',
     'onb.communitiesTitle': 'Comunidades',
-    'onb.communitiesDesc': 'Únete a comunidades por carrera, materia o interés. Comparte apuntes, haz preguntas y conecta con otros estudiantes.',
+    'onb.communitiesDesc':
+      'Únete a comunidades por carrera, materia o interés. Comparte apuntes, haz preguntas y conecta con otros estudiantes.',
     'onb.messagingTitle': 'Mensajería y Study Buddy',
-    'onb.messagingDesc': 'Chat en tiempo real con tus compañeros. Además, el Study Buddy te ayuda a resolver dudas académicas en cualquier momento.',
+    'onb.messagingDesc':
+      'Chat en tiempo real con tus compañeros. Además, el Study Buddy te ayuda a resolver dudas académicas en cualquier momento.',
     'onb.jobsTitle': 'Empleo y CV Coach',
-    'onb.jobsDesc': 'Explora prácticas, postula a empleos, y usa el Coach de CV para mejorar tu currículum profesional.',
+    'onb.jobsDesc':
+      'Explora prácticas, postula a empleos, y usa el Coach de CV para mejorar tu currículum profesional.',
     'onb.next': 'Siguiente',
     'onb.back': 'Atrás',
     'onb.skipTour': 'Saltar tour',
@@ -552,7 +567,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.termsLink': 'Términos de Servicio',
     'tos.understood': 'Entendido',
     'tos.s1Title': 'Aceptación de términos',
-    'tos.s1Text': 'Al crear una cuenta en Conniku, aceptas estos términos en su totalidad. Si no estás de acuerdo, no utilices la plataforma.',
+    'tos.s1Text':
+      'Al crear una cuenta en Conniku, aceptas estos términos en su totalidad. Si no estás de acuerdo, no utilices la plataforma.',
     'tos.s2Title': 'Uso permitido',
     'tos.s2Text': 'Conniku es una plataforma educativa. El uso debe ser:',
     'tos.s2Item1': 'Exclusivamente con fines educativos y de estudio',
@@ -566,15 +582,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.s3Item3': 'Compartir material con derechos de autor sin autorización',
     'tos.s3Item4': 'Usar la plataforma para actividades ilegales o fraudulentas',
     'tos.s4Title': 'Moderación y sanciones',
-    'tos.s4Text': 'El administrador de la plataforma tiene derecho a monitorear el contenido, eliminar mensajes inapropiados y suspender o eliminar cuentas que violen estos términos sin previo aviso.',
+    'tos.s4Text':
+      'El administrador de la plataforma tiene derecho a monitorear el contenido, eliminar mensajes inapropiados y suspender o eliminar cuentas que violen estos términos sin previo aviso.',
     'tos.s5Title': 'Privacidad y datos',
-    'tos.s5Text': 'Tus datos personales serán utilizados exclusivamente para el funcionamiento de la plataforma. El administrador tiene acceso al contenido compartido para fines de moderación y seguridad.',
+    'tos.s5Text':
+      'Tus datos personales serán utilizados exclusivamente para el funcionamiento de la plataforma. El administrador tiene acceso al contenido compartido para fines de moderación y seguridad.',
     'tos.s6Title': 'Responsabilidad',
-    'tos.s6Text': 'Conniku no se hace responsable por el contenido generado por los usuarios ni por las interacciones entre ellos. Cada usuario es responsable del contenido que comparte y de sus interacciones en la plataforma.',
+    'tos.s6Text':
+      'Conniku no se hace responsable por el contenido generado por los usuarios ni por las interacciones entre ellos. Cada usuario es responsable del contenido que comparte y de sus interacciones en la plataforma.',
     'tos.s7Title': 'Propiedad intelectual',
-    'tos.s7Text': 'Los documentos subidos son propiedad de quien los sube. Conniku no reclama propiedad sobre tu contenido, pero se reserva el derecho de procesarlo para ofrecer sus servicios.',
+    'tos.s7Text':
+      'Los documentos subidos son propiedad de quien los sube. Conniku no reclama propiedad sobre tu contenido, pero se reserva el derecho de procesarlo para ofrecer sus servicios.',
     'tos.s8Title': 'Modificaciones',
-    'tos.s8Text': 'Estos términos pueden ser modificados en cualquier momento. El uso continuado de la plataforma después de cambios constituye aceptación de los nuevos términos.',
+    'tos.s8Text':
+      'Estos términos pueden ser modificados en cualquier momento. El uso continuado de la plataforma después de cambios constituye aceptación de los nuevos términos.',
 
     // Admin
     'admin.title': 'Panel de Administración',
@@ -619,15 +640,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Onboarding
     'onb.welcomeTitle': '¡Bienvenido a Conniku!',
-    'onb.welcomeDesc': 'Tu comunidad de estudio universitario. Vamos a mostrarte cómo sacar el máximo provecho.',
+    'onb.welcomeDesc':
+      'Tu comunidad de estudio universitario. Vamos a mostrarte cómo sacar el máximo provecho.',
     'onb.subjectsTitle': 'Crea tus asignaturas',
-    'onb.subjectsDesc': 'Organiza tu estudio creando un proyecto por cada asignatura. Sube PDFs, Word, Excel, PowerPoint y más.',
+    'onb.subjectsDesc':
+      'Organiza tu estudio creando un proyecto por cada asignatura. Sube PDFs, Word, Excel, PowerPoint y más.',
     'onb.studyTitle': 'Estudio Interactivo',
-    'onb.studyDesc': 'Conniku analiza tus documentos y te ayuda a entenderlos. Genera guías de estudio, quizzes y flashcards automáticamente.',
+    'onb.studyDesc':
+      'Conniku analiza tus documentos y te ayuda a entenderlos. Genera guías de estudio, quizzes y flashcards automáticamente.',
     'onb.chatTitle': 'Chatea con la comunidad',
-    'onb.chatDesc': 'Conecta con otros estudiantes, crea grupos de estudio y comparte documentos directamente en el chat.',
+    'onb.chatDesc':
+      'Conecta con otros estudiantes, crea grupos de estudio y comparte documentos directamente en el chat.',
     'onb.readyTitle': '¡Todo listo!',
-    'onb.readyDesc': 'Ya puedes empezar a usar Conniku. Recuerda mantener un trato respetuoso con la comunidad.',
+    'onb.readyDesc':
+      'Ya puedes empezar a usar Conniku. Recuerda mantener un trato respetuoso con la comunidad.',
     'onb.start': '¡Comenzar!',
     'onb.skip': 'Saltar tutorial',
 
@@ -686,7 +712,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'landing.heroTitle1': 'Donde los estudiantes se ',
     'landing.heroHighlight': 'conectan',
     'landing.heroTitle2': ', aprenden y crecen',
-    'landing.heroDescription': 'La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad, y preparate para tu futuro profesional.',
+    'landing.heroDescription':
+      'La plataforma todo-en-uno para tu vida universitaria. Estudia de forma interactiva, conecta con tu comunidad, y preparate para tu futuro profesional.',
     'landing.startFree': 'Comenzar gratis',
     'landing.viewTour': 'Ver tour de 2 min',
     'landing.footerAbout': 'Acerca de',
@@ -707,7 +734,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'landing.jobsDesc': 'Practicas y trabajos',
     'landing.viewDemo': 'Ver demo',
     'landing.featureAll': 'Todo lo que necesitas en un solo lugar',
-    'landing.featureSubtitle': 'Mas de 55 herramientas disenadas para tu exito academico y profesional',
+    'landing.featureSubtitle':
+      'Mas de 55 herramientas disenadas para tu exito academico y profesional',
     'landing.statsTools': 'Herramientas',
     'landing.statsFreeCourses': 'Cursos gratuitos',
     'landing.statsLanguages': 'Idiomas',
@@ -722,13 +750,15 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'landing.planRecommended': 'RECOMENDADO',
     'landing.planChoose': 'Elegir',
     'landing.ctaJoin': 'Unete a la comunidad',
-    'landing.ctaSubtitle': 'Miles de estudiantes ya estan conectando, aprendiendo y creciendo juntos.',
+    'landing.ctaSubtitle':
+      'Miles de estudiantes ya estan conectando, aprendiendo y creciendo juntos.',
     'landing.online': 'En linea',
     'landing.processed': 'Procesado',
 
     // NotFound
     'notfound.heading': 'Pagina no encontrada',
-    'notfound.description': 'La pagina que buscas no existe o fue movida. Revisa la URL o vuelve al inicio.',
+    'notfound.description':
+      'La pagina que buscas no existe o fue movida. Revisa la URL o vuelve al inicio.',
     'notfound.homeBtn': 'Ir al Inicio',
     'notfound.quickLinks': 'Enlaces rapidos',
 
@@ -752,7 +782,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.community': 'Comunidad',
     'dash.badges': 'Insignias',
     'dash.tip': 'Consejo:',
-    'dash.tipText': 'Sube documentos a una asignatura para que Conniku genere guías, quizzes y flashcards automáticamente.',
+    'dash.tipText':
+      'Sube documentos a una asignatura para que Conniku genere guías, quizzes y flashcards automáticamente.',
     'dash.friendActivity': 'Actividad de amigos',
     'dash.mySubjects': 'Mis Asignaturas',
     'dash.goodMorning': 'Buenos dias',
@@ -781,7 +812,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.timeAgoDay': 'hace {n}d',
     'dash.comingSoon': 'Pronto',
     'dash.conniku.jrTitle': 'Conniku JR',
-    'dash.conniku.jrDesc': 'La comunidad para estudiantes secundarios que se preparan para la PAES. Materias enfocadas en Competencia Lectora, Matematica, Ciencias e Historia. Simulacros, guias de estudio y comunidad entre futuros universitarios.',
+    'dash.conniku.jrDesc':
+      'La comunidad para estudiantes secundarios que se preparan para la PAES. Materias enfocadas en Competencia Lectora, Matematica, Ciencias e Historia. Simulacros, guias de estudio y comunidad entre futuros universitarios.',
     'dash.conniku.jrPaes': 'Preparacion PAES',
     'dash.conniku.jrCommunity': 'Comunidad Estudiantil',
     'dash.conniku.jrSimulations': 'Simulacros de Entrevista',
@@ -877,7 +909,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'feed.publish': 'Publicar',
     'feed.publishing': 'Publicando...',
     'feed.emptyTitle': 'Tu feed esta vacio',
-    'feed.emptyDesc': 'Conecta con otros estudiantes para ver publicaciones, apuntes y actividad de tu comunidad.',
+    'feed.emptyDesc':
+      'Conecta con otros estudiantes para ver publicaciones, apuntes y actividad de tu comunidad.',
     'feed.searchClassmates': 'Buscar Companeros',
     'feed.reacted': 'Reaccionado',
     'feed.like': 'Me gusta',
@@ -917,7 +950,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'communities.emptyExplore': 'No se encontraron comunidades',
     'communities.emptyMy': 'Aun no te unes a comunidades',
     'communities.emptyExploreDesc': 'Se el primero en crear una comunidad para tu area.',
-    'communities.emptyMyDesc': 'Conecta con estudiantes de tu carrera, comparte apuntes y resuelve dudas juntos.',
+    'communities.emptyMyDesc':
+      'Conecta con estudiantes de tu carrera, comparte apuntes y resuelve dudas juntos.',
     'communities.exploreBtn': 'Explorar Comunidades',
     'communities.createBtn': 'Crear Comunidad',
     'communities.members': 'miembros',
@@ -975,7 +1009,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'friends.add': 'Agregar',
     'friends.emptyTitle': 'Aún no tienes conexiones',
     'friends.emptyDescSearch': 'Busca estudiantes de tu universidad y envíales una solicitud',
-    'friends.emptyDescSuggestions': 'Agrega compañeros de las sugerencias de arriba o busca estudiantes',
+    'friends.emptyDescSuggestions':
+      'Agrega compañeros de las sugerencias de arriba o busca estudiantes',
     'friends.searchPlaceholder': 'Buscar por nombre, usuario o email...',
     'friends.viewProfile': 'Ver Perfil',
     'friends.remove': 'Eliminar',
@@ -1004,7 +1039,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'marketplace.of': 'de',
     'marketplace.next': 'Siguiente →',
     'marketplace.modalTitle': 'Compartir Apuntes',
-    'marketplace.modalSubtitle': 'Comparte tus apuntes y gana XP por cada descarga. ¡Ayuda a otros estudiantes!',
+    'marketplace.modalSubtitle':
+      'Comparte tus apuntes y gana XP por cada descarga. ¡Ayuda a otros estudiantes!',
     'marketplace.titleLabel': 'Título *',
     'marketplace.titlePlaceholder': 'Ej: Resumen Cálculo II - Integrales',
     'marketplace.subjectLabel': 'Materia',
@@ -1060,7 +1096,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'calendar.today': 'Hoy',
     'calendar.tomorrow': 'Mañana',
     'calendar.emptyTitle': 'Sin eventos todavía',
-    'calendar.emptySubtitle': 'Agrega tareas, exámenes y fechas de entrega para mantenerte organizado',
+    'calendar.emptySubtitle':
+      'Agrega tareas, exámenes y fechas de entrega para mantenerte organizado',
     'calendar.emptyBtn': 'Agregar primer evento',
     'calendar.overdue': 'Atrasados',
     'calendar.upcoming': 'Próximos',
@@ -1111,7 +1148,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.usernameLabel': 'Nombre de usuario *',
     'reg.usernamePlaceholderShort': 'tu.usuario',
     'reg.usernameInUse': 'En uso',
-    'reg.usernameHelp': 'Este será tu identificador único. Solo letras, números, puntos y guiones bajos.',
+    'reg.usernameHelp':
+      'Este será tu identificador único. Solo letras, números, puntos y guiones bajos.',
     'reg.country': 'País',
     'reg.uniSearchPlaceholder': 'Buscar universidad, instituto o CFT...',
     'reg.uniNoResults': 'No se encontraron resultados. Puedes escribir el nombre manualmente.',
@@ -1132,7 +1170,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.professionalTitle': 'Título profesional *',
     'reg.professionalTitlePlaceholder': 'Ej: Ingeniero Civil Industrial, Abogado, Médico...',
     'reg.offerTutoring': '¿Quieres ofrecer tutorías?',
-    'reg.tutoringDesc': 'Como {status}, puedes ofrecer ayudantías, cursos o clases particulares a otros estudiantes.',
+    'reg.tutoringDesc':
+      'Como {status}, puedes ofrecer ayudantías, cursos o clases particulares a otros estudiantes.',
     'reg.svcTutoring': 'Ayudantías',
     'reg.svcTutoringDesc': 'Apoyo en materias',
     'reg.svcCourses': 'Cursos',
@@ -1140,20 +1179,24 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.svcPrivate': 'Clases particulares',
     'reg.svcPrivateDesc': 'Sesiones 1 a 1',
     'reg.proRequired': 'Plan PRO requerido para ofrecer tutorías',
-    'reg.proRequiredDesc': 'Para que tus servicios sean visibles a todos los usuarios (Free, Pro y Max), necesitas tener al menos el plan Pro activo. Puedes completar tu registro ahora y activar el plan Pro desde tu perfil para comenzar a recibir solicitudes.',
+    'reg.proRequiredDesc':
+      'Para que tus servicios sean visibles a todos los usuarios (Free, Pro y Max), necesitas tener al menos el plan Pro activo. Puedes completar tu registro ahora y activar el plan Pro desde tu perfil para comenzar a recibir solicitudes.',
     'reg.subjectsLabel': 'Materias que puedes enseñar',
     'reg.subjectsPlaceholder': 'Ej: Cálculo, Física, Programación (separar con comas)',
     'reg.offerDescription': 'Describe brevemente tu oferta',
-    'reg.offerDescPlaceholder': 'Ej: Tengo experiencia en cálculo diferencial e integral. Puedo ayudar con ejercicios y preparación de pruebas.',
+    'reg.offerDescPlaceholder':
+      'Ej: Tengo experiencia en cálculo diferencial e integral. Puedo ayudar con ejercicios y preparación de pruebas.',
     'reg.pricingMode': 'Modalidad de cobro',
     'reg.priceFree': 'Gratis',
     'reg.priceFreeDesc': 'Voluntariado',
     'reg.pricePaid': 'Con cobro',
     'reg.pricePaidDesc': 'Precio por hora',
     'reg.pricePerHour': 'Precio por hora (USD)',
-    'reg.priceTransparency': 'Se transparente con tu precio. Los acuerdos se realizan por el chat de la plataforma.',
+    'reg.priceTransparency':
+      'Se transparente con tu precio. Los acuerdos se realizan por el chat de la plataforma.',
     'reg.approxConversion': '(conversión aproximada)',
-    'reg.tutoringChatNotice': 'Toda coordinación de tutorías se realiza a través del chat de Conniku. Los estudiantes te enviarán una solicitud que podrás aceptar o rechazar desde tu perfil. Esto garantiza seguridad y registro para ambas partes.',
+    'reg.tutoringChatNotice':
+      'Toda coordinación de tutorías se realiza a través del chat de Conniku. Los estudiantes te enviarán una solicitud que podrás aceptar o rechazar desde tu perfil. Esto garantiza seguridad y registro para ambas partes.',
     'reg.academicRegime': 'Régimen académico',
     'reg.regimeSemester': 'Semestral',
     'reg.regimeTrimester': 'Trimestral',
@@ -1182,7 +1225,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // ForgotPassword
     'forgot.title': 'Recuperar Contraseña',
-    'forgot.instructions': 'Ingresa el correo asociado a tu cuenta y te enviaremos un código de verificación.',
+    'forgot.instructions':
+      'Ingresa el correo asociado a tu cuenta y te enviaremos un código de verificación.',
     'forgot.emailLabel': 'Correo electrónico',
     'forgot.emailPlaceholder': 'tu@email.com',
     'forgot.sending': 'Enviando...',
@@ -1278,7 +1322,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.pending': 'Pendientes',
     'ceo.legalNotes': 'Notas Legales',
     'ceo.certManagement': 'Gestión de Certificaciones',
-    'ceo.certManagementDesc': 'Certifica manualmente a usuarios, revoca certificados o revisa el progreso de cada estudiante.',
+    'ceo.certManagementDesc':
+      'Certifica manualmente a usuarios, revoca certificados o revisa el progreso de cada estudiante.',
     'ceo.refresh': 'Actualizar',
     'ceo.activeStudents': 'Estudiantes activos',
     'ceo.certsIssued': 'Certificados emitidos',
@@ -1305,9 +1350,11 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.certRevoked': 'Certificado revocado',
     'ceo.certIssued': 'Certificado(s) emitido(s)',
     'ceo.pushTitle': 'Notificación Push a Todos los Usuarios',
-    'ceo.pushDesc': 'Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).',
+    'ceo.pushDesc':
+      'Envía una notificación push instantánea a todos los dispositivos suscritos (móvil y desktop).',
     'ceo.pushUpdateApp': 'Enviar: Actualizar App (Logo)',
-    'ceo.pushUpdateConfirm': '¿Enviar notificación push a TODOS los usuarios para actualizar la app?',
+    'ceo.pushUpdateConfirm':
+      '¿Enviar notificación push a TODOS los usuarios para actualizar la app?',
     'ceo.pushSent': 'Notificación push enviada a todos los usuarios',
     'ceo.pushCustom': 'Push Personalizado',
     'ceo.pushTitlePrompt': 'Título de la notificación:',
@@ -1316,7 +1363,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.pushSentShort': 'Push enviado',
     'ceo.deleteEmailConfirm': '¿Eliminar este email del historial?',
     'ceo.deleteEmailsConfirm': '¿Eliminar {count} email(s) del historial?',
-    'ceo.broadcastConfirm': '¿Enviar email masivo a usuarios ({filter})? Esta accion no se puede deshacer.',
+    'ceo.broadcastConfirm':
+      '¿Enviar email masivo a usuarios ({filter})? Esta accion no se puede deshacer.',
     'ceo.emailSentTo': 'Email enviado a {count} usuarios.',
     'ceo.errorSending': 'Error al enviar',
     'ceo.errorDeleting': 'Error al eliminar',
@@ -1412,7 +1460,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceomail.goBack': 'Volver',
     'ceomail.deleteConfirm': '¿Eliminar este email?',
     'ceomail.bulkDeleteConfirm': '¿Eliminar {count} email(s)?',
-    'ceomail.broadcastConfirm': '¿Enviar email masivo a usuarios ({filter})? Esta accion no se puede deshacer.',
+    'ceomail.broadcastConfirm':
+      '¿Enviar email masivo a usuarios ({filter})? Esta accion no se puede deshacer.',
     'ceomail.broadcastSentTo': 'Email enviado a {count} usuarios.',
     'ceomail.errorSending': 'Error al enviar',
     'ceomail.errorDeleting': 'Error al eliminar',
@@ -1485,13 +1534,17 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'sub.securePayments': 'Pagos seguros con encriptacion SSL · Sin almacenar datos de tarjeta',
     'sub.faqTitle': 'Preguntas Frecuentes',
     'sub.faq1q': '¿Puedo cancelar cuando quiera?',
-    'sub.faq1a': 'Sí, cancela en cualquier momento desde tu portal de suscripción. No hay contratos ni compromisos.',
+    'sub.faq1a':
+      'Sí, cancela en cualquier momento desde tu portal de suscripción. No hay contratos ni compromisos.',
     'sub.faq2q': '¿Qué pasa con mis datos si cancelo?',
-    'sub.faq2a': 'Tus datos se mantienen. Simplemente pierdes acceso a las funciones PRO y vuelves al plan gratuito.',
+    'sub.faq2a':
+      'Tus datos se mantienen. Simplemente pierdes acceso a las funciones PRO y vuelves al plan gratuito.',
     'sub.faq3q': '¿Que metodos de pago aceptan?',
-    'sub.faq3a': 'Mercado Pago (tarjetas, transferencia, Webpay), PayPal, Google Pay y tarjetas internacionales (Visa, Mastercard, AMEX).',
+    'sub.faq3a':
+      'Mercado Pago (tarjetas, transferencia, Webpay), PayPal, Google Pay y tarjetas internacionales (Visa, Mastercard, AMEX).',
     'sub.faq4q': '¿La prueba gratis tiene costo?',
-    'sub.faq4a': 'No. Los primeros 7 días son completamente gratis. Solo se cobra si decides continuar.',
+    'sub.faq4a':
+      'No. Los primeros 7 días son completamente gratis. Solo se cobra si decides continuar.',
     'sub.yourProIncludes': 'Tu Plan PRO Incluye',
     'sub.unlimitedSubjects': 'Asignaturas ilimitadas',
     'sub.unlimitedChat': 'Chat con tus documentos ilimitado',
@@ -1517,7 +1570,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Search
     'search.title': 'Búsqueda Académica',
-    'search.subtitle': 'Encuentra recursos de estudio en toda la web — contenido seguro y académico',
+    'search.subtitle':
+      'Encuentra recursos de estudio en toda la web — contenido seguro y académico',
     'search.myDownloads': 'Mis Descargas',
     'search.placeholder': 'Buscar artículos, PDFs, tutoriales, investigaciones...',
     'search.searchBtn': 'Buscar',
@@ -1534,7 +1588,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'search.summarizeAi': 'Generar Resumen',
     'search.open': 'Abrir',
     'search.download': 'Descargar',
-    'search.saveWherePrompt': '¿Dónde quieres guardar?\n\n• OK = Guardar en Conniku (usa tu almacenamiento)\n• Cancelar = Descargar a tu computador',
+    'search.saveWherePrompt':
+      '¿Dónde quieres guardar?\n\n• OK = Guardar en Conniku (usa tu almacenamiento)\n• Cancelar = Descargar a tu computador',
     'search.saveToConniku': 'Guardar en Conniku',
     'search.previous': '← Anterior',
     'search.page': 'Página',
@@ -1546,7 +1601,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Jobs
     'jobs.title': 'Bolsa de Trabajo',
-    'jobs.subtitle': 'Conecta con empresas, muestra tu perfil profesional y encuentra tu proximo paso',
+    'jobs.subtitle':
+      'Conecta con empresas, muestra tu perfil profesional y encuentra tu proximo paso',
     'jobs.exploringOpportunities': 'Explorando Oportunidades',
     'jobs.activateVisibility': 'Activar Visibilidad',
     'jobs.postOffer': '+ Publicar Oferta',
@@ -1600,21 +1656,24 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.openToOffers': 'Abierto a ofertas',
     'jobs.active': 'Activo',
     'jobs.coreCompetencies': 'Competencias Clave',
-    'jobs.competenciesHint': 'Estas competencias se importan automaticamente al subir tu CV. Puedes agregar, editar o eliminar libremente.',
+    'jobs.competenciesHint':
+      'Estas competencias se importan automaticamente al subir tu CV. Puedes agregar, editar o eliminar libremente.',
     'jobs.competencyPlaceholder': 'Escribe una competencia y presiona Enter...',
     'jobs.add': 'Agregar',
     'jobs.professionalInfo': 'Informacion Profesional',
     'jobs.headlinePlaceholder': 'Ej: Ingeniero de Software Senior | Desarrollador Full-Stack',
     'jobs.headlineLabel': 'Titular profesional',
     'jobs.summaryLabel': 'Resumen profesional',
-    'jobs.summaryPlaceholder': 'Describe tu experiencia, logros principales y lo que buscas profesionalmente...',
+    'jobs.summaryPlaceholder':
+      'Describe tu experiencia, logros principales y lo que buscas profesionalmente...',
     'jobs.locationLabel': 'Ubicacion',
     'jobs.locationPlaceholder': 'Ciudad, Pais',
     'jobs.contactEmail': 'Email de contacto',
     'jobs.phoneLabel': 'Telefono',
     'jobs.availableWorldwide': 'Disponible mundialmente',
     'jobs.workExperience': 'Experiencia Laboral',
-    'jobs.noExperience': 'No has agregado experiencia laboral aun. Haz clic en "Agregar" para comenzar.',
+    'jobs.noExperience':
+      'No has agregado experiencia laboral aun. Haz clic en "Agregar" para comenzar.',
     'jobs.companyLabel': 'Empresa',
     'jobs.companyPlaceholder': 'Nombre de la empresa',
     'jobs.positionLabel': 'Cargo',
@@ -1645,7 +1704,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.certUrl': 'URL de verificacion (opcional)',
     'jobs.skillsByCategory': 'Habilidades por Categoria',
     'jobs.addCategory': 'Agregar Categoria',
-    'jobs.noSkills': 'No has agregado habilidades aun. Organiza tus habilidades por categorias (Ej: Frontend, Backend, Gestion).',
+    'jobs.noSkills':
+      'No has agregado habilidades aun. Organiza tus habilidades por categorias (Ej: Frontend, Backend, Gestion).',
     'jobs.categoryPlaceholder': 'Nombre de la categoria (Ej: Programacion)',
     'jobs.skillPlaceholder': 'Habilidad',
     'jobs.addSkill': 'Agregar habilidad',
@@ -1657,17 +1717,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.differentiatorPlaceholder': 'Ej: 5 anos liderando equipos remotos multiculturales',
     'jobs.saveProfessionalProfile': 'Guardar Perfil Profesional',
     'jobs.shareWithRecruitersTitle': 'Compartir con Reclutadores',
-    'jobs.shareWithRecruitersDesc': 'Selecciona un reclutador para enviarle tu perfil profesional y comenzar una conversacion.',
+    'jobs.shareWithRecruitersDesc':
+      'Selecciona un reclutador para enviarle tu perfil profesional y comenzar una conversacion.',
     'jobs.noRecruitersAvailable': 'No hay reclutadores activos en este momento.',
     'jobs.send': 'Enviar',
     'jobs.close': 'Cerrar',
     'jobs.savedSuccessfully': 'Perfil profesional guardado exitosamente',
     'jobs.errorSaving': 'Error al guardar',
     'jobs.processingDoc': 'Procesando documento...',
-    'jobs.docProcessed': 'Documento procesado. Competencias y habilidades importadas. Revisa los campos.',
+    'jobs.docProcessed':
+      'Documento procesado. Competencias y habilidades importadas. Revisa los campos.',
     'jobs.errorProcessing': 'Error al procesar el archivo',
     'jobs.cvCoachTitle': 'Coach de CV',
-    'jobs.cvCoachDesc': 'Pega el texto de tu CV y recibe un analisis detallado con puntaje, fortalezas, mejoras sugeridas y secciones faltantes.',
+    'jobs.cvCoachDesc':
+      'Pega el texto de tu CV y recibe un analisis detallado con puntaje, fortalezas, mejoras sugeridas y secciones faltantes.',
     'jobs.targetRole': 'Cargo al que postulas (opcional)',
     'jobs.targetRolePlaceholder': 'Ej: Ingeniero de Software, Disenador UX, Analista de Datos...',
     'jobs.cvTextLabel': 'Texto de tu CV',
@@ -1683,12 +1746,15 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.rewriteSuggestion': 'Sugerencia de Reescritura',
     'jobs.tip': 'Consejo:',
     'jobs.searchCvsPlaceholder': 'Buscar por nombre, carrera, habilidad, universidad...',
-    'jobs.publicCvsDesc': 'Perfiles profesionales de estudiantes que han decidido hacer publico su curriculum para aumentar su visibilidad laboral.',
+    'jobs.publicCvsDesc':
+      'Perfiles profesionales de estudiantes que han decidido hacer publico su curriculum para aumentar su visibilidad laboral.',
     'jobs.noPublicCvs': 'No hay curriculums publicos todavia',
-    'jobs.noPublicCvsDesc': 'Completa tu curriculum en tu perfil y ponlo en visibilidad publica para aparecer aqui.',
+    'jobs.noPublicCvsDesc':
+      'Completa tu curriculum en tu perfil y ponlo en visibilidad publica para aparecer aqui.',
     'jobs.more': 'mas',
     'jobs.verifiedTutors': 'Tutores Verificados por Conniku',
-    'jobs.verifiedTutorsDesc': 'Profesionales verificados, clases garantizadas y pagos seguros a traves de la plataforma.',
+    'jobs.verifiedTutorsDesc':
+      'Profesionales verificados, clases garantizadas y pagos seguros a traves de la plataforma.',
     'jobs.searchTutors': 'Buscar Tutores',
     'jobs.becomeTutor': 'Quiero ser Tutor',
     'jobs.offerTutoring': '+ Ofrecer Tutoria',
@@ -1713,7 +1779,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.web': 'Web',
     'jobs.searchCandidates': 'Buscar Candidatos',
     'jobs.registerAsRecruiter': 'Registrarse como Reclutador',
-    'jobs.registerRecruiterDesc': 'Registra tu empresa para publicar ofertas y buscar talento verificado',
+    'jobs.registerRecruiterDesc':
+      'Registra tu empresa para publicar ofertas y buscar talento verificado',
     'jobs.companyRequired': 'Empresa *',
     'jobs.corporateEmail': 'Correo corporativo *',
     'jobs.yourTitle': 'Tu cargo *',
@@ -2004,7 +2071,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'msg.noGroupsDesc': 'Create a study group with your subject classmates',
     'msg.createGroupBtn': 'Create group',
     'msg.noRequests': 'No requests',
-    'msg.noRequestsDesc': 'When someone who is not your contact sends you a message, it will appear here',
+    'msg.noRequestsDesc':
+      'When someone who is not your contact sends you a message, it will appear here',
     'msg.received': 'Received',
     'msg.sent': 'Sent',
     'msg.wantsToMessage': 'wants to send you a message',
@@ -2043,18 +2111,23 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'msg.errorReportUser': 'Error sending report',
     'msg.errorAcceptRequest': 'Error accepting request',
     'msg.errorRejectRequest': 'Error rejecting request',
-    'msg.confirmBlock': 'Block {name}? They won\'t be able to send you messages or view your profile.',
+    'msg.confirmBlock':
+      "Block {name}? They won't be able to send you messages or view your profile.",
     'msg.userBlocked': '{name} has been blocked.',
     'msg.reportReason': 'Why do you want to report {name}?',
     'msg.reportSent': 'Report sent. Our team will review it.',
     'onb.dashboardTitle': 'Your Dashboard',
-    'onb.dashboardDesc': 'On the home page you\'ll see your daily personalized summary, recent activity, study stats and quick access to everything.',
+    'onb.dashboardDesc':
+      "On the home page you'll see your daily personalized summary, recent activity, study stats and quick access to everything.",
     'onb.communitiesTitle': 'Communities',
-    'onb.communitiesDesc': 'Join communities by major, subject or interest. Share notes, ask questions and connect with other students.',
+    'onb.communitiesDesc':
+      'Join communities by major, subject or interest. Share notes, ask questions and connect with other students.',
     'onb.messagingTitle': 'Messaging & Study Buddy',
-    'onb.messagingDesc': 'Real-time chat with your classmates. Plus, the Study Buddy helps you solve academic questions anytime.',
+    'onb.messagingDesc':
+      'Real-time chat with your classmates. Plus, the Study Buddy helps you solve academic questions anytime.',
     'onb.jobsTitle': 'Jobs & CV Coach',
-    'onb.jobsDesc': 'Explore internships, apply for jobs, and use the CV Coach to improve your professional resume.',
+    'onb.jobsDesc':
+      'Explore internships, apply for jobs, and use the CV Coach to improve your professional resume.',
     'onb.next': 'Next',
     'onb.back': 'Back',
     'onb.skipTour': 'Skip tour',
@@ -2065,7 +2138,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.termsLink': 'Terms of Service',
     'tos.understood': 'Understood',
     'tos.s1Title': 'Acceptance of Terms',
-    'tos.s1Text': 'By creating an account on Conniku, you accept these terms in full. If you disagree, do not use the platform.',
+    'tos.s1Text':
+      'By creating an account on Conniku, you accept these terms in full. If you disagree, do not use the platform.',
     'tos.s2Title': 'Permitted Use',
     'tos.s2Text': 'Conniku is an educational platform. Use must be:',
     'tos.s2Item1': 'Exclusively for educational and study purposes',
@@ -2079,15 +2153,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.s3Item3': 'Sharing copyrighted material without authorization',
     'tos.s3Item4': 'Using the platform for illegal or fraudulent activities',
     'tos.s4Title': 'Moderation and Sanctions',
-    'tos.s4Text': 'The platform administrator has the right to monitor content, remove inappropriate messages and suspend or delete accounts that violate these terms without notice.',
+    'tos.s4Text':
+      'The platform administrator has the right to monitor content, remove inappropriate messages and suspend or delete accounts that violate these terms without notice.',
     'tos.s5Title': 'Privacy and Data',
-    'tos.s5Text': 'Your personal data will be used exclusively for platform operation. The administrator has access to shared content for moderation and security purposes.',
+    'tos.s5Text':
+      'Your personal data will be used exclusively for platform operation. The administrator has access to shared content for moderation and security purposes.',
     'tos.s6Title': 'Liability',
-    'tos.s6Text': 'Conniku is not responsible for user-generated content or interactions between users. Each user is responsible for their shared content and platform interactions.',
+    'tos.s6Text':
+      'Conniku is not responsible for user-generated content or interactions between users. Each user is responsible for their shared content and platform interactions.',
     'tos.s7Title': 'Intellectual Property',
-    'tos.s7Text': 'Uploaded documents belong to their uploader. Conniku does not claim ownership but reserves the right to process content to provide its services.',
+    'tos.s7Text':
+      'Uploaded documents belong to their uploader. Conniku does not claim ownership but reserves the right to process content to provide its services.',
     'tos.s8Title': 'Modifications',
-    'tos.s8Text': 'These terms may be modified at any time. Continued use after changes constitutes acceptance.',
+    'tos.s8Text':
+      'These terms may be modified at any time. Continued use after changes constitutes acceptance.',
     'admin.title': 'Admin Panel',
     'admin.subtitle': 'Manage users, content and moderation',
     'admin.noAccess': 'You do not have admin permissions.',
@@ -2128,15 +2207,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'admin.noLogs': 'No moderation logs.',
     'admin.target': 'User',
     'onb.welcomeTitle': 'Welcome to Conniku!',
-    'onb.welcomeDesc': 'Your university study community. Let us show you how to get the most out of it.',
+    'onb.welcomeDesc':
+      'Your university study community. Let us show you how to get the most out of it.',
     'onb.subjectsTitle': 'Create your subjects',
-    'onb.subjectsDesc': 'Organize your study by creating a project for each subject. Upload PDFs, Word, Excel, PowerPoint and more.',
+    'onb.subjectsDesc':
+      'Organize your study by creating a project for each subject. Upload PDFs, Word, Excel, PowerPoint and more.',
     'onb.studyTitle': 'Interactive Study',
-    'onb.studyDesc': 'Conniku analyzes your documents and helps you understand them. Generate study guides, quizzes and flashcards automatically.',
+    'onb.studyDesc':
+      'Conniku analyzes your documents and helps you understand them. Generate study guides, quizzes and flashcards automatically.',
     'onb.chatTitle': 'Chat with the community',
-    'onb.chatDesc': 'Connect with other students, create study groups and share documents directly in chat.',
+    'onb.chatDesc':
+      'Connect with other students, create study groups and share documents directly in chat.',
     'onb.readyTitle': 'All set!',
-    'onb.readyDesc': 'You can now start using Conniku. Remember to be respectful with the community.',
+    'onb.readyDesc':
+      'You can now start using Conniku. Remember to be respectful with the community.',
     'onb.start': "Let's go!",
     'onb.skip': 'Skip tutorial',
     'feat.docs': 'Upload your documents',
@@ -2189,7 +2273,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'landing.heroTitle1': 'Where students ',
     'landing.heroHighlight': 'connect',
     'landing.heroTitle2': ', learn, and grow',
-    'landing.heroDescription': 'The all-in-one platform for your university life. Study interactively, connect with your community, and prepare for your professional future.',
+    'landing.heroDescription':
+      'The all-in-one platform for your university life. Study interactively, connect with your community, and prepare for your professional future.',
     'landing.startFree': 'Get started free',
     'landing.viewTour': 'Watch 2-min tour',
     'landing.footerAbout': 'About',
@@ -2225,13 +2310,15 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'landing.planRecommended': 'RECOMMENDED',
     'landing.planChoose': 'Choose',
     'landing.ctaJoin': 'Join the community',
-    'landing.ctaSubtitle': 'Thousands of students are already connecting, learning, and growing together.',
+    'landing.ctaSubtitle':
+      'Thousands of students are already connecting, learning, and growing together.',
     'landing.online': 'Online',
     'landing.processed': 'Processed',
 
     // NotFound
     'notfound.heading': 'Page not found',
-    'notfound.description': 'The page you are looking for does not exist or has been moved. Check the URL or go back to the home page.',
+    'notfound.description':
+      'The page you are looking for does not exist or has been moved. Check the URL or go back to the home page.',
     'notfound.homeBtn': 'Go to Home',
     'notfound.quickLinks': 'Quick links',
 
@@ -2255,7 +2342,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.community': 'Community',
     'dash.badges': 'Badges',
     'dash.tip': 'Tip:',
-    'dash.tipText': 'Upload documents to a subject so Conniku can automatically generate guides, quizzes, and flashcards.',
+    'dash.tipText':
+      'Upload documents to a subject so Conniku can automatically generate guides, quizzes, and flashcards.',
     'dash.friendActivity': 'Friend activity',
     'dash.mySubjects': 'My Subjects',
     'dash.goodMorning': 'Good morning',
@@ -2284,7 +2372,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'dash.timeAgoDay': '{n}d ago',
     'dash.comingSoon': 'Coming Soon',
     'dash.conniku.jrTitle': 'Conniku JR',
-    'dash.conniku.jrDesc': 'The community for high school students preparing for the PAES. Subjects focused on Reading Comprehension, Mathematics, Sciences and History. Mock exams, study guides and community among future university students.',
+    'dash.conniku.jrDesc':
+      'The community for high school students preparing for the PAES. Subjects focused on Reading Comprehension, Mathematics, Sciences and History. Mock exams, study guides and community among future university students.',
     'dash.conniku.jrPaes': 'PAES Preparation',
     'dash.conniku.jrCommunity': 'Student Community',
     'dash.conniku.jrSimulations': 'Interview Simulations',
@@ -2380,7 +2469,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'feed.publish': 'Post',
     'feed.publishing': 'Posting...',
     'feed.emptyTitle': 'Your feed is empty',
-    'feed.emptyDesc': 'Connect with other students to see posts, notes, and activity from your community.',
+    'feed.emptyDesc':
+      'Connect with other students to see posts, notes, and activity from your community.',
     'feed.searchClassmates': 'Find Classmates',
     'feed.reacted': 'Reacted',
     'feed.like': 'Like',
@@ -2418,9 +2508,10 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'communities.catGeneral': 'General',
     'communities.search': 'Search',
     'communities.emptyExplore': 'No communities found',
-    'communities.emptyMy': 'You haven\'t joined any communities yet',
+    'communities.emptyMy': "You haven't joined any communities yet",
     'communities.emptyExploreDesc': 'Be the first to create a community for your field.',
-    'communities.emptyMyDesc': 'Connect with students in your major, share notes, and solve problems together.',
+    'communities.emptyMyDesc':
+      'Connect with students in your major, share notes, and solve problems together.',
     'communities.exploreBtn': 'Explore Communities',
     'communities.createBtn': 'Create Community',
     'communities.members': 'members',
@@ -2478,7 +2569,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'friends.add': 'Add',
     'friends.emptyTitle': 'No connections yet',
     'friends.emptyDescSearch': 'Search for students at your university and send them a request',
-    'friends.emptyDescSuggestions': 'Add classmates from the suggestions above or search for students',
+    'friends.emptyDescSuggestions':
+      'Add classmates from the suggestions above or search for students',
     'friends.searchPlaceholder': 'Search by name, username, or email...',
     'friends.viewProfile': 'View Profile',
     'friends.remove': 'Remove',
@@ -2507,7 +2599,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'marketplace.of': 'of',
     'marketplace.next': 'Next →',
     'marketplace.modalTitle': 'Share Notes',
-    'marketplace.modalSubtitle': 'Share your notes and earn XP for every download. Help other students!',
+    'marketplace.modalSubtitle':
+      'Share your notes and earn XP for every download. Help other students!',
     'marketplace.titleLabel': 'Title *',
     'marketplace.titlePlaceholder': 'E.g.: Calculus II Summary - Integrals',
     'marketplace.subjectLabel': 'Subject',
@@ -2614,7 +2707,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.usernameLabel': 'Username *',
     'reg.usernamePlaceholderShort': 'your.username',
     'reg.usernameInUse': 'Taken',
-    'reg.usernameHelp': 'This will be your unique identifier. Only lowercase letters, numbers, dots and underscores.',
+    'reg.usernameHelp':
+      'This will be your unique identifier. Only lowercase letters, numbers, dots and underscores.',
     'reg.country': 'Country',
     'reg.uniSearchPlaceholder': 'Search university, institute or college...',
     'reg.uniNoResults': 'No results found. You can type the name manually.',
@@ -2635,7 +2729,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.professionalTitle': 'Professional title *',
     'reg.professionalTitlePlaceholder': 'E.g.: Civil Engineer, Lawyer, Doctor...',
     'reg.offerTutoring': 'Want to offer tutoring?',
-    'reg.tutoringDesc': 'As a {status}, you can offer tutoring, courses or private lessons to other students.',
+    'reg.tutoringDesc':
+      'As a {status}, you can offer tutoring, courses or private lessons to other students.',
     'reg.svcTutoring': 'Tutoring',
     'reg.svcTutoringDesc': 'Subject support',
     'reg.svcCourses': 'Courses',
@@ -2643,20 +2738,24 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'reg.svcPrivate': 'Private lessons',
     'reg.svcPrivateDesc': '1-on-1 sessions',
     'reg.proRequired': 'PRO plan required to offer tutoring',
-    'reg.proRequiredDesc': 'For your services to be visible to all users (Free, Pro and Max), you need at least an active Pro plan. You can complete your registration now and activate the Pro plan from your profile to start receiving requests.',
+    'reg.proRequiredDesc':
+      'For your services to be visible to all users (Free, Pro and Max), you need at least an active Pro plan. You can complete your registration now and activate the Pro plan from your profile to start receiving requests.',
     'reg.subjectsLabel': 'Subjects you can teach',
     'reg.subjectsPlaceholder': 'E.g.: Calculus, Physics, Programming (comma separated)',
     'reg.offerDescription': 'Briefly describe your offer',
-    'reg.offerDescPlaceholder': 'E.g.: I have experience in differential and integral calculus. I can help with exercises and test prep.',
+    'reg.offerDescPlaceholder':
+      'E.g.: I have experience in differential and integral calculus. I can help with exercises and test prep.',
     'reg.pricingMode': 'Pricing model',
     'reg.priceFree': 'Free',
     'reg.priceFreeDesc': 'Volunteer',
     'reg.pricePaid': 'Paid',
     'reg.pricePaidDesc': 'Price per hour',
     'reg.pricePerHour': 'Price per hour (USD)',
-    'reg.priceTransparency': 'Be transparent with your pricing. Agreements are made through the platform chat.',
+    'reg.priceTransparency':
+      'Be transparent with your pricing. Agreements are made through the platform chat.',
     'reg.approxConversion': '(approximate conversion)',
-    'reg.tutoringChatNotice': 'All tutoring coordination is done through Conniku chat. Students will send you a request that you can accept or reject from your profile. This ensures security and record-keeping for both parties.',
+    'reg.tutoringChatNotice':
+      'All tutoring coordination is done through Conniku chat. Students will send you a request that you can accept or reject from your profile. This ensures security and record-keeping for both parties.',
     'reg.academicRegime': 'Academic regime',
     'reg.regimeSemester': 'Semester',
     'reg.regimeTrimester': 'Trimester',
@@ -2685,7 +2784,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // ForgotPassword
     'forgot.title': 'Reset Password',
-    'forgot.instructions': 'Enter the email associated with your account and we will send you a verification code.',
+    'forgot.instructions':
+      'Enter the email associated with your account and we will send you a verification code.',
     'forgot.emailLabel': 'Email address',
     'forgot.emailPlaceholder': 'you@email.com',
     'forgot.sending': 'Sending...',
@@ -2781,7 +2881,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.pending': 'Pending',
     'ceo.legalNotes': 'Legal Notes',
     'ceo.certManagement': 'Certification Management',
-    'ceo.certManagementDesc': 'Manually certify users, revoke certificates, or review each student\'s progress.',
+    'ceo.certManagementDesc':
+      "Manually certify users, revoke certificates, or review each student's progress.",
     'ceo.refresh': 'Refresh',
     'ceo.activeStudents': 'Active students',
     'ceo.certsIssued': 'Certificates issued',
@@ -2808,7 +2909,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.certRevoked': 'Certificate revoked',
     'ceo.certIssued': 'Certificate(s) issued',
     'ceo.pushTitle': 'Push Notification to All Users',
-    'ceo.pushDesc': 'Send an instant push notification to all subscribed devices (mobile and desktop).',
+    'ceo.pushDesc':
+      'Send an instant push notification to all subscribed devices (mobile and desktop).',
     'ceo.pushUpdateApp': 'Send: Update App (Logo)',
     'ceo.pushUpdateConfirm': 'Send push notification to ALL users to update the app?',
     'ceo.pushSent': 'Push notification sent to all users',
@@ -2819,7 +2921,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceo.pushSentShort': 'Push sent',
     'ceo.deleteEmailConfirm': 'Delete this email from history?',
     'ceo.deleteEmailsConfirm': 'Delete {count} email(s) from history?',
-    'ceo.broadcastConfirm': 'Send broadcast email to users ({filter})? This action cannot be undone.',
+    'ceo.broadcastConfirm':
+      'Send broadcast email to users ({filter})? This action cannot be undone.',
     'ceo.emailSentTo': 'Email sent to {count} users.',
     'ceo.errorSending': 'Error sending',
     'ceo.errorDeleting': 'Error deleting',
@@ -2915,7 +3018,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'ceomail.goBack': 'Go back',
     'ceomail.deleteConfirm': 'Delete this email?',
     'ceomail.bulkDeleteConfirm': 'Delete {count} email(s)?',
-    'ceomail.broadcastConfirm': 'Send broadcast email to users ({filter})? This action cannot be undone.',
+    'ceomail.broadcastConfirm':
+      'Send broadcast email to users ({filter})? This action cannot be undone.',
     'ceomail.broadcastSentTo': 'Email sent to {count} users.',
     'ceomail.errorSending': 'Error sending',
     'ceomail.errorDeleting': 'Error deleting',
@@ -2990,11 +3094,14 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'sub.faq1q': 'Can I cancel anytime?',
     'sub.faq1a': 'Yes, cancel anytime from your subscription portal. No contracts or commitments.',
     'sub.faq2q': 'What happens to my data if I cancel?',
-    'sub.faq2a': 'Your data is preserved. You simply lose access to PRO features and return to the free plan.',
+    'sub.faq2a':
+      'Your data is preserved. You simply lose access to PRO features and return to the free plan.',
     'sub.faq3q': 'What payment methods do you accept?',
-    'sub.faq3a': 'Mercado Pago (cards, transfer, Webpay), PayPal, Google Pay, and international cards (Visa, Mastercard, AMEX).',
+    'sub.faq3a':
+      'Mercado Pago (cards, transfer, Webpay), PayPal, Google Pay, and international cards (Visa, Mastercard, AMEX).',
     'sub.faq4q': 'Does the free trial cost anything?',
-    'sub.faq4a': 'No. The first 7 days are completely free. You are only charged if you decide to continue.',
+    'sub.faq4a':
+      'No. The first 7 days are completely free. You are only charged if you decide to continue.',
     'sub.yourProIncludes': 'Your PRO Plan Includes',
     'sub.unlimitedSubjects': 'Unlimited subjects',
     'sub.unlimitedChat': 'Unlimited document chat',
@@ -3037,7 +3144,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'search.summarizeAi': 'Generate Summary',
     'search.open': 'Open',
     'search.download': 'Download',
-    'search.saveWherePrompt': 'Where do you want to save?\n\n• OK = Save to Conniku (uses your storage)\n• Cancel = Download to your computer',
+    'search.saveWherePrompt':
+      'Where do you want to save?\n\n• OK = Save to Conniku (uses your storage)\n• Cancel = Download to your computer',
     'search.saveToConniku': 'Save to Conniku',
     'search.previous': '← Previous',
     'search.page': 'Page',
@@ -3049,7 +3157,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Jobs
     'jobs.title': 'Job Board',
-    'jobs.subtitle': 'Connect with companies, showcase your professional profile and find your next step',
+    'jobs.subtitle':
+      'Connect with companies, showcase your professional profile and find your next step',
     'jobs.exploringOpportunities': 'Exploring Opportunities',
     'jobs.activateVisibility': 'Activate Visibility',
     'jobs.postOffer': '+ Post Listing',
@@ -3062,7 +3171,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.tabCandidates': 'Talent',
     'jobs.tabMyApps': 'My Applications',
     'jobs.tabMyListings': 'My Listings',
-    'jobs.tabRecruiter': 'I\'m a Recruiter',
+    'jobs.tabRecruiter': "I'm a Recruiter",
     'jobs.allTypes': 'All',
     'jobs.fullTime': 'Full Time',
     'jobs.partTime': 'Part Time',
@@ -3083,7 +3192,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.noTalent': 'No talent available',
     'jobs.viewProfile': 'View Profile',
     'jobs.contact': 'Contact',
-    'jobs.noApplications': 'You haven\'t applied to any listings',
+    'jobs.noApplications': "You haven't applied to any listings",
     'jobs.statusPending': 'Pending',
     'jobs.statusReviewed': 'Reviewed',
     'jobs.statusInterview': 'Interview',
@@ -3103,14 +3212,16 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.openToOffers': 'Open to offers',
     'jobs.active': 'Active',
     'jobs.coreCompetencies': 'Core Competencies',
-    'jobs.competenciesHint': 'These competencies are imported automatically when you upload your CV. You can add, edit or remove freely.',
+    'jobs.competenciesHint':
+      'These competencies are imported automatically when you upload your CV. You can add, edit or remove freely.',
     'jobs.competencyPlaceholder': 'Type a competency and press Enter...',
     'jobs.add': 'Add',
     'jobs.professionalInfo': 'Professional Information',
     'jobs.headlinePlaceholder': 'E.g.: Senior Software Engineer | Full-Stack Developer',
     'jobs.headlineLabel': 'Professional headline',
     'jobs.summaryLabel': 'Professional summary',
-    'jobs.summaryPlaceholder': 'Describe your experience, key achievements and what you are looking for professionally...',
+    'jobs.summaryPlaceholder':
+      'Describe your experience, key achievements and what you are looking for professionally...',
     'jobs.locationLabel': 'Location',
     'jobs.locationPlaceholder': 'City, Country',
     'jobs.contactEmail': 'Contact email',
@@ -3127,9 +3238,9 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.endDate': 'End date',
     'jobs.descriptionAchievements': 'Description and achievements (use bullet points with "-")',
     'jobs.education': 'Education',
-    'jobs.noEducation': 'You haven\'t added education yet.',
+    'jobs.noEducation': "You haven't added education yet.",
     'jobs.degreeLabel': 'Degree / Title',
-    'jobs.degreePlaceholder': 'E.g.: Bachelor\'s, Master\'s',
+    'jobs.degreePlaceholder': "E.g.: Bachelor's, Master's",
     'jobs.institutionLabel': 'Institution',
     'jobs.institutionPlaceholder': 'University name',
     'jobs.fieldLabel': 'Field / Major',
@@ -3139,7 +3250,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.eduDescription': 'Description (optional)',
     'jobs.eduDescPlaceholder': 'Academic achievements, thesis, honors...',
     'jobs.certifications': 'Certifications',
-    'jobs.noCertifications': 'You haven\'t added certifications yet.',
+    'jobs.noCertifications': "You haven't added certifications yet.",
     'jobs.certName': 'Certification name',
     'jobs.certNamePlaceholder': 'E.g.: AWS Solutions Architect',
     'jobs.certIssuer': 'Issuer',
@@ -3148,19 +3259,21 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.certUrl': 'Verification URL (optional)',
     'jobs.skillsByCategory': 'Skills by Category',
     'jobs.addCategory': 'Add Category',
-    'jobs.noSkills': 'You haven\'t added skills yet. Organize your skills by categories (E.g.: Frontend, Backend, Management).',
+    'jobs.noSkills':
+      "You haven't added skills yet. Organize your skills by categories (E.g.: Frontend, Backend, Management).",
     'jobs.categoryPlaceholder': 'Category name (E.g.: Programming)',
     'jobs.skillPlaceholder': 'Skill',
     'jobs.addSkill': 'Add skill',
     'jobs.languages': 'Languages',
-    'jobs.noLanguages': 'You haven\'t added languages yet.',
+    'jobs.noLanguages': "You haven't added languages yet.",
     'jobs.langPlaceholder': 'E.g.: English',
     'jobs.differentiators': 'What sets me apart',
     'jobs.noDifferentiators': 'Add points that make you unique as a professional.',
     'jobs.differentiatorPlaceholder': 'E.g.: 5 years leading multicultural remote teams',
     'jobs.saveProfessionalProfile': 'Save Professional Profile',
     'jobs.shareWithRecruitersTitle': 'Share with Recruiters',
-    'jobs.shareWithRecruitersDesc': 'Select a recruiter to send your professional profile and start a conversation.',
+    'jobs.shareWithRecruitersDesc':
+      'Select a recruiter to send your professional profile and start a conversation.',
     'jobs.noRecruitersAvailable': 'No active recruiters at this time.',
     'jobs.send': 'Send',
     'jobs.close': 'Close',
@@ -3170,7 +3283,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.docProcessed': 'Document processed. Competencies and skills imported. Review the fields.',
     'jobs.errorProcessing': 'Error processing the file',
     'jobs.cvCoachTitle': 'CV Coach',
-    'jobs.cvCoachDesc': 'Paste your CV text and receive a detailed analysis with score, strengths, suggested improvements and missing sections.',
+    'jobs.cvCoachDesc':
+      'Paste your CV text and receive a detailed analysis with score, strengths, suggested improvements and missing sections.',
     'jobs.targetRole': 'Target role (optional)',
     'jobs.targetRolePlaceholder': 'E.g.: Software Engineer, UX Designer, Data Analyst...',
     'jobs.cvTextLabel': 'Your CV text',
@@ -3186,12 +3300,15 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.rewriteSuggestion': 'Rewrite Suggestion',
     'jobs.tip': 'Tip:',
     'jobs.searchCvsPlaceholder': 'Search by name, major, skill, university...',
-    'jobs.publicCvsDesc': 'Professional profiles of students who have made their CV public to increase their job visibility.',
+    'jobs.publicCvsDesc':
+      'Professional profiles of students who have made their CV public to increase their job visibility.',
     'jobs.noPublicCvs': 'No public CVs yet',
-    'jobs.noPublicCvsDesc': 'Complete your CV in your profile and set it to public visibility to appear here.',
+    'jobs.noPublicCvsDesc':
+      'Complete your CV in your profile and set it to public visibility to appear here.',
     'jobs.more': 'more',
     'jobs.verifiedTutors': 'Conniku Verified Tutors',
-    'jobs.verifiedTutorsDesc': 'Verified professionals, guaranteed classes and secure payments through the platform.',
+    'jobs.verifiedTutorsDesc':
+      'Verified professionals, guaranteed classes and secure payments through the platform.',
     'jobs.searchTutors': 'Search Tutors',
     'jobs.becomeTutor': 'I Want to be a Tutor',
     'jobs.offerTutoring': '+ Offer Tutoring',
@@ -3216,7 +3333,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'jobs.web': 'Website',
     'jobs.searchCandidates': 'Search Candidates',
     'jobs.registerAsRecruiter': 'Register as Recruiter',
-    'jobs.registerRecruiterDesc': 'Register your company to post listings and search verified talent',
+    'jobs.registerRecruiterDesc':
+      'Register your company to post listings and search verified talent',
     'jobs.companyRequired': 'Company *',
     'jobs.corporateEmail': 'Corporate email *',
     'jobs.yourTitle': 'Your title *',
@@ -3580,13 +3698,17 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'msg.reportReason': 'Por que deseja denunciar {name}?',
     'msg.reportSent': 'Denúncia enviada. Nossa equipe irá analisá-la.',
     'onb.dashboardTitle': 'Seu Dashboard',
-    'onb.dashboardDesc': 'Na página inicial você verá seu resumo diário personalizado, atividade recente, estatísticas de estudo e acesso rápido a tudo.',
+    'onb.dashboardDesc':
+      'Na página inicial você verá seu resumo diário personalizado, atividade recente, estatísticas de estudo e acesso rápido a tudo.',
     'onb.communitiesTitle': 'Comunidades',
-    'onb.communitiesDesc': 'Participe de comunidades por curso, disciplina ou interesse. Compartilhe anotações, faça perguntas e conecte-se com outros estudantes.',
+    'onb.communitiesDesc':
+      'Participe de comunidades por curso, disciplina ou interesse. Compartilhe anotações, faça perguntas e conecte-se com outros estudantes.',
     'onb.messagingTitle': 'Mensagens e Study Buddy',
-    'onb.messagingDesc': 'Chat em tempo real com seus colegas. Além disso, o Study Buddy ajuda a resolver dúvidas acadêmicas a qualquer momento.',
+    'onb.messagingDesc':
+      'Chat em tempo real com seus colegas. Além disso, o Study Buddy ajuda a resolver dúvidas acadêmicas a qualquer momento.',
     'onb.jobsTitle': 'Emprego e CV Coach',
-    'onb.jobsDesc': 'Explore estágios, candidate-se a empregos e use o Coach de CV para melhorar seu currículo profissional.',
+    'onb.jobsDesc':
+      'Explore estágios, candidate-se a empregos e use o Coach de CV para melhorar seu currículo profissional.',
     'onb.next': 'Próximo',
     'onb.back': 'Voltar',
     'onb.skipTour': 'Pular tour',
@@ -3599,7 +3721,8 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.termsLink': 'Termos de Serviço',
     'tos.understood': 'Entendido',
     'tos.s1Title': 'Aceitação dos termos',
-    'tos.s1Text': 'Ao criar uma conta no Conniku, você aceita estes termos na íntegra. Se não concorda, não utilize a plataforma.',
+    'tos.s1Text':
+      'Ao criar uma conta no Conniku, você aceita estes termos na íntegra. Se não concorda, não utilize a plataforma.',
     'tos.s2Title': 'Uso permitido',
     'tos.s2Text': 'Conniku é uma plataforma educacional. O uso deve ser:',
     'tos.s2Item1': 'Exclusivamente para fins educacionais e de estudo',
@@ -3613,15 +3736,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'tos.s3Item3': 'Compartilhar material com direitos autorais sem autorização',
     'tos.s3Item4': 'Usar a plataforma para atividades ilegais ou fraudulentas',
     'tos.s4Title': 'Moderação e sanções',
-    'tos.s4Text': 'O administrador da plataforma tem o direito de monitorar conteúdo, remover mensagens inapropriadas e suspender ou excluir contas que violem estes termos sem aviso prévio.',
+    'tos.s4Text':
+      'O administrador da plataforma tem o direito de monitorar conteúdo, remover mensagens inapropriadas e suspender ou excluir contas que violem estes termos sem aviso prévio.',
     'tos.s5Title': 'Privacidade e dados',
-    'tos.s5Text': 'Seus dados pessoais serão utilizados exclusivamente para o funcionamento da plataforma. O administrador tem acesso ao conteúdo compartilhado para fins de moderação e segurança.',
+    'tos.s5Text':
+      'Seus dados pessoais serão utilizados exclusivamente para o funcionamento da plataforma. O administrador tem acesso ao conteúdo compartilhado para fins de moderação e segurança.',
     'tos.s6Title': 'Responsabilidade',
-    'tos.s6Text': 'O Conniku não se responsabiliza pelo conteúdo gerado pelos usuários nem pelas interações entre eles. Cada usuário é responsável pelo conteúdo que compartilha e por suas interações na plataforma.',
+    'tos.s6Text':
+      'O Conniku não se responsabiliza pelo conteúdo gerado pelos usuários nem pelas interações entre eles. Cada usuário é responsável pelo conteúdo que compartilha e por suas interações na plataforma.',
     'tos.s7Title': 'Propriedade intelectual',
-    'tos.s7Text': 'Os documentos enviados são propriedade de quem os envia. O Conniku não reivindica propriedade sobre seu conteúdo, mas reserva-se o direito de processá-lo para oferecer seus serviços.',
+    'tos.s7Text':
+      'Os documentos enviados são propriedade de quem os envia. O Conniku não reivindica propriedade sobre seu conteúdo, mas reserva-se o direito de processá-lo para oferecer seus serviços.',
     'tos.s8Title': 'Modificações',
-    'tos.s8Text': 'Estes termos podem ser modificados a qualquer momento. O uso continuado da plataforma após alterações constitui aceitação dos novos termos.',
+    'tos.s8Text':
+      'Estes termos podem ser modificados a qualquer momento. O uso continuado da plataforma após alterações constitui aceitação dos novos termos.',
 
     // Admin
     'admin.title': 'Painel de Administração',
@@ -3666,15 +3794,20 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
 
     // Onboarding
     'onb.welcomeTitle': 'Bem-vindo ao Conniku!',
-    'onb.welcomeDesc': 'Sua comunidade de estudo universitário. Vamos mostrar como aproveitar ao máximo.',
+    'onb.welcomeDesc':
+      'Sua comunidade de estudo universitário. Vamos mostrar como aproveitar ao máximo.',
     'onb.subjectsTitle': 'Crie suas disciplinas',
-    'onb.subjectsDesc': 'Organize seus estudos criando um projeto para cada disciplina. Envie PDFs, Word, Excel, PowerPoint e mais.',
+    'onb.subjectsDesc':
+      'Organize seus estudos criando um projeto para cada disciplina. Envie PDFs, Word, Excel, PowerPoint e mais.',
     'onb.studyTitle': 'Estudo Interativo',
-    'onb.studyDesc': 'O Conniku analisa seus documentos e ajuda você a entendê-los. Gere guias de estudo, quizzes e flashcards automaticamente.',
+    'onb.studyDesc':
+      'O Conniku analisa seus documentos e ajuda você a entendê-los. Gere guias de estudo, quizzes e flashcards automaticamente.',
     'onb.chatTitle': 'Converse com a comunidade',
-    'onb.chatDesc': 'Conecte-se com outros estudantes, crie grupos de estudo e compartilhe documentos diretamente no chat.',
+    'onb.chatDesc':
+      'Conecte-se com outros estudantes, crie grupos de estudo e compartilhe documentos diretamente no chat.',
     'onb.readyTitle': 'Tudo pronto!',
-    'onb.readyDesc': 'Você já pode começar a usar o Conniku. Lembre-se de ser respeitoso com a comunidade.',
+    'onb.readyDesc':
+      'Você já pode começar a usar o Conniku. Lembre-se de ser respeitoso com a comunidade.',
     'onb.start': 'Vamos lá!',
     'onb.skip': 'Pular tutorial',
 
@@ -3811,7 +3944,7 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'skill.beginner': 'Débutant',
     'skill.intermediate': 'Intermédiaire',
     'skill.advanced': 'Avancé',
-    'err.under18': "Vous devez avoir au moins 18 ans pour vous inscrire",
+    'err.under18': 'Vous devez avoir au moins 18 ans pour vous inscrire',
     'err.acceptTOS': "Vous devez accepter les conditions d'utilisation",
     'lang.es': 'Español',
     'lang.en': 'English',
@@ -3866,51 +3999,90 @@ const translations: Partial<Record<Language, Record<string, string>>> = {
     'rightpanel.members': 'membres',
     'rightpanel.explore': 'Explorer',
   },
-}
+};
 
 interface I18nContextType {
-  lang: Language
-  setLang: (lang: Language) => void
-  t: (key: string) => string
+  lang: Language;
+  setLang: (lang: Language) => void;
+  t: (key: string) => string;
 }
 
-const I18nContext = createContext<I18nContextType | null>(null)
+const I18nContext = createContext<I18nContextType | null>(null);
 
-const ALL_LANG_CODES = ['es','en','pt','fr','de','it','zh','ja','ko','ar','ru','hi','tr','nl','pl','sv','da','no','fi','el','he','th','vi','id','ms','tl','uk','cs','ro','hu','ca','hr','bg','sk','sl','lt','lv','et','sw','bn']
+const ALL_LANG_CODES = [
+  'es',
+  'en',
+  'pt',
+  'fr',
+  'de',
+  'it',
+  'zh',
+  'ja',
+  'ko',
+  'ar',
+  'ru',
+  'hi',
+  'tr',
+  'nl',
+  'pl',
+  'sv',
+  'da',
+  'no',
+  'fi',
+  'el',
+  'he',
+  'th',
+  'vi',
+  'id',
+  'ms',
+  'tl',
+  'uk',
+  'cs',
+  'ro',
+  'hu',
+  'ca',
+  'hr',
+  'bg',
+  'sk',
+  'sl',
+  'lt',
+  'lv',
+  'et',
+  'sw',
+  'bn',
+];
 
 function detectBrowserLanguage(): Language {
-  const browserLang = navigator.language?.slice(0, 2) || 'es'
-  if (ALL_LANG_CODES.includes(browserLang)) return browserLang as Language
-  return 'es'
+  const browserLang = navigator.language?.slice(0, 2) || 'es';
+  if (ALL_LANG_CODES.includes(browserLang)) return browserLang as Language;
+  return 'es';
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
-    const saved = localStorage.getItem('conniku_language')
-    if (saved && ALL_LANG_CODES.includes(saved)) return saved as Language
-    return detectBrowserLanguage()
-  })
+    const saved = localStorage.getItem('conniku_language');
+    if (saved && ALL_LANG_CODES.includes(saved)) return saved as Language;
+    return detectBrowserLanguage();
+  });
 
   const setLang = (newLang: Language) => {
-    setLangState(newLang)
-    localStorage.setItem('conniku_language', newLang)
-  }
+    setLangState(newLang);
+    localStorage.setItem('conniku_language', newLang);
+  };
 
   const t = (key: string): string => {
-    return translations[lang]?.[key] || translations['en']?.[key] || translations['es']?.[key] || key
-  }
+    return (
+      translations[lang]?.[key] || translations['en']?.[key] || translations['es']?.[key] || key
+    );
+  };
 
-  return (
-    <I18nContext.Provider value={{ lang, setLang, t }}>
-      {children}
-    </I18nContext.Provider>
-  )
+  return <I18nContext.Provider value={{ lang, setLang, t }}>{children}</I18nContext.Provider>;
 }
 
 export function useI18n() {
-  const ctx = useContext(I18nContext)
-  if (!ctx) throw new Error('useI18n must be used within I18nProvider')
-  return ctx
+  const ctx = useContext(I18nContext);
+  if (!ctx) throw new Error('useI18n must be used within I18nProvider');
+  return ctx;
 }
 
 export const LANGUAGES = [
@@ -3954,4 +4126,4 @@ export const LANGUAGES = [
   { code: 'et', name: 'Eesti', flag: '🇪🇪' },
   { code: 'sw', name: 'Kiswahili', flag: '🇰🇪' },
   { code: 'bn', name: 'বাংলা', flag: '🇧🇩' },
-] as const
+] as const;

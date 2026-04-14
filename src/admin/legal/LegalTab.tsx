@@ -1,28 +1,39 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
-  Shield, Star, Globe, CheckCircle, AlertTriangle, Minus, ChevronDown, ChevronRight,
-  FileText, Download, Clock, Info, X
-} from 'lucide-react'
-import { api } from '../../services/api'
+  Shield,
+  Star,
+  Globe,
+  CheckCircle,
+  AlertTriangle,
+  Minus,
+  ChevronDown,
+  ChevronRight,
+  FileText,
+  Download,
+  Clock,
+  Info,
+  X,
+} from 'lucide-react';
+import { api } from '../../services/api';
 
 // ─── Types ──────────────────────────────────────────────────────
-type ObligationStatus = 'pendiente' | 'completo' | 'na'
+type ObligationStatus = 'pendiente' | 'completo' | 'na';
 
 interface Obligation {
-  id: string
-  title: string
-  description: string
-  defaultStatus: ObligationStatus
-  guide: string[]       // Steps to complete
-  documents?: string[]  // Documents to generate
-  legalRef?: string     // Legal reference
-  links?: { label: string; url: string }[]
+  id: string;
+  title: string;
+  description: string;
+  defaultStatus: ObligationStatus;
+  guide: string[]; // Steps to complete
+  documents?: string[]; // Documents to generate
+  legalRef?: string; // Legal reference
+  links?: { label: string; url: string }[];
 }
 
 interface StatusRecord {
-  status: ObligationStatus
-  completedAt?: string
-  notes?: string
+  status: ObligationStatus;
+  completedAt?: string;
+  notes?: string;
 }
 
 // ─── Obligations Data ───────────────────────────────────────────
@@ -30,7 +41,8 @@ const OBLIGATIONS: Obligation[] = [
   {
     id: 'reglamento_interno',
     title: 'Reglamento Interno de Orden, Higiene y Seguridad',
-    description: 'Obligatorio con 10+ trabajadores (Art. 153 CT). Debe ser registrado en la Direccion del Trabajo e Inspeccion del Trabajo.',
+    description:
+      'Obligatorio con 10+ trabajadores (Art. 153 CT). Debe ser registrado en la Direccion del Trabajo e Inspeccion del Trabajo.',
     defaultStatus: 'pendiente',
     legalRef: 'Art. 153-157 Codigo del Trabajo',
     guide: [
@@ -53,7 +65,8 @@ const OBLIGATIONS: Obligation[] = [
   {
     id: 'registro_dt',
     title: 'Registro en Direccion del Trabajo',
-    description: 'Inscripcion como empleador en dt.gob.cl. Necesario para inicio de actividades laborales.',
+    description:
+      'Inscripcion como empleador en dt.gob.cl. Necesario para inicio de actividades laborales.',
     defaultStatus: 'pendiente',
     legalRef: 'Codigo del Trabajo, Titulo Preliminar',
     guide: [
@@ -67,14 +80,13 @@ const OBLIGATIONS: Obligation[] = [
       'Guardar comprobante PDF como respaldo',
       'Marcar como COMPLETO una vez obtenida la constancia',
     ],
-    links: [
-      { label: 'Portal Mi DT', url: 'dt.gob.cl' },
-    ],
+    links: [{ label: 'Portal Mi DT', url: 'dt.gob.cl' }],
   },
   {
     id: 'mutual_seguridad',
     title: 'Mutual de Seguridad',
-    description: 'Afiliacion a una mutual (ACHS, Mutual de Seguridad, IST) para seguro de accidentes laborales. Tasa base: 0.93%.',
+    description:
+      'Afiliacion a una mutual (ACHS, Mutual de Seguridad, IST) para seguro de accidentes laborales. Tasa base: 0.93%.',
     defaultStatus: 'pendiente',
     legalRef: 'Ley 16.744 — Seguro Social contra Riesgos de Accidentes del Trabajo',
     guide: [
@@ -101,7 +113,8 @@ const OBLIGATIONS: Obligation[] = [
   {
     id: 'comite_paritario',
     title: 'Comite Paritario de Higiene y Seguridad',
-    description: 'Obligatorio con 25+ trabajadores. 3 representantes del empleador y 3 de los trabajadores.',
+    description:
+      'Obligatorio con 25+ trabajadores. 3 representantes del empleador y 3 de los trabajadores.',
     defaultStatus: 'na',
     legalRef: 'DS 54 — Reglamento para la Constitucion de Comites Paritarios',
     guide: [
@@ -166,7 +179,8 @@ const OBLIGATIONS: Obligation[] = [
   {
     id: 'asistencia_jornada',
     title: 'Asistencia y Control de Jornada',
-    description: 'Art. 33 CT. Registro de asistencia obligatorio (reloj control, libro, sistema electronico).',
+    description:
+      'Art. 33 CT. Registro de asistencia obligatorio (reloj control, libro, sistema electronico).',
     defaultStatus: 'pendiente',
     legalRef: 'Art. 33 Codigo del Trabajo',
     guide: [
@@ -184,9 +198,7 @@ const OBLIGATIONS: Obligation[] = [
       'Si usa sistema electronico, debe estar autorizado por la DT',
       'Marcar como COMPLETO una vez implementado el sistema de registro',
     ],
-    links: [
-      { label: 'Modulo Asistencia en Admin', url: '/admin-panel/hr/asistencia' },
-    ],
+    links: [{ label: 'Modulo Asistencia en Admin', url: '/admin-panel/hr/asistencia' }],
   },
   {
     id: 'certificado_cumplimiento',
@@ -208,16 +220,16 @@ const OBLIGATIONS: Obligation[] = [
       'Renovar cuando sea necesario para licitaciones',
       'Marcar como COMPLETO cuando se obtenga el primer certificado sin observaciones',
     ],
-    links: [
-      { label: 'DT — Certificados', url: 'dt.gob.cl' },
-    ],
+    links: [{ label: 'DT — Certificados', url: 'dt.gob.cl' }],
   },
   {
     id: 'ley_karin',
     title: 'Ley Karin (Ley 21.643)',
-    description: 'Protocolo de prevencion del acoso laboral, sexual y violencia en el trabajo. Obligatorio desde agosto 2024.',
+    description:
+      'Protocolo de prevencion del acoso laboral, sexual y violencia en el trabajo. Obligatorio desde agosto 2024.',
     defaultStatus: 'pendiente',
-    legalRef: 'Ley 21.643 — Modifica CT en materia de prevencion, investigacion y sancion del acoso laboral, sexual y violencia',
+    legalRef:
+      'Ley 21.643 — Modifica CT en materia de prevencion, investigacion y sancion del acoso laboral, sexual y violencia',
     guide: [
       'Elaborar Protocolo de Prevencion del Acoso Laboral, Sexual y Violencia en el Trabajo',
       'El protocolo debe incluir:',
@@ -239,7 +251,8 @@ const OBLIGATIONS: Obligation[] = [
   {
     id: 'ley_inclusion',
     title: 'Ley de Inclusion (Ley 21.015)',
-    description: 'Empresas con 100+ trabajadores deben tener al menos 1% personas con discapacidad.',
+    description:
+      'Empresas con 100+ trabajadores deben tener al menos 1% personas con discapacidad.',
     defaultStatus: 'na',
     legalRef: 'Ley 21.015 — Incentiva la inclusion de personas con discapacidad al mundo laboral',
     guide: [
@@ -252,7 +265,7 @@ const OBLIGATIONS: Obligation[] = [
       'Marcar como COMPLETO cuando corresponda y se haya implementado',
     ],
   },
-]
+];
 
 // ─── Document Generator ─────────────────────────────────────────
 const DOC_STYLES = `
@@ -271,10 +284,14 @@ const DOC_STYLES = `
   .sig-line { border-top: 1px solid #000; margin-top: 60pt; padding-top: 6pt; }
   .note { background: #f5f5f0; padding: 12pt; border-left: 3pt solid #333; margin: 16pt 0; font-size: 11pt; }
   @media print { body { -webkit-print-color-adjust: exact; } }
-`
+`;
 
 function generateODI(): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>Obligacion de Informar — Conniku SpA</title>
 <style>${DOC_STYLES}</style></head><body>
@@ -339,11 +356,15 @@ function generateODI(): string {
 </div>
 
 <p style="text-align:center;margin-top:40pt;font-size:10pt;color:#666;">Santiago, ${today}</p>
-</body></html>`
+</body></html>`;
 }
 
 function generateLeyKarinProtocol(): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>Protocolo Ley Karin — Conniku SpA</title>
 <style>${DOC_STYLES}</style></head><body>
@@ -433,11 +454,15 @@ function generateLeyKarinProtocol(): string {
 </div>
 
 <p style="text-align:center;margin-top:40pt;font-size:10pt;color:#666;">Santiago, ${today}</p>
-</body></html>`
+</body></html>`;
 }
 
 function generateReglamentoInterno(): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   return `<!DOCTYPE html><html><head><meta charset="utf-8">
 <title>Reglamento Interno — Conniku SpA</title>
 <style>${DOC_STYLES} h3 { font-size: 12pt; margin: 12pt 0 6pt; }</style></head><body>
@@ -516,33 +541,34 @@ function generateReglamentoInterno(): string {
 </div>
 
 <p style="text-align:center;margin-top:40pt;font-size:10pt;color:#666;">Santiago, ${today}</p>
-</body></html>`
+</body></html>`;
 }
 
 // ─── Main Component ─────────────────────────────────────────────
 export default function LegalTab() {
-  const [statuses, setStatuses] = useState<Record<string, StatusRecord>>({})
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [showGuide, setShowGuide] = useState<string | null>(null)
-  const [noteInput, setNoteInput] = useState('')
+  const [statuses, setStatuses] = useState<Record<string, StatusRecord>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showGuide, setShowGuide] = useState<string | null>(null);
+  const [noteInput, setNoteInput] = useState('');
 
   useEffect(() => {
-    api.getLegalObligations()
+    api
+      .getLegalObligations()
       .then((res: any) => {
-        const mapped: Record<string, StatusRecord> = {}
+        const mapped: Record<string, StatusRecord> = {};
         if (res.statuses) {
           for (const [id, data] of Object.entries(res.statuses) as any) {
-             mapped[id] = {
-               status: data.status as ObligationStatus,
-               notes: data.notes,
-               completedAt: data.completed_at
-             }
+            mapped[id] = {
+              status: data.status as ObligationStatus,
+              notes: data.notes,
+              completedAt: data.completed_at,
+            };
           }
         }
-        setStatuses(mapped)
+        setStatuses(mapped);
       })
-      .catch(console.error)
-  }, [])
+      .catch(console.error);
+  }, []);
 
   const saveToBackend = async (newStatuses: Record<string, StatusRecord>) => {
     try {
@@ -550,20 +576,20 @@ export default function LegalTab() {
         id,
         status: st.status,
         notes: st.notes,
-        completed_at: st.completedAt
-      }))
-      await api.saveLegalObligations(payload)
+        completed_at: st.completedAt,
+      }));
+      await api.saveLegalObligations(payload);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-  }
+  };
 
   const getStatus = (ob: Obligation): ObligationStatus => {
-    return statuses[ob.id]?.status ?? ob.defaultStatus
-  }
+    return statuses[ob.id]?.status ?? ob.defaultStatus;
+  };
 
   const setObStatus = (id: string, status: ObligationStatus) => {
-    setStatuses(prev => {
+    setStatuses((prev) => {
       const next = {
         ...prev,
         [id]: {
@@ -571,130 +597,237 @@ export default function LegalTab() {
           status,
           completedAt: status === 'completo' ? new Date().toISOString() : undefined,
         },
-      }
-      saveToBackend(next)
-      return next
-    })
-  }
+      };
+      saveToBackend(next);
+      return next;
+    });
+  };
 
   const setNote = (id: string, notes: string) => {
-    setStatuses(prev => {
+    setStatuses((prev) => {
       const next = {
         ...prev,
         [id]: { ...prev[id], status: prev[id]?.status ?? 'pendiente', notes },
-      }
-      saveToBackend(next)
-      return next
-    })
-  }
+      };
+      saveToBackend(next);
+      return next;
+    });
+  };
 
   const openDoc = (html: string) => {
-    const w = window.open('', '_blank')
-    if (w) { w.document.write(html); w.document.close(); setTimeout(() => w.print(), 500) }
-  }
+    const w = window.open('', '_blank');
+    if (w) {
+      w.document.write(html);
+      w.document.close();
+      setTimeout(() => w.print(), 500);
+    }
+  };
 
   // Stats
-  const total = OBLIGATIONS.length
-  const completos = OBLIGATIONS.filter(o => getStatus(o) === 'completo').length
-  const pendientes = OBLIGATIONS.filter(o => getStatus(o) === 'pendiente').length
-  const naCount = OBLIGATIONS.filter(o => getStatus(o) === 'na').length
+  const total = OBLIGATIONS.length;
+  const completos = OBLIGATIONS.filter((o) => getStatus(o) === 'completo').length;
+  const pendientes = OBLIGATIONS.filter((o) => getStatus(o) === 'pendiente').length;
+  const naCount = OBLIGATIONS.filter((o) => getStatus(o) === 'na').length;
 
   const statusColor = (s: ObligationStatus) =>
-    s === 'completo' ? '#22c55e' : s === 'na' ? 'var(--text-muted)' : '#f59e0b'
+    s === 'completo' ? '#22c55e' : s === 'na' ? 'var(--text-muted)' : '#f59e0b';
   const statusBg = (s: ObligationStatus) =>
-    s === 'completo' ? 'rgba(34,197,94,0.12)' : s === 'na' ? 'rgba(150,150,150,0.1)' : 'rgba(245,158,11,0.12)'
+    s === 'completo'
+      ? 'rgba(34,197,94,0.12)'
+      : s === 'na'
+        ? 'rgba(150,150,150,0.1)'
+        : 'rgba(245,158,11,0.12)';
   const statusLabel = (s: ObligationStatus) =>
-    s === 'completo' ? 'COMPLETO' : s === 'na' ? 'N/A' : 'PENDIENTE'
+    s === 'completo' ? 'COMPLETO' : s === 'na' ? 'N/A' : 'PENDIENTE';
   const StatusIcon = ({ s }: { s: ObligationStatus }) =>
-    s === 'completo' ? <CheckCircle size={18} style={{ color: '#22c55e' }} /> :
-    s === 'na' ? <Minus size={18} style={{ color: 'var(--text-muted)' }} /> :
-    <AlertTriangle size={18} style={{ color: '#f59e0b' }} />
+    s === 'completo' ? (
+      <CheckCircle size={18} style={{ color: '#22c55e' }} />
+    ) : s === 'na' ? (
+      <Minus size={18} style={{ color: 'var(--text-muted)' }} />
+    ) : (
+      <AlertTriangle size={18} style={{ color: '#f59e0b' }} />
+    );
 
   return (
     <div>
       {/* Header */}
-      <div className="card" style={{ padding: 20, marginBottom: 20, background: 'linear-gradient(135deg, #1a2332, #2d62c8)', color: '#fff', borderRadius: 16 }}>
+      <div
+        className="card"
+        style={{
+          padding: 20,
+          marginBottom: 20,
+          background: 'linear-gradient(135deg, #1a2332, #2d62c8)',
+          color: '#fff',
+          borderRadius: 16,
+        }}
+      >
         <h3 style={{ margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Shield size={20} /> Compliance Legal — Chile
         </h3>
         <p style={{ fontSize: 13, opacity: 0.85, margin: 0 }}>
-          Checklist de obligaciones legales como empleador. Click en cada obligacion para ver la guia paso a paso.
+          Checklist de obligaciones legales como empleador. Click en cada obligacion para ver la
+          guia paso a paso.
         </p>
       </div>
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 20 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
         {[
           { label: 'Total', value: total, color: 'var(--accent)' },
           { label: 'Completos', value: completos, color: '#22c55e' },
           { label: 'Pendientes', value: pendientes, color: '#f59e0b' },
           { label: 'N/A', value: naCount, color: 'var(--text-muted)' },
-        ].map(s => (
+        ].map((s) => (
           <div key={s.label} className="card" style={{ padding: 16, textAlign: 'center' }}>
             <div style={{ fontSize: 28, fontWeight: 800, color: s.color }}>{s.value}</div>
-            <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase' }}>{s.label}</div>
+            <div
+              style={{
+                fontSize: 11,
+                color: 'var(--text-muted)',
+                fontWeight: 600,
+                textTransform: 'uppercase',
+              }}
+            >
+              {s.label}
+            </div>
           </div>
         ))}
       </div>
 
       {/* How to use guide */}
-      <div className="card" style={{ padding: 16, marginBottom: 20, background: 'var(--bg-tertiary)', border: '1px solid var(--border)' }}>
+      <div
+        className="card"
+        style={{
+          padding: 16,
+          marginBottom: 20,
+          background: 'var(--bg-tertiary)',
+          border: '1px solid var(--border)',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
           <Info size={16} style={{ color: 'var(--accent)' }} />
           <strong style={{ fontSize: 14 }}>Como cambiar de PENDIENTE a COMPLETO</strong>
         </div>
-        <ol style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 2, paddingLeft: 20, margin: 0 }}>
+        <ol
+          style={{
+            fontSize: 13,
+            color: 'var(--text-secondary)',
+            lineHeight: 2,
+            paddingLeft: 20,
+            margin: 0,
+          }}
+        >
           <li>Haz click en una obligacion para expandir los detalles</li>
-          <li>Lee la <strong>guia paso a paso</strong> y completa cada paso en la vida real</li>
-          <li>Si hay documentos disponibles, haz click en <strong>"Generar Documento"</strong> para imprimir/PDF</li>
-          <li>Una vez completados todos los pasos, haz click en el boton <strong>"Marcar como Completo"</strong></li>
+          <li>
+            Lee la <strong>guia paso a paso</strong> y completa cada paso en la vida real
+          </li>
+          <li>
+            Si hay documentos disponibles, haz click en <strong>"Generar Documento"</strong> para
+            imprimir/PDF
+          </li>
+          <li>
+            Una vez completados todos los pasos, haz click en el boton{' '}
+            <strong>"Marcar como Completo"</strong>
+          </li>
           <li>Opcionalmente agrega notas (ej: numero de registro, fecha de tramite, etc.)</li>
         </ol>
       </div>
 
       {/* Obligations List */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3
+          style={{
+            margin: '0 0 16px',
+            fontSize: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
           <FileText size={18} /> Obligaciones como Empleador
         </h3>
 
-        {OBLIGATIONS.map(ob => {
-          const st = getStatus(ob)
-          const isExpanded = expandedId === ob.id
-          const record = statuses[ob.id]
+        {OBLIGATIONS.map((ob) => {
+          const st = getStatus(ob);
+          const isExpanded = expandedId === ob.id;
+          const record = statuses[ob.id];
 
           return (
-            <div key={ob.id} style={{ borderBottom: '1px solid var(--border)', marginBottom: isExpanded ? 16 : 0 }}>
+            <div
+              key={ob.id}
+              style={{ borderBottom: '1px solid var(--border)', marginBottom: isExpanded ? 16 : 0 }}
+            >
               {/* Header row */}
               <div
                 onClick={() => setExpandedId(isExpanded ? null : ob.id)}
                 style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 0',
-                  cursor: 'pointer', transition: 'background 0.15s',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 12,
+                  padding: '14px 0',
+                  cursor: 'pointer',
+                  transition: 'background 0.15s',
                 }}
               >
                 <div style={{ marginTop: 2, flexShrink: 0 }}>
-                  {isExpanded ? <ChevronDown size={16} style={{ color: 'var(--accent)' }} /> : <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />}
+                  {isExpanded ? (
+                    <ChevronDown size={16} style={{ color: 'var(--accent)' }} />
+                  ) : (
+                    <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
+                  )}
                 </div>
                 <StatusIcon s={st} />
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: 14 }}>{ob.title}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{ob.description}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                    {ob.description}
+                  </div>
                   {record?.completedAt && st === 'completo' && (
-                    <div style={{ fontSize: 11, color: '#22c55e', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <Clock size={11} /> Completado el {new Date(record.completedAt).toLocaleDateString('es-CL')}
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: '#22c55e',
+                        marginTop: 4,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <Clock size={11} /> Completado el{' '}
+                      {new Date(record.completedAt).toLocaleDateString('es-CL')}
                     </div>
                   )}
                   {record?.notes && (
-                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 2, fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--text-secondary)',
+                        marginTop: 2,
+                        fontStyle: 'italic',
+                      }}
+                    >
                       Nota: {record.notes}
                     </div>
                   )}
                 </div>
-                <span style={{
-                  padding: '4px 12px', borderRadius: 12, fontSize: 10, fontWeight: 700, flexShrink: 0,
-                  background: statusBg(st), color: statusColor(st),
-                }}>
+                <span
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: 12,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    background: statusBg(st),
+                    color: statusColor(st),
+                  }}
+                >
                   {statusLabel(st)}
                 </span>
               </div>
@@ -703,19 +836,56 @@ export default function LegalTab() {
               {isExpanded && (
                 <div style={{ padding: '0 0 16px 40px' }}>
                   {ob.legalRef && (
-                    <div style={{ fontSize: 11, color: 'var(--accent)', marginBottom: 12, fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: 'var(--accent)',
+                        marginBottom: 12,
+                        fontStyle: 'italic',
+                      }}
+                    >
                       Ref: {ob.legalRef}
                     </div>
                   )}
 
                   {/* Step-by-step guide */}
-                  <div style={{ background: 'var(--bg-tertiary)', borderRadius: 10, padding: 16, marginBottom: 12 }}>
-                    <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <div
+                    style={{
+                      background: 'var(--bg-tertiary)',
+                      borderRadius: 10,
+                      padding: 16,
+                      marginBottom: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13,
+                        marginBottom: 10,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                      }}
+                    >
                       <FileText size={14} /> Guia paso a paso
                     </div>
-                    <ol style={{ paddingLeft: 20, margin: 0, fontSize: 13, lineHeight: 2, color: 'var(--text-secondary)' }}>
+                    <ol
+                      style={{
+                        paddingLeft: 20,
+                        margin: 0,
+                        fontSize: 13,
+                        lineHeight: 2,
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
                       {ob.guide.map((step, i) => (
-                        <li key={i} style={{ paddingLeft: step.startsWith('  —') ? 16 : 0, listStyleType: step.startsWith('  —') ? 'none' : undefined }}>
+                        <li
+                          key={i}
+                          style={{
+                            paddingLeft: step.startsWith('  —') ? 16 : 0,
+                            listStyleType: step.startsWith('  —') ? 'none' : undefined,
+                          }}
+                        >
                           {step.startsWith('  —') ? step : step}
                         </li>
                       ))}
@@ -725,34 +895,75 @@ export default function LegalTab() {
                   {/* Documents */}
                   {ob.documents && ob.documents.length > 0 && (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 12,
+                          marginBottom: 8,
+                          color: 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         Documentos
                       </div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {ob.id === 'odi' && (
-                          <button onClick={() => openDoc(generateODI())} style={{
-                            padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)',
-                            background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                            fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                          }}>
+                          <button
+                            onClick={() => openDoc(generateODI())}
+                            style={{
+                              padding: '8px 14px',
+                              borderRadius: 8,
+                              border: '1px solid var(--border)',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-primary)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
                             <Download size={13} /> Generar ODI
                           </button>
                         )}
                         {ob.id === 'ley_karin' && (
-                          <button onClick={() => openDoc(generateLeyKarinProtocol())} style={{
-                            padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)',
-                            background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                            fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                          }}>
+                          <button
+                            onClick={() => openDoc(generateLeyKarinProtocol())}
+                            style={{
+                              padding: '8px 14px',
+                              borderRadius: 8,
+                              border: '1px solid var(--border)',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-primary)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
                             <Download size={13} /> Generar Protocolo Ley Karin
                           </button>
                         )}
                         {ob.id === 'reglamento_interno' && (
-                          <button onClick={() => openDoc(generateReglamentoInterno())} style={{
-                            padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)',
-                            background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                            fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                          }}>
+                          <button
+                            onClick={() => openDoc(generateReglamentoInterno())}
+                            style={{
+                              padding: '8px 14px',
+                              borderRadius: 8,
+                              border: '1px solid var(--border)',
+                              background: 'var(--bg-secondary)',
+                              color: 'var(--text-primary)',
+                              fontSize: 12,
+                              fontWeight: 600,
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
                             <Download size={13} /> Generar Reglamento Interno
                           </button>
                         )}
@@ -763,15 +974,31 @@ export default function LegalTab() {
                   {/* Links */}
                   {ob.links && ob.links.length > 0 && (
                     <div style={{ marginBottom: 12 }}>
-                      <div style={{ fontWeight: 700, fontSize: 12, marginBottom: 8, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 12,
+                          marginBottom: 8,
+                          color: 'var(--text-muted)',
+                          textTransform: 'uppercase',
+                        }}
+                      >
                         Enlaces
                       </div>
                       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         {ob.links.map((link, i) => (
-                          <div key={i} style={{
-                            padding: '6px 12px', background: 'var(--bg-tertiary)', borderRadius: 8,
-                            fontSize: 12, display: 'flex', alignItems: 'center', gap: 6,
-                          }}>
+                          <div
+                            key={i}
+                            style={{
+                              padding: '6px 12px',
+                              background: 'var(--bg-tertiary)',
+                              borderRadius: 8,
+                              fontSize: 12,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 6,
+                            }}
+                          >
                             <Globe size={12} style={{ color: 'var(--accent)' }} />
                             <span>{link.label}</span>
                             <span style={{ color: 'var(--accent)', fontSize: 11 }}>{link.url}</span>
@@ -787,17 +1014,24 @@ export default function LegalTab() {
                       type="text"
                       placeholder="Agregar nota (ej: N° registro, fecha tramite...)"
                       value={record?.notes ?? noteInput}
-                      onChange={e => {
-                        if (record) setNote(ob.id, e.target.value)
-                        else setNoteInput(e.target.value)
+                      onChange={(e) => {
+                        if (record) setNote(ob.id, e.target.value);
+                        else setNoteInput(e.target.value);
                       }}
                       onBlur={() => {
-                        if (!record && noteInput) { setNote(ob.id, noteInput); setNoteInput('') }
+                        if (!record && noteInput) {
+                          setNote(ob.id, noteInput);
+                          setNoteInput('');
+                        }
                       }}
                       style={{
-                        width: '100%', padding: '8px 12px', borderRadius: 8,
-                        border: '1px solid var(--border)', background: 'var(--bg-secondary)',
-                        color: 'var(--text-primary)', fontSize: 12,
+                        width: '100%',
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg-secondary)',
+                        color: 'var(--text-primary)',
+                        fontSize: 12,
                       }}
                     />
                   </div>
@@ -805,38 +1039,76 @@ export default function LegalTab() {
                   {/* Status buttons */}
                   <div style={{ display: 'flex', gap: 8 }}>
                     {st !== 'completo' && (
-                      <button onClick={() => setObStatus(ob.id, 'completo')} style={{
-                        padding: '8px 16px', borderRadius: 8, border: 'none',
-                        background: '#22c55e', color: '#fff', fontSize: 12, fontWeight: 700,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                      }}>
+                      <button
+                        onClick={() => setObStatus(ob.id, 'completo')}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 8,
+                          border: 'none',
+                          background: '#22c55e',
+                          color: '#fff',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
                         <CheckCircle size={14} /> Marcar como Completo
                       </button>
                     )}
                     {st === 'completo' && (
-                      <button onClick={() => setObStatus(ob.id, 'pendiente')} style={{
-                        padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 12, fontWeight: 700,
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
-                      }}>
+                      <button
+                        onClick={() => setObStatus(ob.id, 'pendiente')}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 8,
+                          border: '1px solid var(--border)',
+                          background: 'var(--bg-secondary)',
+                          color: 'var(--text-primary)',
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
                         <X size={14} /> Revertir a Pendiente
                       </button>
                     )}
                     {st !== 'na' && ob.defaultStatus !== 'na' && (
-                      <button onClick={() => setObStatus(ob.id, 'na')} style={{
-                        padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)',
-                        background: 'var(--bg-secondary)', color: 'var(--text-muted)', fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer',
-                      }}>
+                      <button
+                        onClick={() => setObStatus(ob.id, 'na')}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 8,
+                          border: '1px solid var(--border)',
+                          background: 'var(--bg-secondary)',
+                          color: 'var(--text-muted)',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
                         Marcar N/A
                       </button>
                     )}
                     {st === 'na' && ob.defaultStatus !== 'na' && (
-                      <button onClick={() => setObStatus(ob.id, 'pendiente')} style={{
-                        padding: '8px 16px', borderRadius: 8, border: '1px solid var(--border)',
-                        background: 'var(--bg-secondary)', color: '#f59e0b', fontSize: 12, fontWeight: 600,
-                        cursor: 'pointer',
-                      }}>
+                      <button
+                        onClick={() => setObStatus(ob.id, 'pendiente')}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 8,
+                          border: '1px solid var(--border)',
+                          background: 'var(--bg-secondary)',
+                          color: '#f59e0b',
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
                         Revertir a Pendiente
                       </button>
                     )}
@@ -844,26 +1116,57 @@ export default function LegalTab() {
                 </div>
               )}
             </div>
-          )
+          );
         })}
       </div>
 
       {/* Brand Registration Guide */}
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <h3
+          style={{
+            margin: '0 0 16px',
+            fontSize: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
           <Star size={18} /> Registro de Marca — INAPI
         </h3>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-          <h4 style={{ color: 'var(--text-primary)', fontSize: 14 }}>Pasos para registrar "Conniku" en Chile:</h4>
+          <h4 style={{ color: 'var(--text-primary)', fontSize: 14 }}>
+            Pasos para registrar "Conniku" en Chile:
+          </h4>
           <ol style={{ paddingLeft: 20, lineHeight: 2.2 }}>
-            <li><strong>Busqueda previa:</strong> Verificar disponibilidad en <strong>inapi.cl</strong> → Busqueda de Marcas.</li>
-            <li><strong>Definir clases Niza:</strong> Clase 9 (Software), Clase 41 (Educacion), Clase 42 (SaaS)</li>
-            <li><strong>Presentar solicitud:</strong> Portal online INAPI con RUT empresa y logo</li>
-            <li><strong>Pago:</strong> ~1 UTM por clase (~$66,000 CLP)</li>
-            <li><strong>Publicacion:</strong> 30 dias en Diario Oficial para oposiciones</li>
-            <li><strong>Resolucion:</strong> 4-8 meses. Registro por 10 anos (renovable)</li>
+            <li>
+              <strong>Busqueda previa:</strong> Verificar disponibilidad en{' '}
+              <strong>inapi.cl</strong> → Busqueda de Marcas.
+            </li>
+            <li>
+              <strong>Definir clases Niza:</strong> Clase 9 (Software), Clase 41 (Educacion), Clase
+              42 (SaaS)
+            </li>
+            <li>
+              <strong>Presentar solicitud:</strong> Portal online INAPI con RUT empresa y logo
+            </li>
+            <li>
+              <strong>Pago:</strong> ~1 UTM por clase (~$66,000 CLP)
+            </li>
+            <li>
+              <strong>Publicacion:</strong> 30 dias en Diario Oficial para oposiciones
+            </li>
+            <li>
+              <strong>Resolucion:</strong> 4-8 meses. Registro por 10 anos (renovable)
+            </li>
           </ol>
-          <div style={{ marginTop: 12, padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+          <div
+            style={{
+              marginTop: 12,
+              padding: 12,
+              background: 'var(--bg-tertiary)',
+              borderRadius: 8,
+            }}
+          >
             <strong>Costo estimado:</strong> ~3 UTM (~$198,000 CLP) por Clases 9, 41 y 42.
           </div>
         </div>
@@ -873,9 +1176,16 @@ export default function LegalTab() {
       <div className="card" style={{ padding: 20, marginBottom: 16 }}>
         <h3 style={{ margin: '0 0 12px', fontSize: 16 }}>Proteccion de Datos Personales</h3>
         <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.8 }}>
-          <p><strong>Ley 19.628:</strong> Proteccion de la vida privada. Obligacion de informar al trabajador sobre datos recopilados.</p>
-          <p><strong>Ley 21.096:</strong> Proteccion de datos como garantia constitucional.</p>
-          <p><strong>Recomendaciones:</strong></p>
+          <p>
+            <strong>Ley 19.628:</strong> Proteccion de la vida privada. Obligacion de informar al
+            trabajador sobre datos recopilados.
+          </p>
+          <p>
+            <strong>Ley 21.096:</strong> Proteccion de datos como garantia constitucional.
+          </p>
+          <p>
+            <strong>Recomendaciones:</strong>
+          </p>
           <ul style={{ paddingLeft: 20 }}>
             <li>Consentimiento explicito del trabajador para tratamiento de datos</li>
             <li>Politica de privacidad laboral interna</li>
@@ -900,7 +1210,18 @@ export default function LegalTab() {
             { label: 'ACHS — Mutual', url: 'achs.cl' },
             { label: 'NIC Chile — Dominios .cl', url: 'nic.cl' },
           ].map((link, i) => (
-            <div key={i} style={{ padding: '10px 12px', background: 'var(--bg-tertiary)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
+            <div
+              key={i}
+              style={{
+                padding: '10px 12px',
+                background: 'var(--bg-tertiary)',
+                borderRadius: 8,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                fontSize: 13,
+              }}
+            >
               <Globe size={14} style={{ color: 'var(--accent)' }} />
               <span style={{ flex: 1 }}>{link.label}</span>
               <span style={{ fontSize: 11, color: 'var(--accent)' }}>{link.url}</span>
@@ -909,5 +1230,5 @@ export default function LegalTab() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 // ══════════════════════════════════════════════════════════════
 //  CONNIKU ADS INFRASTRUCTURE
@@ -7,24 +7,24 @@ import React from 'react'
 //  Solo bajo instrucción de Cristian (CEO)
 // ══════════════════════════════════════════════════════════════
 
-export const ADS_ENABLED = false   // ← INTERRUPTOR MAESTRO
+export const ADS_ENABLED = false; // ← INTERRUPTOR MAESTRO
 
 // Tipos de slots disponibles
-export type AdPlacement = 'feed-inline' | 'sidebar-top' | 'sidebar-mid' | 'sidebar-bottom'
+export type AdPlacement = 'feed-inline' | 'sidebar-top' | 'sidebar-mid' | 'sidebar-bottom';
 
 export interface Ad {
-  id: string
-  placement: AdPlacement
-  imageUrl?: string
-  title: string
-  description?: string
-  ctaLabel?: string
-  ctaUrl: string
-  sponsorName: string
-  sponsorLogoUrl?: string
-  backgroundColor?: string
-  textColor?: string
-  isPriority?: boolean
+  id: string;
+  placement: AdPlacement;
+  imageUrl?: string;
+  title: string;
+  description?: string;
+  ctaLabel?: string;
+  ctaUrl: string;
+  sponsorName: string;
+  sponsorLogoUrl?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  isPriority?: boolean;
 }
 
 // Ads de ejemplo/placeholder (se reemplazarán con datos reales del backend)
@@ -64,24 +64,24 @@ const PLACEHOLDER_ADS: Record<AdPlacement, Ad[]> = {
     },
   ],
   'sidebar-bottom': [],
-}
+};
 
 // ── Componente de ad individual ──────────────────────────────
 interface AdSlotProps {
-  placement: AdPlacement
-  className?: string
-  style?: React.CSSProperties
+  placement: AdPlacement;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function AdSlot({ placement, className, style }: AdSlotProps) {
   // Si los ads están desactivados → no renderizar nada
-  if (!ADS_ENABLED) return null
+  if (!ADS_ENABLED) return null;
 
-  const ads = PLACEHOLDER_ADS[placement] || []
-  if (ads.length === 0) return null
+  const ads = PLACEHOLDER_ADS[placement] || [];
+  if (ads.length === 0) return null;
 
   // Por ahora muestra el primero; en el futuro se puede rotar o cargar del backend
-  const ad = ads[0]
+  const ad = ads[0];
 
   return (
     <div
@@ -109,7 +109,7 @@ export default function AdSlot({ placement, className, style }: AdSlotProps) {
             src={ad.imageUrl}
             alt={ad.title}
             className="ad-slot__image"
-            onError={e => (e.currentTarget.style.display = 'none')}
+            onError={(e) => (e.currentTarget.style.display = 'none')}
           />
         )}
         <div className="ad-slot__content">
@@ -119,17 +119,13 @@ export default function AdSlot({ placement, className, style }: AdSlotProps) {
           <div className="ad-slot__title" style={ad.textColor ? { color: ad.textColor } : {}}>
             {ad.title}
           </div>
-          {ad.description && (
-            <div className="ad-slot__desc">{ad.description}</div>
-          )}
+          {ad.description && <div className="ad-slot__desc">{ad.description}</div>}
           <div className="ad-slot__footer">
             <span className="ad-slot__sponsor">{ad.sponsorName}</span>
-            {ad.ctaLabel && (
-              <span className="ad-slot__cta">{ad.ctaLabel} →</span>
-            )}
+            {ad.ctaLabel && <span className="ad-slot__cta">{ad.ctaLabel} →</span>}
           </div>
         </div>
       </a>
     </div>
-  )
+  );
 }

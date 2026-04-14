@@ -1,56 +1,68 @@
-import React, { useState } from 'react'
-import { api } from '../services/api'
-import { useI18n } from '../services/i18n'
-import { CheckCircle } from './Icons'
+import React, { useState } from 'react';
+import { api } from '../services/api';
+import { useI18n } from '../services/i18n';
+import { CheckCircle } from './Icons';
 
 interface Props {
-  onBack: () => void
+  onBack: () => void;
 }
 
 export default function ForgotPassword({ onBack }: Props) {
-  const { t } = useI18n()
-  const [step, setStep] = useState<'email' | 'code' | 'newpass' | 'done'>('email')
-  const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
-  const [demoCode, setDemoCode] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const { t } = useI18n();
+  const [step, setStep] = useState<'email' | 'code' | 'newpass' | 'done'>('email');
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [demoCode, setDemoCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSendCode = async () => {
-    if (!email.trim()) { setError(t('forgot.errEmail')); return }
-    setIsLoading(true)
-    setError('')
-    try {
-      const result = await api.forgotPassword(email)
-      if (result.code) setDemoCode(result.code) // MVP demo
-      setStep('code')
-    } catch (err: any) {
-      setError(err.message || t('forgot.errSend'))
+    if (!email.trim()) {
+      setError(t('forgot.errEmail'));
+      return;
     }
-    setIsLoading(false)
-  }
+    setIsLoading(true);
+    setError('');
+    try {
+      const result = await api.forgotPassword(email);
+      if (result.code) setDemoCode(result.code); // MVP demo
+      setStep('code');
+    } catch (err: any) {
+      setError(err.message || t('forgot.errSend'));
+    }
+    setIsLoading(false);
+  };
 
   const handleVerifyAndReset = async () => {
-    if (code.length !== 6) { setError(t('forgot.errCode')); return }
-    setStep('newpass')
-    setError('')
-  }
+    if (code.length !== 6) {
+      setError(t('forgot.errCode'));
+      return;
+    }
+    setStep('newpass');
+    setError('');
+  };
 
   const handleResetPassword = async () => {
-    if (newPassword.length < 8) { setError(t('forgot.errNewPwd')); return }
-    if (newPassword !== confirmPassword) { setError(t('forgot.errMismatch')); return }
-    setIsLoading(true)
-    setError('')
-    try {
-      await api.resetPassword(email, code, newPassword)
-      setStep('done')
-    } catch (err: any) {
-      setError(err.message || t('forgot.errReset'))
+    if (newPassword.length < 8) {
+      setError(t('forgot.errNewPwd'));
+      return;
     }
-    setIsLoading(false)
-  }
+    if (newPassword !== confirmPassword) {
+      setError(t('forgot.errMismatch'));
+      return;
+    }
+    setIsLoading(true);
+    setError('');
+    try {
+      await api.resetPassword(email, code, newPassword);
+      setStep('done');
+    } catch (err: any) {
+      setError(err.message || t('forgot.errReset'));
+    }
+    setIsLoading(false);
+  };
 
   return (
     <div className="auth-page">
@@ -69,7 +81,7 @@ export default function ForgotPassword({ onBack }: Props) {
                   type="email"
                   placeholder={t('forgot.emailPlaceholder')}
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   autoFocus
                 />
               </div>
@@ -84,7 +96,9 @@ export default function ForgotPassword({ onBack }: Props) {
             <>
               <div className="auth-verification">
                 <div className="auth-verification-icon">📧</div>
-                <p>{t('forgot.codeSent')} <strong>{email}</strong></p>
+                <p>
+                  {t('forgot.codeSent')} <strong>{email}</strong>
+                </p>
                 <div className="auth-field">
                   <label>{t('forgot.codeLabel')}</label>
                   <input
@@ -92,7 +106,7 @@ export default function ForgotPassword({ onBack }: Props) {
                     maxLength={6}
                     placeholder="000000"
                     value={code}
-                    onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                     className="auth-code-input"
                     autoFocus
                   />
@@ -104,7 +118,11 @@ export default function ForgotPassword({ onBack }: Props) {
                 )}
               </div>
               {error && <div className="auth-error">{error}</div>}
-              <button className="btn-auth-primary" onClick={handleVerifyAndReset} disabled={code.length !== 6}>
+              <button
+                className="btn-auth-primary"
+                onClick={handleVerifyAndReset}
+                disabled={code.length !== 6}
+              >
                 {t('forgot.verifyCode')}
               </button>
             </>
@@ -121,7 +139,7 @@ export default function ForgotPassword({ onBack }: Props) {
                   type="password"
                   placeholder={t('forgot.newPassPlaceholder')}
                   value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
+                  onChange={(e) => setNewPassword(e.target.value)}
                   autoFocus
                 />
               </div>
@@ -131,11 +149,15 @@ export default function ForgotPassword({ onBack }: Props) {
                   type="password"
                   placeholder={t('forgot.confirmPlaceholder')}
                   value={confirmPassword}
-                  onChange={e => setConfirmPassword(e.target.value)}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                 />
               </div>
               {error && <div className="auth-error">{error}</div>}
-              <button className="btn-auth-primary" onClick={handleResetPassword} disabled={isLoading}>
+              <button
+                className="btn-auth-primary"
+                onClick={handleResetPassword}
+                disabled={isLoading}
+              >
                 {isLoading ? t('forgot.changing') : t('forgot.changePassword')}
               </button>
             </>
@@ -143,7 +165,9 @@ export default function ForgotPassword({ onBack }: Props) {
 
           {step === 'done' && (
             <div style={{ textAlign: 'center', padding: 20 }}>
-              <div style={{ fontSize: 48 }}>{CheckCircle({ size: 48, color: 'var(--accent-green)' })}</div>
+              <div style={{ fontSize: 48 }}>
+                {CheckCircle({ size: 48, color: 'var(--accent-green)' })}
+              </div>
               <h3 style={{ marginTop: 16 }}>{t('forgot.doneTitle')}</h3>
               <p style={{ color: 'var(--text-secondary)', marginTop: 8 }}>
                 {t('forgot.doneMessage')}
@@ -162,5 +186,5 @@ export default function ForgotPassword({ onBack }: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 }

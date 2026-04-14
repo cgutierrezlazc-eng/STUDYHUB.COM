@@ -31,25 +31,28 @@ const COUNTRY_RATES: Record<string, { code: string; symbol: string; rate: number
   KR: { code: 'KRW', symbol: '₩', rate: 1350 },
   AU: { code: 'AUD', symbol: 'A$', rate: 1.55 },
   IN: { code: 'INR', symbol: '₹', rate: 83.5 },
-}
+};
 
-const DEFAULT_CURRENCY = { code: 'USD', symbol: '$', rate: 1 }
+const DEFAULT_CURRENCY = { code: 'USD', symbol: '$', rate: 1 };
 
 export function getCurrencyForCountry(countryCode: string) {
-  return COUNTRY_RATES[countryCode] || DEFAULT_CURRENCY
+  return COUNTRY_RATES[countryCode] || DEFAULT_CURRENCY;
 }
 
 export function formatUsdToLocal(usd: number, countryCode: string): string {
-  const curr = getCurrencyForCountry(countryCode)
-  const local = Math.round(usd * curr.rate)
-  return `${curr.symbol}${local.toLocaleString()} ${curr.code}`
+  const curr = getCurrencyForCountry(countryCode);
+  const local = Math.round(usd * curr.rate);
+  return `${curr.symbol}${local.toLocaleString()} ${curr.code}`;
 }
 
-export function formatPriceDisplay(usd: number, countryCode: string): { usdText: string; localText: string | null } {
-  const curr = getCurrencyForCountry(countryCode)
-  const usdText = `$${usd} USD`
-  if (curr.code === 'USD') return { usdText, localText: null }
-  const local = Math.round(usd * curr.rate)
-  const localText = `${curr.symbol}${local.toLocaleString()} ${curr.code}`
-  return { usdText, localText }
+export function formatPriceDisplay(
+  usd: number,
+  countryCode: string
+): { usdText: string; localText: string | null } {
+  const curr = getCurrencyForCountry(countryCode);
+  const usdText = `$${usd} USD`;
+  if (curr.code === 'USD') return { usdText, localText: null };
+  const local = Math.round(usd * curr.rate);
+  const localText = `${curr.symbol}${local.toLocaleString()} ${curr.code}`;
+  return { usdText, localText };
 }

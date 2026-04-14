@@ -1,51 +1,53 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react'
-import { AlertTriangle } from './Icons'
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle } from './Icons';
 
 interface Props {
-  children: ReactNode
-  fallback?: ReactNode
+  children: ReactNode;
+  fallback?: ReactNode;
 }
 
 interface State {
-  hasError: boolean
-  error: Error | null
+  hasError: boolean;
+  error: Error | null;
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
-    super(props)
-    this.state = { hasError: false, error: null }
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error }
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo)
+    console.error('ErrorBoundary caught:', error, errorInfo);
   }
 
   handleRetry = () => {
-    this.setState({ hasError: false, error: null })
-  }
+    this.setState({ hasError: false, error: null });
+  };
 
   render() {
     if (this.state.hasError) {
-      if (this.props.fallback) return this.props.fallback
+      if (this.props.fallback) return this.props.fallback;
 
       return (
-        <div style={{
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--bg-primary, #1a1a2e)',
-          color: 'var(--text-primary, #e0e0e0)',
-          flexDirection: 'column',
-          gap: 16,
-          padding: 24,
-          textAlign: 'center',
-        }}>
+        <div
+          style={{
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'var(--bg-primary, #1a1a2e)',
+            color: 'var(--text-primary, #e0e0e0)',
+            flexDirection: 'column',
+            gap: 16,
+            padding: 24,
+            textAlign: 'center',
+          }}
+        >
           <div style={{ fontSize: 48 }}>{AlertTriangle({ size: 48 })}</div>
           <h2 style={{ margin: 0, fontSize: 22 }}>Algo salió mal</h2>
           <p style={{ margin: 0, color: 'var(--text-secondary, #999)', maxWidth: 400 }}>
@@ -68,7 +70,14 @@ export default class ErrorBoundary extends Component<Props, State> {
             Intentar de nuevo
           </button>
           {this.state.error && (
-            <details style={{ marginTop: 16, color: 'var(--text-secondary, #666)', fontSize: 12, maxWidth: 500 }}>
+            <details
+              style={{
+                marginTop: 16,
+                color: 'var(--text-secondary, #666)',
+                fontSize: 12,
+                maxWidth: 500,
+              }}
+            >
               <summary style={{ cursor: 'pointer' }}>Detalles del error</summary>
               <pre style={{ whiteSpace: 'pre-wrap', textAlign: 'left', marginTop: 8 }}>
                 {this.state.error.message}
@@ -76,9 +85,9 @@ export default class ErrorBoundary extends Component<Props, State> {
             </details>
           )}
         </div>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
