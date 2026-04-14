@@ -37,6 +37,7 @@ from community_routes import router as community_router
 from notification_routes import router as notification_router
 from biblioteca_routes import router as biblioteca_router
 from collab_routes import router as collab_router
+from collab_ws import router as collab_ws_router
 from job_routes import router as job_router
 from course_routes import router as course_router
 from event_routes import router as event_router
@@ -251,6 +252,7 @@ app.include_router(community_router)
 app.include_router(notification_router)
 app.include_router(biblioteca_router)
 app.include_router(collab_router)
+app.include_router(collab_ws_router)
 app.include_router(job_router)
 app.include_router(course_router)
 app.include_router(event_router)

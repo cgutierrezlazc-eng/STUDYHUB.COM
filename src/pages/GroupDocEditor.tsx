@@ -283,6 +283,9 @@ export default function GroupDocEditor({ onNavigate }: Props) {
               content={doc?.content || ''}
               onUpdate={handleContentUpdate}
               editable={canEdit}
+              docId={docId}
+              userName={user ? `${user.firstName} ${user.lastName}` : undefined}
+              userColor={doc?.color || '#2D62C8'}
             />
           </Suspense>
         </div>
