@@ -1,124 +1,175 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { api } from '../../../services/api'
-import { Employee } from '../../shared/types'
+import React, { useState, useEffect, useCallback } from 'react';
+import { api } from '../../../services/api';
+import { Employee } from '../../shared/types';
 
 // ─── Constantes laborales Chile ────────────────────────────────
-const IMM = 510966
+const IMM = 510966;
 const AFP_LIST = [
-  { value: 'modelo',   label: 'Modelo' },
-  { value: 'capital',  label: 'Capital' },
-  { value: 'cuprum',   label: 'Cuprum' },
-  { value: 'habitat',  label: 'Habitat' },
-  { value: 'planvital',label: 'PlanVital' },
-  { value: 'provida',  label: 'ProVida' },
-  { value: 'uno',      label: 'Uno' },
-]
+  { value: 'modelo', label: 'Modelo' },
+  { value: 'capital', label: 'Capital' },
+  { value: 'cuprum', label: 'Cuprum' },
+  { value: 'habitat', label: 'Habitat' },
+  { value: 'planvital', label: 'PlanVital' },
+  { value: 'provida', label: 'ProVida' },
+  { value: 'uno', label: 'Uno' },
+];
 const HEALTH_OPTIONS = [
   { value: 'fonasa', label: 'FONASA' },
   { value: 'isapre', label: 'ISAPRE' },
-]
+];
 const CONTRACT_TYPES = [
   { value: 'plazo_fijo', label: 'Plazo Fijo' },
   { value: 'indefinido', label: 'Indefinido' },
   { value: 'obra_faena', label: 'Obra o Faena' },
   { value: 'honorarios', label: 'Honorarios' },
   { value: 'aprendizaje', label: 'Aprendizaje' },
-]
-const DEPARTMENTS = ['Tecnologia','RRHH','Finanzas','Operaciones','Marketing','Legal','Gerencia','Diseño','Soporte']
+];
+const DEPARTMENTS = [
+  'Tecnologia',
+  'RRHH',
+  'Finanzas',
+  'Operaciones',
+  'Marketing',
+  'Legal',
+  'Gerencia',
+  'Diseño',
+  'Soporte',
+];
 const SCHEDULE_OPTIONS = [
   { value: 'full_time', label: 'Jornada Completa (45h)' },
   { value: 'part_time', label: 'Media Jornada' },
   { value: 'flexible', label: 'Horario Flexible' },
   { value: 'remoto', label: 'Teletrabajo' },
-]
-const BANKS = ['Banco Estado','BancoChile','Santander','BCI','Itaú','Scotiabank','Falabella','Ripley','Security','Consorcio']
+];
+const BANKS = [
+  'Banco Estado',
+  'BancoChile',
+  'Santander',
+  'BCI',
+  'Itaú',
+  'Scotiabank',
+  'Falabella',
+  'Ripley',
+  'Security',
+  'Consorcio',
+];
 const ACCOUNT_TYPES = [
   { value: 'cuenta_vista', label: 'Cuenta Vista' },
   { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
   { value: 'cuenta_rut', label: 'Cuenta RUT' },
-]
+];
 // ─── Tasas previsionales Chile 2025 ────────────────────────────
 // Fuente: Superintendencia de Pensiones (www.spensiones.cl) — vigentes 2025
 const AFP_RATES: Record<string, { commission: number; obligatory: number }> = {
-  modelo:    { commission: 0.58, obligatory: 10.00 },
-  capital:   { commission: 1.44, obligatory: 10.00 },
-  cuprum:    { commission: 1.44, obligatory: 10.00 },
-  habitat:   { commission: 1.27, obligatory: 10.00 },
-  planvital: { commission: 1.16, obligatory: 10.00 },
-  provida:   { commission: 1.45, obligatory: 10.00 },
-  uno:       { commission: 0.49, obligatory: 10.00 },
-}
+  modelo: { commission: 0.58, obligatory: 10.0 },
+  capital: { commission: 1.44, obligatory: 10.0 },
+  cuprum: { commission: 1.44, obligatory: 10.0 },
+  habitat: { commission: 1.27, obligatory: 10.0 },
+  planvital: { commission: 1.16, obligatory: 10.0 },
+  provida: { commission: 1.45, obligatory: 10.0 },
+  uno: { commission: 0.49, obligatory: 10.0 },
+};
 // SIS (Seguro Invalidez y Sobrevivencia): 1.49% — costo del EMPLEADOR, no se descuenta del trabajador
-const SIS_RATE = 1.49
-const FONASA_RATE = 7.00   // % de remuneración imponible (Ley 18.469)
-const AFC_WORKER = 0.60    // % trabajador (Ley 19.728)
-const AFC_EMPLOYER_INDEFINIDO = 2.40  // % empleador contrato indefinido
-const AFC_EMPLOYER_PLAZO_FIJO  = 3.00 // % empleador contrato plazo fijo/obra
+const SIS_RATE = 1.49;
+const FONASA_RATE = 7.0; // % de remuneración imponible (Ley 18.469)
+const AFC_WORKER = 0.6; // % trabajador (Ley 19.728)
+const AFC_EMPLOYER_INDEFINIDO = 2.4; // % empleador contrato indefinido
+const AFC_EMPLOYER_PLAZO_FIJO = 3.0; // % empleador contrato plazo fijo/obra
 // ISAPREs vigentes en Chile 2025 — cotización mínima legal 7% remuneración imponible
 // (los planes tienen un costo adicional en UF según institución y cobertura)
 const ISAPRE_LIST = [
-  { value: 'banmedica',     label: 'Banmédica' },
-  { value: 'colmena',       label: 'Colmena' },
-  { value: 'cruz_blanca',   label: 'Cruz Blanca' },
+  { value: 'banmedica', label: 'Banmédica' },
+  { value: 'colmena', label: 'Colmena' },
+  { value: 'cruz_blanca', label: 'Cruz Blanca' },
   { value: 'nueva_masvida', label: 'Nueva MásVida' },
-  { value: 'consalud',      label: 'Consalud' },
-  { value: 'vida_tres',     label: 'Vida Tres' },
-  { value: 'esencial',      label: 'Esencial' },
-]
+  { value: 'consalud', label: 'Consalud' },
+  { value: 'vida_tres', label: 'Vida Tres' },
+  { value: 'esencial', label: 'Esencial' },
+];
 // Cálculo de descuentos legales sobre remuneración imponible
-function calcDescuentos(grossSalary: number, afp: string, healthSystem: string, contractType: string) {
-  const afpRate = AFP_RATES[afp] || AFP_RATES.modelo
-  const afpObligatorio = Math.round(grossSalary * afpRate.obligatory / 100)
-  const afpComision    = Math.round(grossSalary * afpRate.commission  / 100)
-  const afpTotal       = afpObligatorio + afpComision
-  const salud          = Math.round(grossSalary * FONASA_RATE / 100)
-  const afcWorker      = Math.round(grossSalary * AFC_WORKER  / 100)
-  const afcEmployer    = Math.round(grossSalary * (contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO) / 100)
-  const sisEmployer    = Math.round(grossSalary * SIS_RATE / 100)
-  const totalWorker    = afpTotal + salud + afcWorker
-  return { afpObligatorio, afpComision, afpTotal, salud, afcWorker, afcEmployer, sisEmployer, totalWorker }
+function calcDescuentos(
+  grossSalary: number,
+  afp: string,
+  healthSystem: string,
+  contractType: string
+) {
+  const afpRate = AFP_RATES[afp] || AFP_RATES.modelo;
+  const afpObligatorio = Math.round((grossSalary * afpRate.obligatory) / 100);
+  const afpComision = Math.round((grossSalary * afpRate.commission) / 100);
+  const afpTotal = afpObligatorio + afpComision;
+  const salud = Math.round((grossSalary * FONASA_RATE) / 100);
+  const afcWorker = Math.round((grossSalary * AFC_WORKER) / 100);
+  const afcEmployer = Math.round(
+    (grossSalary *
+      (contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO)) /
+      100
+  );
+  const sisEmployer = Math.round((grossSalary * SIS_RATE) / 100);
+  const totalWorker = afpTotal + salud + afcWorker;
+  return {
+    afpObligatorio,
+    afpComision,
+    afpTotal,
+    salud,
+    afcWorker,
+    afcEmployer,
+    sisEmployer,
+    totalWorker,
+  };
 }
 // ─── APV y Descuentos Adicionales ──────────────────────────────
 // Fuente: DL 3.500 Art.20 bis/ter, Ley 19.768, Ley 14.908, Art.58 CT
 const APV_REGIMEN = [
   { value: 'B', label: 'Régimen B — Rebaja base imponible Imp. 2ª Categoría (rentas altas)' },
   { value: 'A', label: 'Régimen A — Crédito tributario 15%, tope 6 UTM/año (rentas bajas/medias)' },
-]
+];
 const APV_INSTITUTIONS = [
-  { value: 'afp_mismo',   label: 'Misma AFP del trabajador' },
+  { value: 'afp_mismo', label: 'Misma AFP del trabajador' },
   { value: 'fondo_mutuo', label: 'Administradora de Fondos Mutuos' },
-  { value: 'banco',       label: 'Banco (depósito a plazo APV)' },
+  { value: 'banco', label: 'Banco (depósito a plazo APV)' },
   { value: 'seguro_vida', label: 'Compañía de Seguros de Vida' },
-  { value: 'otro',        label: 'Otra institución habilitada SP' },
-]
+  { value: 'otro', label: 'Otra institución habilitada SP' },
+];
 const PENSION_TIPOS = [
-  { value: 'fijo',       label: 'Monto fijo mensual ($)' },
+  { value: 'fijo', label: 'Monto fijo mensual ($)' },
   { value: 'porcentaje', label: 'Porcentaje del sueldo líquido (%)' },
-]
+];
 const PENSION_DESTINO = [
   { value: 'transferencia', label: 'Transferencia bancaria al beneficiario' },
-  { value: 'tribunal',      label: 'Depósito cuenta Tribunal de Familia' },
-  { value: 'ojv',           label: 'Oficina Judicial Virtual (OJV) — Poder Judicial' },
-]
+  { value: 'tribunal', label: 'Depósito cuenta Tribunal de Familia' },
+  { value: 'ojv', label: 'Oficina Judicial Virtual (OJV) — Poder Judicial' },
+];
 const PENSION_CUENTA_TIPOS = [
   { value: 'cuenta_corriente', label: 'Cuenta Corriente' },
-  { value: 'cuenta_vista',     label: 'Cuenta Vista' },
-  { value: 'cuenta_rut',       label: 'Cuenta RUT' },
-]
-const PENSION_BANCOS = ['Banco Estado','BancoChile','Santander','BCI','Itaú','Scotiabank','Falabella','Ripley','Security','Consorcio','Tribunal de Familia']
+  { value: 'cuenta_vista', label: 'Cuenta Vista' },
+  { value: 'cuenta_rut', label: 'Cuenta RUT' },
+];
+const PENSION_BANCOS = [
+  'Banco Estado',
+  'BancoChile',
+  'Santander',
+  'BCI',
+  'Itaú',
+  'Scotiabank',
+  'Falabella',
+  'Ripley',
+  'Security',
+  'Consorcio',
+  'Tribunal de Familia',
+];
 const POSITIONS_LIST = [
-  { value: 'gerente_general',      label: 'Gerente General / CEO' },
-  { value: 'gerente_tecnologia',   label: 'Gerente de Tecnología / CTO' },
+  { value: 'gerente_general', label: 'Gerente General / CEO' },
+  { value: 'gerente_tecnologia', label: 'Gerente de Tecnología / CTO' },
   { value: 'desarrollador_fullstack', label: 'Desarrollador/a Full Stack' },
-  { value: 'disenador_ux',         label: 'Diseñador/a UX/UI' },
-  { value: 'marketing_digital',    label: 'Responsable de Marketing Digital' },
-  { value: 'rrhh_analista',        label: 'Analista de RRHH y Remuneraciones' },
-  { value: 'ejecutivo_ventas',     label: 'Ejecutivo/a de Ventas' },
-  { value: 'soporte_cliente',      label: 'Ejecutivo/a de Soporte al Cliente' },
-  { value: 'contador',             label: 'Contador/a / Analista Financiero' },
-  { value: 'coordinador_proyectos',label: 'Coordinador/a de Proyectos' },
-  { value: 'otro',                 label: 'Otro (especificar)' },
-]
+  { value: 'disenador_ux', label: 'Diseñador/a UX/UI' },
+  { value: 'marketing_digital', label: 'Responsable de Marketing Digital' },
+  { value: 'rrhh_analista', label: 'Analista de RRHH y Remuneraciones' },
+  { value: 'ejecutivo_ventas', label: 'Ejecutivo/a de Ventas' },
+  { value: 'soporte_cliente', label: 'Ejecutivo/a de Soporte al Cliente' },
+  { value: 'contador', label: 'Contador/a / Analista Financiero' },
+  { value: 'coordinador_proyectos', label: 'Coordinador/a de Proyectos' },
+  { value: 'otro', label: 'Otro (especificar)' },
+];
 const JOB_DESCRIPTIONS: Record<string, string> = {
   gerente_general: `• Dirigir y representar legalmente a Conniku SpA ante organismos públicos, privados y reguladores.
 • Definir, comunicar y ejecutar la visión estratégica y objetivos corporativos de la empresa.
@@ -149,7 +200,7 @@ const JOB_DESCRIPTIONS: Record<string, string> = {
 • Participar activamente en code reviews y definición de arquitectura técnica.
 • Corregir defectos (bugs), optimizar rendimiento y asegurar la calidad del código.
 • Colaborar con el equipo de diseño UX/UI para implementar interfaces de usuario.
-• Integrar APIs y servicios de terceros (pagos, email, notificaciones push, IA).
+• Integrar APIs y servicios de terceros (pagos, email, notificaciones push, herramientas inteligentes).
 • Documentar el código, APIs y procesos técnicos.
 • Asegurar la seguridad, escalabilidad y mantenibilidad del código producido.
 • Reporta a: Gerente de Tecnología / CTO.`,
@@ -233,18 +284,18 @@ const JOB_DESCRIPTIONS: Record<string, string> = {
 • Asegurar que los proyectos se entreguen dentro del alcance, tiempo y presupuesto acordados.
 • Documentar procesos, lecciones aprendidas y mejores prácticas del equipo.
 • Reporta a: Gerente General / CEO.`,
-}
+};
 // ─── Formateador RUT Chile ──────────────────────────────────────
 function formatRUT(raw: string): string {
   // Limpia todo excepto dígitos y K
-  const clean = raw.replace(/[^0-9kK]/g, '').toUpperCase()
-  if (clean.length === 0) return ''
-  if (clean.length === 1) return clean
-  const verifier = clean.slice(-1)
-  const numbers  = clean.slice(0, -1)
+  const clean = raw.replace(/[^0-9kK]/g, '').toUpperCase();
+  if (clean.length === 0) return '';
+  if (clean.length === 1) return clean;
+  const verifier = clean.slice(-1);
+  const numbers = clean.slice(0, -1);
   // Puntos cada 3 dígitos de derecha a izquierda
-  const dotted = numbers.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  return `${dotted}-${verifier}`
+  const dotted = numbers.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${dotted}-${verifier}`;
 }
 
 const STATUS_COLOR: Record<string, string> = {
@@ -252,90 +303,145 @@ const STATUS_COLOR: Record<string, string> = {
   terminated: '#ef4444',
   suspended: '#f59e0b',
   on_leave: '#3b82f6',
-}
+};
 const STATUS_LABEL: Record<string, string> = {
   active: 'Activo',
   terminated: 'Terminado',
   suspended: 'Suspendido',
   on_leave: 'Con Permiso',
-}
+};
 
 // ─── Helpers ────────────────────────────────────────────────────
 function fmtDate(iso: string) {
-  if (!iso) return '—'
-  try { return new Date(iso).toLocaleDateString('es-CL') } catch { return iso }
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('es-CL');
+  } catch {
+    return iso;
+  }
 }
 function fmtMoney(n: number) {
-  return `$${(n || 0).toLocaleString('es-CL')}`
+  return `$${(n || 0).toLocaleString('es-CL')}`;
 }
 function initials(e: Employee) {
-  return `${e.firstName?.[0] || ''}${e.lastName?.[0] || ''}`.toUpperCase()
+  return `${e.firstName?.[0] || ''}${e.lastName?.[0] || ''}`.toUpperCase();
 }
 function fullName(e: Employee) {
-  return `${e.firstName} ${e.lastName}`.trim()
+  return `${e.firstName} ${e.lastName}`.trim();
 }
 function avatarColor(e: Employee) {
-  const colors = ['#3b82f6','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899']
-  const idx = (e.firstName?.charCodeAt(0) || 0) % colors.length
-  return colors[idx]
+  const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+  const idx = (e.firstName?.charCodeAt(0) || 0) % colors.length;
+  return colors[idx];
 }
 
 // ─── Sub-components ─────────────────────────────────────────────
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 16 }}>
-      <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 5 }}>
+      <label
+        style={{
+          display: 'block',
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.6px',
+          marginBottom: 5,
+        }}
+      >
         {label}
       </label>
       {children}
     </div>
-  )
+  );
 }
 
-function Input({ value, onChange, placeholder, type = 'text', disabled }: {
-  value: string | number; onChange?: (v: string) => void
-  placeholder?: string; type?: string; disabled?: boolean
+function Input({
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+  disabled,
+}: {
+  value: string | number;
+  onChange?: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+  disabled?: boolean;
 }) {
   return (
     <input
       type={type}
       value={value ?? ''}
-      onChange={e => onChange?.(e.target.value)}
+      onChange={(e) => onChange?.(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
       style={{
-        width: '100%', padding: '8px 12px', borderRadius: 8,
-        border: '1px solid var(--border)', background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
-        color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box',
-        outline: 'none', fontFamily: 'inherit',
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: 8,
+        border: '1px solid var(--border)',
+        background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
+        color: 'var(--text-primary)',
+        fontSize: 13,
+        boxSizing: 'border-box',
+        outline: 'none',
+        fontFamily: 'inherit',
       }}
     />
-  )
+  );
 }
 
-function Select({ value, onChange, options, disabled }: {
-  value: string; onChange?: (v: string) => void
-  options: { value: string; label: string }[] | string[]; disabled?: boolean
+function Select({
+  value,
+  onChange,
+  options,
+  disabled,
+}: {
+  value: string;
+  onChange?: (v: string) => void;
+  options: { value: string; label: string }[] | string[];
+  disabled?: boolean;
 }) {
-  const opts = options.map(o => typeof o === 'string' ? { value: o, label: o } : o)
+  const opts = options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
   return (
     <select
       value={value ?? ''}
-      onChange={e => onChange?.(e.target.value)}
+      onChange={(e) => onChange?.(e.target.value)}
       disabled={disabled}
       style={{
-        width: '100%', padding: '8px 12px', borderRadius: 8,
-        border: '1px solid var(--border)', background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
-        color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box',
-        outline: 'none', fontFamily: 'inherit', cursor: disabled ? 'default' : 'pointer',
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: 8,
+        border: '1px solid var(--border)',
+        background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
+        color: 'var(--text-primary)',
+        fontSize: 13,
+        boxSizing: 'border-box',
+        outline: 'none',
+        fontFamily: 'inherit',
+        cursor: disabled ? 'default' : 'pointer',
       }}
     >
-      {opts.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+      {opts.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
     </select>
-  )
+  );
 }
 
-function RutInput({ value, onChange, disabled }: { value: string; onChange?: (v: string) => void; disabled?: boolean }) {
+function RutInput({
+  value,
+  onChange,
+  disabled,
+}: {
+  value: string;
+  onChange?: (v: string) => void;
+  disabled?: boolean;
+}) {
   return (
     <input
       type="text"
@@ -343,46 +449,66 @@ function RutInput({ value, onChange, disabled }: { value: string; onChange?: (v:
       placeholder="12.345.678-9"
       disabled={disabled}
       maxLength={12}
-      onChange={e => onChange?.(formatRUT(e.target.value))}
+      onChange={(e) => onChange?.(formatRUT(e.target.value))}
       style={{
-        width: '100%', padding: '8px 12px', borderRadius: 8,
-        border: '1px solid var(--border)', background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
-        color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box',
-        outline: 'none', fontFamily: 'inherit',
+        width: '100%',
+        padding: '8px 12px',
+        borderRadius: 8,
+        border: '1px solid var(--border)',
+        background: disabled ? 'var(--bg-tertiary)' : 'var(--bg-primary)',
+        color: 'var(--text-primary)',
+        fontSize: 13,
+        boxSizing: 'border-box',
+        outline: 'none',
+        fontFamily: 'inherit',
       }}
     />
-  )
+  );
 }
 
 function ErrMsg({ msg }: { msg?: string }) {
-  if (!msg) return null
-  return <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{msg}</div>
+  if (!msg) return null;
+  return <div style={{ fontSize: 11, color: '#ef4444', marginTop: 4 }}>{msg}</div>;
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{
-      fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase',
-      letterSpacing: '1px', margin: '20px 0 14px', paddingBottom: 6,
-      borderBottom: '1px solid var(--border)',
-    }}>
+    <div
+      style={{
+        fontSize: 11,
+        fontWeight: 700,
+        color: 'var(--text-muted)',
+        textTransform: 'uppercase',
+        letterSpacing: '1px',
+        margin: '20px 0 14px',
+        paddingBottom: 6,
+        borderBottom: '1px solid var(--border)',
+      }}
+    >
       {children}
     </div>
-  )
+  );
 }
 
 // ─── Generador de contrato HTML imprimible (versión completa) ────
 function buildContractHTML(form: any, jobDescription: string): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const contractLabel = CONTRACT_TYPES.find(c => c.value === form.contractType)?.label || form.contractType
-  const scheduleLabel = SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label || form.workSchedule
-  const afpLabel = AFP_LIST.find(a => a.value === form.afp)?.label || form.afp
-  const healthLabel = form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName || ''}`
-  const duracionClause = form.contractType === 'indefinido'
-    ? 'El presente contrato es de duración <strong>indefinida</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.'
-    : form.contractType === 'plazo_fijo'
-    ? `El presente contrato es de <strong>plazo fijo</strong>, con fecha de inicio <strong>${fmtDate(form.hireDate)}</strong> y fecha de término <strong>${fmtDate(form.endDate || '')}</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.`
-    : `El presente contrato es por <strong>${contractLabel}</strong>, a partir del <strong>${fmtDate(form.hireDate)}</strong>.`
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const contractLabel =
+    CONTRACT_TYPES.find((c) => c.value === form.contractType)?.label || form.contractType;
+  const scheduleLabel =
+    SCHEDULE_OPTIONS.find((s) => s.value === form.workSchedule)?.label || form.workSchedule;
+  const afpLabel = AFP_LIST.find((a) => a.value === form.afp)?.label || form.afp;
+  const healthLabel = form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName || ''}`;
+  const duracionClause =
+    form.contractType === 'indefinido'
+      ? 'El presente contrato es de duración <strong>indefinida</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.'
+      : form.contractType === 'plazo_fijo'
+        ? `El presente contrato es de <strong>plazo fijo</strong>, con fecha de inicio <strong>${fmtDate(form.hireDate)}</strong> y fecha de término <strong>${fmtDate(form.endDate || '')}</strong>, en conformidad con el artículo 159 N°4 del Código del Trabajo.`
+        : `El presente contrato es por <strong>${contractLabel}</strong>, a partir del <strong>${fmtDate(form.hireDate)}</strong>.`;
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -494,17 +620,21 @@ function buildContractHTML(form: any, jobDescription: string): string {
   <div class="clause-title">Sexto — Remuneración, Cotizaciones y Política de Pagos</div>
   <div class="clause">Las partes acuerdan la siguiente estructura remuneracional. Los montos indicados corresponden a la proyección de la primera liquidación mensual completa, calculada a la fecha de suscripción de este contrato como referencia. Los porcentajes de cotizaciones se actualizarán automáticamente conforme a las resoluciones de la Superintendencia de Pensiones, FONASA, ISAPREs y AFC, sin necesidad de modificar este instrumento.</div>
   ${(() => {
-    const salary = Number(form.grossSalary)
-    const colacion = Number(form.colacion) || 0
-    const movilizacion = Number(form.movilizacion) || 0
-    const totalHaberes = salary + colacion + movilizacion
-    const d = calcDescuentos(salary, form.afp, form.healthSystem, form.contractType)
-    const isapreLabel = form.healthSystem === 'isapre' ? (ISAPRE_LIST.find(i => i.value === form.isapreProvider)?.label || 'ISAPRE') : ''
-    const afpR = AFP_RATES[form.afp] || AFP_RATES.modelo
-    const afpLabel = AFP_LIST.find(a => a.value === form.afp)?.label || form.afp
-    const netLiquido = salary - d.afpTotal - d.salud - d.afcWorker
-    const afcEmployerRate = form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO
-    const totalCostoEmpresa = d.afcEmployer + d.sisEmployer
+    const salary = Number(form.grossSalary);
+    const colacion = Number(form.colacion) || 0;
+    const movilizacion = Number(form.movilizacion) || 0;
+    const totalHaberes = salary + colacion + movilizacion;
+    const d = calcDescuentos(salary, form.afp, form.healthSystem, form.contractType);
+    const isapreLabel =
+      form.healthSystem === 'isapre'
+        ? ISAPRE_LIST.find((i) => i.value === form.isapreProvider)?.label || 'ISAPRE'
+        : '';
+    const afpR = AFP_RATES[form.afp] || AFP_RATES.modelo;
+    const afpLabel = AFP_LIST.find((a) => a.value === form.afp)?.label || form.afp;
+    const netLiquido = salary - d.afpTotal - d.salud - d.afcWorker;
+    const afcEmployerRate =
+      form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO;
+    const totalCostoEmpresa = d.afcEmployer + d.sisEmployer;
     return `
   <div class="liq-wrap">
     <div class="liq-header">📋 LIQUIDACIÓN DE REMUNERACIÓN — REFERENCIA CONTRATO</div>
@@ -515,16 +645,24 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-detail">Imponible · Art. 41 y 44 CT</td>
         <td class="liq-amount">${fmtMoney(salary)}</td>
       </tr>
-      ${colacion > 0 ? `<tr>
+      ${
+        colacion > 0
+          ? `<tr>
         <td class="liq-label">Asignación de Colación</td>
         <td class="liq-detail">No imponible · no afecta AFP/Salud</td>
         <td class="liq-amount">${fmtMoney(colacion)}</td>
-      </tr>` : ''}
-      ${movilizacion > 0 ? `<tr>
+      </tr>`
+          : ''
+      }
+      ${
+        movilizacion > 0
+          ? `<tr>
         <td class="liq-label">Asignación de Movilización</td>
         <td class="liq-detail">No imponible · no afecta AFP/Salud</td>
         <td class="liq-amount">${fmtMoney(movilizacion)}</td>
-      </tr>` : ''}
+      </tr>`
+          : ''
+      }
       <tr class="liq-total">
         <td colspan="2">TOTAL HABERES</td>
         <td style="text-align:right;">${fmtMoney(totalHaberes)}</td>
@@ -553,56 +691,84 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-detail">${AFC_WORKER}% de ${fmtMoney(salary)} imponible · Ley 19.728</td>
         <td class="liq-amount">${fmtMoney(d.afcWorker)}</td>
       </tr>
-      ${form.apvActivo && form.apvMonto > 0 ? `<tr>
+      ${
+        form.apvActivo && form.apvMonto > 0
+          ? `<tr>
         <td class="liq-label">APV — Ahorro Previsional Voluntario (Régimen ${form.apvRegimen})</td>
-        <td class="liq-detail">${form.apvInstitucion === 'afp_mismo' ? `Misma AFP ${afpLabel}` : (form.apvInstitucionNombre || 'Institución habilitada')} · DL 3.500 Art. 20 bis · Ley 19.768${form.apvRegimen === 'B' ? ' · Rebaja base imponible Imp. 2ª Cat.' : ' · Crédito trib. 15%'}</td>
+        <td class="liq-detail">${form.apvInstitucion === 'afp_mismo' ? `Misma AFP ${afpLabel}` : form.apvInstitucionNombre || 'Institución habilitada'} · DL 3.500 Art. 20 bis · Ley 19.768${form.apvRegimen === 'B' ? ' · Rebaja base imponible Imp. 2ª Cat.' : ' · Crédito trib. 15%'}</td>
         <td class="liq-amount">${fmtMoney(Number(form.apvMonto))}</td>
-      </tr>` : ''}
-      ${form.pensionActiva ? `<tr>
+      </tr>`
+          : ''
+      }
+      ${
+        form.pensionActiva
+          ? `<tr>
         <td class="liq-label">Pensión de Alimentos</td>
         <td class="liq-detail">RIT ${form.pensionRit || '—'} · ${form.pensionTribunal || 'Tribunal de Familia'} · Ley 14.908 · Art. 58 CT</td>
-        <td class="liq-amount">${form.pensionTipo === 'fijo' ? fmtMoney(Number(form.pensionMonto)) : fmtMoney(Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) + ` (${form.pensionPorcentaje}% líquido)`}</td>
-      </tr>` : ''}
-      ${form.cuotaSindicalActiva && form.cuotaSindicalMonto > 0 ? `<tr>
+        <td class="liq-amount">${form.pensionTipo === 'fijo' ? fmtMoney(Number(form.pensionMonto)) : fmtMoney(Math.round((netLiquido * Number(form.pensionPorcentaje)) / 100)) + ` (${form.pensionPorcentaje}% líquido)`}</td>
+      </tr>`
+          : ''
+      }
+      ${
+        form.cuotaSindicalActiva && form.cuotaSindicalMonto > 0
+          ? `<tr>
         <td class="liq-label">Cuota Sindical</td>
         <td class="liq-detail">${form.cuotaSindicalSindicato || 'Sindicato'} · Art. 262 CT</td>
         <td class="liq-amount">${fmtMoney(Number(form.cuotaSindicalMonto))}</td>
-      </tr>` : ''}
-      ${form.prestamoActivo && form.prestamoCuota > 0 ? `<tr>
+      </tr>`
+          : ''
+      }
+      ${
+        form.prestamoActivo && form.prestamoCuota > 0
+          ? `<tr>
         <td class="liq-label">Cuota Préstamo Empresa</td>
         <td class="liq-detail">Saldo total: ${fmtMoney(Number(form.prestamoSaldo))} · Autorizado por el trabajador · Art. 58 CT</td>
         <td class="liq-amount">${fmtMoney(Number(form.prestamoCuota))}</td>
-      </tr>` : ''}
-      ${form.seguroColectivoActivo && form.seguroColectivoMonto > 0 ? `<tr>
+      </tr>`
+          : ''
+      }
+      ${
+        form.seguroColectivoActivo && form.seguroColectivoMonto > 0
+          ? `<tr>
         <td class="liq-label">Seguro Colectivo</td>
         <td class="liq-detail">${form.seguroColectivoAseguradora || 'Aseguradora'} · Prima mensual acordada con trabajador</td>
         <td class="liq-amount">${fmtMoney(Number(form.seguroColectivoMonto))}</td>
-      </tr>` : ''}
+      </tr>`
+          : ''
+      }
       ${(() => {
-        const apv = form.apvActivo ? Number(form.apvMonto) : 0
-        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
-        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
-        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
-        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
-        const totalAdicional = apv + pension + sindical + prestamo + seguro
-        if (totalAdicional === 0) return ''
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0;
+        const pension = form.pensionActiva
+          ? form.pensionTipo === 'fijo'
+            ? Number(form.pensionMonto)
+            : Math.round((netLiquido * Number(form.pensionPorcentaje)) / 100)
+          : 0;
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0;
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0;
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0;
+        const totalAdicional = apv + pension + sindical + prestamo + seguro;
+        if (totalAdicional === 0) return '';
         return `<tr style="background:#fff7ed;">
           <td class="liq-label" style="font-size:9.5pt;color:#92400e;">Subtotal descuentos adicionales</td>
           <td class="liq-detail" style="color:#92400e;">APV + Pensión + Sindical + Préstamo + Seguro</td>
           <td class="liq-amount" style="color:#92400e;">${fmtMoney(totalAdicional)}</td>
-        </tr>`
+        </tr>`;
       })()}
       ${(() => {
-        const apv = form.apvActivo ? Number(form.apvMonto) : 0
-        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
-        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
-        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
-        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
-        const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0;
+        const pension = form.pensionActiva
+          ? form.pensionTipo === 'fijo'
+            ? Number(form.pensionMonto)
+            : Math.round((netLiquido * Number(form.pensionPorcentaje)) / 100)
+          : 0;
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0;
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0;
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0;
+        const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro;
         return `<tr class="liq-total">
           <td colspan="2">TOTAL DESCUENTOS TRABAJADOR</td>
           <td style="text-align:right;">${fmtMoney(totalDesc)}</td>
-        </tr>`
+        </tr>`;
       })()}
     </table>
 
@@ -619,29 +785,37 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-amount" style="color:#dc2626;">− ${fmtMoney(d.totalWorker)}</td>
       </tr>
       ${(() => {
-        const apv = form.apvActivo ? Number(form.apvMonto) : 0
-        const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
-        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
-        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
-        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
-        const totalAdicional = apv + pension + sindical + prestamo + seguro
-        if (totalAdicional === 0) return ''
+        const apv = form.apvActivo ? Number(form.apvMonto) : 0;
+        const pension = form.pensionActiva
+          ? form.pensionTipo === 'fijo'
+            ? Number(form.pensionMonto)
+            : Math.round((netLiquido * Number(form.pensionPorcentaje)) / 100)
+          : 0;
+        const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0;
+        const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0;
+        const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0;
+        const totalAdicional = apv + pension + sindical + prestamo + seguro;
+        if (totalAdicional === 0) return '';
         return `<tr>
           <td class="liq-label">(−) Descuentos adicionales</td>
           <td class="liq-detail">APV + Alimentos + Sindical + Otros</td>
           <td class="liq-amount" style="color:#dc2626;">− ${fmtMoney(totalAdicional)}</td>
-        </tr>`
+        </tr>`;
       })()}
       <tr class="liq-net">
         <td colspan="2">💰 TOTAL LÍQUIDO A RECIBIR *</td>
         <td style="text-align:right;">${(() => {
-          const apv = form.apvActivo ? Number(form.apvMonto) : 0
-          const pension = form.pensionActiva ? (form.pensionTipo === 'fijo' ? Number(form.pensionMonto) : Math.round(netLiquido * Number(form.pensionPorcentaje) / 100)) : 0
-          const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0
-          const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0
-          const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0
-          const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro
-          return fmtMoney(totalHaberes - totalDesc)
+          const apv = form.apvActivo ? Number(form.apvMonto) : 0;
+          const pension = form.pensionActiva
+            ? form.pensionTipo === 'fijo'
+              ? Number(form.pensionMonto)
+              : Math.round((netLiquido * Number(form.pensionPorcentaje)) / 100)
+            : 0;
+          const sindical = form.cuotaSindicalActiva ? Number(form.cuotaSindicalMonto) : 0;
+          const prestamo = form.prestamoActivo ? Number(form.prestamoCuota) : 0;
+          const seguro = form.seguroColectivoActivo ? Number(form.seguroColectivoMonto) : 0;
+          const totalDesc = d.totalWorker + apv + pension + sindical + prestamo + seguro;
+          return fmtMoney(totalHaberes - totalDesc);
         })()}</td>
       </tr>
     </table>
@@ -672,7 +846,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
         <td class="liq-amount" style="font-size:9.5pt;">${form.bankName}</td>
       </tr>
       <tr>
-        <td class="liq-label">${ACCOUNT_TYPES.find(a => a.value === form.bankAccountType)?.label || 'Cuenta'}</td>
+        <td class="liq-label">${ACCOUNT_TYPES.find((a) => a.value === form.bankAccountType)?.label || 'Cuenta'}</td>
         <td class="liq-detail">N° de cuenta</td>
         <td class="liq-amount" style="font-size:9.5pt;">${form.bankAccountNumber || '—'}</td>
       </tr>
@@ -682,7 +856,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
       ⚠️ <strong>Nota legal:</strong> (*) El líquido indicado es referencial y no incluye el Impuesto Único de Segunda Categoría (Art. 42 N°1 Ley de Renta), que se calculará mensualmente según la escala progresiva vigente. Tampoco incluye descuentos por pensión alimenticia judicial ni otros autorizados por escrito.<br>
       Los porcentajes de cotización AFP, FONASA, ISAPRE y AFC corresponden a las tasas <strong>vigentes al ${new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</strong>. Se actualizarán automáticamente conforme a las resoluciones de la <strong>Superintendencia de Pensiones</strong> (spensiones.cl), <strong>FONASA</strong> (fonasa.cl), las ISAPREs y el <strong>Fondo de Cesantía</strong> (afc.cl), sin que sea necesario modificar este contrato. El Empleador informará al Trabajador de cualquier cambio que afecte su liquidación mensual.
     </div>
-  </div>`
+  </div>`;
   })()}
   <div class="clause">
     <strong>Cierre de mes:</strong> Las remuneraciones se calcularán considerando el cierre del período el <strong>día 22 de cada mes</strong>. Los días trabajados entre el 23 y el último día del mes se arrastrarán al período siguiente. <strong>Fecha de pago:</strong> El pago se realizará el <strong>último día hábil de cada mes</strong>, mediante depósito en la cuenta bancaria indicada (Art. 55 CT).
@@ -807,7 +981,7 @@ function buildContractHTML(form: any, jobDescription: string): string {
   <div class="clause">
     Las partes declaran que el presente contrato recoge fielmente los acuerdos alcanzados y no existen otros pactos, verbales o escritos, que lo modifiquen, salvo los que puedan establecerse mediante anexos suscritos. Cualquier modificación al contrato deberá constar por escrito y ser firmada por ambas partes (Art. 11 CT). Las partes se obligan a comportarse de buena fe tanto en la ejecución como en la terminación de este contrato (Art. 1546 Código Civil). Los Términos y Condiciones de uso de la plataforma Conniku, publicados en <strong>conniku.com/terms</strong>, son parte integrante de las políticas de la empresa y el Trabajador declara haberlos leído y aceptado en lo que le aplica.
     El Trabajador declara haber tomado conocimiento del <strong>Reglamento Interno de Orden, Higiene y Seguridad (RIOHS)</strong>, del <strong>Código de Ética</strong> y de todas las políticas internas de Conniku SpA, comprometiéndose a su cumplimiento. Dichos documentos se encuentran disponibles de forma permanente y sin restricciones en la <strong>plataforma Conniku Admin</strong> (conniku.com/admin), accesible desde cualquier dispositivo con acceso autorizado, mediante accesos directos visibles en el panel principal. El Empleador garantiza que dichos documentos estarán siempre actualizados, accesibles y legibles en la plataforma.
-    Adicionalmente, el Trabajador podrá consultar en cualquier momento el contenido de los reglamentos, políticas, procedimientos y documentos institucionales de la empresa a través de <strong>KONNI</strong>, el asistente de inteligencia artificial interactivo de Conniku SpA, disponible en la plataforma Admin. KONNI está habilitado para responder preguntas sobre RIOHS, Código de Ética, políticas de RRHH, procedimientos internos y normativa laboral aplicable, de manera inmediata y en cualquier horario. El uso de KONNI no reemplaza la asesoría legal formal ni las instancias oficiales de denuncia o consulta ante organismos del Estado.
+    Adicionalmente, el Trabajador podrá consultar en cualquier momento el contenido de los reglamentos, políticas, procedimientos y documentos institucionales de la empresa a través de <strong>KONNI</strong>, el asistente inteligente interactivo de Conniku SpA, disponible en la plataforma Admin. KONNI está habilitado para responder preguntas sobre RIOHS, Código de Ética, políticas de RRHH, procedimientos internos y normativa laboral aplicable, de manera inmediata y en cualquier horario. El uso de KONNI no reemplaza la asesoría legal formal ni las instancias oficiales de denuncia o consulta ante organismos del Estado.
   </div>
 
   <div class="clause-title">Vigésimo Tercero — Dirección del Trabajo e Información Legal</div>
@@ -866,15 +1040,25 @@ function buildContractHTML(form: any, jobDescription: string): string {
   </div>
 
 </body>
-</html>`
+</html>`;
 }
 
 // ─── Generador HTML hoja de credenciales (imprimible) ───────────
 function buildCredentialsHTML(data: {
-  employee_number: string; username: string; password: string; corporate_email: string;
-  fullName: string; position: string; rut: string; hireDate: string;
+  employee_number: string;
+  username: string;
+  password: string;
+  corporate_email: string;
+  fullName: string;
+  position: string;
+  rut: string;
+  hireDate: string;
 }): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
   return `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
   <title>Credenciales Plataforma — ${data.fullName}</title>
   <style>
@@ -952,7 +1136,7 @@ function buildCredentialsHTML(data: {
     Documento generado por Conniku Admin · ${today}<br>
     Conniku SpA · RUT 78.395.702-7 · contacto@conniku.com · www.conniku.com
   </div>
-</body></html>`
+</body></html>`;
 }
 
 // ─── Checklist de documentos (Paso 2) ───────────────────────────
@@ -960,83 +1144,190 @@ const DOC_CHECKLIST = [
   // OBLIGATORIOS — Identidad
   { id: 'ci_anverso', label: 'CI — Anverso (frente)', required: true, category: 'Identidad' },
   { id: 'ci_reverso', label: 'CI — Reverso (dorso)', required: true, category: 'Identidad' },
-  { id: 'pasaporte', label: 'Pasaporte vigente', required: false, category: 'Identidad', note: 'Obligatorio para extranjeros' },
+  {
+    id: 'pasaporte',
+    label: 'Pasaporte vigente',
+    required: false,
+    category: 'Identidad',
+    note: 'Obligatorio para extranjeros',
+  },
   // OBLIGATORIOS — Previsional
-  { id: 'afp_cert', label: 'Certificado de afiliación AFP', required: true, category: 'Previsional' },
-  { id: 'salud_cert', label: 'Certificado FONASA / ISAPRE', required: true, category: 'Previsional' },
+  {
+    id: 'afp_cert',
+    label: 'Certificado de afiliación AFP',
+    required: true,
+    category: 'Previsional',
+  },
+  {
+    id: 'salud_cert',
+    label: 'Certificado FONASA / ISAPRE',
+    required: true,
+    category: 'Previsional',
+  },
   // OBLIGATORIOS — Legal
-  { id: 'antecedentes', label: 'Certificado de antecedentes (≤30 días)', required: true, category: 'Legal', note: 'Registro Civil o Carabineros' },
-  { id: 'datos_bancarios', label: 'Certificado de cuenta bancaria', required: true, category: 'Legal', note: 'Para depósito de sueldo' },
+  {
+    id: 'antecedentes',
+    label: 'Certificado de antecedentes (≤30 días)',
+    required: true,
+    category: 'Legal',
+    note: 'Registro Civil o Carabineros',
+  },
+  {
+    id: 'datos_bancarios',
+    label: 'Certificado de cuenta bancaria',
+    required: true,
+    category: 'Legal',
+    note: 'Para depósito de sueldo',
+  },
   // COMPLEMENTARIOS
-  { id: 'cargas_familiares', label: 'Certificado de cargas familiares', required: false, category: 'Complementarios', note: 'Para asignación familiar' },
-  { id: 'nacimiento', label: 'Certificado de nacimiento', required: false, category: 'Complementarios', note: 'Para sala cuna / cargas' },
+  {
+    id: 'cargas_familiares',
+    label: 'Certificado de cargas familiares',
+    required: false,
+    category: 'Complementarios',
+    note: 'Para asignación familiar',
+  },
+  {
+    id: 'nacimiento',
+    label: 'Certificado de nacimiento',
+    required: false,
+    category: 'Complementarios',
+    note: 'Para sala cuna / cargas',
+  },
   // ACADÉMICOS
-  { id: 'titulo', label: 'Título universitario / técnico', required: false, category: 'Académicos' },
-  { id: 'postgrados', label: 'Postgrados / magíster / doctorado', required: false, category: 'Académicos' },
-  { id: 'cursos', label: 'Certificados de cursos y capacitaciones', required: false, category: 'Académicos' },
+  {
+    id: 'titulo',
+    label: 'Título universitario / técnico',
+    required: false,
+    category: 'Académicos',
+  },
+  {
+    id: 'postgrados',
+    label: 'Postgrados / magíster / doctorado',
+    required: false,
+    category: 'Académicos',
+  },
+  {
+    id: 'cursos',
+    label: 'Certificados de cursos y capacitaciones',
+    required: false,
+    category: 'Académicos',
+  },
   { id: 'cv', label: 'Currículum Vitae actualizado', required: false, category: 'Académicos' },
   // DECLARACIONES
-  { id: 'conflicto', label: 'Declaración no conflicto de interés', required: false, category: 'Declaraciones', note: 'Especialmente cargos con acceso a datos' },
+  {
+    id: 'conflicto',
+    label: 'Declaración no conflicto de interés',
+    required: false,
+    category: 'Declaraciones',
+    note: 'Especialmente cargos con acceso a datos',
+  },
   { id: 'foto', label: 'Foto perfil laboral', required: false, category: 'Declaraciones' },
-]
+];
 
 function DocumentChecklist({
-  employeeId, uploadedDocs, setUploadedDocs, workerName
+  employeeId,
+  uploadedDocs,
+  setUploadedDocs,
+  workerName,
 }: {
-  employeeId: string | null
-  uploadedDocs: Record<string, boolean>
-  setUploadedDocs: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
-  workerName: string
+  employeeId: string | null;
+  uploadedDocs: Record<string, boolean>;
+  setUploadedDocs: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  workerName: string;
 }) {
-  const [uploading, setUploading] = useState<string | null>(null)
-  const categories = [...new Set(DOC_CHECKLIST.map(d => d.category))]
-  const requiredUploaded = DOC_CHECKLIST.filter(d => d.required).every(d => uploadedDocs[d.id])
+  const [uploading, setUploading] = useState<string | null>(null);
+  const categories = [...new Set(DOC_CHECKLIST.map((d) => d.category))];
+  const requiredUploaded = DOC_CHECKLIST.filter((d) => d.required).every((d) => uploadedDocs[d.id]);
 
   const handleFileUpload = async (docId: string, label: string, file: File) => {
-    if (!employeeId) return
-    setUploading(docId)
+    if (!employeeId) return;
+    setUploading(docId);
     try {
-      await api.uploadEmployeeFile(employeeId, file, 'otro', label + ' — ' + file.name)
-      setUploadedDocs(prev => ({ ...prev, [docId]: true }))
+      await api.uploadEmployeeFile(employeeId, file, 'otro', label + ' — ' + file.name);
+      setUploadedDocs((prev) => ({ ...prev, [docId]: true }));
     } catch {
-      alert('Error al subir el archivo. Intenta nuevamente.')
+      alert('Error al subir el archivo. Intenta nuevamente.');
     } finally {
-      setUploading(null)
+      setUploading(null);
     }
-  }
+  };
 
   return (
     <div>
-      <div style={{ background: 'rgba(26,86,219,0.06)', border: '1px solid rgba(26,86,219,0.2)', borderRadius: 10, padding: '12px 16px', marginBottom: 20, fontSize: 13 }}>
+      <div
+        style={{
+          background: 'rgba(26,86,219,0.06)',
+          border: '1px solid rgba(26,86,219,0.2)',
+          borderRadius: 10,
+          padding: '12px 16px',
+          marginBottom: 20,
+          fontSize: 13,
+        }}
+      >
         <strong>📋 Documentos de ingreso para {workerName}</strong>
         <p style={{ marginTop: 4, color: 'var(--text-muted)', fontSize: 12 }}>
-          Sube los documentos requeridos para completar el expediente del colaborador.
-          Los marcados con <span style={{ color: '#dc2626' }}>*</span> son obligatorios antes de generar el contrato.
-          {!employeeId && <span style={{ color: '#f59e0b' }}> · Los archivos se guardarán al crear el colaborador en el paso siguiente.</span>}
+          Sube los documentos requeridos para completar el expediente del colaborador. Los marcados
+          con <span style={{ color: '#dc2626' }}>*</span> son obligatorios antes de generar el
+          contrato.
+          {!employeeId && (
+            <span style={{ color: '#f59e0b' }}>
+              {' '}
+              · Los archivos se guardarán al crear el colaborador en el paso siguiente.
+            </span>
+          )}
         </p>
       </div>
 
-      {categories.map(cat => (
+      {categories.map((cat) => (
         <div key={cat} style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, paddingBottom: 4, borderBottom: '1px solid var(--border)' }}>
+          <div
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: 1,
+              marginBottom: 8,
+              paddingBottom: 4,
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
             {cat}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {DOC_CHECKLIST.filter(d => d.category === cat).map(doc => (
-              <div key={doc.id} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: '8px 12px',
-                background: uploadedDocs[doc.id] ? 'rgba(22,163,74,0.06)' : 'var(--bg-secondary)',
-                borderRadius: 8,
-                border: `1px solid ${uploadedDocs[doc.id] ? '#86efac' : 'var(--border)'}`,
-              }}>
-                <div style={{
-                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                  background: uploadedDocs[doc.id] ? '#16a34a' : doc.required ? '#fef2f2' : 'var(--bg-tertiary)',
-                  border: `2px solid ${uploadedDocs[doc.id] ? '#16a34a' : doc.required ? '#dc2626' : 'var(--border)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 12, color: '#fff',
-                }}>
+            {DOC_CHECKLIST.filter((d) => d.category === cat).map((doc) => (
+              <div
+                key={doc.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  padding: '8px 12px',
+                  background: uploadedDocs[doc.id] ? 'rgba(22,163,74,0.06)' : 'var(--bg-secondary)',
+                  borderRadius: 8,
+                  border: `1px solid ${uploadedDocs[doc.id] ? '#86efac' : 'var(--border)'}`,
+                }}
+              >
+                <div
+                  style={{
+                    width: 22,
+                    height: 22,
+                    borderRadius: '50%',
+                    flexShrink: 0,
+                    background: uploadedDocs[doc.id]
+                      ? '#16a34a'
+                      : doc.required
+                        ? '#fef2f2'
+                        : 'var(--bg-tertiary)',
+                    border: `2px solid ${uploadedDocs[doc.id] ? '#16a34a' : doc.required ? '#dc2626' : 'var(--border)'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    color: '#fff',
+                  }}
+                >
                   {uploadedDocs[doc.id] ? '✓' : doc.required ? '!' : ''}
                 </div>
                 <div style={{ flex: 1 }}>
@@ -1044,25 +1335,34 @@ function DocumentChecklist({
                     {doc.label}
                     {doc.required && <span style={{ color: '#dc2626', marginLeft: 4 }}>*</span>}
                   </div>
-                  {doc.note && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>{doc.note}</div>}
+                  {doc.note && (
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 1 }}>
+                      {doc.note}
+                    </div>
+                  )}
                 </div>
-                <label style={{
-                  padding: '4px 12px', fontSize: 11, fontWeight: 600,
-                  background: uploadedDocs[doc.id] ? 'transparent' : 'var(--accent)',
-                  color: uploadedDocs[doc.id] ? 'var(--text-muted)' : '#fff',
-                  border: uploadedDocs[doc.id] ? '1px solid var(--border)' : 'none',
-                  borderRadius: 6, cursor: uploading === doc.id ? 'default' : 'pointer',
-                  opacity: uploading === doc.id ? 0.7 : 1,
-                }}>
+                <label
+                  style={{
+                    padding: '4px 12px',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    background: uploadedDocs[doc.id] ? 'transparent' : 'var(--accent)',
+                    color: uploadedDocs[doc.id] ? 'var(--text-muted)' : '#fff',
+                    border: uploadedDocs[doc.id] ? '1px solid var(--border)' : 'none',
+                    borderRadius: 6,
+                    cursor: uploading === doc.id ? 'default' : 'pointer',
+                    opacity: uploading === doc.id ? 0.7 : 1,
+                  }}
+                >
                   {uploading === doc.id ? '…' : uploadedDocs[doc.id] ? '✓ Subido' : '+ Subir'}
                   {uploading !== doc.id && (
                     <input
                       type="file"
                       style={{ display: 'none' }}
-                      onChange={e => {
-                        const f = e.target.files?.[0]
-                        if (f) handleFileUpload(doc.id, doc.label, f)
-                        e.target.value = ''
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f) handleFileUpload(doc.id, doc.label, f);
+                        e.target.value = '';
                       }}
                     />
                   )}
@@ -1074,303 +1374,554 @@ function DocumentChecklist({
       ))}
 
       {!requiredUploaded && (
-        <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#78350f', marginTop: 8 }}>
-          ⚠️ Aún faltan documentos obligatorios. Puedes continuar al paso siguiente, pero el expediente quedará incompleto.
+        <div
+          style={{
+            background: '#fffbeb',
+            border: '1px solid #f59e0b',
+            borderRadius: 8,
+            padding: '10px 14px',
+            fontSize: 12,
+            color: '#78350f',
+            marginTop: 8,
+          }}
+        >
+          ⚠️ Aún faltan documentos obligatorios. Puedes continuar al paso siguiente, pero el
+          expediente quedará incompleto.
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Pantalla de credenciales generadas ─────────────────────────
-function CredentialsScreen({ credentials, workerName, onPrint, onClose }: {
-  credentials: { employee_number: string; username: string; password: string; corporate_email: string }
-  workerName: string
-  onPrint: () => void
-  onClose: () => void
+function CredentialsScreen({
+  credentials,
+  workerName,
+  onPrint,
+  onClose,
+}: {
+  credentials: {
+    employee_number: string;
+    username: string;
+    password: string;
+    corporate_email: string;
+  };
+  workerName: string;
+  onPrint: () => void;
+  onClose: () => void;
 }) {
   return (
     <div>
       {/* Banner de éxito */}
-      <div style={{ background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 100%)', borderRadius: 12, padding: '20px 24px', marginBottom: 24, color: '#fff', textAlign: 'center' }}>
+      <div
+        style={{
+          background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 100%)',
+          borderRadius: 12,
+          padding: '20px 24px',
+          marginBottom: 24,
+          color: '#fff',
+          textAlign: 'center',
+        }}
+      >
         <div style={{ fontSize: 32, marginBottom: 8 }}>✅</div>
-        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Colaborador creado exitosamente</div>
-        <div style={{ fontSize: 13, opacity: 0.8 }}>{workerName} ya tiene su cuenta en conniku.com</div>
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
+          Colaborador creado exitosamente
+        </div>
+        <div style={{ fontSize: 13, opacity: 0.8 }}>
+          {workerName} ya tiene su cuenta en conniku.com
+        </div>
       </div>
 
       {/* Credenciales */}
-      <div style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '18px 20px', border: '2px solid var(--accent)', marginBottom: 16 }}>
-        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, color: 'var(--accent)' }}>🔐 Credenciales de acceso a conniku.com</div>
+      <div
+        style={{
+          background: 'var(--bg-secondary)',
+          borderRadius: 10,
+          padding: '18px 20px',
+          border: '2px solid var(--accent)',
+          marginBottom: 16,
+        }}
+      >
+        <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 14, color: 'var(--accent)' }}>
+          🔐 Credenciales de acceso a conniku.com
+        </div>
         {[
           { label: 'N° Empleado', value: credentials.employee_number },
           { label: 'Usuario', value: credentials.username },
           { label: 'Contraseña inicial', value: credentials.password, highlight: true },
           { label: 'Email corporativo', value: credentials.corporate_email },
         ].map(({ label, value, highlight }) => (
-          <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)', alignItems: 'center' }}>
+          <div
+            key={label}
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '8px 0',
+              borderBottom: '1px solid var(--border)',
+              alignItems: 'center',
+            }}
+          >
             <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{label}</span>
-            <span style={{
-              fontFamily: 'monospace', fontSize: 14, fontWeight: 700,
-              color: highlight ? '#dc2626' : 'var(--text-primary)',
-              letterSpacing: highlight ? 2 : 0,
-            }}>{value}</span>
+            <span
+              style={{
+                fontFamily: 'monospace',
+                fontSize: 14,
+                fontWeight: 700,
+                color: highlight ? '#dc2626' : 'var(--text-primary)',
+                letterSpacing: highlight ? 2 : 0,
+              }}
+            >
+              {value}
+            </span>
           </div>
         ))}
       </div>
 
-      <div style={{ background: '#fffbeb', border: '1px solid #f59e0b', borderRadius: 8, padding: '12px 16px', fontSize: 12, color: '#78350f', marginBottom: 20 }}>
-        <strong>⚠️ Importante:</strong> Entrega este papel impreso al trabajador junto con su contrato.
-        Las credenciales no se volverán a mostrar. El trabajador deberá cambiar su contraseña en el primer acceso.
+      <div
+        style={{
+          background: '#fffbeb',
+          border: '1px solid #f59e0b',
+          borderRadius: 8,
+          padding: '12px 16px',
+          fontSize: 12,
+          color: '#78350f',
+          marginBottom: 20,
+        }}
+      >
+        <strong>⚠️ Importante:</strong> Entrega este papel impreso al trabajador junto con su
+        contrato. Las credenciales no se volverán a mostrar. El trabajador deberá cambiar su
+        contraseña en el primer acceso.
       </div>
 
       <button
         onClick={onPrint}
-        style={{ width: '100%', padding: '12px', background: '#15803d', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer', fontWeight: 700, fontSize: 14, marginBottom: 10 }}
+        style={{
+          width: '100%',
+          padding: '12px',
+          background: '#15803d',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 10,
+          cursor: 'pointer',
+          fontWeight: 700,
+          fontSize: 14,
+          marginBottom: 10,
+        }}
       >
         🖨️ Imprimir hoja de credenciales (para entregar al trabajador)
       </button>
     </div>
-  )
+  );
 }
 
 // ─── Crear colaborador modal (3 pasos) ──────────────────────────
-function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+function NuevoColaboradorModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: () => void;
+}) {
   const emptyForm = {
-    rut: '', firstName: '', lastName: '', email: '', phone: '', address: '',
-    birthDate: '', nationality: 'Chilena', maritalStatus: 'soltero',
-    emergencyContactName: '', emergencyContactPhone: '',
-    positionKey: '', positionOther: '', department: 'Tecnologia', hireDate: '',
-    contractType: 'plazo_fijo', endDate: '', workSchedule: 'full_time', weeklyHours: 45,
-    grossSalary: IMM, colacion: 0, movilizacion: 0,
-    afp: 'modelo', healthSystem: 'fonasa', isapreProvider: '', isapreName: '', isapreUf: 0,
-    afcActive: true, bankName: 'Banco Estado', bankAccountType: 'cuenta_rut', bankAccountNumber: '',
+    rut: '',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    birthDate: '',
+    nationality: 'Chilena',
+    maritalStatus: 'soltero',
+    emergencyContactName: '',
+    emergencyContactPhone: '',
+    positionKey: '',
+    positionOther: '',
+    department: 'Tecnologia',
+    hireDate: '',
+    contractType: 'plazo_fijo',
+    endDate: '',
+    workSchedule: 'full_time',
+    weeklyHours: 45,
+    grossSalary: IMM,
+    colacion: 0,
+    movilizacion: 0,
+    afp: 'modelo',
+    healthSystem: 'fonasa',
+    isapreProvider: '',
+    isapreName: '',
+    isapreUf: 0,
+    afcActive: true,
+    bankName: 'Banco Estado',
+    bankAccountType: 'cuenta_rut',
+    bankAccountNumber: '',
     // APV — Ahorro Previsional Voluntario (DL 3.500 Art. 20 bis, Ley 19.768)
-    apvActivo: false, apvRegimen: 'B', apvMonto: 0, apvInstitucion: 'afp_mismo', apvInstitucionNombre: '',
+    apvActivo: false,
+    apvRegimen: 'B',
+    apvMonto: 0,
+    apvInstitucion: 'afp_mismo',
+    apvInstitucionNombre: '',
     // Pensión de Alimentos (Ley 14.908, Art. 58 CT)
-    pensionActiva: false, pensionTipo: 'fijo', pensionMonto: 0, pensionPorcentaje: 0,
-    pensionRit: '', pensionTribunal: 'Tribunal de Familia de Antofagasta', pensionBeneficiario: '',
-    pensionDestino: 'transferencia', pensionCuentaBanco: 'Banco Estado', pensionCuentaTipo: 'cuenta_corriente', pensionCuentaNumero: '',
+    pensionActiva: false,
+    pensionTipo: 'fijo',
+    pensionMonto: 0,
+    pensionPorcentaje: 0,
+    pensionRit: '',
+    pensionTribunal: 'Tribunal de Familia de Antofagasta',
+    pensionBeneficiario: '',
+    pensionDestino: 'transferencia',
+    pensionCuentaBanco: 'Banco Estado',
+    pensionCuentaTipo: 'cuenta_corriente',
+    pensionCuentaNumero: '',
     // Cuota Sindical (Art. 262 CT) — solo si trabajador afiliado a sindicato
-    cuotaSindicalActiva: false, cuotaSindicalMonto: 0, cuotaSindicalSindicato: '',
+    cuotaSindicalActiva: false,
+    cuotaSindicalMonto: 0,
+    cuotaSindicalSindicato: '',
     // Préstamo empresa (Art. 58 CT — requiere autorización escrita del trabajador)
-    prestamoActivo: false, prestamoCuota: 0, prestamoSaldo: 0,
+    prestamoActivo: false,
+    prestamoCuota: 0,
+    prestamoSaldo: 0,
     // Seguro colectivo (voluntario, acordado con trabajador)
-    seguroColectivoActivo: false, seguroColectivoMonto: 0, seguroColectivoAseguradora: '',
-  }
-  const [step, setStep]   = useState<1 | 2 | 3>(1)
-  const [form, setForm]   = useState<any>(emptyForm)
-  const [jobDescription, setJobDescription] = useState('')
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [saving, setSaving] = useState(false)
+    seguroColectivoActivo: false,
+    seguroColectivoMonto: 0,
+    seguroColectivoAseguradora: '',
+  };
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [form, setForm] = useState<any>(emptyForm);
+  const [jobDescription, setJobDescription] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
   // ── Checklist documentos ────────────────────────────────────────
-  const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({})
-  const [createdEmpId, setCreatedEmpId] = useState<string | null>(null)
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, boolean>>({});
+  const [createdEmpId, setCreatedEmpId] = useState<string | null>(null);
   // ── Credenciales generadas ──────────────────────────────────────
   const [credentials, setCredentials] = useState<{
-    employee_number: string; username: string; password: string; corporate_email: string
-  } | null>(null)
+    employee_number: string;
+    username: string;
+    password: string;
+    corporate_email: string;
+  } | null>(null);
 
   // Derived: the actual position string for display / contract
-  const resolvedPosition = form.positionKey === 'otro' ? form.positionOther : (POSITIONS_LIST.find(p => p.value === form.positionKey)?.label || '')
+  const resolvedPosition =
+    form.positionKey === 'otro'
+      ? form.positionOther
+      : POSITIONS_LIST.find((p) => p.value === form.positionKey)?.label || '';
 
-  const F = (k: string) => (v: string) => setForm((p: any) => ({ ...p, [k]: v }))
+  const F = (k: string) => (v: string) => setForm((p: any) => ({ ...p, [k]: v }));
 
   const validate = () => {
-    const e: Record<string, string> = {}
-    if (!form.rut.trim()) e.rut = 'Obligatorio'
-    if (!form.firstName.trim()) e.firstName = 'Obligatorio'
-    if (!form.lastName.trim()) e.lastName = 'Obligatorio'
-    if (!form.email.trim()) e.email = 'Obligatorio'
-    if (!form.positionKey) e.positionKey = 'Obligatorio'
-    if (form.positionKey === 'otro' && !form.positionOther.trim()) e.positionOther = 'Especifica el cargo'
-    if (!form.hireDate) e.hireDate = 'Obligatorio'
-    if (Number(form.grossSalary) < IMM) e.grossSalary = `Mínimo: ${fmtMoney(IMM)} (Art. 44 CT)`
-    if (form.healthSystem === 'isapre' && !form.isapreProvider) e.isapreProvider = 'Selecciona una ISAPRE'
-    return e
-  }
+    const e: Record<string, string> = {};
+    if (!form.rut.trim()) e.rut = 'Obligatorio';
+    if (!form.firstName.trim()) e.firstName = 'Obligatorio';
+    if (!form.lastName.trim()) e.lastName = 'Obligatorio';
+    if (!form.email.trim()) e.email = 'Obligatorio';
+    if (!form.positionKey) e.positionKey = 'Obligatorio';
+    if (form.positionKey === 'otro' && !form.positionOther.trim())
+      e.positionOther = 'Especifica el cargo';
+    if (!form.hireDate) e.hireDate = 'Obligatorio';
+    if (Number(form.grossSalary) < IMM) e.grossSalary = `Mínimo: ${fmtMoney(IMM)} (Art. 44 CT)`;
+    if (form.healthSystem === 'isapre' && !form.isapreProvider)
+      e.isapreProvider = 'Selecciona una ISAPRE';
+    return e;
+  };
 
   const handleNext = () => {
     if (step === 1) {
-      const e = validate()
-      setErrors(e)
-      if (Object.keys(e).length > 0) return
-      setStep(2)
+      const e = validate();
+      setErrors(e);
+      if (Object.keys(e).length > 0) return;
+      setStep(2);
     } else if (step === 2) {
       // Auto-populate JD from predefined list if not already customized
       if (!jobDescription && form.positionKey && form.positionKey !== 'otro') {
-        setJobDescription(JOB_DESCRIPTIONS[form.positionKey] || '')
+        setJobDescription(JOB_DESCRIPTIONS[form.positionKey] || '');
       }
-      setStep(3)
+      setStep(3);
     }
-  }
+  };
 
   const handlePrint = () => {
-    const contractForm = { ...form, position: resolvedPosition }
-    const html = buildContractHTML(contractForm, jobDescription)
-    const win = window.open('', '_blank', 'width=900,height=700')
-    if (!win) return
-    win.document.write(html)
-    win.document.close()
-    setTimeout(() => win.print(), 500)
-  }
+    const contractForm = { ...form, position: resolvedPosition };
+    const html = buildContractHTML(contractForm, jobDescription);
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
+  };
 
-  const [contractSaved, setContractSaved] = useState(false)
-  const [contractDocId, setContractDocId] = useState<string | null>(null)
+  const [contractSaved, setContractSaved] = useState(false);
+  const [contractDocId, setContractDocId] = useState<string | null>(null);
 
   const handleSave = async () => {
-    setSaving(true)
+    setSaving(true);
     try {
-      const isapreLabel = ISAPRE_LIST.find(i => i.value === form.isapreProvider)?.label || form.isapreProvider || ''
+      const isapreLabel =
+        ISAPRE_LIST.find((i) => i.value === form.isapreProvider)?.label ||
+        form.isapreProvider ||
+        '';
       const payload = {
         ...form,
         position: resolvedPosition,
         isapreName: form.healthSystem === 'isapre' ? isapreLabel : '',
-      }
-      const result = await api.createEmployee(payload)
-      const newEmpId: string = result?.employee?.id
-      setCreatedEmpId(newEmpId)
+      };
+      const result = await api.createEmployee(payload);
+      const newEmpId: string = result?.employee?.id;
+      setCreatedEmpId(newEmpId);
 
       // ── 1. Auto-guardar contrato como PDF en carpeta del trabajador ──
       if (newEmpId) {
         try {
-          const contractForm = { ...form, position: resolvedPosition }
-          const htmlContent = buildContractHTML(contractForm, jobDescription)
-          const workerName = `${form.firstName} ${form.lastName}`.trim()
+          const contractForm = { ...form, position: resolvedPosition };
+          const htmlContent = buildContractHTML(contractForm, jobDescription);
+          const workerName = `${form.firstName} ${form.lastName}`.trim();
           const pdfResult = await api.generateContractPdf(newEmpId, {
             html: htmlContent,
             worker_name: workerName,
-          })
+          });
           if (pdfResult?.document?.id) {
-            setContractDocId(pdfResult.document.id)
-            setContractSaved(true)
+            setContractDocId(pdfResult.document.id);
+            setContractSaved(true);
           }
         } catch {
-          console.warn('PDF generation failed — employee was created successfully')
+          console.warn('PDF generation failed — employee was created successfully');
         }
       }
 
       // ── 2. Provisionar cuenta de plataforma + generar credenciales ──
       if (newEmpId) {
         try {
-          const credResult = await api.provisionEmployeeAccount(newEmpId)
+          const credResult = await api.provisionEmployeeAccount(newEmpId);
           if (credResult?.username) {
             setCredentials({
               employee_number: credResult.employee_number,
               username: credResult.username,
               password: credResult.password,
               corporate_email: credResult.corporate_email,
-            })
+            });
             // NO cerramos el modal — mostramos credenciales para imprimir
-            setSaving(false)
-            onCreated()
-            return
+            setSaving(false);
+            onCreated();
+            return;
           }
         } catch {
-          console.warn('Account provisioning failed — employee was created successfully')
+          console.warn('Account provisioning failed — employee was created successfully');
         }
       }
 
-      onCreated()
-      onClose()
+      onCreated();
+      onClose();
     } catch (err: any) {
-      setErrors({ _general: err?.message || err?.detail || 'Error al guardar. Verifica los datos.' })
-      setSaving(false)
+      setErrors({
+        _general: err?.message || err?.detail || 'Error al guardar. Verifica los datos.',
+      });
+      setSaving(false);
     }
-  }
+  };
 
   // ── Imprimir hoja de credenciales ───────────────────────────────
   const handlePrintCredentials = () => {
-    if (!credentials) return
+    if (!credentials) return;
     const html = buildCredentialsHTML({
       ...credentials,
       fullName: `${form.firstName} ${form.lastName}`,
       position: resolvedPosition,
       rut: form.rut,
       hireDate: form.hireDate,
-    })
-    const win = window.open('', '_blank', 'width=700,height=500')
-    if (!win) return
-    win.document.write(html)
-    win.document.close()
-    setTimeout(() => win.print(), 400)
-  }
+    });
+    const win = window.open('', '_blank', 'width=700,height=500');
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => win.print(), 400);
+  };
 
   // ── Indicador de pasos ──────────────────────────────────────────
   const StepBar = () => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 4px' }}>
-      {[{ n: 1, label: 'Datos' }, { n: 2, label: 'Documentos' }, { n: 3, label: 'Contrato' }].map(({ n, label }) => (
+      {[
+        { n: 1, label: 'Datos' },
+        { n: 2, label: 'Documentos' },
+        { n: 3, label: 'Contrato' },
+      ].map(({ n, label }) => (
         <React.Fragment key={n}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <div style={{
-              width: 22, height: 22, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 11, fontWeight: 700,
-              background: step >= n ? 'var(--accent)' : 'var(--bg-tertiary)',
-              color: step >= n ? '#fff' : 'var(--text-muted)',
-            }}>{n}</div>
-            <span style={{ fontSize: 12, fontWeight: step === n ? 600 : 400, color: step === n ? 'var(--text-primary)' : 'var(--text-muted)' }}>{label}</span>
+            <div
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 11,
+                fontWeight: 700,
+                background: step >= n ? 'var(--accent)' : 'var(--bg-tertiary)',
+                color: step >= n ? '#fff' : 'var(--text-muted)',
+              }}
+            >
+              {n}
+            </div>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: step === n ? 600 : 400,
+                color: step === n ? 'var(--text-primary)' : 'var(--text-muted)',
+              }}
+            >
+              {label}
+            </span>
           </div>
-          {n < 3 && <div style={{ flex: 1, height: 1, background: step > n ? 'var(--accent)' : 'var(--border)', maxWidth: 28 }} />}
+          {n < 3 && (
+            <div
+              style={{
+                flex: 1,
+                height: 1,
+                background: step > n ? 'var(--accent)' : 'var(--border)',
+                maxWidth: 28,
+              }}
+            />
+          )}
         </React.Fragment>
       ))}
     </div>
-  )
+  );
 
   return (
-    <div style={{
-      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-      zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    }}>
-      <div style={{
-        background: 'var(--bg-primary)', borderRadius: 16, width: '100%',
-        maxWidth: step === 3 ? 820 : 680, maxHeight: '92vh', overflow: 'hidden',
-        display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-        transition: 'max-width 0.25s ease',
-      }}>
-
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 1000,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--bg-primary)',
+          borderRadius: 16,
+          width: '100%',
+          maxWidth: step === 3 ? 820 : 680,
+          maxHeight: '92vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+          transition: 'max-width 0.25s ease',
+        }}
+      >
         {/* ── Header ── */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--border)' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 24px',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
           <div>
             <StepBar />
             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
-              {step === 1 ? 'Art. 9 CT — contrato debe firmarse en 15 días corridos'
-                : step === 2 ? 'Sube los documentos requeridos antes de generar el contrato'
-                : credentials ? '✅ Colaborador creado — imprime las credenciales'
-                : 'Revisa, edita la descripción de cargo e imprime el contrato'}
+              {step === 1
+                ? 'Art. 9 CT — contrato debe firmarse en 15 días corridos'
+                : step === 2
+                  ? 'Sube los documentos requeridos antes de generar el contrato'
+                  : credentials
+                    ? '✅ Colaborador creado — imprime las credenciales'
+                    : 'Revisa, edita la descripción de cargo e imprime el contrato'}
             </div>
           </div>
-          <button onClick={onClose} style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: 'var(--text-muted)', lineHeight: 1 }}>×</button>
+          <button
+            onClick={onClose}
+            style={{
+              border: 'none',
+              background: 'none',
+              fontSize: 20,
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+              lineHeight: 1,
+            }}
+          >
+            ×
+          </button>
         </div>
 
         {/* ── Body ── */}
         <div style={{ overflowY: 'auto', padding: '20px 24px', flex: 1 }}>
-
           {/* ── PASO 1: Formulario de datos ── */}
           {step === 1 && (
             <>
               {errors._general && (
-                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
+                <div
+                  style={{
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    borderRadius: 8,
+                    padding: '10px 14px',
+                    marginBottom: 16,
+                    fontSize: 13,
+                    color: '#ef4444',
+                  }}
+                >
                   {errors._general}
                 </div>
               )}
               <SectionTitle>Datos Personales</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                <Field label="RUT *"><RutInput value={form.rut} onChange={F('rut')} /><ErrMsg msg={errors.rut} /></Field>
-                <Field label="Fecha Nacimiento"><Input type="date" value={form.birthDate} onChange={F('birthDate')} /></Field>
-                <Field label="Nombre *"><Input value={form.firstName} onChange={F('firstName')} /><ErrMsg msg={errors.firstName} /></Field>
-                <Field label="Apellido *"><Input value={form.lastName} onChange={F('lastName')} /><ErrMsg msg={errors.lastName} /></Field>
-                <Field label="Email *"><Input type="email" value={form.email} onChange={F('email')} /><ErrMsg msg={errors.email} /></Field>
-                <Field label="Teléfono"><Input value={form.phone} onChange={F('phone')} placeholder="+56 9 xxxx xxxx" /></Field>
-                <Field label="Dirección"><Input value={form.address} onChange={F('address')} /></Field>
-                <Field label="Nacionalidad"><Input value={form.nationality} onChange={F('nationality')} /></Field>
+                <Field label="RUT *">
+                  <RutInput value={form.rut} onChange={F('rut')} />
+                  <ErrMsg msg={errors.rut} />
+                </Field>
+                <Field label="Fecha Nacimiento">
+                  <Input type="date" value={form.birthDate} onChange={F('birthDate')} />
+                </Field>
+                <Field label="Nombre *">
+                  <Input value={form.firstName} onChange={F('firstName')} />
+                  <ErrMsg msg={errors.firstName} />
+                </Field>
+                <Field label="Apellido *">
+                  <Input value={form.lastName} onChange={F('lastName')} />
+                  <ErrMsg msg={errors.lastName} />
+                </Field>
+                <Field label="Email *">
+                  <Input type="email" value={form.email} onChange={F('email')} />
+                  <ErrMsg msg={errors.email} />
+                </Field>
+                <Field label="Teléfono">
+                  <Input value={form.phone} onChange={F('phone')} placeholder="+56 9 xxxx xxxx" />
+                </Field>
+                <Field label="Dirección">
+                  <Input value={form.address} onChange={F('address')} />
+                </Field>
+                <Field label="Nacionalidad">
+                  <Input value={form.nationality} onChange={F('nationality')} />
+                </Field>
                 <Field label="Estado Civil">
-                  <Select value={form.maritalStatus} onChange={F('maritalStatus')} options={[{value:'soltero',label:'Soltero/a'},{value:'casado',label:'Casado/a'},{value:'divorciado',label:'Divorciado/a'},{value:'viudo',label:'Viudo/a'}]} />
+                  <Select
+                    value={form.maritalStatus}
+                    onChange={F('maritalStatus')}
+                    options={[
+                      { value: 'soltero', label: 'Soltero/a' },
+                      { value: 'casado', label: 'Casado/a' },
+                      { value: 'divorciado', label: 'Divorciado/a' },
+                      { value: 'viudo', label: 'Viudo/a' },
+                    ]}
+                  />
                 </Field>
               </div>
 
               <SectionTitle>Contacto de Emergencia</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                <Field label="Nombre Contacto"><Input value={form.emergencyContactName} onChange={F('emergencyContactName')} /></Field>
-                <Field label="Teléfono Contacto"><Input value={form.emergencyContactPhone} onChange={F('emergencyContactPhone')} /></Field>
+                <Field label="Nombre Contacto">
+                  <Input value={form.emergencyContactName} onChange={F('emergencyContactName')} />
+                </Field>
+                <Field label="Teléfono Contacto">
+                  <Input value={form.emergencyContactPhone} onChange={F('emergencyContactPhone')} />
+                </Field>
               </div>
 
               <SectionTitle>Contrato Laboral</SectionTitle>
@@ -1378,71 +1929,186 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                 <Field label="Cargo *">
                   <Select
                     value={form.positionKey}
-                    onChange={v => {
-                      setForm((p: any) => ({ ...p, positionKey: v, positionOther: '' }))
+                    onChange={(v) => {
+                      setForm((p: any) => ({ ...p, positionKey: v, positionOther: '' }));
                       // Reset JD when position changes so it auto-populates on Next
-                      setJobDescription('')
+                      setJobDescription('');
                     }}
                     options={[{ value: '', label: '— Seleccionar cargo —' }, ...POSITIONS_LIST]}
                   />
                   <ErrMsg msg={errors.positionKey} />
                   {form.positionKey === 'otro' && (
                     <div style={{ marginTop: 8 }}>
-                      <Input value={form.positionOther} onChange={F('positionOther')} placeholder="Especifica el nombre del cargo" />
+                      <Input
+                        value={form.positionOther}
+                        onChange={F('positionOther')}
+                        placeholder="Especifica el nombre del cargo"
+                      />
                       <ErrMsg msg={errors.positionOther} />
                     </div>
                   )}
                 </Field>
-                <Field label="Departamento"><Select value={form.department} onChange={F('department')} options={DEPARTMENTS} /></Field>
-                <Field label="Tipo Contrato"><Select value={form.contractType} onChange={F('contractType')} options={CONTRACT_TYPES} /></Field>
-                <Field label="Fecha Ingreso *"><Input type="date" value={form.hireDate} onChange={F('hireDate')} /><ErrMsg msg={errors.hireDate} /></Field>
+                <Field label="Departamento">
+                  <Select
+                    value={form.department}
+                    onChange={F('department')}
+                    options={DEPARTMENTS}
+                  />
+                </Field>
+                <Field label="Tipo Contrato">
+                  <Select
+                    value={form.contractType}
+                    onChange={F('contractType')}
+                    options={CONTRACT_TYPES}
+                  />
+                </Field>
+                <Field label="Fecha Ingreso *">
+                  <Input type="date" value={form.hireDate} onChange={F('hireDate')} />
+                  <ErrMsg msg={errors.hireDate} />
+                </Field>
                 {(form.contractType === 'plazo_fijo' || form.contractType === 'obra_faena') && (
-                  <Field label="Fecha Término"><Input type="date" value={form.endDate} onChange={F('endDate')} /></Field>
+                  <Field label="Fecha Término">
+                    <Input type="date" value={form.endDate} onChange={F('endDate')} />
+                  </Field>
                 )}
-                <Field label="Jornada"><Select value={form.workSchedule} onChange={F('workSchedule')} options={SCHEDULE_OPTIONS} /></Field>
-                <Field label="Horas Semanales"><Input type="number" value={form.weeklyHours} onChange={v => setForm((p:any) => ({...p, weeklyHours: Number(v)}))} /></Field>
+                <Field label="Jornada">
+                  <Select
+                    value={form.workSchedule}
+                    onChange={F('workSchedule')}
+                    options={SCHEDULE_OPTIONS}
+                  />
+                </Field>
+                <Field label="Horas Semanales">
+                  <Input
+                    type="number"
+                    value={form.weeklyHours}
+                    onChange={(v) => setForm((p: any) => ({ ...p, weeklyHours: Number(v) }))}
+                  />
+                </Field>
               </div>
 
               <SectionTitle>Remuneración</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
                 <Field label={`Sueldo Bruto * (mín. ${fmtMoney(IMM)})`}>
-                  <Input type="number" value={form.grossSalary} onChange={v => setForm((p:any) => ({...p, grossSalary: Number(v)}))} />
+                  <Input
+                    type="number"
+                    value={form.grossSalary}
+                    onChange={(v) => setForm((p: any) => ({ ...p, grossSalary: Number(v) }))}
+                  />
                   <ErrMsg msg={errors.grossSalary} />
                 </Field>
-                <Field label="Colación"><Input type="number" value={form.colacion} onChange={v => setForm((p:any) => ({...p, colacion: Number(v)}))} /></Field>
-                <Field label="Movilización"><Input type="number" value={form.movilizacion} onChange={v => setForm((p:any) => ({...p, movilizacion: Number(v)}))} /></Field>
+                <Field label="Colación">
+                  <Input
+                    type="number"
+                    value={form.colacion}
+                    onChange={(v) => setForm((p: any) => ({ ...p, colacion: Number(v) }))}
+                  />
+                </Field>
+                <Field label="Movilización">
+                  <Input
+                    type="number"
+                    value={form.movilizacion}
+                    onChange={(v) => setForm((p: any) => ({ ...p, movilizacion: Number(v) }))}
+                  />
+                </Field>
                 {/* ── Compliance box ── */}
-                <div style={{ gridColumn: 'span 2', background: Number(form.grossSalary) < IMM ? 'rgba(239,68,68,0.08)' : 'rgba(34,197,94,0.07)', border: `1px solid ${Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e'}`, borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.8 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4, color: Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e' }}>
-                    {Number(form.grossSalary) < IMM ? `⚠ Sueldo base BAJO el mínimo legal (Art. 44 CT)` : `✓ Sueldo base sobre el mínimo legal`}
+                <div
+                  style={{
+                    gridColumn: 'span 2',
+                    background:
+                      Number(form.grossSalary) < IMM
+                        ? 'rgba(239,68,68,0.08)'
+                        : 'rgba(34,197,94,0.07)',
+                    border: `1px solid ${Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e'}`,
+                    borderRadius: 8,
+                    padding: '10px 14px',
+                    fontSize: 12,
+                    lineHeight: 1.8,
+                  }}
+                >
+                  <div
+                    style={{
+                      fontWeight: 700,
+                      marginBottom: 4,
+                      color: Number(form.grossSalary) < IMM ? '#ef4444' : '#22c55e',
+                    }}
+                  >
+                    {Number(form.grossSalary) < IMM
+                      ? `⚠ Sueldo base BAJO el mínimo legal (Art. 44 CT)`
+                      : `✓ Sueldo base sobre el mínimo legal`}
                   </div>
-                  <div><span style={{ color: 'var(--text-muted)' }}>Sueldo base (imponible):</span> <strong>{fmtMoney(Number(form.grossSalary))}</strong> — mínimo legal: <strong>{fmtMoney(IMM)}</strong></div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>Sueldo base (imponible):</span>{' '}
+                    <strong>{fmtMoney(Number(form.grossSalary))}</strong> — mínimo legal:{' '}
+                    <strong>{fmtMoney(IMM)}</strong>
+                  </div>
                   {(Number(form.colacion) > 0 || Number(form.movilizacion) > 0) && (
-                    <div><span style={{ color: 'var(--text-muted)' }}>Bonos no imponibles (colación + movilización):</span> <strong>+{fmtMoney(Number(form.colacion) + Number(form.movilizacion))}</strong> <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>(NO cuentan para el mínimo legal — Art. 44 CT)</span></div>
+                    <div>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Bonos no imponibles (colación + movilización):
+                      </span>{' '}
+                      <strong>
+                        +{fmtMoney(Number(form.colacion) + Number(form.movilizacion))}
+                      </strong>{' '}
+                      <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                        (NO cuentan para el mínimo legal — Art. 44 CT)
+                      </span>
+                    </div>
                   )}
-                  <div><span style={{ color: 'var(--text-muted)' }}>Total paquete remuneracional:</span> <strong>{fmtMoney(Number(form.grossSalary) + Number(form.colacion) + Number(form.movilizacion))}</strong></div>
+                  <div>
+                    <span style={{ color: 'var(--text-muted)' }}>
+                      Total paquete remuneracional:
+                    </span>{' '}
+                    <strong>
+                      {fmtMoney(
+                        Number(form.grossSalary) + Number(form.colacion) + Number(form.movilizacion)
+                      )}
+                    </strong>
+                  </div>
                 </div>
                 <Field label="AFP">
                   <Select value={form.afp} onChange={F('afp')} options={AFP_LIST} />
                   {(() => {
-                    const r = AFP_RATES[form.afp]
-                    const total = r.obligatory + r.commission
-                    const monto = Math.round(Number(form.grossSalary) * total / 100)
+                    const r = AFP_RATES[form.afp];
+                    const total = r.obligatory + r.commission;
+                    const monto = Math.round((Number(form.grossSalary) * total) / 100);
                     return (
-                      <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>10% obligatorio + {r.commission}% comisión = </span>
-                        <strong style={{ color: 'var(--accent)' }}>{total.toFixed(2)}% → {fmtMoney(monto)}</strong>
-                        <br /><span style={{ fontSize: 10, color: 'var(--text-muted)' }}>SIS {SIS_RATE}% lo paga el empleador — spensiones.cl 2025</span>
+                      <div
+                        style={{
+                          marginTop: 5,
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          10% obligatorio + {r.commission}% comisión ={' '}
+                        </span>
+                        <strong style={{ color: 'var(--accent)' }}>
+                          {total.toFixed(2)}% → {fmtMoney(monto)}
+                        </strong>
+                        <br />
+                        <span style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+                          SIS {SIS_RATE}% lo paga el empleador — spensiones.cl 2025
+                        </span>
                       </div>
-                    )
+                    );
                   })()}
                 </Field>
                 <Field label="Salud">
-                  <Select value={form.healthSystem} onChange={F('healthSystem')} options={HEALTH_OPTIONS} />
+                  <Select
+                    value={form.healthSystem}
+                    onChange={F('healthSystem')}
+                    options={HEALTH_OPTIONS}
+                  />
                   {form.healthSystem === 'fonasa' && (
                     <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>FONASA {FONASA_RATE}% remuneración imponible → </span>
-                      <strong style={{ color: 'var(--accent)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * FONASA_RATE / 100))}</strong>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        FONASA {FONASA_RATE}% remuneración imponible →{' '}
+                      </span>
+                      <strong style={{ color: 'var(--accent)' }}>
+                        {fmtMoney(Math.round((Number(form.grossSalary) * FONASA_RATE) / 100))}
+                      </strong>
                     </div>
                   )}
                   {form.healthSystem === 'isapre' && (
@@ -1453,23 +2119,68 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                         options={[{ value: '', label: '— Seleccionar ISAPRE —' }, ...ISAPRE_LIST]}
                       />
                       <ErrMsg msg={errors.isapreProvider} />
-                      <div style={{ marginTop: 5, fontSize: 11, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>Mínimo legal: {FONASA_RATE}% → </span>
-                        <strong style={{ color: 'var(--accent)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * FONASA_RATE / 100))}</strong>
-                        <br /><span style={{ fontSize: 10 }}>El plan específico puede tener costo adicional en UF según cobertura.</span>
+                      <div
+                        style={{
+                          marginTop: 5,
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        <span style={{ color: 'var(--text-secondary)' }}>
+                          Mínimo legal: {FONASA_RATE}% →{' '}
+                        </span>
+                        <strong style={{ color: 'var(--accent)' }}>
+                          {fmtMoney(Math.round((Number(form.grossSalary) * FONASA_RATE) / 100))}
+                        </strong>
+                        <br />
+                        <span style={{ fontSize: 10 }}>
+                          El plan específico puede tener costo adicional en UF según cobertura.
+                        </span>
                       </div>
                     </div>
                   )}
                 </Field>
                 <Field label="AFC (Seguro Cesantía)">
-                  <div style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-tertiary)', fontSize: 12 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Trabajador {AFC_WORKER}%</span>
-                      <strong>{fmtMoney(Math.round(Number(form.grossSalary) * AFC_WORKER / 100))}</strong>
+                  <div
+                    style={{
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border: '1px solid var(--border)',
+                      background: 'var(--bg-tertiary)',
+                      fontSize: 12,
+                    }}
+                  >
+                    <div
+                      style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3 }}
+                    >
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        Trabajador {AFC_WORKER}%
+                      </span>
+                      <strong>
+                        {fmtMoney(Math.round((Number(form.grossSalary) * AFC_WORKER) / 100))}
+                      </strong>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Empleador {form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO}%</span>
-                      <span style={{ color: 'var(--text-muted)' }}>{fmtMoney(Math.round(Number(form.grossSalary) * (form.contractType === 'indefinido' ? AFC_EMPLOYER_INDEFINIDO : AFC_EMPLOYER_PLAZO_FIJO) / 100))} (cargo empresa)</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>
+                        Empleador{' '}
+                        {form.contractType === 'indefinido'
+                          ? AFC_EMPLOYER_INDEFINIDO
+                          : AFC_EMPLOYER_PLAZO_FIJO}
+                        %
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        {fmtMoney(
+                          Math.round(
+                            (Number(form.grossSalary) *
+                              (form.contractType === 'indefinido'
+                                ? AFC_EMPLOYER_INDEFINIDO
+                                : AFC_EMPLOYER_PLAZO_FIJO)) /
+                              100
+                          )
+                        )}{' '}
+                        (cargo empresa)
+                      </span>
                     </div>
                   </div>
                 </Field>
@@ -1477,130 +2188,424 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
 
               <SectionTitle>Datos Bancarios</SectionTitle>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                <Field label="Banco"><Select value={form.bankName} onChange={F('bankName')} options={BANKS} /></Field>
-                <Field label="Tipo Cuenta"><Select value={form.bankAccountType} onChange={F('bankAccountType')} options={ACCOUNT_TYPES} /></Field>
-                <Field label="N° Cuenta"><Input value={form.bankAccountNumber} onChange={F('bankAccountNumber')} /></Field>
+                <Field label="Banco">
+                  <Select value={form.bankName} onChange={F('bankName')} options={BANKS} />
+                </Field>
+                <Field label="Tipo Cuenta">
+                  <Select
+                    value={form.bankAccountType}
+                    onChange={F('bankAccountType')}
+                    options={ACCOUNT_TYPES}
+                  />
+                </Field>
+                <Field label="N° Cuenta">
+                  <Input value={form.bankAccountNumber} onChange={F('bankAccountNumber')} />
+                </Field>
               </div>
 
               <SectionTitle>Descuentos y Beneficios Adicionales</SectionTitle>
 
               {/* ── APV ── */}
-              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.apvActivo ? 12 : 0 }}>
+              <div
+                style={{
+                  marginBottom: 16,
+                  padding: '12px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: form.apvActivo ? 12 : 0,
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>📈 APV — Ahorro Previsional Voluntario</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>DL 3.500 Art. 20 bis · Ley 19.768 · máx. 50 UF/mes</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      📈 APV — Ahorro Previsional Voluntario
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      DL 3.500 Art. 20 bis · Ley 19.768 · máx. 50 UF/mes
+                    </div>
                   </div>
-                  <select value={form.apvActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, apvActivo: e.target.value === 'si' }))}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.apvActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.apvActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                  <select
+                    value={form.apvActivo ? 'si' : 'no'}
+                    onChange={(e) =>
+                      setForm((p: any) => ({ ...p, apvActivo: e.target.value === 'si' }))
+                    }
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                      background: form.apvActivo ? 'var(--accent)' : 'var(--bg-tertiary)',
+                      color: form.apvActivo ? '#fff' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <option value="no">No aplica</option>
                     <option value="si">Sí, tiene APV</option>
                   </select>
                 </div>
                 {form.apvActivo && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                    <Field label="Régimen"><Select value={form.apvRegimen} onChange={F('apvRegimen')} options={APV_REGIMEN} /></Field>
-                    <Field label="Monto mensual APV ($)"><Input type="number" value={form.apvMonto} onChange={v => setForm((p: any) => ({ ...p, apvMonto: Number(v) }))} /></Field>
-                    <Field label="Institución APV"><Select value={form.apvInstitucion} onChange={F('apvInstitucion')} options={APV_INSTITUTIONS} /></Field>
+                    <Field label="Régimen">
+                      <Select
+                        value={form.apvRegimen}
+                        onChange={F('apvRegimen')}
+                        options={APV_REGIMEN}
+                      />
+                    </Field>
+                    <Field label="Monto mensual APV ($)">
+                      <Input
+                        type="number"
+                        value={form.apvMonto}
+                        onChange={(v) => setForm((p: any) => ({ ...p, apvMonto: Number(v) }))}
+                      />
+                    </Field>
+                    <Field label="Institución APV">
+                      <Select
+                        value={form.apvInstitucion}
+                        onChange={F('apvInstitucion')}
+                        options={APV_INSTITUTIONS}
+                      />
+                    </Field>
                     {form.apvInstitucion !== 'afp_mismo' && (
-                      <Field label="Nombre institución"><Input value={form.apvInstitucionNombre} onChange={F('apvInstitucionNombre')} placeholder="Ej: Fondo Mutuo BCI" /></Field>
+                      <Field label="Nombre institución">
+                        <Input
+                          value={form.apvInstitucionNombre}
+                          onChange={F('apvInstitucionNombre')}
+                          placeholder="Ej: Fondo Mutuo BCI"
+                        />
+                      </Field>
                     )}
                   </div>
                 )}
               </div>
 
               {/* ── Pensión de alimentos ── */}
-              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.pensionActiva ? 12 : 0 }}>
+              <div
+                style={{
+                  marginBottom: 16,
+                  padding: '12px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: form.pensionActiva ? 12 : 0,
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>⚖️ Pensión de Alimentos</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Ley 14.908 · Art. 58 CT · resolución judicial obligatoria</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      ⚖️ Pensión de Alimentos
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      Ley 14.908 · Art. 58 CT · resolución judicial obligatoria
+                    </div>
                   </div>
-                  <select value={form.pensionActiva ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, pensionActiva: e.target.value === 'si' }))}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.pensionActiva ? '#dc2626' : 'var(--bg-tertiary)', color: form.pensionActiva ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                  <select
+                    value={form.pensionActiva ? 'si' : 'no'}
+                    onChange={(e) =>
+                      setForm((p: any) => ({ ...p, pensionActiva: e.target.value === 'si' }))
+                    }
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                      background: form.pensionActiva ? '#dc2626' : 'var(--bg-tertiary)',
+                      color: form.pensionActiva ? '#fff' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <option value="no">Sin orden judicial</option>
                     <option value="si">Con orden judicial</option>
                   </select>
                 </div>
                 {form.pensionActiva && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                    <Field label="Tipo de descuento"><Select value={form.pensionTipo} onChange={F('pensionTipo')} options={PENSION_TIPOS} /></Field>
-                    {form.pensionTipo === 'fijo'
-                      ? <Field label="Monto fijo mensual ($)"><Input type="number" value={form.pensionMonto} onChange={v => setForm((p: any) => ({ ...p, pensionMonto: Number(v) }))} /></Field>
-                      : <Field label="Porcentaje del líquido (%)"><Input type="number" value={form.pensionPorcentaje} onChange={v => setForm((p: any) => ({ ...p, pensionPorcentaje: Number(v) }))} /></Field>
-                    }
-                    <Field label="RIT (N° causa)"><Input value={form.pensionRit} onChange={F('pensionRit')} placeholder="Ej: A-1234-2025" /></Field>
-                    <Field label="Tribunal"><Input value={form.pensionTribunal} onChange={F('pensionTribunal')} /></Field>
-                    <Field label="Nombre beneficiario"><Input value={form.pensionBeneficiario} onChange={F('pensionBeneficiario')} /></Field>
-                    <Field label="Destino del pago"><Select value={form.pensionDestino} onChange={F('pensionDestino')} options={PENSION_DESTINO} /></Field>
-                    {form.pensionDestino === 'transferencia' && (<>
-                      <Field label="Banco beneficiario"><Select value={form.pensionCuentaBanco} onChange={F('pensionCuentaBanco')} options={PENSION_BANCOS} /></Field>
-                      <Field label="Tipo cuenta"><Select value={form.pensionCuentaTipo} onChange={F('pensionCuentaTipo')} options={PENSION_CUENTA_TIPOS} /></Field>
-                      <Field label="N° cuenta beneficiario"><Input value={form.pensionCuentaNumero} onChange={F('pensionCuentaNumero')} /></Field>
-                    </>)}
+                    <Field label="Tipo de descuento">
+                      <Select
+                        value={form.pensionTipo}
+                        onChange={F('pensionTipo')}
+                        options={PENSION_TIPOS}
+                      />
+                    </Field>
+                    {form.pensionTipo === 'fijo' ? (
+                      <Field label="Monto fijo mensual ($)">
+                        <Input
+                          type="number"
+                          value={form.pensionMonto}
+                          onChange={(v) => setForm((p: any) => ({ ...p, pensionMonto: Number(v) }))}
+                        />
+                      </Field>
+                    ) : (
+                      <Field label="Porcentaje del líquido (%)">
+                        <Input
+                          type="number"
+                          value={form.pensionPorcentaje}
+                          onChange={(v) =>
+                            setForm((p: any) => ({ ...p, pensionPorcentaje: Number(v) }))
+                          }
+                        />
+                      </Field>
+                    )}
+                    <Field label="RIT (N° causa)">
+                      <Input
+                        value={form.pensionRit}
+                        onChange={F('pensionRit')}
+                        placeholder="Ej: A-1234-2025"
+                      />
+                    </Field>
+                    <Field label="Tribunal">
+                      <Input value={form.pensionTribunal} onChange={F('pensionTribunal')} />
+                    </Field>
+                    <Field label="Nombre beneficiario">
+                      <Input value={form.pensionBeneficiario} onChange={F('pensionBeneficiario')} />
+                    </Field>
+                    <Field label="Destino del pago">
+                      <Select
+                        value={form.pensionDestino}
+                        onChange={F('pensionDestino')}
+                        options={PENSION_DESTINO}
+                      />
+                    </Field>
+                    {form.pensionDestino === 'transferencia' && (
+                      <>
+                        <Field label="Banco beneficiario">
+                          <Select
+                            value={form.pensionCuentaBanco}
+                            onChange={F('pensionCuentaBanco')}
+                            options={PENSION_BANCOS}
+                          />
+                        </Field>
+                        <Field label="Tipo cuenta">
+                          <Select
+                            value={form.pensionCuentaTipo}
+                            onChange={F('pensionCuentaTipo')}
+                            options={PENSION_CUENTA_TIPOS}
+                          />
+                        </Field>
+                        <Field label="N° cuenta beneficiario">
+                          <Input
+                            value={form.pensionCuentaNumero}
+                            onChange={F('pensionCuentaNumero')}
+                          />
+                        </Field>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
 
               {/* ── Cuota sindical ── */}
-              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.cuotaSindicalActiva ? 12 : 0 }}>
+              <div
+                style={{
+                  marginBottom: 16,
+                  padding: '12px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: form.cuotaSindicalActiva ? 12 : 0,
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>🤝 Cuota Sindical</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Art. 262 CT · solo si trabajador está afiliado a sindicato</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      🤝 Cuota Sindical
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      Art. 262 CT · solo si trabajador está afiliado a sindicato
+                    </div>
                   </div>
-                  <select value={form.cuotaSindicalActiva ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, cuotaSindicalActiva: e.target.value === 'si' }))}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.cuotaSindicalActiva ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.cuotaSindicalActiva ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                  <select
+                    value={form.cuotaSindicalActiva ? 'si' : 'no'}
+                    onChange={(e) =>
+                      setForm((p: any) => ({ ...p, cuotaSindicalActiva: e.target.value === 'si' }))
+                    }
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                      background: form.cuotaSindicalActiva ? 'var(--accent)' : 'var(--bg-tertiary)',
+                      color: form.cuotaSindicalActiva ? '#fff' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <option value="no">No afiliado</option>
                     <option value="si">Sí, afiliado</option>
                   </select>
                 </div>
                 {form.cuotaSindicalActiva && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                    <Field label="Nombre del sindicato"><Input value={form.cuotaSindicalSindicato} onChange={F('cuotaSindicalSindicato')} /></Field>
-                    <Field label="Cuota mensual ($)"><Input type="number" value={form.cuotaSindicalMonto} onChange={v => setForm((p: any) => ({ ...p, cuotaSindicalMonto: Number(v) }))} /></Field>
+                    <Field label="Nombre del sindicato">
+                      <Input
+                        value={form.cuotaSindicalSindicato}
+                        onChange={F('cuotaSindicalSindicato')}
+                      />
+                    </Field>
+                    <Field label="Cuota mensual ($)">
+                      <Input
+                        type="number"
+                        value={form.cuotaSindicalMonto}
+                        onChange={(v) =>
+                          setForm((p: any) => ({ ...p, cuotaSindicalMonto: Number(v) }))
+                        }
+                      />
+                    </Field>
                   </div>
                 )}
               </div>
 
               {/* ── Préstamo empresa ── */}
-              <div style={{ marginBottom: 16, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.prestamoActivo ? 12 : 0 }}>
+              <div
+                style={{
+                  marginBottom: 16,
+                  padding: '12px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: form.prestamoActivo ? 12 : 0,
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>💳 Préstamo Empresa</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Art. 58 CT · requiere autorización escrita del trabajador</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      💳 Préstamo Empresa
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      Art. 58 CT · requiere autorización escrita del trabajador
+                    </div>
                   </div>
-                  <select value={form.prestamoActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, prestamoActivo: e.target.value === 'si' }))}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.prestamoActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.prestamoActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                  <select
+                    value={form.prestamoActivo ? 'si' : 'no'}
+                    onChange={(e) =>
+                      setForm((p: any) => ({ ...p, prestamoActivo: e.target.value === 'si' }))
+                    }
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                      background: form.prestamoActivo ? 'var(--accent)' : 'var(--bg-tertiary)',
+                      color: form.prestamoActivo ? '#fff' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <option value="no">Sin préstamo</option>
                     <option value="si">Con préstamo activo</option>
                   </select>
                 </div>
                 {form.prestamoActivo && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                    <Field label="Cuota mensual a descontar ($)"><Input type="number" value={form.prestamoCuota} onChange={v => setForm((p: any) => ({ ...p, prestamoCuota: Number(v) }))} /></Field>
-                    <Field label="Saldo total del préstamo ($)"><Input type="number" value={form.prestamoSaldo} onChange={v => setForm((p: any) => ({ ...p, prestamoSaldo: Number(v) }))} /></Field>
+                    <Field label="Cuota mensual a descontar ($)">
+                      <Input
+                        type="number"
+                        value={form.prestamoCuota}
+                        onChange={(v) => setForm((p: any) => ({ ...p, prestamoCuota: Number(v) }))}
+                      />
+                    </Field>
+                    <Field label="Saldo total del préstamo ($)">
+                      <Input
+                        type="number"
+                        value={form.prestamoSaldo}
+                        onChange={(v) => setForm((p: any) => ({ ...p, prestamoSaldo: Number(v) }))}
+                      />
+                    </Field>
                   </div>
                 )}
               </div>
 
               {/* ── Seguro colectivo ── */}
-              <div style={{ marginBottom: 4, padding: '12px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: form.seguroColectivoActivo ? 12 : 0 }}>
+              <div
+                style={{
+                  marginBottom: 4,
+                  padding: '12px 14px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-secondary)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: form.seguroColectivoActivo ? 12 : 0,
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>🛡️ Seguro Colectivo</div>
-                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>Prima mensual voluntaria · acordado con trabajador por escrito</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      🛡️ Seguro Colectivo
+                    </div>
+                    <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                      Prima mensual voluntaria · acordado con trabajador por escrito
+                    </div>
                   </div>
-                  <select value={form.seguroColectivoActivo ? 'si' : 'no'} onChange={e => setForm((p: any) => ({ ...p, seguroColectivoActivo: e.target.value === 'si' }))}
-                    style={{ padding: '5px 10px', borderRadius: 6, border: '1px solid var(--border)', background: form.seguroColectivoActivo ? 'var(--accent)' : 'var(--bg-tertiary)', color: form.seguroColectivoActivo ? '#fff' : 'var(--text-secondary)', fontSize: 12, cursor: 'pointer' }}>
+                  <select
+                    value={form.seguroColectivoActivo ? 'si' : 'no'}
+                    onChange={(e) =>
+                      setForm((p: any) => ({
+                        ...p,
+                        seguroColectivoActivo: e.target.value === 'si',
+                      }))
+                    }
+                    style={{
+                      padding: '5px 10px',
+                      borderRadius: 6,
+                      border: '1px solid var(--border)',
+                      background: form.seguroColectivoActivo
+                        ? 'var(--accent)'
+                        : 'var(--bg-tertiary)',
+                      color: form.seguroColectivoActivo ? '#fff' : 'var(--text-secondary)',
+                      fontSize: 12,
+                      cursor: 'pointer',
+                    }}
+                  >
                     <option value="no">Sin seguro colectivo</option>
                     <option value="si">Con seguro colectivo</option>
                   </select>
                 </div>
                 {form.seguroColectivoActivo && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-                    <Field label="Aseguradora"><Input value={form.seguroColectivoAseguradora} onChange={F('seguroColectivoAseguradora')} placeholder="Ej: Metlife, Seguros Vida" /></Field>
-                    <Field label="Prima mensual ($)"><Input type="number" value={form.seguroColectivoMonto} onChange={v => setForm((p: any) => ({ ...p, seguroColectivoMonto: Number(v) }))} /></Field>
+                    <Field label="Aseguradora">
+                      <Input
+                        value={form.seguroColectivoAseguradora}
+                        onChange={F('seguroColectivoAseguradora')}
+                        placeholder="Ej: Metlife, Seguros Vida"
+                      />
+                    </Field>
+                    <Field label="Prima mensual ($)">
+                      <Input
+                        type="number"
+                        value={form.seguroColectivoMonto}
+                        onChange={(v) =>
+                          setForm((p: any) => ({ ...p, seguroColectivoMonto: Number(v) }))
+                        }
+                      />
+                    </Field>
                   </div>
                 )}
               </div>
@@ -1619,71 +2624,248 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
 
           {/* ── PASO 3 / CREDENCIALES: Pantalla de credenciales generadas ── */}
           {step === 3 && credentials && (
-            <CredentialsScreen credentials={credentials} workerName={`${form.firstName} ${form.lastName}`} onPrint={handlePrintCredentials} onClose={onClose} />
+            <CredentialsScreen
+              credentials={credentials}
+              workerName={`${form.firstName} ${form.lastName}`}
+              onPrint={handlePrintCredentials}
+              onClose={onClose}
+            />
           )}
 
           {/* ── PASO 3: Vista previa del contrato ── */}
           {step === 3 && !credentials && (
             <>
               {errors._general && (
-                <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 13, color: '#ef4444' }}>
+                <div
+                  style={{
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    borderRadius: 8,
+                    padding: '10px 14px',
+                    marginBottom: 16,
+                    fontSize: 13,
+                    color: '#ef4444',
+                  }}
+                >
                   {errors._general}
                 </div>
               )}
 
               {/* Job Description editable */}
               <div style={{ marginBottom: 20 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.6px',
+                    marginBottom: 6,
+                  }}
+                >
                   Descripción del Cargo / Job Description
                 </label>
                 <textarea
                   value={jobDescription}
-                  onChange={e => setJobDescription(e.target.value)}
+                  onChange={(e) => setJobDescription(e.target.value)}
                   placeholder={`Ej:\n• Desarrollar y mantener el frontend de la plataforma Conniku usando React y TypeScript\n• Participar en code reviews y definición de arquitectura\n• Colaborar con el equipo de diseño para implementar interfaces de usuario\n• Reportar al Gerente de Tecnología`}
                   rows={6}
                   style={{
-                    width: '100%', padding: '10px 14px', border: '1px solid var(--border)',
-                    borderRadius: 8, background: 'var(--bg-secondary)', color: 'var(--text-primary)',
-                    fontSize: 13, fontFamily: 'inherit', resize: 'vertical', outline: 'none',
-                    lineHeight: 1.6, boxSizing: 'border-box',
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: '1px solid var(--border)',
+                    borderRadius: 8,
+                    background: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    fontFamily: 'inherit',
+                    resize: 'vertical',
+                    outline: 'none',
+                    lineHeight: 1.6,
+                    boxSizing: 'border-box',
                   }}
                 />
               </div>
 
               {/* Preview del contrato */}
-              <div style={{
-                border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
-                background: '#fff', color: '#000',
-              }}>
-                <div style={{ background: '#f3f4f6', padding: '10px 16px', borderBottom: '1px solid #e5e7eb', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>📄 Vista previa del contrato</span>
-                  <span style={{ fontSize: 11, color: '#6b7280' }}>— Se generará con los datos ingresados</span>
+              <div
+                style={{
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  background: '#fff',
+                  color: '#000',
+                }}
+              >
+                <div
+                  style={{
+                    background: '#f3f4f6',
+                    padding: '10px 16px',
+                    borderBottom: '1px solid #e5e7eb',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 600, color: '#374151' }}>
+                    📄 Vista previa del contrato
+                  </span>
+                  <span style={{ fontSize: 11, color: '#6b7280' }}>
+                    — Se generará con los datos ingresados
+                  </span>
                 </div>
-                <div style={{ padding: '24px 32px', fontFamily: 'Georgia, serif', fontSize: 12, lineHeight: 1.65, color: '#111', maxHeight: 420, overflowY: 'auto' }}>
+                <div
+                  style={{
+                    padding: '24px 32px',
+                    fontFamily: 'Georgia, serif',
+                    fontSize: 12,
+                    lineHeight: 1.65,
+                    color: '#111',
+                    maxHeight: 420,
+                    overflowY: 'auto',
+                  }}
+                >
                   <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                    <div style={{ fontSize: 15, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>Contrato Individual de Trabajo</div>
-                    <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile</div>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: 1.5,
+                      }}
+                    >
+                      Contrato Individual de Trabajo
+                    </div>
+                    <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>
+                      Conniku SpA · RUT 78.395.702-7 · Antofagasta, Chile
+                    </div>
                   </div>
-                  <p style={{ marginBottom: 12 }}>En Antofagasta, a {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}, entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el Empleador»), y <strong>{form.firstName} {form.lastName}</strong>, RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato Individual de Trabajo:</p>
+                  <p style={{ marginBottom: 12 }}>
+                    En Antofagasta, a{' '}
+                    {new Date().toLocaleDateString('es-CL', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                    , entre <strong>Conniku SpA</strong>, RUT 78.395.702-7 (en adelante «el
+                    Empleador»), y{' '}
+                    <strong>
+                      {form.firstName} {form.lastName}
+                    </strong>
+                    , RUT {form.rut} (en adelante «el Trabajador»), se celebra el siguiente Contrato
+                    Individual de Trabajo:
+                  </p>
 
                   {[
-                    { title: 'Primero — Cargo y Funciones', content: <><p>Cargo: <strong>{resolvedPosition}</strong> — Área: <strong>{form.department}</strong></p>{jobDescription && <div style={{ marginTop: 8, background: '#f9f9f9', borderLeft: '3px solid #555', padding: '6px 10px', fontSize: 11, whiteSpace: 'pre-wrap' }}>{jobDescription}</div>}</> },
-                    { title: 'Segundo — Lugar de Trabajo', content: <p>Dependencias de Conniku SpA, Antofagasta, o modalidad de teletrabajo según lo coordinado.</p> },
-                    { title: 'Tercero — Duración', content: <p dangerouslySetInnerHTML={{ __html: form.contractType === 'indefinido' ? 'Contrato de duración <strong>indefinida</strong> (Art. 159 N°4 CT).' : `Contrato a <strong>plazo fijo</strong> desde ${fmtDate(form.hireDate)}${form.endDate ? ` hasta ${fmtDate(form.endDate)}` : ''}.` }} /> },
-                    { title: 'Cuarto — Jornada', content: <p><strong>{form.weeklyHours}h semanales</strong> — {SCHEDULE_OPTIONS.find(s => s.value === form.workSchedule)?.label}. (Art. 22 CT)</p> },
-                    { title: 'Quinto — Remuneración', content: <p>Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>{Number(form.colacion) > 0 ? ` · Colación: ${fmtMoney(Number(form.colacion))}` : ''}{Number(form.movilizacion) > 0 ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}` : ''}. AFP: {AFP_LIST.find(a => a.value === form.afp)?.label}. Salud: {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}. Pago: último día hábil del mes vía Previred.</p> },
+                    {
+                      title: 'Primero — Cargo y Funciones',
+                      content: (
+                        <>
+                          <p>
+                            Cargo: <strong>{resolvedPosition}</strong> — Área:{' '}
+                            <strong>{form.department}</strong>
+                          </p>
+                          {jobDescription && (
+                            <div
+                              style={{
+                                marginTop: 8,
+                                background: '#f9f9f9',
+                                borderLeft: '3px solid #555',
+                                padding: '6px 10px',
+                                fontSize: 11,
+                                whiteSpace: 'pre-wrap',
+                              }}
+                            >
+                              {jobDescription}
+                            </div>
+                          )}
+                        </>
+                      ),
+                    },
+                    {
+                      title: 'Segundo — Lugar de Trabajo',
+                      content: (
+                        <p>
+                          Dependencias de Conniku SpA, Antofagasta, o modalidad de teletrabajo según
+                          lo coordinado.
+                        </p>
+                      ),
+                    },
+                    {
+                      title: 'Tercero — Duración',
+                      content: (
+                        <p
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              form.contractType === 'indefinido'
+                                ? 'Contrato de duración <strong>indefinida</strong> (Art. 159 N°4 CT).'
+                                : `Contrato a <strong>plazo fijo</strong> desde ${fmtDate(form.hireDate)}${form.endDate ? ` hasta ${fmtDate(form.endDate)}` : ''}.`,
+                          }}
+                        />
+                      ),
+                    },
+                    {
+                      title: 'Cuarto — Jornada',
+                      content: (
+                        <p>
+                          <strong>{form.weeklyHours}h semanales</strong> —{' '}
+                          {SCHEDULE_OPTIONS.find((s) => s.value === form.workSchedule)?.label}.
+                          (Art. 22 CT)
+                        </p>
+                      ),
+                    },
+                    {
+                      title: 'Quinto — Remuneración',
+                      content: (
+                        <p>
+                          Sueldo bruto: <strong>{fmtMoney(Number(form.grossSalary))}</strong>
+                          {Number(form.colacion) > 0
+                            ? ` · Colación: ${fmtMoney(Number(form.colacion))}`
+                            : ''}
+                          {Number(form.movilizacion) > 0
+                            ? ` · Movilización: ${fmtMoney(Number(form.movilizacion))}`
+                            : ''}
+                          . AFP: {AFP_LIST.find((a) => a.value === form.afp)?.label}. Salud:{' '}
+                          {form.healthSystem === 'fonasa' ? 'FONASA' : `ISAPRE ${form.isapreName}`}.
+                          Pago: último día hábil del mes vía Previred.
+                        </p>
+                      ),
+                    },
                   ].map(({ title, content }) => (
                     <div key={title} style={{ marginBottom: 14 }}>
-                      <div style={{ fontWeight: 700, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5, borderBottom: '1px solid #ddd', paddingBottom: 3, marginBottom: 6 }}>{title}</div>
+                      <div
+                        style={{
+                          fontWeight: 700,
+                          fontSize: 11,
+                          textTransform: 'uppercase',
+                          letterSpacing: 0.5,
+                          borderBottom: '1px solid #ddd',
+                          paddingBottom: 3,
+                          marginBottom: 6,
+                        }}
+                      >
+                        {title}
+                      </div>
                       {content}
                     </div>
                   ))}
 
                   {/* Firmas preview */}
-                  <div style={{ marginTop: 32, display: 'flex', justifyContent: 'space-between', gap: 40 }}>
+                  <div
+                    style={{
+                      marginTop: 32,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      gap: 40,
+                    }}
+                  >
                     {[
                       { name: 'Conniku SpA', sub: 'RUT 78.395.702-7 — Empleador' },
-                      { name: `${form.firstName} ${form.lastName}`, sub: `RUT ${form.rut} — ${resolvedPosition || 'Trabajador'}` },
+                      {
+                        name: `${form.firstName} ${form.lastName}`,
+                        sub: `RUT ${form.rut} — ${resolvedPosition || 'Trabajador'}`,
+                      },
                     ].map(({ name, sub }) => (
                       <div key={name} style={{ flex: 1, textAlign: 'center' }}>
                         <div style={{ borderTop: '1px solid #000', paddingTop: 6, marginTop: 40 }}>
@@ -1695,8 +2877,10 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
                   </div>
                   <div style={{ marginTop: 16, textAlign: 'center', fontSize: 10, color: '#777' }}>
                     ✍️ Firma electrónica avanzada disponible en:&nbsp;
-                    <strong>Acepta.com</strong> · <strong>E-CertChile</strong> · <strong>Signer.cl</strong> · <strong>DocuSign</strong>
-                    <br />Ley 19.799 — Firma Electrónica (Chile)
+                    <strong>Acepta.com</strong> · <strong>E-CertChile</strong> ·{' '}
+                    <strong>Signer.cl</strong> · <strong>DocuSign</strong>
+                    <br />
+                    Ley 19.799 — Firma Electrónica (Chile)
                   </div>
                 </div>
               </div>
@@ -1705,12 +2889,29 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
         </div>
 
         {/* ── Footer ── */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div
+          style={{
+            padding: '14px 24px',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 10,
+          }}
+        >
           {/* Izquierda */}
           {!credentials && (
             <button
-              onClick={step === 1 ? onClose : () => setStep(prev => (prev - 1) as 1 | 2 | 3)}
-              style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}
+              onClick={step === 1 ? onClose : () => setStep((prev) => (prev - 1) as 1 | 2 | 3)}
+              style={{
+                padding: '9px 20px',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                background: 'none',
+                cursor: 'pointer',
+                fontSize: 13,
+                color: 'var(--text-secondary)',
+              }}
             >
               {step === 1 ? 'Cancelar' : '← Volver'}
             </button>
@@ -1719,14 +2920,33 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
           {/* Derecha */}
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
             {step === 3 && contractSaved && !credentials && (
-              <span style={{ fontSize: 12, color: '#16a34a', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: '#16a34a',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
                 ✅ PDF guardado en carpeta del trabajador
               </span>
             )}
             {step === 3 && !credentials && (
               <button
                 onClick={handlePrint}
-                style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{
+                  padding: '9px 20px',
+                  border: '1px solid var(--border)',
+                  borderRadius: 8,
+                  background: 'none',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  color: 'var(--text-secondary)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
               >
                 🖨️ Vista previa / Imprimir
               </button>
@@ -1735,13 +2955,31 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
               <>
                 <button
                   onClick={handlePrintCredentials}
-                  style={{ padding: '9px 20px', background: '#15803d', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  style={{
+                    padding: '9px 20px',
+                    background: '#15803d',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
                 >
                   🖨️ Imprimir credenciales
                 </button>
                 <button
                   onClick={onClose}
-                  style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                  style={{
+                    padding: '9px 20px',
+                    background: 'var(--accent)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
                 >
                   Finalizar ✓
                 </button>
@@ -1750,133 +2988,332 @@ function NuevoColaboradorModal({ onClose, onCreated }: { onClose: () => void; on
               <button
                 onClick={step < 3 ? handleNext : handleSave}
                 disabled={saving}
-                style={{ padding: '9px 22px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
+                style={{
+                  padding: '9px 22px',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: saving ? 'default' : 'pointer',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  opacity: saving ? 0.7 : 1,
+                }}
               >
-                {step < 3 ? 'Siguiente →' : saving ? 'Creando y generando contrato…' : '✅ Crear Colaborador'}
+                {step < 3
+                  ? 'Siguiente →'
+                  : saving
+                    ? 'Creando y generando contrato…'
+                    : '✅ Crear Colaborador'}
               </button>
             )}
           </div>
         </div>
-
       </div>
     </div>
-  )
+  );
 }
 
 // ─── Tabs del perfil ─────────────────────────────────────────────
-type ProfileTab = 'datos' | 'contrato' | 'remuneracion' | 'documentos' | 'historial'
+type ProfileTab = 'datos' | 'contrato' | 'remuneracion' | 'documentos' | 'historial';
 
-function TabDatos({ emp, onChange, saving, onSave }: { emp: Employee; onChange: (k: string, v: any) => void; saving: boolean; onSave: () => void }) {
+function TabDatos({
+  emp,
+  onChange,
+  saving,
+  onSave,
+}: {
+  emp: Employee;
+  onChange: (k: string, v: any) => void;
+  saving: boolean;
+  onSave: () => void;
+}) {
   return (
     <div>
       <SectionTitle>Identificación</SectionTitle>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="RUT"><RutInput value={emp.rut} onChange={v => onChange('rut', v)} /></Field>
-        <Field label="Fecha Nacimiento"><Input type="date" value={emp.birthDate} onChange={v => onChange('birthDate', v)} /></Field>
-        <Field label="Nombre"><Input value={emp.firstName} onChange={v => onChange('firstName', v)} /></Field>
-        <Field label="Apellido"><Input value={emp.lastName} onChange={v => onChange('lastName', v)} /></Field>
-        <Field label="Email"><Input type="email" value={emp.email} onChange={v => onChange('email', v)} /></Field>
-        <Field label="Teléfono"><Input value={emp.phone} onChange={v => onChange('phone', v)} /></Field>
-        <Field label="Dirección"><Input value={emp.address} onChange={v => onChange('address', v)} /></Field>
-        <Field label="Nacionalidad"><Input value={emp.nationality} onChange={v => onChange('nationality', v)} /></Field>
+        <Field label="RUT">
+          <RutInput value={emp.rut} onChange={(v) => onChange('rut', v)} />
+        </Field>
+        <Field label="Fecha Nacimiento">
+          <Input type="date" value={emp.birthDate} onChange={(v) => onChange('birthDate', v)} />
+        </Field>
+        <Field label="Nombre">
+          <Input value={emp.firstName} onChange={(v) => onChange('firstName', v)} />
+        </Field>
+        <Field label="Apellido">
+          <Input value={emp.lastName} onChange={(v) => onChange('lastName', v)} />
+        </Field>
+        <Field label="Email">
+          <Input type="email" value={emp.email} onChange={(v) => onChange('email', v)} />
+        </Field>
+        <Field label="Teléfono">
+          <Input value={emp.phone} onChange={(v) => onChange('phone', v)} />
+        </Field>
+        <Field label="Dirección">
+          <Input value={emp.address} onChange={(v) => onChange('address', v)} />
+        </Field>
+        <Field label="Nacionalidad">
+          <Input value={emp.nationality} onChange={(v) => onChange('nationality', v)} />
+        </Field>
         <Field label="Estado Civil">
-          <Select value={emp.maritalStatus} onChange={v => onChange('maritalStatus', v)} options={[{value:'soltero',label:'Soltero/a'},{value:'casado',label:'Casado/a'},{value:'divorciado',label:'Divorciado/a'},{value:'viudo',label:'Viudo/a'}]} />
+          <Select
+            value={emp.maritalStatus}
+            onChange={(v) => onChange('maritalStatus', v)}
+            options={[
+              { value: 'soltero', label: 'Soltero/a' },
+              { value: 'casado', label: 'Casado/a' },
+              { value: 'divorciado', label: 'Divorciado/a' },
+              { value: 'viudo', label: 'Viudo/a' },
+            ]}
+          />
         </Field>
       </div>
       <SectionTitle>Contacto de Emergencia</SectionTitle>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="Nombre"><Input value={emp.emergencyContactName} onChange={v => onChange('emergencyContactName', v)} /></Field>
-        <Field label="Teléfono"><Input value={emp.emergencyContactPhone} onChange={v => onChange('emergencyContactPhone', v)} /></Field>
-      </div>
-      <SaveBtn saving={saving} onSave={onSave} />
-    </div>
-  )
-}
-
-function TabContrato({ emp, onChange, saving, onSave }: { emp: Employee; onChange: (k: string, v: any) => void; saving: boolean; onSave: () => void }) {
-  return (
-    <div>
-      <SectionTitle>Contrato Laboral — Código del Trabajo</SectionTitle>
-      <div style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'var(--text-secondary)' }}>
-        <strong>Art. 9 CT:</strong> El contrato debe quedar firmado dentro de 15 días corridos desde el inicio. Progresión: plazo fijo 30d → plazo fijo 60d → indefinido. CEO/RRHH puede contratar directamente a indefinido.
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="Cargo"><Input value={emp.position} onChange={v => onChange('position', v)} /></Field>
-        <Field label="Departamento"><Select value={emp.department} onChange={v => onChange('department', v)} options={DEPARTMENTS} /></Field>
-        <Field label="Tipo Contrato"><Select value={emp.contractType} onChange={v => onChange('contractType', v)} options={CONTRACT_TYPES} /></Field>
-        <Field label="Fecha Ingreso"><Input type="date" value={emp.hireDate} onChange={v => onChange('hireDate', v)} /></Field>
-        {(emp.contractType === 'plazo_fijo' || emp.contractType === 'obra_faena') && (
-          <Field label="Fecha Término">
-            <Input type="date" value={emp.endDate || ''} onChange={v => onChange('endDate', v)} />
-          </Field>
-        )}
-        <Field label="Jornada"><Select value={emp.workSchedule} onChange={v => onChange('workSchedule', v)} options={SCHEDULE_OPTIONS} /></Field>
-        <Field label="Horas Semanales"><Input type="number" value={emp.weeklyHours} onChange={v => onChange('weeklyHours', Number(v))} /></Field>
-        <Field label="Estado">
-          <Select value={emp.status} onChange={v => onChange('status', v)} options={[{value:'active',label:'Activo'},{value:'suspended',label:'Suspendido'},{value:'on_leave',label:'Con Permiso'},{value:'terminated',label:'Terminado'}]} />
+        <Field label="Nombre">
+          <Input
+            value={emp.emergencyContactName}
+            onChange={(v) => onChange('emergencyContactName', v)}
+          />
+        </Field>
+        <Field label="Teléfono">
+          <Input
+            value={emp.emergencyContactPhone}
+            onChange={(v) => onChange('emergencyContactPhone', v)}
+          />
         </Field>
       </div>
       <SaveBtn saving={saving} onSave={onSave} />
     </div>
-  )
+  );
 }
 
-function TabRemuneracion({ emp, onChange, saving, onSave }: { emp: Employee; onChange: (k: string, v: any) => void; saving: boolean; onSave: () => void }) {
-  const netEstimate = Math.round(
-    (emp.grossSalary || 0) * (1 - 0.1164 - 0.07 - 0.006) - 0
-  )
+function TabContrato({
+  emp,
+  onChange,
+  saving,
+  onSave,
+}: {
+  emp: Employee;
+  onChange: (k: string, v: any) => void;
+  saving: boolean;
+  onSave: () => void;
+}) {
+  return (
+    <div>
+      <SectionTitle>Contrato Laboral — Código del Trabajo</SectionTitle>
+      <div
+        style={{
+          background: 'rgba(59,130,246,0.06)',
+          border: '1px solid rgba(59,130,246,0.2)',
+          borderRadius: 8,
+          padding: '10px 14px',
+          marginBottom: 16,
+          fontSize: 12,
+          color: 'var(--text-secondary)',
+        }}
+      >
+        <strong>Art. 9 CT:</strong> El contrato debe quedar firmado dentro de 15 días corridos desde
+        el inicio. Progresión: plazo fijo 30d → plazo fijo 60d → indefinido. CEO/RRHH puede
+        contratar directamente a indefinido.
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
+        <Field label="Cargo">
+          <Input value={emp.position} onChange={(v) => onChange('position', v)} />
+        </Field>
+        <Field label="Departamento">
+          <Select
+            value={emp.department}
+            onChange={(v) => onChange('department', v)}
+            options={DEPARTMENTS}
+          />
+        </Field>
+        <Field label="Tipo Contrato">
+          <Select
+            value={emp.contractType}
+            onChange={(v) => onChange('contractType', v)}
+            options={CONTRACT_TYPES}
+          />
+        </Field>
+        <Field label="Fecha Ingreso">
+          <Input type="date" value={emp.hireDate} onChange={(v) => onChange('hireDate', v)} />
+        </Field>
+        {(emp.contractType === 'plazo_fijo' || emp.contractType === 'obra_faena') && (
+          <Field label="Fecha Término">
+            <Input type="date" value={emp.endDate || ''} onChange={(v) => onChange('endDate', v)} />
+          </Field>
+        )}
+        <Field label="Jornada">
+          <Select
+            value={emp.workSchedule}
+            onChange={(v) => onChange('workSchedule', v)}
+            options={SCHEDULE_OPTIONS}
+          />
+        </Field>
+        <Field label="Horas Semanales">
+          <Input
+            type="number"
+            value={emp.weeklyHours}
+            onChange={(v) => onChange('weeklyHours', Number(v))}
+          />
+        </Field>
+        <Field label="Estado">
+          <Select
+            value={emp.status}
+            onChange={(v) => onChange('status', v)}
+            options={[
+              { value: 'active', label: 'Activo' },
+              { value: 'suspended', label: 'Suspendido' },
+              { value: 'on_leave', label: 'Con Permiso' },
+              { value: 'terminated', label: 'Terminado' },
+            ]}
+          />
+        </Field>
+      </div>
+      <SaveBtn saving={saving} onSave={onSave} />
+    </div>
+  );
+}
+
+function TabRemuneracion({
+  emp,
+  onChange,
+  saving,
+  onSave,
+}: {
+  emp: Employee;
+  onChange: (k: string, v: any) => void;
+  saving: boolean;
+  onSave: () => void;
+}) {
+  const netEstimate = Math.round((emp.grossSalary || 0) * (1 - 0.1164 - 0.07 - 0.006) - 0);
   return (
     <div>
       <SectionTitle>Sueldo y Asignaciones</SectionTitle>
-      <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: '10px 14px', marginBottom: 16, fontSize: 12, color: 'var(--text-secondary)' }}>
-        Sueldo líquido estimado: <strong style={{ color: '#22c55e' }}>{fmtMoney(netEstimate)}</strong> (sin Impuesto 2ª Categoría, según retenciones AFP + Salud + AFC)
+      <div
+        style={{
+          background: 'rgba(34,197,94,0.06)',
+          border: '1px solid rgba(34,197,94,0.2)',
+          borderRadius: 8,
+          padding: '10px 14px',
+          marginBottom: 16,
+          fontSize: 12,
+          color: 'var(--text-secondary)',
+        }}
+      >
+        Sueldo líquido estimado:{' '}
+        <strong style={{ color: '#22c55e' }}>{fmtMoney(netEstimate)}</strong> (sin Impuesto 2ª
+        Categoría, según retenciones AFP + Salud + AFC)
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label={`Sueldo Bruto (mín. ${fmtMoney(IMM)})`}><Input type="number" value={emp.grossSalary} onChange={v => onChange('grossSalary', Number(v))} /></Field>
-        <Field label="Colación (no imponible)"><Input type="number" value={emp.colacion} onChange={v => onChange('colacion', Number(v))} /></Field>
-        <Field label="Movilización (no imponible)"><Input type="number" value={emp.movilizacion} onChange={v => onChange('movilizacion', Number(v))} /></Field>
+        <Field label={`Sueldo Bruto (mín. ${fmtMoney(IMM)})`}>
+          <Input
+            type="number"
+            value={emp.grossSalary}
+            onChange={(v) => onChange('grossSalary', Number(v))}
+          />
+        </Field>
+        <Field label="Colación (no imponible)">
+          <Input
+            type="number"
+            value={emp.colacion}
+            onChange={(v) => onChange('colacion', Number(v))}
+          />
+        </Field>
+        <Field label="Movilización (no imponible)">
+          <Input
+            type="number"
+            value={emp.movilizacion}
+            onChange={(v) => onChange('movilizacion', Number(v))}
+          />
+        </Field>
       </div>
       <SectionTitle>Previsión y Salud</SectionTitle>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="AFP"><Select value={emp.afp} onChange={v => onChange('afp', v)} options={AFP_LIST} /></Field>
-        <Field label="Sistema de Salud"><Select value={emp.healthSystem} onChange={v => onChange('healthSystem', v)} options={HEALTH_OPTIONS} /></Field>
+        <Field label="AFP">
+          <Select value={emp.afp} onChange={(v) => onChange('afp', v)} options={AFP_LIST} />
+        </Field>
+        <Field label="Sistema de Salud">
+          <Select
+            value={emp.healthSystem}
+            onChange={(v) => onChange('healthSystem', v)}
+            options={HEALTH_OPTIONS}
+          />
+        </Field>
         {emp.healthSystem === 'isapre' && (
           <>
-            <Field label="ISAPRE"><Select value={ISAPRE_LIST.find(i => i.label === emp.isapreName)?.value || ''} onChange={v => onChange('isapreName', ISAPRE_LIST.find(i => i.value === v)?.label || v)} options={[{ value: '', label: '— Seleccionar —' }, ...ISAPRE_LIST]} /></Field>
-            <Field label="Cotización ISAPRE (UF)"><Input type="number" value={emp.isapreUf || 0} onChange={v => onChange('isapreUf', Number(v))} /></Field>
+            <Field label="ISAPRE">
+              <Select
+                value={ISAPRE_LIST.find((i) => i.label === emp.isapreName)?.value || ''}
+                onChange={(v) =>
+                  onChange('isapreName', ISAPRE_LIST.find((i) => i.value === v)?.label || v)
+                }
+                options={[{ value: '', label: '— Seleccionar —' }, ...ISAPRE_LIST]}
+              />
+            </Field>
+            <Field label="Cotización ISAPRE (UF)">
+              <Input
+                type="number"
+                value={emp.isapreUf || 0}
+                onChange={(v) => onChange('isapreUf', Number(v))}
+              />
+            </Field>
           </>
         )}
         <Field label="AFC (Seguro Desempleo)">
-          <Select value={emp.afcActive ? 'si' : 'no'} onChange={v => onChange('afcActive', v === 'si')} options={[{value:'si',label:'Sí — Ley 19.728'},{value:'no',label:'No aplica'}]} />
+          <Select
+            value={emp.afcActive ? 'si' : 'no'}
+            onChange={(v) => onChange('afcActive', v === 'si')}
+            options={[
+              { value: 'si', label: 'Sí — Ley 19.728' },
+              { value: 'no', label: 'No aplica' },
+            ]}
+          />
         </Field>
       </div>
       <SectionTitle>Datos Bancarios</SectionTitle>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 20px' }}>
-        <Field label="Banco"><Select value={emp.bankName} onChange={v => onChange('bankName', v)} options={BANKS} /></Field>
-        <Field label="Tipo Cuenta"><Select value={emp.bankAccountType} onChange={v => onChange('bankAccountType', v)} options={ACCOUNT_TYPES} /></Field>
-        <Field label="N° Cuenta"><Input value={emp.bankAccountNumber} onChange={v => onChange('bankAccountNumber', v)} /></Field>
+        <Field label="Banco">
+          <Select value={emp.bankName} onChange={(v) => onChange('bankName', v)} options={BANKS} />
+        </Field>
+        <Field label="Tipo Cuenta">
+          <Select
+            value={emp.bankAccountType}
+            onChange={(v) => onChange('bankAccountType', v)}
+            options={ACCOUNT_TYPES}
+          />
+        </Field>
+        <Field label="N° Cuenta">
+          <Input value={emp.bankAccountNumber} onChange={(v) => onChange('bankAccountNumber', v)} />
+        </Field>
       </div>
       <SaveBtn saving={saving} onSave={onSave} />
     </div>
-  )
+  );
 }
 
 function TabDocumentos({ emp }: { emp: Employee }) {
-  const [docs, setDocs] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [docs, setDocs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true)
-    api.getEmployeeDocuments(emp.id)
-      .then(d => setDocs(Array.isArray(d) ? d : []))
+    setLoading(true);
+    api
+      .getEmployeeDocuments(emp.id)
+      .then((d) => setDocs(Array.isArray(d) ? d : []))
       .catch(() => setDocs([]))
-      .finally(() => setLoading(false))
-  }, [emp.id])
+      .finally(() => setLoading(false));
+  }, [emp.id]);
 
   const DOC_TYPE_LABEL: Record<string, string> = {
-    contract: 'Contrato', fes: 'FES', memo: 'Memo', annex: 'Anexo',
-    certificate: 'Certificado', other: 'Otro',
-  }
+    contract: 'Contrato',
+    fes: 'FES',
+    memo: 'Memo',
+    annex: 'Anexo',
+    certificate: 'Certificado',
+    other: 'Otro',
+  };
 
   return (
     <div>
@@ -1891,31 +3328,63 @@ function TabDocumentos({ emp }: { emp: Employee }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {docs.map((d: any) => (
-            <div key={d.id} style={{
-              display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px',
-              border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-secondary)',
-            }}>
+            <div
+              key={d.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 14px',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                background: 'var(--bg-secondary)',
+              }}
+            >
               <span style={{ fontSize: 20 }}>📄</span>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{d.fileName || 'Documento'}</div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                  {DOC_TYPE_LABEL[d.documentType] || d.documentType} · {fmtDate(d.uploadedAt || d.created_at)}
+                  {DOC_TYPE_LABEL[d.documentType] || d.documentType} ·{' '}
+                  {fmtDate(d.uploadedAt || d.created_at)}
                 </div>
               </div>
-              {d.signed && <span style={{ fontSize: 11, background: 'rgba(34,197,94,0.1)', color: '#22c55e', padding: '2px 8px', borderRadius: 20, fontWeight: 600 }}>Firmado</span>}
+              {d.signed && (
+                <span
+                  style={{
+                    fontSize: 11,
+                    background: 'rgba(34,197,94,0.1)',
+                    color: '#22c55e',
+                    padding: '2px 8px',
+                    borderRadius: 20,
+                    fontWeight: 600,
+                  }}
+                >
+                  Firmado
+                </span>
+              )}
             </div>
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function TabHistorial({ emp }: { emp: Employee }) {
   const changes = [
     { date: emp.createdAt, action: 'Registro creado', detail: `Ingreso como ${emp.position}` },
-    ...(emp.contractType === 'indefinido' ? [{ date: emp.hireDate, action: 'Contrato indefinido', detail: 'Contrato vigente sin fecha de término' }] : []),
-  ].filter(c => c.date).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    ...(emp.contractType === 'indefinido'
+      ? [
+          {
+            date: emp.hireDate,
+            action: 'Contrato indefinido',
+            detail: 'Contrato vigente sin fecha de término',
+          },
+        ]
+      : []),
+  ]
+    .filter((c) => c.date)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div>
@@ -1924,11 +3393,33 @@ function TabHistorial({ emp }: { emp: Employee }) {
         <div style={{ color: 'var(--text-muted)', fontSize: 13 }}>Sin historial registrado.</div>
       ) : (
         <div style={{ position: 'relative', paddingLeft: 20 }}>
-          <div style={{ position: 'absolute', left: 7, top: 0, bottom: 0, width: 2, background: 'var(--border)' }} />
+          <div
+            style={{
+              position: 'absolute',
+              left: 7,
+              top: 0,
+              bottom: 0,
+              width: 2,
+              background: 'var(--border)',
+            }}
+          />
           {changes.map((c, i) => (
             <div key={i} style={{ position: 'relative', marginBottom: 20 }}>
-              <div style={{ position: 'absolute', left: -17, top: 4, width: 10, height: 10, borderRadius: '50%', background: 'var(--accent)', border: '2px solid var(--bg-primary)' }} />
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>{fmtDate(c.date)}</div>
+              <div
+                style={{
+                  position: 'absolute',
+                  left: -17,
+                  top: 4,
+                  width: 10,
+                  height: 10,
+                  borderRadius: '50%',
+                  background: 'var(--accent)',
+                  border: '2px solid var(--bg-primary)',
+                }}
+              />
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 2 }}>
+                {fmtDate(c.date)}
+              </div>
               <div style={{ fontSize: 13, fontWeight: 600 }}>{c.action}</div>
               <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.detail}</div>
             </div>
@@ -1936,7 +3427,7 @@ function TabHistorial({ emp }: { emp: Employee }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 function SaveBtn({ saving, onSave }: { saving: boolean; onSave: () => void }) {
@@ -1945,12 +3436,22 @@ function SaveBtn({ saving, onSave }: { saving: boolean; onSave: () => void }) {
       <button
         onClick={onSave}
         disabled={saving}
-        style={{ padding: '9px 24px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving ? 0.7 : 1 }}
+        style={{
+          padding: '9px 24px',
+          background: 'var(--accent)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: 8,
+          cursor: saving ? 'default' : 'pointer',
+          fontSize: 13,
+          fontWeight: 600,
+          opacity: saving ? 0.7 : 1,
+        }}
       >
         {saving ? 'Guardando…' : 'Guardar Cambios'}
       </button>
     </div>
-  )
+  );
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1958,31 +3459,45 @@ function SaveBtn({ saving, onSave }: { saving: boolean; onSave: () => void }) {
 // ═══════════════════════════════════════════════════════════════
 
 interface AnexoChange {
-  clause: string
-  legalRef: string
-  oldValue: string
-  newValue: string
+  clause: string;
+  legalRef: string;
+  oldValue: string;
+  newValue: string;
 }
 
 const ANEXO_TIPOS = [
-  { key: 'salary',        label: 'Sueldo Bruto',              legalRef: 'Art. 11 CT' },
-  { key: 'benefits',      label: 'Colación / Movilización',   legalRef: 'Art. 41 CT' },
-  { key: 'health',        label: 'Sistema de Salud',          legalRef: 'DFL 1/2005' },
-  { key: 'position',      label: 'Cargo / Funciones',         legalRef: 'Art. 12 CT' },
-  { key: 'schedule',      label: 'Jornada / Horario',         legalRef: 'Art. 22 CT' },
-  { key: 'contract_type', label: 'Tipo de Contrato',          legalRef: 'Art. 9 CT'  },
-  { key: 'other',         label: 'Otro acuerdo',              legalRef: 'Art. 11 CT' },
-]
+  { key: 'salary', label: 'Sueldo Bruto', legalRef: 'Art. 11 CT' },
+  { key: 'benefits', label: 'Colación / Movilización', legalRef: 'Art. 41 CT' },
+  { key: 'health', label: 'Sistema de Salud', legalRef: 'DFL 1/2005' },
+  { key: 'position', label: 'Cargo / Funciones', legalRef: 'Art. 12 CT' },
+  { key: 'schedule', label: 'Jornada / Horario', legalRef: 'Art. 22 CT' },
+  { key: 'contract_type', label: 'Tipo de Contrato', legalRef: 'Art. 9 CT' },
+  { key: 'other', label: 'Otro acuerdo', legalRef: 'Art. 11 CT' },
+];
 
 function buildAnexoHTML(emp: Employee, changes: AnexoChange[], notes: string): string {
-  const today = new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
-  const hireDisplay = emp.hireDate ? new Date(emp.hireDate + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }) : 'la fecha de inicio'
-  const rows = changes.map(c => `
+  const today = new Date().toLocaleDateString('es-CL', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  const hireDisplay = emp.hireDate
+    ? new Date(emp.hireDate + 'T12:00:00').toLocaleDateString('es-CL', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      })
+    : 'la fecha de inicio';
+  const rows = changes
+    .map(
+      (c) => `
     <tr>
       <td><strong>${c.clause}</strong><br><span style="font-size:10px;color:#888">${c.legalRef}</span></td>
       <td style="color:#c00">${c.oldValue}</td>
       <td style="color:#006600"><strong>${c.newValue}</strong></td>
-    </tr>`).join('')
+    </tr>`
+    )
+    .join('');
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
     body{font-family:Georgia,serif;font-size:12px;color:#1a1a1a;max-width:780px;margin:0 auto;padding:32px}
     h1{text-align:center;font-size:15px;letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
@@ -2012,210 +3527,556 @@ function buildAnexoHTML(emp: Employee, changes: AnexoChange[], notes: string): s
     <div class="sign-box">________________________________<br>Firma Empleador<br><strong>Conniku SpA</strong><br>RUT 78.395.702-7</div>
     <div class="sign-box">________________________________<br>Firma Trabajador<br><strong>${emp.firstName} ${emp.lastName}</strong><br>RUT ${emp.rut}</div>
   </div>
-  </body></html>`
+  </body></html>`;
 }
 
-function AnexoModal({ emp, onClose, onCreated }: { emp: Employee; onClose: () => void; onCreated: () => void }) {
-  const [selected, setSelected] = useState<string[]>([])
-  const [vals, setVals] = useState<Record<string, any>>({})
-  const [notes, setNotes] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [preview, setPreview] = useState(false)
+function AnexoModal({
+  emp,
+  onClose,
+  onCreated,
+}: {
+  emp: Employee;
+  onClose: () => void;
+  onCreated: () => void;
+}) {
+  const [selected, setSelected] = useState<string[]>([]);
+  const [vals, setVals] = useState<Record<string, any>>({});
+  const [notes, setNotes] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [preview, setPreview] = useState(false);
 
   const toggle = (key: string) =>
-    setSelected(p => p.includes(key) ? p.filter(k => k !== key) : [...p, key])
+    setSelected((p) => (p.includes(key) ? p.filter((k) => k !== key) : [...p, key]));
 
   const setVal = (key: string, field: string, val: any) =>
-    setVals(p => ({ ...p, [key]: { ...(p[key] || {}), [field]: val } }))
+    setVals((p) => ({ ...p, [key]: { ...(p[key] || {}), [field]: val } }));
 
-  const buildChanges = (): AnexoChange[] => selected.map(key => {
-    const tipo = ANEXO_TIPOS.find(t => t.key === key)!
-    const v = vals[key] || {}
-    switch (key) {
-      case 'salary':
-        return { clause: 'Sueldo Bruto', legalRef: tipo.legalRef, oldValue: `$${fmtMoney(emp.grossSalary)} CLP mensual`, newValue: `$${fmtMoney(Number(v.grossSalary || 0))} CLP mensual` }
-      case 'benefits':
-        return { clause: 'Beneficios No Imponibles', legalRef: tipo.legalRef, oldValue: `Colación $${fmtMoney(emp.colacion)} · Movilización $${fmtMoney(emp.movilizacion)}`, newValue: `Colación $${fmtMoney(Number(v.colacion ?? emp.colacion))} · Movilización $${fmtMoney(Number(v.movilizacion ?? emp.movilizacion))}` }
-      case 'health':
-        return { clause: 'Sistema de Salud Previsional', legalRef: tipo.legalRef, oldValue: emp.healthSystem === 'fonasa' ? 'FONASA (7%)' : `ISAPRE ${emp.isapreName} (${emp.isapreUf} UF)`, newValue: v.healthSystem === 'fonasa' ? 'FONASA (7%)' : `ISAPRE ${v.isapreName || ''} (${v.isapreUf || 0} UF)` }
-      case 'position':
-        return { clause: 'Cargo y Funciones', legalRef: tipo.legalRef, oldValue: emp.position || '', newValue: v.position || '' }
-      case 'schedule':
-        return { clause: 'Jornada Laboral', legalRef: tipo.legalRef, oldValue: `${emp.workSchedule === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${emp.weeklyHours}h semanales`, newValue: `${(v.workSchedule || emp.workSchedule) === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${v.weeklyHours || emp.weeklyHours}h semanales` }
-      case 'contract_type':
-        return { clause: 'Tipo de Contrato', legalRef: tipo.legalRef, oldValue: CONTRACT_TYPES.find(c => c.value === emp.contractType)?.label || emp.contractType, newValue: CONTRACT_TYPES.find(c => c.value === (v.contractType || emp.contractType))?.label || v.contractType || '' }
-      case 'other':
-        return { clause: 'Acuerdo Especial', legalRef: tipo.legalRef, oldValue: '—', newValue: v.description || '' }
-      default:
-        return { clause: tipo.label, legalRef: tipo.legalRef, oldValue: '—', newValue: v.newValue || '' }
-    }
-  })
+  const buildChanges = (): AnexoChange[] =>
+    selected.map((key) => {
+      const tipo = ANEXO_TIPOS.find((t) => t.key === key)!;
+      const v = vals[key] || {};
+      switch (key) {
+        case 'salary':
+          return {
+            clause: 'Sueldo Bruto',
+            legalRef: tipo.legalRef,
+            oldValue: `$${fmtMoney(emp.grossSalary)} CLP mensual`,
+            newValue: `$${fmtMoney(Number(v.grossSalary || 0))} CLP mensual`,
+          };
+        case 'benefits':
+          return {
+            clause: 'Beneficios No Imponibles',
+            legalRef: tipo.legalRef,
+            oldValue: `Colación $${fmtMoney(emp.colacion)} · Movilización $${fmtMoney(emp.movilizacion)}`,
+            newValue: `Colación $${fmtMoney(Number(v.colacion ?? emp.colacion))} · Movilización $${fmtMoney(Number(v.movilizacion ?? emp.movilizacion))}`,
+          };
+        case 'health':
+          return {
+            clause: 'Sistema de Salud Previsional',
+            legalRef: tipo.legalRef,
+            oldValue:
+              emp.healthSystem === 'fonasa'
+                ? 'FONASA (7%)'
+                : `ISAPRE ${emp.isapreName} (${emp.isapreUf} UF)`,
+            newValue:
+              v.healthSystem === 'fonasa'
+                ? 'FONASA (7%)'
+                : `ISAPRE ${v.isapreName || ''} (${v.isapreUf || 0} UF)`,
+          };
+        case 'position':
+          return {
+            clause: 'Cargo y Funciones',
+            legalRef: tipo.legalRef,
+            oldValue: emp.position || '',
+            newValue: v.position || '',
+          };
+        case 'schedule':
+          return {
+            clause: 'Jornada Laboral',
+            legalRef: tipo.legalRef,
+            oldValue: `${emp.workSchedule === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${emp.weeklyHours}h semanales`,
+            newValue: `${(v.workSchedule || emp.workSchedule) === 'full_time' ? 'Jornada Completa' : 'Jornada Parcial'} — ${v.weeklyHours || emp.weeklyHours}h semanales`,
+          };
+        case 'contract_type':
+          return {
+            clause: 'Tipo de Contrato',
+            legalRef: tipo.legalRef,
+            oldValue:
+              CONTRACT_TYPES.find((c) => c.value === emp.contractType)?.label || emp.contractType,
+            newValue:
+              CONTRACT_TYPES.find((c) => c.value === (v.contractType || emp.contractType))?.label ||
+              v.contractType ||
+              '',
+          };
+        case 'other':
+          return {
+            clause: 'Acuerdo Especial',
+            legalRef: tipo.legalRef,
+            oldValue: '—',
+            newValue: v.description || '',
+          };
+        default:
+          return {
+            clause: tipo.label,
+            legalRef: tipo.legalRef,
+            oldValue: '—',
+            newValue: v.newValue || '',
+          };
+      }
+    });
 
   const buildUpdates = () => {
-    const u: any = {}
+    const u: any = {};
     for (const key of selected) {
-      const v = vals[key] || {}
-      if (key === 'salary' && v.grossSalary) u.grossSalary = Number(v.grossSalary)
-      if (key === 'benefits') { if (v.colacion !== undefined) u.colacion = Number(v.colacion); if (v.movilizacion !== undefined) u.movilizacion = Number(v.movilizacion) }
-      if (key === 'health') { u.healthSystem = v.healthSystem || emp.healthSystem; u.isapreName = v.isapreName || ''; u.isapreUf = v.isapreUf || 0 }
-      if (key === 'position' && v.position) u.position = v.position
-      if (key === 'schedule') { if (v.workSchedule) u.workSchedule = v.workSchedule; if (v.weeklyHours) u.weeklyHours = Number(v.weeklyHours) }
-      if (key === 'contract_type' && v.contractType) u.contractType = v.contractType
+      const v = vals[key] || {};
+      if (key === 'salary' && v.grossSalary) u.grossSalary = Number(v.grossSalary);
+      if (key === 'benefits') {
+        if (v.colacion !== undefined) u.colacion = Number(v.colacion);
+        if (v.movilizacion !== undefined) u.movilizacion = Number(v.movilizacion);
+      }
+      if (key === 'health') {
+        u.healthSystem = v.healthSystem || emp.healthSystem;
+        u.isapreName = v.isapreName || '';
+        u.isapreUf = v.isapreUf || 0;
+      }
+      if (key === 'position' && v.position) u.position = v.position;
+      if (key === 'schedule') {
+        if (v.workSchedule) u.workSchedule = v.workSchedule;
+        if (v.weeklyHours) u.weeklyHours = Number(v.weeklyHours);
+      }
+      if (key === 'contract_type' && v.contractType) u.contractType = v.contractType;
     }
-    return u
-  }
+    return u;
+  };
 
   const handleSubmit = async () => {
-    setError('')
-    if (selected.length === 0) { setError('Selecciona al menos una modificación'); return }
-    const changes = buildChanges()
-    const invalid = changes.find(c => c.newValue === c.oldValue || !c.newValue.trim() || c.newValue === '— ')
-    if (invalid) { setError(`Completa el nuevo valor para: ${invalid.clause}`); return }
-    setSaving(true)
-    try {
-      const updates = buildUpdates()
-      if (Object.keys(updates).length > 0) await api.updateEmployee(emp.id, updates)
-      const html = buildAnexoHTML(emp, changes, notes)
-      await api.generateContractPdf(emp.id, { html, worker_name: `${emp.firstName} ${emp.lastName}` })
-      onCreated()
-      onClose()
-    } catch (err: any) {
-      setError(err?.message || 'Error al generar el Anexo')
+    setError('');
+    if (selected.length === 0) {
+      setError('Selecciona al menos una modificación');
+      return;
     }
-    setSaving(false)
-  }
+    const changes = buildChanges();
+    const invalid = changes.find(
+      (c) => c.newValue === c.oldValue || !c.newValue.trim() || c.newValue === '— '
+    );
+    if (invalid) {
+      setError(`Completa el nuevo valor para: ${invalid.clause}`);
+      return;
+    }
+    setSaving(true);
+    try {
+      const updates = buildUpdates();
+      if (Object.keys(updates).length > 0) await api.updateEmployee(emp.id, updates);
+      const html = buildAnexoHTML(emp, changes, notes);
+      await api.generateContractPdf(emp.id, {
+        html,
+        worker_name: `${emp.firstName} ${emp.lastName}`,
+      });
+      onCreated();
+      onClose();
+    } catch (err: any) {
+      setError(err?.message || 'Error al generar el Anexo');
+    }
+    setSaving(false);
+  };
 
-  const iStyle: React.CSSProperties = { width: '100%', padding: '7px 10px', borderRadius: 7, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 13 }
+  const iStyle: React.CSSProperties = {
+    width: '100%',
+    padding: '7px 10px',
+    borderRadius: 7,
+    border: '1px solid var(--border)',
+    background: 'var(--bg-secondary)',
+    color: 'var(--text-primary)',
+    fontSize: 13,
+  };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 10001, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ background: 'var(--bg-primary)', borderRadius: 14, width: '100%', maxWidth: 620, maxHeight: '90vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 10001,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div
+        style={{
+          background: 'var(--bg-primary)',
+          borderRadius: 14,
+          width: '100%',
+          maxWidth: 620,
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        }}
+      >
         {/* Header */}
-        <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          style={{
+            padding: '18px 24px',
+            borderBottom: '1px solid var(--border)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div>
             <div style={{ fontWeight: 700, fontSize: 16 }}>Crear Anexo de Contrato</div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{emp.firstName} {emp.lastName} · {emp.rut}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+              {emp.firstName} {emp.lastName} · {emp.rut}
+            </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, color: 'var(--text-muted)' }}>✕</button>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 20,
+              color: 'var(--text-muted)',
+            }}
+          >
+            ✕
+          </button>
         </div>
         {/* Body */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 14 }}>
-            Selecciona qué modificar. Los cambios se guardan en el sistema y se genera un Anexo PDF listo para firma electrónica.
+            Selecciona qué modificar. Los cambios se guardan en el sistema y se genera un Anexo PDF
+            listo para firma electrónica.
           </div>
           {/* Tipo selector */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-            {ANEXO_TIPOS.map(t => (
-              <button key={t.key} onClick={() => toggle(t.key)} style={{ padding: '6px 14px', borderRadius: 20, border: `1.5px solid ${selected.includes(t.key) ? 'var(--accent)' : 'var(--border)'}`, background: selected.includes(t.key) ? 'var(--accent)' : 'var(--bg-secondary)', color: selected.includes(t.key) ? '#fff' : 'var(--text-secondary)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+            {ANEXO_TIPOS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => toggle(t.key)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 20,
+                  border: `1.5px solid ${selected.includes(t.key) ? 'var(--accent)' : 'var(--border)'}`,
+                  background: selected.includes(t.key) ? 'var(--accent)' : 'var(--bg-secondary)',
+                  color: selected.includes(t.key) ? '#fff' : 'var(--text-secondary)',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
                 {t.label}
               </button>
             ))}
           </div>
           {/* Fields per selected type */}
-          {selected.map(key => {
-            const v = vals[key] || {}
-            const setV = (f: string, val: any) => setVal(key, f, val)
+          {selected.map((key) => {
+            const v = vals[key] || {};
+            const setV = (f: string, val: any) => setVal(key, f, val);
             return (
-              <div key={key} style={{ background: 'var(--bg-secondary)', borderRadius: 10, padding: '14px 16px', marginBottom: 14, border: '1px solid var(--border)' }}>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 10, color: 'var(--accent)' }}>
-                  {ANEXO_TIPOS.find(t => t.key === key)?.label} <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>({ANEXO_TIPOS.find(t => t.key === key)?.legalRef})</span>
+              <div
+                key={key}
+                style={{
+                  background: 'var(--bg-secondary)',
+                  borderRadius: 10,
+                  padding: '14px 16px',
+                  marginBottom: 14,
+                  border: '1px solid var(--border)',
+                }}
+              >
+                <div
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 13,
+                    marginBottom: 10,
+                    color: 'var(--accent)',
+                  }}
+                >
+                  {ANEXO_TIPOS.find((t) => t.key === key)?.label}{' '}
+                  <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-muted)' }}>
+                    ({ANEXO_TIPOS.find((t) => t.key === key)?.legalRef})
+                  </span>
                 </div>
                 {key === 'salary' && (
-                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sueldo actual: ${fmtMoney(emp.grossSalary)} → Nuevo sueldo bruto (CLP)</label><input style={iStyle} type="number" value={v.grossSalary || ''} onChange={e => setV('grossSalary', e.target.value)} placeholder={String(emp.grossSalary)} /></div>
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Sueldo actual: ${fmtMoney(emp.grossSalary)} → Nuevo sueldo bruto (CLP)
+                    </label>
+                    <input
+                      style={iStyle}
+                      type="number"
+                      value={v.grossSalary || ''}
+                      onChange={(e) => setV('grossSalary', e.target.value)}
+                      placeholder={String(emp.grossSalary)}
+                    />
+                  </div>
                 )}
                 {key === 'benefits' && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Colación (actual: ${fmtMoney(emp.colacion)})</label><input style={iStyle} type="number" value={v.colacion ?? ''} onChange={e => setV('colacion', e.target.value)} /></div>
-                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Movilización (actual: ${fmtMoney(emp.movilizacion)})</label><input style={iStyle} type="number" value={v.movilizacion ?? ''} onChange={e => setV('movilizacion', e.target.value)} /></div>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        Colación (actual: ${fmtMoney(emp.colacion)})
+                      </label>
+                      <input
+                        style={iStyle}
+                        type="number"
+                        value={v.colacion ?? ''}
+                        onChange={(e) => setV('colacion', e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        Movilización (actual: ${fmtMoney(emp.movilizacion)})
+                      </label>
+                      <input
+                        style={iStyle}
+                        type="number"
+                        value={v.movilizacion ?? ''}
+                        onChange={(e) => setV('movilizacion', e.target.value)}
+                      />
+                    </div>
                   </div>
                 )}
                 {key === 'health' && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Sistema (actual: {emp.healthSystem})</label><select style={iStyle} value={v.healthSystem || emp.healthSystem} onChange={e => setV('healthSystem', e.target.value)}><option value="fonasa">FONASA (7%)</option><option value="isapre">ISAPRE</option></select></div>
-                    {(v.healthSystem || emp.healthSystem) === 'isapre' && (<>
-                      <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>ISAPRE</label><select style={iStyle} value={v.isapreName || ''} onChange={e => setV('isapreName', e.target.value)}><option value="">— Seleccionar —</option>{ISAPRE_LIST.map(i => <option key={i.value} value={i.label}>{i.label}</option>)}</select></div>
-                      <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Plan (UF mensuales)</label><input style={iStyle} type="number" step="0.01" value={v.isapreUf || ''} onChange={e => setV('isapreUf', e.target.value)} /></div>
-                    </>)}
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        Sistema (actual: {emp.healthSystem})
+                      </label>
+                      <select
+                        style={iStyle}
+                        value={v.healthSystem || emp.healthSystem}
+                        onChange={(e) => setV('healthSystem', e.target.value)}
+                      >
+                        <option value="fonasa">FONASA (7%)</option>
+                        <option value="isapre">ISAPRE</option>
+                      </select>
+                    </div>
+                    {(v.healthSystem || emp.healthSystem) === 'isapre' && (
+                      <>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>ISAPRE</label>
+                          <select
+                            style={iStyle}
+                            value={v.isapreName || ''}
+                            onChange={(e) => setV('isapreName', e.target.value)}
+                          >
+                            <option value="">— Seleccionar —</option>
+                            {ISAPRE_LIST.map((i) => (
+                              <option key={i.value} value={i.label}>
+                                {i.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                            Plan (UF mensuales)
+                          </label>
+                          <input
+                            style={iStyle}
+                            type="number"
+                            step="0.01"
+                            value={v.isapreUf || ''}
+                            onChange={(e) => setV('isapreUf', e.target.value)}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 {key === 'position' && (
-                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Cargo actual: {emp.position} → Nuevo cargo</label><input style={iStyle} value={v.position || ''} onChange={e => setV('position', e.target.value)} /></div>
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Cargo actual: {emp.position} → Nuevo cargo
+                    </label>
+                    <input
+                      style={iStyle}
+                      value={v.position || ''}
+                      onChange={(e) => setV('position', e.target.value)}
+                    />
+                  </div>
                 )}
                 {key === 'schedule' && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Jornada</label><select style={iStyle} value={v.workSchedule || emp.workSchedule} onChange={e => setV('workSchedule', e.target.value)}><option value="full_time">Jornada Completa</option><option value="part_time">Jornada Parcial</option></select></div>
-                    <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Horas semanales</label><input style={iStyle} type="number" value={v.weeklyHours || emp.weeklyHours} onChange={e => setV('weeklyHours', e.target.value)} /></div>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Jornada</label>
+                      <select
+                        style={iStyle}
+                        value={v.workSchedule || emp.workSchedule}
+                        onChange={(e) => setV('workSchedule', e.target.value)}
+                      >
+                        <option value="full_time">Jornada Completa</option>
+                        <option value="part_time">Jornada Parcial</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                        Horas semanales
+                      </label>
+                      <input
+                        style={iStyle}
+                        type="number"
+                        value={v.weeklyHours || emp.weeklyHours}
+                        onChange={(e) => setV('weeklyHours', e.target.value)}
+                      />
+                    </div>
                   </div>
                 )}
                 {key === 'contract_type' && (
-                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tipo actual: {CONTRACT_TYPES.find(c => c.value === emp.contractType)?.label} → Nuevo tipo</label><select style={iStyle} value={v.contractType || emp.contractType} onChange={e => setV('contractType', e.target.value)}>{CONTRACT_TYPES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Tipo actual: {CONTRACT_TYPES.find((c) => c.value === emp.contractType)?.label}{' '}
+                      → Nuevo tipo
+                    </label>
+                    <select
+                      style={iStyle}
+                      value={v.contractType || emp.contractType}
+                      onChange={(e) => setV('contractType', e.target.value)}
+                    >
+                      {CONTRACT_TYPES.map((c) => (
+                        <option key={c.value} value={c.value}>
+                          {c.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
                 {key === 'other' && (
-                  <div><label style={{ fontSize: 11, color: 'var(--text-muted)' }}>Describe el acuerdo</label><textarea style={{ ...iStyle, minHeight: 70, resize: 'vertical' }} value={v.description || ''} onChange={e => setV('description', e.target.value)} /></div>
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                      Describe el acuerdo
+                    </label>
+                    <textarea
+                      style={{ ...iStyle, minHeight: 70, resize: 'vertical' }}
+                      value={v.description || ''}
+                      onChange={(e) => setV('description', e.target.value)}
+                    />
+                  </div>
                 )}
               </div>
-            )
+            );
           })}
           {/* Observaciones */}
           <div style={{ marginTop: 4 }}>
-            <label style={{ fontSize: 12, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}>Observaciones adicionales (opcional)</label>
-            <textarea style={{ ...iStyle, minHeight: 60, resize: 'vertical' }} value={notes} onChange={e => setNotes(e.target.value)} placeholder="Ej: Este acuerdo se suscribe a solicitud del trabajador conforme a lo establecido en el Art. 11 CT." />
+            <label
+              style={{
+                fontSize: 12,
+                color: 'var(--text-muted)',
+                display: 'block',
+                marginBottom: 6,
+              }}
+            >
+              Observaciones adicionales (opcional)
+            </label>
+            <textarea
+              style={{ ...iStyle, minHeight: 60, resize: 'vertical' }}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Ej: Este acuerdo se suscribe a solicitud del trabajador conforme a lo establecido en el Art. 11 CT."
+            />
           </div>
           {error && <div style={{ marginTop: 10, fontSize: 12, color: '#ef4444' }}>{error}</div>}
         </div>
         {/* Footer */}
-        <div style={{ padding: '14px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ padding: '9px 20px', border: '1px solid var(--border)', borderRadius: 8, background: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--text-secondary)' }}>Cancelar</button>
-          <button onClick={handleSubmit} disabled={saving || selected.length === 0} style={{ padding: '9px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: saving ? 'default' : 'pointer', fontSize: 13, fontWeight: 600, opacity: saving || selected.length === 0 ? 0.6 : 1 }}>
+        <div
+          style={{
+            padding: '14px 24px',
+            borderTop: '1px solid var(--border)',
+            display: 'flex',
+            gap: 10,
+            justifyContent: 'flex-end',
+          }}
+        >
+          <button
+            onClick={onClose}
+            style={{
+              padding: '9px 20px',
+              border: '1px solid var(--border)',
+              borderRadius: 8,
+              background: 'none',
+              cursor: 'pointer',
+              fontSize: 13,
+              color: 'var(--text-secondary)',
+            }}
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={saving || selected.length === 0}
+            style={{
+              padding: '9px 20px',
+              background: 'var(--accent)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: saving ? 'default' : 'pointer',
+              fontSize: 13,
+              fontWeight: 600,
+              opacity: saving || selected.length === 0 ? 0.6 : 1,
+            }}
+          >
             {saving ? 'Generando Anexo…' : 'Guardar y Generar Anexo PDF'}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ─── Panel derecho: Perfil completo ──────────────────────────────
-function EmployeeProfile({ employee, onUpdated, onDelete }: {
-  employee: Employee
-  onUpdated: (e: Employee) => void
-  onDelete: (id: string) => void
+function EmployeeProfile({
+  employee,
+  onUpdated,
+  onDelete,
+}: {
+  employee: Employee;
+  onUpdated: (e: Employee) => void;
+  onDelete: (id: string) => void;
 }) {
-  const [form, setForm] = useState<Employee>({ ...employee })
-  const [activeTab, setActiveTab] = useState<ProfileTab>('datos')
-  const [saving, setSaving] = useState(false)
-  const [saveMsg, setSaveMsg] = useState('')
-  const [confirmDelete, setConfirmDelete] = useState(false)
-  const [showAnexo, setShowAnexo] = useState(false)
+  const [form, setForm] = useState<Employee>({ ...employee });
+  const [activeTab, setActiveTab] = useState<ProfileTab>('datos');
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showAnexo, setShowAnexo] = useState(false);
 
   // Reset form when employee changes
-  useEffect(() => { setForm({ ...employee }); setActiveTab('datos'); setSaveMsg('') }, [employee.id])
+  useEffect(() => {
+    setForm({ ...employee });
+    setActiveTab('datos');
+    setSaveMsg('');
+  }, [employee.id]);
 
-  const handleChange = (k: string, v: any) => setForm(p => ({ ...p, [k]: v }))
+  const handleChange = (k: string, v: any) => setForm((p) => ({ ...p, [k]: v }));
 
   const handleSave = async () => {
-    setSaving(true); setSaveMsg('')
+    setSaving(true);
+    setSaveMsg('');
     try {
-      const updated = await api.updateEmployee(form.id, form)
-      onUpdated({ ...form, ...updated })
-      setSaveMsg('✅ Guardado correctamente')
-      setTimeout(() => setSaveMsg(''), 3000)
+      const updated = await api.updateEmployee(form.id, form);
+      onUpdated({ ...form, ...updated });
+      setSaveMsg('✅ Guardado correctamente');
+      setTimeout(() => setSaveMsg(''), 3000);
     } catch (err: any) {
-      setSaveMsg(`❌ ${err?.message || 'Error al guardar'}`)
+      setSaveMsg(`❌ ${err?.message || 'Error al guardar'}`);
     }
-    setSaving(false)
-  }
+    setSaving(false);
+  };
 
   const handleDelete = async () => {
     try {
-      await api.deleteEmployee(form.id)
-      onDelete(form.id)
+      await api.deleteEmployee(form.id);
+      onDelete(form.id);
     } catch (err: any) {
-      setSaveMsg(`❌ ${err?.message || 'Error al dar de baja'}`)
+      setSaveMsg(`❌ ${err?.message || 'Error al dar de baja'}`);
     }
-    setConfirmDelete(false)
-  }
+    setConfirmDelete(false);
+  };
 
   const TABS: { key: ProfileTab; label: string; emoji: string }[] = [
     { key: 'datos', label: 'Datos Personales', emoji: '👤' },
@@ -2223,11 +4084,12 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
     { key: 'remuneracion', label: 'Remuneración', emoji: '💰' },
     { key: 'documentos', label: 'Documentos', emoji: '📄' },
     { key: 'historial', label: 'Historial', emoji: '🕐' },
-  ]
+  ];
 
-  const statusColor = STATUS_COLOR[form.status] || '#6b7280'
-  const statusLabel = STATUS_LABEL[form.status] || form.status
-  const contractLabel = CONTRACT_TYPES.find(c => c.value === form.contractType)?.label || form.contractType
+  const statusColor = STATUS_COLOR[form.status] || '#6b7280';
+  const statusLabel = STATUS_LABEL[form.status] || form.status;
+  const contractLabel =
+    CONTRACT_TYPES.find((c) => c.value === form.contractType)?.label || form.contractType;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -2235,25 +4097,43 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
       <div style={{ padding: '20px 24px 0', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 16 }}>
           {/* Avatar */}
-          <div style={{
-            width: 64, height: 64, borderRadius: 14, background: avatarColor(form),
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#fff', fontSize: 22, fontWeight: 700, flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-          }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 14,
+              background: avatarColor(form),
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: 22,
+              fontWeight: 700,
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+            }}
+          >
             {initials(form)}
           </div>
 
           {/* Info principal */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-              <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>
+              <h2
+                style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}
+              >
                 {fullName(form)}
               </h2>
-              <span style={{
-                fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 20,
-                background: `${statusColor}18`, color: statusColor,
-              }}>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  padding: '2px 8px',
+                  borderRadius: 20,
+                  background: `${statusColor}18`,
+                  color: statusColor,
+                }}
+              >
                 {statusLabel}
               </span>
             </div>
@@ -2266,34 +4146,96 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
                 { icon: '📅', val: `Ingreso: ${fmtDate(form.hireDate)}` },
                 { icon: '📋', val: contractLabel },
                 ...(form.endDate ? [{ icon: '⏳', val: `Término: ${fmtDate(form.endDate)}` }] : []),
-              ].map(({ icon, val }) => val ? (
-                <span key={val} style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  {icon} {val}
-                </span>
-              ) : null)}
+              ].map(({ icon, val }) =>
+                val ? (
+                  <span
+                    key={val}
+                    style={{
+                      fontSize: 12,
+                      color: 'var(--text-muted)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    {icon} {val}
+                  </span>
+                ) : null
+              )}
             </div>
           </div>
 
           {/* Acciones */}
-          <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+          <div
+            style={{
+              flexShrink: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+              alignItems: 'flex-end',
+            }}
+          >
             <button
               onClick={() => setShowAnexo(true)}
-              style={{ fontSize: 12, padding: '6px 12px', border: '1.5px solid var(--accent)', borderRadius: 8, background: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600 }}
+              style={{
+                fontSize: 12,
+                padding: '6px 12px',
+                border: '1.5px solid var(--accent)',
+                borderRadius: 8,
+                background: 'none',
+                color: 'var(--accent)',
+                cursor: 'pointer',
+                fontWeight: 600,
+              }}
             >
               + Anexo de Contrato
             </button>
             {!confirmDelete ? (
               <button
                 onClick={() => setConfirmDelete(true)}
-                style={{ fontSize: 12, padding: '6px 12px', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, background: 'none', color: '#ef4444', cursor: 'pointer' }}
+                style={{
+                  fontSize: 12,
+                  padding: '6px 12px',
+                  border: '1px solid rgba(239,68,68,0.4)',
+                  borderRadius: 8,
+                  background: 'none',
+                  color: '#ef4444',
+                  cursor: 'pointer',
+                }}
               >
                 Dar de Baja
               </button>
             ) : (
               <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                 <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>¿Confirmar?</span>
-                <button onClick={handleDelete} style={{ fontSize: 11, padding: '5px 10px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: 6, cursor: 'pointer' }}>Sí</button>
-                <button onClick={() => setConfirmDelete(false)} style={{ fontSize: 11, padding: '5px 10px', border: '1px solid var(--border)', background: 'none', borderRadius: 6, cursor: 'pointer', color: 'var(--text-secondary)' }}>No</button>
+                <button
+                  onClick={handleDelete}
+                  style={{
+                    fontSize: 11,
+                    padding: '5px 10px',
+                    background: '#ef4444',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Sí
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  style={{
+                    fontSize: 11,
+                    padding: '5px 10px',
+                    border: '1px solid var(--border)',
+                    background: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  No
+                </button>
               </div>
             )}
           </div>
@@ -2301,16 +4243,22 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
 
         {/* Pestañas */}
         <div style={{ display: 'flex', gap: 0, overflowX: 'auto' }}>
-          {TABS.map(tab => (
+          {TABS.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
               style={{
-                padding: '9px 14px', border: 'none', background: 'none', cursor: 'pointer',
-                fontSize: 13, fontWeight: activeTab === tab.key ? 600 : 400,
+                padding: '9px 14px',
+                border: 'none',
+                background: 'none',
+                cursor: 'pointer',
+                fontSize: 13,
+                fontWeight: activeTab === tab.key ? 600 : 400,
                 color: activeTab === tab.key ? 'var(--accent)' : 'var(--text-muted)',
-                borderBottom: activeTab === tab.key ? '2px solid var(--accent)' : '2px solid transparent',
-                whiteSpace: 'nowrap', transition: 'all 0.15s',
+                borderBottom:
+                  activeTab === tab.key ? '2px solid var(--accent)' : '2px solid transparent',
+                whiteSpace: 'nowrap',
+                transition: 'all 0.15s',
               }}
             >
               {tab.emoji} {tab.label}
@@ -2321,16 +4269,30 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
 
       {/* Mensaje de guardado */}
       {saveMsg && (
-        <div style={{ padding: '8px 24px', fontSize: 12, color: saveMsg.startsWith('✅') ? '#22c55e' : '#ef4444', background: saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)', borderBottom: '1px solid var(--border)' }}>
+        <div
+          style={{
+            padding: '8px 24px',
+            fontSize: 12,
+            color: saveMsg.startsWith('✅') ? '#22c55e' : '#ef4444',
+            background: saveMsg.startsWith('✅') ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+            borderBottom: '1px solid var(--border)',
+          }}
+        >
           {saveMsg}
         </div>
       )}
 
       {/* Contenido de la pestaña activa */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-        {activeTab === 'datos' && <TabDatos emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />}
-        {activeTab === 'contrato' && <TabContrato emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />}
-        {activeTab === 'remuneracion' && <TabRemuneracion emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />}
+        {activeTab === 'datos' && (
+          <TabDatos emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />
+        )}
+        {activeTab === 'contrato' && (
+          <TabContrato emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />
+        )}
+        {activeTab === 'remuneracion' && (
+          <TabRemuneracion emp={form} onChange={handleChange} saving={saving} onSave={handleSave} />
+        )}
         {activeTab === 'documentos' && <TabDocumentos emp={form} />}
         {activeTab === 'historial' && <TabHistorial emp={form} />}
       </div>
@@ -2340,77 +4302,94 @@ function EmployeeProfile({ employee, onUpdated, onDelete }: {
           emp={form}
           onClose={() => setShowAnexo(false)}
           onCreated={() => {
-            setShowAnexo(false)
-            setActiveTab('documentos')
-            setSaveMsg('✅ Anexo generado — ve a la pestaña Documentos para firmarlo')
-            setTimeout(() => setSaveMsg(''), 5000)
+            setShowAnexo(false);
+            setActiveTab('documentos');
+            setSaveMsg('✅ Anexo generado — ve a la pestaña Documentos para firmarlo');
+            setTimeout(() => setSaveMsg(''), 5000);
           }}
         />
       )}
     </div>
-  )
+  );
 }
 
 // ══════════════════════════════════════════════════════════════
 // COMPONENTE PRINCIPAL
 // ══════════════════════════════════════════════════════════════
 export default function DirectorioPersonal() {
-  const [employees, setEmployees] = useState<Employee[]>([])
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Employee | null>(null)
-  const [showNew, setShowNew] = useState(false)
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'terminated'>('active')
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [selected, setSelected] = useState<Employee | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'terminated'>('active');
 
   const loadEmployees = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await api.getEmployees()
-      const list: Employee[] = Array.isArray(data) ? data : (data.employees || data.items || [])
-      setEmployees(list)
+      const data = await api.getEmployees();
+      const list: Employee[] = Array.isArray(data) ? data : data.employees || data.items || [];
+      setEmployees(list);
       // Mantener selección si sigue existiendo
       if (selected) {
-        const still = list.find(e => e.id === selected.id)
-        if (still) setSelected(still)
+        const still = list.find((e) => e.id === selected.id);
+        if (still) setSelected(still);
       }
     } catch {
-      setEmployees([])
+      setEmployees([]);
     }
-    setLoading(false)
-  }, [selected?.id])
+    setLoading(false);
+  }, [selected?.id]);
 
-  useEffect(() => { loadEmployees() }, [])
+  useEffect(() => {
+    loadEmployees();
+  }, []);
 
-  const filtered = employees.filter(e => {
-    const q = search.toLowerCase()
-    const matchSearch = !q || fullName(e).toLowerCase().includes(q) || e.rut.includes(q) || e.position?.toLowerCase().includes(q)
-    const matchStatus = filterStatus === 'all' || e.status === filterStatus || (filterStatus === 'active' && !e.status)
-    return matchSearch && matchStatus
-  })
+  const filtered = employees.filter((e) => {
+    const q = search.toLowerCase();
+    const matchSearch =
+      !q ||
+      fullName(e).toLowerCase().includes(q) ||
+      e.rut.includes(q) ||
+      e.position?.toLowerCase().includes(q);
+    const matchStatus =
+      filterStatus === 'all' ||
+      e.status === filterStatus ||
+      (filterStatus === 'active' && !e.status);
+    return matchSearch && matchStatus;
+  });
 
   const handleUpdated = (updated: Employee) => {
-    setEmployees(prev => prev.map(e => e.id === updated.id ? updated : e))
-    setSelected(updated)
-  }
+    setEmployees((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
+    setSelected(updated);
+  };
 
   const handleDeleted = (id: string) => {
-    setEmployees(prev => prev.filter(e => e.id !== id))
-    setSelected(null)
-  }
+    setEmployees((prev) => prev.filter((e) => e.id !== id));
+    setSelected(null);
+  };
 
   const stats = {
     total: employees.length,
-    activos: employees.filter(e => !e.status || e.status === 'active').length,
-    plazoFijo: employees.filter(e => e.contractType === 'plazo_fijo').length,
-    indefinido: employees.filter(e => e.contractType === 'indefinido').length,
-  }
+    activos: employees.filter((e) => !e.status || e.status === 'active').length,
+    plazoFijo: employees.filter((e) => e.contractType === 'plazo_fijo').length,
+    indefinido: employees.filter((e) => e.contractType === 'indefinido').length,
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
-
       {/* ── Barra superior ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 0 16px', flexShrink: 0, flexWrap: 'wrap', gap: 10 }}>
-
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 0 16px',
+          flexShrink: 0,
+          flexWrap: 'wrap',
+          gap: 10,
+        }}
+      >
         {/* Stats rápidas */}
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           {[
@@ -2418,11 +4397,32 @@ export default function DirectorioPersonal() {
             { label: 'Activos', value: stats.activos, color: '#22c55e' },
             { label: 'Plazo Fijo', value: stats.plazoFijo, color: '#f59e0b' },
             { label: 'Indefinido', value: stats.indefinido, color: '#8b5cf6' },
-          ].map(s => (
-            <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8, padding: '6px 12px' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block' }} />
+          ].map((s) => (
+            <div
+              key={s.label}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                padding: '6px 12px',
+              }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: s.color,
+                  display: 'inline-block',
+                }}
+              />
               <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{s.label}</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{s.value}</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {s.value}
+              </span>
             </div>
           ))}
         </div>
@@ -2430,34 +4430,87 @@ export default function DirectorioPersonal() {
         {/* Botón nuevo colaborador */}
         <button
           onClick={() => setShowNew(true)}
-          style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 18px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, flexShrink: 0 }}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 7,
+            padding: '9px 18px',
+            background: 'var(--accent)',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            fontSize: 13,
+            fontWeight: 600,
+            flexShrink: 0,
+          }}
         >
           + Nuevo Colaborador
         </button>
       </div>
 
       {/* ── Layout split-panel ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: 0, flex: 1, minHeight: 0, border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden', background: 'var(--bg-primary)' }}>
-
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '280px 1fr',
+          gap: 0,
+          flex: 1,
+          minHeight: 0,
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          overflow: 'hidden',
+          background: 'var(--bg-primary)',
+        }}
+      >
         {/* ═══ PANEL IZQUIERDO — Lista de colaboradores ═══ */}
-        <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', background: 'var(--bg-secondary)', minHeight: 0 }}>
-
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: '1px solid var(--border)',
+            background: 'var(--bg-secondary)',
+            minHeight: 0,
+          }}
+        >
           {/* Búsqueda + filtro */}
-          <div style={{ padding: '12px 12px 8px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <div
+            style={{
+              padding: '12px 12px 8px',
+              borderBottom: '1px solid var(--border)',
+              flexShrink: 0,
+            }}
+          >
             <input
               type="text"
               placeholder="🔍 Buscar nombre, RUT, cargo…"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width: '100%', padding: '7px 10px', border: '1px solid var(--border)', borderRadius: 8, background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 12, boxSizing: 'border-box', outline: 'none', fontFamily: 'inherit' }}
+              onChange={(e) => setSearch(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '7px 10px',
+                border: '1px solid var(--border)',
+                borderRadius: 8,
+                background: 'var(--bg-primary)',
+                color: 'var(--text-primary)',
+                fontSize: 12,
+                boxSizing: 'border-box',
+                outline: 'none',
+                fontFamily: 'inherit',
+              }}
             />
             <div style={{ display: 'flex', gap: 4, marginTop: 8 }}>
-              {(['all','active','terminated'] as const).map(f => (
+              {(['all', 'active', 'terminated'] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilterStatus(f)}
                   style={{
-                    flex: 1, fontSize: 11, padding: '4px 0', borderRadius: 6, cursor: 'pointer', fontWeight: 500,
+                    flex: 1,
+                    fontSize: 11,
+                    padding: '4px 0',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    fontWeight: 500,
                     border: filterStatus === f ? 'none' : '1px solid var(--border)',
                     background: filterStatus === f ? 'var(--accent)' : 'none',
                     color: filterStatus === f ? '#fff' : 'var(--text-muted)',
@@ -2473,69 +4526,138 @@ export default function DirectorioPersonal() {
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {loading ? (
               <div style={{ padding: 20 }}>
-                {[1,2,3,4].map(i => (
-                  <div key={i} style={{ display: 'flex', gap: 10, padding: '10px 12px', marginBottom: 4 }}>
-                    <div className="skeleton" style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0 }} />
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    style={{ display: 'flex', gap: 10, padding: '10px 12px', marginBottom: 4 }}
+                  >
+                    <div
+                      className="skeleton"
+                      style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0 }}
+                    />
                     <div style={{ flex: 1 }}>
-                      <div className="skeleton skeleton-text" style={{ width: '70%', marginBottom: 6 }} />
+                      <div
+                        className="skeleton skeleton-text"
+                        style={{ width: '70%', marginBottom: 6 }}
+                      />
                       <div className="skeleton skeleton-text" style={{ width: '50%' }} />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+              <div
+                style={{
+                  padding: 24,
+                  textAlign: 'center',
+                  color: 'var(--text-muted)',
+                  fontSize: 13,
+                }}
+              >
                 {search ? 'Sin resultados' : 'Sin colaboradores'}
               </div>
             ) : (
-              filtered.map(emp => {
-                const isSelected = selected?.id === emp.id
-                const sc = STATUS_COLOR[emp.status] || '#22c55e'
+              filtered.map((emp) => {
+                const isSelected = selected?.id === emp.id;
+                const sc = STATUS_COLOR[emp.status] || '#22c55e';
                 return (
                   <button
                     key={emp.id}
                     onClick={() => setSelected(emp)}
                     style={{
-                      display: 'flex', alignItems: 'center', gap: 10, width: '100%',
-                      padding: '10px 12px', border: 'none', textAlign: 'left', cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      padding: '10px 12px',
+                      border: 'none',
+                      textAlign: 'left',
+                      cursor: 'pointer',
                       background: isSelected ? 'rgba(37,99,235,0.08)' : 'transparent',
                       borderLeft: isSelected ? '3px solid var(--accent)' : '3px solid transparent',
                       transition: 'background 0.12s',
                     }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--bg-hover)' }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'var(--bg-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) e.currentTarget.style.background = 'transparent';
+                    }}
                   >
                     {/* Avatar mini */}
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10, background: avatarColor(emp),
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: '#fff', fontSize: 13, fontWeight: 700, flexShrink: 0, position: 'relative',
-                    }}>
+                    <div
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 10,
+                        background: avatarColor(emp),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        flexShrink: 0,
+                        position: 'relative',
+                      }}
+                    >
                       {initials(emp)}
-                      <span style={{
-                        position: 'absolute', bottom: -2, right: -2,
-                        width: 9, height: 9, borderRadius: '50%',
-                        background: sc, border: '1.5px solid var(--bg-secondary)',
-                      }} />
+                      <span
+                        style={{
+                          position: 'absolute',
+                          bottom: -2,
+                          right: -2,
+                          width: 9,
+                          height: 9,
+                          borderRadius: '50%',
+                          background: sc,
+                          border: '1.5px solid var(--bg-secondary)',
+                        }}
+                      />
                     </div>
 
                     {/* Texto */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: isSelected ? 700 : 500, color: isSelected ? 'var(--accent)' : 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: isSelected ? 700 : 500,
+                          color: isSelected ? 'var(--accent)' : 'var(--text-primary)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
                         {fullName(emp)}
                       </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: 'var(--text-muted)',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
                         {emp.position || '—'} {emp.department ? `· ${emp.department}` : ''}
                       </div>
                     </div>
                   </button>
-                )
+                );
               })
             )}
           </div>
 
           {/* Contador */}
-          <div style={{ padding: '8px 12px', borderTop: '1px solid var(--border)', fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>
+          <div
+            style={{
+              padding: '8px 12px',
+              borderTop: '1px solid var(--border)',
+              fontSize: 11,
+              color: 'var(--text-muted)',
+              flexShrink: 0,
+            }}
+          >
             {filtered.length} de {employees.length} colaboradores
           </div>
         </div>
@@ -2550,13 +4672,37 @@ export default function DirectorioPersonal() {
               onDelete={handleDeleted}
             />
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', gap: 12 }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                color: 'var(--text-muted)',
+                gap: 12,
+              }}
+            >
               <div style={{ fontSize: 56 }}>👥</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)' }}>Selecciona un colaborador</div>
-              <div style={{ fontSize: 13 }}>Haz clic en un nombre de la lista para ver su perfil</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                Selecciona un colaborador
+              </div>
+              <div style={{ fontSize: 13 }}>
+                Haz clic en un nombre de la lista para ver su perfil
+              </div>
               <button
                 onClick={() => setShowNew(true)}
-                style={{ marginTop: 8, padding: '9px 18px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                style={{
+                  marginTop: 8,
+                  padding: '9px 18px',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
               >
                 + Crear primer colaborador
               </button>
@@ -2569,9 +4715,12 @@ export default function DirectorioPersonal() {
       {showNew && (
         <NuevoColaboradorModal
           onClose={() => setShowNew(false)}
-          onCreated={() => { loadEmployees(); setShowNew(false) }}
+          onCreated={() => {
+            loadEmployees();
+            setShowNew(false);
+          }}
         />
       )}
     </div>
-  )
+  );
 }

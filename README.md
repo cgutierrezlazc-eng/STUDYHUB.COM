@@ -1,6 +1,6 @@
 # Conniku
 
-Conniku is an AI-powered study assistant platform designed to help university students optimize their learning through intelligent multi-modal interactions.
+Conniku es la plataforma universitaria todo-en-uno. Estudio inteligente, comunidad academica y desarrollo profesional para estudiantes universitarios.
 
 ## Architecture
 

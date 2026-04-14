@@ -3,70 +3,125 @@
  * Diseño: LinkedIn Executive (Opción A)
  * Tarjeta con borde izquierdo grueso del color del tipo + banner premium
  */
-import React, { useState, useEffect } from 'react'
-import { api } from '../services/api'
-import type { ExecutiveShowcaseItem, ShowcaseItemType } from '../types'
+import React, { useState, useEffect } from 'react';
+import { api } from '../services/api';
+import type { ExecutiveShowcaseItem, ShowcaseItemType } from '../types';
 
 // ── Tipos ──────────────────────────────────────────────────────
 const ITEM_TYPES = [
-  { id: 'article'    as const, label: 'Artículo / Publicación', icon: '📝', color: '#3b82f6', placeholder: 'ej. El futuro de la IA en Chile',         tagLabel: 'Publicado en'      },
-  { id: 'book'       as const, label: 'Libro',                  icon: '📖', color: '#8b5cf6', placeholder: 'ej. Liderazgo en la Era Digital',           tagLabel: 'Autor / Editorial' },
-  { id: 'talk'       as const, label: 'Conferencia / Charla',   icon: '🎤', color: '#f59e0b', placeholder: 'ej. TED: La Innovación que viene',          tagLabel: 'Evento'            },
-  { id: 'media'      as const, label: 'Aparición en Medios',    icon: '📺', color: '#ef4444', placeholder: 'ej. Entrevista en CNN Chile',               tagLabel: 'Medio'             },
-  { id: 'achievement'as const, label: 'Logro / Reconocimiento', icon: '🏆', color: '#22c55e', placeholder: 'ej. Top 100 Líderes Innovadores 2024',      tagLabel: 'Otorgado por'      },
-  { id: 'project'    as const, label: 'Proyecto Destacado',     icon: '🚀', color: '#06b6d4', placeholder: 'ej. Transformación digital Banco XYZ',      tagLabel: 'Organización'      },
-  { id: 'insight'    as const, label: 'Insight / Visión',       icon: '💡', color: '#a855f7', placeholder: 'ej. Por qué las startups fallan en Chile',  tagLabel: 'Categoría'         },
-]
+  {
+    id: 'article' as const,
+    label: 'Artículo / Publicación',
+    icon: '📝',
+    color: '#3b82f6',
+    placeholder: 'ej. El futuro de la tecnología en Chile',
+    tagLabel: 'Publicado en',
+  },
+  {
+    id: 'book' as const,
+    label: 'Libro',
+    icon: '📖',
+    color: '#8b5cf6',
+    placeholder: 'ej. Liderazgo en la Era Digital',
+    tagLabel: 'Autor / Editorial',
+  },
+  {
+    id: 'talk' as const,
+    label: 'Conferencia / Charla',
+    icon: '🎤',
+    color: '#f59e0b',
+    placeholder: 'ej. TED: La Innovación que viene',
+    tagLabel: 'Evento',
+  },
+  {
+    id: 'media' as const,
+    label: 'Aparición en Medios',
+    icon: '📺',
+    color: '#ef4444',
+    placeholder: 'ej. Entrevista en CNN Chile',
+    tagLabel: 'Medio',
+  },
+  {
+    id: 'achievement' as const,
+    label: 'Logro / Reconocimiento',
+    icon: '🏆',
+    color: '#22c55e',
+    placeholder: 'ej. Top 100 Líderes Innovadores 2024',
+    tagLabel: 'Otorgado por',
+  },
+  {
+    id: 'project' as const,
+    label: 'Proyecto Destacado',
+    icon: '🚀',
+    color: '#06b6d4',
+    placeholder: 'ej. Transformación digital Banco XYZ',
+    tagLabel: 'Organización',
+  },
+  {
+    id: 'insight' as const,
+    label: 'Insight / Visión',
+    icon: '💡',
+    color: '#a855f7',
+    placeholder: 'ej. Por qué las startups fallan en Chile',
+    tagLabel: 'Categoría',
+  },
+];
 
-type TypeId = typeof ITEM_TYPES[number]['id']
-const typeMap = Object.fromEntries(ITEM_TYPES.map(t => [t.id, t])) as Record<TypeId, typeof ITEM_TYPES[number]>
+type TypeId = (typeof ITEM_TYPES)[number]['id'];
+const typeMap = Object.fromEntries(ITEM_TYPES.map((t) => [t.id, t])) as Record<
+  TypeId,
+  (typeof ITEM_TYPES)[number]
+>;
 
-function genId() { return Math.random().toString(36).slice(2, 10) }
+function genId() {
+  return Math.random().toString(36).slice(2, 10);
+}
 
 function formatDate(d: string) {
-  try { return new Date(d + 'T00:00:00').toLocaleDateString('es-CL', { year: 'numeric', month: 'long' }) }
-  catch { return d }
+  try {
+    return new Date(d + 'T00:00:00').toLocaleDateString('es-CL', {
+      year: 'numeric',
+      month: 'long',
+    });
+  } catch {
+    return d;
+  }
 }
 
 // ── ShowcaseCard — LinkedIn style ──────────────────────────────
-function ShowcaseCard({ item, onEdit, onDelete, editable }: {
-  item: ExecutiveShowcaseItem
-  onEdit?: () => void
-  onDelete?: () => void
-  editable?: boolean
+function ShowcaseCard({
+  item,
+  onEdit,
+  onDelete,
+  editable,
+}: {
+  item: ExecutiveShowcaseItem;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  editable?: boolean;
 }) {
-  const meta = typeMap[item.type as TypeId] || typeMap.insight
+  const meta = typeMap[item.type as TypeId] || typeMap.insight;
 
   return (
-    <div
-      className="sc-card"
-      style={{ '--sc-accent': meta.color } as React.CSSProperties}
-    >
+    <div className="sc-card" style={{ '--sc-accent': meta.color } as React.CSSProperties}>
       {/* Large icon spot — top right */}
-      <div
-        className="sc-icon-spot"
-        style={{ background: meta.color + '18' }}
-      >
+      <div className="sc-icon-spot" style={{ background: meta.color + '18' }}>
         {meta.icon}
       </div>
 
       {/* Type label */}
-      <div className="sc-type-pill">
-        {meta.label}
-      </div>
+      <div className="sc-type-pill">{meta.label}</div>
 
       {/* Title */}
       <div className="sc-title">
         {item.url ? (
-          <a
-            href={item.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="sc-title-link"
-          >
-            {item.title}<span className="sc-link-arrow"> ↗</span>
+          <a href={item.url} target="_blank" rel="noopener noreferrer" className="sc-title-link">
+            {item.title}
+            <span className="sc-link-arrow"> ↗</span>
           </a>
-        ) : item.title}
+        ) : (
+          item.title
+        )}
       </div>
 
       {/* Description */}
@@ -78,7 +133,11 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
           {item.tag && (
             <span
               className="sc-tag"
-              style={{ color: meta.color, background: meta.color + '14', borderColor: meta.color + '25' }}
+              style={{
+                color: meta.color,
+                background: meta.color + '14',
+                borderColor: meta.color + '25',
+              }}
             >
               {item.tag}
             </span>
@@ -90,22 +149,31 @@ function ShowcaseCard({ item, onEdit, onDelete, editable }: {
       {/* Edit / Delete — hover on desktop, always visible on touch */}
       {editable && (
         <div className="sc-actions sc-actions--card">
-          <button className="sc-btn-edit" onClick={onEdit}>Editar</button>
-          <button className="sc-btn-delete" onClick={onDelete}>✕</button>
+          <button className="sc-btn-edit" onClick={onEdit}>
+            Editar
+          </button>
+          <button className="sc-btn-delete" onClick={onDelete}>
+            ✕
+          </button>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ── ShowcaseHeroCard — first item, full-width ─────────────────
-function ShowcaseHeroCard({ item, onEdit, onDelete, editable }: {
-  item: ExecutiveShowcaseItem
-  onEdit?: () => void
-  onDelete?: () => void
-  editable?: boolean
+function ShowcaseHeroCard({
+  item,
+  onEdit,
+  onDelete,
+  editable,
+}: {
+  item: ExecutiveShowcaseItem;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  editable?: boolean;
 }) {
-  const meta = typeMap[item.type as TypeId] || typeMap.insight
+  const meta = typeMap[item.type as TypeId] || typeMap.insight;
   return (
     <div
       className="sc-card sc-card--hero"
@@ -119,15 +187,25 @@ function ShowcaseHeroCard({ item, onEdit, onDelete, editable }: {
         <div className="sc-title sc-title--hero">
           {item.url ? (
             <a href={item.url} target="_blank" rel="noopener noreferrer" className="sc-title-link">
-              {item.title}<span className="sc-link-arrow"> ↗</span>
+              {item.title}
+              <span className="sc-link-arrow"> ↗</span>
             </a>
-          ) : item.title}
+          ) : (
+            item.title
+          )}
         </div>
         {item.description && <p className="sc-desc sc-desc--hero">{item.description}</p>}
         {(item.tag || item.date) && (
           <div className="sc-footer">
             {item.tag && (
-              <span className="sc-tag" style={{ color: meta.color, background: meta.color + '14', borderColor: meta.color + '25' }}>
+              <span
+                className="sc-tag"
+                style={{
+                  color: meta.color,
+                  background: meta.color + '14',
+                  borderColor: meta.color + '25',
+                }}
+              >
                 {item.tag}
               </span>
             )}
@@ -137,32 +215,40 @@ function ShowcaseHeroCard({ item, onEdit, onDelete, editable }: {
       </div>
       {editable && (
         <div className="sc-actions sc-actions--card">
-          <button className="sc-btn-edit" onClick={onEdit}>Editar</button>
-          <button className="sc-btn-delete" onClick={onDelete}>✕</button>
+          <button className="sc-btn-edit" onClick={onEdit}>
+            Editar
+          </button>
+          <button className="sc-btn-delete" onClick={onDelete}>
+            ✕
+          </button>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // ── ItemForm ───────────────────────────────────────────────────
-function ItemForm({ initial, onSave, onCancel }: {
-  initial?: Partial<ExecutiveShowcaseItem>
-  onSave: (item: ExecutiveShowcaseItem) => void
-  onCancel: () => void
+function ItemForm({
+  initial,
+  onSave,
+  onCancel,
+}: {
+  initial?: Partial<ExecutiveShowcaseItem>;
+  onSave: (item: ExecutiveShowcaseItem) => void;
+  onCancel: () => void;
 }) {
   const [form, setForm] = useState<ExecutiveShowcaseItem>({
-    id:          initial?.id          || genId(),
-    type:        initial?.type        || 'article',
-    title:       initial?.title       || '',
+    id: initial?.id || genId(),
+    type: initial?.type || 'article',
+    title: initial?.title || '',
     description: initial?.description || '',
-    url:         initial?.url         || '',
-    date:        initial?.date        || '',
-    tag:         initial?.tag         || '',
-  })
-  const meta   = typeMap[form.type as TypeId] || typeMap.article
-  const set    = (k: keyof ExecutiveShowcaseItem, v: string) => setForm(p => ({ ...p, [k]: v }))
-  const canSave = form.title.trim().length > 0
+    url: initial?.url || '',
+    date: initial?.date || '',
+    tag: initial?.tag || '',
+  });
+  const meta = typeMap[form.type as TypeId] || typeMap.article;
+  const set = (k: keyof ExecutiveShowcaseItem, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const canSave = form.title.trim().length > 0;
 
   return (
     <div className="sc-form" style={{ borderLeft: `4px solid ${meta.color}` }}>
@@ -174,14 +260,16 @@ function ItemForm({ initial, onSave, onCancel }: {
       <div className="sc-form-field">
         <label className="sc-form-label">Tipo</label>
         <div className="sc-type-selector">
-          {ITEM_TYPES.map(t => (
+          {ITEM_TYPES.map((t) => (
             <button
               key={t.id}
               onClick={() => set('type', t.id)}
               className={`sc-type-btn${form.type === t.id ? ' active' : ''}`}
-              style={form.type === t.id
-                ? { borderColor: t.color, background: t.color + '15', color: t.color }
-                : {}}
+              style={
+                form.type === t.id
+                  ? { borderColor: t.color, background: t.color + '15', color: t.color }
+                  : {}
+              }
             >
               {t.icon} {t.label.split('/')[0].trim()}
             </button>
@@ -195,7 +283,7 @@ function ItemForm({ initial, onSave, onCancel }: {
           <label className="sc-form-label">Título *</label>
           <input
             value={form.title}
-            onChange={e => set('title', e.target.value)}
+            onChange={(e) => set('title', e.target.value)}
             placeholder={meta.placeholder}
             className="sc-input"
           />
@@ -205,7 +293,7 @@ function ItemForm({ initial, onSave, onCancel }: {
           <label className="sc-form-label">Descripción</label>
           <textarea
             value={form.description}
-            onChange={e => set('description', e.target.value)}
+            onChange={(e) => set('description', e.target.value)}
             rows={3}
             placeholder="Describe brevemente este logro, publicación o proyecto..."
             className="sc-input sc-textarea"
@@ -216,8 +304,12 @@ function ItemForm({ initial, onSave, onCancel }: {
           <label className="sc-form-label">{meta.tagLabel}</label>
           <input
             value={form.tag}
-            onChange={e => set('tag', e.target.value)}
-            placeholder={meta.tagLabel === 'Publicado en' ? 'Harvard Business Review, Medium...' : meta.tagLabel}
+            onChange={(e) => set('tag', e.target.value)}
+            placeholder={
+              meta.tagLabel === 'Publicado en'
+                ? 'Harvard Business Review, Medium...'
+                : meta.tagLabel
+            }
             className="sc-input"
           />
         </div>
@@ -227,7 +319,7 @@ function ItemForm({ initial, onSave, onCancel }: {
           <input
             type="date"
             value={form.date}
-            onChange={e => set('date', e.target.value)}
+            onChange={(e) => set('date', e.target.value)}
             className="sc-input"
           />
         </div>
@@ -236,7 +328,7 @@ function ItemForm({ initial, onSave, onCancel }: {
           <label className="sc-form-label">URL (opcional)</label>
           <input
             value={form.url}
-            onChange={e => set('url', e.target.value)}
+            onChange={(e) => set('url', e.target.value)}
             placeholder="https://..."
             className="sc-input"
           />
@@ -244,7 +336,9 @@ function ItemForm({ initial, onSave, onCancel }: {
       </div>
 
       <div className="sc-form-actions">
-        <button onClick={onCancel} className="sc-btn-cancel">Cancelar</button>
+        <button onClick={onCancel} className="sc-btn-cancel">
+          Cancelar
+        </button>
         <button
           onClick={() => canSave && onSave(form)}
           disabled={!canSave}
@@ -255,7 +349,7 @@ function ItemForm({ initial, onSave, onCancel }: {
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 // ── FilterBar ─────────────────────────────────────────────────
@@ -265,84 +359,91 @@ function FilterBar({ active, onChange }: { active: string; onChange: (t: string)
       <button
         onClick={() => onChange('')}
         className={`sc-filter-pill${active === '' ? ' active' : ''}`}
-        style={active === '' ? { borderColor: '#64748b', background: '#64748b15', color: '#64748b' } : {}}
+        style={
+          active === '' ? { borderColor: '#64748b', background: '#64748b15', color: '#64748b' } : {}
+        }
       >
         Todos
       </button>
-      {ITEM_TYPES.map(t => (
+      {ITEM_TYPES.map((t) => (
         <button
           key={t.id}
           onClick={() => onChange(t.id)}
           className={`sc-filter-pill${active === t.id ? ' active' : ''}`}
-          style={active === t.id ? { borderColor: t.color, background: t.color + '15', color: t.color } : {}}
+          style={
+            active === t.id
+              ? { borderColor: t.color, background: t.color + '15', color: t.color }
+              : {}
+          }
         >
           {t.icon} {t.label.split('/')[0].trim()}
         </button>
       ))}
     </div>
-  )
+  );
 }
 
 // ── Main ──────────────────────────────────────────────────────
 interface Props {
-  userId:  string
-  isOwner: boolean
+  userId: string;
+  isOwner: boolean;
 }
 
 export default function ExecutiveShowcase({ userId, isOwner }: Props) {
-  const [items,       setItems]       = useState<ExecutiveShowcaseItem[]>([])
-  const [loading,     setLoading]     = useState(true)
-  const [saving,      setSaving]      = useState(false)
-  const [editingItem, setEditingItem] = useState<ExecutiveShowcaseItem | null>(null)
-  const [addingNew,   setAddingNew]   = useState(false)
-  const [filterType,  setFilterType]  = useState('')
+  const [items, setItems] = useState<ExecutiveShowcaseItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [editingItem, setEditingItem] = useState<ExecutiveShowcaseItem | null>(null);
+  const [addingNew, setAddingNew] = useState(false);
+  const [filterType, setFilterType] = useState('');
 
   useEffect(() => {
-    const req = isOwner
-      ? api.getMyExecutiveShowcase()
-      : api.getUserExecutiveShowcase(userId)
+    const req = isOwner ? api.getMyExecutiveShowcase() : api.getUserExecutiveShowcase(userId);
     req
       .then((d: any) => setItems(d.items || []))
       .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [userId, isOwner])
+      .finally(() => setLoading(false));
+  }, [userId, isOwner]);
 
   const saveItems = async (next: ExecutiveShowcaseItem[]) => {
-    setSaving(true)
-    try   { await api.updateMyExecutiveShowcase(next); setItems(next) }
-    catch (e: any) { alert(e?.message || 'Error al guardar') }
-    finally { setSaving(false) }
-  }
+    setSaving(true);
+    try {
+      await api.updateMyExecutiveShowcase(next);
+      setItems(next);
+    } catch (e: any) {
+      alert(e?.message || 'Error al guardar');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSave = (item: ExecutiveShowcaseItem) => {
-    const idx = items.findIndex(i => i.id === item.id)
-    saveItems(idx >= 0 ? items.map(i => i.id === item.id ? item : i) : [...items, item])
-    setEditingItem(null)
-    setAddingNew(false)
-  }
+    const idx = items.findIndex((i) => i.id === item.id);
+    saveItems(idx >= 0 ? items.map((i) => (i.id === item.id ? item : i)) : [...items, item]);
+    setEditingItem(null);
+    setAddingNew(false);
+  };
 
   const handleDelete = (id: string) => {
-    if (!confirm('¿Eliminar este item del showcase?')) return
-    saveItems(items.filter(i => i.id !== id))
-  }
+    if (!confirm('¿Eliminar este item del showcase?')) return;
+    saveItems(items.filter((i) => i.id !== id));
+  };
 
-  const visible = filterType ? items.filter(i => i.type === filterType) : items
+  const visible = filterType ? items.filter((i) => i.type === filterType) : items;
 
-  if (loading) return (
-    <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
-      Cargando showcase...
-    </div>
-  )
+  if (loading)
+    return (
+      <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+        Cargando showcase...
+      </div>
+    );
 
   return (
     <div className="sc-root">
-
       {/* ── Banner ── */}
       <div className="sc-banner">
         <div className="sc-banner-left">
-          <div className="sc-banner-title">
-            🏅 Showcase
-          </div>
+          <div className="sc-banner-title">🏅 Showcase</div>
           <div className="sc-banner-sub">
             {items.length > 0
               ? `${items.length} item${items.length !== 1 ? 's' : ''} · artículos, charlas, logros y más`
@@ -357,8 +458,10 @@ export default function ExecutiveShowcase({ userId, isOwner }: Props) {
       </div>
 
       {/* ── Formulario ── */}
-      {addingNew   && <ItemForm onSave={handleSave} onCancel={() => setAddingNew(false)} />}
-      {editingItem && <ItemForm initial={editingItem} onSave={handleSave} onCancel={() => setEditingItem(null)} />}
+      {addingNew && <ItemForm onSave={handleSave} onCancel={() => setAddingNew(false)} />}
+      {editingItem && (
+        <ItemForm initial={editingItem} onSave={handleSave} onCancel={() => setEditingItem(null)} />
+      )}
 
       {/* ── Empty state ── */}
       {items.length === 0 && !addingNew && (
@@ -380,9 +483,11 @@ export default function ExecutiveShowcase({ userId, isOwner }: Props) {
 
           {isOwner && (
             <div className="sc-tips">
-              <div className="sc-tips-title">💡 Qué suelen publicar los profesionales de alto nivel</div>
+              <div className="sc-tips-title">
+                💡 Qué suelen publicar los profesionales de alto nivel
+              </div>
               <div className="sc-tips-grid">
-                {ITEM_TYPES.map(t => (
+                {ITEM_TYPES.map((t) => (
                   <div key={t.id} className="sc-tips-item">
                     <span style={{ fontSize: 16 }}>{t.icon}</span>
                     <span>{t.label}</span>
@@ -399,7 +504,8 @@ export default function ExecutiveShowcase({ userId, isOwner }: Props) {
                   id: '__sample__',
                   type: 'achievement',
                   title: 'Así podría verse tu primer logro en el Showcase',
-                  description: 'Artículos, libros, charlas, apariciones en medios, reconocimientos — todo en un solo lugar que habla por ti.',
+                  description:
+                    'Artículos, libros, charlas, apariciones en medios, reconocimientos — todo en un solo lugar que habla por ti.',
                   tag: 'Ejemplo',
                   date: new Date().toISOString().slice(0, 10),
                   url: '',
@@ -416,7 +522,9 @@ export default function ExecutiveShowcase({ userId, isOwner }: Props) {
           <FilterBar active={filterType} onChange={setFilterType} />
 
           {visible.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)', fontSize: 13 }}>
+            <div
+              style={{ textAlign: 'center', padding: 32, color: 'var(--text-muted)', fontSize: 13 }}
+            >
               No hay items de ese tipo aún.
             </div>
           ) : (
@@ -447,7 +555,6 @@ export default function ExecutiveShowcase({ userId, isOwner }: Props) {
 
       {/* ── Saving toast ── */}
       {saving && <div className="sc-saving-toast">Guardando...</div>}
-
     </div>
-  )
+  );
 }

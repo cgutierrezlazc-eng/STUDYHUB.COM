@@ -1,68 +1,90 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { useParams } from 'react-router-dom'
-import { useAuth } from '../services/auth'
-import { api } from '../services/api'
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../services/auth';
+import { api } from '../services/api';
 import {
-  Pencil, Download, Share2, Upload, Globe, Briefcase, GraduationCap,
-  Award, Star, CheckCircle, ExternalLink, Link, Eye, EyeOff, Save,
-  Plus, Trash2, X, Clock, Map, Target, Users, FileText, Zap, ChevronRight
-} from '../components/Icons'
+  Pencil,
+  Download,
+  Share2,
+  Upload,
+  Globe,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Star,
+  CheckCircle,
+  ExternalLink,
+  Link,
+  Eye,
+  EyeOff,
+  Save,
+  Plus,
+  Trash2,
+  X,
+  Clock,
+  Map,
+  Target,
+  Users,
+  FileText,
+  Zap,
+  ChevronRight,
+} from '../components/Icons';
 
 interface Props {
-  onNavigate: (path: string) => void
+  onNavigate: (path: string) => void;
 }
 
 interface Experience {
-  id: string
-  company: string
-  title: string
-  location: string
-  startDate: string
-  endDate: string
-  current: boolean
-  description: string
+  id: string;
+  company: string;
+  title: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  description: string;
 }
 
 interface Education {
-  id: string
-  institution: string
-  degree: string
-  field: string
-  startYear: string
-  endYear: string
-  description: string
+  id: string;
+  institution: string;
+  degree: string;
+  field: string;
+  startYear: string;
+  endYear: string;
+  description: string;
 }
 
 interface Certification {
-  id: string
-  name: string
-  issuer: string
-  date: string
-  url: string
+  id: string;
+  name: string;
+  issuer: string;
+  date: string;
+  url: string;
 }
 
 interface SkillGroup {
-  category: string
-  skills: { name: string; level: number }[]
+  category: string;
+  skills: { name: string; level: number }[];
 }
 
 interface CVData {
-  headline: string
-  summary: string
-  location: string
-  email: string
-  phone: string
-  availableWorldwide: boolean
-  openToOffers: boolean
-  experience: Experience[]
-  education: Education[]
-  certifications: Certification[]
-  skillGroups: SkillGroup[]
-  differentiators: string[]
-  languages: { name: string; level: string }[]
-  links: { label: string; url: string }[]
-  competencies: string[]
-  visibility: 'public' | 'private' | 'connections'
+  headline: string;
+  summary: string;
+  location: string;
+  email: string;
+  phone: string;
+  availableWorldwide: boolean;
+  openToOffers: boolean;
+  experience: Experience[];
+  education: Education[];
+  certifications: Certification[];
+  skillGroups: SkillGroup[];
+  differentiators: string[];
+  languages: { name: string; level: string }[];
+  links: { label: string; url: string }[];
+  competencies: string[];
+  visibility: 'public' | 'private' | 'connections';
 }
 
 const EMPTY_CV: CVData = {
@@ -82,12 +104,12 @@ const EMPTY_CV: CVData = {
   links: [],
   competencies: [],
   visibility: 'private',
-}
+};
 
-const LANG_LEVELS = ['Basico', 'Intermedio', 'Avanzado', 'Nativo/Bilingue']
+const LANG_LEVELS = ['Basico', 'Intermedio', 'Avanzado', 'Nativo/Bilingue'];
 
 function genId() {
-  return Math.random().toString(36).slice(2, 10)
+  return Math.random().toString(36).slice(2, 10);
 }
 
 /* ────────── Styles ────────── */
@@ -371,23 +393,23 @@ const styles: Record<string, React.CSSProperties> = {
     transition: 'all .2s',
     background: 'var(--bg-secondary, #fafbfc)',
   },
-}
+};
 
 export default function CVProfile({ onNavigate }: Props) {
-  const { user } = useAuth()
-  const { username } = useParams<{ username?: string }>()
-  const isPublicView = !!username
-  const isOwnProfile = !isPublicView
+  const { user } = useAuth();
+  const { username } = useParams<{ username?: string }>();
+  const isPublicView = !!username;
+  const isOwnProfile = !isPublicView;
 
-  const [cv, setCv] = useState<CVData>({ ...EMPTY_CV })
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
-  const [editMode, setEditMode] = useState(false)
-  const [activeTab, setActiveTab] = useState('sobre')
-  const [uploadMsg, setUploadMsg] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
+  const [cv, setCv] = useState<CVData>({ ...EMPTY_CV });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [activeTab, setActiveTab] = useState('sobre');
+  const [uploadMsg, setUploadMsg] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const tabs = [
     { id: 'sobre', label: 'Sobre Mi' },
@@ -396,31 +418,31 @@ export default function CVProfile({ onNavigate }: Props) {
     { id: 'certificaciones', label: 'Certificaciones' },
     { id: 'habilidades', label: 'Habilidades' },
     { id: 'diferenciadores', label: 'Lo que me diferencia' },
-  ]
+  ];
 
   /* ── Load data ── */
   useEffect(() => {
-    loadCV()
-  }, [username])
+    loadCV();
+  }, [username]);
 
   async function loadCV() {
-    setLoading(true)
+    setLoading(true);
     try {
       if (isPublicView) {
-        const res = await api.getUserCV(username!)
-        if (res) hydrateCV(res)
+        const res = await api.getUserCV(username!);
+        if (res) hydrateCV(res);
       } else {
-        const cvRes = await api.getMyCV().catch(() => null)
-        if (cvRes) hydrateCV(cvRes?.profile || cvRes)
+        const cvRes = await api.getMyCV().catch(() => null);
+        if (cvRes) hydrateCV(cvRes?.profile || cvRes);
       }
     } catch (e) {
-      console.error('Error loading CV:', e)
+      console.error('Error loading CV:', e);
     }
-    setLoading(false)
+    setLoading(false);
   }
 
   function hydrateCV(raw: any) {
-    if (!raw) return
+    if (!raw) return;
     setCv({
       headline: raw.headline || raw.cv_headline || '',
       summary: raw.summary || raw.cv_summary || '',
@@ -432,27 +454,33 @@ export default function CVProfile({ onNavigate }: Props) {
       experience: normalizeExperience(parseJsonField(raw.experience || raw.cv_experience, [])),
       education: normalizeEducation(parseJsonField(raw.education, [])),
       certifications: parseJsonField(raw.certifications || raw.cv_certifications, []),
-      skillGroups: normalizeSkillGroups(parseJsonField(raw.skill_groups || raw.skills || raw.cv_skills, [])),
+      skillGroups: normalizeSkillGroups(
+        parseJsonField(raw.skill_groups || raw.skills || raw.cv_skills, [])
+      ),
       differentiators: normalizeDifferentiators(parseJsonField(raw.differentiators, [])),
       languages: normalizeLanguages(parseJsonField(raw.languages || raw.cv_languages, [])),
       links: parseJsonField(raw.links || raw.cv_portfolio, []),
       competencies: parseJsonField(raw.competencies, []),
       visibility: raw.visibility || raw.cv_visibility || 'private',
-    })
+    });
   }
 
   function parseJsonField(val: any, fallback: any) {
-    if (!val) return fallback
-    if (Array.isArray(val)) return val
+    if (!val) return fallback;
+    if (Array.isArray(val)) return val;
     if (typeof val === 'string') {
-      try { return JSON.parse(val) } catch { return fallback }
+      try {
+        return JSON.parse(val);
+      } catch {
+        return fallback;
+      }
     }
-    return fallback
+    return fallback;
   }
 
-  // Normaliza experiencias: acepta formato IA (start_date/bullets) y formato guardado (startDate/description)
+  // Normaliza experiencias: acepta formato del asistente (start_date/bullets) y formato guardado (startDate/description)
   function normalizeExperience(arr: any[]): Experience[] {
-    return arr.map(exp => ({
+    return arr.map((exp) => ({
       id: exp.id || genId(),
       company: exp.company || '',
       title: exp.title || '',
@@ -460,14 +488,15 @@ export default function CVProfile({ onNavigate }: Props) {
       startDate: exp.startDate || exp.start_date || '',
       endDate: exp.endDate || exp.end_date || '',
       current: exp.current ?? false,
-      description: exp.description ||
+      description:
+        exp.description ||
         (Array.isArray(exp.bullets) ? exp.bullets.join('\n') : exp.bullets || ''),
-    }))
+    }));
   }
 
   // Normaliza educación: acepta start_date/end_date y startYear/endYear
   function normalizeEducation(arr: any[]): Education[] {
-    return arr.map(edu => ({
+    return arr.map((edu) => ({
       id: edu.id || genId(),
       institution: edu.institution || '',
       degree: edu.degree || '',
@@ -475,53 +504,66 @@ export default function CVProfile({ onNavigate }: Props) {
       startYear: edu.startYear || edu.start_date || edu.startDate || '',
       endYear: edu.endYear || edu.end_date || edu.endDate || '',
       description: edu.description || '',
-    }))
+    }));
   }
 
   // Normaliza habilidades: acepta items[{name,proficiency}] e skills[{name,level}]
   function normalizeSkillGroups(arr: any[]): SkillGroup[] {
-    return arr.map(group => ({
+    return arr.map((group) => ({
       category: group.category || '',
       skills: (group.skills || group.items || []).map((s: any) => ({
         name: s.name || '',
-        level: typeof s.level === 'number' ? s.level : proficiencyToNumber(s.proficiency || s.level),
+        level:
+          typeof s.level === 'number' ? s.level : proficiencyToNumber(s.proficiency || s.level),
       })),
-    }))
+    }));
   }
 
   // Convierte texto de nivel a número 0-100
   function proficiencyToNumber(p: any): number {
-    if (typeof p === 'number') return p
+    if (typeof p === 'number') return p;
     const map: Record<string, number> = {
-      beginner: 25, básico: 25, basico: 25, basic: 25,
-      intermediate: 50, intermedio: 50,
-      advanced: 75, avanzado: 75,
-      expert: 95, experto: 95, nativo: 95, native: 95, bilingüe: 95, bilingual: 95,
-    }
-    return map[(p || '').toLowerCase()] ?? 50
+      beginner: 25,
+      básico: 25,
+      basico: 25,
+      basic: 25,
+      intermediate: 50,
+      intermedio: 50,
+      advanced: 75,
+      avanzado: 75,
+      expert: 95,
+      experto: 95,
+      nativo: 95,
+      native: 95,
+      bilingüe: 95,
+      bilingual: 95,
+    };
+    return map[(p || '').toLowerCase()] ?? 50;
   }
 
   // Normaliza idiomas: acepta {language,proficiency} y {name,level}
   function normalizeLanguages(arr: any[]): { name: string; level: string }[] {
-    return arr.map(lang => ({
+    return arr.map((lang) => ({
       name: lang.name || lang.language || '',
       level: lang.level || lang.proficiency || '',
-    }))
+    }));
   }
 
   // Normaliza diferenciadores: acepta strings o {title, description}
   function normalizeDifferentiators(arr: any[]): string[] {
-    return arr.map(d => {
-      if (typeof d === 'string') return d
-      if (d && d.title) return d.description ? `${d.title}: ${d.description}` : d.title
-      return String(d)
-    }).filter(Boolean)
+    return arr
+      .map((d) => {
+        if (typeof d === 'string') return d;
+        if (d && d.title) return d.description ? `${d.title}: ${d.description}` : d.title;
+        return String(d);
+      })
+      .filter(Boolean);
   }
 
   /* ── Save ── */
   async function handleSave() {
-    setSaveError(null)
-    setSaving(true)
+    setSaveError(null);
+    setSaving(true);
     try {
       await api.updateCV({
         headline: cv.headline,
@@ -529,190 +571,290 @@ export default function CVProfile({ onNavigate }: Props) {
         location: cv.location,
         phone: cv.phone,
         available_worldwide: cv.availableWorldwide,
-        open_to_work: cv.openToOffers,       // nombre correcto en backend
-        experience: cv.experience,            // enviamos lista directa, no string
+        open_to_work: cv.openToOffers, // nombre correcto en backend
+        experience: cv.experience, // enviamos lista directa, no string
         education: cv.education,
         certifications: cv.certifications,
-        skills: cv.skillGroups,               // nombre correcto en backend
+        skills: cv.skillGroups, // nombre correcto en backend
         differentiators: cv.differentiators,
         languages: cv.languages,
         visibility: cv.visibility,
-      })
-      setEditMode(false)
+      });
+      setEditMode(false);
     } catch (e) {
-      console.error('Error saving CV:', e)
-      setSaveError('Error al guardar. Intenta de nuevo.')
+      console.error('Error saving CV:', e);
+      setSaveError('Error al guardar. Intenta de nuevo.');
     }
-    setSaving(false)
+    setSaving(false);
   }
 
   /* ── Upload ── */
   async function handleFileUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const file = e.target.files?.[0];
+    if (!file) return;
     // Reset input so same file can be re-uploaded
-    e.target.value = ''
-    setUploadMsg('⏳ Analizando CV con IA...')
+    e.target.value = '';
+    setUploadMsg('⏳ Analizando tu CV...');
     try {
-      const res = await api.uploadCV(file)
+      const res = await api.uploadCV(file);
       if (res.success === false && !res.draft) {
-        setUploadMsg(res.message || 'No se pudo extraer texto del archivo.')
-        return
+        setUploadMsg(res.message || 'No se pudo extraer texto del archivo.');
+        return;
       }
       // Use the full saved profile (preferred) or fall back to draft
-      const source = res.profile || res.draft
+      const source = res.profile || res.draft;
       if (source) {
-        hydrateCV(source)
-        setUploadMsg(res.message || '✅ CV analizado. Revisa y ajusta los campos.')
-        setEditMode(true)
+        hydrateCV(source);
+        setUploadMsg(res.message || '✅ CV analizado. Revisa y ajusta los campos.');
+        setEditMode(true);
       }
     } catch (err: any) {
-      setUploadMsg(err.message || 'Error al procesar el archivo')
+      setUploadMsg(err.message || 'Error al procesar el archivo');
     }
   }
 
   /* ── PDF Download ── */
   function handleDownloadPDF() {
     // Generate a simple print-friendly version
-    window.print()
+    window.print();
   }
 
   /* ── Share ── */
   function handleShare() {
-    const url = `${window.location.origin}/cv/${user?.username || user?.id || ''}`
-    navigator.clipboard.writeText(url).then(() => {
-      alert('Enlace copiado al portapapeles')
-    }).catch(() => {
-      prompt('Copia este enlace:', url)
-    })
+    const url = `${window.location.origin}/cv/${user?.username || user?.id || ''}`;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        alert('Enlace copiado al portapapeles');
+      })
+      .catch(() => {
+        prompt('Copia este enlace:', url);
+      });
   }
 
   /* ── Helpers for editing ── */
   function updateField<K extends keyof CVData>(field: K, value: CVData[K]) {
-    setCv(prev => ({ ...prev, [field]: value }))
+    setCv((prev) => ({ ...prev, [field]: value }));
   }
 
   function addExperience() {
-    updateField('experience', [...cv.experience, {
-      id: genId(), company: '', title: '', location: '', startDate: '', endDate: '', current: false, description: '',
-    }])
+    updateField('experience', [
+      ...cv.experience,
+      {
+        id: genId(),
+        company: '',
+        title: '',
+        location: '',
+        startDate: '',
+        endDate: '',
+        current: false,
+        description: '',
+      },
+    ]);
   }
 
   function removeExperience(id: string) {
-    updateField('experience', cv.experience.filter(e => e.id !== id))
+    updateField(
+      'experience',
+      cv.experience.filter((e) => e.id !== id)
+    );
   }
 
   function updateExperience(id: string, field: keyof Experience, value: any) {
-    updateField('experience', cv.experience.map(e => e.id === id ? { ...e, [field]: value } : e))
+    updateField(
+      'experience',
+      cv.experience.map((e) => (e.id === id ? { ...e, [field]: value } : e))
+    );
   }
 
   function addEducation() {
-    updateField('education', [...cv.education, {
-      id: genId(), institution: '', degree: '', field: '', startYear: '', endYear: '', description: '',
-    }])
+    updateField('education', [
+      ...cv.education,
+      {
+        id: genId(),
+        institution: '',
+        degree: '',
+        field: '',
+        startYear: '',
+        endYear: '',
+        description: '',
+      },
+    ]);
   }
 
   function removeEducation(id: string) {
-    updateField('education', cv.education.filter(e => e.id !== id))
+    updateField(
+      'education',
+      cv.education.filter((e) => e.id !== id)
+    );
   }
 
   function updateEducation(id: string, field: keyof Education, value: any) {
-    updateField('education', cv.education.map(e => e.id === id ? { ...e, [field]: value } : e))
+    updateField(
+      'education',
+      cv.education.map((e) => (e.id === id ? { ...e, [field]: value } : e))
+    );
   }
 
   function addCertification() {
-    updateField('certifications', [...cv.certifications, {
-      id: genId(), name: '', issuer: '', date: '', url: '',
-    }])
+    updateField('certifications', [
+      ...cv.certifications,
+      {
+        id: genId(),
+        name: '',
+        issuer: '',
+        date: '',
+        url: '',
+      },
+    ]);
   }
 
   function removeCertification(id: string) {
-    updateField('certifications', cv.certifications.filter(c => c.id !== id))
+    updateField(
+      'certifications',
+      cv.certifications.filter((c) => c.id !== id)
+    );
   }
 
   function updateCertification(id: string, field: keyof Certification, value: string) {
-    updateField('certifications', cv.certifications.map(c => c.id === id ? { ...c, [field]: value } : c))
+    updateField(
+      'certifications',
+      cv.certifications.map((c) => (c.id === id ? { ...c, [field]: value } : c))
+    );
   }
 
   function addSkillGroup() {
-    updateField('skillGroups', [...cv.skillGroups, { category: '', skills: [] }])
+    updateField('skillGroups', [...cv.skillGroups, { category: '', skills: [] }]);
   }
 
   function removeSkillGroup(idx: number) {
-    updateField('skillGroups', cv.skillGroups.filter((_, i) => i !== idx))
+    updateField(
+      'skillGroups',
+      cv.skillGroups.filter((_, i) => i !== idx)
+    );
   }
 
   function addSkillToGroup(groupIdx: number) {
-    const groups = [...cv.skillGroups]
-    groups[groupIdx] = { ...groups[groupIdx], skills: [...groups[groupIdx].skills, { name: '', level: 70 }] }
-    updateField('skillGroups', groups)
+    const groups = [...cv.skillGroups];
+    groups[groupIdx] = {
+      ...groups[groupIdx],
+      skills: [...groups[groupIdx].skills, { name: '', level: 70 }],
+    };
+    updateField('skillGroups', groups);
   }
 
   function removeSkillFromGroup(groupIdx: number, skillIdx: number) {
-    const groups = [...cv.skillGroups]
-    groups[groupIdx] = { ...groups[groupIdx], skills: groups[groupIdx].skills.filter((_, i) => i !== skillIdx) }
-    updateField('skillGroups', groups)
+    const groups = [...cv.skillGroups];
+    groups[groupIdx] = {
+      ...groups[groupIdx],
+      skills: groups[groupIdx].skills.filter((_, i) => i !== skillIdx),
+    };
+    updateField('skillGroups', groups);
   }
 
   function updateSkillInGroup(groupIdx: number, skillIdx: number, field: string, value: any) {
-    const groups = [...cv.skillGroups]
-    const skills = [...groups[groupIdx].skills]
-    skills[skillIdx] = { ...skills[skillIdx], [field]: value }
-    groups[groupIdx] = { ...groups[groupIdx], skills }
-    updateField('skillGroups', groups)
+    const groups = [...cv.skillGroups];
+    const skills = [...groups[groupIdx].skills];
+    skills[skillIdx] = { ...skills[skillIdx], [field]: value };
+    groups[groupIdx] = { ...groups[groupIdx], skills };
+    updateField('skillGroups', groups);
   }
 
   function addLanguage() {
-    updateField('languages', [...cv.languages, { name: '', level: 'Intermedio' }])
+    updateField('languages', [...cv.languages, { name: '', level: 'Intermedio' }]);
   }
 
   function removeLanguage(idx: number) {
-    updateField('languages', cv.languages.filter((_, i) => i !== idx))
+    updateField(
+      'languages',
+      cv.languages.filter((_, i) => i !== idx)
+    );
   }
 
   function addLink() {
-    updateField('links', [...cv.links, { label: '', url: '' }])
+    updateField('links', [...cv.links, { label: '', url: '' }]);
   }
 
   function removeLink(idx: number) {
-    updateField('links', cv.links.filter((_, i) => i !== idx))
+    updateField(
+      'links',
+      cv.links.filter((_, i) => i !== idx)
+    );
   }
 
   function addDifferentiator() {
-    updateField('differentiators', [...cv.differentiators, ''])
+    updateField('differentiators', [...cv.differentiators, '']);
   }
 
   function removeDifferentiator(idx: number) {
-    updateField('differentiators', cv.differentiators.filter((_, i) => i !== idx))
+    updateField(
+      'differentiators',
+      cv.differentiators.filter((_, i) => i !== idx)
+    );
   }
 
   function addCompetency(text: string) {
     if (text.trim() && !cv.competencies.includes(text.trim())) {
-      updateField('competencies', [...cv.competencies, text.trim()])
+      updateField('competencies', [...cv.competencies, text.trim()]);
     }
   }
 
   function removeCompetency(idx: number) {
-    updateField('competencies', cv.competencies.filter((_, i) => i !== idx))
+    updateField(
+      'competencies',
+      cv.competencies.filter((_, i) => i !== idx)
+    );
   }
 
   /* ── Computed stats ── */
   const yearsExp = cv.experience.reduce((sum, e) => {
-    const start = e.startDate ? new Date(e.startDate).getFullYear() : 0
-    const end = e.current ? new Date().getFullYear() : (e.endDate ? new Date(e.endDate).getFullYear() : 0)
-    return sum + Math.max(0, end - start)
-  }, 0)
-  const companiesCount = new Set(cv.experience.map(e => e.company).filter(Boolean)).size
-  const certsCount = cv.certifications.length
-  const displayName = (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) || 'Profesional'
-  const initials = displayName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase()
+    const start = e.startDate ? new Date(e.startDate).getFullYear() : 0;
+    const end = e.current
+      ? new Date().getFullYear()
+      : e.endDate
+        ? new Date(e.endDate).getFullYear()
+        : 0;
+    return sum + Math.max(0, end - start);
+  }, 0);
+  const companiesCount = new Set(cv.experience.map((e) => e.company).filter(Boolean)).size;
+  const certsCount = cv.certifications.length;
+  const displayName =
+    (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.username) ||
+    'Profesional';
+  const initials = displayName
+    .split(' ')
+    .map((w: string) => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   if (loading) {
     return (
-      <div style={{ ...styles.page, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 600, margin: '0 auto' }}>{[1,2,3].map(i => <div key={i} className="skeleton skeleton-card" />)}</div>
+      <div
+        style={{
+          ...styles.page,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '60vh',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 12,
+            width: '100%',
+            maxWidth: 600,
+            margin: '0 auto',
+          }}
+        >
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton skeleton-card" />
+          ))}
+        </div>
       </div>
-    )
+    );
   }
 
   /* ══════════════════════════════════════════════
@@ -753,7 +895,11 @@ export default function CVProfile({ onNavigate }: Props) {
         <div style={{ position: 'absolute', top: -60, left: 24, zIndex: 2 }}>
           <div style={styles.avatar}>
             {user?.avatar ? (
-              <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+              <img
+                src={user.avatar}
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+              />
             ) : (
               initials
             )}
@@ -763,29 +909,61 @@ export default function CVProfile({ onNavigate }: Props) {
         <div style={styles.headerCard} className="cv-header-card">
           {/* Top-right edit/save */}
           {isOwnProfile && (
-            <div style={{ position: 'absolute', top: 16, right: 20, display: 'flex', gap: 8, alignItems: 'center' }} className="cv-no-print">
+            <div
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 20,
+                display: 'flex',
+                gap: 8,
+                alignItems: 'center',
+              }}
+              className="cv-no-print"
+            >
               {editMode ? (
                 <>
                   {saveError && (
                     <p style={{ color: '#ef4444', fontSize: 12, margin: '4px 0' }}>{saveError}</p>
                   )}
-                  <button style={styles.btnPrimary} className="cv-btn" onClick={handleSave} disabled={saving}>
-                    {Save({ style: { width: 16, height: 16 } })} {saving ? 'Guardando...' : 'Guardar'}
+                  <button
+                    style={styles.btnPrimary}
+                    className="cv-btn"
+                    onClick={handleSave}
+                    disabled={saving}
+                  >
+                    {Save({ style: { width: 16, height: 16 } })}{' '}
+                    {saving ? 'Guardando...' : 'Guardar'}
                   </button>
-                  <button style={styles.btnSecondary} className="cv-btn" onClick={() => { setEditMode(false); loadCV() }}>
+                  <button
+                    style={styles.btnSecondary}
+                    className="cv-btn"
+                    onClick={() => {
+                      setEditMode(false);
+                      loadCV();
+                    }}
+                  >
                     Cancelar
                   </button>
                 </>
               ) : (
-                <button style={styles.btnSecondary} className="cv-btn" onClick={() => setEditMode(true)}>
+                <button
+                  style={styles.btnSecondary}
+                  className="cv-btn"
+                  onClick={() => setEditMode(true)}
+                >
                   {Pencil({ style: { width: 16, height: 16 } })} Editar Perfil
                 </button>
               )}
               {/* Preview toggle */}
               <button
-                style={{ ...styles.btnSecondary, background: showPreview ? '#1e56a0' : undefined, color: showPreview ? '#fff' : undefined, borderColor: showPreview ? '#1e56a0' : undefined }}
+                style={{
+                  ...styles.btnSecondary,
+                  background: showPreview ? '#1e56a0' : undefined,
+                  color: showPreview ? '#fff' : undefined,
+                  borderColor: showPreview ? '#1e56a0' : undefined,
+                }}
                 className="cv-btn"
-                onClick={() => setShowPreview(p => !p)}
+                onClick={() => setShowPreview((p) => !p)}
                 title="Vista previa en formato Conniku"
               >
                 {Eye({ style: { width: 16, height: 16 } })} Vista Previa
@@ -799,7 +977,7 @@ export default function CVProfile({ onNavigate }: Props) {
               <input
                 style={{ ...styles.input, fontSize: 22, fontWeight: 700 }}
                 value={cv.headline}
-                onChange={e => updateField('headline', e.target.value)}
+                onChange={(e) => updateField('headline', e.target.value)}
                 placeholder="Titulo profesional (ej: Director Tecnico de Entretenimiento)"
               />
             </div>
@@ -816,22 +994,43 @@ export default function CVProfile({ onNavigate }: Props) {
               <span style={styles.metaItem}>
                 {Map({ style: { width: 14, height: 14 } })}
                 {editMode ? (
-                  <input style={{ ...styles.input, width: 200, padding: '4px 10px' }} value={cv.location} onChange={e => updateField('location', e.target.value)} placeholder="Ubicacion" />
-                ) : cv.location}
+                  <input
+                    style={{ ...styles.input, width: 200, padding: '4px 10px' }}
+                    value={cv.location}
+                    onChange={(e) => updateField('location', e.target.value)}
+                    placeholder="Ubicacion"
+                  />
+                ) : (
+                  cv.location
+                )}
               </span>
             )}
             {(editMode || cv.email) && (
               <span style={styles.metaItem}>
                 {editMode ? (
-                  <input style={{ ...styles.input, width: 220, padding: '4px 10px' }} value={cv.email} onChange={e => updateField('email', e.target.value)} placeholder="Email" />
-                ) : cv.email}
+                  <input
+                    style={{ ...styles.input, width: 220, padding: '4px 10px' }}
+                    value={cv.email}
+                    onChange={(e) => updateField('email', e.target.value)}
+                    placeholder="Email"
+                  />
+                ) : (
+                  cv.email
+                )}
               </span>
             )}
             {(editMode || cv.phone) && (
               <span style={styles.metaItem}>
                 {editMode ? (
-                  <input style={{ ...styles.input, width: 160, padding: '4px 10px' }} value={cv.phone} onChange={e => updateField('phone', e.target.value)} placeholder="Telefono" />
-                ) : cv.phone}
+                  <input
+                    style={{ ...styles.input, width: 160, padding: '4px 10px' }}
+                    value={cv.phone}
+                    onChange={(e) => updateField('phone', e.target.value)}
+                    placeholder="Telefono"
+                  />
+                ) : (
+                  cv.phone
+                )}
               </span>
             )}
           </div>
@@ -840,8 +1039,20 @@ export default function CVProfile({ onNavigate }: Props) {
           {(cv.availableWorldwide || editMode) && (
             <div style={{ marginTop: 8 }}>
               {editMode ? (
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, cursor: 'pointer' }}>
-                  <input type="checkbox" checked={cv.availableWorldwide} onChange={e => updateField('availableWorldwide', e.target.checked)} />
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontSize: 13,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={cv.availableWorldwide}
+                    onChange={(e) => updateField('availableWorldwide', e.target.checked)}
+                  />
                   Disponible mundialmente
                 </label>
               ) : (
@@ -855,7 +1066,11 @@ export default function CVProfile({ onNavigate }: Props) {
           {/* Action buttons */}
           {isOwnProfile && !editMode && (
             <div style={styles.actions} className="cv-no-print">
-              <button style={styles.btnPrimary} className="cv-btn" onClick={() => fileRef.current?.click()}>
+              <button
+                style={styles.btnPrimary}
+                className="cv-btn"
+                onClick={() => fileRef.current?.click()}
+              >
                 {Upload({ style: { width: 16, height: 16 } })} Subir CV
               </button>
               <button style={styles.btnSecondary} className="cv-btn" onClick={handleDownloadPDF}>
@@ -868,9 +1083,28 @@ export default function CVProfile({ onNavigate }: Props) {
           )}
 
           {uploadMsg && (
-            <div style={{ marginTop: 12, padding: '10px 16px', borderRadius: 10, background: 'var(--bg-secondary, #f0f4f8)', fontSize: 13, color: 'var(--text-secondary, #555)' }} className="cv-no-print">
+            <div
+              style={{
+                marginTop: 12,
+                padding: '10px 16px',
+                borderRadius: 10,
+                background: 'var(--bg-secondary, #f0f4f8)',
+                fontSize: 13,
+                color: 'var(--text-secondary, #555)',
+              }}
+              className="cv-no-print"
+            >
               {uploadMsg}
-              <button onClick={() => setUploadMsg('')} style={{ marginLeft: 8, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)' }}>
+              <button
+                onClick={() => setUploadMsg('')}
+                style={{
+                  marginLeft: 8,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--text-tertiary)',
+                }}
+              >
                 {X({ style: { width: 14, height: 14 } })}
               </button>
             </div>
@@ -883,7 +1117,7 @@ export default function CVProfile({ onNavigate }: Props) {
         {/* Left column */}
         <div>
           <div style={styles.tabBar} className="cv-no-print">
-            {tabs.map(t => (
+            {tabs.map((t) => (
               <button
                 key={t.id}
                 className="cv-tab"
@@ -911,24 +1145,54 @@ export default function CVProfile({ onNavigate }: Props) {
                   style={styles.textarea}
                   rows={5}
                   value={cv.summary}
-                  onChange={e => updateField('summary', e.target.value)}
+                  onChange={(e) => updateField('summary', e.target.value)}
                   placeholder="Escribe un resumen de tu perfil profesional, logros clave y lo que buscas..."
                 />
               ) : (
-                <p style={{ fontSize: 15, lineHeight: 1.7, color: 'var(--text-secondary, #555)', margin: 0, whiteSpace: 'pre-line' }}>
-                  {cv.summary || (isOwnProfile ? 'Agrega un resumen profesional para destacar tu perfil.' : 'Sin informacion disponible.')}
+                <p
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.7,
+                    color: 'var(--text-secondary, #555)',
+                    margin: 0,
+                    whiteSpace: 'pre-line',
+                  }}
+                >
+                  {cv.summary ||
+                    (isOwnProfile
+                      ? 'Agrega un resumen profesional para destacar tu perfil.'
+                      : 'Sin informacion disponible.')}
                 </p>
               )}
 
               {/* Competencies tags */}
               <div style={{ marginTop: 20 }}>
-                <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, color: 'var(--text-primary)' }}>Competencias Clave</div>
+                <div
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 600,
+                    marginBottom: 10,
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  Competencias Clave
+                </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {cv.competencies.map((c, i) => (
                     <span key={i} style={styles.tag}>
                       {c}
                       {editMode && (
-                        <button onClick={() => removeCompetency(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginLeft: 2, color: 'var(--text-tertiary)' }}>
+                        <button
+                          onClick={() => removeCompetency(i)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            marginLeft: 2,
+                            color: 'var(--text-tertiary)',
+                          }}
+                        >
                           {X({ style: { width: 12, height: 12 } })}
                         </button>
                       )}
@@ -938,16 +1202,18 @@ export default function CVProfile({ onNavigate }: Props) {
                     <input
                       style={{ ...styles.input, width: 180, padding: '5px 12px', fontSize: 13 }}
                       placeholder="Agregar competencia + Enter"
-                      onKeyDown={e => {
+                      onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           addCompetency((e.target as HTMLInputElement).value);
-                          (e.target as HTMLInputElement).value = ''
+                          (e.target as HTMLInputElement).value = '';
                         }
                       }}
                     />
                   )}
                   {!editMode && cv.competencies.length === 0 && isOwnProfile && (
-                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>Agrega competencias clave para mejorar tu visibilidad.</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
+                      Agrega competencias clave para mejorar tu visibilidad.
+                    </span>
                   )}
                 </div>
               </div>
@@ -959,10 +1225,15 @@ export default function CVProfile({ onNavigate }: Props) {
             <div style={styles.card}>
               <div style={styles.cardTitle}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Briefcase({ style: { width: 20, height: 20, color: '#1e56a0' } })} Experiencia Laboral
+                  {Briefcase({ style: { width: 20, height: 20, color: '#1e56a0' } })} Experiencia
+                  Laboral
                 </span>
                 {editMode && (
-                  <button style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }} className="cv-btn" onClick={addExperience}>
+                  <button
+                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
+                    className="cv-btn"
+                    onClick={addExperience}
+                  >
                     {Plus({ style: { width: 14, height: 14 } })} Agregar
                   </button>
                 )}
@@ -970,7 +1241,9 @@ export default function CVProfile({ onNavigate }: Props) {
 
               {cv.experience.length === 0 && !editMode && (
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile ? 'Agrega tu experiencia laboral para completar tu perfil.' : 'Sin experiencia registrada.'}
+                  {isOwnProfile
+                    ? 'Agrega tu experiencia laboral para completar tu perfil.'
+                    : 'Sin experiencia registrada.'}
                 </p>
               )}
 
@@ -979,45 +1252,139 @@ export default function CVProfile({ onNavigate }: Props) {
                   <div key={exp.id} style={styles.timelineItem}>
                     {!editMode && <div style={styles.timelineDot} />}
                     {editMode ? (
-                      <div style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: 12, padding: 16, marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div
+                        style={{
+                          background: 'var(--bg-secondary, #f9fafb)',
+                          borderRadius: 12,
+                          padding: 16,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginBottom: 10,
+                          }}
+                        >
                           <strong style={{ fontSize: 14 }}>Experiencia</strong>
-                          <button onClick={() => removeExperience(exp.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                          <button
+                            onClick={() => removeExperience(exp.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#ef4444',
+                            }}
+                          >
                             {Trash2({ style: { width: 16, height: 16 } })}
                           </button>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                          <input style={styles.input} value={exp.title} onChange={e => updateExperience(exp.id, 'title', e.target.value)} placeholder="Cargo" />
-                          <input style={styles.input} value={exp.company} onChange={e => updateExperience(exp.id, 'company', e.target.value)} placeholder="Empresa" />
-                          <input style={styles.input} value={exp.location} onChange={e => updateExperience(exp.id, 'location', e.target.value)} placeholder="Ubicacion" />
+                          <input
+                            style={styles.input}
+                            value={exp.title}
+                            onChange={(e) => updateExperience(exp.id, 'title', e.target.value)}
+                            placeholder="Cargo"
+                          />
+                          <input
+                            style={styles.input}
+                            value={exp.company}
+                            onChange={(e) => updateExperience(exp.id, 'company', e.target.value)}
+                            placeholder="Empresa"
+                          />
+                          <input
+                            style={styles.input}
+                            value={exp.location}
+                            onChange={(e) => updateExperience(exp.id, 'location', e.target.value)}
+                            placeholder="Ubicacion"
+                          />
                           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                            <input type="date" style={{ ...styles.input, flex: 1 }} value={exp.startDate} onChange={e => updateExperience(exp.id, 'startDate', e.target.value)} />
+                            <input
+                              type="date"
+                              style={{ ...styles.input, flex: 1 }}
+                              value={exp.startDate}
+                              onChange={(e) =>
+                                updateExperience(exp.id, 'startDate', e.target.value)
+                              }
+                            />
                             <span style={{ fontSize: 13 }}>-</span>
                             {exp.current ? (
-                              <span style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>Presente</span>
+                              <span style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>
+                                Presente
+                              </span>
                             ) : (
-                              <input type="date" style={{ ...styles.input, flex: 1 }} value={exp.endDate} onChange={e => updateExperience(exp.id, 'endDate', e.target.value)} />
+                              <input
+                                type="date"
+                                style={{ ...styles.input, flex: 1 }}
+                                value={exp.endDate}
+                                onChange={(e) =>
+                                  updateExperience(exp.id, 'endDate', e.target.value)
+                                }
+                              />
                             )}
                           </div>
                         </div>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, marginTop: 8, cursor: 'pointer' }}>
-                          <input type="checkbox" checked={exp.current} onChange={e => updateExperience(exp.id, 'current', e.target.checked)} />
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            fontSize: 13,
+                            marginTop: 8,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={exp.current}
+                            onChange={(e) => updateExperience(exp.id, 'current', e.target.checked)}
+                          />
                           Trabajo actual
                         </label>
-                        <textarea style={{ ...styles.textarea, marginTop: 8 }} value={exp.description} onChange={e => updateExperience(exp.id, 'description', e.target.value)} placeholder="Describe tus responsabilidades y logros..." rows={3} />
+                        <textarea
+                          style={{ ...styles.textarea, marginTop: 8 }}
+                          value={exp.description}
+                          onChange={(e) => updateExperience(exp.id, 'description', e.target.value)}
+                          placeholder="Describe tus responsabilidades y logros..."
+                          rows={3}
+                        />
                       </div>
                     ) : (
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}>{exp.title}</div>
-                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>
-                          {exp.company}{exp.location ? ` - ${exp.location}` : ''}
+                        <div
+                          style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}
+                        >
+                          {exp.title}
                         </div>
-                        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>
+                          {exp.company}
+                          {exp.location ? ` - ${exp.location}` : ''}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            color: 'var(--text-tertiary)',
+                            marginTop: 2,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                          }}
+                        >
                           {Clock({ style: { width: 12, height: 12 } })}
-                          {exp.startDate}{exp.current ? ' - Presente' : exp.endDate ? ` - ${exp.endDate}` : ''}
+                          {exp.startDate}
+                          {exp.current ? ' - Presente' : exp.endDate ? ` - ${exp.endDate}` : ''}
                         </div>
                         {exp.description && (
-                          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)', marginTop: 8, whiteSpace: 'pre-line' }}>
+                          <p
+                            style={{
+                              fontSize: 14,
+                              lineHeight: 1.6,
+                              color: 'var(--text-secondary)',
+                              marginTop: 8,
+                              whiteSpace: 'pre-line',
+                            }}
+                          >
                             {exp.description}
                           </p>
                         )}
@@ -1037,7 +1404,11 @@ export default function CVProfile({ onNavigate }: Props) {
                   {GraduationCap({ style: { width: 20, height: 20, color: '#1e56a0' } })} Educacion
                 </span>
                 {editMode && (
-                  <button style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }} className="cv-btn" onClick={addEducation}>
+                  <button
+                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
+                    className="cv-btn"
+                    onClick={addEducation}
+                  >
                     {Plus({ style: { width: 14, height: 14 } })} Agregar
                   </button>
                 )}
@@ -1054,33 +1425,101 @@ export default function CVProfile({ onNavigate }: Props) {
                   <div key={edu.id} style={styles.timelineItem}>
                     {!editMode && <div style={styles.timelineDot} />}
                     {editMode ? (
-                      <div style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: 12, padding: 16, marginBottom: 12 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div
+                        style={{
+                          background: 'var(--bg-secondary, #f9fafb)',
+                          borderRadius: 12,
+                          padding: 16,
+                          marginBottom: 12,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            marginBottom: 10,
+                          }}
+                        >
                           <strong style={{ fontSize: 14 }}>Educacion</strong>
-                          <button onClick={() => removeEducation(edu.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                          <button
+                            onClick={() => removeEducation(edu.id)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              color: '#ef4444',
+                            }}
+                          >
                             {Trash2({ style: { width: 16, height: 16 } })}
                           </button>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                          <input style={styles.input} value={edu.institution} onChange={e => updateEducation(edu.id, 'institution', e.target.value)} placeholder="Institucion" />
-                          <input style={styles.input} value={edu.degree} onChange={e => updateEducation(edu.id, 'degree', e.target.value)} placeholder="Titulo/Grado" />
-                          <input style={styles.input} value={edu.field} onChange={e => updateEducation(edu.id, 'field', e.target.value)} placeholder="Campo de estudio" />
+                          <input
+                            style={styles.input}
+                            value={edu.institution}
+                            onChange={(e) => updateEducation(edu.id, 'institution', e.target.value)}
+                            placeholder="Institucion"
+                          />
+                          <input
+                            style={styles.input}
+                            value={edu.degree}
+                            onChange={(e) => updateEducation(edu.id, 'degree', e.target.value)}
+                            placeholder="Titulo/Grado"
+                          />
+                          <input
+                            style={styles.input}
+                            value={edu.field}
+                            onChange={(e) => updateEducation(edu.id, 'field', e.target.value)}
+                            placeholder="Campo de estudio"
+                          />
                           <div style={{ display: 'flex', gap: 8 }}>
-                            <input style={{ ...styles.input, flex: 1 }} value={edu.startYear} onChange={e => updateEducation(edu.id, 'startYear', e.target.value)} placeholder="Inicio" />
-                            <input style={{ ...styles.input, flex: 1 }} value={edu.endYear} onChange={e => updateEducation(edu.id, 'endYear', e.target.value)} placeholder="Fin" />
+                            <input
+                              style={{ ...styles.input, flex: 1 }}
+                              value={edu.startYear}
+                              onChange={(e) => updateEducation(edu.id, 'startYear', e.target.value)}
+                              placeholder="Inicio"
+                            />
+                            <input
+                              style={{ ...styles.input, flex: 1 }}
+                              value={edu.endYear}
+                              onChange={(e) => updateEducation(edu.id, 'endYear', e.target.value)}
+                              placeholder="Fin"
+                            />
                           </div>
                         </div>
-                        <textarea style={{ ...styles.textarea, marginTop: 8 }} value={edu.description} onChange={e => updateEducation(edu.id, 'description', e.target.value)} placeholder="Descripcion (opcional)" rows={2} />
+                        <textarea
+                          style={{ ...styles.textarea, marginTop: 8 }}
+                          value={edu.description}
+                          onChange={(e) => updateEducation(edu.id, 'description', e.target.value)}
+                          placeholder="Descripcion (opcional)"
+                          rows={2}
+                        />
                       </div>
                     ) : (
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}>{edu.degree}{edu.field ? ` en ${edu.field}` : ''}</div>
-                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>{edu.institution}</div>
+                        <div
+                          style={{ fontWeight: 600, fontSize: 16, color: 'var(--text-primary)' }}
+                        >
+                          {edu.degree}
+                          {edu.field ? ` en ${edu.field}` : ''}
+                        </div>
+                        <div style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 2 }}>
+                          {edu.institution}
+                        </div>
                         <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 2 }}>
-                          {edu.startYear}{edu.endYear ? ` - ${edu.endYear}` : ''}
+                          {edu.startYear}
+                          {edu.endYear ? ` - ${edu.endYear}` : ''}
                         </div>
                         {edu.description && (
-                          <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)', marginTop: 6, whiteSpace: 'pre-line' }}>
+                          <p
+                            style={{
+                              fontSize: 14,
+                              lineHeight: 1.6,
+                              color: 'var(--text-secondary)',
+                              marginTop: 6,
+                              whiteSpace: 'pre-line',
+                            }}
+                          >
                             {edu.description}
                           </p>
                         )}
@@ -1100,7 +1539,11 @@ export default function CVProfile({ onNavigate }: Props) {
                   {Award({ style: { width: 20, height: 20, color: '#1e56a0' } })} Certificaciones
                 </span>
                 {editMode && (
-                  <button style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }} className="cv-btn" onClick={addCertification}>
+                  <button
+                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
+                    className="cv-btn"
+                    onClick={addCertification}
+                  >
                     {Plus({ style: { width: 14, height: 14 } })} Agregar
                   </button>
                 )}
@@ -1108,39 +1551,132 @@ export default function CVProfile({ onNavigate }: Props) {
 
               {cv.certifications.length === 0 && !editMode && (
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile ? 'Agrega tus certificaciones profesionales.' : 'Sin certificaciones registradas.'}
+                  {isOwnProfile
+                    ? 'Agrega tus certificaciones profesionales.'
+                    : 'Sin certificaciones registradas.'}
                 </p>
               )}
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 14 }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                  gap: 14,
+                }}
+              >
                 {cv.certifications.map((cert) => (
-                  <div key={cert.id} style={{ background: 'var(--bg-secondary, #f9fafb)', borderRadius: 12, padding: 16, position: 'relative' }}>
+                  <div
+                    key={cert.id}
+                    style={{
+                      background: 'var(--bg-secondary, #f9fafb)',
+                      borderRadius: 12,
+                      padding: 16,
+                      position: 'relative',
+                    }}
+                  >
                     {editMode ? (
                       <>
-                        <button onClick={() => removeCertification(cert.id)} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                        <button
+                          onClick={() => removeCertification(cert.id)}
+                          style={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                          }}
+                        >
                           {Trash2({ style: { width: 14, height: 14 } })}
                         </button>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <input style={styles.input} value={cert.name} onChange={e => updateCertification(cert.id, 'name', e.target.value)} placeholder="Nombre de certificacion" />
-                          <input style={styles.input} value={cert.issuer} onChange={e => updateCertification(cert.id, 'issuer', e.target.value)} placeholder="Entidad emisora" />
-                          <input style={styles.input} value={cert.date} onChange={e => updateCertification(cert.id, 'date', e.target.value)} placeholder="Fecha (ej: 2024)" />
-                          <input style={styles.input} value={cert.url} onChange={e => updateCertification(cert.id, 'url', e.target.value)} placeholder="URL de verificacion (opcional)" />
+                          <input
+                            style={styles.input}
+                            value={cert.name}
+                            onChange={(e) => updateCertification(cert.id, 'name', e.target.value)}
+                            placeholder="Nombre de certificacion"
+                          />
+                          <input
+                            style={styles.input}
+                            value={cert.issuer}
+                            onChange={(e) => updateCertification(cert.id, 'issuer', e.target.value)}
+                            placeholder="Entidad emisora"
+                          />
+                          <input
+                            style={styles.input}
+                            value={cert.date}
+                            onChange={(e) => updateCertification(cert.id, 'date', e.target.value)}
+                            placeholder="Fecha (ej: 2024)"
+                          />
+                          <input
+                            style={styles.input}
+                            value={cert.url}
+                            onChange={(e) => updateCertification(cert.id, 'url', e.target.value)}
+                            placeholder="URL de verificacion (opcional)"
+                          />
                         </div>
                       </>
                     ) : (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            marginBottom: 6,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 36,
+                              height: 36,
+                              borderRadius: 10,
+                              background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             {Award({ style: { width: 18, height: 18, color: '#fff' } })}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>{cert.name}</div>
-                            <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>{cert.issuer}</div>
+                            <div
+                              style={{
+                                fontWeight: 600,
+                                fontSize: 14,
+                                color: 'var(--text-primary)',
+                              }}
+                            >
+                              {cert.name}
+                            </div>
+                            <div style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>
+                              {cert.issuer}
+                            </div>
                           </div>
                         </div>
-                        {cert.date && <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}>{cert.date}</div>}
+                        {cert.date && (
+                          <div
+                            style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 4 }}
+                          >
+                            {cert.date}
+                          </div>
+                        )}
                         {cert.url && (
-                          <a href={cert.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: '#1e56a0', display: 'flex', alignItems: 'center', gap: 4, marginTop: 6, textDecoration: 'none' }}>
+                          <a
+                            href={cert.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: 12,
+                              color: '#1e56a0',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              marginTop: 6,
+                              textDecoration: 'none',
+                            }}
+                          >
                             Ver credencial {ExternalLink({ style: { width: 12, height: 12 } })}
                           </a>
                         )}
@@ -1160,7 +1696,11 @@ export default function CVProfile({ onNavigate }: Props) {
                   {Zap({ style: { width: 20, height: 20, color: '#1e56a0' } })} Habilidades
                 </span>
                 {editMode && (
-                  <button style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }} className="cv-btn" onClick={addSkillGroup}>
+                  <button
+                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
+                    className="cv-btn"
+                    onClick={addSkillGroup}
+                  >
                     {Plus({ style: { width: 14, height: 14 } })} Agregar Categoria
                   </button>
                 )}
@@ -1168,33 +1708,58 @@ export default function CVProfile({ onNavigate }: Props) {
 
               {cv.skillGroups.length === 0 && !editMode && (
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile ? 'Organiza tus habilidades por categoria.' : 'Sin habilidades registradas.'}
+                  {isOwnProfile
+                    ? 'Organiza tus habilidades por categoria.'
+                    : 'Sin habilidades registradas.'}
                 </p>
               )}
 
               {cv.skillGroups.map((group, gi) => (
                 <div key={gi} style={{ marginBottom: 24 }}>
                   {editMode ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}
+                    >
                       <input
                         style={{ ...styles.input, fontWeight: 600, flex: 1 }}
                         value={group.category}
-                        onChange={e => {
-                          const groups = [...cv.skillGroups]
-                          groups[gi] = { ...groups[gi], category: e.target.value }
-                          updateField('skillGroups', groups)
+                        onChange={(e) => {
+                          const groups = [...cv.skillGroups];
+                          groups[gi] = { ...groups[gi], category: e.target.value };
+                          updateField('skillGroups', groups);
                         }}
                         placeholder="Nombre de categoria (ej: Software, Gestion, Tecnico)"
                       />
-                      <button onClick={() => addSkillToGroup(gi)} style={{ ...styles.btnSecondary, padding: '6px 12px', fontSize: 12 }} className="cv-btn">
+                      <button
+                        onClick={() => addSkillToGroup(gi)}
+                        style={{ ...styles.btnSecondary, padding: '6px 12px', fontSize: 12 }}
+                        className="cv-btn"
+                      >
                         {Plus({ style: { width: 12, height: 12 } })} Habilidad
                       </button>
-                      <button onClick={() => removeSkillGroup(gi)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                      <button
+                        onClick={() => removeSkillGroup(gi)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#ef4444',
+                        }}
+                      >
                         {Trash2({ style: { width: 16, height: 16 } })}
                       </button>
                     </div>
                   ) : (
-                    <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>{group.category}</div>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        marginBottom: 12,
+                      }}
+                    >
+                      {group.category}
+                    </div>
                   )}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     {group.skills.map((skill, si) => (
@@ -1204,7 +1769,7 @@ export default function CVProfile({ onNavigate }: Props) {
                             <input
                               style={{ ...styles.input, width: 180 }}
                               value={skill.name}
-                              onChange={e => updateSkillInGroup(gi, si, 'name', e.target.value)}
+                              onChange={(e) => updateSkillInGroup(gi, si, 'name', e.target.value)}
                               placeholder="Habilidad"
                             />
                             <input
@@ -1213,21 +1778,58 @@ export default function CVProfile({ onNavigate }: Props) {
                               max={100}
                               step={5}
                               value={skill.level}
-                              onChange={e => updateSkillInGroup(gi, si, 'level', Number(e.target.value))}
+                              onChange={(e) =>
+                                updateSkillInGroup(gi, si, 'level', Number(e.target.value))
+                              }
                               style={{ flex: 1 }}
                             />
-                            <span style={{ fontSize: 13, color: 'var(--text-tertiary)', width: 36, textAlign: 'right' }}>{skill.level}%</span>
-                            <button onClick={() => removeSkillFromGroup(gi, si)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                            <span
+                              style={{
+                                fontSize: 13,
+                                color: 'var(--text-tertiary)',
+                                width: 36,
+                                textAlign: 'right',
+                              }}
+                            >
+                              {skill.level}%
+                            </span>
+                            <button
+                              onClick={() => removeSkillFromGroup(gi, si)}
+                              style={{
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                color: '#ef4444',
+                              }}
+                            >
                               {X({ style: { width: 14, height: 14 } })}
                             </button>
                           </>
                         ) : (
                           <>
-                            <span style={{ fontSize: 14, color: 'var(--text-primary)', width: 160, flexShrink: 0 }}>{skill.name}</span>
+                            <span
+                              style={{
+                                fontSize: 14,
+                                color: 'var(--text-primary)',
+                                width: 160,
+                                flexShrink: 0,
+                              }}
+                            >
+                              {skill.name}
+                            </span>
                             <div style={styles.skillBar}>
                               <div style={{ ...styles.skillFill, width: `${skill.level}%` }} />
                             </div>
-                            <span style={{ fontSize: 12, color: 'var(--text-tertiary)', width: 36, textAlign: 'right' }}>{skill.level}%</span>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: 'var(--text-tertiary)',
+                                width: 36,
+                                textAlign: 'right',
+                              }}
+                            >
+                              {skill.level}%
+                            </span>
                           </>
                         )}
                       </div>
@@ -1243,10 +1845,15 @@ export default function CVProfile({ onNavigate }: Props) {
             <div style={styles.card}>
               <div style={styles.cardTitle}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {Target({ style: { width: 20, height: 20, color: '#1e56a0' } })} Lo que me diferencia
+                  {Target({ style: { width: 20, height: 20, color: '#1e56a0' } })} Lo que me
+                  diferencia
                 </span>
                 {editMode && (
-                  <button style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }} className="cv-btn" onClick={addDifferentiator}>
+                  <button
+                    style={{ ...styles.btnSecondary, padding: '6px 14px', fontSize: 13 }}
+                    className="cv-btn"
+                    onClick={addDifferentiator}
+                  >
                     {Plus({ style: { width: 14, height: 14 } })} Agregar
                   </button>
                 )}
@@ -1254,14 +1861,38 @@ export default function CVProfile({ onNavigate }: Props) {
 
               {cv.differentiators.length === 0 && !editMode && (
                 <p style={{ color: 'var(--text-tertiary)', fontSize: 14 }}>
-                  {isOwnProfile ? 'Destaca lo que te hace unico como profesional.' : 'Sin informacion disponible.'}
+                  {isOwnProfile
+                    ? 'Destaca lo que te hace unico como profesional.'
+                    : 'Sin informacion disponible.'}
                 </p>
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {cv.differentiators.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: 14, borderRadius: 12, background: 'var(--bg-secondary, #f9fafb)' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: 12,
+                      padding: 14,
+                      borderRadius: 12,
+                      background: 'var(--bg-secondary, #f9fafb)',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: 'linear-gradient(135deg, #1e56a0, #3d7cc9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        marginTop: 2,
+                      }}
+                    >
                       {Star({ style: { width: 16, height: 16, color: '#fff' } })}
                     </div>
                     {editMode ? (
@@ -1269,20 +1900,38 @@ export default function CVProfile({ onNavigate }: Props) {
                         <textarea
                           style={{ ...styles.textarea, minHeight: 40 }}
                           value={d}
-                          onChange={e => {
-                            const arr = [...cv.differentiators]
-                            arr[i] = e.target.value
-                            updateField('differentiators', arr)
+                          onChange={(e) => {
+                            const arr = [...cv.differentiators];
+                            arr[i] = e.target.value;
+                            updateField('differentiators', arr);
                           }}
                           placeholder="Describe tu propuesta de valor unica..."
                           rows={2}
                         />
-                        <button onClick={() => removeDifferentiator(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', alignSelf: 'flex-start' }}>
+                        <button
+                          onClick={() => removeDifferentiator(i)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            color: '#ef4444',
+                            alignSelf: 'flex-start',
+                          }}
+                        >
                           {Trash2({ style: { width: 16, height: 16 } })}
                         </button>
                       </div>
                     ) : (
-                      <p style={{ fontSize: 14, lineHeight: 1.6, color: 'var(--text-secondary)', margin: 0 }}>{d}</p>
+                      <p
+                        style={{
+                          fontSize: 14,
+                          lineHeight: 1.6,
+                          color: 'var(--text-secondary)',
+                          margin: 0,
+                        }}
+                      >
+                        {d}
+                      </p>
                     )}
                   </div>
                 ))}
@@ -1300,7 +1949,14 @@ export default function CVProfile({ onNavigate }: Props) {
                 onClick={() => fileRef.current?.click()}
               >
                 {Upload({ style: { width: 32, height: 32, color: '#1e56a0', marginBottom: 8 } })}
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)', marginTop: 8 }}>
+                <div
+                  style={{
+                    fontSize: 15,
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    marginTop: 8,
+                  }}
+                >
                   Arrastra o haz clic para subir tu CV
                 </div>
                 <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginTop: 4 }}>
@@ -1333,10 +1989,16 @@ export default function CVProfile({ onNavigate }: Props) {
           {/* Open to offers toggle */}
           {isOwnProfile && (
             <div style={styles.card}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+              >
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Abierto a ofertas</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>Los reclutadores pueden contactarte</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    Abierto a ofertas
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--text-tertiary)', marginTop: 2 }}>
+                    Los reclutadores pueden contactarte
+                  </div>
                 </div>
                 <button
                   style={{
@@ -1355,8 +2017,18 @@ export default function CVProfile({ onNavigate }: Props) {
           {isOwnProfile && (
             <div style={styles.card}>
               <div style={{ ...styles.cardTitle, fontSize: 15 }}>Visibilidad del perfil</div>
-              {(['public', 'connections', 'private'] as const).map(v => (
-                <label key={v} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', cursor: 'pointer', fontSize: 14 }}>
+              {(['public', 'connections', 'private'] as const).map((v) => (
+                <label
+                  key={v}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '6px 0',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                  }}
+                >
                   <input
                     type="radio"
                     name="cv-visibility"
@@ -1367,7 +2039,11 @@ export default function CVProfile({ onNavigate }: Props) {
                     {v === 'public' && Globe({ style: { width: 14, height: 14 } })}
                     {v === 'connections' && Users({ style: { width: 14, height: 14 } })}
                     {v === 'private' && EyeOff({ style: { width: 14, height: 14 } })}
-                    {v === 'public' ? 'Publico' : v === 'connections' ? 'Solo conexiones' : 'Privado'}
+                    {v === 'public'
+                      ? 'Publico'
+                      : v === 'connections'
+                        ? 'Solo conexiones'
+                        : 'Privado'}
                   </span>
                 </label>
               ))}
@@ -1379,34 +2055,74 @@ export default function CVProfile({ onNavigate }: Props) {
             <div style={{ ...styles.cardTitle, fontSize: 15 }}>
               Idiomas
               {editMode && (
-                <button onClick={addLanguage} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1e56a0' }}>
+                <button
+                  onClick={addLanguage}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#1e56a0',
+                  }}
+                >
                   {Plus({ style: { width: 16, height: 16 } })}
                 </button>
               )}
             </div>
             {cv.languages.length === 0 && !editMode && (
-              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Sin idiomas registrados.</p>
+              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>
+                Sin idiomas registrados.
+              </p>
             )}
             {cv.languages.map((lang, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div
+                key={i}
+                style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}
+              >
                 {editMode ? (
                   <>
-                    <input style={{ ...styles.input, flex: 1 }} value={lang.name} onChange={e => {
-                      const langs = [...cv.languages]; langs[i] = { ...langs[i], name: e.target.value }; updateField('languages', langs)
-                    }} placeholder="Idioma" />
-                    <select style={{ ...styles.input, width: 140 }} value={lang.level} onChange={e => {
-                      const langs = [...cv.languages]; langs[i] = { ...langs[i], level: e.target.value }; updateField('languages', langs)
-                    }}>
-                      {LANG_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                    <input
+                      style={{ ...styles.input, flex: 1 }}
+                      value={lang.name}
+                      onChange={(e) => {
+                        const langs = [...cv.languages];
+                        langs[i] = { ...langs[i], name: e.target.value };
+                        updateField('languages', langs);
+                      }}
+                      placeholder="Idioma"
+                    />
+                    <select
+                      style={{ ...styles.input, width: 140 }}
+                      value={lang.level}
+                      onChange={(e) => {
+                        const langs = [...cv.languages];
+                        langs[i] = { ...langs[i], level: e.target.value };
+                        updateField('languages', langs);
+                      }}
+                    >
+                      {LANG_LEVELS.map((l) => (
+                        <option key={l} value={l}>
+                          {l}
+                        </option>
+                      ))}
                     </select>
-                    <button onClick={() => removeLanguage(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                    <button
+                      onClick={() => removeLanguage(i)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#ef4444',
+                      }}
+                    >
                       {X({ style: { width: 14, height: 14 } })}
                     </button>
                   </>
                 ) : (
                   <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                     <span style={{ fontSize: 14, color: 'var(--text-primary)' }}>{lang.name}</span>
-                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>{lang.level}</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>
+                      {lang.level}
+                    </span>
                   </div>
                 )}
               </div>
@@ -1418,30 +2134,75 @@ export default function CVProfile({ onNavigate }: Props) {
             <div style={{ ...styles.cardTitle, fontSize: 15 }}>
               Enlaces
               {editMode && (
-                <button onClick={addLink} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#1e56a0' }}>
+                <button
+                  onClick={addLink}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#1e56a0',
+                  }}
+                >
                   {Plus({ style: { width: 16, height: 16 } })}
                 </button>
               )}
             </div>
             {cv.links.length === 0 && !editMode && (
-              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>Sin enlaces registrados.</p>
+              <p style={{ color: 'var(--text-tertiary)', fontSize: 13 }}>
+                Sin enlaces registrados.
+              </p>
             )}
             {cv.links.map((lnk, i) => (
               <div key={i} style={{ marginBottom: 8 }}>
                 {editMode ? (
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <input style={{ ...styles.input, width: 100 }} value={lnk.label} onChange={e => {
-                      const links = [...cv.links]; links[i] = { ...links[i], label: e.target.value }; updateField('links', links)
-                    }} placeholder="Etiqueta" />
-                    <input style={{ ...styles.input, flex: 1 }} value={lnk.url} onChange={e => {
-                      const links = [...cv.links]; links[i] = { ...links[i], url: e.target.value }; updateField('links', links)
-                    }} placeholder="URL" />
-                    <button onClick={() => removeLink(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                    <input
+                      style={{ ...styles.input, width: 100 }}
+                      value={lnk.label}
+                      onChange={(e) => {
+                        const links = [...cv.links];
+                        links[i] = { ...links[i], label: e.target.value };
+                        updateField('links', links);
+                      }}
+                      placeholder="Etiqueta"
+                    />
+                    <input
+                      style={{ ...styles.input, flex: 1 }}
+                      value={lnk.url}
+                      onChange={(e) => {
+                        const links = [...cv.links];
+                        links[i] = { ...links[i], url: e.target.value };
+                        updateField('links', links);
+                      }}
+                      placeholder="URL"
+                    />
+                    <button
+                      onClick={() => removeLink(i)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#ef4444',
+                      }}
+                    >
                       {X({ style: { width: 14, height: 14 } })}
                     </button>
                   </div>
                 ) : (
-                  <a href={lnk.url} target="_blank" rel="noopener noreferrer" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, color: '#1e56a0', textDecoration: 'none', padding: '4px 0' }}>
+                  <a
+                    href={lnk.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      fontSize: 14,
+                      color: '#1e56a0',
+                      textDecoration: 'none',
+                      padding: '4px 0',
+                    }}
+                  >
                     {Link({ style: { width: 14, height: 14 } })} {lnk.label || lnk.url}
                     {ExternalLink({ style: { width: 12, height: 12, opacity: 0.5 } })}
                   </a>
@@ -1456,75 +2217,249 @@ export default function CVProfile({ onNavigate }: Props) {
       {showPreview && (
         <>
           {/* Overlay */}
-          <div onClick={() => setShowPreview(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.28)', zIndex: 1100 }} className="cv-no-print" />
+          <div
+            onClick={() => setShowPreview(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.28)', zIndex: 1100 }}
+            className="cv-no-print"
+          />
 
           {/* Panel */}
-          <div style={{
-            position: 'fixed', top: 0, right: 0, width: 420, height: '100vh',
-            background: '#f8f9fb', borderLeft: '1px solid #e0e4ea',
-            zIndex: 1101, display: 'flex', flexDirection: 'column',
-            boxShadow: '-6px 0 28px rgba(0,0,0,0.14)', overflowY: 'auto',
-          }} className="cv-no-print">
-
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              right: 0,
+              width: 420,
+              height: '100vh',
+              background: '#f8f9fb',
+              borderLeft: '1px solid #e0e4ea',
+              zIndex: 1101,
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '-6px 0 28px rgba(0,0,0,0.14)',
+              overflowY: 'auto',
+            }}
+            className="cv-no-print"
+          >
             {/* Panel header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', background: '#fff', borderBottom: '1px solid #e8eaed', flexShrink: 0, position: 'sticky', top: 0, zIndex: 2 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '14px 18px',
+                background: '#fff',
+                borderBottom: '1px solid #e8eaed',
+                flexShrink: 0,
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+              }}
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg viewBox="0 0 40 40" width={18} height={18}>
-                  <circle cx="20" cy="20" r="12" fill="none" stroke="#2D62C8" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19" />
+                  <circle
+                    cx="20"
+                    cy="20"
+                    r="12"
+                    fill="none"
+                    stroke="#2D62C8"
+                    strokeWidth="5"
+                    strokeLinecap="round"
+                    strokeDasharray="56 19"
+                  />
                 </svg>
-                <span style={{ fontWeight: 700, fontSize: 13, color: '#2D62C8', letterSpacing: '0.02em' }}>Vista Previa — Formato Conniku</span>
+                <span
+                  style={{
+                    fontWeight: 700,
+                    fontSize: 13,
+                    color: '#2D62C8',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  Vista Previa — Formato Conniku
+                </span>
               </div>
-              <button onClick={() => setShowPreview(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: 20, lineHeight: 1, padding: 4 }}>×</button>
+              <button
+                onClick={() => setShowPreview(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#94a3b8',
+                  fontSize: 20,
+                  lineHeight: 1,
+                  padding: 4,
+                }}
+              >
+                ×
+              </button>
             </div>
 
             {/* CV Document */}
             <div style={{ padding: '20px 20px 40px', flex: 1 }}>
               {/* Document card */}
-              <div style={{ background: '#fff', borderRadius: 12, boxShadow: '0 2px 12px rgba(0,0,0,0.08)', overflow: 'hidden', border: '1px solid #e8eaed' }}>
-
+              <div
+                style={{
+                  background: '#fff',
+                  borderRadius: 12,
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                  overflow: 'hidden',
+                  border: '1px solid #e8eaed',
+                }}
+              >
                 {/* Document header — blue Conniku stripe */}
-                <div style={{ background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)', padding: '22px 22px 18px', color: '#fff' }}>
+                <div
+                  style={{
+                    background: 'linear-gradient(135deg, #0d2a6b 0%, #1a56db 60%, #3b82f6 100%)',
+                    padding: '22px 22px 18px',
+                    color: '#fff',
+                  }}
+                >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-                    <div style={{ width: 52, height: 52, borderRadius: '50%', background: user?.avatar ? `url(${user.avatar}) center/cover` : 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, fontWeight: 700, color: '#fff', border: '2px solid rgba(255,255,255,0.4)', flexShrink: 0 }}>
-                      {!user?.avatar && `${(user?.firstName || '?')[0]}${(user?.lastName || '')[0]}`.toUpperCase()}
+                    <div
+                      style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: '50%',
+                        background: user?.avatar
+                          ? `url(${user.avatar}) center/cover`
+                          : 'rgba(255,255,255,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: '#fff',
+                        border: '2px solid rgba(255,255,255,0.4)',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {!user?.avatar &&
+                        `${(user?.firstName || '?')[0]}${(user?.lastName || '')[0]}`.toUpperCase()}
                     </div>
                     <div>
-                      <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+                      <div
+                        style={{
+                          fontSize: 18,
+                          fontWeight: 800,
+                          letterSpacing: '-0.02em',
+                          lineHeight: 1.1,
+                        }}
+                      >
                         {user?.firstName} {user?.lastName}
                       </div>
-                      {cv.headline && <div style={{ fontSize: 12, marginTop: 4, opacity: 0.85, lineHeight: 1.3 }}>{cv.headline}</div>}
+                      {cv.headline && (
+                        <div style={{ fontSize: 12, marginTop: 4, opacity: 0.85, lineHeight: 1.3 }}>
+                          {cv.headline}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, fontSize: 11, opacity: 0.8 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 10,
+                      fontSize: 11,
+                      opacity: 0.8,
+                    }}
+                  >
                     {cv.email && <span>✉ {cv.email}</span>}
                     {cv.phone && <span>📞 {cv.phone}</span>}
                     {cv.location && <span>📍 {cv.location}</span>}
-                    {cv.openToOffers && <span style={{ background: 'rgba(255,255,255,0.18)', borderRadius: 8, padding: '2px 8px', fontWeight: 600 }}>✓ Abierto a ofertas</span>}
+                    {cv.openToOffers && (
+                      <span
+                        style={{
+                          background: 'rgba(255,255,255,0.18)',
+                          borderRadius: 8,
+                          padding: '2px 8px',
+                          fontWeight: 600,
+                        }}
+                      >
+                        ✓ Abierto a ofertas
+                      </span>
+                    )}
                   </div>
                   {/* Conniku watermark */}
-                  <div style={{ marginTop: 12, fontSize: 9, opacity: 0.45, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 9,
+                      opacity: 0.45,
+                      letterSpacing: '0.15em',
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     Generado con Conniku · conniku.com
                   </div>
                 </div>
 
                 {/* Body */}
-                <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
+                <div
+                  style={{
+                    padding: '16px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 14,
+                  }}
+                >
                   {/* Summary */}
                   {cv.summary && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Resumen</div>
-                      <p style={{ fontSize: 12, color: '#444', lineHeight: 1.6, margin: 0 }}>{cv.summary}</p>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 6,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Resumen
+                      </div>
+                      <p style={{ fontSize: 12, color: '#444', lineHeight: 1.6, margin: 0 }}>
+                        {cv.summary}
+                      </p>
                     </div>
                   )}
 
                   {/* Competencies */}
                   {cv.competencies.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Competencias Clave</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 6,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Competencias Clave
+                      </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
                         {cv.competencies.map((c, i) => (
-                          <span key={i} style={{ fontSize: 10, padding: '2px 8px', borderRadius: 12, background: 'rgba(26,86,219,0.08)', color: '#1a56db', border: '1px solid rgba(26,86,219,0.18)', fontWeight: 500 }}>{c}</span>
+                          <span
+                            key={i}
+                            style={{
+                              fontSize: 10,
+                              padding: '2px 8px',
+                              borderRadius: 12,
+                              background: 'rgba(26,86,219,0.08)',
+                              color: '#1a56db',
+                              border: '1px solid rgba(26,86,219,0.18)',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {c}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -1533,13 +2468,53 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Experience */}
                   {cv.experience.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Experiencia</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 8,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Experiencia
+                      </div>
                       {cv.experience.map((exp, i) => (
-                        <div key={exp.id} style={{ marginBottom: i < cv.experience.length - 1 ? 10 : 0, paddingBottom: i < cv.experience.length - 1 ? 10 : 0, borderBottom: i < cv.experience.length - 1 ? '1px solid #f0f0f0' : 'none' }}>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>{exp.title}</div>
-                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>{exp.company}{exp.location ? ` · ${exp.location}` : ''}</div>
-                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{exp.startDate}{exp.endDate ? ` – ${exp.endDate}` : exp.current ? ' – Actualidad' : ''}</div>
-                          {exp.description && <p style={{ fontSize: 11, color: '#555', margin: '4px 0 0', lineHeight: 1.5 }}>{exp.description}</p>}
+                        <div
+                          key={exp.id}
+                          style={{
+                            marginBottom: i < cv.experience.length - 1 ? 10 : 0,
+                            paddingBottom: i < cv.experience.length - 1 ? 10 : 0,
+                            borderBottom:
+                              i < cv.experience.length - 1 ? '1px solid #f0f0f0' : 'none',
+                          }}
+                        >
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>
+                            {exp.title}
+                          </div>
+                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>
+                            {exp.company}
+                            {exp.location ? ` · ${exp.location}` : ''}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>
+                            {exp.startDate}
+                            {exp.endDate ? ` – ${exp.endDate}` : exp.current ? ' – Actualidad' : ''}
+                          </div>
+                          {exp.description && (
+                            <p
+                              style={{
+                                fontSize: 11,
+                                color: '#555',
+                                margin: '4px 0 0',
+                                lineHeight: 1.5,
+                              }}
+                            >
+                              {exp.description}
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -1548,12 +2523,36 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Education */}
                   {cv.education.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Educación</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 8,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Educación
+                      </div>
                       {cv.education.map((edu, i) => (
-                        <div key={edu.id} style={{ marginBottom: i < cv.education.length - 1 ? 8 : 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>{edu.degree}{edu.field ? ` en ${edu.field}` : ''}</div>
-                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>{edu.institution}</div>
-                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>{edu.startYear}{edu.endYear ? ` – ${edu.endYear}` : ''}</div>
+                        <div
+                          key={edu.id}
+                          style={{ marginBottom: i < cv.education.length - 1 ? 8 : 0 }}
+                        >
+                          <div style={{ fontWeight: 700, fontSize: 12, color: '#1a2e4a' }}>
+                            {edu.degree}
+                            {edu.field ? ` en ${edu.field}` : ''}
+                          </div>
+                          <div style={{ fontSize: 11, color: '#1a56db', marginTop: 1 }}>
+                            {edu.institution}
+                          </div>
+                          <div style={{ fontSize: 10, color: '#888', marginTop: 1 }}>
+                            {edu.startYear}
+                            {edu.endYear ? ` – ${edu.endYear}` : ''}
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1562,15 +2561,72 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Skills */}
                   {cv.skillGroups.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 8, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Habilidades</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 8,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Habilidades
+                      </div>
                       {cv.skillGroups.map((sg, i) => (
                         <div key={i} style={{ marginBottom: 8 }}>
-                          <div style={{ fontSize: 10, fontWeight: 600, color: '#555', marginBottom: 4 }}>{sg.category}</div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: '#555',
+                              marginBottom: 4,
+                            }}
+                          >
+                            {sg.category}
+                          </div>
                           {sg.skills.map((sk, j) => (
-                            <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                              <span style={{ fontSize: 11, color: '#444', width: 90, flexShrink: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sk.name}</span>
-                              <div style={{ flex: 1, height: 4, borderRadius: 2, background: '#e8eaed', overflow: 'hidden' }}>
-                                <div style={{ width: `${(sk.level / 5) * 100}%`, height: '100%', background: 'linear-gradient(90deg, #1a56db, #3b82f6)', borderRadius: 2 }} />
+                            <div
+                              key={j}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 8,
+                                marginBottom: 4,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  color: '#444',
+                                  width: 90,
+                                  flexShrink: 0,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {sk.name}
+                              </span>
+                              <div
+                                style={{
+                                  flex: 1,
+                                  height: 4,
+                                  borderRadius: 2,
+                                  background: '#e8eaed',
+                                  overflow: 'hidden',
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    width: `${(sk.level / 5) * 100}%`,
+                                    height: '100%',
+                                    background: 'linear-gradient(90deg, #1a56db, #3b82f6)',
+                                    borderRadius: 2,
+                                  }}
+                                />
                               </div>
                             </div>
                           ))}
@@ -1582,10 +2638,35 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Languages */}
                   {cv.languages.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Idiomas</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 6,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Idiomas
+                      </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {cv.languages.map((l, i) => (
-                          <span key={i} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 8, background: '#f3f4f6', color: '#333', fontWeight: 500 }}>{l.name} · {l.level}</span>
+                          <span
+                            key={i}
+                            style={{
+                              fontSize: 11,
+                              padding: '2px 8px',
+                              borderRadius: 8,
+                              background: '#f3f4f6',
+                              color: '#333',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {l.name} · {l.level}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -1594,9 +2675,28 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Certifications */}
                   {cv.certifications.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Certificaciones</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 6,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Certificaciones
+                      </div>
                       {cv.certifications.map((cert, i) => (
-                        <div key={cert.id} style={{ marginBottom: i < cv.certifications.length - 1 ? 6 : 0, fontSize: 11 }}>
+                        <div
+                          key={cert.id}
+                          style={{
+                            marginBottom: i < cv.certifications.length - 1 ? 6 : 0,
+                            fontSize: 11,
+                          }}
+                        >
                           <span style={{ fontWeight: 600, color: '#1a2e4a' }}>{cert.name}</span>
                           {cert.issuer && <span style={{ color: '#888' }}> · {cert.issuer}</span>}
                           {cert.date && <span style={{ color: '#888' }}> · {cert.date}</span>}
@@ -1608,22 +2708,35 @@ export default function CVProfile({ onNavigate }: Props) {
                   {/* Links */}
                   {cv.links.length > 0 && (
                     <div>
-                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1a56db', marginBottom: 6, borderBottom: '1.5px solid #1a56db', paddingBottom: 4 }}>Links</div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          color: '#1a56db',
+                          marginBottom: 6,
+                          borderBottom: '1.5px solid #1a56db',
+                          paddingBottom: 4,
+                        }}
+                      >
+                        Links
+                      </div>
                       {cv.links.map((lnk, i) => (
                         <div key={i} style={{ fontSize: 11, marginBottom: 3 }}>
-                          <span style={{ color: '#1a56db', fontWeight: 500 }}>{lnk.label || lnk.url}</span>
+                          <span style={{ color: '#1a56db', fontWeight: 500 }}>
+                            {lnk.label || lnk.url}
+                          </span>
                         </div>
                       ))}
                     </div>
                   )}
-
                 </div>
               </div>
             </div>
           </div>
         </>
       )}
-
     </div>
-  )
+  );
 }

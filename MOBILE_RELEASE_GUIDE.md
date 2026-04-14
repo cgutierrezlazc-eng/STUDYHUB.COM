@@ -83,7 +83,7 @@ Funciones principales:
 • Feed Social — Comparte logros, preguntas y recursos con tu comunidad
 • Mensajes — Chat en tiempo real con compañeros, grupos y notas de voz
 • Cursos — 60+ cursos con certificados para tu perfil profesional
-• Proyectos — Gestiona tus trabajos con documentos e IA integrada
+• Proyectos — Gestiona tus trabajos con documentos y herramientas inteligentes
 • Comunidades — Únete a grupos de estudio y foros académicos
 • Bolsa de Trabajo — Encuentra pasantías, empleo y tutorías
 • Eventos — Descubre hackathons, conferencias y meetups

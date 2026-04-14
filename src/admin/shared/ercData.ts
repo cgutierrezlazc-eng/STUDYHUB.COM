@@ -5,41 +5,41 @@
 // ═════════════════════════════════════════════════════════════════
 
 export interface ERCJobDescription {
-  positionKey: string
-  title: string
-  department: string
-  email: string
-  reportTo: string
-  mision: string
-  expectations: string[]      // Lo que se espera del colaborador
-  responsibilities: string[]  // Funciones y tareas especificas
-  commitments: string[]       // Lo que la empresa se compromete a entregar
-  requirements: string[]      // Requisitos del cargo
-  desirable: string[]         // Deseables
-  kpis: { metric: string; target: string }[]
-  tools: string[]             // Herramientas que usara
-  schedule: string
-  compensation: { base: string; benefits: string[] }
+  positionKey: string;
+  title: string;
+  department: string;
+  email: string;
+  reportTo: string;
+  mision: string;
+  expectations: string[]; // Lo que se espera del colaborador
+  responsibilities: string[]; // Funciones y tareas especificas
+  commitments: string[]; // Lo que la empresa se compromete a entregar
+  requirements: string[]; // Requisitos del cargo
+  desirable: string[]; // Deseables
+  kpis: { metric: string; target: string }[];
+  tools: string[]; // Herramientas que usara
+  schedule: string;
+  compensation: { base: string; benefits: string[] };
 }
 
 export interface ERCExpectationMemo {
-  positionKey: string
-  title: string
-  intro: string
-  day30: { title: string; items: string[] }
-  day60: { title: string; items: string[] }
-  day90: { title: string; items: string[] }
-  ongoing: string[]           // Expectativas permanentes
-  values: string[]            // Valores Conniku que debe vivir
-  evaluationCriteria: string[]
-  signature: { employee: boolean; supervisor: boolean; date: boolean }
+  positionKey: string;
+  title: string;
+  intro: string;
+  day30: { title: string; items: string[] };
+  day60: { title: string; items: string[] };
+  day90: { title: string; items: string[] };
+  ongoing: string[]; // Expectativas permanentes
+  values: string[]; // Valores Conniku que debe vivir
+  evaluationCriteria: string[];
+  signature: { employee: boolean; supervisor: boolean; date: boolean };
 }
 
 export interface ERCContractTemplate {
-  positionKey: string
-  title: string
-  type: string                // indefinido, plazo_fijo
-  clauses: { title: string; content: string }[]
+  positionKey: string;
+  title: string;
+  type: string; // indefinido, plazo_fijo
+  clauses: { title: string; content: string }[];
 }
 
 // ═════════════════════════════════════════════════════════════════
@@ -52,7 +52,7 @@ export const CONNIKU_VALUES = [
   'Excelencia Operacional — Hacer las cosas bien, con calidad y a tiempo',
   'Transparencia — Comunicar con honestidad, celebrar logros y asumir errores',
   'Crecimiento Personal — Cada miembro del equipo debe crecer profesionalmente junto a Conniku',
-]
+];
 
 // ═════════════════════════════════════════════════════════════════
 // JOB DESCRIPTIONS
@@ -65,7 +65,8 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     department: 'Tecnologia',
     email: 'cto@conniku.com',
     reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
-    mision: 'Liderar la vision tecnologica de Conniku, asegurando que la plataforma sea robusta, escalable y este a la vanguardia de la tecnologia educativa en Chile.',
+    mision:
+      'Liderar la vision tecnologica de Conniku, asegurando que la plataforma sea robusta, escalable y este a la vanguardia de la tecnologia educativa en Chile.',
     expectations: [
       'Mantener la plataforma con 99.5% de uptime mensual',
       'Entregar features nuevos segun el roadmap acordado con el CEO',
@@ -86,7 +87,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
       'Monitorear performance, errores y metricas de la plataforma',
       'Planificar y ejecutar migraciones de base de datos',
       'Gestionar certificados SSL, dominios y DNS',
-      'Implementar features de IA (chatbot, generacion de contenido, feed personalizado)',
+      'Implementar features inteligentes (chatbot, generacion de contenido, feed personalizado)',
     ],
     commitments: [
       'Acceso completo a todas las herramientas y servicios necesarios',
@@ -107,7 +108,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     ],
     desirable: [
       'Experiencia en EdTech o plataformas B2C',
-      'Conocimiento de IA/ML aplicado a educacion',
+      'Conocimiento de tecnologias inteligentes aplicado a educacion',
       'Experiencia con apps moviles (Capacitor, React Native)',
       'Certificaciones cloud (AWS, GCP)',
     ],
@@ -120,10 +121,16 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
       { metric: 'Features entregados vs planificados', target: '>= 85% del sprint' },
     ],
     tools: ['VS Code', 'GitHub', 'Vercel', 'Render', 'PostgreSQL', 'Claude API', 'Figma', 'Slack'],
-    schedule: 'Lunes a Viernes, 45 hrs semanales. Disponibilidad para incidentes criticos fuera de horario.',
+    schedule:
+      'Lunes a Viernes, 45 hrs semanales. Disponibilidad para incidentes criticos fuera de horario.',
     compensation: {
       base: '$2.800.000 CLP bruto mensual',
-      benefits: ['Colacion $80.000', 'Movilizacion $50.000', 'Bono por uptime trimestral', 'Dias libres adicionales por deploy exitoso de version mayor'],
+      benefits: [
+        'Colacion $80.000',
+        'Movilizacion $50.000',
+        'Bono por uptime trimestral',
+        'Dias libres adicionales por deploy exitoso de version mayor',
+      ],
     },
   },
 
@@ -134,7 +141,8 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     department: 'Operaciones',
     email: 'operaciones@conniku.com',
     reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
-    mision: 'Asegurar que todas las operaciones de Conniku funcionen de manera eficiente, desde la gestion interna hasta la experiencia del usuario, optimizando procesos y recursos.',
+    mision:
+      'Asegurar que todas las operaciones de Conniku funcionen de manera eficiente, desde la gestion interna hasta la experiencia del usuario, optimizando procesos y recursos.',
     expectations: [
       'Mantener los procesos internos documentados y optimizados',
       'Coordinar entre todos los departamentos para evitar cuellos de botella',
@@ -190,7 +198,11 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     schedule: 'Lunes a Viernes, 45 hrs semanales.',
     compensation: {
       base: '$2.200.000 CLP bruto mensual',
-      benefits: ['Colacion $80.000', 'Movilizacion $50.000', 'Bono trimestral por cumplimiento KPIs'],
+      benefits: [
+        'Colacion $80.000',
+        'Movilizacion $50.000',
+        'Bono trimestral por cumplimiento KPIs',
+      ],
     },
   },
 
@@ -201,7 +213,8 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     department: 'Marketing',
     email: 'comunidad@conniku.com',
     reportTo: 'Marketing & Growth Lead / CEO',
-    mision: 'Construir, nutrir y hacer crecer la comunidad de estudiantes universitarios de Conniku, generando engagement y sentido de pertenencia a traves de contenido relevante e interacciones significativas.',
+    mision:
+      'Construir, nutrir y hacer crecer la comunidad de estudiantes universitarios de Conniku, generando engagement y sentido de pertenencia a traves de contenido relevante e interacciones significativas.',
     expectations: [
       'Mantener crecimiento constante de la comunidad activa',
       'Generar contenido que los estudiantes compartan organicamente',
@@ -252,11 +265,23 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
       { metric: 'NPS de comunidad', target: '>= 40' },
       { metric: 'Referidos generados', target: '>= 50 referidos activos/mes' },
     ],
-    tools: ['Canva', 'Instagram Business', 'TikTok Creator', 'LinkedIn', 'Plataforma Conniku', 'Google Analytics', 'Slack'],
+    tools: [
+      'Canva',
+      'Instagram Business',
+      'TikTok Creator',
+      'LinkedIn',
+      'Plataforma Conniku',
+      'Google Analytics',
+      'Slack',
+    ],
     schedule: 'Lunes a Viernes, 45 hrs semanales. Flexibilidad para publicar en horarios peak.',
     compensation: {
       base: '$1.200.000 CLP bruto mensual',
-      benefits: ['Colacion $70.000', 'Movilizacion $40.000', 'Bono por hitos de crecimiento de comunidad'],
+      benefits: [
+        'Colacion $70.000',
+        'Movilizacion $40.000',
+        'Bono por hitos de crecimiento de comunidad',
+      ],
     },
   },
 
@@ -267,7 +292,8 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     department: 'Soporte',
     email: 'soporte@conniku.com',
     reportTo: 'Head of Operations / CEO',
-    mision: 'Garantizar que cada estudiante que contacte a Conniku reciba una respuesta rapida, empatica y resolutiva, convirtiendo cada interaccion de soporte en una oportunidad de fidelizacion.',
+    mision:
+      'Garantizar que cada estudiante que contacte a Conniku reciba una respuesta rapida, empatica y resolutiva, convirtiendo cada interaccion de soporte en una oportunidad de fidelizacion.',
     expectations: [
       'Resolver el 90% de tickets en primera respuesta',
       'Mantener satisfaccion de soporte >= 4.5/5.0',
@@ -278,7 +304,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     ],
     responsibilities: [
       'Atender consultas de estudiantes via chat, email y redes sociales',
-      'Gestionar el chatbot de soporte (Claude AI) y entrenar respuestas',
+      'Gestionar el chatbot de soporte y entrenar respuestas',
       'Crear y mantener base de conocimiento (FAQ, tutoriales, guias)',
       'Monitorear tickets de soporte y priorizar por urgencia',
       'Documentar bugs reportados por usuarios y coordinar con CTO',
@@ -318,7 +344,7 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
       { metric: 'FAQ articles creados/actualizados', target: '>= 5/mes' },
       { metric: 'Bugs reportados documentados', target: '100% con reproduccion' },
     ],
-    tools: ['Plataforma Conniku', 'Zoho Mail', 'Claude AI (chatbot)', 'Google Docs', 'Slack'],
+    tools: ['Plataforma Conniku', 'Zoho Mail', 'Chatbot de soporte', 'Google Docs', 'Slack'],
     schedule: 'Lunes a Viernes, 45 hrs semanales.',
     compensation: {
       base: '$1.000.000 CLP bruto mensual',
@@ -333,7 +359,8 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
     department: 'Marketing',
     email: 'marketing@conniku.com',
     reportTo: 'CEO / Cristian Andrés Gutiérrez Lazcano',
-    mision: 'Disenar y ejecutar la estrategia de crecimiento de Conniku, posicionando la plataforma como la herramienta #1 para estudiantes universitarios en Chile, adquiriendo usuarios de forma eficiente y sostenible.',
+    mision:
+      'Disenar y ejecutar la estrategia de crecimiento de Conniku, posicionando la plataforma como la herramienta #1 para estudiantes universitarios en Chile, adquiriendo usuarios de forma eficiente y sostenible.',
     expectations: [
       'Lograr crecimiento sostenido de usuarios activos mensuales',
       'Optimizar el costo de adquisicion (CAC) mes a mes',
@@ -387,14 +414,27 @@ export const JOB_DESCRIPTIONS: ERCJobDescription[] = [
       { metric: 'ROI de campanas', target: '>= 3x' },
       { metric: 'Trafico organico', target: 'Crecimiento >= 15% mensual' },
     ],
-    tools: ['Google Ads', 'Meta Ads Manager', 'Google Analytics', 'Google Tag Manager', 'Canva', 'Zoho Mail', 'Plataforma Conniku (Admin)', 'Slack'],
+    tools: [
+      'Google Ads',
+      'Meta Ads Manager',
+      'Google Analytics',
+      'Google Tag Manager',
+      'Canva',
+      'Zoho Mail',
+      'Plataforma Conniku (Admin)',
+      'Slack',
+    ],
     schedule: 'Lunes a Viernes, 45 hrs semanales.',
     compensation: {
       base: '$1.500.000 CLP bruto mensual',
-      benefits: ['Colacion $70.000', 'Movilizacion $40.000', 'Bono trimestral por cumplimiento de growth targets'],
+      benefits: [
+        'Colacion $70.000',
+        'Movilizacion $40.000',
+        'Bono trimestral por cumplimiento de growth targets',
+      ],
     },
   },
-]
+];
 
 // ═════════════════════════════════════════════════════════════════
 // EXPECTATION MEMOS (30/60/90 dias)
@@ -404,7 +444,8 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
   {
     positionKey: 'cto',
     title: 'Expectation Memo — CTO',
-    intro: 'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de CTO de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
+    intro:
+      'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de CTO de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
     day30: {
       title: 'Primeros 30 dias — Inmersion y Diagnostico',
       items: [
@@ -436,7 +477,7 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
         'Tener code coverage >= 50% en areas criticas',
         'Haber entregado >= 80% de los features planificados en el trimestre',
         'Establecer proceso de sprint planning y retrospectivas',
-        'Implementar al menos 1 feature de IA que diferencie a Conniku',
+        'Implementar al menos 1 feature inteligente que diferencie a Conniku',
         'Tener la app movil (Android) publicada en Play Store',
         'Presentar propuesta de escalamiento de infraestructura',
       ],
@@ -462,7 +503,8 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
   {
     positionKey: 'head_operations',
     title: 'Expectation Memo — Head of Operations',
-    intro: 'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Head of Operations de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
+    intro:
+      'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Head of Operations de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
     day30: {
       title: 'Primeros 30 dias — Levantamiento y Orden',
       items: [
@@ -520,7 +562,8 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
   {
     positionKey: 'community_manager',
     title: 'Expectation Memo — Community Manager',
-    intro: 'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Community Manager de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
+    intro:
+      'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Community Manager de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
     day30: {
       title: 'Primeros 30 dias — Inmersion en la Comunidad',
       items: [
@@ -578,14 +621,15 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
   {
     positionKey: 'customer_support',
     title: 'Expectation Memo — Customer Support Lead',
-    intro: 'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Customer Support Lead de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
+    intro:
+      'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Customer Support Lead de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
     day30: {
       title: 'Primeros 30 dias — Conocer el Producto y los Usuarios',
       items: [
         'Dominar completamente todas las funcionalidades de Conniku',
         'Crear cuenta y usar la plataforma como estudiante durante 1 semana',
         'Revisar y categorizar todas las consultas/problemas recibidos hasta la fecha',
-        'Configurar y personalizar el chatbot de soporte (Claude AI)',
+        'Configurar y personalizar el chatbot de soporte',
         'Crear primeros 10 articulos de FAQ',
         'Establecer plantillas de respuesta para consultas frecuentes',
         'Definir protocolo de escalamiento (soporte → CTO para bugs tecnicos)',
@@ -636,7 +680,8 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
   {
     positionKey: 'marketing_growth',
     title: 'Expectation Memo — Marketing & Growth Lead',
-    intro: 'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Marketing & Growth Lead de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
+    intro:
+      'Este documento establece las expectativas claras para los primeros 90 dias en el cargo de Marketing & Growth Lead de Conniku SpA. Se entrega junto al contrato de trabajo y debe ser firmado por ambas partes.',
     day30: {
       title: 'Primeros 30 dias — Data y Estrategia Base',
       items: [
@@ -689,7 +734,7 @@ export const EXPECTATION_MEMOS: ERCExpectationMemo[] = [
     ],
     signature: { employee: true, supervisor: true, date: true },
   },
-]
+];
 
 // ═════════════════════════════════════════════════════════════════
 // CONTRACT TEMPLATES
@@ -700,21 +745,81 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — CTO',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
-      { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
-      { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como CTO — Director de Tecnologia, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
-      { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
-      { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. El Trabajador tendra disponibilidad para incidentes criticos fuera de horario.' },
-      { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.800.000 (dos millones ochocientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
-      { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
-      { title: 'NOVENO: Propiedad Intelectual', content: 'Todo el codigo, disenos, algoritmos y propiedad intelectual creada por el Trabajador en el ejercicio de sus funciones sera propiedad exclusiva de Conniku SpA.' },
-      { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
-      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
-      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
-      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
-      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      {
+        title: 'PRIMERO: Antecedentes del Empleador',
+        content:
+          'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.',
+      },
+      {
+        title: 'SEGUNDO: Antecedentes del Trabajador',
+        content:
+          'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".',
+      },
+      {
+        title: 'TERCERO: Naturaleza de los Servicios',
+        content:
+          'El Trabajador se desempenara como CTO — Director de Tecnologia, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.',
+      },
+      {
+        title: 'CUARTO: Lugar de Prestacion de Servicios',
+        content:
+          'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.',
+      },
+      {
+        title: 'QUINTO: Jornada de Trabajo',
+        content:
+          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. El Trabajador tendra disponibilidad para incidentes criticos fuera de horario.',
+      },
+      {
+        title: 'SEXTO: Remuneracion',
+        content:
+          'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.800.000 (dos millones ochocientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.',
+      },
+      {
+        title: 'SEPTIMO: Duracion del Contrato',
+        content:
+          'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].',
+      },
+      {
+        title: 'OCTAVO: Confidencialidad y Terminacion Inmediata',
+        content:
+          'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.',
+      },
+      {
+        title: 'NOVENO: Propiedad Intelectual',
+        content:
+          'Todo el codigo, disenos, algoritmos y propiedad intelectual creada por el Trabajador en el ejercicio de sus funciones sera propiedad exclusiva de Conniku SpA.',
+      },
+      {
+        title: 'DECIMO: Expectation Memo',
+        content:
+          'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.',
+      },
+      {
+        title: 'UNDECIMO: Disciplina Progresiva',
+        content:
+          'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.',
+      },
+      {
+        title: 'DUODECIMO: Evaluacion de Desempeno',
+        content:
+          'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).',
+      },
+      {
+        title: 'DECIMOTERCERO: Falta de Probidad',
+        content:
+          'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.',
+      },
+      {
+        title: 'DECIMOCUARTO: Incumplimiento de Contrato',
+        content:
+          'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.',
+      },
+      {
+        title: 'DECIMOQUINTO: Legislacion Aplicable',
+        content:
+          'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.',
+      },
     ],
   },
   {
@@ -722,21 +827,81 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Head of Operations',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
-      { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
-      { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Head of Operations, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
-      { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
-      { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.' },
-      { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.200.000 (dos millones doscientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
-      { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
-      { title: 'NOVENO: Manejo de Datos Personales', content: 'El Trabajador tendra acceso a datos personales de empleados conforme a la Ley 19.628, comprometiendose a su tratamiento exclusivamente para fines laborales.' },
-      { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
-      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
-      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
-      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
-      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      {
+        title: 'PRIMERO: Antecedentes del Empleador',
+        content:
+          'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.',
+      },
+      {
+        title: 'SEGUNDO: Antecedentes del Trabajador',
+        content:
+          'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".',
+      },
+      {
+        title: 'TERCERO: Naturaleza de los Servicios',
+        content:
+          'El Trabajador se desempenara como Head of Operations, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.',
+      },
+      {
+        title: 'CUARTO: Lugar de Prestacion de Servicios',
+        content:
+          'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.',
+      },
+      {
+        title: 'QUINTO: Jornada de Trabajo',
+        content:
+          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+      },
+      {
+        title: 'SEXTO: Remuneracion',
+        content:
+          'El Empleador pagara al Trabajador una remuneracion bruta mensual de $2.200.000 (dos millones doscientos mil pesos), mas asignacion de colacion de $80.000 y movilizacion de $50.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.',
+      },
+      {
+        title: 'SEPTIMO: Duracion del Contrato',
+        content:
+          'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].',
+      },
+      {
+        title: 'OCTAVO: Confidencialidad y Terminacion Inmediata',
+        content:
+          'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.',
+      },
+      {
+        title: 'NOVENO: Manejo de Datos Personales',
+        content:
+          'El Trabajador tendra acceso a datos personales de empleados conforme a la Ley 19.628, comprometiendose a su tratamiento exclusivamente para fines laborales.',
+      },
+      {
+        title: 'DECIMO: Expectation Memo',
+        content:
+          'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.',
+      },
+      {
+        title: 'UNDECIMO: Disciplina Progresiva',
+        content:
+          'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.',
+      },
+      {
+        title: 'DUODECIMO: Evaluacion de Desempeno',
+        content:
+          'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).',
+      },
+      {
+        title: 'DECIMOTERCERO: Falta de Probidad',
+        content:
+          'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.',
+      },
+      {
+        title: 'DECIMOCUARTO: Incumplimiento de Contrato',
+        content:
+          'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.',
+      },
+      {
+        title: 'DECIMOQUINTO: Legislacion Aplicable',
+        content:
+          'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.',
+      },
     ],
   },
   {
@@ -744,22 +909,86 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Community Manager',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
-      { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
-      { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Community Manager, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
-      { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
-      { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. Se permite flexibilidad horaria para publicacion en horarios peak de redes sociales.' },
-      { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.200.000 (un millon doscientos mil pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
-      { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Redes Sociales y Propiedad', content: 'Las cuentas de redes sociales creadas y gestionadas en nombre de Conniku SpA son propiedad exclusiva de la empresa. El Trabajador se compromete a traspasar accesos al terminar la relacion laboral.' },
-      { title: 'NOVENO: Uso de Imagen', content: 'El Trabajador autoriza el uso de su imagen y voz en contenido de Conniku SpA para fines de marketing y comunidad, durante y despues de la relacion laboral.' },
-      { title: 'DECIMO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
-      { title: 'UNDECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'DUODECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
-      { title: 'DECIMOTERCERO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
-      { title: 'DECIMOCUARTO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
-      { title: 'DECIMOQUINTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
-      { title: 'DECIMOSEXTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      {
+        title: 'PRIMERO: Antecedentes del Empleador',
+        content:
+          'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.',
+      },
+      {
+        title: 'SEGUNDO: Antecedentes del Trabajador',
+        content:
+          'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".',
+      },
+      {
+        title: 'TERCERO: Naturaleza de los Servicios',
+        content:
+          'El Trabajador se desempenara como Community Manager, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.',
+      },
+      {
+        title: 'CUARTO: Lugar de Prestacion de Servicios',
+        content:
+          'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.',
+      },
+      {
+        title: 'QUINTO: Jornada de Trabajo',
+        content:
+          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion. Se permite flexibilidad horaria para publicacion en horarios peak de redes sociales.',
+      },
+      {
+        title: 'SEXTO: Remuneracion',
+        content:
+          'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.200.000 (un millon doscientos mil pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.',
+      },
+      {
+        title: 'SEPTIMO: Duracion del Contrato',
+        content:
+          'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].',
+      },
+      {
+        title: 'OCTAVO: Redes Sociales y Propiedad',
+        content:
+          'Las cuentas de redes sociales creadas y gestionadas en nombre de Conniku SpA son propiedad exclusiva de la empresa. El Trabajador se compromete a traspasar accesos al terminar la relacion laboral.',
+      },
+      {
+        title: 'NOVENO: Uso de Imagen',
+        content:
+          'El Trabajador autoriza el uso de su imagen y voz en contenido de Conniku SpA para fines de marketing y comunidad, durante y despues de la relacion laboral.',
+      },
+      {
+        title: 'DECIMO: Confidencialidad y Terminacion Inmediata',
+        content:
+          'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.',
+      },
+      {
+        title: 'UNDECIMO: Expectation Memo',
+        content:
+          'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.',
+      },
+      {
+        title: 'DUODECIMO: Disciplina Progresiva',
+        content:
+          'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.',
+      },
+      {
+        title: 'DECIMOTERCERO: Evaluacion de Desempeno',
+        content:
+          'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).',
+      },
+      {
+        title: 'DECIMOCUARTO: Falta de Probidad',
+        content:
+          'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.',
+      },
+      {
+        title: 'DECIMOQUINTO: Incumplimiento de Contrato',
+        content:
+          'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.',
+      },
+      {
+        title: 'DECIMOSEXTO: Legislacion Aplicable',
+        content:
+          'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.',
+      },
     ],
   },
   {
@@ -767,21 +996,81 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Customer Support Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
-      { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
-      { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Customer Support Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
-      { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
-      { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.' },
-      { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.000.000 (un millon de pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
-      { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
-      { title: 'NOVENO: Protocolo de Atencion', content: 'El Trabajador se compromete a seguir los protocolos de atencion establecidos y mantener los estandares de calidad definidos en las metricas de soporte.' },
-      { title: 'DECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'UNDECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
-      { title: 'DUODECIMO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
-      { title: 'DECIMOTERCERO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
-      { title: 'DECIMOCUARTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
-      { title: 'DECIMOQUINTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      {
+        title: 'PRIMERO: Antecedentes del Empleador',
+        content:
+          'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.',
+      },
+      {
+        title: 'SEGUNDO: Antecedentes del Trabajador',
+        content:
+          'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".',
+      },
+      {
+        title: 'TERCERO: Naturaleza de los Servicios',
+        content:
+          'El Trabajador se desempenara como Customer Support Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.',
+      },
+      {
+        title: 'CUARTO: Lugar de Prestacion de Servicios',
+        content:
+          'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.',
+      },
+      {
+        title: 'QUINTO: Jornada de Trabajo',
+        content:
+          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+      },
+      {
+        title: 'SEXTO: Remuneracion',
+        content:
+          'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.000.000 (un millon de pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.',
+      },
+      {
+        title: 'SEPTIMO: Duracion del Contrato',
+        content:
+          'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].',
+      },
+      {
+        title: 'OCTAVO: Confidencialidad y Terminacion Inmediata',
+        content:
+          'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.',
+      },
+      {
+        title: 'NOVENO: Protocolo de Atencion',
+        content:
+          'El Trabajador se compromete a seguir los protocolos de atencion establecidos y mantener los estandares de calidad definidos en las metricas de soporte.',
+      },
+      {
+        title: 'DECIMO: Expectation Memo',
+        content:
+          'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.',
+      },
+      {
+        title: 'UNDECIMO: Disciplina Progresiva',
+        content:
+          'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.',
+      },
+      {
+        title: 'DUODECIMO: Evaluacion de Desempeno',
+        content:
+          'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).',
+      },
+      {
+        title: 'DECIMOTERCERO: Falta de Probidad',
+        content:
+          'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.',
+      },
+      {
+        title: 'DECIMOCUARTO: Incumplimiento de Contrato',
+        content:
+          'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.',
+      },
+      {
+        title: 'DECIMOQUINTO: Legislacion Aplicable',
+        content:
+          'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.',
+      },
     ],
   },
   {
@@ -789,25 +1078,89 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
     title: 'Contrato Tipo — Marketing & Growth Lead',
     type: 'indefinido',
     clauses: [
-      { title: 'PRIMERO: Antecedentes del Empleador', content: 'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.' },
-      { title: 'SEGUNDO: Antecedentes del Trabajador', content: 'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".' },
-      { title: 'TERCERO: Naturaleza de los Servicios', content: 'El Trabajador se desempenara como Marketing & Growth Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.' },
-      { title: 'CUARTO: Lugar de Prestacion de Servicios', content: 'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.' },
-      { title: 'QUINTO: Jornada de Trabajo', content: 'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.' },
-      { title: 'SEXTO: Remuneracion', content: 'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.500.000 (un millon quinientos mil pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.' },
-      { title: 'SEPTIMO: Duracion del Contrato', content: 'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].' },
-      { title: 'OCTAVO: Presupuesto de Marketing', content: 'El Trabajador gestionara el presupuesto de marketing asignado, debiendo reportar ROI y gastos mensualmente. Cualquier gasto que exceda el presupuesto requiere aprobacion previa del CEO.' },
-      { title: 'NOVENO: Propiedad Intelectual', content: 'Todo material creativo, campanas, copy, y assets creados para Conniku SpA son propiedad exclusiva de la empresa.' },
-      { title: 'DECIMO: Confidencialidad y Terminacion Inmediata', content: 'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.' },
-      { title: 'UNDECIMO: Expectation Memo', content: 'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.' },
-      { title: 'DUODECIMO: Disciplina Progresiva', content: 'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.' },
-      { title: 'DECIMOTERCERO: Evaluacion de Desempeno', content: 'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).' },
-      { title: 'DECIMOCUARTO: Falta de Probidad', content: 'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.' },
-      { title: 'DECIMOQUINTO: Incumplimiento de Contrato', content: 'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.' },
-      { title: 'DECIMOSEXTO: Legislacion Aplicable', content: 'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.' },
+      {
+        title: 'PRIMERO: Antecedentes del Empleador',
+        content:
+          'CONNIKU SpA, RUT 78.395.702-7, representada legalmente por don Cristian Andrés Gutiérrez Lazcano, en adelante "el Empleador", con domicilio en Antofagasta, II Región de Antofagasta, Chile.',
+      },
+      {
+        title: 'SEGUNDO: Antecedentes del Trabajador',
+        content:
+          'Don/Dona [NOMBRE COMPLETO], RUT [RUT], de nacionalidad [NACIONALIDAD], estado civil [ESTADO CIVIL], domiciliado/a en [DIRECCION], en adelante "el Trabajador".',
+      },
+      {
+        title: 'TERCERO: Naturaleza de los Servicios',
+        content:
+          'El Trabajador se desempenara como Marketing & Growth Lead, realizando las funciones descritas en la Job Description adjunta (Anexo 1), la cual forma parte integrante de este contrato.',
+      },
+      {
+        title: 'CUARTO: Lugar de Prestacion de Servicios',
+        content:
+          'El Trabajador prestara sus servicios en modalidad remota/hibrida, pudiendo desempenar funciones desde su domicilio o desde las oficinas que la empresa designe en Santiago, Chile.',
+      },
+      {
+        title: 'QUINTO: Jornada de Trabajo',
+        content:
+          'La jornada ordinaria sera de 45 horas semanales, distribuidas de lunes a viernes, de 09:00 a 18:00 horas, con 1 hora de colacion.',
+      },
+      {
+        title: 'SEXTO: Remuneracion',
+        content:
+          'El Empleador pagara al Trabajador una remuneracion bruta mensual de $1.500.000 (un millon quinientos mil pesos), mas asignacion de colacion de $70.000 y movilizacion de $40.000, ambas no imponibles. El pago se realizara el ultimo dia habil de cada mes.',
+      },
+      {
+        title: 'SEPTIMO: Duracion del Contrato',
+        content:
+          'El presente contrato tendra duracion indefinida, comenzando a regir desde el [FECHA INICIO].',
+      },
+      {
+        title: 'OCTAVO: Presupuesto de Marketing',
+        content:
+          'El Trabajador gestionara el presupuesto de marketing asignado, debiendo reportar ROI y gastos mensualmente. Cualquier gasto que exceda el presupuesto requiere aprobacion previa del CEO.',
+      },
+      {
+        title: 'NOVENO: Propiedad Intelectual',
+        content:
+          'Todo material creativo, campanas, copy, y assets creados para Conniku SpA son propiedad exclusiva de la empresa.',
+      },
+      {
+        title: 'DECIMO: Confidencialidad y Terminacion Inmediata',
+        content:
+          'El Trabajador se obliga a mantener estricta y absoluta confidencialidad sobre toda informacion tecnica, comercial, financiera, estrategica, de propiedad intelectual y datos personales de usuarios a la que tenga acceso durante el ejercicio de sus funciones en Conniku SpA. Esta obligacion incluye, sin limitarse a: codigo fuente, algoritmos, bases de datos, planes de negocio, informacion financiera, datos de usuarios, estrategias de marketing, credenciales de acceso, y cualquier informacion que razonablemente pueda considerarse como confidencial o propietaria de la empresa. La violacion de esta clausula constituye CAUSAL DE TERMINACION INMEDIATA del contrato conforme al articulo 160 N°7 del Codigo del Trabajo (Incumplimiento Grave de las Obligaciones del Contrato), sin derecho a indemnizacion alguna. Adicionalmente, el Trabajador podra ser sujeto a acciones civiles por los danos y perjuicios causados. Esta clausula de confidencialidad subsiste por un periodo de 2 anos despues de terminada la relacion laboral.',
+      },
+      {
+        title: 'UNDECIMO: Expectation Memo',
+        content:
+          'El Trabajador declara haber recibido y comprendido el Expectation Memo (Anexo 2), que detalla las expectativas para los primeros 90 dias y forma parte integrante de este contrato.',
+      },
+      {
+        title: 'DUODECIMO: Disciplina Progresiva',
+        content:
+          'El Empleador aplicara un sistema de disciplina progresiva ante incumplimientos laborales, consistente en: (i) Amonestacion Verbal, (ii) Amonestacion Escrita 1, (iii) Amonestacion Escrita 2, y (iv) Terminacion del contrato. Cada etapa sera documentada en el Electronic Record Card (ERC) del Trabajador y firmada electronicamente. El Trabajador sera notificado formalmente en cada instancia y tendra derecho a presentar sus descargos dentro de 3 dias habiles.',
+      },
+      {
+        title: 'DECIMOTERCERO: Evaluacion de Desempeno',
+        content:
+          'El Trabajador sera evaluado mediante Performance Reviews programadas (Mid-Contract y End-of-Contract), utilizando un sistema de 7 dimensiones calificadas de 1 a 5. Si el Trabajador obtiene un promedio inferior a 3.0 en dos evaluaciones consecutivas, la empresa se reserva el derecho de poner termino al contrato por necesidades de la empresa conforme al articulo 161 del Codigo del Trabajo, con las indemnizaciones legales correspondientes. El Trabajador recibira copia de cada evaluacion y podra firmar su recepcion a traves del sistema de Firma Electronica Simple (FES).',
+      },
+      {
+        title: 'DECIMOCUARTO: Falta de Probidad',
+        content:
+          'Constituye causal de terminacion inmediata del contrato, conforme al articulo 160 N°1 del Codigo del Trabajo, toda falta de probidad del Trabajador en el desempeno de sus funciones. Se entiende por falta de probidad cualquier conducta deshonesta, fraudulenta o contraria a la buena fe, incluyendo pero no limitandose a: apropiacion indebida de recursos, falsificacion de documentos, declaraciones falsas, uso de informacion privilegiada para beneficio personal, y cualquier acto que atente contra la integridad y confianza depositada por el Empleador.',
+      },
+      {
+        title: 'DECIMOQUINTO: Incumplimiento de Contrato',
+        content:
+          'Sin perjuicio de las causales de terminacion establecidas en el Codigo del Trabajo, el incumplimiento reiterado de las obligaciones contractuales, incluyendo las metas definidas en la Job Description y el Expectation Memo, podra dar lugar a la aplicacion del sistema de disciplina progresiva. En casos de incumplimiento grave, se aplicara el articulo 160 N°7 del Codigo del Trabajo.',
+      },
+      {
+        title: 'DECIMOSEXTO: Legislacion Aplicable',
+        content:
+          'El presente contrato se rige por las disposiciones del Codigo del Trabajo de Chile y demas normativa laboral vigente.',
+      },
     ],
   },
-]
+];
 
 // ═════════════════════════════════════════════════════════════════
 // HELPER: Match employee position to ERC data
@@ -815,7 +1168,7 @@ export const CONTRACT_TEMPLATES: ERCContractTemplate[] = [
 const POSITION_MAP: Record<string, string> = {
   'CTO — Director de Tecnología': 'cto',
   'CTO — Director de Tecnologia': 'cto',
-  'CTO': 'cto',
+  CTO: 'cto',
   'Head of Operations': 'head_operations',
   'Jefa de Operaciones': 'head_operations',
   'Community Manager': 'community_manager',
@@ -823,34 +1176,34 @@ const POSITION_MAP: Record<string, string> = {
   'Lider de Soporte': 'customer_support',
   'Marketing & Growth Lead': 'marketing_growth',
   'Marketing Lead': 'marketing_growth',
-}
+};
 
 export function getPositionKey(position: string): string | null {
   // Direct match
-  if (POSITION_MAP[position]) return POSITION_MAP[position]
+  if (POSITION_MAP[position]) return POSITION_MAP[position];
   // Fuzzy match
-  const lower = position.toLowerCase()
-  if (lower.includes('cto') || lower.includes('director de tecnolog')) return 'cto'
-  if (lower.includes('operations') || lower.includes('operacion')) return 'head_operations'
-  if (lower.includes('community') || lower.includes('comunidad')) return 'community_manager'
-  if (lower.includes('support') || lower.includes('soporte')) return 'customer_support'
-  if (lower.includes('marketing') || lower.includes('growth')) return 'marketing_growth'
-  return null
+  const lower = position.toLowerCase();
+  if (lower.includes('cto') || lower.includes('director de tecnolog')) return 'cto';
+  if (lower.includes('operations') || lower.includes('operacion')) return 'head_operations';
+  if (lower.includes('community') || lower.includes('comunidad')) return 'community_manager';
+  if (lower.includes('support') || lower.includes('soporte')) return 'customer_support';
+  if (lower.includes('marketing') || lower.includes('growth')) return 'marketing_growth';
+  return null;
 }
 
 export function getJobDescription(position: string): ERCJobDescription | null {
-  const key = getPositionKey(position)
-  return key ? JOB_DESCRIPTIONS.find(jd => jd.positionKey === key) || null : null
+  const key = getPositionKey(position);
+  return key ? JOB_DESCRIPTIONS.find((jd) => jd.positionKey === key) || null : null;
 }
 
 export function getExpectationMemo(position: string): ERCExpectationMemo | null {
-  const key = getPositionKey(position)
-  return key ? EXPECTATION_MEMOS.find(em => em.positionKey === key) || null : null
+  const key = getPositionKey(position);
+  return key ? EXPECTATION_MEMOS.find((em) => em.positionKey === key) || null : null;
 }
 
 export function getContractTemplate(position: string): ERCContractTemplate | null {
-  const key = getPositionKey(position)
-  return key ? CONTRACT_TEMPLATES.find(ct => ct.positionKey === key) || null : null
+  const key = getPositionKey(position);
+  return key ? CONTRACT_TEMPLATES.find((ct) => ct.positionKey === key) || null : null;
 }
 
 // All available positions for dropdown
@@ -860,7 +1213,7 @@ export const CONNIKU_POSITIONS = [
   { value: 'Community Manager', label: 'Community Manager', key: 'community_manager' },
   { value: 'Customer Support Lead', label: 'Customer Support Lead', key: 'customer_support' },
   { value: 'Marketing & Growth Lead', label: 'Marketing & Growth Lead', key: 'marketing_growth' },
-]
+];
 
 // ═════════════════════════════════════════════════════════════════
 // PDF GENERATION — Open printable HTML in new window
@@ -901,42 +1254,90 @@ const PDF_STYLES = `
     .print-btn { position: fixed; top: 20px; right: 20px; padding: 12px 24px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; z-index: 100; }
     .print-btn:hover { background: #1d4ed8; }
   </style>
-`
+`;
 
-const fmtCLP = (n: number) => '$' + Math.round(n).toLocaleString('es-CL')
-const fmtDate = (d: string) => d ? new Date(d + 'T12:00:00').toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' }) : '[FECHA]'
+const fmtCLP = (n: number) => '$' + Math.round(n).toLocaleString('es-CL');
+const fmtDate = (d: string) =>
+  d
+    ? new Date(d + 'T12:00:00').toLocaleDateString('es-CL', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      })
+    : '[FECHA]';
 
 interface EmployeeData {
-  firstName: string; lastName: string; rut: string; email: string; phone: string
-  address: string; birthDate: string; nationality: string; maritalStatus: string
-  position: string; department: string; hireDate: string; contractType: string
-  workSchedule: string; weeklyHours: number; grossSalary: number
-  colacion: number; movilizacion: number; bonoAsistencia?: number; bonoProduccion?: number
-  afp: string; healthSystem: string; isapreName?: string | null; isapreUf?: number | null
-  afcActive: boolean; bankName: string; bankAccountType: string; bankAccountNumber: string
-  emergencyContactName: string; emergencyContactPhone: string
-  gender?: string; profession1?: string; profession2?: string; notes?: string
+  firstName: string;
+  lastName: string;
+  rut: string;
+  email: string;
+  phone: string;
+  address: string;
+  birthDate: string;
+  nationality: string;
+  maritalStatus: string;
+  position: string;
+  department: string;
+  hireDate: string;
+  contractType: string;
+  workSchedule: string;
+  weeklyHours: number;
+  grossSalary: number;
+  colacion: number;
+  movilizacion: number;
+  bonoAsistencia?: number;
+  bonoProduccion?: number;
+  afp: string;
+  healthSystem: string;
+  isapreName?: string | null;
+  isapreUf?: number | null;
+  afcActive: boolean;
+  bankName: string;
+  bankAccountType: string;
+  bankAccountNumber: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  gender?: string;
+  profession1?: string;
+  profession2?: string;
+  notes?: string;
 }
 
 function openPrintWindow(html: string) {
-  const win = window.open('', '_blank')
-  if (!win) { alert('Permite ventanas emergentes para generar PDF'); return }
-  win.document.write(html)
-  win.document.close()
+  const win = window.open('', '_blank');
+  if (!win) {
+    alert('Permite ventanas emergentes para generar PDF');
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
 }
 
 // ─── GENERATE FULL CONTRACT PDF ───
 export function generateContractPDF(emp: EmployeeData, afpRate: number) {
-  const jd = getJobDescription(emp.position)
-  const totalImponible = emp.grossSalary
-  const gratificacion = Math.min(Math.round(totalImponible * 0.25), 176066) // tope legal 4.75 IMM
-  const afpAmount = Math.round(totalImponible * afpRate / 100)
-  const healthAmount = Math.round(totalImponible * 0.07)
-  const afcEmpAmount = emp.contractType === 'indefinido' ? Math.round(totalImponible * 0.006) : Math.round(totalImponible * 0.03)
-  const afcErAmount = emp.contractType === 'indefinido' ? Math.round(totalImponible * 0.024) : Math.round(totalImponible * 0.02)
-  const sisAmount = Math.round(totalImponible * 0.0141)
-  const mutualAmount = Math.round(totalImponible * 0.0093)
-  const contractTypeLabel = emp.contractType === 'indefinido' ? 'indefinida' : emp.contractType === 'plazo_fijo' ? 'plazo fijo' : emp.contractType === 'por_obra' ? 'por obra o faena' : 'segun acuerdo'
+  const jd = getJobDescription(emp.position);
+  const totalImponible = emp.grossSalary;
+  const gratificacion = Math.min(Math.round(totalImponible * 0.25), 176066); // tope legal 4.75 IMM
+  const afpAmount = Math.round((totalImponible * afpRate) / 100);
+  const healthAmount = Math.round(totalImponible * 0.07);
+  const afcEmpAmount =
+    emp.contractType === 'indefinido'
+      ? Math.round(totalImponible * 0.006)
+      : Math.round(totalImponible * 0.03);
+  const afcErAmount =
+    emp.contractType === 'indefinido'
+      ? Math.round(totalImponible * 0.024)
+      : Math.round(totalImponible * 0.02);
+  const sisAmount = Math.round(totalImponible * 0.0141);
+  const mutualAmount = Math.round(totalImponible * 0.0093);
+  const contractTypeLabel =
+    emp.contractType === 'indefinido'
+      ? 'indefinida'
+      : emp.contractType === 'plazo_fijo'
+        ? 'plazo fijo'
+        : emp.contractType === 'por_obra'
+          ? 'por obra o faena'
+          : 'segun acuerdo';
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Contrato - ${emp.firstName} ${emp.lastName}</title>${PDF_STYLES}</head><body>
     <button class="print-btn no-print" onclick="window.print()">Imprimir / Guardar PDF</button>
@@ -1244,15 +1645,18 @@ export function generateContractPDF(emp: EmployeeData, afpRate: number) {
     <div class="footer">
       Conniku SpA — conniku.com — Contrato generado el ${new Date().toLocaleDateString('es-CL')}
     </div>
-  </body></html>`
+  </body></html>`;
 
-  openPrintWindow(html)
+  openPrintWindow(html);
 }
 
 // ─── GENERATE JOB DESCRIPTION PDF ───
 export function generateJobDescriptionPDF(emp: EmployeeData) {
-  const jd = getJobDescription(emp.position)
-  if (!jd) { alert('No hay Job Description para este cargo'); return }
+  const jd = getJobDescription(emp.position);
+  if (!jd) {
+    alert('No hay Job Description para este cargo');
+    return;
+  }
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Job Description - ${jd.title}</title>${PDF_STYLES}</head><body>
     <button class="print-btn no-print" onclick="window.print()">Imprimir / Guardar PDF</button>
@@ -1275,24 +1679,24 @@ export function generateJobDescriptionPDF(emp: EmployeeData) {
     <p style="font-style:italic; font-size:13px; padding:8px 16px; background:#f8fafc; border-radius:8px;">${jd.mision}</p>
 
     <h2>Expectativas (Lo que se espera de ti)</h2>
-    <ul>${jd.expectations.map(e => `<li>${e}</li>`).join('')}</ul>
+    <ul>${jd.expectations.map((e) => `<li>${e}</li>`).join('')}</ul>
 
     <h2>Responsabilidades</h2>
-    <ul>${jd.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
+    <ul>${jd.responsibilities.map((r) => `<li>${r}</li>`).join('')}</ul>
 
     <h2>Compromisos de Conniku (Lo que te ofrecemos)</h2>
-    <ul>${jd.commitments.map(c => `<li>${c}</li>`).join('')}</ul>
+    <ul>${jd.commitments.map((c) => `<li>${c}</li>`).join('')}</ul>
 
     <h2>Requisitos del Cargo</h2>
-    <ul>${jd.requirements.map(r => `<li>${r}</li>`).join('')}</ul>
+    <ul>${jd.requirements.map((r) => `<li>${r}</li>`).join('')}</ul>
 
     <h2>Deseables</h2>
-    <ul>${jd.desirable.map(d => `<li>${d}</li>`).join('')}</ul>
+    <ul>${jd.desirable.map((d) => `<li>${d}</li>`).join('')}</ul>
 
     <h2>KPIs — Indicadores de Desempeno</h2>
     <table class="kpi-table">
       <tr><th>Metrica</th><th>Meta</th></tr>
-      ${jd.kpis.map(k => `<tr><td>${k.metric}</td><td>${k.target}</td></tr>`).join('')}
+      ${jd.kpis.map((k) => `<tr><td>${k.metric}</td><td>${k.target}</td></tr>`).join('')}
     </table>
 
     <h2>Herramientas de Trabajo</h2>
@@ -1304,11 +1708,11 @@ export function generateJobDescriptionPDF(emp: EmployeeData) {
     <h2>Compensacion</h2>
     <p><strong>Sueldo Base:</strong> ${jd.compensation.base}</p>
     <p><strong>Beneficios:</strong></p>
-    <ul>${jd.compensation.benefits.map(b => `<li>${b}</li>`).join('')}</ul>
+    <ul>${jd.compensation.benefits.map((b) => `<li>${b}</li>`).join('')}</ul>
 
     <div class="values-box">
       <h3 style="margin-top:0; color:#2563eb;">Valores Conniku</h3>
-      <ul>${CONNIKU_VALUES.map(v => `<li>${v}</li>`).join('')}</ul>
+      <ul>${CONNIKU_VALUES.map((v) => `<li>${v}</li>`).join('')}</ul>
     </div>
 
     <div class="signature-block">
@@ -1329,15 +1733,18 @@ export function generateJobDescriptionPDF(emp: EmployeeData) {
     <div class="footer">
       Conniku SpA — conniku.com — Anexo 1 del Contrato de Trabajo — ${new Date().toLocaleDateString('es-CL')}
     </div>
-  </body></html>`
+  </body></html>`;
 
-  openPrintWindow(html)
+  openPrintWindow(html);
 }
 
 // ─── GENERATE EXPECTATION MEMO PDF ───
 export function generateExpectationMemoPDF(emp: EmployeeData) {
-  const memo = getExpectationMemo(emp.position)
-  if (!memo) { alert('No hay Expectation Memo para este cargo'); return }
+  const memo = getExpectationMemo(emp.position);
+  if (!memo) {
+    alert('No hay Expectation Memo para este cargo');
+    return;
+  }
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Expectation Memo - ${memo.title}</title>${PDF_STYLES}</head><body>
     <button class="print-btn no-print" onclick="window.print()">Imprimir / Guardar PDF</button>
@@ -1360,24 +1767,24 @@ export function generateExpectationMemoPDF(emp: EmployeeData) {
 
     <div class="timeline">
       <h3>${memo.day30.title}</h3>
-      <ul>${memo.day30.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      <ul>${memo.day30.items.map((i) => `<li>${i}</li>`).join('')}</ul>
 
       <h3>${memo.day60.title}</h3>
-      <ul>${memo.day60.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      <ul>${memo.day60.items.map((i) => `<li>${i}</li>`).join('')}</ul>
 
       <h3>${memo.day90.title}</h3>
-      <ul>${memo.day90.items.map(i => `<li>${i}</li>`).join('')}</ul>
+      <ul>${memo.day90.items.map((i) => `<li>${i}</li>`).join('')}</ul>
     </div>
 
     <h2>Expectativas Permanentes</h2>
-    <ul>${memo.ongoing.map(o => `<li>${o}</li>`).join('')}</ul>
+    <ul>${memo.ongoing.map((o) => `<li>${o}</li>`).join('')}</ul>
 
     <h2>Criterios de Evaluacion</h2>
-    <ul>${memo.evaluationCriteria.map(c => `<li>${c}</li>`).join('')}</ul>
+    <ul>${memo.evaluationCriteria.map((c) => `<li>${c}</li>`).join('')}</ul>
 
     <div class="values-box">
       <h3 style="margin-top:0; color:#2563eb;">Valores Conniku que Debes Vivir</h3>
-      <ul>${memo.values.map(v => `<li>${v}</li>`).join('')}</ul>
+      <ul>${memo.values.map((v) => `<li>${v}</li>`).join('')}</ul>
     </div>
 
     <div class="signature-block">
@@ -1402,7 +1809,7 @@ export function generateExpectationMemoPDF(emp: EmployeeData) {
     <div class="footer">
       Conniku SpA — conniku.com — Anexo 2 del Contrato de Trabajo — ${new Date().toLocaleDateString('es-CL')}
     </div>
-  </body></html>`
+  </body></html>`;
 
-  openPrintWindow(html)
+  openPrintWindow(html);
 }
