@@ -7,19 +7,22 @@ import json
 import logging
 import re
 import time
+import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import (
-    get_db, User, UniversityConnection, LMSCourse, LMSSyncItem,
+    get_db, DATA_DIR, User, UniversityConnection, LMSCourse, LMSSyncItem,
     CalendarEvent, UserNotificationPrefs, InAppNotification, gen_id
 )
-from middleware import get_current_user
+from middleware import get_current_user, get_current_user_optional, decode_token as jwt_decode
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/lms", tags=["lms"])
@@ -1690,3 +1693,315 @@ def update_calendar_prefs(body: dict,
     prefs.updated_at = datetime.utcnow()
     db.commit()
     return {"ok": True}
+
+
+# ══════════════════════════════════════════════════════════════
+# AUTO-LINK — crea proyecto Conniku automáticamente para un curso
+# ══════════════════════════════════════════════════════════════
+
+_PROJECTS_DIR = DATA_DIR / "projects"
+_PROJECTS_DIR.mkdir(exist_ok=True)
+
+# Color palette for auto-created course projects
+_COURSE_COLORS = [
+    "#4f8cff", "#7c3aed", "#0891b2", "#059669",
+    "#d97706", "#dc2626", "#db2777", "#4338ca",
+]
+
+
+def _create_project_for_course(course_name: str, user_id: str) -> dict:
+    """Create a minimal Conniku project linked to a university course."""
+    project_id = uuid.uuid4().hex[:12]
+    color = _COURSE_COLORS[hash(course_name) % len(_COURSE_COLORS)]
+    meta = {
+        "id": project_id,
+        "name": course_name,
+        "description": f"Material sincronizado de {course_name}",
+        "color": color,
+        "documents": [],
+        "user_id": user_id,
+    }
+    proj_dir = _PROJECTS_DIR / project_id
+    proj_dir.mkdir(exist_ok=True)
+    (proj_dir / "documents").mkdir(exist_ok=True)
+    (proj_dir / "meta.json").write_text(json.dumps(meta, indent=2))
+
+    # Initialize AI engine for the new project (import lazily to avoid circular dep)
+    try:
+        from ai_engine import AIEngine
+        AIEngine().init_project(project_id)
+    except Exception:
+        pass  # non-blocking — AI engine inits lazily on first chat anyway
+
+    return meta
+
+
+@router.post("/courses/{course_id}/auto-link")
+def auto_link_course(course_id: str,
+                     user: User = Depends(get_current_user),
+                     db: Session = Depends(get_db)):
+    """
+    Auto-crea un proyecto Conniku para la asignatura y la vincula.
+    Si ya tiene proyecto vinculado, retorna el existente.
+    """
+    course = db.query(LMSCourse).filter(
+        LMSCourse.id == course_id,
+        LMSCourse.user_id == user.id,
+    ).first()
+    if not course:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    # Already linked — return existing project ID
+    if course.conniku_project_id:
+        return {
+            "ok": True,
+            "project_id": course.conniku_project_id,
+            "already_linked": True,
+        }
+
+    # Create new project
+    display = course.display_name or course.name
+    meta = _create_project_for_course(display, user.id)
+    course.conniku_project_id = meta["id"]
+    db.commit()
+
+    return {
+        "ok": True,
+        "project_id": meta["id"],
+        "project_name": meta["name"],
+        "already_linked": False,
+    }
+
+
+# ══════════════════════════════════════════════════════════════
+# DOWNLOAD PROXY — descarga archivos LMS con autenticación
+# ══════════════════════════════════════════════════════════════
+
+@router.get("/download/{item_id}")
+def download_item(item_id: str,
+                  token: str = "",
+                  user: User = Depends(get_current_user_optional),
+                  db: Session = Depends(get_db)):
+    """
+    Proxy de descarga: obtiene el archivo del LMS con el token del usuario
+    y lo sirve directamente al navegador. Evita exponer tokens en URLs del frontend.
+    Acepta JWT via Authorization header o via ?token= query param (para <a href>).
+    """
+    # Resolve user: prefer Authorization header, fallback to ?token= query param
+    actual_user = user
+    if actual_user is None and token:
+        uid = jwt_decode(token)
+        if uid:
+            actual_user = db.query(User).filter(User.id == uid).first()
+    if actual_user is None:
+        raise HTTPException(401, "No autenticado")
+
+    item = db.query(LMSSyncItem).filter(
+        LMSSyncItem.id == item_id,
+        LMSSyncItem.user_id == actual_user.id,
+    ).first()
+    if not item:
+        raise HTTPException(404, "Archivo no encontrado")
+
+    course = db.query(LMSCourse).filter(LMSCourse.id == item.course_id).first()
+    if not course:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == course.connection_id,
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión LMS no encontrada")
+
+    # If we have cached content, serve it directly
+    if item.file_content_b64:
+        try:
+            content = base64.b64decode(item.file_content_b64)
+            mime = item.mime_type or "application/octet-stream"
+            filename = item.item_name or "archivo"
+            return Response(
+                content=content,
+                media_type=mime,
+                headers={"Content-Disposition": f'inline; filename="{filename}"'},
+            )
+        except Exception:
+            pass  # fall through to live download
+
+    # Download from LMS
+    token, _ = _decode_token(conn)
+    content_bytes: Optional[bytes] = None
+
+    try:
+        if conn.platform_type == "moodle":
+            content_bytes = moodle_download_file(item.item_url, token)
+        elif conn.platform_type == "canvas":
+            content_bytes = canvas_download_file(item.item_url, token)
+    except Exception as e:
+        log.warning(f"[LMS] proxy download error: {e}")
+
+    if not content_bytes:
+        # Fallback: redirect to item_url (for platforms without download support)
+        if item.item_url:
+            return Response(
+                status_code=302,
+                headers={"Location": item.item_url},
+            )
+        raise HTTPException(502, "No se pudo descargar el archivo del campus virtual")
+
+    # Cache for next time
+    try:
+        item.file_content_b64 = base64.b64encode(content_bytes).decode()
+        db.commit()
+    except Exception:
+        pass  # non-blocking
+
+    mime = item.mime_type or "application/octet-stream"
+    filename = item.item_name or "archivo"
+    return Response(
+        content=content_bytes,
+        media_type=mime,
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
+    )
+
+
+# ══════════════════════════════════════════════════════════════
+# BULK IMPORT — importa todos los items pendientes de un curso
+# ══════════════════════════════════════════════════════════════
+
+@router.post("/courses/{course_id}/bulk-import")
+def bulk_import_course(course_id: str,
+                       user: User = Depends(get_current_user),
+                       db: Session = Depends(get_db)):
+    """
+    Importa todos los archivos pendientes de una asignatura al proyecto vinculado.
+    Auto-crea el proyecto si no existe.
+    """
+    course = db.query(LMSCourse).filter(
+        LMSCourse.id == course_id,
+        LMSCourse.user_id == user.id,
+    ).first()
+    if not course:
+        raise HTTPException(404, "Asignatura no encontrada")
+
+    # Auto-link if needed
+    if not course.conniku_project_id:
+        display = course.display_name or course.name
+        meta = _create_project_for_course(display, user.id)
+        course.conniku_project_id = meta["id"]
+        db.commit()
+
+    project_id = course.conniku_project_id
+
+    # Get pending items (files only, not URLs/pages)
+    pending = db.query(LMSSyncItem).filter(
+        LMSSyncItem.course_id == course_id,
+        LMSSyncItem.status == "pending",
+        LMSSyncItem.item_type == "file",
+    ).all()
+
+    if not pending:
+        return {"ok": True, "imported": 0, "project_id": project_id, "message": "No hay archivos pendientes"}
+
+    conn = db.query(UniversityConnection).filter(
+        UniversityConnection.id == course.connection_id,
+    ).first()
+    if not conn:
+        raise HTTPException(404, "Conexión no encontrada")
+
+    token, _ = _decode_token(conn)
+    imported = 0
+    errors = 0
+
+    # Load project meta
+    proj_dir = _PROJECTS_DIR / project_id
+    meta_path = proj_dir / "meta.json"
+    try:
+        project_meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}
+    except Exception:
+        project_meta = {}
+
+    docs_dir = proj_dir / "documents"
+    docs_dir.mkdir(exist_ok=True)
+
+    for item in pending:
+        content_bytes: Optional[bytes] = None
+
+        # Try cached content first
+        if item.file_content_b64:
+            try:
+                content_bytes = base64.b64decode(item.file_content_b64)
+            except Exception:
+                pass
+
+        # Download from LMS if not cached
+        if not content_bytes:
+            try:
+                if conn.platform_type == "moodle":
+                    content_bytes = moodle_download_file(item.item_url, token)
+                elif conn.platform_type == "canvas":
+                    content_bytes = canvas_download_file(item.item_url, token)
+            except Exception as e:
+                log.warning(f"[LMS] bulk-import download error {item.item_name}: {e}")
+
+        if not content_bytes:
+            errors += 1
+            continue
+
+        # Save file to project
+        safe_name = Path(item.item_name).name if item.item_name else f"archivo_{item.id}"
+        file_path = docs_dir / safe_name
+        file_path.write_bytes(content_bytes)
+
+        # Extract text for AI
+        doc_id = uuid.uuid4().hex[:12]
+        text = ""
+        try:
+            from document_processor import DocumentProcessor
+            text = DocumentProcessor().extract_text(str(file_path))
+        except Exception:
+            pass
+
+        try:
+            from ai_engine import AIEngine
+            AIEngine().add_document(project_id, doc_id, item.item_name or safe_name, text)
+        except Exception:
+            pass
+
+        # Add to project meta
+        ext = Path(safe_name).suffix.lower().lstrip('.')
+        type_map = {'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx', 'xls': 'xlsx',
+                    'xlsx': 'xlsx', 'ppt': 'pptx', 'pptx': 'pptx', 'txt': 'txt'}
+        doc_type = type_map.get(ext, _mime_to_doc_type(item.mime_type or ""))
+
+        project_meta.setdefault("documents", []).append({
+            "id": doc_id,
+            "name": item.item_name or safe_name,
+            "path": str(file_path),
+            "size": len(content_bytes),
+            "type": doc_type,
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "processed": bool(text),
+            "source": "lms",
+        })
+
+        # Mark item as synced + cache content
+        item.status = "synced"
+        item.synced_at = datetime.utcnow()
+        if not item.file_content_b64:
+            item.file_content_b64 = base64.b64encode(content_bytes).decode()
+
+        # Update user storage
+        user.storage_used_bytes = (user.storage_used_bytes or 0) + len(content_bytes)
+
+        imported += 1
+
+    # Save project meta and commit
+    meta_path.write_text(json.dumps(project_meta, indent=2))
+    db.commit()
+
+    return {
+        "ok": True,
+        "imported": imported,
+        "errors": errors,
+        "project_id": project_id,
+    }

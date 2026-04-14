@@ -174,6 +174,12 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [renamingId, setRenamingId] = useState<string | null>(null)
   const [renameValue, setRenameValue] = useState('')
 
+  // Auto-link + import
+  const [linking, setLinking] = useState(false)
+  const [importingItemId, setImportingItemId] = useState('')
+  const [bulkImporting, setBulkImporting] = useState('')
+  const [bulkImportMsg, setBulkImportMsg] = useState('')
+
   // ── Calendario universitario ────────────────────────────────
   const [calEvents, setCalEvents] = useState<any[]>([])
   const [calPrefs, setCalPrefs] = useState({ cal_push: true, cal_inapp: true, cal_email: true })
@@ -351,6 +357,102 @@ export default function MiUniversidad({ onNavigate }: Props) {
     }
   }
 
+  // ── Auto-vincular asignatura → crea proyecto Conniku automáticamente ──
+  const handleAutoLink = async (courseId: string) => {
+    setLinking(true)
+    try {
+      const res: any = await api.lmsAutoLink(courseId)
+      if (res.project_id) {
+        // Actualizar estado local del curso
+        setSelectedCourse(prev => prev ? { ...prev, conniku_project_id: res.project_id } : prev)
+        setHub(prev => {
+          if (!prev) return prev
+          const update = (list: CourseItem[]) =>
+            list.map(c => c.id === courseId ? { ...c, conniku_project_id: res.project_id } : c)
+          return { ...prev, current_courses: update(prev.current_courses), past_courses: update(prev.past_courses) }
+        })
+        setScanMsg(res.already_linked ? '✅ Asignatura ya vinculada' : '✅ Asignatura vinculada — Chat IA, Quizzes e importación activados')
+        setTimeout(() => setScanMsg(''), 4000)
+      }
+    } catch {
+      setScanMsg('⚠ No se pudo vincular la asignatura')
+      setTimeout(() => setScanMsg(''), 4000)
+    } finally {
+      setLinking(false)
+    }
+  }
+
+  // ── Importar un archivo individual al proyecto vinculado ──
+  const handleImportItem = async (item: TopicItem) => {
+    if (!selectedCourse) return
+    let projectId = selectedCourse.conniku_project_id
+    // Auto-link if needed
+    if (!projectId) {
+      setLinking(true)
+      try {
+        const res: any = await api.lmsAutoLink(selectedCourse.id)
+        projectId = res.project_id
+        setSelectedCourse(prev => prev ? { ...prev, conniku_project_id: projectId } : prev)
+        setHub(prev => {
+          if (!prev) return prev
+          const update = (list: CourseItem[]) =>
+            list.map(c => c.id === selectedCourse.id ? { ...c, conniku_project_id: projectId } : c)
+          return { ...prev, current_courses: update(prev.current_courses), past_courses: update(prev.past_courses) }
+        })
+      } catch {
+        setScanMsg('⚠ No se pudo vincular la asignatura')
+        setLinking(false)
+        return
+      } finally {
+        setLinking(false)
+      }
+    }
+    if (!projectId) return
+    setImportingItemId(item.id)
+    try {
+      const res: any = await api.lmsSyncItem(item.id, projectId)
+      if (res.has_content && res.content_b64) {
+        await api.importDocumentB64(projectId, res.filename, res.content_b64, res.file_type)
+      }
+      setScanMsg(`✅ "${item.item_name}" importado al proyecto`)
+      setTimeout(() => setScanMsg(''), 3000)
+    } catch {
+      setScanMsg(`⚠ No se pudo importar "${item.item_name}"`)
+      setTimeout(() => setScanMsg(''), 3000)
+    } finally {
+      setImportingItemId('')
+    }
+  }
+
+  // ── Bulk import: importar todos los archivos de un curso ──
+  const handleBulkImport = async (courseId: string) => {
+    setBulkImporting(courseId)
+    setBulkImportMsg('⏳ Importando archivos...')
+    try {
+      const res: any = await api.lmsBulkImport(courseId)
+      const msg = res.imported > 0
+        ? `✅ ${res.imported} archivo${res.imported !== 1 ? 's' : ''} importado${res.imported !== 1 ? 's' : ''}${res.errors > 0 ? ` (${res.errors} error${res.errors !== 1 ? 'es' : ''})` : ''}`
+        : '✅ No hay archivos nuevos para importar'
+      setBulkImportMsg(msg)
+      // Actualizar hub y estado del curso
+      if (res.project_id) {
+        setHub(prev => {
+          if (!prev) return prev
+          const update = (list: CourseItem[]) =>
+            list.map(c => c.id === courseId ? { ...c, conniku_project_id: res.project_id } : c)
+          return { ...prev, current_courses: update(prev.current_courses), past_courses: update(prev.past_courses) }
+        })
+      }
+      await loadHub()
+      setTimeout(() => setBulkImportMsg(''), 5000)
+    } catch {
+      setBulkImportMsg('⚠ Error al importar archivos')
+      setTimeout(() => setBulkImportMsg(''), 4000)
+    } finally {
+      setBulkImporting('')
+    }
+  }
+
   // ── Chat de asignatura ─────────────────────────────────────
   // Si la asignatura tiene proyecto Conniku vinculado: usa /projects/{id}/chat (Claude + documentos del curso)
   // Si no: usa /support/chat con contexto de asignatura (Konni con detección automática de intención)
@@ -521,6 +623,35 @@ export default function MiUniversidad({ onNavigate }: Props) {
           </div>
           {scanMsg && <p style={{ marginTop: 10, fontSize: 13, color: 'var(--text-muted)' }}>{scanMsg}</p>}
         </div>
+
+        {/* Banner: vincular asignatura si no tiene proyecto */}
+        {!selectedCourse.conniku_project_id && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10,
+            background: 'linear-gradient(135deg, rgba(79,140,255,0.12) 0%, rgba(124,58,237,0.10) 100%)',
+            border: '1px solid rgba(79,140,255,0.25)', borderRadius: 12, padding: '12px 18px', marginBottom: 16,
+          }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                Vincula esta asignatura para desbloquear todas las funciones
+              </p>
+              <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                Chat IA con tu material, Quizzes adaptativos, importar archivos al proyecto y mas.
+              </p>
+            </div>
+            <button
+              onClick={() => handleAutoLink(selectedCourse.id)}
+              disabled={linking}
+              style={{
+                background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10,
+                padding: '9px 20px', fontSize: 13, fontWeight: 700,
+                cursor: linking ? 'not-allowed' : 'pointer', opacity: linking ? 0.6 : 1,
+                whiteSpace: 'nowrap', flexShrink: 0,
+              }}>
+              {linking ? '⏳ Vinculando…' : '⚡ Vincular ahora'}
+            </button>
+          </div>
+        )}
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, width: 'fit-content' }}>
@@ -1148,6 +1279,8 @@ export default function MiUniversidad({ onNavigate }: Props) {
             {topics.map(topic => (
               <TopicAccordion key={topic.name} topic={topic}
                 open={openTopics.has(topic.name)}
+                onImport={handleImportItem}
+                importingId={importingItemId}
                 onToggle={() => setOpenTopics(prev => {
                   const next = new Set(prev)
                   if (next.has(topic.name)) next.delete(topic.name)
@@ -1160,7 +1293,8 @@ export default function MiUniversidad({ onNavigate }: Props) {
           // Vista "todo el material" — lista plana
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
             {topics.flatMap(t => t.items).map((item, idx) => (
-              <ItemRow key={item.id} item={item} borderTop={idx > 0} />
+              <ItemRow key={item.id} item={item} borderTop={idx > 0}
+                onImport={handleImportItem} importing={importingItemId === item.id} />
             ))}
           </div>
         )}
@@ -1205,9 +1339,9 @@ export default function MiUniversidad({ onNavigate }: Props) {
         🎓 Mi Universidad
       </h1>
 
-      {scanMsg && (
+      {(scanMsg || bulkImportMsg) && (
         <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 16px', marginBottom: 16, fontSize: 13, color: 'var(--text-muted)' }}>
-          {scanMsg}
+          {scanMsg || bulkImportMsg}
         </div>
       )}
 
@@ -1357,20 +1491,23 @@ export default function MiUniversidad({ onNavigate }: Props) {
                         )}
                       </div>
                       {/* Botones de acción */}
+                      {bulkImporting === courseId && bulkImportMsg && (
+                        <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--text-muted)' }}>{bulkImportMsg}</p>
+                      )}
                       <div style={{ display: 'flex', gap: 8 }}>
-                        {isLinked ? (
-                          <button
-                            onClick={() => linkedCourse && openCourse(linkedCourse)}
-                            style={{ flex: 1, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                            📌 Actualizar {displayLabel}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => linkedCourse && openCourse(linkedCourse)}
-                            style={{ flex: 1, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'var(--accent-orange, #f97316)', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>
-                            🚀 Importar asignatura
-                          </button>
-                        )}
+                        <button
+                          onClick={() => handleBulkImport(courseId)}
+                          disabled={bulkImporting === courseId}
+                          style={{
+                            flex: 1, padding: '8px 14px', borderRadius: 8, border: 'none',
+                            background: bulkImporting === courseId ? 'var(--bg-secondary)' : (isLinked ? 'var(--accent)' : 'var(--accent-orange, #f97316)'),
+                            color: bulkImporting === courseId ? 'var(--text-muted)' : '#fff',
+                            fontSize: 12, fontWeight: 700,
+                            cursor: bulkImporting === courseId ? 'not-allowed' : 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                          }}>
+                          {bulkImporting === courseId ? '⏳ Importando...' : (isLinked ? `📌 Importar a ${displayLabel}` : '🚀 Importar asignatura')}
+                        </button>
                         <button
                           onClick={() => linkedCourse && openCourse(linkedCourse)}
                           style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
@@ -1927,7 +2064,10 @@ function CalendarSidebar({ events, prefs, syncing, msg, month, onMonthChange, on
   )
 }
 
-function TopicAccordion({ topic, open, onToggle }: { topic: Topic; open: boolean; onToggle: () => void }) {
+function TopicAccordion({ topic, open, onToggle, onImport, importingId }: {
+  topic: Topic; open: boolean; onToggle: () => void;
+  onImport?: (item: TopicItem) => void; importingId?: string;
+}) {
   return (
     <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
       <button onClick={onToggle}
@@ -1946,7 +2086,8 @@ function TopicAccordion({ topic, open, onToggle }: { topic: Topic; open: boolean
       {open && (
         <div style={{ borderTop: '1px solid var(--border)' }}>
           {topic.items.map((item, idx) => (
-            <ItemRow key={item.id} item={item} borderTop={idx > 0} />
+            <ItemRow key={item.id} item={item} borderTop={idx > 0}
+              onImport={onImport} importing={importingId === item.id} />
           ))}
         </div>
       )}
@@ -1954,7 +2095,16 @@ function TopicAccordion({ topic, open, onToggle }: { topic: Topic; open: boolean
   )
 }
 
-function ItemRow({ item, borderTop }: { item: TopicItem; borderTop: boolean }) {
+function ItemRow({ item, borderTop, onImport, importing }: {
+  item: TopicItem; borderTop: boolean;
+  onImport?: (item: TopicItem) => void; importing?: boolean;
+}) {
+  const isFile = item.item_type === 'file'
+  // For files: use proxy download (avoids exposing LMS tokens)
+  // For URLs/pages: open directly (no auth needed)
+  const downloadUrl = isFile ? api.lmsDownloadUrl(item.id) : item.item_url
+  const token = localStorage.getItem('token')
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderTop: borderTop ? '1px solid var(--border)' : 'none' }}>
       <span style={{ fontSize: 16, flexShrink: 0 }}>{itemIcon(item.item_type, item.mime_type)}</span>
@@ -1967,13 +2117,40 @@ function ItemRow({ item, borderTop }: { item: TopicItem; borderTop: boolean }) {
       {item.file_size > 0 && (
         <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{formatSize(item.file_size)}</span>
       )}
-      {item.item_url && (
-        <a href={item.item_url} target="_blank" rel="noopener noreferrer"
-          onClick={e => e.stopPropagation()}
-          style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 7, padding: '4px 10px', fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
-          Abrir
-        </a>
-      )}
+      <div style={{ display: 'flex', gap: 5, flexShrink: 0 }}>
+        {/* Import button — for files only */}
+        {isFile && onImport && (
+          <button
+            onClick={e => { e.stopPropagation(); onImport(item) }}
+            disabled={importing}
+            style={{
+              background: importing ? 'var(--bg-secondary)' : 'var(--accent)',
+              color: importing ? 'var(--text-muted)' : '#fff',
+              border: 'none', borderRadius: 7, padding: '4px 10px',
+              fontSize: 11, fontWeight: 600, cursor: importing ? 'not-allowed' : 'pointer',
+              whiteSpace: 'nowrap',
+            }}>
+            {importing ? '⏳' : '↓ Importar'}
+          </button>
+        )}
+        {/* Open/Download button */}
+        {downloadUrl && (
+          isFile ? (
+            <a href={`${downloadUrl}${downloadUrl.includes('?') ? '&' : '?'}token=${token}`}
+              target="_blank" rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 7, padding: '4px 10px', fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Abrir
+            </a>
+          ) : (
+            <a href={item.item_url} target="_blank" rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 7, padding: '4px 10px', fontSize: 11, color: 'var(--text-muted)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+              Abrir
+            </a>
+          )
+        )}
+      </div>
     </div>
   )
 }

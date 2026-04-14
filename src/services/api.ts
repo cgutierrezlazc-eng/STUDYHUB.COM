@@ -1510,6 +1510,12 @@ export const api = {
   lmsAddCourses: (connectionId: string, courseIds: string[]) =>
     request('/lms/courses/add', { method: 'POST', body: JSON.stringify({ connection_id: connectionId, course_ids: courseIds }) }),
   lmsScanCourse: (courseId: string) => request(`/lms/scan/${courseId}`, { method: 'POST' }),
+  lmsAutoLink: (courseId: string) =>
+    request(`/lms/courses/${courseId}/auto-link`, { method: 'POST' }),
+  lmsDownloadUrl: (itemId: string) =>
+    `${getApiBase()}/lms/download/${itemId}`,
+  lmsBulkImport: (courseId: string) =>
+    request(`/lms/courses/${courseId}/bulk-import`, { method: 'POST' }),
   importDocumentB64: (projectId: string, filename: string, content_b64: string, file_type?: string) =>
     request(`/projects/${projectId}/documents/import`, {
       method: 'POST',
