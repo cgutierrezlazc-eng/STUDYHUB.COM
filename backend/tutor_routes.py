@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session, relationship
 from database import Base, engine, get_db, User, gen_id, DATA_DIR, SessionLocal
 from middleware import get_current_user
 from push_routes import send_push_to_user
-from gemini_engine import AIEngine as _AIEngine
+from ai_engine import AIEngine as _AIEngine
 
 _ai_engine = _AIEngine()
 

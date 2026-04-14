@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Universidad — Conniku (Mockup)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── CSS Variables — Dark theme (default) ─────────────────────────── */
+    :root,
+    [data-theme="dark"] {
+      --bg-primary:    #0D1117;
+      --bg-secondary:  #161B22;
+      --bg-card:       #1C2128;
+      --bg-hover:      #272D36;
+      --bg-tertiary:   #1C2128;
+      --text-primary:  #E6EDF3;
+      --text-secondary:#8B949E;
+      --text-muted:    #6E7681;
+      --accent:        #58A6FF;
+      --border:        #30363D;
+      --border-subtle: #21262D;
+      --shadow:        0 1px 3px rgba(0,0,0,0.45);
+      --shadow-md:     0 4px 16px rgba(0,0,0,0.35);
+    }
+
+    /* ─── Light theme ───────────────────────────────────────────────────── */
+    [data-theme="light"] {
+      --bg-primary:    #F5F3EF;
+      --bg-secondary:  #FAFAF8;
+      --bg-card:       #FFFFFF;
+      --bg-hover:      #EDEAE5;
+      --bg-tertiary:   #F9F7F3;
+      --text-primary:  #1D2939;
+      --text-secondary:#475467;
+      --text-muted:    #98A2B3;
+      --accent:        #2563EB;
+      --border:        #E5E7EB;
+      --border-subtle: #F3F4F6;
+      --shadow:        0 1px 3px rgba(16,24,40,0.10), 0 1px 2px rgba(16,24,40,0.06);
+      --shadow-md:     0 4px 16px rgba(16,24,40,0.10);
+    }
+
+    /* ─── Reset & Base ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+      transition: background 0.25s ease, color 0.25s ease;
+    }
+
+    /* ─── Theme switcher (fixed top-right) ──────────────────────────────── */
+    .theme-switcher {
+      position: fixed;
+      top: 16px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 5px 8px;
+      box-shadow: var(--shadow-md);
+    }
+    .theme-btn {
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 7px;
+      transition: background 0.15s, color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .theme-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .theme-btn.active {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ─── Platform bar ──────────────────────────────────────────────────── */
+    .platform-bar {
+      background: linear-gradient(90deg, #0f1f3d 0%, #1a3055 50%, #12294a 100%);
+      border-bottom: 1px solid rgba(88,166,255,0.15);
+      padding: 0 24px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .platform-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .platform-logo {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #1e40af, #3b82f6);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .platform-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #c9d8f0;
+      white-space: nowrap;
+    }
+    .platform-sep {
+      color: rgba(255,255,255,0.25);
+      font-size: 12px;
+    }
+    .platform-sub {
+      font-size: 12px;
+      color: rgba(200,220,255,0.6);
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      background: #22c55e;
+      border-radius: 50%;
+      box-shadow: 0 0 6px rgba(34,197,94,0.7);
+      flex-shrink: 0;
+    }
+    .platform-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .sync-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid;
+      font-family: inherit;
+    }
+    .sync-btn-secondary {
+      background: rgba(88,166,255,0.08);
+      border-color: rgba(88,166,255,0.25);
+      color: #93c5fd;
+    }
+    .sync-btn-secondary:hover {
+      background: rgba(88,166,255,0.15);
+      border-color: rgba(88,166,255,0.45);
+      color: #bfdbfe;
+    }
+    .sync-btn-primary {
+      background: rgba(34,197,94,0.15);
+      border-color: rgba(34,197,94,0.35);
+      color: #86efac;
+    }
+    .sync-btn-primary:hover {
+      background: rgba(34,197,94,0.25);
+      border-color: rgba(34,197,94,0.55);
+      color: #bbf7d0;
+    }
+    .last-sync {
+      font-size: 11px;
+      color: rgba(200,220,255,0.45);
+      white-space: nowrap;
+    }
+
+    /* ─── Page wrapper ──────────────────────────────────────────────────── */
+    .page-wrapper {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 48px;
+    }
+
+    .page-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* ─── 2-column layout ───────────────────────────────────────────────── */
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1fr 284px;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ─── Section labels ────────────────────────────────────────────────── */
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .section-label .badge {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 20px;
+      padding: 1px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    /* ─── Course cards grid ─────────────────────────────────────────────── */
+    .courses-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+
+    .course-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      box-shadow: var(--shadow);
+    }
+    .course-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+      background: var(--bg-hover);
+    }
+    .course-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 14px 0 0 14px;
+    }
+    .course-card.linked::before  { background: #10b981; }
+    .course-card.pending::before { background: #f97316; }
+
+    .card-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 6px;
+    }
+    .card-emoji { font-size: 20px; line-height: 1; }
+    .card-badges {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .chip-green  { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+    .chip-orange { background: rgba(249,115,22,0.15);  color: #f97316; border: 1px solid rgba(249,115,22,0.25); }
+    .chip-blue   { background: rgba(88,166,255,0.12);  color: var(--accent); border: 1px solid rgba(88,166,255,0.22); }
+    .chip-red    { background: rgba(248,81,73,0.12);   color: #f85149; border: 1px solid rgba(248,81,73,0.22); }
+
+    .course-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    .course-sync-key {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+      background: var(--border-subtle);
+      padding: 2px 6px;
+      border-radius: 5px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .course-stats {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .stat-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .card-action {
+      width: 100%;
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      text-align: center;
+    }
+    .action-linked {
+      background: rgba(16,185,129,0.15);
+      color: #10b981;
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .action-linked:hover {
+      background: rgba(16,185,129,0.25);
+      color: #34d399;
+    }
+    .action-pending {
+      background: rgba(249,115,22,0.15);
+      color: #f97316;
+      border: 1px solid rgba(249,115,22,0.3);
+    }
+    .action-pending:hover {
+      background: rgba(249,115,22,0.25);
+      color: #fb923c;
+    }
+
+    /* ─── Collapsible rows (material nuevo) ─────────────────────────────── */
+    .collapsible-row {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow);
+      transition: background 0.15s;
+    }
+    .collapsible-row:hover { background: var(--bg-hover); }
+    .collapsible-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      cursor: pointer;
+    }
+    .collapsible-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .collapsible-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .chevron {
+      color: var(--text-muted);
+      font-size: 12px;
+      transition: transform 0.2s;
+    }
+
+    /* ─── RIGHT COLUMN ──────────────────────────────────────────────────── */
+    .sidebar {
+      position: sticky;
+      top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .sidebar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ─── Mini Calendar ─────────────────────────────────────────────────── */
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .cal-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .cal-nav {
+      display: flex;
+      gap: 4px;
+    }
+    .cal-nav-btn {
+      width: 26px; height: 26px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .cal-nav-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+    .cal-eventos-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .cal-eventos-count span {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 10px;
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      padding: 4px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .cal-day {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 4px 2px 3px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.12s;
+      min-height: 38px;
+    }
+    .cal-day:hover { background: var(--bg-hover); }
+    .cal-day.other-month .cal-day-num { color: var(--text-muted); opacity: 0.4; }
+    .cal-day.today .cal-day-num {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cal-day-num {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .cal-dots {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .cal-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .cal-dot-yellow { background: #f59e0b; }
+    .cal-dot-red    { background: #ef4444; }
+    .cal-dot-blue   { background: #3b82f6; }
+    .cal-dot-green  { background: #10b981; }
+
+    .cal-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .legend-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ─── Sync calendar button ──────────────────────────────────────────── */
+    .btn-sync-cal {
+      width: 100%;
+      padding: 11px 16px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .btn-sync-cal:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-sync-cal:active { transform: translateY(0); opacity: 0.75; }
+
+    /* ─── Próximos eventos ──────────────────────────────────────────────── */
+    .sidebar-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .event-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .event-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .event-icon-wrap {
+      width: 32px; height: 32px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .ei-red    { background: rgba(239,68,68,0.15); }
+    .ei-yellow { background: rgba(245,158,11,0.15); }
+    .ei-blue   { background: rgba(59,130,246,0.15); }
+    .ei-green  { background: rgba(16,185,129,0.15); }
+    .ei-purple { background: rgba(139,92,246,0.15); }
+
+    .event-body { flex: 1; min-width: 0; }
+    .event-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .event-course {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .event-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+    .event-progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .event-progress-bar {
+      flex: 1;
+      height: 3px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .event-progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.3s ease;
+    }
+    .event-time-left {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .urgency-badge {
+      flex-shrink: 0;
+      padding: 2px 7px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .ub-red    { background: rgba(239,68,68,0.18); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+    .ub-yellow { background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .ub-green  { background: rgba(16,185,129,0.18); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+
+    /* ─── Alertas automáticas ───────────────────────────────────────────── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .toggle-row:last-of-type { border-bottom: none; }
+    .toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .toggle-label .tlabel-emoji { font-size: 14px; }
+
+    /* Toggle switch */
+    .toggle-switch {
+      width: 36px; height: 20px;
+      background: var(--accent);
+      border-radius: 20px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 18px;
+      width: 14px; height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      transition: left 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-switch.off {
+      background: var(--border);
+    }
+    .toggle-switch.off::after {
+      left: 3px;
+    }
+
+    .info-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      background: rgba(88,166,255,0.08);
+      border: 1px solid rgba(88,166,255,0.2);
+      border-radius: 9px;
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      display: flex;
+      gap: 7px;
+    }
+    [data-theme="light"] .info-box {
+      background: rgba(37,99,235,0.06);
+      border-color: rgba(37,99,235,0.18);
+    }
+    .info-box-icon { flex-shrink: 0; font-size: 13px; line-height: 1.55; }
+
+    /* ─── Scrollbar ─────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <!-- ── Theme switcher ──────────────────────────────────────────────────── -->
+  <div class="theme-switcher" id="themeSwitcher">
+    <button class="theme-btn active" id="btnDark" onclick="setTheme('dark')">🌙 Oscuro</button>
+    <button class="theme-btn" id="btnLight" onclick="setTheme('light')">☀️ Claro</button>
+  </div>
+
+  <!-- ── Platform bar ────────────────────────────────────────────────────── -->
+  <div class="platform-bar">
+    <div class="platform-bar-left">
+      <div class="platform-logo">🎓</div>
+      <span class="platform-name">Universidad de Chile</span>
+      <span class="platform-sep">—</span>
+      <span class="platform-sub">Ucampus</span>
+      <div class="status-dot"></div>
+    </div>
+    <div class="platform-bar-right">
+      <span class="last-sync">Última sync hace 12 min</span>
+      <button class="sync-btn sync-btn-secondary">
+        <span>⟳</span> Actualizar cursos
+      </button>
+      <button class="sync-btn sync-btn-primary">
+        <span>📅</span> Sync calendario
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Page wrapper ─────────────────────────────────────────────────────── -->
+  <div class="page-wrapper">
+
+    <h1 class="page-title">🎓 Mi Universidad</h1>
+
+    <!-- ── 2-column grid ─────────────────────────────────────────────────── -->
+    <div class="layout-grid">
+
+      <!-- ════════════════════════════════════════════
+           LEFT COLUMN
+      ═════════════════════════════════════════════ -->
+      <div class="main-content">
+
+        <!-- ── Section: Semestre actual ─── -->
+        <div class="section-label">
+          📅 Semestre actual
+          <span class="badge">4</span>
+        </div>
+
+        <div class="courses-grid">
+
+          <!-- Card 1: Cálculo II — linked -->
+          <div class="course-card linked">
+            <div class="card-top-row">
+              <span class="card-emoji">📐</span>
+              <div class="card-badges">
+                <span class="chip chip-green">✓ Vinculado</span>
+                <span class="chip chip-red">3 nuevos</span>
+              </div>
+            </div>
+            <div class="course-name">Cálculo II</div>
+            <div class="course-sync-key">MAT-201</div>
+            <div class="course-stats">
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#10b981"></span>
+                48 archivos
+              </span>
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#6E7681"></span>
+                hace 12 min
+              </span>
+            </div>
+            <button class="card-action action-linked">Ver asignatura →</button>
+          </div>
+
+          <!-- Card 2: Circuitos Eléctricos — linked -->
+          <div class="course-card linked">
+            <div class="card-top-row">
+              <span class="card-emoji">⚡</span>
+              <div class="card-badges">
+                <span class="chip chip-green">✓ Vinculado</span>
+                <span class="chip chip-blue">1 nuevo</span>
+              </div>
+            </div>
+            <div class="course-name">Circuitos Eléctricos I</div>
+            <div class="course-sync-key">ELC-310</div>
+            <div class="course-stats">
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#10b981"></span>
+                31 archivos
+              </span>
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#6E7681"></span>
+                hace 1h
+              </span>
+            </div>
+            <button class="card-action action-linked">Ver asignatura →</button>
+          </div>
+
+          <!-- Card 3: Protocolo TCP/IP — linked -->
+          <div class="course-card linked">
+            <div class="card-top-row">
+              <span class="card-emoji">🌐</span>
+              <div class="card-badges">
+                <span class="chip chip-green">✓ Vinculado</span>
+              </div>
+            </div>
+            <div class="course-name">Redes y Comunicaciones</div>
+            <div class="course-sync-key">INF-430</div>
+            <div class="course-stats">
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#10b981"></span>
+                22 archivos
+              </span>
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#6E7681"></span>
+                hace 3h
+              </span>
+            </div>
+            <button class="card-action action-linked">Ver asignatura →</button>
+          </div>
+
+          <!-- Card 4: Estadística — pending (not linked) -->
+          <div class="course-card pending">
+            <div class="card-top-row">
+              <span class="card-emoji">📊</span>
+              <div class="card-badges">
+                <span class="chip chip-orange">Sin vincular</span>
+              </div>
+            </div>
+            <div class="course-name">Estadística y Probabilidades</div>
+            <div class="course-stats">
+              <span class="stat-item">
+                <span class="stat-dot" style="background:#f97316"></span>
+                No sincronizado
+              </span>
+            </div>
+            <button class="card-action action-pending">🚀 Importar</button>
+          </div>
+
+        </div><!-- /.courses-grid -->
+
+        <!-- ── Section: Material nuevo ─── -->
+        <div class="section-label">
+          📥 Material nuevo detectado
+          <span class="badge">4</span>
+        </div>
+
+        <!-- Collapsible 1 -->
+        <div class="collapsible-row">
+          <div class="collapsible-header" onclick="toggleRow(this)">
+            <div class="collapsible-left">
+              <span style="font-size:16px">📐</span>
+              <span class="collapsible-title">Cálculo II</span>
+              <span class="chip chip-red" style="margin-left:2px">3 nuevos</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+        </div>
+
+        <!-- Collapsible 2 -->
+        <div class="collapsible-row">
+          <div class="collapsible-header" onclick="toggleRow(this)">
+            <div class="collapsible-left">
+              <span style="font-size:16px">⚡</span>
+              <span class="collapsible-title">Circuitos Eléctricos I</span>
+              <span class="chip chip-blue" style="margin-left:2px">1 nuevo</span>
+            </div>
+            <span class="chevron">▼</span>
+          </div>
+        </div>
+
+      </div><!-- /.main-content -->
+
+
+      <!-- ════════════════════════════════════════════
+           RIGHT COLUMN — SIDEBAR
+      ═════════════════════════════════════════════ -->
+      <div class="sidebar">
+
+        <!-- ── Card 1: Mini Calendar ─────────────────────────────────────── -->
+        <div class="sidebar-card">
+          <div class="cal-header">
+            <span class="cal-title">Abril 2026</span>
+            <div class="cal-nav">
+              <button class="cal-nav-btn">‹</button>
+              <button class="cal-nav-btn">›</button>
+            </div>
+          </div>
+          <div class="cal-eventos-count"><span>3 eventos</span> este mes</div>
+
+          <div class="cal-grid">
+            <!-- Day-of-week headers: L M M J V S D -->
+            <div class="cal-dow">L</div>
+            <div class="cal-dow">M</div>
+            <div class="cal-dow">M</div>
+            <div class="cal-dow">J</div>
+            <div class="cal-dow">V</div>
+            <div class="cal-dow">S</div>
+            <div class="cal-dow">D</div>
+
+            <!-- Week 1: Mar 30, Mar 31, Apr 1–5 -->
+            <div class="cal-day other-month"><span class="cal-day-num">30</span></div>
+            <div class="cal-day other-month"><span class="cal-day-num">31</span></div>
+            <div class="cal-day"><span class="cal-day-num">1</span></div>
+            <div class="cal-day"><span class="cal-day-num">2</span></div>
+            <div class="cal-day"><span class="cal-day-num">3</span></div>
+            <div class="cal-day"><span class="cal-day-num">4</span></div>
+            <div class="cal-day"><span class="cal-day-num">5</span></div>
+
+            <!-- Week 2: Apr 6–12 -->
+            <div class="cal-day">
+              <span class="cal-day-num">6</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">7</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">8</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">9</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">10</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">11</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">12</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+
+            <!-- Week 3: Apr 13–19 -->
+            <div class="cal-day">
+              <span class="cal-day-num">13</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+            <!-- TODAY = 14 -->
+            <div class="cal-day today">
+              <span class="cal-day-num">14</span>
+              <div class="cal-dots">
+                <span class="cal-dot cal-dot-red"></span>
+              </div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">15</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-yellow"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">16</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">17</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-red"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">18</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">19</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-green"></span></div>
+            </div>
+
+            <!-- Week 4: Apr 20–26 -->
+            <div class="cal-day">
+              <span class="cal-day-num">20</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">21</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">22</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">23</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-red"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">24</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-green"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">25</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">26</span>
+            </div>
+
+            <!-- Week 5: Apr 27–30, May 1–3 -->
+            <div class="cal-day">
+              <span class="cal-day-num">27</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-yellow"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">28</span>
+              <div class="cal-dots"><span class="cal-dot cal-dot-blue"></span></div>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">29</span>
+            </div>
+            <div class="cal-day">
+              <span class="cal-day-num">30</span>
+            </div>
+            <div class="cal-day other-month"><span class="cal-day-num">1</span></div>
+            <div class="cal-day other-month"><span class="cal-day-num">2</span></div>
+            <div class="cal-day other-month"><span class="cal-day-num">3</span></div>
+          </div><!-- /.cal-grid -->
+
+          <!-- Legend -->
+          <div class="cal-legend">
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#f59e0b"></span>
+              Tarea
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#ef4444"></span>
+              Examen
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#3b82f6"></span>
+              Clase
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot" style="background:#10b981"></span>
+              Foro
+            </div>
+          </div>
+        </div><!-- /.sidebar-card (calendar) -->
+
+        <!-- ── Card 2: Sync calendar button ──────────────────────────────── -->
+        <button class="btn-sync-cal">
+          📅 Sincronizar calendario universitario
+        </button>
+
+        <!-- ── Card 3: Próximos eventos ──────────────────────────────────── -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">📆 Próximos eventos</div>
+
+          <!-- Event 1: Quiz Cálculo — HOY -->
+          <div class="event-item">
+            <div class="event-icon-wrap ei-red">🧩</div>
+            <div class="event-body">
+              <div class="event-title">Quiz Unidad 4 — Cálculo</div>
+              <div class="event-course">Cálculo II</div>
+              <div class="event-date">Hoy · 18:00</div>
+              <div class="event-progress-wrap">
+                <div class="event-progress-bar">
+                  <div class="event-progress-fill" style="width:88%;background:#ef4444"></div>
+                </div>
+                <span class="event-time-left">3h 45m</span>
+              </div>
+            </div>
+            <span class="urgency-badge ub-red">HOY</span>
+          </div>
+
+          <!-- Event 2: Entrega Tarea — 24h -->
+          <div class="event-item">
+            <div class="event-icon-wrap ei-yellow">📝</div>
+            <div class="event-body">
+              <div class="event-title">Entrega Tarea 3 — Circuitos</div>
+              <div class="event-course">Circuitos Eléctricos I</div>
+              <div class="event-date">Mañana · 23:59</div>
+              <div class="event-progress-wrap">
+                <div class="event-progress-bar">
+                  <div class="event-progress-fill" style="width:72%;background:#f59e0b"></div>
+                </div>
+                <span class="event-time-left">21h 12m</span>
+              </div>
+            </div>
+            <span class="urgency-badge ub-yellow">⚠ 24h</span>
+          </div>
+
+          <!-- Event 3: Clase Zoom — 2 días -->
+          <div class="event-item">
+            <div class="event-icon-wrap ei-blue">🎥</div>
+            <div class="event-body">
+              <div class="event-title">Clase Zoom — Protocolo TCP/IP</div>
+              <div class="event-course">Redes y Comunicaciones</div>
+              <div class="event-date">Mié · 10:00</div>
+              <div class="event-progress-wrap">
+                <div class="event-progress-bar">
+                  <div class="event-progress-fill" style="width:30%;background:#3b82f6"></div>
+                </div>
+                <span class="event-time-left">2d 14h</span>
+              </div>
+            </div>
+            <span class="urgency-badge ub-green">2 días</span>
+          </div>
+
+          <!-- Event 4: Solemne Estadística — 3 días -->
+          <div class="event-item">
+            <div class="event-icon-wrap ei-red">📋</div>
+            <div class="event-body">
+              <div class="event-title">Solemne 1 — Estadística</div>
+              <div class="event-course">Estadística y Probabilidades</div>
+              <div class="event-date">Jue · 14:00</div>
+              <div class="event-progress-wrap">
+                <div class="event-progress-bar">
+                  <div class="event-progress-fill" style="width:22%;background:#ef4444"></div>
+                </div>
+                <span class="event-time-left">3d 2h</span>
+              </div>
+            </div>
+            <span class="urgency-badge ub-green">3 días</span>
+          </div>
+
+          <!-- Event 5: Foro Seguridad — 4 días -->
+          <div class="event-item">
+            <div class="event-icon-wrap ei-green">💬</div>
+            <div class="event-body">
+              <div class="event-title">Foro Reflexión — Seguridad en Redes</div>
+              <div class="event-course">Redes y Comunicaciones</div>
+              <div class="event-date">Vie · 23:59</div>
+              <div class="event-progress-wrap">
+                <div class="event-progress-bar">
+                  <div class="event-progress-fill" style="width:15%;background:#10b981"></div>
+                </div>
+                <span class="event-time-left">4d 8h</span>
+              </div>
+            </div>
+            <span class="urgency-badge ub-green">4 días</span>
+          </div>
+
+        </div><!-- /.sidebar-card (eventos) -->
+
+        <!-- ── Card 4: Alertas automáticas ────────────────────────────────── -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">🔔 Alertas automáticas</div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">
+              <span class="tlabel-emoji">📱</span>
+              Push (app)
+            </span>
+            <div class="toggle-switch" onclick="this.classList.toggle('off')" title="Activar/desactivar"></div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">
+              <span class="tlabel-emoji">🔔</span>
+              In-app
+            </span>
+            <div class="toggle-switch" onclick="this.classList.toggle('off')" title="Activar/desactivar"></div>
+          </div>
+
+          <div class="toggle-row">
+            <span class="toggle-label">
+              <span class="tlabel-emoji">✉️</span>
+              Email
+            </span>
+            <div class="toggle-switch" onclick="this.classList.toggle('off')" title="Activar/desactivar"></div>
+          </div>
+
+          <div class="info-box">
+            <span class="info-box-icon">ℹ️</span>
+            <span>Tareas y exámenes: 24h antes. Clases sincrónicas: 15 min antes.</span>
+          </div>
+        </div><!-- /.sidebar-card (alertas) -->
+
+      </div><!-- /.sidebar -->
+    </div><!-- /.layout-grid -->
+  </div><!-- /.page-wrapper -->
+
+  <script>
+    function setTheme(t) {
+      document.documentElement.setAttribute('data-theme', t);
+      document.getElementById('btnDark').classList.toggle('active', t === 'dark');
+      document.getElementById('btnLight').classList.toggle('active', t === 'light');
+    }
+
+    function toggleRow(header) {
+      const chevron = header.querySelector('.chevron');
+      if (chevron) {
+        chevron.style.transform =
+          chevron.style.transform === 'rotate(180deg)' ? '' : 'rotate(180deg)';
+      }
+    }
+  </script>
+</body>
+</html>

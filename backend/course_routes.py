@@ -496,7 +496,7 @@ def generate_course_content(course_id: str, user: User = Depends(get_current_use
 
     # Try AI generation
     try:
-        from gemini_engine import AIEngine
+        from ai_engine import AIEngine
         ai = AIEngine()
     except Exception:
         raise HTTPException(503, "El contenido de este curso aún no está disponible. Estamos trabajando en agregarlo.")
@@ -857,7 +857,7 @@ def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
     need = count - len(unseen)
 
     try:
-        from gemini_engine import AIEngine
+        from ai_engine import AIEngine
         ai = AIEngine()
     except Exception:
         # If AI not available, return whatever unseen we have

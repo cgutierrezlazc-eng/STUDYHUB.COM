@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Universidad — Módulo completo · Conniku</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+
+:root {
+  --bg-primary:    #0f1117;
+  --bg-card:       #1a1f2e;
+  --bg-secondary:  #232838;
+  --border:        rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --text-primary:  #f0f2f8;
+  --text-secondary:#b0b8d0;
+  --text-muted:    #6b7280;
+  --accent:        #1a56db;
+  --radius:        14px;
+}
+[data-theme="light"] {
+  --bg-primary:    #f3f4f6;
+  --bg-card:       #ffffff;
+  --bg-secondary:  #f9fafb;
+  --border:        rgba(0,0,0,0.09);
+  --border-subtle: rgba(0,0,0,0.06);
+  --text-primary:  #111827;
+  --text-secondary:#374151;
+  --text-muted:    #9ca3af;
+  --accent:        #1a56db;
+}
+
+/* ── Theme bar ── */
+.theme-bar { position: fixed; top: 12px; right: 16px; z-index: 999; display: flex; gap: 6px; }
+.theme-bar button { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-weight: 600; }
+.theme-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── View switcher ── */
+.view-bar { display: flex; gap: 8px; margin-bottom: 28px; }
+.view-btn { padding: 7px 18px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; font-size: 13px; font-weight: 600; transition: all .15s; }
+.view-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Layout ── */
+.page { max-width: 1100px; margin: 0 auto; padding: 32px 20px 100px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 284px; gap: 20px; align-items: start; }
+.main-col { display: flex; flex-direction: column; gap: 16px; }
+.sidebar-col { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
+
+/* ── Cards ── */
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.card-pad { padding: 18px 20px; }
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border-subtle); }
+.card-title { font-size: 14px; font-weight: 700; }
+
+/* ── Section titles ── */
+.sec-label { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+/* ── Course cards ── */
+.course-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px 14px 18px; border-left-width: 4px; cursor: pointer; transition: transform .1s, box-shadow .1s; }
+.course-card:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.18); }
+.course-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.course-orig { font-size: 11px; color: var(--text-muted); font-family: monospace; margin-bottom: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.course-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.badge-linked { background: rgba(16,185,129,.14); color: #10b981; }
+.badge-unlinked { background: rgba(249,115,22,.14); color: #f97316; }
+.badge-new { background: rgba(26,86,219,.14); color: var(--accent); }
+.course-action { width: 100%; padding: 7px 0; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; }
+.action-linked { background: var(--accent); color: #fff; }
+.action-unlinked { background: rgba(249,115,22,.15); color: #f97316; }
+
+/* ── Novedades block ── */
+.novedad-item { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); }
+.novedad-item:last-child { border-bottom: none; }
+.novedad-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.novedad-icon { font-size: 14px; }
+.novedad-name { font-size: 12px; font-weight: 600; flex: 1; }
+.novedad-course { font-size: 10px; color: var(--text-muted); }
+
+/* ── Calendar sidebar ── */
+.ev-row { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); }
+.ev-row:last-child { border-bottom: none; }
+.ev-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.ev-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.ev-body { flex: 1; min-width: 0; }
+.ev-title-row { display: flex; align-items: center; gap: 5px; margin-bottom: 2px; }
+.ev-title { font-size: 12px; font-weight: 600; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.ev-course { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-date { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.ev-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+.ev-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ev-bar-track { flex: 1; height: 4px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.ev-bar-fill { height: 100%; border-radius: 99px; transition: width .3s; }
+.ev-bar-label { font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* Submission badge */
+.sub-ok   { background: rgba(16,185,129,.15); color: #10b981; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+.sub-miss { background: rgba(239,68,68,.12);  color: #ef4444; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+.sub-late { background: rgba(245,158,11,.14); color: #f59e0b; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; }
+
+/* Platform buttons */
+.btn-platform { width: 100%; padding: 5px 0; border-radius: 7px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-zoom   { background: #2D8CFF; color: #fff; }
+.btn-bbb    { background: #467fcf; color: #fff; }
+.btn-teams  { background: #5059C9; color: #fff; }
+.btn-meet   { background: #00897B; color: #fff; }
+.btn-task   { background: rgba(245,158,11,.18); color: #f59e0b; }
+.btn-exam   { background: rgba(239,68,68,.15); color: #ef4444; }
+.btn-forum  { background: rgba(16,185,129,.14); color: #10b981; }
+
+/* ── Mini calendar ── */
+.mini-cal { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 14px; }
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cal-month-label { font-size: 13px; font-weight: 700; }
+.cal-nav-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 12px; padding: 2px 8px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-day-label { text-align: center; font-size: 9px; font-weight: 700; color: var(--text-muted); padding: 3px 0; }
+.cal-day { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-muted); cursor: pointer; position: relative; margin: auto; }
+.cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+.cal-day.has-event::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: #f59e0b; }
+.cal-day.other-month { opacity: .3; }
+
+/* ── Course view ── */
+.course-view { display: none; }
+.course-view.active { display: block; }
+.hub-view.hidden { display: none; }
+.back-btn { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 16px; background: none; border: none; padding: 0; }
+.course-tabs { display: flex; gap: 4px; padding: 0 18px; border-bottom: 1px solid var(--border-subtle); background: var(--bg-card); }
+.ctab { padding: 10px 16px; border: none; background: transparent; font-size: 13px; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; transition: color .15s; }
+.ctab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+.tab-content { display: none; padding: 20px; background: var(--bg-card); border-radius: 0 0 16px 16px; border: 1px solid var(--border); border-top: none; }
+.tab-content.active { display: block; }
+
+/* Topic accordion */
+.topic-block { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 8px; }
+.topic-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; }
+.topic-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.topic-count { font-size: 11px; color: var(--text-muted); }
+.item-row { display: flex; align-items: center; gap: 10px; padding: 9px 16px; border-top: 1px solid var(--border-subtle); }
+.item-icon { font-size: 15px; flex-shrink: 0; }
+.item-name { font-size: 12px; color: var(--text-primary); flex: 1; }
+.item-badge { font-size: 10px; padding: 2px 7px; border-radius: 4px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); }
+.item-open { font-size: 11px; padding: 4px 10px; border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; }
+
+/* Classes tab */
+.class-live-card { background: var(--bg-secondary); border: 1px solid rgba(45,140,255,.25); border-left: 3px solid #2D8CFF; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; }
+.live-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 800; color: #10b981; margin-bottom: 8px; }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: #10b981; animation: blink 1.4s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+.class-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.class-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+.class-btns { display: flex; gap: 8px; }
+.btn-join { flex: 1; padding: 8px 0; border-radius: 8px; border: none; background: #2D8CFF; color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-rec { padding: 8px 12px; border-radius: 8px; border: none; background: rgba(239,68,68,.15); color: #ef4444; font-size: 12px; font-weight: 700; cursor: pointer; }
+.btn-trans { padding: 8px 12px; border-radius: 8px; border: none; background: rgba(26,86,219,.15); color: var(--accent); font-size: 12px; font-weight: 700; cursor: pointer; }
+.rec-pill { display: flex; align-items: center; gap: 7px; padding: 7px 12px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #ef4444; font-weight: 600; margin-bottom: 10px; }
+
+.past-class-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.past-class-row:last-child { border-bottom: none; }
+.past-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(26,86,219,.12); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.past-meta { flex: 1; min-width: 0; }
+.past-title { font-size: 12px; font-weight: 600; }
+.past-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.past-btns { display: flex; gap: 5px; }
+.btn-tiny { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; font-size: 11px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+.btn-tiny.accent { background: rgba(26,86,219,.12); border-color: rgba(26,86,219,.2); color: var(--accent); }
+
+.ai-box { background: rgba(26,86,219,.06); border: 1px solid rgba(26,86,219,.13); border-radius: 12px; padding: 14px; margin-top: 14px; }
+.ai-title { font-size: 12px; font-weight: 700; margin-bottom: 10px; }
+.ai-btns { display: flex; gap: 7px; flex-wrap: wrap; }
+.ai-btn { padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(26,86,219,.2); background: rgba(26,86,219,.1); color: var(--accent); font-size: 11px; font-weight: 700; cursor: pointer; }
+
+/* Sync bar */
+.sync-bar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(26,86,219,.06); border-radius: 10px; border: 1px solid rgba(26,86,219,.12); }
+.sync-bar-info { flex: 1; font-size: 12px; color: var(--text-secondary); }
+.sync-bar-sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.btn-scan { padding: 7px 16px; border-radius: 8px; border: none; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.btn-sync-cal { width: 100%; padding: 9px 0; border-radius: 10px; border: none; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+/* Progress */
+.xp-bar { height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.xp-fill { height: 100%; background: var(--accent); border-radius: 99px; }
+</style>
+</head>
+<body>
+
+<div class="theme-bar">
+  <button class="active" onclick="setTheme('dark')">🌙 Dark</button>
+  <button onclick="setTheme('light')">☀️ Light</button>
+</div>
+
+<div class="page">
+
+  <!-- View switcher -->
+  <div class="view-bar">
+    <button class="view-btn active" onclick="showView('hub')">🏠 Hub principal</button>
+    <button class="view-btn" onclick="showView('course')">📘 Asignatura (Álgebra)</button>
+    <button class="view-btn" onclick="showView('courseBBB')">📗 Asignatura (Cálculo · BBB)</button>
+  </div>
+
+  <!-- ══════════════════════════ HUB PRINCIPAL ══════════════════════════ -->
+  <div id="hubView">
+    <div class="grid-2">
+
+      <!-- COLUMNA PRINCIPAL -->
+      <div class="main-col">
+
+        <!-- Header conexión -->
+        <div class="card card-pad" style="border-left: 3px solid #10b981;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#10b981;margin-bottom:4px;">✓ Conectado</div>
+              <div style="font-size:16px;font-weight:700;">Moodle — Universidad de Chile</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">campus.uchile.cl · Actualizado hace 3 min</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button style="padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:12px;cursor:pointer;">⚙ Config</button>
+              <button class="btn-scan" onclick="animateScan(this)">🔍 Buscar nuevos</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Novedades -->
+        <div>
+          <div class="sec-label">
+            🆕 Novedades
+            <span style="background:var(--accent);color:#fff;font-size:10px;font-weight:700;padding:1px 8px;border-radius:99px;">5</span>
+          </div>
+          <div class="card">
+            <div class="novedad-item">
+              <div class="novedad-top">
+                <span class="novedad-icon">📝</span>
+                <span class="novedad-name">Tarea 4 — Transformaciones lineales</span>
+                <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(26,86,219,.1);color:var(--accent);font-weight:700;">Nuevo</span>
+              </div>
+              <div class="novedad-course">Álgebra Lineal I — hace 12 min</div>
+            </div>
+            <div class="novedad-item">
+              <div class="novedad-top">
+                <span class="novedad-icon">📕</span>
+                <span class="novedad-name">Apuntes Clase 9 — Determinantes.pdf</span>
+                <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(26,86,219,.1);color:var(--accent);font-weight:700;">Nuevo</span>
+              </div>
+              <div class="novedad-course">Álgebra Lineal I — hace 1h</div>
+            </div>
+            <div class="novedad-item">
+              <div class="novedad-top">
+                <span class="novedad-icon">🧩</span>
+                <span class="novedad-name">Quiz de práctica — Integrales</span>
+                <span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(26,86,219,.1);color:var(--accent);font-weight:700;">Nuevo</span>
+              </div>
+              <div class="novedad-course">Cálculo I — hace 2h</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Asignaturas actuales -->
+        <div>
+          <div class="sec-label">📚 Asignaturas actuales (4)</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+
+            <!-- Vinculada con novedades -->
+            <div class="course-card" style="border-left-color:#10b981;" onclick="showView('course')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="course-name">Álgebra Lineal I</div>
+                  <div class="course-orig">🔗 MAT220A — Álgebra Lineal</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <span class="badge badge-linked">✓ Vinculada</span>
+                  <span class="badge badge-new">3 nuevos</span>
+                </div>
+              </div>
+              <button class="course-action action-linked">Ver asignatura →</button>
+            </div>
+
+            <!-- Vinculada sin novedades -->
+            <div class="course-card" style="border-left-color:#10b981;" onclick="showView('courseBBB')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="course-name">Cálculo Diferencial</div>
+                  <div class="course-orig">🔗 MAT130B — Cálculo I</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                  <span class="badge badge-linked">✓ Vinculada</span>
+                  <span class="badge badge-new">2 nuevos</span>
+                </div>
+              </div>
+              <button class="course-action action-linked">Ver asignatura →</button>
+            </div>
+
+            <!-- Sin importar -->
+            <div class="course-card" style="border-left-color:#f97316;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="course-name" style="color:var(--text-secondary);">FIS201 — Física III</div>
+                </div>
+                <span class="badge badge-unlinked">⚡ Sin importar</span>
+              </div>
+              <button class="course-action action-unlinked">🚀 Importar</button>
+            </div>
+
+            <!-- Renombrando inline -->
+            <div class="course-card" style="border-left-color:#10b981;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px;">
+                <div style="flex:1;min-width:0;">
+                  <div class="course-name">Estadística Aplicada</div>
+                  <div class="course-orig">🔗 EST301A — Estadística</div>
+                </div>
+                <span class="badge badge-linked">✓ Vinculada</span>
+              </div>
+              <button class="course-action action-linked">Ver asignatura →</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /main-col -->
+
+      <!-- SIDEBAR CALENDARIO -->
+      <div class="sidebar-col">
+
+        <!-- Mini calendario -->
+        <div class="mini-cal">
+          <div class="cal-nav">
+            <button class="cal-nav-btn">‹</button>
+            <span class="cal-month-label">Abril 2026</span>
+            <button class="cal-nav-btn">›</button>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day-label">Lu</div><div class="cal-day-label">Ma</div><div class="cal-day-label">Mi</div>
+            <div class="cal-day-label">Ju</div><div class="cal-day-label">Vi</div><div class="cal-day-label">Sa</div><div class="cal-day-label">Do</div>
+            <!-- Semana 1 -->
+            <div class="cal-day other-month">31</div>
+            <div class="cal-day">1</div><div class="cal-day">2</div><div class="cal-day">3</div>
+            <div class="cal-day">4</div><div class="cal-day">5</div><div class="cal-day">6</div>
+            <!-- Semana 2 -->
+            <div class="cal-day">7</div><div class="cal-day">8</div><div class="cal-day">9</div>
+            <div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div><div class="cal-day">13</div>
+            <!-- Semana 3 -->
+            <div class="cal-day today">14</div><div class="cal-day has-event">15</div><div class="cal-day has-event">16</div>
+            <div class="cal-day">17</div><div class="cal-day has-event">18</div><div class="cal-day">19</div><div class="cal-day">20</div>
+            <!-- Semana 4 -->
+            <div class="cal-day">21</div><div class="cal-day has-event">22</div><div class="cal-day">23</div>
+            <div class="cal-day has-event">24</div><div class="cal-day">25</div><div class="cal-day">26</div><div class="cal-day">27</div>
+            <!-- Semana 5 -->
+            <div class="cal-day">28</div><div class="cal-day">29</div><div class="cal-day">30</div>
+            <div class="cal-day other-month">1</div><div class="cal-day other-month">2</div><div class="cal-day other-month">3</div><div class="cal-day other-month">4</div>
+          </div>
+        </div>
+
+        <!-- Sync button -->
+        <button class="btn-sync-cal">📅 Sincronizar calendario universitario</button>
+
+        <!-- Eventos -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⏱ Próximos eventos</span>
+            <span style="font-size:11px;color:var(--text-muted)">6 pendientes</span>
+          </div>
+
+          <!-- Clase Zoom — en 50 min -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(45,140,255,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Clase: Álgebra Lineal ↗</div>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">lun. 14 abr · 10:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.15);color:#10b981">🟢 50m</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:82%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">50m</span>
+            </div>
+            <!-- ① Botón Zoom branded -->
+            <button class="btn-platform btn-zoom">🎥 Unirse a Zoom</button>
+          </div>
+
+          <!-- Tarea sin entregar — urgente -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(245,158,11,.12)">📝</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Tarea: Vectores 3D ↗</div>
+                  <!-- ② Badge sin entregar -->
+                  <span class="sub-miss">✗ Sin entregar</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Vence hoy · 23:59</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(239,68,68,.12);color:#ef4444">🔴 5h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:94%;background:#ef4444"></div></div>
+              <span class="ev-bar-label" style="color:#ef4444">5h</span>
+            </div>
+            <button class="btn-platform btn-task">📤 Ir a entregar</button>
+          </div>
+
+          <!-- Clase BBB -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(70,127,207,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Clase: Cálculo II ↗</div>
+                </div>
+                <div class="ev-course">Cálculo Diferencial</div>
+                <div class="ev-date">mié. 15 abr · 09:30</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 1d 3h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:58%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">1d 3h</span>
+            </div>
+            <!-- ① Botón BBB branded -->
+            <button class="btn-platform btn-bbb">🎥 Unirse a BigBlueButton</button>
+          </div>
+
+          <!-- Examen sin rendir -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(239,68,68,.12)">🧩</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Examen Parcial I ↗</div>
+                  <span class="sub-miss">✗ Sin rendir</span>
+                </div>
+                <div class="ev-course">Cálculo Diferencial</div>
+                <div class="ev-date">vie. 17 abr · 09:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 3d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:44%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">3d</span>
+            </div>
+            <button class="btn-platform btn-exam">🧩 Ir al examen</button>
+          </div>
+
+          <!-- Tarea entregada — sin botón -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(16,185,129,.12)">📝</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title" style="color:var(--text-secondary);text-decoration:none;cursor:default;">Tarea: Matrices</div>
+                  <span class="sub-ok">✓ Entregado</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Vence lun. 21 abr</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.12);color:#10b981">🟢 8d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:10%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">8d</span>
+            </div>
+            <!-- Sin botón — ya entregado -->
+          </div>
+
+          <!-- Foro -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(16,185,129,.12)">💬</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Foro: Aplicaciones ↗</div>
+                </div>
+                <div class="ev-course">Estadística Aplicada</div>
+                <div class="ev-date">mié. 22 abr · 23:59</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.12);color:#10b981">🟢 9d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:8%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">9d</span>
+            </div>
+            <button class="btn-platform btn-forum">💬 Participar</button>
+          </div>
+
+        </div>
+
+        <!-- Alertas -->
+        <div class="card card-pad">
+          <div style="font-size:12px;font-weight:700;margin-bottom:10px;">🔔 Alertas automáticas</div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text-secondary);">📱 Push (app)</span>
+              <div class="toggle active" onclick="toggleThis(this)"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text-secondary);">🔔 In-app</span>
+              <div class="toggle active" onclick="toggleThis(this)"></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:12px;color:var(--text-secondary);">✉️ Email</span>
+              <div class="toggle" onclick="toggleThis(this)"></div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(26,86,219,.06);border:1px solid rgba(26,86,219,.12);font-size:11px;color:var(--text-secondary);line-height:1.5;">
+            ℹ️ Tareas y exámenes: <strong>24h antes</strong>. Clases: <strong>15 min antes</strong>.
+          </div>
+        </div>
+      </div><!-- /sidebar -->
+
+    </div>
+  </div><!-- /hubView -->
+
+
+  <!-- ══════════════════════════ VISTA ASIGNATURA — ZOOM ══════════════════════════ -->
+  <div id="courseView" style="display:none;">
+    <div class="grid-2">
+      <div>
+        <!-- Header + tabs -->
+        <div class="card" style="border-radius:16px 16px 0 0;">
+          <div class="card-pad" style="padding-bottom:0;">
+            <button class="back-btn" onclick="showView('hub')">← Mi Universidad</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div>
+                <div style="font-size:18px;font-weight:700;">📘 Álgebra Lineal I</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">MAT220A · Dr. Mora · Sem. 1-2026 · 🟢 Vigente</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button style="padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:11px;cursor:pointer;">✏️ Renombrar</button>
+                <button style="padding:6px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">🔄 Actualizar</button>
+              </div>
+            </div>
+          </div>
+          <div class="course-tabs">
+            <button class="ctab active" onclick="switchTab('modulos')">📚 Por módulo</button>
+            <button class="ctab" onclick="switchTab('todo')">📋 Todo</button>
+            <button class="ctab" onclick="switchTab('clases')">🎥 Clases</button>
+          </div>
+        </div>
+
+        <!-- Tab: Módulos -->
+        <div id="tab-modulos" class="tab-content active">
+          <div class="topic-block">
+            <div class="topic-header" onclick="toggleTopic(this)">
+              <div class="topic-title">📁 Tema 1 — Vectores y espacios</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="topic-count">4 archivos</span>
+                <span style="color:var(--text-muted);font-size:11px;">▲</span>
+              </div>
+            </div>
+            <div class="topic-items">
+              <div class="item-row"><span class="item-icon">📕</span><span class="item-name">Apuntes Clase 1 — Vectores.pdf</span><span class="item-badge">PDF · 1.2 MB</span><button class="item-open">Abrir</button></div>
+              <div class="item-row"><span class="item-icon">📊</span><span class="item-name">Presentación Semana 1.pptx</span><span class="item-badge">PPTX · 3.4 MB</span><button class="item-open">Abrir</button></div>
+              <div class="item-row" style="background:rgba(26,86,219,.04);"><span class="item-icon">📝</span><span class="item-name">Tarea 1 — Operaciones vectoriales</span><span style="font-size:10px;padding:2px 7px;border-radius:4px;background:rgba(26,86,219,.1);color:var(--accent);font-weight:700;">Nuevo</span><button class="item-open">Ver</button></div>
+              <div class="item-row"><span class="item-icon">🧩</span><span class="item-name">Quiz práctica — Vectores</span><span class="item-badge">Quiz</span><button class="item-open">Ver</button></div>
+            </div>
+          </div>
+          <div class="topic-block">
+            <div class="topic-header" onclick="toggleTopic(this)">
+              <div class="topic-title">📁 Tema 2 — Matrices y transformaciones</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="topic-count">6 archivos</span>
+                <span style="color:var(--text-muted);font-size:11px;">▼</span>
+              </div>
+            </div>
+          </div>
+          <div class="topic-block">
+            <div class="topic-header" onclick="toggleTopic(this)">
+              <div class="topic-title">📁 Tema 3 — Determinantes</div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span class="topic-count">3 archivos</span>
+                <span style="color:var(--text-muted);font-size:11px;">▼</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Todo -->
+        <div id="tab-todo" class="tab-content">
+          <div style="font-size:12px;color:var(--text-muted);text-align:center;padding:24px;">Vista plana de todos los archivos de la asignatura</div>
+        </div>
+
+        <!-- Tab: Clases -->
+        <div id="tab-clases" class="tab-content">
+          <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">EN VIVO AHORA</div>
+
+          <div class="class-live-card">
+            <div class="live-pill"><div class="live-dot"></div>EN VIVO · Empezó hace 18 min</div>
+            <div class="class-title">Semana 10 — Espacios vectoriales</div>
+            <div class="class-meta">
+              <span>👥 23 participantes</span>
+              <span>📅 lun. 14 abr · 10:00 – 11:30</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="background:rgba(45,140,255,.15);color:#2D8CFF;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;">Zoom</span></span>
+            </div>
+            <div class="rec-pill">
+              <div class="live-dot"></div>
+              Grabando · 18:04 · 142 MB · Transcripción activa
+              <button style="margin-left:auto;border:none;background:none;color:#ef4444;font-size:11px;font-weight:700;cursor:pointer;">⏹ Detener</button>
+            </div>
+            <div class="class-btns">
+              <button class="btn-join">🎥 Unirse a Zoom</button>
+              <button class="btn-rec">⏺ Grabar</button>
+              <button class="btn-trans">💬 Transcripción</button>
+            </div>
+          </div>
+
+          <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:16px 0 10px;">GRABACIONES ANTERIORES</div>
+          <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:0 14px;">
+            <div class="past-class-row">
+              <div class="past-icon">🎥</div>
+              <div class="past-meta">
+                <div class="past-title">Semana 9 — Transformaciones lineales</div>
+                <div class="past-date">lun. 6 abr · 1h 28m · 📝 Transcripción disponible</div>
+              </div>
+              <div class="past-btns">
+                <button class="btn-tiny accent">▶ Ver</button>
+                <button class="btn-tiny">💬 Transcript</button>
+              </div>
+            </div>
+            <div class="past-class-row">
+              <div class="past-icon">🎥</div>
+              <div class="past-meta">
+                <div class="past-title">Semana 8 — Determinantes</div>
+                <div class="past-date">lun. 30 mar · 1h 22m · 📝 Transcripción disponible</div>
+              </div>
+              <div class="past-btns">
+                <button class="btn-tiny accent">▶ Ver</button>
+                <button class="btn-tiny">💬 Transcript</button>
+              </div>
+            </div>
+            <div class="past-class-row">
+              <div class="past-icon" style="background:rgba(107,114,128,.12);">⚠️</div>
+              <div class="past-meta">
+                <div class="past-title">Semana 7 — Matrices inversas</div>
+                <div class="past-date" style="color:#f59e0b;">Sin grabación — clase no iniciada</div>
+              </div>
+              <div class="past-btns">
+                <button class="btn-tiny" disabled style="opacity:.35;cursor:not-allowed">▶ Ver</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ai-box">
+            <div class="ai-title">🤖 Asistente AI — desde grabaciones</div>
+            <div class="ai-btns">
+              <button class="ai-btn">📋 Generar resumen</button>
+              <button class="ai-btn">🧠 Crear quiz</button>
+              <button class="ai-btn">📖 Buscar en transcripción</button>
+              <button class="ai-btn">⏱ Saltar a tema…</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar con eventos de ESTA asignatura -->
+      <div class="sidebar-col">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📅 Esta asignatura</span>
+          </div>
+          <!-- Clase en curso -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(45,140,255,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title-row"><div class="ev-title">Clase Sem. 10 · EN VIVO ↗</div></div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Hoy · 10:00 — en curso</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.15);color:#10b981">🟢 18m</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:20%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">18m</span>
+            </div>
+            <button class="btn-platform btn-zoom">🎥 Unirse a Zoom</button>
+          </div>
+          <!-- Tarea sin entregar -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(245,158,11,.12)">📝</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Tarea: Ej. 3.4–3.7 ↗</div>
+                  <span class="sub-miss">✗</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Vence vie. 17 abr</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 4d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:52%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">4d</span>
+            </div>
+            <button class="btn-platform btn-task">📤 Ir a entregar</button>
+          </div>
+          <!-- Tarea entregada -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(16,185,129,.12)">📝</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title" style="color:var(--text-secondary);text-decoration:none;cursor:default;">Tarea: Vectores</div>
+                  <span class="sub-ok">✓</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Vence lun. 21 abr</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.12);color:#10b981">🟢 8d</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div><!-- /courseView Zoom -->
+
+
+  <!-- ══════════════════════════ VISTA ASIGNATURA — BBB ══════════════════════════ -->
+  <div id="courseBBBView" style="display:none;">
+    <div class="grid-2">
+      <div>
+        <div class="card" style="border-radius:16px 16px 0 0;">
+          <div class="card-pad" style="padding-bottom:0;">
+            <button class="back-btn" onclick="showView('hub')">← Mi Universidad</button>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div>
+                <div style="font-size:18px;font-weight:700;">📗 Cálculo Diferencial</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">MAT130B · Dr. Vega · Sem. 1-2026 · 🟢 Vigente</div>
+              </div>
+              <button style="padding:6px 12px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">🔄 Actualizar</button>
+            </div>
+          </div>
+          <div class="course-tabs">
+            <button class="ctab active" onclick="switchTabB('modulosB')">📚 Por módulo</button>
+            <button class="ctab" onclick="switchTabB('clasesB')">🎥 Clases</button>
+          </div>
+        </div>
+
+        <div id="tab-modulosB" class="tab-content active">
+          <div class="topic-block">
+            <div class="topic-header"><div class="topic-title">📁 Tema 1 — Límites y continuidad</div><span class="topic-count">5 archivos</span></div>
+          </div>
+          <div class="topic-block">
+            <div class="topic-header"><div class="topic-title">📁 Tema 2 — Derivadas</div><span class="topic-count">7 archivos</span></div>
+          </div>
+        </div>
+
+        <div id="tab-clasesB" class="tab-content">
+          <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:12px;">PRÓXIMA CLASE</div>
+          <div class="class-live-card" style="border-color:rgba(70,127,207,.25);border-left-color:#467fcf;">
+            <div style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#f59e0b;margin-bottom:8px;">⏱ EN 27 HORAS</div>
+            <div class="class-title">Semana 10 — Integrales de línea</div>
+            <div class="class-meta">
+              <span>📅 mié. 15 abr · 09:30 – 11:00</span>
+              <span style="display:flex;align-items:center;gap:4px;"><span style="background:rgba(70,127,207,.15);color:#467fcf;padding:1px 7px;border-radius:4px;font-size:10px;font-weight:700;">BigBlueButton</span></span>
+            </div>
+            <div class="class-btns">
+              <button class="btn-join" style="background:#467fcf;">🎥 Unirse a BigBlueButton</button>
+              <button class="btn-rec">⏺ Grabar</button>
+            </div>
+          </div>
+
+          <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin:16px 0 10px;">GRABACIONES ANTERIORES</div>
+          <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:0 14px;">
+            <div class="past-class-row">
+              <div class="past-icon" style="background:rgba(70,127,207,.12);">🎥</div>
+              <div class="past-meta">
+                <div class="past-title">Semana 9 — Integrales múltiples</div>
+                <div class="past-date">mié. 8 abr · 1h 20m · 📝 Transcripción disponible</div>
+              </div>
+              <div class="past-btns">
+                <button class="btn-tiny accent" style="color:#467fcf;background:rgba(70,127,207,.1);border-color:rgba(70,127,207,.2);">▶ Ver</button>
+                <button class="btn-tiny">💬 Transcript</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar BBB course -->
+      <div class="sidebar-col">
+        <div class="card">
+          <div class="card-header"><span class="card-title">📅 Esta asignatura</span></div>
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(70,127,207,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title-row"><div class="ev-title">Clase Sem. 10 ↗</div></div>
+                <div class="ev-course">Cálculo Diferencial</div>
+                <div class="ev-date">mié. 15 abr · 09:30</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 27h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:62%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">27h</span>
+            </div>
+            <button class="btn-platform btn-bbb">🎥 Unirse a BigBlueButton</button>
+          </div>
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(239,68,68,.12)">🧩</div>
+              <div class="ev-body">
+                <div class="ev-title-row">
+                  <div class="ev-title">Examen Parcial I ↗</div>
+                  <span class="sub-miss">✗</span>
+                </div>
+                <div class="ev-course">Cálculo Diferencial</div>
+                <div class="ev-date">vie. 17 abr · 09:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 3d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:44%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">3d</span>
+            </div>
+            <button class="btn-platform btn-exam">🧩 Ir al examen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- Toggle switch styles -->
+<style>
+.toggle { width: 34px; height: 18px; border-radius: 99px; background: var(--border); position: relative; cursor: pointer; transition: background .2s; border: none; }
+.toggle.active { background: var(--accent); }
+.toggle::after { content: ''; position: absolute; width: 13px; height: 13px; background: #fff; border-radius: 50%; top: 2.5px; left: 2.5px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.toggle.active::after { left: 18.5px; }
+</style>
+
+<script>
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t)
+  document.querySelectorAll('.theme-bar button').forEach(b => b.classList.remove('active'))
+  event.target.classList.add('active')
+}
+
+function showView(v) {
+  document.getElementById('hubView').style.display = 'none'
+  document.getElementById('courseView').style.display = 'none'
+  document.getElementById('courseBBBView').style.display = 'none'
+  document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'))
+
+  if (v === 'hub') {
+    document.getElementById('hubView').style.display = 'block'
+    document.querySelectorAll('.view-btn')[0].classList.add('active')
+  } else if (v === 'course') {
+    document.getElementById('courseView').style.display = 'block'
+    document.querySelectorAll('.view-btn')[1].classList.add('active')
+    // Auto-switch to clases tab to demo it
+    switchTab('clases')
+  } else if (v === 'courseBBB') {
+    document.getElementById('courseBBBView').style.display = 'block'
+    document.querySelectorAll('.view-btn')[2].classList.add('active')
+    switchTabB('clasesB')
+  }
+}
+
+function switchTab(t) {
+  document.querySelectorAll('#courseView .tab-content').forEach(el => el.classList.remove('active'))
+  document.querySelectorAll('#courseView .ctab').forEach(el => el.classList.remove('active'))
+  document.getElementById('tab-' + t).classList.add('active')
+  const tabs = ['modulos', 'todo', 'clases']
+  const idx = tabs.indexOf(t)
+  if (idx >= 0) document.querySelectorAll('#courseView .ctab')[idx].classList.add('active')
+}
+
+function switchTabB(t) {
+  document.querySelectorAll('#courseBBBView .tab-content').forEach(el => el.classList.remove('active'))
+  document.querySelectorAll('#courseBBBView .ctab').forEach(el => el.classList.remove('active'))
+  document.getElementById('tab-' + t).classList.add('active')
+  const tabs = ['modulosB', 'clasesB']
+  const idx = tabs.indexOf(t)
+  if (idx >= 0) document.querySelectorAll('#courseBBBView .ctab')[idx].classList.add('active')
+}
+
+function toggleTopic(el) {
+  const items = el.nextElementSibling
+  if (!items) return
+  items.style.display = items.style.display === 'none' ? 'block' : 'none'
+  const arrow = el.querySelector('span:last-child')
+  if (arrow) arrow.textContent = items.style.display === 'none' ? '▼' : '▲'
+}
+
+function toggleThis(el) {
+  el.classList.toggle('active')
+}
+
+function animateScan(btn) {
+  btn.textContent = '⏳ Buscando...'
+  btn.disabled = true
+  setTimeout(() => {
+    btn.textContent = '✅ 3 nuevos encontrados'
+    setTimeout(() => { btn.textContent = '🔍 Buscar nuevos'; btn.disabled = false }, 2000)
+  }, 1500)
+}
+</script>
+</body>
+</html>

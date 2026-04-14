@@ -117,7 +117,7 @@ def process_video_transcription(video_doc_id: str, file_path: Optional[str] = No
                 meta_file.write_text(json_mod.dumps(meta, indent=2))
 
             # Also index in AI engine for chat
-            from gemini_engine import AIEngine
+            from ai_engine import AIEngine
             ai = AIEngine()
             ai.add_document(video.project_id, txt_filename, transcript)
         except Exception as e:

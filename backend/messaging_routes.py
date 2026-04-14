@@ -17,6 +17,7 @@ from database import (
 )
 from middleware import get_current_user
 from moderation import check_content, moderate_image
+from websocket_manager import manager as ws_manager
 
 logger = logging.getLogger(__name__)
 try:
@@ -435,7 +436,7 @@ def get_messages(
 
 
 @router.post("/conversations/{conv_id}/messages")
-def send_message(
+async def send_message(
     conv_id: str,
     req: SendMessageRequest,
     user: User = Depends(get_current_user),
@@ -563,6 +564,50 @@ def send_message(
             )
     except Exception as e:
         print(f"[Push] Notification error: {e}")
+
+    # Broadcast via WebSocket so online users see the message in real-time
+    # even when the sender used the REST fallback (WS disconnected on their end)
+    try:
+        ws_payload = {
+            "id": msg.id,
+            "conversationId": conv_id,
+            "senderId": user.id,
+            "senderUsername": user.username or "",
+            "senderFirstName": user.first_name or "",
+            "senderLastName": user.last_name or "",
+            "senderAvatar": user.avatar or "",
+            "content": req.content,
+            "messageType": req.message_type,
+            "documentName": req.document_name,
+            "documentPath": req.document_path,
+            "isFlagged": moderation.get("flagged", False),
+            "createdAt": msg.created_at.isoformat(),
+            "isEdited": False,
+            "replyToId": req.reply_to_id,
+            "replyToContent": reply_to_content,
+            "replyToSenderName": reply_to_sender_name,
+            "moderationStatus": "approved",
+        }
+        await ws_manager.broadcast_to_conversation(conv_id, {
+            "type": "new_message",
+            "conversation_id": conv_id,
+            "message": ws_payload,
+        }, exclude_user=user.id)
+        # Also send conversation_update to notify participants not currently subscribed
+        conv_name = conv.name if conv else ""
+        all_participant_ids = [p.user_id for p in db.query(ConversationParticipant).filter(
+            ConversationParticipant.conversation_id == conv_id
+        ).all()]
+        await ws_manager.notify_conversation_participants(conv_id, all_participant_ids, {
+            "type": "conversation_update",
+            "conversation_id": conv_id,
+            "conversation_name": conv_name,
+            "last_message": req.content[:100],
+            "last_message_at": msg.created_at.isoformat(),
+            "sender_username": user.username or "",
+        }, exclude_user=user.id)
+    except Exception as e:
+        logger.warning(f"[messaging] WS broadcast skipped: {e}")
 
     return message_to_dict(msg, db)
 

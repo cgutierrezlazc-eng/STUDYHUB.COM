@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Universidad — Extensiones del Calendario · Conniku</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); }
+
+:root {
+  --bg-primary:    #0f1117;
+  --bg-card:       #1a1f2e;
+  --bg-secondary:  #232838;
+  --border:        rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --text-primary:  #f0f2f8;
+  --text-secondary:#b0b8d0;
+  --text-muted:    #6b7280;
+  --accent:        #1a56db;
+  --radius:        14px;
+}
+[data-theme="light"] {
+  --bg-primary:    #f3f4f6;
+  --bg-card:       #ffffff;
+  --bg-secondary:  #f9fafb;
+  --border:        rgba(0,0,0,0.09);
+  --border-subtle: rgba(0,0,0,0.05);
+  --text-primary:  #111827;
+  --text-secondary:#374151;
+  --text-muted:    #9ca3af;
+  --accent:        #1a56db;
+}
+
+/* Theme toggle */
+.theme-bar { position: fixed; top: 12px; right: 16px; z-index: 999; display: flex; gap: 6px; }
+.theme-bar button { padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-secondary); cursor: pointer; font-size: 12px; font-weight: 600; }
+.theme-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* Layout */
+.page { max-width: 1100px; margin: 0 auto; padding: 32px 20px 100px; }
+.page-title { font-size: 26px; font-weight: 800; margin-bottom: 6px; }
+.page-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; }
+
+/* Section labels */
+.ext-label { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 18px; padding: 4px 12px; background: var(--bg-secondary); border-radius: 99px; border: 1px solid var(--border); }
+.ext-label .dot { width: 7px; height: 7px; border-radius: 50%; }
+
+.section { margin-bottom: 60px; }
+.section-head { margin-bottom: 22px; }
+.section-head h2 { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.section-head p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+/* Grid layout */
+.two-col { display: grid; grid-template-columns: 1fr 284px; gap: 28px; align-items: start; }
+.main-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ─── Calendar Sidebar ─── */
+.cal-sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 24px; }
+
+.widget { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+.widget-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 10px; border-bottom: 1px solid var(--border-subtle); }
+.widget-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.widget-count { font-size: 11px; color: var(--text-muted); }
+
+/* ─── Event rows ─── */
+.ev-row { padding: 10px 14px; border-bottom: 1px solid var(--border-subtle); }
+.ev-row:last-child { border-bottom: none; }
+.ev-top { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.ev-icon { width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.ev-body { flex: 1; min-width: 0; }
+.ev-title { font-size: 12px; font-weight: 600; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.ev-title:hover { opacity: 0.8; }
+.ev-course { font-size: 10px; color: var(--text-muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-date { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+.ev-badge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+
+.ev-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ev-bar-track { flex: 1; height: 4px; border-radius: 99px; background: var(--border); overflow: hidden; }
+.ev-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+.ev-bar-label { font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+/* ─── Platform buttons ─── */
+.btn-platform { width: 100%; padding: 6px 0; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; letter-spacing: 0.01em; transition: opacity 0.15s; }
+.btn-platform:hover { opacity: 0.85; }
+.btn-platform svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.btn-zoom   { background: #2D8CFF; color: #fff; }
+.btn-bbb    { background: #467fcf; color: #fff; }
+.btn-teams  { background: #5059C9; color: #fff; }
+.btn-meet   { background: #00897B; color: #fff; }
+.btn-task   { background: rgba(245,158,11,.18); color: #f59e0b; }
+.btn-exam   { background: rgba(239,68,68,.15); color: #ef4444; }
+.btn-forum  { background: rgba(16,185,129,.14); color: #10b981; }
+.btn-generic { background: var(--bg-secondary); border: 1px solid var(--border); color: var(--text-secondary); }
+
+/* ─── Submission status badge ─── */
+.sub-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+.sub-ok   { background: rgba(16,185,129,.15); color: #10b981; }
+.sub-miss { background: rgba(239,68,68,.12); color: #ef4444; }
+.sub-late { background: rgba(245,158,11,.14); color: #f59e0b; }
+
+/* ─── Course view (panel izquierdo) ─── */
+.course-header { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 20px 0; margin-bottom: 0; }
+.course-back { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-muted); cursor: pointer; margin-bottom: 14px; }
+.course-title { font-size: 17px; font-weight: 700; margin-bottom: 14px; }
+.course-tabs { display: flex; gap: 4px; padding: 0; border-bottom: 1px solid var(--border-subtle); margin-top: 4px; }
+.course-tab { padding: 8px 16px; border: none; background: transparent; font-size: 13px; cursor: pointer; color: var(--text-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 500; }
+.course-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+
+/* Classes tab content */
+.classes-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 0 0 16px 16px; padding: 20px; border-top: none; }
+
+.class-item { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+.class-item:last-child { margin-bottom: 0; }
+.class-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.class-live { display: flex; align-items: center; gap: 6px; }
+.class-live-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.6;transform:scale(1.2)} }
+.class-title { font-size: 14px; font-weight: 700; flex: 1; }
+.class-meta { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; gap: 14px; }
+.class-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn-action { padding: 7px 14px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
+.btn-action:hover { opacity: 0.85; }
+.btn-join-zoom { background: #2D8CFF; color: #fff; flex: 1; justify-content: center; }
+.btn-record { background: rgba(239,68,68,.15); color: #ef4444; }
+.btn-transcribe { background: rgba(26,86,219,.15); color: var(--accent); }
+.btn-notes { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-secondary); }
+
+.recording-active { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.2); border-radius: 8px; font-size: 11px; color: #ef4444; font-weight: 600; }
+.rec-dot { width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: pulse 0.8s infinite; }
+
+/* Past class row */
+.past-class { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); }
+.past-class:last-child { border-bottom: none; }
+.past-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(26,86,219,.12); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.past-meta { flex: 1; min-width: 0; }
+.past-title { font-size: 12px; font-weight: 600; }
+.past-date { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+.past-actions { display: flex; gap: 6px; }
+.btn-tiny { padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); background: transparent; font-size: 11px; font-weight: 600; color: var(--text-secondary); cursor: pointer; }
+.btn-tiny.accent { background: rgba(26,86,219,.12); border-color: rgba(26,86,219,.2); color: var(--accent); }
+
+/* ─── Comparison table ─── */
+.compare { background: var(--bg-card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 10px; }
+.compare-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr; gap: 0; }
+.compare-row > div { padding: 10px 14px; font-size: 12px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 6px; }
+.compare-row.header > div { background: var(--bg-secondary); font-weight: 700; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+.compare-row:last-child > div { border-bottom: none; }
+.check { color: #10b981; font-weight: 800; }
+.cross { color: var(--text-muted); }
+
+/* Tooltip chip */
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+.chip-blue   { background: rgba(45,140,255,.15); color: #2D8CFF; }
+.chip-purple { background: rgba(70,127,207,.15); color: #467fcf; }
+.chip-indigo { background: rgba(80,89,201,.15); color: #5059C9; }
+.chip-green  { background: rgba(0,137,123,.15); color: #00897B; }
+
+</style>
+</head>
+<body>
+
+<div class="theme-bar">
+  <button class="active" onclick="setTheme('dark')">🌙 Dark</button>
+  <button onclick="setTheme('light')">☀️ Light</button>
+</div>
+
+<div class="page">
+
+  <div class="page-title">Mi Universidad — Extensiones</div>
+  <div class="page-sub">Vista previa de las 3 mejoras para el calendario y la asignatura</div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- EXT 1 — DETECCIÓN DE PLATAFORMA -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="ext-label"><span class="dot" style="background:#2D8CFF"></span> Extensión ①</div>
+    <div class="section-head">
+      <h2>🎨 Botones branded según plataforma</h2>
+      <p>El botón de clase detecta el tipo de sala (Zoom, BBB, Teams, Meet) y muestra el color y logo correspondiente. Misma lógica simple: revisa si la URL contiene zoom.us / bigbluebutton / teams.microsoft / meet.google.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="main-col">
+        <!-- Tabla comparativa -->
+        <div class="compare">
+          <div class="compare-row header">
+            <div>Plataforma</div>
+            <div>Color botón</div>
+            <div>Detectado por</div>
+            <div>Estado</div>
+          </div>
+          <div class="compare-row">
+            <div><span class="chip chip-blue">Zoom</span></div>
+            <div style="color:#2D8CFF;font-weight:700">#2D8CFF</div>
+            <div style="color:var(--text-muted)">zoom.us en URL</div>
+            <div class="check">✓ Fácil</div>
+          </div>
+          <div class="compare-row">
+            <div><span class="chip chip-purple">BigBlueButton</span></div>
+            <div style="color:#467fcf;font-weight:700">#467fcf</div>
+            <div style="color:var(--text-muted)">bigbluebutton / bbb</div>
+            <div class="check">✓ Fácil</div>
+          </div>
+          <div class="compare-row">
+            <div><span class="chip chip-indigo">Teams</span></div>
+            <div style="color:#5059C9;font-weight:700">#5059C9</div>
+            <div style="color:var(--text-muted)">teams.microsoft</div>
+            <div class="check">✓ Fácil</div>
+          </div>
+          <div class="compare-row">
+            <div><span class="chip chip-green">Google Meet</span></div>
+            <div style="color:#00897B;font-weight:700">#00897B</div>
+            <div style="color:var(--text-muted)">meet.google</div>
+            <div class="check">✓ Fácil</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar con los 4 botones de plataforma -->
+      <div class="cal-sidebar">
+        <div class="widget">
+          <div class="widget-header">
+            <span class="widget-title">⏱ Próximos eventos</span>
+            <span class="widget-count">4 pendientes</span>
+          </div>
+
+          <!-- Zoom class -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(45,140,255,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title" style="color:#2D8CFF">Clase: Álgebra Lineal ↗</div>
+                <div class="ev-course">Álgebra Lineal I — Dr. Mora</div>
+                <div class="ev-date">mié. 14 abr · 10:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(16,185,129,.15);color:#10b981">🟢 50 min</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:75%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">50m</span>
+            </div>
+            <!-- Zoom branded button -->
+            <button class="btn-platform btn-zoom">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 8.5v7l4.5 2.7V5.8L15.5 8.5zM4 8a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h9.5a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H4z"/></svg>
+              Unirse a Zoom
+            </button>
+          </div>
+
+          <!-- BBB class -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(70,127,207,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title" style="color:#467fcf">Clase: Cálculo II ↗</div>
+                <div class="ev-course">Cálculo Diferencial — Dr. Vega</div>
+                <div class="ev-date">jue. 15 abr · 09:30</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 1d 3h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:45%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">1d 3h</span>
+            </div>
+            <!-- BBB branded button -->
+            <button class="btn-platform btn-bbb">
+              <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93V18h2v1.93c-3.07-.44-5.49-2.86-5.93-5.93H9v-2H5.07c.44-3.07 2.86-5.49 5.93-5.93V8h2V6.07c3.07.44 5.49 2.86 5.93 5.93H17v2h1.93c-.44 3.07-2.86 5.49-5.93 5.93z"/></svg>
+              Unirse a BigBlueButton
+            </button>
+          </div>
+
+          <!-- Teams class -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(80,89,201,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title" style="color:#5059C9">Clase: Física Moderna ↗</div>
+                <div class="ev-course">Física III — Dr. Castro</div>
+                <div class="ev-date">vie. 16 abr · 11:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(239,68,68,.12);color:#ef4444">🔴 2d 5h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:30%;background:#ef4444"></div></div>
+              <span class="ev-bar-label" style="color:#ef4444">2d 5h</span>
+            </div>
+            <!-- Teams branded button -->
+            <button class="btn-platform btn-teams">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zm2.5 1h-5a1 1 0 0 0-1 1v5.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5V11h3a1 1 0 0 0 0-2zM9 8A3 3 0 1 0 9 2a3 3 0 0 0 0 6zm4 2H5a1 1 0 0 0-1 1v6a4 4 0 0 0 8 0v-6a1 1 0 0 0-1-1z"/></svg>
+              Unirse a Teams
+            </button>
+          </div>
+
+          <!-- Meet class -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(0,137,123,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title" style="color:#00897B">Clase: Estadística ↗</div>
+                <div class="ev-course">Estadística Aplicada — Dr. López</div>
+                <div class="ev-date">lun. 19 abr · 14:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 5d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:15%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">5d</span>
+            </div>
+            <!-- Meet branded button -->
+            <button class="btn-platform btn-meet">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3l4 4V7l-4 4V3z"/></svg>
+              Unirse a Google Meet
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- EXT 2 — ESTADO DE ENTREGA -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="ext-label"><span class="dot" style="background:#10b981"></span> Extensión ②</div>
+    <div class="section-head">
+      <h2>✓/✗ Estado de entrega por tarea</h2>
+      <p>Al sincronizar el calendario, Conniku consulta la API de Moodle (<code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:12px">mod_assign_get_submission_status</code>) para saber si cada tarea ya fue entregada, está pendiente o fue entregada tarde. El badge aparece junto al nombre.</p>
+    </div>
+
+    <div class="two-col">
+      <div class="main-col">
+        <div class="compare">
+          <div class="compare-row header">
+            <div>Estado</div>
+            <div>Badge</div>
+            <div>Botón acción</div>
+            <div>Moodle status</div>
+          </div>
+          <div class="compare-row">
+            <div>✅ Entregada</div>
+            <div><span class="sub-badge sub-ok">✓ Entregado</span></div>
+            <div style="color:var(--text-muted)">Sin botón (ya ok)</div>
+            <div><code style="font-size:11px;color:var(--text-muted)">submitted</code></div>
+          </div>
+          <div class="compare-row">
+            <div>❌ Sin entregar</div>
+            <div><span class="sub-badge sub-miss">✗ Sin entregar</span></div>
+            <div><span style="color:#f59e0b;font-size:11px;font-weight:700">📤 Entregar →</span></div>
+            <div><code style="font-size:11px;color:var(--text-muted)">nosubmission</code></div>
+          </div>
+          <div class="compare-row">
+            <div>⚠️ Entregada tarde</div>
+            <div><span class="sub-badge sub-late">⚠ Tardía</span></div>
+            <div style="color:var(--text-muted)">Texto informativo</div>
+            <div><code style="font-size:11px;color:var(--text-muted)">submitted_late</code></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar con estados de entrega -->
+      <div class="cal-sidebar">
+        <div class="widget">
+          <div class="widget-header">
+            <span class="widget-title">⏱ Próximos eventos</span>
+            <span class="widget-count">4 pendientes</span>
+          </div>
+
+          <!-- Tarea entregada -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(16,185,129,.15)">📝</div>
+              <div class="ev-body">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                  <div class="ev-title" style="color:var(--accent);flex:1;min-width:0;">Tarea: Vectores 3D ↗</div>
+                  <span class="sub-badge sub-ok">✓ Entregado</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Venció mié. 14 abr · 23:59</div>
+              </div>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:100%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981">Vencido</span>
+            </div>
+          </div>
+
+          <!-- Tarea sin entregar - urgente -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(239,68,68,.12)">📝</div>
+              <div class="ev-body">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                  <div class="ev-title" style="color:var(--accent);flex:1;min-width:0;">Tarea: Límites ↗</div>
+                  <span class="sub-badge sub-miss">✗ Sin entregar</span>
+                </div>
+                <div class="ev-course">Cálculo I</div>
+                <div class="ev-date">Vence hoy · 23:59</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(239,68,68,.12);color:#ef4444">🔴 5h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:95%;background:#ef4444"></div></div>
+              <span class="ev-bar-label" style="color:#ef4444">5h</span>
+            </div>
+            <button class="btn-platform btn-task">📤 Entregar ahora</button>
+          </div>
+
+          <!-- Examen sin rendir -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(239,68,68,.12)">🧩</div>
+              <div class="ev-body">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                  <div class="ev-title" style="color:var(--accent);flex:1;min-width:0;">Examen Parcial ↗</div>
+                  <span class="sub-badge sub-miss">✗ Sin rendir</span>
+                </div>
+                <div class="ev-course">Física III</div>
+                <div class="ev-date">vie. 16 abr · 09:00</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(239,68,68,.12);color:#ef4444">🔴 2d 3h</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:70%;background:#ef4444"></div></div>
+              <span class="ev-bar-label" style="color:#ef4444">2d 3h</span>
+            </div>
+            <button class="btn-platform btn-exam">🧩 Ir al examen</button>
+          </div>
+
+          <!-- Tarea entregada tarde -->
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(245,158,11,.12)">📝</div>
+              <div class="ev-body">
+                <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                  <div class="ev-title" style="color:var(--text-secondary);flex:1;min-width:0;cursor:default;text-decoration:none;">Tarea: Derivadas</div>
+                  <span class="sub-badge sub-late">⚠ Tardía</span>
+                </div>
+                <div class="ev-course">Cálculo II — Entregada con 2h de retraso</div>
+                <div class="ev-date">Venció mié. 7 abr · 23:59</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- EXT 3 — GRABACIÓN Y TRANSCRIPCIÓN -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="ext-label"><span class="dot" style="background:#ef4444"></span> Extensión ③</div>
+    <div class="section-head">
+      <h2>🎥 Tab "Clases" en la asignatura — Grabación y Transcripción</h2>
+      <p>Dentro de la vista de asignatura, se agrega un nuevo tab <strong>🎥 Clases</strong>. Al entrar desde el calendario (haciendo clic en una clase Zoom), se activa automáticamente. Desde ahí el alumno puede unirse a la sala, grabar la sesión, transcribir en tiempo real y tomar notas.</p>
+    </div>
+
+    <!-- Vista de asignatura completa -->
+    <div class="two-col">
+      <div class="main-col">
+        <!-- Course header + tabs -->
+        <div class="course-header">
+          <div class="course-back">← Mi Universidad</div>
+          <div class="course-title">📘 Álgebra Lineal I — Dr. Mora</div>
+          <div class="course-tabs">
+            <button class="course-tab">📚 Por módulo</button>
+            <button class="course-tab">📋 Todo el material</button>
+            <button class="course-tab active">🎥 Clases</button>
+          </div>
+        </div>
+
+        <!-- Classes tab content -->
+        <div class="classes-content">
+
+          <!-- Clase en vivo ahora -->
+          <div style="margin-bottom:16px;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">EN VIVO AHORA</div>
+
+            <div class="class-item" style="border-color:rgba(45,140,255,.3);border-left:3px solid #2D8CFF;">
+              <div class="class-top">
+                <div class="class-live">
+                  <div class="class-live-dot"></div>
+                  <span style="font-size:11px;font-weight:700;color:#10b981;">EN VIVO</span>
+                </div>
+                <div class="class-title">Semana 10 — Espacios vectoriales</div>
+                <span class="chip chip-blue" style="font-size:10px;">Zoom</span>
+              </div>
+              <div class="class-meta">
+                <span>🕙 Empezó hace 18 min</span>
+                <span>👥 23 participantes</span>
+                <span>📅 lun. 13 abr · 10:00–11:30</span>
+              </div>
+
+              <!-- Estado grabación activa -->
+              <div class="recording-active" style="margin-bottom:10px;">
+                <div class="rec-dot"></div>
+                Grabando · 18:04 · 142 MB · Transcripción activa
+                <button style="margin-left:auto;border:none;background:none;color:#ef4444;font-size:11px;font-weight:700;cursor:pointer;">⏹ Detener</button>
+              </div>
+
+              <div class="class-actions">
+                <button class="btn-action btn-join-zoom">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 8.5v7l4.5 2.7V5.8L15.5 8.5zM4 8a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h9.5a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H4z"/></svg>
+                  Unirse a Zoom
+                </button>
+                <button class="btn-action btn-transcribe">💬 Ver transcripción</button>
+                <button class="btn-action btn-notes">📝 Mis notas</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Clases pasadas -->
+          <div>
+            <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;">GRABACIONES ANTERIORES</div>
+
+            <div style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:12px;padding:0 14px;">
+
+              <div class="past-class">
+                <div class="past-icon">🎥</div>
+                <div class="past-meta">
+                  <div class="past-title">Semana 9 — Transformaciones lineales</div>
+                  <div class="past-date">lun. 6 abr · 10:00 — 1h 28m · 📝 Transcripción disponible</div>
+                </div>
+                <div class="past-actions">
+                  <button class="btn-tiny accent">▶ Ver</button>
+                  <button class="btn-tiny">💬 Transcript</button>
+                </div>
+              </div>
+
+              <div class="past-class">
+                <div class="past-icon">🎥</div>
+                <div class="past-meta">
+                  <div class="past-title">Semana 8 — Determinantes y aplicaciones</div>
+                  <div class="past-date">lun. 30 mar · 10:00 — 1h 22m · 📝 Transcripción disponible</div>
+                </div>
+                <div class="past-actions">
+                  <button class="btn-tiny accent">▶ Ver</button>
+                  <button class="btn-tiny">💬 Transcript</button>
+                </div>
+              </div>
+
+              <div class="past-class">
+                <div class="past-icon" style="background:rgba(245,158,11,.12);">⚠️</div>
+                <div class="past-meta">
+                  <div class="past-title">Semana 7 — Matrices inversas</div>
+                  <div class="past-date">lun. 23 mar · Sin grabación (no iniciada)</div>
+                </div>
+                <div class="past-actions">
+                  <button class="btn-tiny" disabled style="opacity:.4;cursor:not-allowed">▶ Ver</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- AI actions -->
+          <div style="margin-top:16px;padding:14px;background:rgba(26,86,219,.07);border:1px solid rgba(26,86,219,.14);border-radius:12px;">
+            <div style="font-size:12px;font-weight:700;color:var(--text-primary);margin-bottom:10px;">🤖 Asistente AI — desde las grabaciones</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <button style="padding:6px 12px;border-radius:8px;border:1px solid rgba(26,86,219,.2);background:rgba(26,86,219,.1);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">📋 Generar resumen</button>
+              <button style="padding:6px 12px;border-radius:8px;border:1px solid rgba(26,86,219,.2);background:rgba(26,86,219,.1);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">🧠 Crear quiz de práctica</button>
+              <button style="padding:6px 12px;border-radius:8px;border:1px solid rgba(26,86,219,.2);background:rgba(26,86,219,.1);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">📖 Buscar en transcripción</button>
+              <button style="padding:6px 12px;border-radius:8px;border:1px solid rgba(26,86,219,.2);background:rgba(26,86,219,.1);color:var(--accent);font-size:11px;font-weight:700;cursor:pointer;">⏱ Saltar a tema...</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar: evento de la clase -->
+      <div class="cal-sidebar">
+        <div class="widget">
+          <div class="widget-header">
+            <span class="widget-title">⏱ Esta asignatura</span>
+          </div>
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(45,140,255,.15)">🎥</div>
+              <div class="ev-body">
+                <div class="ev-title" style="color:#2D8CFF;">Clase en vivo · Sem. 10 ↗</div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Hoy · 10:00 — EN CURSO</div>
+              </div>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:20%;background:#10b981"></div></div>
+              <span class="ev-bar-label" style="color:#10b981;">18m</span>
+            </div>
+            <button class="btn-platform btn-zoom">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M15.5 8.5v7l4.5 2.7V5.8L15.5 8.5zM4 8a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h9.5a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2H4z"/></svg>
+              Unirse a Zoom
+            </button>
+          </div>
+          <div class="ev-row">
+            <div class="ev-top">
+              <div class="ev-icon" style="background:rgba(239,68,68,.12)">📝</div>
+              <div class="ev-body">
+                <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+                  <div class="ev-title" style="color:var(--accent);flex:1">Tarea: Ej. 3.4–3.7 ↗</div>
+                  <span class="sub-badge sub-miss">✗</span>
+                </div>
+                <div class="ev-course">Álgebra Lineal I</div>
+                <div class="ev-date">Vence vie. 17 abr</div>
+              </div>
+              <span class="ev-badge" style="background:rgba(245,158,11,.15);color:#f59e0b">⚠️ 4d</span>
+            </div>
+            <div class="ev-bar">
+              <div class="ev-bar-track"><div class="ev-bar-fill" style="width:55%;background:#f59e0b"></div></div>
+              <span class="ev-bar-label" style="color:#f59e0b">4d</span>
+            </div>
+            <button class="btn-platform btn-task">📤 Ir a entregar</button>
+          </div>
+        </div>
+
+        <!-- Complexity note -->
+        <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:14px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text-primary);margin-bottom:8px;">⚙️ Complejidad técnica</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary);">
+              <span>Nuevo tab "Clases"</span><span style="color:#10b981;font-weight:700;">Fácil</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary);">
+              <span>Grabar sesión</span><span style="color:#f59e0b;font-weight:700;">Medio</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary);">
+              <span>Transcripción live</span><span style="color:#ef4444;font-weight:700;">Complejo</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary);">
+              <span>AI sobre grabación</span><span style="color:#f59e0b;font-weight:700;">Medio</span>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);font-size:11px;color:var(--text-secondary);line-height:1.5;">
+            💡 La grabación se hace del lado del navegador (MediaRecorder API) o delegada a Zoom Cloud. La transcripción usa Whisper (vía API de Anthropic o OpenAI).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer resumen -->
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:22px 24px;">
+    <div style="font-size:14px;font-weight:700;margin-bottom:14px;">📋 Resumen de implementación</div>
+    <div class="compare">
+      <div class="compare-row header">
+        <div>Extensión</div>
+        <div>Archivos</div>
+        <div>Complejidad</div>
+        <div>Tiempo estimado</div>
+      </div>
+      <div class="compare-row">
+        <div>① Botones branded (Zoom/BBB/Teams)</div>
+        <div style="color:var(--text-muted)">MiUniversidad.tsx</div>
+        <div class="check">● Fácil</div>
+        <div style="color:#10b981;font-weight:700;">5 min</div>
+      </div>
+      <div class="compare-row">
+        <div>② Estado de entrega ✓/✗</div>
+        <div style="color:var(--text-muted)">lms_routes.py + MiUniversidad.tsx</div>
+        <div style="color:#f59e0b;font-weight:700;">● Medio</div>
+        <div style="color:#f59e0b;font-weight:700;">20 min</div>
+      </div>
+      <div class="compare-row">
+        <div>③ Tab Clases + grabación</div>
+        <div style="color:var(--text-muted)">MiUniversidad.tsx + backend</div>
+        <div style="color:#ef4444;font-weight:700;">● Complejo</div>
+        <div style="color:#ef4444;font-weight:700;">1–2 horas</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t)
+  document.querySelectorAll('.theme-bar button').forEach(b => b.classList.remove('active'))
+  event.target.classList.add('active')
+}
+</script>
+</body>
+</html>

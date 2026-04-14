@@ -91,7 +91,7 @@ def process_conference_transcription(conference_id: str):
 
             # Index for search
             try:
-                from gemini_engine import AIEngine
+                from ai_engine import AIEngine
                 ai = AIEngine()
                 ai.add_document(conf.project_id, txt_filename, transcript)
             except Exception:

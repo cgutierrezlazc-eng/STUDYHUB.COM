@@ -274,7 +274,7 @@ def parse_cv_with_gemini(raw_text: str) -> dict:
     Falls back to heuristic parsing if OpenAI is unavailable or fails.
     """
     try:
-        from gemini_engine import gpt_client, GPT_MODEL
+        from ai_engine import gpt_client, GPT_MODEL
 
         if not gpt_client:
             print("[CV] OPENAI_API_KEY no disponible, usando parser heurístico")

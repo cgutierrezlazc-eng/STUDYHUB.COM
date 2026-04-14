@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Universidad — Mockup</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 24px; }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* Barra de plataforma */
+  .platform-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, rgba(10,30,70,0.9) 0%, rgba(26,86,219,0.6) 100%);
+    border: 1px solid rgba(59,130,246,0.3); border-radius: 14px;
+    padding: 12px 18px; margin-bottom: 24px; flex-wrap: wrap; gap: 10px;
+  }
+  .platform-bar .left { display: flex; align-items: center; gap: 10px; }
+  .dot-green { width: 9px; height: 9px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; flex-shrink: 0; }
+  .platform-name { font-size: 14px; font-weight: 700; color: #fff; }
+  .platform-meta { font-size: 12px; color: rgba(255,255,255,0.5); }
+  .bar-btns { display: flex; gap: 8px; }
+  .btn-bar { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: #fff; }
+  .btn-bar:hover { background: rgba(255,255,255,0.18); }
+
+  /* Sección de título */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin: 28px 0 14px;
+  }
+  .section-title {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #64748b;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: #1e293b; display: block; min-width: 40px; }
+  .badge-new { background: #3b82f6; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+
+  /* Grid de asignaturas */
+  .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+
+  /* Tarjeta de asignatura */
+  .course-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+    padding: 18px; cursor: pointer; transition: all 0.18s; position: relative;
+  }
+  .course-card:hover { border-color: #3b82f6; background: #1e3a5f; transform: translateY(-1px); }
+  .course-card.linked { border-left: 3px solid #10b981; }
+  .course-card.unlinked { border-left: 3px solid #f59e0b; }
+
+  .course-icon { font-size: 28px; margin-bottom: 10px; }
+  .course-name-display { font-size: 15px; font-weight: 700; color: #f1f5f9; line-height: 1.3; margin-bottom: 3px; }
+  .course-name-original { font-size: 11px; color: #64748b; font-family: monospace; margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .course-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .chip { padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+  .chip-blue { background: rgba(59,130,246,0.15); color: #93c5fd; }
+  .chip-green { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+  .chip-orange { background: rgba(245,158,11,0.15); color: #fcd34d; }
+  .chip-gray { background: rgba(100,116,139,0.15); color: #94a3b8; }
+  .chip-red { background: rgba(239,68,68,0.12); color: #fca5a5; }
+
+  .course-actions { display: flex; gap: 8px; }
+  .btn-primary { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: none; background: #2563eb; color: #fff; flex: 1; text-align: center; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-secondary { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid #334155; background: transparent; color: #94a3b8; }
+  .btn-secondary:hover { background: #1e293b; color: #e2e8f0; }
+  .btn-import { padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid rgba(245,158,11,0.4); background: rgba(245,158,11,0.1); color: #fbbf24; flex: 1; text-align: center; }
+
+  /* Separador semestre pasado */
+  .past-toggle {
+    display: flex; align-items: center; gap: 10px; cursor: pointer;
+    padding: 10px 0; color: #475569; font-size: 13px; font-weight: 600;
+    user-select: none;
+  }
+  .past-courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 12px; }
+  .past-card { background: #141e2e; border: 1px solid #1e293b; border-radius: 12px; padding: 14px; opacity: 0.75; cursor: pointer; transition: all 0.15s; }
+  .past-card:hover { opacity: 1; border-color: #334155; }
+  .past-card-name { font-size: 13px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; }
+  .past-card-meta { font-size: 11px; color: #475569; }
+
+  /* Sección material nuevo */
+  .novedades-section { margin-top: 28px; }
+  .novedades-group {
+    background: #1e293b; border: 1px solid #334155; border-radius: 14px;
+    overflow: hidden; margin-bottom: 12px;
+  }
+  .novedades-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; cursor: pointer;
+  }
+  .novedades-header:hover { background: rgba(255,255,255,0.02); }
+  .novedades-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: #f1f5f9; }
+  .novedades-date { font-size: 11px; color: #64748b; }
+  .novedades-count { background: #1d4ed8; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; }
+  .novedades-body { padding: 0 18px 16px; }
+  .file-list { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; }
+  .file-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 8px; background: #0f172a; }
+  .file-icon { font-size: 15px; flex-shrink: 0; }
+  .file-name { font-size: 12px; color: #cbd5e1; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-meta { font-size: 11px; color: #475569; white-space: nowrap; }
+  .more-files { font-size: 12px; color: #64748b; padding: 4px 10px; font-style: italic; }
+  .novedades-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-import-all { padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 700; cursor: pointer; border: none; background: #2563eb; color: #fff; display: flex; align-items: center; gap: 6px; }
+  .btn-updates-only { padding: 8px 18px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid #334155; background: transparent; color: #94a3b8; }
+
+  /* Vista detalle asignatura */
+  .detail-view { display: none; }
+  .detail-view.active { display: block; }
+  .hub-view.hidden { display: none; }
+
+  .back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color: #64748b; font-size: 14px; cursor: pointer; margin-bottom: 20px; padding: 0; }
+  .back-btn:hover { color: #94a3b8; }
+
+  .detail-header { background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 22px 24px; margin-bottom: 20px; }
+  .detail-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .detail-name { font-size: 22px; font-weight: 800; color: #f1f5f9; }
+  .detail-name-original { font-size: 11px; color: #475569; font-family: monospace; margin-top: 3px; }
+  .edit-name-btn { background: rgba(100,116,139,0.15); border: 1px solid #334155; color: #64748b; font-size: 11px; padding: 4px 10px; border-radius: 8px; cursor: pointer; white-space: nowrap; }
+  .edit-name-btn:hover { color: #94a3b8; }
+  .detail-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+
+  .tools-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tool-btn { flex: 1; min-width: 100px; padding: 10px 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: #e2e8f0; font-size: 13px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; }
+  .tool-btn:hover { border-color: #3b82f6; background: rgba(59,130,246,0.1); color: #93c5fd; }
+
+  .module-list { display: flex; flex-direction: column; gap: 8px; }
+  .module-item { background: #1e293b; border: 1px solid #334155; border-radius: 12px; overflow: hidden; }
+  .module-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; cursor: pointer; }
+  .module-header:hover { background: rgba(255,255,255,0.02); }
+  .module-name { font-size: 14px; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 8px; }
+  .module-count { font-size: 11px; color: #64748b; }
+  .module-files { padding: 0 18px 14px; display: flex; flex-direction: column; gap: 4px; }
+
+  .novedad-banner { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); border-radius: 10px; padding: 10px 16px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; }
+  .novedad-banner-text { font-size: 13px; color: #93c5fd; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .btn-ver-novedades { padding: 5px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; background: #2563eb; color: #fff; border: none; cursor: pointer; }
+
+  h1.page-title { font-size: 24px; font-weight: 800; color: #f1f5f9; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .page-subtitle { font-size: 13px; color: #64748b; margin-bottom: 0; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ═══════════════════════════════════ HUB VIEW ═══════════════════════════════ -->
+  <div class="hub-view" id="hubView">
+
+    <!-- Barra de plataforma -->
+    <div class="platform-bar">
+      <div class="left">
+        <span class="dot-green"></span>
+        <div>
+          <div class="platform-name">Moodle — Universidad del Alba</div>
+          <div class="platform-meta">Última sincronización: hace 2 horas</div>
+        </div>
+      </div>
+      <div class="bar-btns">
+        <button class="btn-bar">↻ Sincronizar</button>
+        <button class="btn-bar">⚙ Cambiar</button>
+      </div>
+    </div>
+
+    <!-- Título -->
+    <h1 class="page-title">🎓 Mi Universidad</h1>
+    <p class="page-subtitle">Universidad del Alba · Ingeniería Comercial ADVANCE</p>
+
+    <!-- ── Asignaturas en curso ── -->
+    <div class="section-header" style="margin-top: 28px;">
+      <div class="section-title">📅 Semestre I-2026 — En curso &nbsp;</div>
+      <button class="btn-secondary" style="font-size:12px; padding:5px 12px;" onclick="showImportModal()">+ Agregar asignatura</button>
+    </div>
+
+    <div class="courses-grid">
+
+      <!-- Asignatura vinculada con Conniku -->
+      <div class="course-card linked" onclick="showDetail()">
+        <div class="course-icon">📘</div>
+        <div class="course-name-display">Finanzas I</div>
+        <div class="course-name-original">FINANZAS_I7-VESPERTINO-470695</div>
+        <div class="course-meta">
+          <span class="chip chip-green">✓ Vinculada</span>
+          <span class="chip chip-blue">305 archivos</span>
+          <span class="chip chip-red">12 nuevos</span>
+        </div>
+        <div class="course-actions">
+          <button class="btn-primary" onclick="showDetail(); event.stopPropagation()">Ver asignatura →</button>
+        </div>
+      </div>
+
+      <!-- Asignatura detectada, aún no importada -->
+      <div class="course-card unlinked">
+        <div class="course-icon">📗</div>
+        <div class="course-name-display">Marketing Estratégico II</div>
+        <div class="course-name-original">MARKETING_ESTRATEGICO_II-DIURNO-470812</div>
+        <div class="course-meta">
+          <span class="chip chip-orange">⚡ Sin importar</span>
+          <span class="chip chip-gray">18 archivos</span>
+        </div>
+        <div class="course-actions">
+          <button class="btn-import" onclick="showImportModal(); event.stopPropagation()">🚀 Importar asignatura</button>
+        </div>
+      </div>
+
+      <!-- Asignatura vinculada, sin novedades -->
+      <div class="course-card linked">
+        <div class="course-icon">📘</div>
+        <div class="course-name-display">Estadística Aplicada</div>
+        <div class="course-name-original">ESTADISTICA_APLIC_3-VESPERTINO-470631</div>
+        <div class="course-meta">
+          <span class="chip chip-green">✓ Vinculada</span>
+          <span class="chip chip-blue">47 archivos</span>
+          <span class="chip chip-gray">Sin novedades</span>
+        </div>
+        <div class="course-actions">
+          <button class="btn-primary">Ver asignatura →</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Semestres anteriores (colapsado) ── -->
+    <div class="past-toggle" onclick="togglePast()">
+      <span>▶</span>
+      <span id="pastLabel">Semestres anteriores (5 asignaturas)</span>
+    </div>
+    <div id="pastGrid" style="display:none;">
+      <div class="past-courses-grid">
+        <div class="past-card">
+          <div class="past-card-name">📗 Economía I</div>
+          <div class="past-card-meta">2025 · 89 archivos</div>
+        </div>
+        <div class="past-card">
+          <div class="past-card-name">📗 Contabilidad II</div>
+          <div class="past-card-meta">2025 · 62 archivos</div>
+        </div>
+        <div class="past-card">
+          <div class="past-card-name">📗 Derecho Comercial</div>
+          <div class="past-card-meta">2024 · 41 archivos</div>
+        </div>
+        <div class="past-card">
+          <div class="past-card-name">📗 Macroeconomía</div>
+          <div class="past-card-meta">2024 · 55 archivos</div>
+        </div>
+        <div class="past-card">
+          <div class="past-card-name">📗 Matemáticas I</div>
+          <div class="past-card-meta">2023 · 33 archivos</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Material Nuevo Detectado ── -->
+    <div class="novedades-section">
+      <div class="section-header">
+        <div class="section-title">📥 Material nuevo detectado &nbsp;</div>
+        <span class="badge-new">2 asignaturas · 30 archivos</span>
+      </div>
+
+      <!-- Grupo: Finanzas I -->
+      <div class="novedades-group">
+        <div class="novedades-header" onclick="toggleGroup(this)">
+          <div class="novedades-title">
+            📘 Finanzas I
+            <span class="novedades-count">12 nuevos</span>
+            <span class="novedades-date">13 abr 2026</span>
+          </div>
+          <span style="color:#475569; font-size:13px;">▼</span>
+        </div>
+        <div class="novedades-body">
+          <div class="file-list">
+            <div class="file-row">
+              <span class="file-icon">📊</span>
+              <span class="file-name">CLASE N° 8 ALBA.pptx</span>
+              <span class="file-meta">3.8 MB · hoy</span>
+            </div>
+            <div class="file-row">
+              <span class="file-icon">📕</span>
+              <span class="file-name">u-3-finanzas-i-Ul4sa3KU.pdf</span>
+              <span class="file-meta">2.2 MB · hoy</span>
+            </div>
+            <div class="file-row">
+              <span class="file-icon">📋</span>
+              <span class="file-name">Caso Cencosud 1.xlsx</span>
+              <span class="file-meta">32 KB · hoy</span>
+            </div>
+            <div class="file-row">
+              <span class="file-icon">📋</span>
+              <span class="file-name">Ejemplo Análisis Financiero.xlsx</span>
+              <span class="file-meta">15 KB · ayer</span>
+            </div>
+          </div>
+          <div class="more-files">+ 8 archivos más...</div>
+          <div class="novedades-actions">
+            <button class="btn-import-all">📌 Actualizar Finanzas I</button>
+            <button class="btn-updates-only">Ver todos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grupo: Marketing (asignatura nueva) -->
+      <div class="novedades-group">
+        <div class="novedades-header" onclick="toggleGroup(this)">
+          <div class="novedades-title">
+            📗 Marketing Estratégico II
+            <span class="novedades-count" style="background:#f59e0b; color:#000;">18 archivos</span>
+            <span class="novedades-date">12 abr 2026</span>
+          </div>
+          <span style="color:#475569; font-size:13px;">▼</span>
+        </div>
+        <div class="novedades-body">
+          <div class="file-list">
+            <div class="file-row">
+              <span class="file-icon">📊</span>
+              <span class="file-name">Intro Marketing Moderno.pptx</span>
+              <span class="file-meta">5.1 MB · 12 abr</span>
+            </div>
+            <div class="file-row">
+              <span class="file-icon">📕</span>
+              <span class="file-name">Kotler - Cap 1.pdf</span>
+              <span class="file-meta">4.8 MB · 12 abr</span>
+            </div>
+          </div>
+          <div class="more-files">+ 16 archivos más...</div>
+          <div class="novedades-actions">
+            <button class="btn-import-all" style="background:#f59e0b; color:#000;">🚀 Importar asignatura completa</button>
+            <button class="btn-updates-only">Ver archivos</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /hub-view -->
+
+
+  <!-- ═══════════════════════════ DETALLE DE ASIGNATURA ═══════════════════════════ -->
+  <div class="detail-view" id="detailView">
+
+    <button class="back-btn" onclick="showHub()">← Mi Universidad</button>
+
+    <!-- Header asignatura -->
+    <div class="detail-header">
+      <div class="detail-title-row">
+        <div>
+          <div class="detail-name">📘 Finanzas I</div>
+          <div class="detail-name-original">FINANZAS_I7-VESPERTINO-470695</div>
+        </div>
+        <button class="edit-name-btn">✏️ Editar nombre</button>
+      </div>
+      <div class="detail-chips">
+        <span class="chip chip-blue">Semestre I-2026</span>
+        <span class="chip chip-green">305 archivos</span>
+        <span class="chip chip-gray">Actualizado: hoy</span>
+        <span class="chip chip-red">12 nuevos</span>
+      </div>
+
+      <!-- Banner novedades -->
+      <div class="novedad-banner">
+        <div class="novedad-banner-text">📥 12 archivos nuevos desde tu última visita</div>
+        <button class="btn-ver-novedades">Ver novedades</button>
+      </div>
+
+      <!-- Herramientas -->
+      <div class="tools-row">
+        <button class="tool-btn">💬 Chat IA</button>
+        <button class="tool-btn">🧩 Quiz</button>
+        <button class="tool-btn">📄 Resumen</button>
+        <button class="tool-btn">📝 Notas</button>
+        <button class="tool-btn">📁 Archivos</button>
+      </div>
+    </div>
+
+    <!-- Módulos -->
+    <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+      <div class="section-title">📂 Módulos de la asignatura &nbsp;</div>
+      <div style="display:flex; gap:6px;">
+        <button class="btn-secondary" style="font-size:11px; padding:4px 10px;">📚 Por módulo</button>
+        <button class="btn-secondary" style="font-size:11px; padding:4px 10px; border-color:#3b82f6; color:#93c5fd;">📋 Todo el material</button>
+      </div>
+    </div>
+
+    <div class="module-list">
+      <div class="module-item">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-name">▼ &nbsp; Unidad 1 — Introducción a las Finanzas</div>
+          <div class="module-count">8 archivos</div>
+        </div>
+        <div class="module-files">
+          <div class="file-row"><span class="file-icon">📊</span><span class="file-name">CLASE N° 1 Introducción.pptx</span><span class="file-meta">2.1 MB</span></div>
+          <div class="file-row"><span class="file-icon">📕</span><span class="file-name">u-1-finanzas-introduccion.pdf</span><span class="file-meta">1.4 MB</span></div>
+          <div class="file-row"><span class="file-icon">📊</span><span class="file-name">CLASE N° 2 Mercados.pptx</span><span class="file-meta">3.2 MB</span></div>
+          <div class="file-row"><span class="file-icon">📕</span><span class="file-name">Lectura complementaria Cap1.pdf</span><span class="file-meta">890 KB</span></div>
+          <div class="more-files">+ 4 archivos más...</div>
+        </div>
+      </div>
+
+      <div class="module-item">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-name">▶ &nbsp; Unidad 2 — Valorización de Activos</div>
+          <div class="module-count">12 archivos</div>
+        </div>
+      </div>
+
+      <div class="module-item">
+        <div class="module-header" onclick="toggleModule(this)">
+          <div class="module-name">▶ &nbsp; Unidad 3 — Mercados Financieros</div>
+          <div class="module-count">9 archivos</div>
+        </div>
+      </div>
+
+      <div class="module-item">
+        <div class="module-header" style="background: rgba(59,130,246,0.06); border-left: 3px solid #3b82f6;" onclick="toggleModule(this)">
+          <div class="module-name" style="color:#93c5fd;">🔵 ▶ &nbsp; Unidad 8 — CLASE N°8 (nuevo)</div>
+          <div class="module-count" style="color:#3b82f6;">12 nuevos</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /detail-view -->
+
+
+  <!-- ═══════════════════════ MODAL: IMPORTAR ASIGNATURA ════════════════════════ -->
+  <div id="importModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:100; display:none; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; border:1px solid #334155; border-radius:18px; padding:28px; max-width:440px; width:90%;">
+      <h3 style="font-size:17px; font-weight:800; margin-bottom:6px;">Importar asignatura</h3>
+      <p style="font-size:13px; color:#64748b; margin-bottom:6px;">Nombre en la universidad:</p>
+      <div style="font-family:monospace; font-size:12px; color:#94a3b8; background:#0f172a; padding:8px 12px; border-radius:8px; margin-bottom:16px;">
+        MARKETING_ESTRATEGICO_II-DIURNO-470812
+      </div>
+      <p style="font-size:13px; color:#94a3b8; margin-bottom:8px;">¿Cómo quieres llamarla en Conniku?</p>
+      <input type="text" value="Marketing Estratégico II" style="width:100%; padding:10px 14px; border-radius:9px; border:1px solid #334155; background:#0f172a; color:#f1f5f9; font-size:14px; margin-bottom:18px; outline:none;">
+      <p style="font-size:11px; color:#475569; margin-bottom:20px;">
+        El sistema siempre usará el código original para sincronizar documentos, aunque cambies el nombre.
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="btn-import-all" style="width:100%; justify-content:center; padding:12px;">🚀 Importar asignatura completa<br><small style="font-weight:400; opacity:.7;">Todos los archivos y módulos organizados</small></button>
+        <button class="btn-updates-only" style="width:100%; padding:10px; text-align:center;">📄 Solo importar documentos<br><small style="opacity:.7;">Sin estructura de módulos</small></button>
+        <button class="btn-updates-only" style="width:100%; padding:10px; text-align:center;">✏️ Crear asignatura vacía<br><small style="opacity:.7;">Agregas los archivos tú mismo</small></button>
+        <button onclick="closeImportModal()" style="background:none; border:none; color:#475569; cursor:pointer; padding:8px; font-size:13px;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+function showDetail() {
+  document.getElementById('hubView').classList.add('hidden');
+  document.getElementById('detailView').classList.add('active');
+}
+function showHub() {
+  document.getElementById('hubView').classList.remove('hidden');
+  document.getElementById('detailView').classList.remove('active');
+}
+function togglePast() {
+  const g = document.getElementById('pastGrid');
+  const l = document.getElementById('pastLabel');
+  if (g.style.display === 'none') {
+    g.style.display = 'block';
+    l.textContent = 'Semestres anteriores (5 asignaturas) ▲';
+  } else {
+    g.style.display = 'none';
+    l.textContent = 'Semestres anteriores (5 asignaturas)';
+  }
+}
+function toggleGroup(el) {
+  const body = el.nextElementSibling;
+  const arrow = el.querySelector('span:last-child');
+  if (body.style.display === 'none') { body.style.display = 'block'; arrow.textContent = '▼'; }
+  else { body.style.display = 'none'; arrow.textContent = '▶'; }
+}
+function toggleModule(el) {
+  const body = el.nextElementSibling;
+  if (!body || !body.classList.contains('module-files')) return;
+  body.style.display = body.style.display === 'none' ? 'flex' : 'none';
+}
+function showImportModal() {
+  const m = document.getElementById('importModal');
+  m.style.display = 'flex';
+}
+function closeImportModal() {
+  document.getElementById('importModal').style.display = 'none';
+}
+</script>
+</body>
+</html>

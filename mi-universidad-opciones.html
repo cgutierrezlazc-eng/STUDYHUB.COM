@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Universidad — 6 Opciones de Diseño</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0d1117; color: #e2e8f0; }
+
+/* ─ NAV ─ */
+.nav { display: flex; gap: 6px; padding: 16px 20px; background: #090e18; border-bottom: 1px solid #1e293b; flex-wrap: wrap; align-items: center; }
+.nav-label { font-size: 11px; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: .08em; margin-right: 6px; }
+.nav-btn { padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1px solid #1e293b; background: transparent; color: #64748b; transition: all .15s; }
+.nav-btn:hover, .nav-btn.active { border-color: #3b82f6; background: rgba(59,130,246,.15); color: #93c5fd; }
+.nav-sep { width: 1px; height: 24px; background: #1e293b; margin: 0 6px; }
+
+/* ─ FRAMES ─ */
+.frame { display: none; padding: 24px; min-height: calc(100vh - 56px); }
+.frame.active { display: block; }
+
+/* ══════════════════════════════ VERSIÓN 1A — Cards · Dark ══════════════════════════ */
+.v1a { background: #0f172a; }
+.v1a .pbar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,rgba(10,30,70,.9),rgba(26,86,219,.6)); border:1px solid rgba(59,130,246,.3); border-radius:14px; padding:12px 18px; margin-bottom:24px; flex-wrap:wrap; gap:8px; }
+.v1a .pbar-l { display:flex; align-items:center; gap:10px; }
+.v1a .dot { width:9px; height:9px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; }
+.v1a .pname { font-size:14px; font-weight:700; color:#fff; }
+.v1a .pmeta { font-size:11px; color:rgba(255,255,255,.5); }
+.v1a .pbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.1); color:#fff; }
+.v1a h1 { font-size:22px; font-weight:800; color:#f1f5f9; margin-bottom:4px; }
+.v1a .sub { font-size:13px; color:#64748b; margin-bottom:24px; }
+.v1a .sh { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#475569; border-bottom:1px solid #1e293b; padding-bottom:10px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+.v1a .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:28px; }
+.v1a .card { background:#1e293b; border:1px solid #334155; border-radius:14px; padding:18px; cursor:pointer; transition:all .15s; }
+.v1a .card:hover { border-color:#3b82f6; transform:translateY(-2px); }
+.v1a .card.linked { border-left:3px solid #10b981; }
+.v1a .card.new { border-left:3px solid #f59e0b; }
+.v1a .cico { font-size:26px; margin-bottom:10px; }
+.v1a .cname { font-size:15px; font-weight:700; color:#f1f5f9; margin-bottom:3px; }
+.v1a .ccode { font-size:11px; color:#475569; font-family:monospace; margin-bottom:10px; }
+.v1a .tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.v1a .tag { padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; }
+.v1a .tg { background:rgba(16,185,129,.15); color:#6ee7b7; }
+.v1a .tb { background:rgba(59,130,246,.15); color:#93c5fd; }
+.v1a .to { background:rgba(245,158,11,.15); color:#fcd34d; }
+.v1a .tr { background:rgba(239,68,68,.12); color:#fca5a5; }
+.v1a .ts { background:rgba(100,116,139,.15); color:#94a3b8; }
+.v1a .cbtn { width:100%; padding:8px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v1a .cbtn2 { background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.3); color:#fbbf24; }
+/* novedades */
+.v1a .nov { background:#1e293b; border:1px solid #334155; border-radius:14px; overflow:hidden; margin-bottom:10px; }
+.v1a .novh { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; cursor:pointer; }
+.v1a .novh:hover { background:rgba(255,255,255,.02); }
+.v1a .novt { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#f1f5f9; }
+.v1a .novc { background:#1d4ed8; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; }
+.v1a .novb { padding:0 18px 16px; }
+.v1a .fl { display:flex; flex-direction:column; gap:4px; margin:10px 0; }
+.v1a .fr { display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:8px; background:#0f172a; }
+.v1a .fn { font-size:12px; color:#cbd5e1; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v1a .fm { font-size:11px; color:#475569; }
+.v1a .mf { font-size:12px; color:#64748b; padding:4px 10px; font-style:italic; }
+.v1a .na { display:flex; gap:8px; margin-top:10px; }
+.v1a .na1 { padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v1a .na2 { padding:8px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid #334155; background:transparent; color:#94a3b8; }
+
+/* ══════════════════════════════ VERSIÓN 1B — Cards · Light ══════════════════════════ */
+.v1b { background:#f0f4f8; color:#1e293b; }
+.v1b .pbar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#1a3a8f,#2563eb); border-radius:14px; padding:12px 18px; margin-bottom:24px; flex-wrap:wrap; gap:8px; }
+.v1b .pbar-l { display:flex; align-items:center; gap:10px; }
+.v1b .dot { width:9px; height:9px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80; }
+.v1b .pname { font-size:14px; font-weight:700; color:#fff; }
+.v1b .pmeta { font-size:11px; color:rgba(255,255,255,.65); }
+.v1b .pbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.15); color:#fff; }
+.v1b h1 { font-size:22px; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.v1b .sub { font-size:13px; color:#64748b; margin-bottom:24px; }
+.v1b .sh { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:14px; display:flex; align-items:center; justify-content:space-between; }
+.v1b .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:28px; }
+.v1b .card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; cursor:pointer; transition:all .15s; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+.v1b .card:hover { border-color:#3b82f6; box-shadow:0 4px 16px rgba(37,99,235,.12); transform:translateY(-2px); }
+.v1b .card.linked { border-left:3px solid #059669; }
+.v1b .card.new { border-left:3px solid #d97706; }
+.v1b .cico { font-size:26px; margin-bottom:10px; }
+.v1b .cname { font-size:15px; font-weight:700; color:#0f172a; margin-bottom:3px; }
+.v1b .ccode { font-size:11px; color:#94a3b8; font-family:monospace; margin-bottom:10px; }
+.v1b .tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.v1b .tag { padding:3px 9px; border-radius:99px; font-size:11px; font-weight:600; }
+.v1b .tg { background:#d1fae5; color:#065f46; }
+.v1b .tb { background:#dbeafe; color:#1d4ed8; }
+.v1b .to { background:#fef3c7; color:#92400e; }
+.v1b .tr { background:#fee2e2; color:#991b1b; }
+.v1b .ts { background:#f1f5f9; color:#475569; }
+.v1b .cbtn { width:100%; padding:8px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v1b .cbtn2 { background:#fef3c7; border:1px solid #fde68a; color:#92400e; }
+.v1b .nov { background:#fff; border:1px solid #e2e8f0; border-radius:14px; overflow:hidden; margin-bottom:10px; box-shadow:0 2px 8px rgba(0,0,0,.05); }
+.v1b .novh { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; cursor:pointer; }
+.v1b .novh:hover { background:#f8fafc; }
+.v1b .novt { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:700; color:#0f172a; }
+.v1b .novc { background:#2563eb; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; }
+.v1b .novb { padding:0 18px 16px; }
+.v1b .fl { display:flex; flex-direction:column; gap:4px; margin:10px 0; }
+.v1b .fr { display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:8px; background:#f8fafc; }
+.v1b .fn { font-size:12px; color:#334155; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.v1b .fm { font-size:11px; color:#94a3b8; }
+.v1b .mf { font-size:12px; color:#94a3b8; padding:4px 10px; font-style:italic; }
+.v1b .na { display:flex; gap:8px; margin-top:10px; }
+.v1b .na1 { padding:8px 16px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v1b .na2 { padding:8px 16px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid #e2e8f0; background:transparent; color:#64748b; }
+
+/* ══════════════════════════════ VERSIÓN 2A — Lista Timeline · Dark ══════════════════════════ */
+.v2a { background:#0a0f1a; }
+.v2a .pbar { display:flex; align-items:center; justify-content:space-between; background:rgba(16,185,129,.07); border:1px solid rgba(16,185,129,.25); border-radius:12px; padding:10px 16px; margin-bottom:24px; flex-wrap:wrap; gap:8px; }
+.v2a .dot { width:8px; height:8px; border-radius:50%; background:#10b981; box-shadow:0 0 6px #10b981; }
+.v2a .pbar-l { display:flex; align-items:center; gap:10px; }
+.v2a .pname { font-size:13px; font-weight:700; color:#10b981; }
+.v2a .pmeta { font-size:11px; color:#475569; }
+.v2a .pbtn { padding:5px 12px; border-radius:7px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid rgba(16,185,129,.3); background:transparent; color:#10b981; }
+.v2a h1 { font-size:20px; font-weight:800; color:#f1f5f9; margin-bottom:2px; }
+.v2a .sub { font-size:12px; color:#475569; margin-bottom:22px; }
+/* Timeline list */
+.v2a .tl-section { margin-bottom:28px; }
+.v2a .tl-title { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#3b82f6; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.v2a .tl-title::after { content:''; flex:1; height:1px; background:#1e293b; }
+.v2a .tl-item { display:flex; align-items:stretch; gap:0; margin-bottom:4px; }
+.v2a .tl-line { display:flex; flex-direction:column; align-items:center; width:36px; flex-shrink:0; }
+.v2a .tl-node { width:10px; height:10px; border-radius:50%; border:2px solid #3b82f6; background:#0a0f1a; margin-top:16px; flex-shrink:0; }
+.v2a .tl-node.green { border-color:#10b981; }
+.v2a .tl-node.orange { border-color:#f59e0b; }
+.v2a .tl-vert { flex:1; width:1px; background:#1e293b; margin:0 auto; }
+.v2a .tl-card { flex:1; background:#111827; border:1px solid #1e293b; border-radius:12px; padding:14px 16px; margin-bottom:4px; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:space-between; }
+.v2a .tl-card:hover { border-color:#374151; background:#161f2e; }
+.v2a .tl-card-l { display:flex; align-items:center; gap:12px; }
+.v2a .tl-ico { font-size:22px; }
+.v2a .tl-name { font-size:14px; font-weight:700; color:#f1f5f9; }
+.v2a .tl-code { font-size:10px; color:#374151; font-family:monospace; }
+.v2a .tl-tags { display:flex; gap:5px; }
+.v2a .tag { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.v2a .tg { background:rgba(16,185,129,.12); color:#6ee7b7; }
+.v2a .tb { background:rgba(59,130,246,.12); color:#93c5fd; }
+.v2a .to { background:rgba(245,158,11,.12); color:#fcd34d; }
+.v2a .tr { background:rgba(239,68,68,.1); color:#fca5a5; }
+.v2a .ts { background:rgba(100,116,139,.1); color:#64748b; }
+.v2a .tl-action { font-size:12px; font-weight:600; color:#3b82f6; }
+/* novedades timeline */
+.v2a .nov-item { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #1e293b; }
+.v2a .nov-date { font-size:11px; color:#3b82f6; font-weight:700; width:60px; flex-shrink:0; padding-top:2px; text-align:right; }
+.v2a .nov-body { flex:1; }
+.v2a .nov-course { font-size:13px; font-weight:700; color:#f1f5f9; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.v2a .nov-files { display:flex; flex-direction:column; gap:3px; }
+.v2a .nov-file { font-size:12px; color:#64748b; display:flex; align-items:center; gap:6px; }
+.v2a .nov-actions { display:flex; gap:6px; margin-top:10px; }
+.v2a .na1 { padding:6px 14px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v2a .na2 { padding:6px 14px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #1e293b; background:transparent; color:#64748b; }
+
+/* ══════════════════════════════ VERSIÓN 2B — Lista Timeline · Light ══════════════════════════ */
+.v2b { background:#ffffff; color:#1e293b; }
+.v2b .pbar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#1e3a8a,#1d4ed8); border-radius:12px; padding:12px 18px; margin-bottom:24px; flex-wrap:wrap; gap:8px; }
+.v2b .dot { width:9px; height:9px; border-radius:50%; background:#4ade80; }
+.v2b .pbar-l { display:flex; align-items:center; gap:10px; }
+.v2b .pname { font-size:14px; font-weight:700; color:#fff; }
+.v2b .pmeta { font-size:11px; color:rgba(255,255,255,.6); }
+.v2b .pbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.15); color:#fff; }
+.v2b h1 { font-size:22px; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.v2b .sub { font-size:13px; color:#64748b; margin-bottom:24px; }
+.v2b .tl-section { margin-bottom:28px; }
+.v2b .tl-title { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:#1d4ed8; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.v2b .tl-title::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+.v2b .tl-item { display:flex; gap:0; margin-bottom:4px; }
+.v2b .tl-line { display:flex; flex-direction:column; align-items:center; width:36px; flex-shrink:0; }
+.v2b .tl-node { width:10px; height:10px; border-radius:50%; border:2px solid #2563eb; background:#fff; margin-top:16px; }
+.v2b .tl-node.green { border-color:#059669; background:#d1fae5; }
+.v2b .tl-node.orange { border-color:#d97706; background:#fef3c7; }
+.v2b .tl-vert { flex:1; width:2px; background:#e2e8f0; margin:0 auto; }
+.v2b .tl-card { flex:1; background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; margin-bottom:4px; cursor:pointer; transition:all .15s; display:flex; align-items:center; justify-content:space-between; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+.v2b .tl-card:hover { border-color:#93c5fd; box-shadow:0 2px 12px rgba(37,99,235,.1); }
+.v2b .tl-card-l { display:flex; align-items:center; gap:12px; }
+.v2b .tl-ico { font-size:22px; }
+.v2b .tl-name { font-size:14px; font-weight:700; color:#0f172a; }
+.v2b .tl-code { font-size:10px; color:#94a3b8; font-family:monospace; }
+.v2b .tl-tags { display:flex; gap:5px; }
+.v2b .tag { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.v2b .tg { background:#d1fae5; color:#065f46; }
+.v2b .tb { background:#dbeafe; color:#1d4ed8; }
+.v2b .to { background:#fef3c7; color:#92400e; }
+.v2b .tr { background:#fee2e2; color:#991b1b; }
+.v2b .ts { background:#f1f5f9; color:#64748b; }
+.v2b .tl-action { font-size:12px; font-weight:600; color:#2563eb; }
+.v2b .nov-item { display:flex; gap:14px; padding:14px 0; border-bottom:1px solid #f1f5f9; }
+.v2b .nov-date { font-size:11px; color:#2563eb; font-weight:700; width:60px; flex-shrink:0; padding-top:2px; text-align:right; }
+.v2b .nov-body { flex:1; }
+.v2b .nov-course { font-size:13px; font-weight:700; color:#0f172a; margin-bottom:6px; display:flex; align-items:center; gap:8px; }
+.v2b .nov-files { display:flex; flex-direction:column; gap:3px; }
+.v2b .nov-file { font-size:12px; color:#64748b; display:flex; align-items:center; gap:6px; }
+.v2b .nov-actions { display:flex; gap:6px; margin-top:10px; }
+.v2b .na1 { padding:6px 14px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; border:none; background:#2563eb; color:#fff; }
+.v2b .na2 { padding:6px 14px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid #e2e8f0; background:transparent; color:#64748b; }
+
+/* ══════════════════════════════ VERSIÓN 3A — Dashboard · Dark ══════════════════════════ */
+.v3a { background:#080d14; }
+.v3a .layout { display:grid; grid-template-columns:1fr 320px; gap:20px; }
+@media(max-width:700px){ .v3a .layout { grid-template-columns:1fr; } }
+.v3a .pbar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#0a1628,#0d2251); border:1px solid rgba(99,102,241,.3); border-radius:14px; padding:12px 18px; margin-bottom:20px; flex-wrap:wrap; gap:8px; }
+.v3a .dot { width:9px; height:9px; border-radius:50%; background:#10b981; box-shadow:0 0 8px #10b981; }
+.v3a .pbar-l { display:flex; align-items:center; gap:10px; }
+.v3a .pname { font-size:14px; font-weight:700; color:#c7d2fe; }
+.v3a .pmeta { font-size:11px; color:#4c5680; }
+.v3a .pbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(99,102,241,.3); background:rgba(99,102,241,.1); color:#a5b4fc; }
+.v3a h1 { font-size:20px; font-weight:800; color:#e0e7ff; margin-bottom:4px; }
+.v3a .sub { font-size:12px; color:#4c5680; margin-bottom:20px; }
+/* Main col */
+.v3a .sec-h { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#4c5680; margin:0 0 12px; display:flex; align-items:center; justify-content:space-between; }
+.v3a .course-list { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+.v3a .cl-item { background:#0e1824; border:1px solid #1a2535; border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all .15s; }
+.v3a .cl-item:hover { border-color:#4f46e5; background:#111d2e; }
+.v3a .cl-item.linked { border-left:3px solid #10b981; }
+.v3a .cl-item.unlinked { border-left:3px solid #f59e0b; }
+.v3a .cl-ico { font-size:24px; }
+.v3a .cl-info { flex:1; }
+.v3a .cl-name { font-size:14px; font-weight:700; color:#e0e7ff; }
+.v3a .cl-code { font-size:10px; color:#374151; font-family:monospace; }
+.v3a .cl-tags { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
+.v3a .tag { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.v3a .tg { background:rgba(16,185,129,.1); color:#6ee7b7; }
+.v3a .tb { background:rgba(99,102,241,.12); color:#a5b4fc; }
+.v3a .to { background:rgba(245,158,11,.1); color:#fcd34d; }
+.v3a .tr { background:rgba(239,68,68,.1); color:#fca5a5; }
+.v3a .ts { background:rgba(100,116,139,.1); color:#4c5680; }
+.v3a .cl-btn { padding:7px 14px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; border:none; background:#4f46e5; color:#fff; white-space:nowrap; }
+.v3a .cl-btn2 { background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.25); color:#fbbf24; }
+/* sidebar */
+.v3a .sidebar { display:flex; flex-direction:column; gap:14px; }
+.v3a .sw { background:#0e1824; border:1px solid #1a2535; border-radius:14px; padding:16px; }
+.v3a .sw-h { font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:#4c5680; margin-bottom:12px; }
+.v3a .stat-row { display:flex; justify-content:space-around; }
+.v3a .stat { text-align:center; }
+.v3a .stat-n { font-size:22px; font-weight:800; color:#a5b4fc; }
+.v3a .stat-l { font-size:10px; color:#4c5680; text-transform:uppercase; letter-spacing:.05em; }
+.v3a .nov-mini { display:flex; flex-direction:column; gap:8px; }
+.v3a .nm { background:#0a0f1a; border:1px solid #1a2535; border-radius:10px; padding:10px 12px; cursor:pointer; }
+.v3a .nm:hover { border-color:#4f46e5; }
+.v3a .nm-title { font-size:12px; font-weight:700; color:#c7d2fe; margin-bottom:3px; display:flex; align-items:center; justify-content:space-between; }
+.v3a .nm-count { background:#4f46e5; color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:99px; }
+.v3a .nm-files { font-size:11px; color:#4c5680; line-height:1.6; }
+.v3a .nm-act { display:flex; gap:5px; margin-top:8px; }
+.v3a .nm-a1 { padding:5px 10px; border-radius:7px; font-size:10px; font-weight:700; cursor:pointer; border:none; background:#4f46e5; color:#fff; }
+.v3a .nm-a2 { padding:5px 10px; border-radius:7px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid #1a2535; background:transparent; color:#4c5680; }
+.v3a .past-mini { display:flex; flex-direction:column; gap:6px; }
+.v3a .pm { display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; cursor:pointer; }
+.v3a .pm:hover { background:#0a0f1a; }
+.v3a .pm-name { font-size:12px; color:#6b7a99; }
+.v3a .pm-year { font-size:10px; color:#2d3748; margin-left:auto; }
+
+/* ══════════════════════════════ VERSIÓN 3B — Dashboard · Light ══════════════════════════ */
+.v3b { background:#f8fafc; color:#1e293b; }
+.v3b .layout { display:grid; grid-template-columns:1fr 300px; gap:20px; }
+@media(max-width:700px){ .v3b .layout { grid-template-columns:1fr; } }
+.v3b .pbar { display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg,#0369a1,#0284c7); border-radius:14px; padding:12px 18px; margin-bottom:20px; flex-wrap:wrap; gap:8px; }
+.v3b .dot { width:9px; height:9px; border-radius:50%; background:#4ade80; }
+.v3b .pbar-l { display:flex; align-items:center; gap:10px; }
+.v3b .pname { font-size:14px; font-weight:700; color:#fff; }
+.v3b .pmeta { font-size:11px; color:rgba(255,255,255,.6); }
+.v3b .pbtn { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.15); color:#fff; }
+.v3b h1 { font-size:22px; font-weight:800; color:#0f172a; margin-bottom:4px; }
+.v3b .sub { font-size:13px; color:#64748b; margin-bottom:22px; }
+.v3b .sec-h { font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:#94a3b8; margin:0 0 12px; display:flex; align-items:center; justify-content:space-between; }
+.v3b .course-list { display:flex; flex-direction:column; gap:8px; margin-bottom:24px; }
+.v3b .cl-item { background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 16px; display:flex; align-items:center; gap:14px; cursor:pointer; transition:all .15s; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+.v3b .cl-item:hover { border-color:#38bdf8; box-shadow:0 3px 12px rgba(14,165,233,.1); }
+.v3b .cl-item.linked { border-left:3px solid #059669; }
+.v3b .cl-item.unlinked { border-left:3px solid #d97706; }
+.v3b .cl-ico { font-size:24px; }
+.v3b .cl-info { flex:1; }
+.v3b .cl-name { font-size:14px; font-weight:700; color:#0f172a; }
+.v3b .cl-code { font-size:10px; color:#94a3b8; font-family:monospace; }
+.v3b .cl-tags { display:flex; gap:5px; margin-top:5px; flex-wrap:wrap; }
+.v3b .tag { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; }
+.v3b .tg { background:#d1fae5; color:#065f46; }
+.v3b .tb { background:#e0f2fe; color:#0369a1; }
+.v3b .to { background:#fef3c7; color:#92400e; }
+.v3b .tr { background:#fee2e2; color:#991b1b; }
+.v3b .ts { background:#f1f5f9; color:#64748b; }
+.v3b .cl-btn { padding:7px 14px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer; border:none; background:#0369a1; color:#fff; white-space:nowrap; }
+.v3b .cl-btn2 { background:#fef3c7; border:1px solid #fde68a; color:#92400e; }
+.v3b .sidebar { display:flex; flex-direction:column; gap:14px; }
+.v3b .sw { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:16px; box-shadow:0 1px 4px rgba(0,0,0,.05); }
+.v3b .sw-h { font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:#94a3b8; margin-bottom:12px; }
+.v3b .stat-row { display:flex; justify-content:space-around; }
+.v3b .stat { text-align:center; }
+.v3b .stat-n { font-size:22px; font-weight:800; color:#0369a1; }
+.v3b .stat-l { font-size:10px; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; }
+.v3b .nov-mini { display:flex; flex-direction:column; gap:8px; }
+.v3b .nm { background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:10px 12px; cursor:pointer; transition:all .15s; }
+.v3b .nm:hover { border-color:#7dd3fc; }
+.v3b .nm-title { font-size:12px; font-weight:700; color:#0f172a; margin-bottom:3px; display:flex; align-items:center; justify-content:space-between; }
+.v3b .nm-count { background:#0369a1; color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:99px; }
+.v3b .nm-files { font-size:11px; color:#64748b; line-height:1.6; }
+.v3b .nm-act { display:flex; gap:5px; margin-top:8px; }
+.v3b .nm-a1 { padding:5px 10px; border-radius:7px; font-size:10px; font-weight:700; cursor:pointer; border:none; background:#0369a1; color:#fff; }
+.v3b .nm-a2 { padding:5px 10px; border-radius:7px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid #e2e8f0; background:transparent; color:#64748b; }
+.v3b .past-mini { display:flex; flex-direction:column; gap:6px; }
+.v3b .pm { display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; cursor:pointer; }
+.v3b .pm:hover { background:#f1f5f9; }
+.v3b .pm-name { font-size:12px; color:#475569; }
+.v3b .pm-year { font-size:10px; color:#94a3b8; margin-left:auto; }
+</style>
+</head>
+<body>
+
+<!-- NAVEGACIÓN -->
+<div class="nav">
+  <span class="nav-label">Diseño</span>
+  <button class="nav-btn active" onclick="show('v1a',this)">1A · Cards Dark</button>
+  <button class="nav-btn" onclick="show('v1b',this)">1B · Cards Light</button>
+  <div class="nav-sep"></div>
+  <button class="nav-btn" onclick="show('v2a',this)">2A · Timeline Dark</button>
+  <button class="nav-btn" onclick="show('v2b',this)">2B · Timeline Light</button>
+  <div class="nav-sep"></div>
+  <button class="nav-btn" onclick="show('v3a',this)">3A · Dashboard Dark</button>
+  <button class="nav-btn" onclick="show('v3b',this)">3B · Dashboard Light</button>
+</div>
+
+
+<!-- ══════════ V1A ══════════ -->
+<div class="frame v1a active" id="f-v1a">
+  <div style="max-width:860px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">↻ Sincronizado hace 2h</div></div></div><div style="display:flex;gap:8px;"><button class="pbtn">↻ Sincronizar</button><button class="pbtn">⚙ Cambiar</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE · Universidad del Alba</div>
+    <div class="sh"><span>📅 Semestre I-2026 — En curso</span><button style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid #334155;background:transparent;color:#64748b;cursor:pointer;">+ Agregar</button></div>
+    <div class="grid">
+      <div class="card linked"><div class="cico">📘</div><div class="cname">Finanzas I</div><div class="ccode">FINANZAS_I7-VESPERTINO-470695</div><div class="tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 archivos</span><span class="tag tr">12 nuevos</span></div><button class="cbtn">Ver asignatura →</button></div>
+      <div class="card new"><div class="cico">📗</div><div class="cname">Marketing Estratégico II</div><div class="ccode">MARKETING_II-DIURNO-470812</div><div class="tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 archivos</span></div><button class="cbtn cbtn2">🚀 Importar asignatura</button></div>
+      <div class="card linked"><div class="cico">📘</div><div class="cname">Estadística Aplicada</div><div class="ccode">ESTADISTICA_APLIC_3-470631</div><div class="tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">47 archivos</span><span class="tag ts">Sin novedades</span></div><button class="cbtn">Ver asignatura →</button></div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:#475569;cursor:pointer;padding:6px 0;border-top:1px solid #1e293b;margin-bottom:20px;">▶ Semestres anteriores (5 asignaturas)</div>
+    <div class="sh"><span>📥 Material nuevo detectado</span><span style="background:#3b82f6;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;">2 asignaturas · 30 archivos</span></div>
+    <div class="nov"><div class="novh"><div class="novt">📘 Finanzas I <span class="novc">12 nuevos</span> <span style="font-size:11px;color:#475569;">13 abr 2026</span></div><span style="color:#475569;">▼</span></div><div class="novb"><div class="fl"><div class="fr"><span>📊</span><span class="fn">CLASE N° 8 ALBA.pptx</span><span class="fm">3.8 MB · hoy</span></div><div class="fr"><span>📕</span><span class="fn">u-3-finanzas-i-Ul4sa3KU.pdf</span><span class="fm">2.2 MB</span></div><div class="fr"><span>📋</span><span class="fn">Caso Cencosud 1.xlsx</span><span class="fm">32 KB</span></div></div><div class="mf">+ 9 archivos más...</div><div class="na"><button class="na1">📌 Actualizar Finanzas I</button><button class="na2">Ver todos</button></div></div></div>
+    <div class="nov"><div class="novh"><div class="novt">📗 Marketing Estratégico II <span class="novc" style="background:#f59e0b;color:#000;">18 archivos</span> <span style="font-size:11px;color:#475569;">12 abr</span></div><span style="color:#475569;">▼</span></div><div class="novb"><div class="fl"><div class="fr"><span>📊</span><span class="fn">Intro Marketing Moderno.pptx</span><span class="fm">5.1 MB</span></div><div class="fr"><span>📕</span><span class="fn">Kotler - Cap 1.pdf</span><span class="fm">4.8 MB</span></div></div><div class="mf">+ 16 archivos más...</div><div class="na"><button class="na1" style="background:#f59e0b;color:#000;">🚀 Importar asignatura</button><button class="na2">Ver archivos</button></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ V1B ══════════ -->
+<div class="frame v1b" id="f-v1b">
+  <div style="max-width:860px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">↻ Sincronizado hace 2h</div></div></div><div style="display:flex;gap:8px;"><button class="pbtn">↻ Sincronizar</button><button class="pbtn">⚙ Cambiar</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE · Universidad del Alba</div>
+    <div class="sh"><span>📅 Semestre I-2026 — En curso</span><button style="font-size:11px;padding:4px 10px;border-radius:7px;border:1px solid #cbd5e1;background:transparent;color:#64748b;cursor:pointer;">+ Agregar</button></div>
+    <div class="grid">
+      <div class="card linked"><div class="cico">📘</div><div class="cname">Finanzas I</div><div class="ccode">FINANZAS_I7-VESPERTINO-470695</div><div class="tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 archivos</span><span class="tag tr">12 nuevos</span></div><button class="cbtn">Ver asignatura →</button></div>
+      <div class="card new"><div class="cico">📗</div><div class="cname">Marketing Estratégico II</div><div class="ccode">MARKETING_II-DIURNO-470812</div><div class="tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 archivos</span></div><button class="cbtn cbtn2">🚀 Importar asignatura</button></div>
+      <div class="card linked"><div class="cico">📘</div><div class="cname">Estadística Aplicada</div><div class="ccode">ESTADISTICA_APLIC_3-470631</div><div class="tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">47 archivos</span><span class="tag ts">Sin novedades</span></div><button class="cbtn">Ver asignatura →</button></div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:#94a3b8;cursor:pointer;padding:8px 0;border-top:2px solid #e2e8f0;margin-bottom:20px;">▶ Semestres anteriores (5 asignaturas)</div>
+    <div class="sh"><span>📥 Material nuevo detectado</span><span style="background:#2563eb;color:#fff;font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;">2 asignaturas · 30 archivos</span></div>
+    <div class="nov"><div class="novh"><div class="novt">📘 Finanzas I <span class="novc">12 nuevos</span> <span style="font-size:11px;color:#94a3b8;">13 abr 2026</span></div><span style="color:#94a3b8;">▼</span></div><div class="novb"><div class="fl"><div class="fr"><span>📊</span><span class="fn">CLASE N° 8 ALBA.pptx</span><span class="fm">3.8 MB · hoy</span></div><div class="fr"><span>📕</span><span class="fn">u-3-finanzas-i-Ul4sa3KU.pdf</span><span class="fm">2.2 MB</span></div></div><div class="mf">+ 10 archivos más...</div><div class="na"><button class="na1">📌 Actualizar Finanzas I</button><button class="na2">Ver todos</button></div></div></div>
+    <div class="nov"><div class="novh"><div class="novt">📗 Marketing Estratégico II <span class="novc" style="background:#d97706;color:#fff;">18 archivos</span></div><span style="color:#94a3b8;">▼</span></div><div class="novb"><div class="fl"><div class="fr"><span>📊</span><span class="fn">Intro Marketing Moderno.pptx</span><span class="fm">5.1 MB</span></div></div><div class="mf">+ 17 archivos más...</div><div class="na"><button class="na1" style="background:#d97706;">🚀 Importar asignatura</button><button class="na2">Ver archivos</button></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ V2A ══════════ -->
+<div class="frame v2a" id="f-v2a">
+  <div style="max-width:760px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">Sincronizado hace 2h</div></div></div><div style="display:flex;gap:6px;"><button class="pbtn">↻</button><button class="pbtn">⚙</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE</div>
+    <div class="tl-section">
+      <div class="tl-title">📅 Semestre I-2026 — En curso</div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node green"></div><div class="tl-vert"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📘</div><div><div class="tl-name">Finanzas I</div><div class="tl-code">FINANZAS_I7-VESPERTINO-470695</div><div class="tl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 arch.</span><span class="tag tr">12 nuevos</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node orange"></div><div class="tl-vert"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Marketing Estratégico II</div><div class="tl-code">MARKETING_II-DIURNO-470812</div><div class="tl-tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 arch.</span></div></div></div><span class="tl-action" style="color:#f59e0b;">Importar →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node green"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📘</div><div><div class="tl-name">Estadística Aplicada</div><div class="tl-code">ESTADISTICA_APLIC_3-470631</div><div class="tl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag ts">47 arch.</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+    </div>
+    <div class="tl-section">
+      <div class="tl-title">🗂 Semestres anteriores</div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node"></div><div class="tl-vert"></div></div><div class="tl-card" style="opacity:.6;"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Economía I</div><div class="tl-tags"><span class="tag ts">89 arch. · 2025</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node"></div></div><div class="tl-card" style="opacity:.6;"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Contabilidad II</div><div class="tl-tags"><span class="tag ts">62 arch. · 2025</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+    </div>
+    <div class="tl-title" style="margin-top:20px;">📥 Material nuevo detectado</div>
+    <div class="nov-item"><div class="nov-date">13 abr<br>hoy</div><div class="nov-body"><div class="nov-course">📘 Finanzas I <span class="novc" style="background:#1d4ed8;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">12 nuevos</span></div><div class="nov-files"><div class="nov-file"><span>📊</span> CLASE N° 8 ALBA.pptx · 3.8 MB</div><div class="nov-file"><span>📕</span> u-3-finanzas-i-Ul4sa3KU.pdf · 2.2 MB</div><div class="nov-file"><span>📋</span> Caso Cencosud.xlsx · 32 KB</div><div class="nov-file" style="color:#374151;">+ 9 más...</div></div><div class="nov-actions"><button class="na1">📌 Actualizar</button><button class="na2">Ver todos</button></div></div></div>
+    <div class="nov-item"><div class="nov-date">12 abr</div><div class="nov-body"><div class="nov-course">📗 Marketing II <span class="novc" style="background:#f59e0b;color:#000;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">18 arch.</span></div><div class="nov-files"><div class="nov-file"><span>📊</span> Intro Marketing Moderno.pptx</div><div class="nov-file" style="color:#374151;">+ 17 más...</div></div><div class="nov-actions"><button class="na1" style="background:#f59e0b;color:#000;">🚀 Importar</button><button class="na2">Ver</button></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ V2B ══════════ -->
+<div class="frame v2b" id="f-v2b">
+  <div style="max-width:760px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">Sincronizado hace 2h</div></div></div><div style="display:flex;gap:8px;"><button class="pbtn">↻ Sincronizar</button><button class="pbtn">⚙ Cambiar</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE · Universidad del Alba</div>
+    <div class="tl-section">
+      <div class="tl-title">📅 Semestre I-2026 — En curso</div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node green"></div><div class="tl-vert"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📘</div><div><div class="tl-name">Finanzas I</div><div class="tl-code">FINANZAS_I7-VESPERTINO-470695</div><div class="tl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 arch.</span><span class="tag tr">12 nuevos</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node orange"></div><div class="tl-vert"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Marketing Estratégico II</div><div class="tl-code">MARKETING_II-DIURNO-470812</div><div class="tl-tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 arch.</span></div></div></div><span class="tl-action" style="color:#d97706;">Importar →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node green"></div></div><div class="tl-card"><div class="tl-card-l"><div class="tl-ico">📘</div><div><div class="tl-name">Estadística Aplicada</div><div class="tl-code">ESTADISTICA_APLIC_3-470631</div><div class="tl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag ts">47 arch.</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+    </div>
+    <div class="tl-section">
+      <div class="tl-title">🗂 Semestres anteriores</div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node"></div><div class="tl-vert"></div></div><div class="tl-card" style="opacity:.6;"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Economía I</div><div class="tl-tags"><span class="tag ts">89 arch. · 2025</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+      <div class="tl-item"><div class="tl-line"><div class="tl-node"></div></div><div class="tl-card" style="opacity:.6;"><div class="tl-card-l"><div class="tl-ico">📗</div><div><div class="tl-name">Contabilidad II</div><div class="tl-tags"><span class="tag ts">62 arch. · 2025</span></div></div></div><span class="tl-action">Ver →</span></div></div>
+    </div>
+    <div class="tl-title" style="margin-top:20px;">📥 Material nuevo detectado</div>
+    <div class="nov-item"><div class="nov-date">13 abr<br>hoy</div><div class="nov-body"><div class="nov-course">📘 Finanzas I <span style="background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">12 nuevos</span></div><div class="nov-files"><div class="nov-file"><span>📊</span> CLASE N° 8 ALBA.pptx · 3.8 MB</div><div class="nov-file"><span>📕</span> u-3-finanzas-i-Ul4sa3KU.pdf · 2.2 MB</div><div class="nov-file" style="color:#94a3b8;">+ 10 más...</div></div><div class="nov-actions"><button class="na1">📌 Actualizar</button><button class="na2">Ver todos</button></div></div></div>
+    <div class="nov-item"><div class="nov-date">12 abr</div><div class="nov-body"><div class="nov-course">📗 Marketing II <span style="background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;">18 arch. nueva</span></div><div class="nov-files"><div class="nov-file"><span>📊</span> Intro Marketing Moderno.pptx</div><div class="nov-file" style="color:#94a3b8;">+ 17 más...</div></div><div class="nov-actions"><button class="na1" style="background:#d97706;">🚀 Importar</button><button class="na2">Ver</button></div></div></div>
+  </div>
+</div>
+
+<!-- ══════════ V3A ══════════ -->
+<div class="frame v3a" id="f-v3a">
+  <div style="max-width:960px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">Sincronizado hace 2h</div></div></div><div style="display:flex;gap:8px;"><button class="pbtn">↻ Sincronizar</button><button class="pbtn">⚙</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE</div>
+    <div class="layout">
+      <div>
+        <div class="sec-h"><span>📅 Semestre I-2026 — En curso</span><button style="font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid #1a2535;background:transparent;color:#4c5680;cursor:pointer;">+ Agregar</button></div>
+        <div class="course-list">
+          <div class="cl-item linked"><div class="cl-ico">📘</div><div class="cl-info"><div class="cl-name">Finanzas I</div><div class="cl-code">FINANZAS_I7-VESPERTINO-470695</div><div class="cl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 arch.</span><span class="tag tr">12 nuevos</span></div></div><button class="cl-btn">Ver →</button></div>
+          <div class="cl-item unlinked"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Marketing Estratégico II</div><div class="cl-code">MARKETING_II-DIURNO-470812</div><div class="cl-tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 arch.</span></div></div><button class="cl-btn cl-btn2">🚀 Importar</button></div>
+          <div class="cl-item linked"><div class="cl-ico">📘</div><div class="cl-info"><div class="cl-name">Estadística Aplicada</div><div class="cl-code">ESTADISTICA_APLIC_3-470631</div><div class="cl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag ts">47 arch.</span></div></div><button class="cl-btn">Ver →</button></div>
+        </div>
+        <div class="sec-h" style="margin-top:4px;"><span>🗂 Semestres anteriores</span></div>
+        <div class="course-list">
+          <div class="cl-item" style="opacity:.55;"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Economía I</div><div class="cl-tags"><span class="tag ts">89 arch. · 2025</span></div></div><button class="cl-btn">Ver →</button></div>
+          <div class="cl-item" style="opacity:.55;"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Contabilidad II</div><div class="cl-tags"><span class="tag ts">62 arch. · 2025</span></div></div><button class="cl-btn">Ver →</button></div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="sw"><div class="sw-h">Resumen</div><div class="stat-row"><div class="stat"><div class="stat-n">3</div><div class="stat-l">Activas</div></div><div class="stat"><div class="stat-n">370</div><div class="stat-l">Archivos</div></div><div class="stat"><div class="stat-n">30</div><div class="stat-l">Nuevos</div></div></div></div>
+        <div class="sw"><div class="sw-h">📥 Material nuevo</div><div class="nov-mini"><div class="nm"><div class="nm-title">📘 Finanzas I <span class="nm-count">12</span></div><div class="nm-files">CLASE N°8 · u-3-finanzas.pdf<br>Caso Cencosud.xlsx · +9 más</div><div class="nm-act"><button class="nm-a1">📌 Actualizar</button><button class="nm-a2">Ver todo</button></div></div><div class="nm"><div class="nm-title" style="color:#fcd34d;">📗 Marketing II <span class="nm-count" style="background:#f59e0b;color:#000;">18</span></div><div class="nm-files">Intro Marketing · Kotler Cap1<br>+16 archivos nuevos</div><div class="nm-act"><button class="nm-a1" style="background:#f59e0b;color:#000;">🚀 Importar</button><button class="nm-a2">Ver</button></div></div></div></div>
+        <div class="sw"><div class="sw-h">📚 Anteriores</div><div class="past-mini"><div class="pm"><span>📗</span><span class="pm-name">Economía I</span><span class="pm-year">2025</span></div><div class="pm"><span>📗</span><span class="pm-name">Contabilidad II</span><span class="pm-year">2025</span></div><div class="pm"><span>📗</span><span class="pm-name">Derecho Comercial</span><span class="pm-year">2024</span></div><div class="pm"><span>📗</span><span class="pm-name">Macroeconomía</span><span class="pm-year">2024</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ V3B ══════════ -->
+<div class="frame v3b" id="f-v3b">
+  <div style="max-width:960px;margin:0 auto;">
+    <div class="pbar"><div class="pbar-l"><span class="dot"></span><div><div class="pname">Moodle — Universidad del Alba</div><div class="pmeta">Sincronizado hace 2h</div></div></div><div style="display:flex;gap:8px;"><button class="pbtn">↻ Sincronizar</button><button class="pbtn">⚙ Cambiar</button></div></div>
+    <h1>🎓 Mi Universidad</h1><div class="sub">Ingeniería Comercial ADVANCE · Universidad del Alba</div>
+    <div class="layout">
+      <div>
+        <div class="sec-h"><span>📅 Semestre I-2026 — En curso</span><button style="font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid #e2e8f0;background:transparent;color:#94a3b8;cursor:pointer;">+ Agregar</button></div>
+        <div class="course-list">
+          <div class="cl-item linked"><div class="cl-ico">📘</div><div class="cl-info"><div class="cl-name">Finanzas I</div><div class="cl-code">FINANZAS_I7-VESPERTINO-470695</div><div class="cl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag tb">305 arch.</span><span class="tag tr">12 nuevos</span></div></div><button class="cl-btn">Ver →</button></div>
+          <div class="cl-item unlinked"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Marketing Estratégico II</div><div class="cl-code">MARKETING_II-DIURNO-470812</div><div class="cl-tags"><span class="tag to">⚡ Sin importar</span><span class="tag ts">18 arch.</span></div></div><button class="cl-btn cl-btn2">🚀 Importar</button></div>
+          <div class="cl-item linked"><div class="cl-ico">📘</div><div class="cl-info"><div class="cl-name">Estadística Aplicada</div><div class="cl-code">ESTADISTICA_APLIC_3-470631</div><div class="cl-tags"><span class="tag tg">✓ Vinculada</span><span class="tag ts">47 arch.</span></div></div><button class="cl-btn">Ver →</button></div>
+        </div>
+        <div class="sec-h" style="margin-top:4px;"><span>🗂 Semestres anteriores</span></div>
+        <div class="course-list">
+          <div class="cl-item" style="opacity:.6;"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Economía I</div><div class="cl-tags"><span class="tag ts">89 arch. · 2025</span></div></div><button class="cl-btn">Ver →</button></div>
+          <div class="cl-item" style="opacity:.6;"><div class="cl-ico">📗</div><div class="cl-info"><div class="cl-name">Contabilidad II</div><div class="cl-tags"><span class="tag ts">62 arch. · 2025</span></div></div><button class="cl-btn">Ver →</button></div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <div class="sw"><div class="sw-h">Resumen</div><div class="stat-row"><div class="stat"><div class="stat-n">3</div><div class="stat-l">Activas</div></div><div class="stat"><div class="stat-n">370</div><div class="stat-l">Archivos</div></div><div class="stat"><div class="stat-n">30</div><div class="stat-l">Nuevos</div></div></div></div>
+        <div class="sw"><div class="sw-h">📥 Material nuevo</div><div class="nov-mini"><div class="nm"><div class="nm-title">📘 Finanzas I <span class="nm-count">12</span></div><div class="nm-files">CLASE N°8 · u-3-finanzas.pdf<br>Caso Cencosud.xlsx · +9 más</div><div class="nm-act"><button class="nm-a1">📌 Actualizar</button><button class="nm-a2">Ver todo</button></div></div><div class="nm"><div class="nm-title" style="color:#92400e;">📗 Marketing II <span class="nm-count" style="background:#d97706;">18</span></div><div class="nm-files">Intro Marketing · Kotler Cap1<br>+16 archivos</div><div class="nm-act"><button class="nm-a1" style="background:#d97706;">🚀 Importar</button><button class="nm-a2">Ver</button></div></div></div></div>
+        <div class="sw"><div class="sw-h">📚 Anteriores</div><div class="past-mini"><div class="pm"><span>📗</span><span class="pm-name">Economía I</span><span class="pm-year">2025</span></div><div class="pm"><span>📗</span><span class="pm-name">Contabilidad II</span><span class="pm-year">2025</span></div><div class="pm"><span>📗</span><span class="pm-name">Derecho Comercial</span><span class="pm-year">2024</span></div></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function show(id, btn) {
+  document.querySelectorAll('.frame').forEach(f => f.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('f-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

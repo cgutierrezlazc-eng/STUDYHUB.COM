@@ -79,75 +79,61 @@ export default function Messages({ conversationId, onNavigate }: Props) {
     const unsubConnection = wsService.onConnection((connected) => {
       setWsConnected(connected)
       if (connected) {
-        // Stop polling when WS is connected
+        // Stop polling when WS reconnects
         if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null }
+      } else {
+        // WS disconnected — restart polling for active conversation
+        if (activeConv && !pollRef.current) {
+          pollRef.current = setInterval(() => loadMessages(activeConv), 5000)
+        }
       }
     })
 
-    // Handle incoming messages
+    // Normaliza el payload de un mensaje — soporta tanto formato WS (flat camelCase)
+    // como formato REST (sender anidado). Siempre devuelve ConversationMessage.
+    const normalizeMessage = (m: any): ConversationMessage => ({
+      id: m.id,
+      conversationId: m.conversationId,
+      sender: m.sender || {
+        id: m.senderId || '',
+        username: m.senderUsername || '',
+        firstName: m.senderFirstName || '',
+        lastName: m.senderLastName || '',
+        avatar: m.senderAvatar || '',
+        userNumber: 0,
+      },
+      content: m.content,
+      messageType: m.messageType || 'text',
+      documentName: m.documentName,
+      documentPath: m.documentPath,
+      isFlagged: m.isFlagged || false,
+      isDeleted: m.isDeleted || false,
+      createdAt: m.createdAt,
+      replyToId: m.replyToId,
+      replyToContent: m.replyToContent,
+      replyToSenderName: m.replyToSenderName,
+      moderationStatus: m.moderationStatus || 'approved',
+    })
+
+    // Handle incoming messages (from other users)
     const unsubNewMsg = wsService.on('new_message', (data) => {
       if (data.conversation_id === activeConv) {
         setMessages(prev => {
           if (prev.some(m => m.id === data.message.id)) return prev
-          const msg: ConversationMessage = {
-            id: data.message.id,
-            conversationId: data.message.conversationId,
-            sender: {
-              id: data.message.senderId,
-              username: data.message.senderUsername || '',
-              firstName: data.message.senderFirstName || '',
-              lastName: data.message.senderLastName || '',
-              avatar: data.message.senderAvatar || '',
-              userNumber: 0,
-            },
-            content: data.message.content,
-            messageType: data.message.messageType || 'text',
-            isFlagged: data.message.isFlagged || false,
-            isDeleted: false,
-            createdAt: data.message.createdAt,
-            replyToId: data.message.replyToId,
-            replyToContent: data.message.replyToContent,
-            replyToSenderName: data.message.replyToSenderName,
-            moderationStatus: data.message.moderationStatus || 'approved',
-          }
-          return [...prev, msg]
+          return [...prev, normalizeMessage(data.message)]
         })
-        // Count new messages when not scrolled to bottom
-        if (!isAtBottom) {
-          setNewMessagesCount(prev => prev + 1)
-        }
+        if (!isAtBottom) setNewMessagesCount(prev => prev + 1)
       }
       // Refresh conversation list for last message preview
       loadConversations()
     })
 
-    // Handle sent message confirmation
+    // Handle sent message confirmation (own message echo back)
     const unsubSent = wsService.on('message_sent', (data) => {
       if (data.conversation_id === activeConv) {
         setMessages(prev => {
           if (prev.some(m => m.id === data.message.id)) return prev
-          const msg: ConversationMessage = {
-            id: data.message.id,
-            conversationId: data.message.conversationId,
-            sender: {
-              id: data.message.senderId,
-              username: data.message.senderUsername || '',
-              firstName: data.message.senderFirstName || '',
-              lastName: data.message.senderLastName || '',
-              avatar: data.message.senderAvatar || '',
-              userNumber: 0,
-            },
-            content: data.message.content,
-            messageType: data.message.messageType || 'text',
-            isFlagged: data.message.isFlagged || false,
-            isDeleted: false,
-            createdAt: data.message.createdAt,
-            replyToId: data.message.replyToId,
-            replyToContent: data.message.replyToContent,
-            replyToSenderName: data.message.replyToSenderName,
-            moderationStatus: data.message.moderationStatus || 'approved',
-          }
-          return [...prev, msg]
+          return [...prev, normalizeMessage(data.message)]
         })
       }
     })

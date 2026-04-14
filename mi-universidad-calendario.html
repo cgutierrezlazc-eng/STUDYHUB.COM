@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Universidad — Calendario Sidebar · Conniku</title>
+<style>
+  /* ── Reset & base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-primary); color: var(--text-primary); transition: background .2s, color .2s; }
+
+  /* ── Theme: Dark (default) ── */
+  :root {
+    --bg-primary:    #0f1117;
+    --bg-card:       #1a1f2e;
+    --bg-secondary:  #232838;
+    --border:        rgba(255,255,255,0.08);
+    --border-subtle: rgba(255,255,255,0.05);
+    --text-primary:  #f0f2f8;
+    --text-secondary:#b0b8d0;
+    --text-muted:    #6b7280;
+    --accent:        #1a56db;
+    --accent-hover:  #2563eb;
+  }
+  /* ── Theme: Light ── */
+  body.light {
+    --bg-primary:    #f3f4f6;
+    --bg-card:       #ffffff;
+    --bg-secondary:  #f9fafb;
+    --border:        rgba(0,0,0,0.09);
+    --border-subtle: rgba(0,0,0,0.05);
+    --text-primary:  #111827;
+    --text-secondary:#374151;
+    --text-muted:    #9ca3af;
+    --accent:        #1a56db;
+    --accent-hover:  #2563eb;
+  }
+
+  /* ── Theme switcher ── */
+  .theme-bar {
+    position: fixed; top: 12px; right: 16px; z-index: 999;
+    display: flex; gap: 6px;
+  }
+  .theme-bar button {
+    padding: 5px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--bg-card); color: var(--text-secondary);
+    cursor: pointer; font-size: 12px; font-weight: 600; transition: all .15s;
+  }
+  .theme-bar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ── Page shell ── */
+  .page { max-width: 1100px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* ── Platform bar ── */
+  .platform-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(135deg, rgba(10,30,70,0.7) 0%, rgba(26,86,219,0.5) 100%);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 12px; padding: 10px 16px; margin-bottom: 20px;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .platform-bar-left { display: flex; align-items: center; gap: 8px; }
+  .dot-green { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981; flex-shrink: 0; }
+  .platform-name { font-size: 13px; font-weight: 600; color: #fff; }
+  .platform-time { font-size: 11px; color: rgba(255,255,255,0.45); }
+  .btn-sync {
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 5px 13px; font-size: 12px; cursor: pointer;
+    color: #fff; display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── Page title ── */
+  .page-title { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+  /* ── Layout: main + sidebar ── */
+  .layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+
+  /* ── Asignaturas section ── */
+  .section-label {
+    font-size: 11px; font-weight: 800; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--text-muted);
+    display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+  }
+  .badge-count {
+    background: var(--accent); color: #fff; font-size: 10px;
+    font-weight: 700; padding: 1px 8px; border-radius: 99px;
+  }
+  .courses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 28px; }
+
+  /* ── Course card ── */
+  .course-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06); transition: box-shadow .15s;
+    cursor: pointer;
+  }
+  .course-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.14); }
+  .course-card.linked  { border-left: 4px solid #10b981; }
+  .course-card.unlinked{ border-left: 4px solid #f97316; }
+  .course-card-body { padding: 14px 14px 10px; flex: 1; }
+  .course-card-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .badge-linked   { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: rgba(16,185,129,.12); color: #10b981; }
+  .badge-unlinked { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: rgba(249,115,22,.12); color: #f97316; }
+  .badge-new      { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: #3b82f6; color: #fff; margin-right: 4px; }
+  .course-name    { font-size: 13px; font-weight: 700; color: var(--text-primary); line-height: 1.35; margin-bottom: 4px; }
+  .course-sync    { font-size: 10px; color: var(--text-muted); font-family: monospace; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .course-stats   { font-size: 11px; color: var(--text-muted); }
+  .course-action  {
+    width: 100%; border: none; border-top: 1px solid var(--border);
+    padding: 9px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .course-action.green { background: rgba(16,185,129,.07); color: #10b981; }
+  .course-action.orange{ background: rgba(249,115,22,.07); color: #f97316; }
+
+  /* ═══════════════════════════════
+     SIDEBAR DERECHO — CALENDARIO
+  ═══════════════════════════════ */
+  .cal-sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 20px; }
+
+  /* ── Mini Calendario ── */
+  .cal-widget {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .cal-widget-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 10px; border-bottom: 1px solid var(--border-subtle);
+  }
+  .cal-month-label { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .cal-nav { display: flex; gap: 2px; }
+  .cal-nav button {
+    background: none; border: none; cursor: pointer; color: var(--text-muted);
+    font-size: 16px; padding: 2px 6px; border-radius: 6px; line-height: 1;
+    transition: background .12s;
+  }
+  .cal-nav button:hover { background: var(--bg-secondary); color: var(--text-primary); }
+
+  .cal-grid { padding: 10px 14px 14px; }
+  .cal-dow  { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 6px; }
+  .cal-dow span { text-align: center; font-size: 10px; font-weight: 700; color: var(--text-muted); padding: 2px 0; text-transform: uppercase; }
+  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-day {
+    position: relative; aspect-ratio: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; border-radius: 8px;
+    font-size: 12px; font-weight: 500; color: var(--text-secondary);
+    cursor: pointer; transition: background .12s;
+  }
+  .cal-day:hover { background: var(--bg-secondary); }
+  .cal-day.other-month { color: var(--text-muted); opacity: .4; }
+  .cal-day.today {
+    background: var(--accent); color: #fff; font-weight: 800;
+    box-shadow: 0 2px 8px rgba(26,86,219,.35);
+  }
+  .cal-day.today:hover { background: var(--accent-hover); }
+  .cal-day.has-events::after {
+    content: ''; position: absolute; bottom: 3px;
+    width: 4px; height: 4px; border-radius: 50%; background: #10b981;
+  }
+  .cal-day.today.has-events::after { background: rgba(255,255,255,.8); }
+  .cal-day.has-exam::after  { background: #ef4444; }
+  .cal-day.has-assign::after { background: #f59e0b; }
+  .cal-day.has-class::after  { background: #3b82f6; }
+  .cal-day.selected { background: rgba(26,86,219,.15); border: 1.5px solid var(--accent); color: var(--accent); }
+
+  /* ── Sync button ── */
+  .cal-sync-btn {
+    width: calc(100% - 28px); margin: 0 14px 14px;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 9px; padding: 8px; font-size: 12px; font-weight: 700;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background .15s;
+  }
+  .cal-sync-btn:hover { background: var(--accent-hover); }
+
+  /* ── Eventos próximos ── */
+  .events-widget {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; overflow: hidden;
+  }
+  .events-widget-header {
+    padding: 12px 16px 10px; border-bottom: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .events-widget-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+  .events-widget-count { font-size: 11px; color: var(--text-muted); }
+  .events-list { display: flex; flex-direction: column; }
+
+  .event-row {
+    padding: 11px 14px; border-bottom: 1px solid var(--border-subtle);
+    display: flex; flex-direction: column; gap: 6px; cursor: pointer;
+    transition: background .12s;
+  }
+  .event-row:last-child { border-bottom: none; }
+  .event-row:hover { background: var(--bg-secondary); }
+  .event-row-top { display: flex; align-items: flex-start; gap: 8px; }
+  .event-icon {
+    width: 28px; height: 28px; border-radius: 8px; display: flex;
+    align-items: center; justify-content: center; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .event-icon.assign  { background: rgba(245,158,11,.15); }
+  .event-icon.exam    { background: rgba(239, 68, 68,.15); }
+  .event-icon.class   { background: rgba(59,130,246,.15); }
+  .event-icon.forum   { background: rgba(16,185,129,.15); }
+
+  .event-info { flex: 1; min-width: 0; }
+  .event-title { font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .event-course { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+  .event-alert-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    flex-shrink: 0; white-space: nowrap; align-self: flex-start;
+  }
+  .event-alert-badge.urgent  { background: rgba(239,68,68,.15); color: #ef4444; }
+  .event-alert-badge.warning { background: rgba(245,158,11,.15); color: #f59e0b; }
+  .event-alert-badge.ok      { background: rgba(16,185,129,.15); color: #10b981; }
+
+  /* ── Countdown bar ── */
+  .countdown-wrap { display: flex; align-items: center; gap: 8px; }
+  .countdown-bar-track {
+    flex: 1; height: 4px; border-radius: 99px;
+    background: var(--border); overflow: hidden;
+  }
+  .countdown-bar-fill { height: 100%; border-radius: 99px; transition: width .3s; }
+  .countdown-bar-fill.urgent  { background: #ef4444; }
+  .countdown-bar-fill.warning { background: #f59e0b; }
+  .countdown-bar-fill.ok      { background: #10b981; }
+  .countdown-label { font-size: 10px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+  .countdown-label.urgent  { color: #ef4444; }
+  .countdown-label.warning { color: #f59e0b; }
+  .countdown-label.ok      { color: #10b981; }
+
+  /* ── Notif settings toggle ── */
+  .notif-settings {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 16px;
+  }
+  .notif-settings-title { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .notif-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0; border-bottom: 1px solid var(--border-subtle);
+  }
+  .notif-row:last-child { border-bottom: none; }
+  .notif-row-left { display: flex; align-items: center; gap: 7px; }
+  .notif-row-icon { font-size: 14px; }
+  .notif-row-label { font-size: 12px; color: var(--text-secondary); }
+
+  /* Toggle switch */
+  .toggle { position: relative; display: inline-block; width: 34px; height: 18px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider {
+    position: absolute; inset: 0; border-radius: 99px;
+    background: var(--border); cursor: pointer; transition: background .2s;
+  }
+  .toggle-slider::before {
+    content: ''; position: absolute; width: 13px; height: 13px;
+    background: #fff; border-radius: 50%; top: 2.5px; left: 2.5px;
+    transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(16px); }
+
+  /* ── Empty state ── */
+  .empty-cal {
+    padding: 24px 16px; text-align: center;
+    font-size: 12px; color: var(--text-muted); line-height: 1.6;
+  }
+  .empty-cal-icon { font-size: 26px; margin-bottom: 6px; }
+
+  /* ── Material nuevo (left main) ── */
+  .novedades-section { margin-top: 8px; }
+  .novedad-card {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 13px; overflow: hidden; margin-bottom: 10px;
+  }
+  .novedad-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; cursor: pointer;
+    background: none; border: none; width: 100%; text-align: left;
+  }
+  .novedad-header-left { display: flex; align-items: center; gap: 9px; }
+  .novedad-title { font-size: 14px; font-weight: 700; color: var(--text-primary); }
+  .novedad-badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 99px; }
+
+  /* ── Tooltip / info box ── */
+  .info-box {
+    background: rgba(26,86,219,.08); border: 1px solid rgba(26,86,219,.2);
+    border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--text-secondary);
+    display: flex; gap: 8px; align-items: flex-start; margin-top: 4px;
+  }
+  .info-box-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+</style>
+</head>
+<body>
+
+<!-- Theme switcher -->
+<div class="theme-bar">
+  <button id="btn-dark" class="active" onclick="setTheme('dark')">🌙 Oscuro</button>
+  <button id="btn-light" onclick="setTheme('light')">☀️ Claro</button>
+</div>
+
+<div class="page">
+
+  <!-- Platform bar -->
+  <div class="platform-bar">
+    <div class="platform-bar-left">
+      <div class="dot-green"></div>
+      <span class="platform-name">Universidad de Chile — Ucampus</span>
+      <span class="platform-time">· hace 12 min</span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button class="btn-sync">↻ Sincronizar</button>
+      <button class="btn-sync" style="opacity:.7">⚙ Cambiar plataforma</button>
+    </div>
+  </div>
+
+  <!-- Page title -->
+  <h1 class="page-title">🎓 Mi Universidad</h1>
+
+  <!-- 2-column layout -->
+  <div class="layout">
+
+    <!-- ═══════════ COLUMNA IZQUIERDA ═══════════ -->
+    <div>
+      <!-- Asignaturas en curso -->
+      <div class="section-label">
+        📅 Semestre actual — en curso
+        <span class="badge-count">4</span>
+      </div>
+
+      <div class="courses-grid">
+
+        <!-- Card vinculada -->
+        <div class="course-card linked">
+          <div class="course-card-body">
+            <div class="course-card-top">
+              <span style="font-size:22px">📘</span>
+              <div>
+                <span class="badge-new">2 nuevos</span>
+                <span class="badge-linked">✓ Vinculada</span>
+              </div>
+            </div>
+            <div class="course-name">Cálculo Diferencial</div>
+            <div class="course-sync">🔗 MAT1610-2026-1</div>
+            <div class="course-stats">📄 47 arch. · ↻ hace 12 min</div>
+          </div>
+          <button class="course-action green">Ver asignatura →</button>
+        </div>
+
+        <!-- Card sin importar -->
+        <div class="course-card unlinked">
+          <div class="course-card-body">
+            <div class="course-card-top">
+              <span style="font-size:22px">📘</span>
+              <span class="badge-unlinked">⚡ Sin importar</span>
+            </div>
+            <div class="course-name">Estadística para Ingeniería</div>
+            <div class="course-stats">📄 23 arch.</div>
+          </div>
+          <button class="course-action orange">🚀 Importar</button>
+        </div>
+
+        <!-- Card vinculada -->
+        <div class="course-card linked">
+          <div class="course-card-body">
+            <div class="course-card-top">
+              <span style="font-size:22px">📘</span>
+              <span class="badge-linked">✓ Vinculada</span>
+            </div>
+            <div class="course-name">Física II — Electromagnetismo</div>
+            <div class="course-sync">🔗 FIS1522-2026-1</div>
+            <div class="course-stats">📄 61 arch. · ↻ hace 1 h</div>
+          </div>
+          <button class="course-action green">Ver asignatura →</button>
+        </div>
+
+        <!-- Card vinculada con nuevos -->
+        <div class="course-card linked">
+          <div class="course-card-body">
+            <div class="course-card-top">
+              <span style="font-size:22px">📘</span>
+              <div>
+                <span class="badge-new">5 nuevos</span>
+                <span class="badge-linked">✓ Vinculada</span>
+              </div>
+            </div>
+            <div class="course-name">Redes de Computadores</div>
+            <div class="course-sync">🔗 CC4303-2026-1</div>
+            <div class="course-stats">📄 38 arch. · ↻ hace 3 h</div>
+          </div>
+          <button class="course-action green">Ver asignatura →</button>
+        </div>
+
+      </div>
+
+      <!-- Material nuevo -->
+      <div class="section-label" style="margin-top:4px">
+        📥 Material nuevo detectado
+        <span class="badge-count">7 archivos</span>
+      </div>
+
+      <div class="novedades-section">
+        <div class="novedad-card">
+          <button class="novedad-header">
+            <div class="novedad-header-left">
+              <span style="font-size:16px">📘</span>
+              <span class="novedad-title">Redes de Computadores</span>
+              <span class="novedad-badge">5 nuevos</span>
+              <span style="font-size:11px;color:var(--text-muted)">13 abr</span>
+            </div>
+            <span style="color:var(--text-muted);font-size:11px">▼</span>
+          </button>
+        </div>
+
+        <div class="novedad-card">
+          <button class="novedad-header">
+            <div class="novedad-header-left">
+              <span style="font-size:16px">📘</span>
+              <span class="novedad-title">Cálculo Diferencial</span>
+              <span class="novedad-badge">2 nuevos</span>
+              <span style="font-size:11px;color:var(--text-muted)">12 abr</span>
+            </div>
+            <span style="color:var(--text-muted);font-size:11px">▼</span>
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /columna izquierda -->
+
+    <!-- ═══════════ COLUMNA DERECHA — CALENDARIO ═══════════ -->
+    <div class="cal-sidebar">
+
+      <!-- ── Mini Calendar ── -->
+      <div class="cal-widget">
+        <div class="cal-widget-header">
+          <div>
+            <div class="cal-month-label">Abril 2026</div>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:2px">3 eventos esta semana</div>
+          </div>
+          <div class="cal-nav">
+            <button>‹</button>
+            <button>›</button>
+          </div>
+        </div>
+
+        <div class="cal-grid">
+          <!-- Day-of-week headers -->
+          <div class="cal-dow">
+            <span>L</span><span>M</span><span>M</span>
+            <span>J</span><span>V</span><span>S</span><span>D</span>
+          </div>
+
+          <!-- Days grid — Abril 2026: starts Wednesday -->
+          <div class="cal-days">
+            <!-- Week 1: fill Mon-Tue from March -->
+            <div class="cal-day other-month">30</div>
+            <div class="cal-day other-month">31</div>
+            <div class="cal-day">1</div>
+            <div class="cal-day">2</div>
+            <div class="cal-day">3</div>
+            <div class="cal-day">4</div>
+            <div class="cal-day">5</div>
+
+            <!-- Week 2 -->
+            <div class="cal-day has-events has-class">6</div>
+            <div class="cal-day">7</div>
+            <div class="cal-day has-events has-assign">8</div>
+            <div class="cal-day has-events has-class">9</div>
+            <div class="cal-day has-events has-assign">10</div>
+            <div class="cal-day">11</div>
+            <div class="cal-day">12</div>
+
+            <!-- Week 3 -->
+            <div class="cal-day has-events has-class">13</div>
+            <div class="cal-day today has-events has-exam selected">14</div>
+            <div class="cal-day has-events has-exam">15</div>
+            <div class="cal-day has-events has-class">16</div>
+            <div class="cal-day">17</div>
+            <div class="cal-day">18</div>
+            <div class="cal-day">19</div>
+
+            <!-- Week 4 -->
+            <div class="cal-day has-events has-class">20</div>
+            <div class="cal-day has-events has-assign">21</div>
+            <div class="cal-day">22</div>
+            <div class="cal-day has-events has-class">23</div>
+            <div class="cal-day has-events has-forum">24</div>
+            <div class="cal-day">25</div>
+            <div class="cal-day">26</div>
+
+            <!-- Week 5 -->
+            <div class="cal-day has-events has-class">27</div>
+            <div class="cal-day has-events has-assign">28</div>
+            <div class="cal-day has-events has-exam">29</div>
+            <div class="cal-day">30</div>
+            <div class="cal-day other-month">1</div>
+            <div class="cal-day other-month">2</div>
+            <div class="cal-day other-month">3</div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div style="display:flex;gap:10px;padding:0 14px 12px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)">
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b"></div> Tarea
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)">
+            <div style="width:7px;height:7px;border-radius:50%;background:#ef4444"></div> Examen
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)">
+            <div style="width:7px;height:7px;border-radius:50%;background:#3b82f6"></div> Clase
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-muted)">
+            <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div> Foro
+          </div>
+        </div>
+
+        <!-- Sync button -->
+        <button class="cal-sync-btn">📅 Sincronizar calendario universitario</button>
+      </div>
+
+      <!-- ── Próximos eventos + Countdown ── -->
+      <div class="events-widget">
+        <div class="events-widget-header">
+          <span class="events-widget-title">⏱ Próximos eventos</span>
+          <span class="events-widget-count">5 pendientes</span>
+        </div>
+
+        <div class="events-list">
+
+          <!-- EVENTO URGENTE: hoy -->
+          <div class="event-row">
+            <div class="event-row-top">
+              <div class="event-icon exam">🧩</div>
+              <div class="event-info">
+                <div class="event-title">Quiz Unidad 4 — Cálculo</div>
+                <div class="event-course">Cálculo Diferencial · Hoy 18:00</div>
+              </div>
+              <span class="event-alert-badge urgent">🔔 HOY</span>
+            </div>
+            <div class="countdown-wrap">
+              <div class="countdown-bar-track">
+                <div class="countdown-bar-fill urgent" style="width:88%"></div>
+              </div>
+              <span class="countdown-label urgent">3h 45m</span>
+            </div>
+          </div>
+
+          <!-- EVENTO URGENTE: mañana -->
+          <div class="event-row">
+            <div class="event-row-top">
+              <div class="event-icon assign">📝</div>
+              <div class="event-info">
+                <div class="event-title">Entrega Tarea 3 — Circuitos</div>
+                <div class="event-course">Física II · Mañana 23:59</div>
+              </div>
+              <span class="event-alert-badge warning">⚠ 24h</span>
+            </div>
+            <div class="countdown-wrap">
+              <div class="countdown-bar-track">
+                <div class="countdown-bar-fill warning" style="width:72%"></div>
+              </div>
+              <span class="countdown-label warning">21h 12m</span>
+            </div>
+          </div>
+
+          <!-- CLASE SINCRÓNICA: pronto -->
+          <div class="event-row">
+            <div class="event-row-top">
+              <div class="event-icon class">🎥</div>
+              <div class="event-info">
+                <div class="event-title">Clase Zoom — Protocolo TCP/IP</div>
+                <div class="event-course">Redes de Computadores · Mié 10:00</div>
+              </div>
+              <span class="event-alert-badge ok">2 días</span>
+            </div>
+            <div class="countdown-wrap">
+              <div class="countdown-bar-track">
+                <div class="countdown-bar-fill ok" style="width:30%"></div>
+              </div>
+              <span class="countdown-label ok">2d 14h</span>
+            </div>
+          </div>
+
+          <!-- EXAMEN -->
+          <div class="event-row">
+            <div class="event-row-top">
+              <div class="event-icon exam">📋</div>
+              <div class="event-info">
+                <div class="event-title">Solemne 1 — Estadística</div>
+                <div class="event-course">Estadística · Jue 15 abr 14:00</div>
+              </div>
+              <span class="event-alert-badge ok">3 días</span>
+            </div>
+            <div class="countdown-wrap">
+              <div class="countdown-bar-track">
+                <div class="countdown-bar-fill ok" style="width:22%"></div>
+              </div>
+              <span class="countdown-label ok">3d 2h</span>
+            </div>
+          </div>
+
+          <!-- FORO -->
+          <div class="event-row">
+            <div class="event-row-top">
+              <div class="event-icon forum">💬</div>
+              <div class="event-info">
+                <div class="event-title">Foro Reflexión — Seguridad en Redes</div>
+                <div class="event-course">Redes · Vie 16 abr 23:59</div>
+              </div>
+              <span class="event-alert-badge ok">4 días</span>
+            </div>
+            <div class="countdown-wrap">
+              <div class="countdown-bar-track">
+                <div class="countdown-bar-fill ok" style="width:15%"></div>
+              </div>
+              <span class="countdown-label ok">4d 8h</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── Configuración de alertas ── -->
+      <div class="notif-settings">
+        <div class="notif-settings-title">🔔 Alertas automáticas</div>
+
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <span class="notif-row-icon">📱</span>
+            <span class="notif-row-label">Push (app)</span>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <span class="notif-row-icon">🔔</span>
+            <span class="notif-row-label">In-app</span>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="notif-row">
+          <div class="notif-row-left">
+            <span class="notif-row-icon">✉️</span>
+            <span class="notif-row-label">Email</span>
+          </div>
+          <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+        </div>
+
+        <div class="info-box" style="margin-top:10px">
+          <span class="info-box-icon">ℹ️</span>
+          <span>Tareas y exámenes: <strong>24h antes</strong>. Clases sincrónicas: <strong>15 min antes</strong>.</span>
+        </div>
+      </div>
+
+    </div><!-- /cal-sidebar -->
+
+  </div><!-- /layout -->
+</div><!-- /page -->
+
+<script>
+function setTheme(t) {
+  document.body.classList.toggle('light', t === 'light')
+  document.getElementById('btn-dark').classList.toggle('active', t === 'dark')
+  document.getElementById('btn-light').classList.toggle('active', t === 'light')
+}
+
+// Live countdown update
+function updateCountdowns() {
+  const now = Date.now()
+  const targets = [
+    { ms: 3*3600000 + 45*60000,  urgent: true  },
+    { ms: 21*3600000 + 12*60000, urgent: false },
+    { ms: (2*24+14)*3600000,     urgent: false },
+    { ms: (3*24+2)*3600000,      urgent: false },
+    { ms: (4*24+8)*3600000,      urgent: false },
+  ]
+  document.querySelectorAll('.countdown-label').forEach((el, i) => {
+    if (!targets[i]) return
+    const ms  = targets[i].ms - (Date.now() - now) // static for demo
+    const h   = Math.floor(ms / 3600000)
+    const m   = Math.floor((ms % 3600000) / 60000)
+    const d   = Math.floor(h / 24)
+    el.textContent = d > 1 ? `${d}d ${h % 24}h` : h > 0 ? `${h}h ${m}m` : `${m}m`
+  })
+}
+updateCountdowns()
+</script>
+</body>
+</html>

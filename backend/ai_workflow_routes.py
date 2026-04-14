@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from database import get_db, User
 from middleware import get_current_user
-from gemini_engine import AIEngine
+from ai_engine import AIEngine
 
 logger = logging.getLogger("conniku.ai_workflows")
 

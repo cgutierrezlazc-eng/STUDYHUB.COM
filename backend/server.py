@@ -21,7 +21,7 @@ from sqlalchemy import desc
 from database import init_db, get_db, User, gen_id, DATA_DIR, ChatUsage
 from middleware import get_current_user
 from document_processor import DocumentProcessor
-from gemini_engine import AIEngine
+from ai_engine import AIEngine
 import anthropic as anthropic_lib
 from auth_routes import router as auth_router
 from messaging_routes import router as messaging_router
