@@ -59,6 +59,7 @@ const CVProfile = React.lazy(() => import('./pages/CVProfile'))
 const Biblioteca = React.lazy(() => import('./pages/Biblioteca'))
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'))
 const GroupDocs = React.lazy(() => import('./pages/GroupDocs'))
+const GroupDocEditor = React.lazy(() => import('./pages/GroupDocEditor'))
 const NotFound = React.lazy(() => import('./pages/NotFound'))
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'))
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'))
@@ -415,7 +416,7 @@ export default function App() {
             <Route path="/class-room/:classId" element={classRoomId ? <ClassRoom classId={classRoomId} onNavigate={(path) => navigate(path)} /> : null} />
             <Route path="/biblioteca" element={<Biblioteca onNavigate={(path) => navigate(path)} />} />
             <Route path="/group-docs" element={<GroupDocs onNavigate={(path) => navigate(path)} />} />
-            <Route path="/group-docs/:docId" element={<GroupDocs onNavigate={(path) => navigate(path)} />} />
+            <Route path="/group-docs/:docId" element={<GroupDocEditor onNavigate={(path) => navigate(path)} />} />
             <Route path="/ceo" element={<Navigate to="/admin-panel" replace />} />
             <Route path="/ceo/mail" element={<CeoMail onNavigate={(path) => navigate(path)} />} />
             <Route path="/hr" element={<Navigate to="/admin-panel" replace />} />
