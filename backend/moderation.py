@@ -111,17 +111,16 @@ def check_content(text: str) -> dict:
 
 def moderate_image(base64_data: str, mime_type: str = "image/jpeg") -> dict:
     """
-    Analyze image for inappropriate content using Gemini vision.
+    Analyze image for inappropriate content using Claude Vision.
     Returns: {"allowed": bool, "requires_review": bool, "reason": str, "category": str}
     """
-    api_key = os.environ.get("GEMINI_API_KEY", "")
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
         # No API key: require review for all images (safe fallback)
         return {"allowed": False, "requires_review": True, "reason": "Revisión manual requerida", "category": "unknown"}
 
     try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
+        import anthropic
 
         # Extract base64 data from data URL if needed
         if "," in base64_data:
@@ -131,7 +130,7 @@ def moderate_image(base64_data: str, mime_type: str = "image/jpeg") -> dict:
             data_part = base64_data
             detected_mime = mime_type
 
-        model = genai.GenerativeModel("gemini-2.0-flash-lite")
+        client = anthropic.Anthropic(api_key=api_key)
 
         prompt = """Eres el sistema de moderación de Conniku, una plataforma universitaria chilena.
 
@@ -163,12 +162,26 @@ o
 o
 {"status": "BLOCKED", "reason": "descripción breve del problema", "category": "adult|hate|violence"}"""
 
-        response = model.generate_content([
-            {"inline_data": {"mime_type": detected_mime, "data": data_part}},
-            prompt
-        ])
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=256,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": detected_mime,
+                            "data": data_part,
+                        },
+                    },
+                    {"type": "text", "text": prompt},
+                ],
+            }],
+        )
 
-        raw = response.text.strip()
+        raw = message.content[0].text.strip()
         # Strip markdown if present
         if raw.startswith("```"):
             lines = raw.split("\n")

@@ -127,11 +127,34 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const [topics, setTopics] = useState<Topic[]>([])
   const [topicsLoading, setTopicsLoading] = useState(false)
   const [openTopics, setOpenTopics] = useState<Set<string>>(new Set())
-  const [courseTab, setCourseTab] = useState<'modulos' | 'todo' | 'chat'>('modulos')
+  const [courseTab, setCourseTab] = useState<'modulos' | 'todo' | 'chat' | 'quizzes'>('modulos')
   // Chat de asignatura
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
   const [chatInput, setChatInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+  // Quiz de asignatura
+  const [qsAvg, setQsAvg] = useState<any>(null)
+  const [qsSched, setQsSched] = useState<any[]>([])
+  const [qsLoaded, setQsLoaded] = useState(false)
+  const [diagMode, setDiagMode] = useState<'idle' | 'loading' | 'active' | 'done'>('idle')
+  const [diagQs, setDiagQs] = useState<any[]>([])
+  const [diagIdx, setDiagIdx] = useState(0)
+  const [diagAns, setDiagAns] = useState<Record<number, number>>({})
+  const [diagRes, setDiagRes] = useState<any>(null)
+  const [schedActive, setSchedActive] = useState<{
+    quizId: string; num: number; questions: any[]; answers: Record<number, number>;
+    idx: number; mode: 'loading' | 'active' | 'done'; result: any
+  } | null>(null)
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([])
+  const [quizCurrentIndex, setQuizCurrentIndex] = useState(0)
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({})
+  const [quizDifficulty, setQuizDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium')
+  const [quizNumQuestions, setQuizNumQuestions] = useState<5 | 10 | 15>(10)
+  const [quizSubmitted, setQuizSubmitted] = useState(false)
+  const [quizScore, setQuizScore] = useState(0)
+  const [quizResult, setQuizResult] = useState<any>(null)
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
+  const [quizHistory, setQuizHistory] = useState<any[]>([])
 
   // Modal agregar asignaturas
   const [showAddModal, setShowAddModal] = useState(false)
@@ -186,6 +209,33 @@ export default function MiUniversidad({ onNavigate }: Props) {
     const timer = setInterval(() => setTick(t => t + 1), 60_000)
     return () => clearInterval(timer)
   }, [loadHub])
+
+  // Reset quiz state when switching courses
+  useEffect(() => {
+    setQsAvg(null); setQsSched([]); setQsLoaded(false)
+    setDiagMode('idle'); setDiagQs([]); setDiagIdx(0); setDiagAns({}); setDiagRes(null)
+    setSchedActive(null)
+    setQuizQuestions([]); setQuizCurrentIndex(0); setQuizAnswers({})
+    setQuizSubmitted(false); setQuizScore(0); setQuizResult(null); setIsGeneratingQuiz(false)
+  }, [selectedCourse?.id])
+
+  // Cargar datos de quizzes cuando se abre el tab
+  useEffect(() => {
+    if (courseTab !== 'quizzes' || !selectedCourse?.conniku_project_id || qsLoaded) return
+    setQsLoaded(true)
+    const pid = selectedCourse.conniku_project_id
+    Promise.all([
+      api.getSubjectAverage(pid).catch(() => null),
+      api.getScheduledQuizzes(pid).catch(() => []),
+    ]).then(([avg, sched]) => {
+      setQsAvg(avg || null)
+      setQsSched(Array.isArray(sched) ? sched : [])
+    })
+    try {
+      const all = JSON.parse(localStorage.getItem('conniku_quiz_history') || '[]')
+      setQuizHistory(all.filter((h: any) => h.projectId === pid).slice(0, 8))
+    } catch {}
+  }, [courseTab, selectedCourse?.conniku_project_id, qsLoaded])
 
   // ── Escanear material nuevo ─────────────────────────────────
   const handleScan = async () => {
@@ -475,9 +525,10 @@ export default function MiUniversidad({ onNavigate }: Props) {
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 4, marginBottom: 16, background: 'var(--bg-secondary)', borderRadius: 10, padding: 4, width: 'fit-content' }}>
           {([
-            { key: 'modulos', label: '📚 Por módulo' },
-            { key: 'todo',    label: '📋 Todo el material' },
-            { key: 'chat',    label: '💬 Chat' },
+            { key: 'modulos',  label: '📚 Por módulo' },
+            { key: 'todo',     label: '📋 Todo el material' },
+            { key: 'chat',     label: '💬 Chat' },
+            { key: 'quizzes',  label: '🧩 Quizzes' },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => { setCourseTab(key); if (key === 'chat' && chatMessages.length === 0) setChatMessages([]) }}
               style={{ padding: '7px 18px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: courseTab === key ? 600 : 400,
@@ -494,35 +545,7 @@ export default function MiUniversidad({ onNavigate }: Props) {
             <div style={{ width: 24, height: 24, border: '2px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.9s linear infinite' }} />
             Cargando material de la asignatura… Esto puede tomar unos segundos dependiendo de la cantidad de archivos.
           </div>
-        ) : topics.length === 0 ? (
-          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
-            <p style={{ fontSize: 32, marginBottom: 8 }}>📭</p>
-            <p>No se encontró material en esta asignatura aún.</p>
-            <button onClick={() => rescanCourse(selectedCourse.id)} style={{ marginTop: 12, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontSize: 13 }}>
-              Buscar material ahora
-            </button>
-          </div>
-        ) : courseTab === 'modulos' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {topics.map(topic => (
-              <TopicAccordion key={topic.name} topic={topic}
-                open={openTopics.has(topic.name)}
-                onToggle={() => setOpenTopics(prev => {
-                  const next = new Set(prev)
-                  if (next.has(topic.name)) next.delete(topic.name)
-                  else next.add(topic.name)
-                  return next
-                })} />
-            ))}
-          </div>
-        ) : courseTab === 'todo' ? (
-          // Vista "todo el material" — lista plana
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-            {topics.flatMap(t => t.items).map((item, idx) => (
-              <ItemRow key={item.id} item={item} borderTop={idx > 0} />
-            ))}
-          </div>
-        ) : (
+        ) : courseTab === 'chat' ? (
           // Vista Chat — consulta sobre el material de la asignatura
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 420 }}>
             {/* Header */}
@@ -537,7 +560,6 @@ export default function MiUniversidad({ onNavigate }: Props) {
                 </div>
               </div>
             </div>
-
             {/* Mensajes */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12, minHeight: 280 }}>
               {chatMessages.length === 0 && (
@@ -579,7 +601,6 @@ export default function MiUniversidad({ onNavigate }: Props) {
                 </div>
               )}
             </div>
-
             {/* Input */}
             <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: 10, alignItems: 'flex-end' }}>
               <textarea
@@ -595,6 +616,552 @@ export default function MiUniversidad({ onNavigate }: Props) {
                 ↑ Enviar
               </button>
             </div>
+          </div>
+
+        ) : courseTab === 'quizzes' ? (
+          // ── Vista Quizzes ──────────────────────────────────────
+          <div style={{ padding: '4px 0' }}>
+            {!selectedCourse.conniku_project_id ? (
+              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: 40, textAlign: 'center' }}>
+                <p style={{ fontSize: 36, marginBottom: 12 }}>🧩</p>
+                <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>Vincula esta asignatura para activar los Quizzes</h3>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px', lineHeight: 1.6 }}>
+                  Los quizzes adaptativos y el diagnóstico inicial están disponibles<br/>al vincular la asignatura con un proyecto Conniku.
+                </p>
+                <button onClick={() => onNavigate?.('/proyectos')}
+                  style={{ background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 10, padding: '9px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
+                  Ver mis proyectos →
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* ── DIAGNÓSTICO ACTIVO ── */}
+                {diagMode === 'active' && diagQs.length > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        Diagnóstico · Pregunta {diagIdx + 1} de {diagQs.length}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{Object.keys(diagAns).length}/{diagQs.length} respondidas</span>
+                    </div>
+                    <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent)', transition: 'width 0.3s', width: `${((diagIdx + 1) / diagQs.length) * 100}%` }} />
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Tema: {diagQs[diagIdx]?.topic}</div>
+                      <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>{diagQs[diagIdx]?.question}</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {diagQs[diagIdx]?.options?.map((opt: string, i: number) => {
+                          const sel = diagAns[diagIdx] === i
+                          return (
+                            <button key={i} onClick={() => setDiagAns(prev => ({ ...prev, [diagIdx]: i }))}
+                              style={{ padding: '12px 16px', borderRadius: 8, border: sel ? '2px solid var(--accent)' : '1px solid var(--border)', background: sel ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s' }}>
+                              <span style={{ fontWeight: 600, marginRight: 10, color: sel ? 'var(--accent)' : 'var(--text-muted)' }}>{String.fromCharCode(65 + i)}.</span>
+                              {opt}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button disabled={diagIdx === 0} onClick={() => setDiagIdx(i => i - 1)}
+                        style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: diagIdx === 0 ? 'not-allowed' : 'pointer', opacity: diagIdx === 0 ? 0.5 : 1, fontSize: 13 }}>
+                        ← Anterior
+                      </button>
+                      {diagIdx < diagQs.length - 1 ? (
+                        <button onClick={() => setDiagIdx(i => i + 1)}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                          Siguiente →
+                        </button>
+                      ) : (
+                        <button
+                          disabled={Object.keys(diagAns).length < diagQs.length}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: Object.keys(diagAns).length < diagQs.length ? 'not-allowed' : 'pointer', opacity: Object.keys(diagAns).length < diagQs.length ? 0.5 : 1, fontSize: 13, fontWeight: 600 }}
+                          onClick={async () => {
+                            const pid = selectedCourse.conniku_project_id!
+                            try {
+                              const res = await api.submitDiagnostic(pid, diagAns, diagQs)
+                              setDiagRes(res); setDiagMode('done')
+                              const [avg, sched] = await Promise.all([api.getSubjectAverage(pid).catch(() => null), api.getScheduledQuizzes(pid).catch(() => [])])
+                              setQsAvg(avg || null); setQsSched(Array.isArray(sched) ? sched : [])
+                            } catch { alert('Error al enviar diagnóstico') }
+                          }}>
+                          Ver Resultado
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── QUIZ PROGRAMADO ACTIVO ── */}
+                {schedActive?.mode === 'active' && schedActive.questions.length > 0 && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>
+                        Quiz {schedActive.num} · Pregunta {schedActive.idx + 1} de {schedActive.questions.length}
+                      </span>
+                      <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{Object.keys(schedActive.answers).length}/{schedActive.questions.length} respondidas</span>
+                    </div>
+                    <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, background: '#8B5CF6', transition: 'width 0.3s', width: `${((schedActive.idx + 1) / schedActive.questions.length) * 100}%` }} />
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Tema: {schedActive.questions[schedActive.idx]?.topic}</div>
+                      <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>{schedActive.questions[schedActive.idx]?.question}</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {schedActive.questions[schedActive.idx]?.options?.map((opt: string, i: number) => {
+                          const sel = schedActive.answers[schedActive.idx] === i
+                          return (
+                            <button key={i}
+                              onClick={() => setSchedActive(prev => prev ? { ...prev, answers: { ...prev.answers, [prev.idx]: i } } : prev)}
+                              style={{ padding: '12px 16px', borderRadius: 8, border: sel ? '2px solid #8B5CF6' : '1px solid var(--border)', background: sel ? 'rgba(139,92,246,0.1)' : 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s' }}>
+                              <span style={{ fontWeight: 600, marginRight: 10, color: sel ? '#8B5CF6' : 'var(--text-muted)' }}>{String.fromCharCode(65 + i)}.</span>
+                              {opt}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button disabled={schedActive.idx === 0} onClick={() => setSchedActive(prev => prev ? { ...prev, idx: prev.idx - 1 } : prev)}
+                        style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: schedActive.idx === 0 ? 'not-allowed' : 'pointer', opacity: schedActive.idx === 0 ? 0.5 : 1, fontSize: 13 }}>
+                        ← Anterior
+                      </button>
+                      {schedActive.idx < schedActive.questions.length - 1 ? (
+                        <button onClick={() => setSchedActive(prev => prev ? { ...prev, idx: prev.idx + 1 } : prev)}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#8B5CF6', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                          Siguiente →
+                        </button>
+                      ) : (
+                        <button
+                          disabled={Object.keys(schedActive.answers).length < schedActive.questions.length}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: '#8B5CF6', color: '#fff', cursor: Object.keys(schedActive.answers).length < schedActive.questions.length ? 'not-allowed' : 'pointer', opacity: Object.keys(schedActive.answers).length < schedActive.questions.length ? 0.5 : 1, fontSize: 13, fontWeight: 600 }}
+                          onClick={async () => {
+                            const pid = selectedCourse.conniku_project_id!
+                            try {
+                              const res = await api.submitScheduledQuiz(schedActive.quizId, schedActive.answers, schedActive.questions)
+                              setSchedActive(prev => prev ? { ...prev, result: res, mode: 'done' } : prev)
+                              const [avg, sched] = await Promise.all([api.getSubjectAverage(pid).catch(() => null), api.getScheduledQuizzes(pid).catch(() => [])])
+                              setQsAvg(avg || null); setQsSched(Array.isArray(sched) ? sched : [])
+                            } catch { alert('Error al enviar quiz') }
+                          }}>
+                          Ver Resultado
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── RESULTADO QUIZ PROGRAMADO ── */}
+                {schedActive?.mode === 'done' && schedActive.result && (
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20, textAlign: 'center' }}>
+                    <div style={{ fontSize: 48, marginBottom: 12 }}>{schedActive.result.score >= 7 ? '🎉' : schedActive.result.score >= 5 ? '📚' : '💪'}</div>
+                    <h2 style={{ margin: '0 0 4px' }}>Quiz {schedActive.num} completado</h2>
+                    <div style={{ fontSize: 42, fontWeight: 800, color: schedActive.result.score >= 7 ? 'var(--accent-green)' : schedActive.result.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', margin: '8px 0' }}>
+                      {schedActive.result.score}<span style={{ fontSize: 22 }}>/10</span>
+                    </div>
+                    <p style={{ color: 'var(--text-secondary)', margin: '0 0 20px' }}>{schedActive.result.correct}/{schedActive.result.total} respuestas correctas</p>
+                    {schedActive.result.topicsScores && Object.keys(schedActive.result.topicsScores).length > 0 && (
+                      <div style={{ textAlign: 'left', marginBottom: 16 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Puntaje por tema</div>
+                        {Object.entries(schedActive.result.topicsScores).map(([t, s]: any) => (
+                          <div key={t} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, fontSize: 13 }}>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t}</span>
+                            <div style={{ width: 80, height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, flexShrink: 0, overflow: 'hidden' }}>
+                              <div style={{ height: '100%', width: `${(s / 10) * 100}%`, background: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', borderRadius: 2 }} />
+                            </div>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', width: 28, textAlign: 'right' }}>{s}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={() => setSchedActive(null)}
+                      style={{ padding: '8px 20px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13 }}>
+                      ← Volver
+                    </button>
+                  </div>
+                )}
+
+                {/* ── SETUP: sin quiz activo ── */}
+                {quizQuestions.length === 0 && !isGeneratingQuiz && diagMode !== 'active' && schedActive?.mode !== 'active' && schedActive?.mode !== 'done' && (
+                  <div>
+                    {/* Barra de promedio */}
+                    {qsAvg && qsAvg.quizCount > 0 && (
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 16, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ width: 56, height: 56, borderRadius: 12, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: qsAvg.average >= 7 ? 'rgba(16,185,129,0.12)' : qsAvg.average >= 5 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)' }}>
+                          <span style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, color: qsAvg.average >= 7 ? 'var(--accent-green)' : qsAvg.average >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)' }}>{qsAvg.average}</span>
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>/ 10</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 2 }}>Nota promedio de la asignatura</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{qsAvg.quizCount} quiz{qsAvg.quizCount !== 1 ? 'zes' : ''} completado{qsAvg.quizCount !== 1 ? 's' : ''}</div>
+                        </div>
+                        {qsAvg.topicsAverage && Object.keys(qsAvg.topicsAverage).length > 0 && (
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', maxWidth: 180 }}>
+                            {Object.entries(qsAvg.topicsAverage).slice(0, 4).map(([t, s]: any) => (
+                              <span key={t} style={{ fontSize: 10, padding: '2px 7px', borderRadius: 20, fontWeight: 600, background: s >= 7 ? 'rgba(16,185,129,0.15)' : s >= 5 ? 'rgba(245,158,11,0.15)' : 'rgba(239,68,68,0.15)', color: s >= 7 ? 'var(--accent-green)' : s >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)' }}>
+                                {t.length > 14 ? t.slice(0, 14) + '…' : t} {s}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Diagnóstico */}
+                    {diagMode === 'idle' && (
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderLeft: '4px solid var(--accent)', borderRadius: 12, padding: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ fontSize: 32, flexShrink: 0 }}>🔬</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 4 }}>Prueba Diagnóstica</div>
+                          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>15 preguntas para evaluar tu nivel inicial en {selectedCourse.display_name || selectedCourse.name}.</div>
+                        </div>
+                        <button style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600, flexShrink: 0 }}
+                          onClick={async () => {
+                            setDiagMode('loading')
+                            const pid = selectedCourse.conniku_project_id!
+                            try {
+                              const res = await api.generateDiagnostic(pid, selectedCourse.display_name || selectedCourse.name, 16)
+                              setDiagQs(res.questions || []); setDiagIdx(0); setDiagAns({}); setDiagMode('active')
+                              if (res.scheduledQuizzes?.length && qsSched.length === 0) setQsSched(res.scheduledQuizzes)
+                            } catch { alert('Error al generar diagnóstico'); setDiagMode('idle') }
+                          }}>
+                          Iniciar
+                        </button>
+                      </div>
+                    )}
+                    {diagMode === 'loading' && (
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderLeft: '4px solid var(--accent)', borderRadius: 12, padding: 20, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 16 }}>
+                        <div style={{ fontSize: 32, flexShrink: 0 }}>🔬</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 4 }}>Generando diagnóstico...</div>
+                          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Creando preguntas para {selectedCourse.display_name || selectedCourse.name}</div>
+                        </div>
+                        <div style={{ width: 20, height: 20, border: '2px solid var(--border)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+                      </div>
+                    )}
+                    {diagMode === 'done' && diagRes && (
+                      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderLeft: `4px solid ${diagRes.score >= 7 ? 'var(--accent-green)' : diagRes.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)'}`, borderRadius: 12, padding: 20, marginBottom: 16 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                          <div style={{ fontSize: 32 }}>🔬</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 700 }}>Diagnóstico completado</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>Nivel inicial evaluado</div>
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: 28, fontWeight: 800, color: diagRes.score >= 7 ? 'var(--accent-green)' : diagRes.score >= 5 ? 'var(--accent-orange)' : 'var(--accent-red)', lineHeight: 1 }}>{diagRes.score}<span style={{ fontSize: 14 }}>/10</span></div>
+                            <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{diagRes.correct}/{diagRes.total} correctas</div>
+                          </div>
+                        </div>
+                        {(diagRes.weakTopics?.length > 0 || diagRes.strongTopics?.length > 0) && (
+                          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                            {diagRes.weakTopics?.slice(0, 3).map((t: string) => <span key={t} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(239,68,68,0.12)', color: 'var(--accent-red)', fontWeight: 600 }}>⚠ {t}</span>)}
+                            {diagRes.strongTopics?.slice(0, 3).map((t: string) => <span key={t} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(16,185,129,0.12)', color: 'var(--accent-green)', fontWeight: 600 }}>✓ {t}</span>)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Quizzes Programados */}
+                    {qsSched.length > 0 && (
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10 }}>Quizzes Programados del Semestre</div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+                          {qsSched.map((sq: any) => {
+                            const st = sq.status || 'pending'
+                            const color = st === 'completed' ? 'var(--accent-green)' : st === 'available' ? '#8B5CF6' : st === 'overdue' ? 'var(--accent-red)' : 'var(--text-muted)'
+                            const bg = st === 'completed' ? 'rgba(16,185,129,0.08)' : st === 'available' ? 'rgba(139,92,246,0.08)' : st === 'overdue' ? 'rgba(239,68,68,0.08)' : 'var(--bg-secondary)'
+                            const label = st === 'completed' ? '✓ Completado' : st === 'available' ? '📝 Disponible' : st === 'overdue' ? '⏰ Vencido' : '🔒 Pendiente'
+                            const dateStr = sq.scheduledDate ? new Date(sq.scheduledDate).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }) : ''
+                            return (
+                              <div key={sq.id || sq.quizNumber} style={{ background: bg, border: `1px solid ${color}30`, borderRadius: 12, padding: 16 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                                  <div style={{ fontSize: 20, fontWeight: 800, color }}>Q{sq.quizNumber}</div>
+                                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: `${color}20`, color }}>{label}</span>
+                                </div>
+                                {dateStr && <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 8 }}>{dateStr}</div>}
+                                {sq.score != null && <div style={{ fontSize: 16, fontWeight: 700, color, marginBottom: 8 }}>{sq.score}/10</div>}
+                                {(st === 'available' || st === 'overdue') && (
+                                  <button style={{ width: '100%', padding: '7px 0', borderRadius: 8, border: 'none', background: '#8B5CF6', color: '#fff', cursor: 'pointer', fontSize: 12, fontWeight: 600 }}
+                                    onClick={async () => {
+                                      setSchedActive({ quizId: sq.id, num: sq.quizNumber, questions: [], answers: {}, idx: 0, mode: 'loading', result: null })
+                                      try {
+                                        const res = await api.generateScheduledQuiz(sq.id)
+                                        setSchedActive({ quizId: sq.id, num: sq.quizNumber, questions: res.questions || [], answers: {}, idx: 0, mode: 'active', result: null })
+                                      } catch { alert('Error al generar quiz'); setSchedActive(null) }
+                                    }}>
+                                    Iniciar Quiz {sq.quizNumber}
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Separador Quiz Libre */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '20px 0 16px' }}>
+                      <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Quiz Libre</span>
+                      <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+                    </div>
+
+                    {/* Config quiz libre */}
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+                        <span style={{ fontSize: 28 }}>🧠</span>
+                        <div>
+                          <h3 style={{ margin: 0, fontSize: 16 }}>Quiz de {selectedCourse.display_name || selectedCourse.name}</h3>
+                          <p style={{ margin: 0, fontSize: 13, color: 'var(--text-muted)' }}>{topics.length} módulo{topics.length !== 1 ? 's' : ''} · genera preguntas del material de la asignatura</p>
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: 16 }}>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Dificultad</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {([
+                            { val: 'easy', label: 'Fácil', color: 'var(--accent-green)', emoji: '🟢' },
+                            { val: 'medium', label: 'Media', color: 'var(--accent-orange)', emoji: '🟡' },
+                            { val: 'hard', label: 'Difícil', color: 'var(--accent-red)', emoji: '🔴' },
+                          ] as const).map(d => (
+                            <button key={d.val} onClick={() => setQuizDifficulty(d.val)}
+                              style={{ flex: 1, padding: '10px 8px', borderRadius: 10, fontSize: 13, fontWeight: quizDifficulty === d.val ? 700 : 500, border: quizDifficulty === d.val ? `2px solid ${d.color}` : '1px solid var(--border)', background: quizDifficulty === d.val ? d.color + '18' : 'var(--bg-secondary)', color: quizDifficulty === d.val ? d.color : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                              {d.emoji} {d.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div style={{ marginBottom: 20 }}>
+                        <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Número de preguntas</label>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {([5, 10, 15] as const).map(n => (
+                            <button key={n} onClick={() => setQuizNumQuestions(n)}
+                              style={{ flex: 1, padding: '10px 8px', borderRadius: 10, fontSize: 15, fontWeight: quizNumQuestions === n ? 700 : 500, border: quizNumQuestions === n ? '2px solid var(--accent)' : '1px solid var(--border)', background: quizNumQuestions === n ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)', color: quizNumQuestions === n ? 'var(--accent)' : 'var(--text-secondary)', cursor: 'pointer', transition: 'all 0.15s' }}>
+                              {n}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        style={{ width: '100%', padding: '12px', fontSize: 15, border: 'none', borderRadius: 10, background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontWeight: 700 }}
+                        onClick={async () => {
+                          const pid = selectedCourse.conniku_project_id!
+                          setIsGeneratingQuiz(true)
+                          try {
+                            const data = await api.generateQuiz(pid, quizNumQuestions, quizDifficulty)
+                            setQuizQuestions(data?.questions || []); setQuizCurrentIndex(0); setQuizAnswers({}); setQuizSubmitted(false); setQuizScore(0)
+                          } catch (e) { console.error('Error generating quiz:', e) } finally { setIsGeneratingQuiz(false) }
+                        }}>
+                        ✨ Generar Quiz · {quizNumQuestions} preguntas
+                      </button>
+                    </div>
+
+                    {/* Historial */}
+                    {quizHistory.length > 0 && (
+                      <div>
+                        <h4 style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 10px' }}>Historial</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          {quizHistory.map((h: any, i: number) => {
+                            const pct = Math.round((h.score / h.total) * 100)
+                            const color = pct >= 70 ? 'var(--accent-green)' : pct >= 40 ? 'var(--accent-orange)' : 'var(--accent-red)'
+                            return (
+                              <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <div style={{ width: 44, height: 44, borderRadius: 10, flexShrink: 0, background: color + '18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+                                  <span style={{ fontSize: 14, fontWeight: 800, color, lineHeight: 1 }}>{pct}%</span>
+                                </div>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 600 }}>
+                                    {h.score}/{h.total} correctas
+                                    {h.difficulty && <span style={{ marginLeft: 8, fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}>· {h.difficulty === 'easy' ? 'Fácil' : h.difficulty === 'medium' ? 'Media' : 'Difícil'}</span>}
+                                  </div>
+                                  <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                                    {h.completedAt ? new Date(h.completedAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : ''}
+                                  </div>
+                                </div>
+                                <div style={{ height: 4, width: 60, background: 'var(--bg-tertiary)', borderRadius: 2, flexShrink: 0, overflow: 'hidden' }}>
+                                  <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 2 }} />
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── GENERANDO QUIZ ── */}
+                {isGeneratingQuiz && (
+                  <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)' }}>
+                    <div style={{ fontSize: 40, marginBottom: 16 }}>🧠</div>
+                    <h3 style={{ margin: '0 0 8px', color: 'var(--text-primary)' }}>Generando quiz...</h3>
+                    <p style={{ fontSize: 13, margin: 0 }}>Analizando el material de {selectedCourse.display_name || selectedCourse.name}</p>
+                  </div>
+                )}
+
+                {/* ── PREGUNTAS QUIZ LIBRE ── */}
+                {quizQuestions.length > 0 && !quizSubmitted && !isGeneratingQuiz && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                      <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-secondary)' }}>Pregunta {quizCurrentIndex + 1} de {quizQuestions.length}</span>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 6, background: quizDifficulty === 'easy' ? 'rgba(5,150,105,0.12)' : quizDifficulty === 'medium' ? 'rgba(217,119,6,0.12)' : 'rgba(220,38,38,0.12)', color: quizDifficulty === 'easy' ? 'var(--accent-green)' : quizDifficulty === 'medium' ? 'var(--accent-orange)' : 'var(--accent-red)' }}>
+                          {quizDifficulty === 'easy' ? 'Fácil' : quizDifficulty === 'medium' ? 'Media' : 'Difícil'}
+                        </span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{Object.keys(quizAnswers).length}/{quizQuestions.length} respondidas</span>
+                      </div>
+                    </div>
+                    <div style={{ height: 4, background: 'var(--bg-tertiary)', borderRadius: 2, marginBottom: 20, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', borderRadius: 2, background: 'var(--accent)', transition: 'width 0.3s', width: `${((quizCurrentIndex + 1) / quizQuestions.length) * 100}%` }} />
+                    </div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20 }}>
+                      <h3 style={{ marginTop: 0, marginBottom: 20, fontSize: 16, lineHeight: 1.5 }}>{quizQuestions[quizCurrentIndex].question}</h3>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {quizQuestions[quizCurrentIndex].options.map((option: string, idx: number) => {
+                          const isSelected = quizAnswers[quizCurrentIndex] === idx
+                          return (
+                            <button key={idx} onClick={() => setQuizAnswers(prev => ({ ...prev, [quizCurrentIndex]: idx }))}
+                              style={{ padding: '12px 16px', borderRadius: 8, border: isSelected ? '2px solid var(--accent)' : '1px solid var(--border)', background: isSelected ? 'rgba(99,102,241,0.1)' : 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', textAlign: 'left', fontSize: 14, lineHeight: 1.4, transition: 'all 0.15s' }}>
+                              <span style={{ fontWeight: 600, marginRight: 10, color: isSelected ? 'var(--accent)' : 'var(--text-muted)' }}>{String.fromCharCode(65 + idx)}.</span>
+                              {option}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <button disabled={quizCurrentIndex === 0} onClick={() => setQuizCurrentIndex(i => i - 1)}
+                        style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: quizCurrentIndex === 0 ? 'not-allowed' : 'pointer', opacity: quizCurrentIndex === 0 ? 0.5 : 1, fontSize: 13 }}>
+                        ← Anterior
+                      </button>
+                      {quizCurrentIndex < quizQuestions.length - 1 ? (
+                        <button onClick={() => setQuizCurrentIndex(i => i + 1)}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                          Siguiente →
+                        </button>
+                      ) : (
+                        <button
+                          disabled={Object.keys(quizAnswers).length < quizQuestions.length}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: Object.keys(quizAnswers).length < quizQuestions.length ? 'not-allowed' : 'pointer', opacity: Object.keys(quizAnswers).length < quizQuestions.length ? 0.5 : 1, fontSize: 13, fontWeight: 600 }}
+                          onClick={() => {
+                            let correct = 0
+                            quizQuestions.forEach((q: any, i: number) => { if (quizAnswers[i] === q.correctAnswer) correct++ })
+                            setQuizScore(correct); setQuizSubmitted(true); setQuizResult({ score: correct, total: quizQuestions.length })
+                            try {
+                              const pid = selectedCourse.conniku_project_id!
+                              const entry = { projectId: pid, projectName: selectedCourse.display_name || selectedCourse.name, score: correct, total: quizQuestions.length, difficulty: quizDifficulty, completedAt: new Date().toISOString() }
+                              const prev = JSON.parse(localStorage.getItem('conniku_quiz_history') || '[]')
+                              const updated = [entry, ...prev].slice(0, 50)
+                              localStorage.setItem('conniku_quiz_history', JSON.stringify(updated))
+                              setQuizHistory(updated.filter((h: any) => h.projectId === pid).slice(0, 8))
+                            } catch {}
+                          }}>
+                          Ver Resultados
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── RESULTADOS QUIZ LIBRE ── */}
+                {quizSubmitted && quizQuestions.length > 0 && (
+                  <div>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, padding: 24, marginBottom: 20, textAlign: 'center' }}>
+                      <div style={{ fontSize: 48, marginBottom: 8 }}>{quizScore / quizQuestions.length >= 0.7 ? '🎉' : quizScore / quizQuestions.length >= 0.4 ? '📚' : '💪'}</div>
+                      <h2 style={{ margin: '0 0 8px' }}>{quizScore} / {quizQuestions.length} correctas</h2>
+                      <div style={{ fontSize: 24, fontWeight: 800, color: quizScore / quizQuestions.length >= 0.7 ? 'var(--accent-green)' : quizScore / quizQuestions.length >= 0.4 ? 'var(--accent-orange)' : 'var(--accent-red)', marginBottom: 8 }}>
+                        {Math.round((quizScore / quizQuestions.length) * 100)}%
+                      </div>
+                      <p style={{ color: 'var(--text-secondary)', margin: '0 0 20px' }}>
+                        {quizScore / quizQuestions.length >= 0.7 ? '¡Excelente trabajo! Dominas bien el material.' : quizScore / quizQuestions.length >= 0.4 ? 'Buen intento. Repasa los temas donde fallaste.' : 'Necesitas repasar más. ¡No te rindas!'}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
+                        <button onClick={() => { setQuizCurrentIndex(0); setQuizAnswers({}); setQuizSubmitted(false); setQuizScore(0); setQuizResult(null) }}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13 }}>
+                          ↺ Reintentar
+                        </button>
+                        <button onClick={() => { setQuizQuestions([]); setQuizCurrentIndex(0); setQuizAnswers({}); setQuizSubmitted(false); setQuizScore(0); setQuizResult(null) }}
+                          style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13 }}>
+                          Cambiar config
+                        </button>
+                        <button
+                          style={{ padding: '8px 18px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+                          onClick={async () => {
+                            setQuizQuestions([]); setQuizCurrentIndex(0); setQuizAnswers({}); setQuizSubmitted(false); setQuizScore(0); setQuizResult(null)
+                            const pid = selectedCourse.conniku_project_id!
+                            setIsGeneratingQuiz(true)
+                            try {
+                              const data = await api.generateQuiz(pid, quizNumQuestions, quizDifficulty)
+                              setQuizQuestions(data?.questions || [])
+                            } catch (e) { console.error(e) } finally { setIsGeneratingQuiz(false) }
+                          }}>
+                          ✨ Nuevo Quiz
+                        </button>
+                      </div>
+                    </div>
+                    <h3 style={{ marginBottom: 12, fontSize: 14, fontWeight: 700 }}>Detalle de Respuestas</h3>
+                    {quizQuestions.map((q: any, i: number) => {
+                      const userAnswer = quizAnswers[i]
+                      const isCorrect = userAnswer === q.correctAnswer
+                      return (
+                        <div key={i} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderLeft: `4px solid ${isCorrect ? '#22c55e' : '#ef4444'}`, borderRadius: 10, padding: 20, marginBottom: 12 }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                            <h4 style={{ margin: 0, fontSize: 14, lineHeight: 1.5, flex: 1 }}>{i + 1}. {q.question}</h4>
+                            <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 6, marginLeft: 12, whiteSpace: 'nowrap', background: isCorrect ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)', color: isCorrect ? '#22c55e' : '#ef4444' }}>
+                              {isCorrect ? '✓ Correcta' : '✗ Incorrecta'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: 13, marginBottom: 8 }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Tu respuesta: </span>
+                            <span style={{ color: isCorrect ? '#22c55e' : '#ef4444', fontWeight: 500 }}>{String.fromCharCode(65 + userAnswer)}. {q.options[userAnswer]}</span>
+                          </div>
+                          {!isCorrect && (
+                            <div style={{ fontSize: 13, marginBottom: 8 }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Respuesta correcta: </span>
+                              <span style={{ color: '#22c55e', fontWeight: 500 }}>{String.fromCharCode(65 + q.correctAnswer)}. {q.options[q.correctAnswer]}</span>
+                            </div>
+                          )}
+                          {q.explanation && (
+                            <div style={{ fontSize: 13, color: 'var(--text-secondary)', background: 'var(--bg-secondary)', padding: '10px 12px', borderRadius: 8, marginTop: 8, lineHeight: 1.5 }}>
+                              💡 {q.explanation}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+        ) : topics.length === 0 ? (
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+            <p style={{ fontSize: 32, marginBottom: 8 }}>📭</p>
+            <p>No se encontró material en esta asignatura aún.</p>
+            <button onClick={() => rescanCourse(selectedCourse.id)} style={{ marginTop: 12, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', cursor: 'pointer', fontSize: 13 }}>
+              Buscar material ahora
+            </button>
+          </div>
+        ) : courseTab === 'modulos' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {topics.map(topic => (
+              <TopicAccordion key={topic.name} topic={topic}
+                open={openTopics.has(topic.name)}
+                onToggle={() => setOpenTopics(prev => {
+                  const next = new Set(prev)
+                  if (next.has(topic.name)) next.delete(topic.name)
+                  else next.add(topic.name)
+                  return next
+                })} />
+            ))}
+          </div>
+        ) : (
+          // Vista "todo el material" — lista plana
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+            {topics.flatMap(t => t.items).map((item, idx) => (
+              <ItemRow key={item.id} item={item} borderTop={idx > 0} />
+            ))}
           </div>
         )}
       </div>
