@@ -1378,16 +1378,27 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                           const usePass = lmsAuthMethod === 'password' && (lmsPlatformType === 'auto' || lmsPlatformType === 'moodle')
                           if (!lmsUrl || (usePass ? (!lmsUsername || !lmsPassword) : !lmsToken)) return
                           setLmsConnecting(true); setLmsConnectError('')
+                          const payload = {
+                            platform_type: lmsPlatformType,
+                            platform_name: lmsPlatformName,
+                            api_url: lmsUrl,
+                            ...(usePass
+                              ? { auth_method: 'password', username: lmsUsername, password: lmsPassword }
+                              : { auth_method: 'token', api_token: lmsToken }
+                            ),
+                          }
                           try {
-                            const res: any = await api.lmsConnect({
-                              platform_type: lmsPlatformType,
-                              platform_name: lmsPlatformName,
-                              api_url: lmsUrl,
-                              ...(usePass
-                                ? { auth_method: 'password', username: lmsUsername, password: lmsPassword }
-                                : { auth_method: 'token', api_token: lmsToken }
-                              ),
-                            })
+                            let res: any
+                            try {
+                              res = await api.lmsConnect(payload)
+                            } catch (firstErr: any) {
+                              if (firstErr.message?.toLowerCase().includes('failed to fetch')) {
+                                setLmsConnectError('⏳ Servidor iniciando... reintentando automáticamente...')
+                                await new Promise(r => setTimeout(r, 5000))
+                                res = await api.lmsConnect(payload)
+                                setLmsConnectError('')
+                              } else { throw firstErr }
+                            }
                             setLmsShowConnect(false)
                             setLmsUrl(''); setLmsToken(''); setLmsPlatformName(''); setLmsUsername(''); setLmsPassword('')
                             if (res.courses && res.courses.length > 0) {
