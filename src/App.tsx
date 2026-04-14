@@ -222,6 +222,36 @@ export default function App() {
   }
 
   if (!user) {
+    // Token exists but user failed to load — backend might be waking up (Render cold start)
+    const hasToken = localStorage.getItem('conniku_token')
+    if (hasToken) {
+      return (
+        <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-primary)', flexDirection: 'column', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 42, height: 42, borderRadius: 12, background: '#2D62C8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg viewBox="0 0 40 40" width={24} height={24}><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" strokeWidth="5" strokeLinecap="round" strokeDasharray="56 19"><animateTransform attributeName="transform" type="rotate" from="0 20 20" to="360 20 20" dur="1s" repeatCount="indefinite" /></circle></svg>
+            </div>
+            <span style={{ fontFamily: "'Outfit', -apple-system, sans-serif", fontSize: 36, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.04em' }}>
+              conni<span style={{ color: '#2D62C8' }}>ku</span>
+            </span>
+          </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, margin: 0 }}>Conectando con el servidor...</p>
+          <button
+            onClick={() => { refreshUser() }}
+            style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: '#2D62C8', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Reintentar
+          </button>
+          <button
+            onClick={() => { localStorage.removeItem('conniku_token'); localStorage.removeItem('conniku_refresh_token'); window.location.reload() }}
+            style={{ padding: '6px 16px', borderRadius: 8, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-muted)', fontSize: 12, cursor: 'pointer' }}
+          >
+            Cerrar sesion e iniciar de nuevo
+          </button>
+        </div>
+      )
+    }
+
     // Legal pages accessible without authentication
     if (location.pathname === '/terms') {
       return (

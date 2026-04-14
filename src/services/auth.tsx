@@ -23,14 +23,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   const refreshUser = async () => {
-    try {
-      const data = await api.getMe()
-      setUser(data)
-    } catch {
-      localStorage.removeItem(TOKEN_KEY)
-      localStorage.removeItem(REFRESH_TOKEN_KEY)
-      setUser(null)
+    // Retry up to 2 times to handle Render cold starts (~30s spin-up)
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const data = await api.getMe()
+        setUser(data)
+        return
+      } catch {
+        // If request() already cleared tokens (401 + refresh failed), stop
+        if (!localStorage.getItem(TOKEN_KEY)) {
+          setUser(null)
+          return
+        }
+        // Network error — wait 3s before retry (backend waking up)
+        if (attempt === 0) {
+          await new Promise(r => setTimeout(r, 3000))
+        }
+      }
     }
+    // Retries exhausted, still network error — keep tokens for next reload
+    setUser(null)
   }
 
   useEffect(() => {
