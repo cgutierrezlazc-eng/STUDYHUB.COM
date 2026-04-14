@@ -110,6 +110,12 @@ class User(Base):
     ban_reason = Column(String(500), nullable=True)
     is_admin = Column(Boolean, nullable=False, default=False)
     is_ghost = Column(Boolean, nullable=False, default=False)  # invisible to other users
+
+    # Email notification preferences
+    email_notif_enabled = Column(Boolean, nullable=False, default=True)
+    email_notif_friend_posts = Column(Boolean, nullable=False, default=True)
+    email_notif_friend_requests = Column(Boolean, nullable=False, default=True)
+    email_notif_direct_messages = Column(Boolean, nullable=False, default=True)
     role = Column(String(20), nullable=False, default="user")  # user | admin | owner | utp
     tos_accepted_at = Column(DateTime, nullable=True)
     onboarding_completed = Column(Boolean, nullable=False, default=False)
@@ -383,6 +389,7 @@ class PostComment(Base):
     post_id = Column(String(16), ForeignKey("wall_posts.id", ondelete="CASCADE"), nullable=False)
     author_id = Column(String(16), ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
+    edited_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     post = relationship("WallPost", back_populates="comments")

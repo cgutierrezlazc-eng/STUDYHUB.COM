@@ -560,6 +560,10 @@ export const api = {
     request(`/social/posts/${postId}/comments`),
   addComment: (postId: string, content: string) =>
     request(`/social/posts/${postId}/comments`, { method: 'POST', body: JSON.stringify({ content }) }),
+  editComment: (commentId: string, content: string) =>
+    request(`/social/comments/${commentId}`, { method: 'PUT', body: JSON.stringify({ content }) }),
+  deleteComment: (commentId: string) =>
+    request(`/social/comments/${commentId}`, { method: 'DELETE' }),
 
   // ─── Block / Report / Suggestions ─────────────────────────
   blockUser: (userId: string) =>

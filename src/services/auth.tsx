@@ -183,6 +183,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if ((data as any).coverType !== undefined) payload.cover_type = (data as any).coverType
       if ((data as any).platformLanguage !== undefined) payload.platform_language = (data as any).platformLanguage
       if ((data as any).secondaryLanguages !== undefined) payload.secondary_languages = (data as any).secondaryLanguages
+      if ((data as any).emailNotifEnabled !== undefined) payload.email_notif_enabled = (data as any).emailNotifEnabled
+      if ((data as any).emailNotifFriendPosts !== undefined) payload.email_notif_friend_posts = (data as any).emailNotifFriendPosts
+      if ((data as any).emailNotifFriendRequests !== undefined) payload.email_notif_friend_requests = (data as any).emailNotifFriendRequests
+      if ((data as any).emailNotifDirectMessages !== undefined) payload.email_notif_direct_messages = (data as any).emailNotifDirectMessages
 
       const updated = await api.updateMe(payload)
       setUser(updated)

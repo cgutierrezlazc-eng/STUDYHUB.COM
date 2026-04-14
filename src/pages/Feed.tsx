@@ -198,6 +198,29 @@ export default function Feed({ onNavigate }: Props) {
     }
   }
 
+  const handleEditComment = async (postId: string, commentId: string) => {
+    const current = (comments[postId] || []).find((c: any) => c.id === commentId)
+    const newText = prompt('Editar comentario:', current?.content || '')
+    if (!newText?.trim() || newText === current?.content) return
+    try {
+      const updated = await api.editComment(commentId, newText)
+      setComments(prev => ({ ...prev, [postId]: (prev[postId] || []).map((c: any) => c.id === commentId ? { ...c, content: updated.content, editedAt: updated.editedAt } : c) }))
+    } catch (err: any) {
+      alert(err.message || 'Error al editar comentario')
+    }
+  }
+
+  const handleDeleteComment = async (postId: string, commentId: string) => {
+    if (!confirm('Eliminar este comentario?')) return
+    try {
+      await api.deleteComment(commentId)
+      setComments(prev => ({ ...prev, [postId]: (prev[postId] || []).filter((c: any) => c.id !== commentId) }))
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, commentCount: Math.max(0, (p.commentCount || 1) - 1) } : p))
+    } catch (err: any) {
+      alert(err.message || 'Error al eliminar comentario')
+    }
+  }
+
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -998,9 +1021,20 @@ export default function Feed({ onNavigate }: Props) {
                             }}>
                               {c.author?.avatar ? <img src={c.author.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} /> : (c.author?.firstName?.[0] || '?')}
                             </div>
-                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: '8px 12px', flex: 1 }}>
-                              <strong style={{ cursor: 'pointer' }} onClick={() => onNavigate(`/user/${c.author?.id}`)}>{c.author?.firstName} {c.author?.lastName}</strong>
+                            <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: '8px 12px', flex: 1, position: 'relative', group: 'comment' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <strong style={{ cursor: 'pointer' }} onClick={() => onNavigate(`/user/${c.author?.id}`)}>{c.author?.firstName} {c.author?.lastName}</strong>
+                                {(c.author?.id === user?.id || post.authorId === user?.id) && (
+                                  <div style={{ display: 'flex', gap: 4 }}>
+                                    {c.author?.id === user?.id && (
+                                      <button onClick={() => handleEditComment(post.id, c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)', padding: '0 4px' }}>Editar</button>
+                                    )}
+                                    <button onClick={() => handleDeleteComment(post.id, c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: 'var(--text-muted)', padding: '0 4px' }}>Eliminar</button>
+                                  </div>
+                                )}
+                              </div>
                               <div style={{ marginTop: 2 }}>{c.content}</div>
+                              {c.editedAt && <span style={{ fontSize: 10, color: 'var(--text-muted)', fontStyle: 'italic' }}>(editado)</span>}
                             </div>
                           </div>
                         ))}

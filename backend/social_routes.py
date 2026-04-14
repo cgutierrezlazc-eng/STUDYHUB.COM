@@ -787,6 +787,59 @@ def add_comment(
     }
 
 
+@router.put("/comments/{comment_id}")
+def edit_comment(
+    comment_id: str,
+    body: CommentBody,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    comment = db.query(PostComment).filter(PostComment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(404, "Comentario no encontrado")
+    if comment.author_id != user.id:
+        raise HTTPException(403, "Solo puedes editar tus propios comentarios")
+    if not body.content.strip():
+        raise HTTPException(400, "El comentario no puede estar vacío")
+
+    from moderation import check_content
+    mod = check_content(body.content)
+    if not mod["allowed"]:
+        raise HTTPException(400, f"Contenido bloqueado: {mod['reason']}")
+
+    comment.content = body.content.strip()
+    comment.edited_at = datetime.utcnow()
+    db.commit()
+
+    author = db.query(User).filter(User.id == comment.author_id).first()
+    return {
+        "id": comment.id,
+        "author": user_brief(author) if author else None,
+        "content": comment.content,
+        "createdAt": comment.created_at.isoformat(),
+        "editedAt": comment.edited_at.isoformat() if comment.edited_at else None,
+    }
+
+
+@router.delete("/comments/{comment_id}")
+def delete_comment(
+    comment_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    comment = db.query(PostComment).filter(PostComment.id == comment_id).first()
+    if not comment:
+        raise HTTPException(404, "Comentario no encontrado")
+    # El autor o el dueño del post pueden eliminar
+    post = db.query(WallPost).filter(WallPost.id == comment.post_id).first()
+    if comment.author_id != user.id and (not post or post.author_id != user.id):
+        raise HTTPException(403, "Sin permiso para eliminar este comentario")
+
+    db.delete(comment)
+    db.commit()
+    return {"success": True}
+
+
 @router.get("/posts/{post_id}/comments")
 def get_comments(
     post_id: str,
@@ -805,6 +858,7 @@ def get_comments(
             "author": user_brief(author) if author else None,
             "content": c.content,
             "createdAt": c.created_at.isoformat(),
+            "editedAt": c.edited_at.isoformat() if getattr(c, 'edited_at', None) else None,
         })
     return result
 

@@ -257,13 +257,13 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
     { id: 'security', label: t('profile.sectionSecurity'), icon: Lock({ size: 16 }) },
   ]
 
-  const ToggleRow = ({ label, desc, defaultOn = true }: { label: string; desc: string; defaultOn?: boolean }) => (
+  const ToggleRow = ({ label, desc, checked, onChange }: { label: string; desc: string; checked?: boolean; onChange?: (v: boolean) => void }) => (
     <label className="pf-toggle-row">
       <div>
         <div className="pf-toggle-label">{label}</div>
         <div className="pf-toggle-desc">{desc}</div>
       </div>
-      <input type="checkbox" defaultChecked={defaultOn} className="pf-checkbox" />
+      <input type="checkbox" checked={checked ?? true} onChange={e => onChange?.(e.target.checked)} className="pf-checkbox" />
     </label>
   )
 
@@ -1635,10 +1635,18 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
 
                 <h3>{t('profile.emailNotifications')}</h3>
                 <div className="pf-toggles">
-                  <ToggleRow label={t('profile.emailNotifToggle')} desc={t('profile.emailNotifDesc')} />
-                  <ToggleRow label={t('profile.friendPosts')} desc={t('profile.friendPostsDesc')} />
-                  <ToggleRow label={t('profile.friendRequests')} desc={t('profile.friendRequestsDesc')} />
-                  <ToggleRow label={t('profile.directMessages')} desc={t('profile.directMessagesDesc')} />
+                  <ToggleRow label={t('profile.emailNotifToggle')} desc={t('profile.emailNotifDesc')}
+                    checked={(user as any).emailNotifEnabled !== false}
+                    onChange={v => updateProfile({ emailNotifEnabled: v } as any)} />
+                  <ToggleRow label={t('profile.friendPosts')} desc={t('profile.friendPostsDesc')}
+                    checked={(user as any).emailNotifFriendPosts !== false}
+                    onChange={v => updateProfile({ emailNotifFriendPosts: v } as any)} />
+                  <ToggleRow label={t('profile.friendRequests')} desc={t('profile.friendRequestsDesc')}
+                    checked={(user as any).emailNotifFriendRequests !== false}
+                    onChange={v => updateProfile({ emailNotifFriendRequests: v } as any)} />
+                  <ToggleRow label={t('profile.directMessages')} desc={t('profile.directMessagesDesc')}
+                    checked={(user as any).emailNotifDirectMessages !== false}
+                    onChange={v => updateProfile({ emailNotifDirectMessages: v } as any)} />
                 </div>
               </div>
             )}

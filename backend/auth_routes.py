@@ -282,6 +282,10 @@ class UpdateProfileRequest(BaseModel):
     study_start_date: Optional[str] = None
     cover_photo: Optional[str] = None
     cover_type: Optional[str] = None
+    email_notif_enabled: Optional[bool] = None
+    email_notif_friend_posts: Optional[bool] = None
+    email_notif_friend_requests: Optional[bool] = None
+    email_notif_direct_messages: Optional[bool] = None
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -372,6 +376,10 @@ def user_to_dict(user: User) -> dict:
         "studyStartDate": getattr(user, 'study_start_date', '') or "",
         "studyDays": _calc_study_days(getattr(user, 'study_start_date', '') or ""),
         "executiveShowcase": _json.loads(getattr(user, 'executive_showcase', None) or "[]"),
+        "emailNotifEnabled": getattr(user, 'email_notif_enabled', True) if getattr(user, 'email_notif_enabled', None) is not None else True,
+        "emailNotifFriendPosts": getattr(user, 'email_notif_friend_posts', True) if getattr(user, 'email_notif_friend_posts', None) is not None else True,
+        "emailNotifFriendRequests": getattr(user, 'email_notif_friend_requests', True) if getattr(user, 'email_notif_friend_requests', None) is not None else True,
+        "emailNotifDirectMessages": getattr(user, 'email_notif_direct_messages', True) if getattr(user, 'email_notif_direct_messages', None) is not None else True,
         "createdAt": user.created_at.isoformat() if user.created_at else "",
         "lastLogin": user.last_login.isoformat() if user.last_login else "",
     }

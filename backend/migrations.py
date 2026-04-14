@@ -106,6 +106,11 @@ def migrate():
         ("cover_position_y", "INTEGER DEFAULT 50"),
         # Ghost / invisible profile (CEO only — not visible to other users)
         ("is_ghost", "BOOLEAN DEFAULT FALSE"),
+        # Email notification preferences
+        ("email_notif_enabled", "BOOLEAN DEFAULT TRUE"),
+        ("email_notif_friend_posts", "BOOLEAN DEFAULT TRUE"),
+        ("email_notif_friend_requests", "BOOLEAN DEFAULT TRUE"),
+        ("email_notif_direct_messages", "BOOLEAN DEFAULT TRUE"),
     ]
 
     inspector = inspect(engine)
@@ -229,6 +234,17 @@ def migrate():
                         logger.info(f"Added column messages.{col_name}")
                     except Exception as e:
                         logger.debug(f"Column messages.{col_name} skipped: {e}")
+
+    # Add edited_at to post_comments table
+    if inspector.has_table("post_comments"):
+        existing_pc_columns = {col["name"] for col in inspector.get_columns("post_comments")}
+        if "edited_at" not in existing_pc_columns:
+            with engine.begin() as conn:
+                try:
+                    conn.execute(text("ALTER TABLE post_comments ADD COLUMN edited_at DATETIME"))
+                    logger.info("Added column post_comments.edited_at")
+                except Exception as e:
+                    logger.debug(f"Column post_comments.edited_at skipped: {e}")
 
     # Add is_announcement to community_posts table
     if inspector.has_table("community_posts"):

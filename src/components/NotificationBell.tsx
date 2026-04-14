@@ -78,6 +78,16 @@ export default function NotificationBell({ onNavigate }: Props) {
     setUnreadCount(0)
   }
 
+  const handleDelete = async (notifId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    try {
+      await api.deleteNotification(notifId)
+      const wasUnread = notifications.find(n => n.id === notifId && !n.isRead)
+      setNotifications(prev => prev.filter(n => n.id !== notifId))
+      if (wasUnread) setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch {}
+  }
+
   const timeAgo = (iso: string) => {
     const diff = Date.now() - new Date(iso).getTime()
     const mins = Math.floor(diff / 60000)
@@ -174,8 +184,15 @@ export default function NotificationBell({ onNavigate }: Props) {
                     </div>
                   )}
                 </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {timeAgo(notif.createdAt)}
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    {timeAgo(notif.createdAt)}
+                  </div>
+                  <button
+                    onClick={(e) => handleDelete(notif.id, e)}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--text-muted)', padding: 0, lineHeight: 1, opacity: 0.5 }}
+                    title="Eliminar"
+                  >×</button>
                 </div>
                 {!notif.isRead && (
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, marginTop: 4 }} />
