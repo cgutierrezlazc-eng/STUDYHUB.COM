@@ -212,18 +212,23 @@ def migrate():
             """))
             logger.info("Created friend_list_members table.")
 
-    # Add moderation_status to messages table
+    # Add moderation_status and reply_to_* columns to messages table
     if inspector.has_table("messages"):
         existing_msg_columns = {col["name"] for col in inspector.get_columns("messages")}
-        if "moderation_status" not in existing_msg_columns:
-            with engine.begin() as conn:
-                try:
-                    conn.execute(text(
-                        "ALTER TABLE messages ADD COLUMN moderation_status VARCHAR(20) DEFAULT 'approved'"
-                    ))
-                    logger.info("Added column messages.moderation_status")
-                except Exception as e:
-                    logger.debug(f"Column messages.moderation_status skipped: {e}")
+        msg_new_cols = [
+            ("moderation_status", "VARCHAR(20) DEFAULT 'approved'"),
+            ("reply_to_id", "VARCHAR(16)"),
+            ("reply_to_content", "TEXT"),
+            ("reply_to_sender_name", "VARCHAR(255)"),
+        ]
+        for col_name, col_def in msg_new_cols:
+            if col_name not in existing_msg_columns:
+                with engine.begin() as conn:
+                    try:
+                        conn.execute(text(f"ALTER TABLE messages ADD COLUMN {col_name} {col_def}"))
+                        logger.info(f"Added column messages.{col_name}")
+                    except Exception as e:
+                        logger.debug(f"Column messages.{col_name} skipped: {e}")
 
     # Add is_announcement to community_posts table
     if inspector.has_table("community_posts"):

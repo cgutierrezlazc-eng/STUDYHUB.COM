@@ -216,6 +216,10 @@ class Message(Base):
     is_deleted = Column(Boolean, default=False)
     is_flagged = Column(Boolean, default=False)
     flag_reason = Column(String(500), nullable=True)
+    reply_to_id = Column(String(16), nullable=True)
+    reply_to_content = Column(Text, nullable=True)
+    reply_to_sender_name = Column(String(255), nullable=True)
+    moderation_status = Column(String(20), default="approved")
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
     edited_at = Column(DateTime, nullable=True)
 
