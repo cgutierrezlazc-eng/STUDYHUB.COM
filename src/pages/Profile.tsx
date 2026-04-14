@@ -1389,15 +1389,21 @@ export default function Profile({ onNavigate, embedded = false, initialSection }
                           }
                           try {
                             let res: any
-                            try {
-                              res = await api.lmsConnect(payload)
-                            } catch (firstErr: any) {
-                              if (firstErr.message?.toLowerCase().includes('failed to fetch')) {
-                                setLmsConnectError('⏳ Servidor iniciando... reintentando automáticamente...')
-                                await new Promise(r => setTimeout(r, 5000))
+                            const delays = [0, 4000, 8000]
+                            for (let attempt = 0; attempt < delays.length; attempt++) {
+                              try {
+                                if (attempt > 0) {
+                                  setLmsConnectError(`⏳ Servidor iniciando... reintento ${attempt}/2`)
+                                  await new Promise(r => setTimeout(r, delays[attempt]))
+                                }
                                 res = await api.lmsConnect(payload)
                                 setLmsConnectError('')
-                              } else { throw firstErr }
+                                break
+                              } catch (err: any) {
+                                const isNetwork = err.message?.toLowerCase().includes('conectar') || err.message?.toLowerCase().includes('failed to fetch') || err.message?.toLowerCase().includes('conexión')
+                                if (isNetwork && attempt < delays.length - 1) continue
+                                throw err
+                              }
                             }
                             setLmsShowConnect(false)
                             setLmsUrl(''); setLmsToken(''); setLmsPlatformName(''); setLmsUsername(''); setLmsPassword('')

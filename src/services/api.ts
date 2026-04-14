@@ -60,10 +60,19 @@ async function request(endpoint: string, options?: RequestInit) {
   const headers: Record<string, string> = isFormData ? {} : { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${endpoint}`, {
-    headers,
-    ...options,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${endpoint}`, {
+      headers,
+      ...options,
+    });
+  } catch (err: any) {
+    throw new Error(
+      err?.message?.toLowerCase().includes('failed to fetch')
+        ? 'No se pudo conectar con el servidor. Verifica tu conexión a internet o intenta de nuevo en unos segundos.'
+        : (err?.message || 'Error de conexión')
+    );
+  }
 
   // On 401, attempt a single token refresh then retry
   if (res.status === 401 && endpoint !== '/auth/refresh') {

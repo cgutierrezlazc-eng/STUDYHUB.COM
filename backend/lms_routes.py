@@ -453,15 +453,17 @@ def connect_lms(req: ConnectRequest, user: User = Depends(get_current_user), db:
 
     # Immediately fetch courses after connection
     courses_added, courses_list = _fetch_and_store_courses(conn, db)
+    db.refresh(conn)
 
     return {
         "id": conn.id,
         "platform_type": platform_type,
         "platform_name": conn.platform_name,
-        "status": "connected",
+        "status": conn.status,
         "info": info,
         "courses_found": courses_added,
         "courses": courses_list,
+        "error_msg": conn.error_msg or None,
     }
 
 
@@ -516,7 +518,7 @@ def _fetch_and_store_courses(conn: UniversityConnection, db: Session) -> int:
         conn.status = "error"
         conn.error_msg = str(e)
         db.commit()
-        return 0
+        return 0, []
 
     # Normalize raw courses per platform
     normalized = _normalize_courses(conn.platform_type, raw_courses)
@@ -658,7 +660,10 @@ def disconnect_lms(conn_id: str, user: User = Depends(get_current_user), db: Ses
     ).first()
     if not conn:
         raise HTTPException(404, "Conexión no encontrada")
-    conn.status = "disconnected"
+    # Hard delete: remove sync items, courses, then connection
+    db.query(LMSSyncItem).filter(LMSSyncItem.connection_id == conn.id).delete()
+    db.query(LMSCourse).filter(LMSCourse.connection_id == conn.id).delete()
+    db.delete(conn)
     db.commit()
     return {"ok": True}
 
