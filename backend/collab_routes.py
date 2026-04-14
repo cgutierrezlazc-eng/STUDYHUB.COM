@@ -11,6 +11,7 @@ from sqlalchemy import desc, or_
 from database import (
     get_db, User, gen_id,
     CollabDocument, CollabDocumentMember, CollabDocumentVersion,
+    CollabDocumentMessage,
 )
 from middleware import get_current_user
 
@@ -383,3 +384,67 @@ def search_users(
     ).limit(10).all()
 
     return [_user_brief(u) for u in results]
+
+
+# ─── Document Chat ───────────────────────────────────────────────
+
+@router.get("/{doc_id}/chat")
+def get_chat_messages(
+    doc_id: str,
+    before: str = Query(None),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _check_access(doc_id, user, db)
+    q = db.query(CollabDocumentMessage).filter(CollabDocumentMessage.document_id == doc_id)
+    if before:
+        q = q.filter(CollabDocumentMessage.created_at < before)
+    messages = q.order_by(desc(CollabDocumentMessage.created_at)).limit(50).all()
+    messages.reverse()
+
+    return [{
+        "id": m.id,
+        "userId": m.user_id,
+        "user": _user_brief(m.user),
+        "content": m.content,
+        "createdAt": m.created_at.isoformat() if m.created_at else "",
+    } for m in messages]
+
+
+@router.post("/{doc_id}/chat")
+async def send_chat_message(
+    doc_id: str,
+    data: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    _check_access(doc_id, user, db)
+    content = data.get("content", "").strip()
+    if not content:
+        raise HTTPException(400, "Mensaje vacio")
+
+    msg = CollabDocumentMessage(
+        id=gen_id(), document_id=doc_id, user_id=user.id, content=content,
+    )
+    db.add(msg)
+    db.commit()
+
+    msg_data = {
+        "id": msg.id,
+        "userId": msg.user_id,
+        "user": _user_brief(user),
+        "content": msg.content,
+        "createdAt": msg.created_at.isoformat() if msg.created_at else "",
+    }
+
+    # Broadcast via document WebSocket room
+    try:
+        from collab_ws import _rooms
+        room = _rooms.get(doc_id)
+        if room:
+            import asyncio
+            await room.broadcast_json({"type": "chat_message", "message": msg_data})
+    except Exception:
+        pass  # WS broadcast is best-effort
+
+    return msg_data

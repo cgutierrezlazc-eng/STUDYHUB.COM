@@ -1556,6 +1556,8 @@ export const api = {
   collabSaveVersion: (docId: string) => request(`/collab/${docId}/versions`, { method: 'POST' }),
   collabGetVersion: (docId: string, versionId: string) => request(`/collab/${docId}/versions/${versionId}`),
   collabSearchUsers: (q: string) => request(`/collab/users/search?q=${encodeURIComponent(q)}`),
+  collabChatMessages: (docId: string) => request(`/collab/${docId}/chat`),
+  collabSendChat: (docId: string, content: string) => request(`/collab/${docId}/chat`, { method: 'POST', body: JSON.stringify({ content }) }),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

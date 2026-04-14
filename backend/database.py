@@ -1682,6 +1682,17 @@ class CollabDocumentVersion(Base):
     author = relationship("User", foreign_keys=[created_by])
 
 
+class CollabDocumentMessage(Base):
+    __tablename__ = "collab_document_messages"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    document_id = Column(String(16), ForeignKey("collab_documents.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()

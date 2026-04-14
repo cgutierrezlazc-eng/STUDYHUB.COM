@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../services/auth'
 import { api } from '../services/api'
-import { Users, Clock, ChevronLeft, Plus, Trash2, X, Search, Check, Crown } from '../components/Icons'
+import { Users, Clock, ChevronLeft, Plus, Trash2, X, Search, Check, Crown, MessageSquare, Send } from '../components/Icons'
 
 const CollabEditor = lazy(() => import('../components/CollabEditor'))
 
@@ -29,6 +29,14 @@ export default function GroupDocEditor({ onNavigate }: Props) {
   const [showVersions, setShowVersions] = useState(false)
   const [versions, setVersions] = useState<any[]>([])
   const [savingVersion, setSavingVersion] = useState(false)
+
+  // Chat
+  const [showChat, setShowChat] = useState(false)
+  const [chatMessages, setChatMessages] = useState<any[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [sendingChat, setSendingChat] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
+  const chatPollRef = useRef<any>(null)
 
   // Auto-save
   const saveTimeout = useRef<any>(null)
@@ -155,6 +163,42 @@ export default function GroupDocEditor({ onNavigate }: Props) {
     }
   }
 
+  // Chat functions
+  const loadChat = async () => {
+    if (!docId) return
+    try {
+      const msgs = await api.collabChatMessages(docId)
+      setChatMessages(msgs)
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    } catch { /* ignore */ }
+  }
+
+  const handleSendChat = async () => {
+    if (!docId || !chatInput.trim() || sendingChat) return
+    const content = chatInput.trim()
+    setChatInput('')
+    setSendingChat(true)
+    try {
+      const msg = await api.collabSendChat(docId, content)
+      setChatMessages(prev => [...prev, msg])
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    } catch (err: any) {
+      setChatInput(content)
+      alert(err.message || 'Error al enviar')
+    } finally {
+      setSendingChat(false)
+    }
+  }
+
+  // Poll chat when open (WS also pushes, but polling is safety net)
+  useEffect(() => {
+    if (showChat && docId) {
+      loadChat()
+      chatPollRef.current = setInterval(loadChat, 10000)
+    }
+    return () => { if (chatPollRef.current) clearInterval(chatPollRef.current) }
+  }, [showChat, docId])
+
   const isOwner = doc?.ownerId === user?.id
   const myRole = doc?.members?.find((m: any) => m.userId === user?.id)?.role || 'viewer'
   const canEdit = isOwner || myRole === 'editor' || myRole === 'owner'
@@ -246,7 +290,7 @@ export default function GroupDocEditor({ onNavigate }: Props) {
 
           {/* Versions */}
           <button
-            onClick={() => { setShowVersions(!showVersions); if (!showVersions) loadVersions() }}
+            onClick={() => { setShowVersions(!showVersions); if (!showVersions) { loadVersions(); setShowMembers(false); setShowChat(false) } }}
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
@@ -258,9 +302,23 @@ export default function GroupDocEditor({ onNavigate }: Props) {
             {Clock({ size: 14 })} Historial
           </button>
 
+          {/* Chat */}
+          <button
+            onClick={() => { setShowChat(!showChat); if (!showChat) { setShowMembers(false); setShowVersions(false) } }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
+              background: showChat ? 'var(--accent-muted)' : 'transparent',
+              color: showChat ? 'var(--accent)' : 'var(--text-secondary)',
+              fontSize: 12, cursor: 'pointer',
+            }}
+          >
+            {MessageSquare({ size: 14 })} Chat
+          </button>
+
           {/* Members */}
           <button
-            onClick={() => setShowMembers(!showMembers)}
+            onClick={() => { setShowMembers(!showMembers); if (!showMembers) { setShowChat(false); setShowVersions(false) } }}
             style={{
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '6px 12px', borderRadius: 8, border: '1px solid var(--border)',
@@ -291,7 +349,7 @@ export default function GroupDocEditor({ onNavigate }: Props) {
         </div>
 
         {/* Side panels */}
-        {(showMembers || showVersions) && (
+        {(showMembers || showVersions || showChat) && (
           <div style={{
             width: 300, borderLeft: '1px solid var(--border)', background: 'var(--bg-secondary)',
             display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0,
@@ -472,6 +530,84 @@ export default function GroupDocEditor({ onNavigate }: Props) {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* Chat panel */}
+            {showChat && (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                    Chat del documento
+                  </h3>
+                  <button onClick={() => setShowChat(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', padding: 2 }}>
+                    {X({ size: 16 })}
+                  </button>
+                </div>
+
+                {/* Messages */}
+                <div style={{ flex: 1, overflow: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {chatMessages.length === 0 && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', textAlign: 'center', padding: 20 }}>
+                      Sin mensajes. Inicia la conversacion sobre este documento.
+                    </p>
+                  )}
+                  {chatMessages.map(msg => {
+                    const isMe = msg.userId === user?.id
+                    return (
+                      <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
+                        {!isMe && (
+                          <span style={{ fontSize: 10, color: 'var(--text-muted)', marginBottom: 2 }}>
+                            {msg.user?.firstName}
+                          </span>
+                        )}
+                        <div style={{
+                          maxWidth: '85%', padding: '8px 12px', borderRadius: 12,
+                          background: isMe ? '#2D62C8' : 'var(--bg-primary)',
+                          color: isMe ? '#fff' : 'var(--text-primary)',
+                          fontSize: 13, lineHeight: 1.4, wordBreak: 'break-word',
+                        }}>
+                          {msg.content}
+                        </div>
+                        <span style={{ fontSize: 9, color: 'var(--text-muted)', marginTop: 2 }}>
+                          {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : ''}
+                        </span>
+                      </div>
+                    )
+                  })}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Input */}
+                <div style={{
+                  display: 'flex', gap: 8, padding: '10px 12px',
+                  borderTop: '1px solid var(--border)',
+                }}>
+                  <input
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendChat() } }}
+                    placeholder="Escribe un mensaje..."
+                    style={{
+                      flex: 1, padding: '8px 12px', borderRadius: 8,
+                      border: '1px solid var(--border)', background: 'var(--bg-primary)',
+                      color: 'var(--text-primary)', fontSize: 13, boxSizing: 'border-box',
+                    }}
+                  />
+                  <button
+                    onClick={handleSendChat}
+                    disabled={!chatInput.trim() || sendingChat}
+                    style={{
+                      width: 36, height: 36, borderRadius: 8, border: 'none',
+                      background: chatInput.trim() ? '#2D62C8' : 'var(--bg-primary)',
+                      color: chatInput.trim() ? '#fff' : 'var(--text-muted)',
+                      cursor: chatInput.trim() ? 'pointer' : 'default',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {Send({ size: 16 })}
+                  </button>
+                </div>
               </div>
             )}
           </div>
