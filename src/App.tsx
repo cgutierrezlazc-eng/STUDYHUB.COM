@@ -24,7 +24,6 @@ import { api, initPushNotifications } from './services/api';
 // ─── Lazy-loaded pages (code-split) ──────────────────────────────
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ProjectView = lazy(() => import('./pages/ProjectView'));
-const Profile = lazy(() => import('./pages/Profile'));
 const Suggestions = lazy(() => import('./pages/Suggestions'));
 const Messages = lazy(() => import('./pages/Messages'));
 const Admin = lazy(() => import('./pages/Admin'));

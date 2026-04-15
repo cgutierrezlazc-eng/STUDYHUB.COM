@@ -267,8 +267,6 @@ export const api = {
     }),
   supportAdminChat: (message: string, history: { role: string; content: string }[] = []) =>
     request('/support/admin-chat', { method: 'POST', body: JSON.stringify({ message, history }) }),
-  getKonniBroadcasts: () => request('/support/konni-broadcasts'),
-  markKonniBroadcastsRead: () => request('/support/konni-broadcasts/read', { method: 'POST' }),
   getRecentJobs: (since: string) => request(`/jobs/listings?since=${encodeURIComponent(since)}`),
 
   // ─── Chat ──────────────────────────────────────────────────
@@ -1539,15 +1537,6 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ hours }),
     }),
-
-  // ─── Subscription Upgrade ─────────────────────────────────
-  calculateUpgradeProration: (targetTier: string) =>
-    request('/payments/upgrade-prorate', {
-      method: 'POST',
-      body: JSON.stringify({ target_tier: targetTier }),
-    }),
-  executeUpgrade: () =>
-    request('/payments/execute-upgrade', { method: 'POST', body: JSON.stringify({}) }),
 
   // ─── Contact ──────────────────────────────────────────────
   sendContactMessage: (data: { name: string; email: string; subject?: string; message: string }) =>
