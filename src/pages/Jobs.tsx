@@ -779,14 +779,14 @@ ${cv.competencies.length ? `<h2>${t('jobs.pdfCompetencies')}</h2><div class="ski
     );
   }
   function addCompetency(text: string) {
-    if (text.trim() && !cv.competencies.includes(text.trim())) {
-      updateCV('competencies', [...cv.competencies, text.trim()]);
+    if (text.trim() && !(cv.competencies || []).includes(text.trim())) {
+      updateCV('competencies', [...(cv.competencies || []), text.trim()]);
     }
   }
   function removeCompetency(idx: number) {
     updateCV(
       'competencies',
-      cv.competencies.filter((_, i) => i !== idx)
+      (cv.competencies || []).filter((_, i) => i !== idx)
     );
   }
 

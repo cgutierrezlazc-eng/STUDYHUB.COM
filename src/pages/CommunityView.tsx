@@ -119,26 +119,30 @@ export default function CommunityView({ onNavigate }: Props) {
   };
   const loadPosts = async () => {
     try {
-      setPosts(await api.getCommunityPosts(id!));
+      const postsData = await api.getCommunityPosts(id!);
+      setPosts(Array.isArray(postsData) ? postsData : []);
     } catch (err: any) {
       console.error('Failed to load posts:', err);
     }
   };
   const loadMembers = async () => {
     try {
-      setMembers(await api.getCommunityMembers(id!));
+      const membersData = await api.getCommunityMembers(id!);
+      setMembers(Array.isArray(membersData) ? membersData : []);
     } catch (err: any) {
       console.error('Failed to load members:', err);
     }
   };
   const loadResources = async () => {
     try {
-      setResources(await api.getCommunityResources(id!));
+      const resourcesData = await api.getCommunityResources(id!);
+      setResources(Array.isArray(resourcesData) ? resourcesData : []);
     } catch {}
   };
   const loadEvents = async () => {
     try {
-      setEvents(await api.getCommunityEvents(id!));
+      const eventsData = await api.getCommunityEvents(id!);
+      setEvents(Array.isArray(eventsData) ? eventsData : []);
     } catch {}
   };
 

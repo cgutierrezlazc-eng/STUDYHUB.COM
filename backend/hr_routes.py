@@ -3,26 +3,26 @@ HR Management API routes for Conniku (Chilean company).
 Handles employees, documents, payroll, operational expenses, and reports.
 All monetary values are in CLP unless otherwise noted.
 """
+import contextlib
 import hashlib
 import json
 import logging
 import os
 import time
+
 import httpx
 
 logger = logging.getLogger(__name__)
-from datetime import datetime, date, timedelta
-from decimal import Decimal, ROUND_HALF_UP
-from typing import Optional, List
+from datetime import date, datetime, timedelta
+from decimal import ROUND_HALF_UP, Decimal
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form, Request
-from pydantic import BaseModel, Field
-from sqlalchemy import Column, String, Integer, Boolean, DateTime, Text, Float, ForeignKey, Index
-from sqlalchemy.orm import Session, relationship
-from sqlalchemy import desc, func
-
-from database import Base, engine, get_db, User, gen_id
+from database import Base, User, engine, gen_id, get_db
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from middleware import get_current_user
+from pydantic import BaseModel, Field
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Index, Integer, String, Text, desc, func
+from sqlalchemy.orm import Session, relationship
 
 router = APIRouter(prefix="/hr", tags=["hr"])
 
@@ -50,10 +50,8 @@ def _run_migrations():
                 "ALTER TABLE hr_employee_documents ADD COLUMN IF NOT EXISTS locked BOOLEAN DEFAULT FALSE",
             ]
             for stmt in stmts:
-                try:
+                with contextlib.suppress(Exception):
                     conn.execute(text(stmt))
-                except Exception:
-                    pass  # Column already exists or not PostgreSQL
             conn.commit()
     except Exception:
         pass  # SQLite or connection error — harmless
@@ -284,7 +282,7 @@ class EmployeeFesSignature(Base):
 
 class EmployeeERCRecord(Base):
     __tablename__ = "hr_erc_records"
-    
+
     id = Column(String(16), primary_key=True, default=gen_id)
     employee_id = Column(String(16), ForeignKey("hr_employees.id", ondelete="CASCADE"), nullable=False, index=True)
     record_type = Column(String(50), nullable=False, index=True)  # discipline, coaching, conversations, acknowledgements, reviews, chat
@@ -364,10 +362,8 @@ try:
     Base.metadata.create_all(engine)
 except Exception as _e:
     for _t in Base.metadata.sorted_tables:
-        try:
+        with contextlib.suppress(Exception):
             _t.create(engine, checkfirst=True)
-        except Exception:
-            pass
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -431,8 +427,8 @@ GRATIFICACION_CAP = 4.75 * MINIMUM_WAGE_CLP / 12
 def _get_uf_value() -> float:
     """Try to fetch current UF, fallback to hardcoded."""
     try:
-        import urllib.request
         import json
+        import urllib.request
         req = urllib.request.Request("https://mindicador.cl/api/uf", headers={"User-Agent": "Conniku/2.0"})
         with urllib.request.urlopen(req, timeout=3) as resp:
             data = json.loads(resp.read().decode())
@@ -649,7 +645,7 @@ class LegalObligationSaveItem(BaseModel):
     completed_at: Optional[str] = None
 
 class LegalObligationSave(BaseModel):
-    statuses: List[LegalObligationSaveItem]
+    statuses: list[LegalObligationSaveItem]
 
 
 class ExpenseCreate(BaseModel):
@@ -1083,11 +1079,11 @@ def create_employee(
     if data.contract_type not in VALID_CONTRACT:
         raise HTTPException(400, f"Tipo de contrato debe ser uno de: {', '.join(VALID_CONTRACT)}")
     if data.work_schedule not in VALID_SCHEDULE:
-        raise HTTPException(400, f"Jornada debe ser full_time o part_time")
+        raise HTTPException(400, "Jornada debe ser full_time o part_time")
     if data.afp not in VALID_AFP:
         raise HTTPException(400, f"AFP debe ser una de: {', '.join(VALID_AFP)}")
     if data.health_system not in VALID_HEALTH:
-        raise HTTPException(400, f"Sistema de salud debe ser fonasa o isapre")
+        raise HTTPException(400, "Sistema de salud debe ser fonasa o isapre")
     if data.health_system == "isapre" and not data.isapre_name:
         raise HTTPException(400, "Debe indicar nombre de Isapre")
 
@@ -1226,28 +1222,30 @@ async def upload_employee_avatar(
     emp = db.query(Employee).filter(Employee.id == employee_id).first()
     if not emp:
         raise HTTPException(404, "Empleado no encontrado")
-        
-    import os, uuid
+
+    import os
+    import uuid
+
     from database import DATA_DIR
     covers_dir = DATA_DIR / "uploads" / "covers"
     covers_dir.mkdir(parents=True, exist_ok=True)
-    
+
     ext = os.path.splitext(file.filename)[1].lower() if file.filename else ".jpg"
     if ext not in {".jpg", ".jpeg", ".png", ".webp"}:
         raise HTTPException(400, "Formato de imagen no permitido. Usa JPG o PNG.")
-        
+
     filename = f"avatar_{employee_id}_{uuid.uuid4().hex[:8]}{ext}"
     file_path = covers_dir / filename
-    
+
     with open(file_path, "wb") as f:
         f.write(await file.read())
-        
+
     url = f"/uploads/covers/{filename}"
     emp.profile_picture_url = url
     emp.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(emp)
-    
+
     return {"employee": _employee_to_dict(emp)}
 
 
@@ -1281,14 +1279,14 @@ def get_all_erc(
 ):
     _require_hr_access(user)
     records = db.query(EmployeeERCRecord).all()
-    
+
     result = {"coaching": [], "discipline": [], "conversations": [], "acknowledgements": [], "performance": []}
     for rec in records:
         if rec.record_type in result:
             payload = json.loads(rec.data_payload)
             payload["id"] = rec.id
             result[rec.record_type].append(payload)
-            
+
     return {"records": result}
 
 @router.get("/employees/{employee_id}/erc")
@@ -1299,14 +1297,14 @@ def get_employee_erc(
 ):
     _require_hr_access(user)
     records = db.query(EmployeeERCRecord).filter(EmployeeERCRecord.employee_id == employee_id).all()
-    
+
     result = {"coaching": [], "discipline": [], "conversations": [], "acknowledgements": [], "performance": []}
     for rec in records:
         if rec.record_type in result:
             payload = json.loads(rec.data_payload)
             payload["id"] = rec.id
             result[rec.record_type].append(payload)
-            
+
     return {"records": result}
 
 @router.post("/employees/{employee_id}/erc")
@@ -1317,15 +1315,15 @@ def create_employee_erc(
     db: Session = Depends(get_db),
 ):
     _require_hr_access(user)
-    
+
     emp = db.query(Employee).filter(Employee.id == employee_id).first()
     if not emp:
         raise HTTPException(404, "Empleado no encontrado")
 
     try:
         json.loads(data.data_payload)
-    except:
-        raise HTTPException(400, "Invalid JSON payload")
+    except Exception:
+        raise HTTPException(400, "Invalid JSON payload") from None
 
     new_record = EmployeeERCRecord(
         employee_id=employee_id,
@@ -1335,10 +1333,10 @@ def create_employee_erc(
     db.add(new_record)
     db.commit()
     db.refresh(new_record)
-    
+
     ret_payload = json.loads(new_record.data_payload)
     ret_payload["id"] = new_record.id
-    
+
     return {"message": "ERC Record saved", "record": ret_payload}
 
 @router.delete("/employees/{employee_id}/erc/{record_id}")
@@ -1355,7 +1353,7 @@ def delete_employee_erc(
     ).first()
     if not rec:
         raise HTTPException(404, "Record not found")
-        
+
     db.delete(rec)
     db.commit()
     return {"message": "Record deleted"}
@@ -1372,7 +1370,7 @@ def get_all_fes(
 ):
     _require_hr_access(user)
     signatures = db.query(EmployeeFesSignature).all()
-    
+
     result = []
     for sig in signatures:
         result.append({
@@ -1399,7 +1397,7 @@ def get_employee_fes(
 ):
     _require_hr_access(user)
     signatures = db.query(EmployeeFesSignature).filter(EmployeeFesSignature.employee_id == employee_id).all()
-    
+
     result = []
     for sig in signatures:
         result.append({
@@ -1425,7 +1423,7 @@ def create_employee_fes(
     db: Session = Depends(get_db),
 ):
     _require_hr_access(user)
-    
+
     emp = db.query(Employee).filter(Employee.id == employee_id).first()
     if not emp:
         raise HTTPException(404, "Empleado no encontrado")
@@ -1445,7 +1443,7 @@ def create_employee_fes(
     db.add(new_sig)
     db.commit()
     db.refresh(new_sig)
-    
+
     return {"message": "FES Signature saved", "id": new_sig.id}
 
 
@@ -1476,16 +1474,14 @@ def save_legal_obligations(
     db: Session = Depends(get_db),
 ):
     _require_hr_access(user)
-    
+
     for item in data.statuses:
         status_rec = db.query(LegalObligationStatus).filter(LegalObligationStatus.id == item.id).first()
         comp_date = None
         if item.completed_at:
-            try:
+            with contextlib.suppress(Exception):
                 comp_date = datetime.fromisoformat(item.completed_at.replace("Z", "+00:00"))
-            except Exception:
-                pass
-                
+
         if status_rec:
             status_rec.status = item.status
             status_rec.notes = item.notes
@@ -1499,7 +1495,7 @@ def save_legal_obligations(
                 completed_at=comp_date
             )
             db.add(new_rec)
-            
+
     db.commit()
     return {"message": "Legal obligations updated"}
 
@@ -1668,7 +1664,7 @@ async def generate_contract_pdf(
             raise ValueError(f"xhtml2pdf error: {status.err}")
         pdf_bytes = pdf_buffer.getvalue()
     except Exception as exc:
-        raise HTTPException(500, f"Error al generar PDF: {exc}")
+        raise HTTPException(500, f"Error al generar PDF: {exc}") from exc
 
     # ── Guardar archivo en disco ────────────────────────────────────
     os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -1719,9 +1715,10 @@ def provision_employee_account(
     Genera: employee_number, username, password temporal, corporate_email.
     La contraseña en texto plano se retorna UNA SOLA VEZ.
     """
-    import bcrypt
-    import unicodedata
     import re as _re
+    import unicodedata
+
+    import bcrypt
 
     _require_hr_access(user)
     emp = db.query(Employee).filter(Employee.id == employee_id).first()
@@ -2579,7 +2576,7 @@ def tax_summary(
         .filter(Employee.status.in_(["active", "on_leave", "terminated"]))
         .filter(Employee.hire_date <= f"{year}-12-31")
         .filter(
-            (Employee.end_date == None) | (Employee.end_date >= f"{year}-01-01")
+            (Employee.end_date is None) | (Employee.end_date >= f"{year}-01-01")
         )
         .count()
     )
@@ -2704,7 +2701,7 @@ def _count_incidents(employee_id: str, incident_type: str, days: int, db: Sessio
     elif incident_type == "tardiness":
         return db.query(AttendanceRecord).filter(
             AttendanceRecord.employee_id == employee_id,
-            AttendanceRecord.is_late == True,
+            AttendanceRecord.is_late,
             AttendanceRecord.created_at >= since,
         ).count()
     return 0
@@ -2762,7 +2759,7 @@ def _check_and_issue_warning(employee_id: str, incident_type: str, db: Session):
 
 def _send_warning_emails(emp, warning_type: str, incident_type: str, count: int, period: int):
     try:
-        from notifications import _send_email_async, _email_template, CEO_EMAIL
+        from notifications import CEO_EMAIL, _email_template, _send_email_async
     except Exception:
         return
 
@@ -2862,7 +2859,7 @@ class LeaveReviewBody(BaseModel):
 
 # ─── Attendance endpoints ────────────────────────────────────────────
 
-@router.post("/hr/attendance/checkin")
+@router.post("/attendance/checkin")
 def attendance_checkin(
     employee_id: Optional[str] = None,
     notes: str = "",
@@ -2935,7 +2932,7 @@ def attendance_checkin(
     }
 
 
-@router.post("/hr/attendance/checkout")
+@router.post("/attendance/checkout")
 def attendance_checkout(
     employee_id: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -2986,7 +2983,7 @@ def attendance_checkout(
     }
 
 
-@router.get("/hr/attendance/today")
+@router.get("/attendance/today")
 def get_today_attendance(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
@@ -3011,7 +3008,7 @@ def get_today_attendance(
     }
 
 
-@router.get("/hr/attendance/monthly/{year}/{month}")
+@router.get("/attendance/monthly/{year}/{month}")
 def get_monthly_attendance(
     year: int,
     month: int,
@@ -3032,7 +3029,7 @@ def get_monthly_attendance(
     return [_attendance_to_dict(r) for r in records]
 
 
-@router.post("/hr/attendance/record")
+@router.post("/attendance/record")
 def admin_record_attendance(
     data: AttendanceAdminCreate,
     db: Session = Depends(get_db),
@@ -3098,7 +3095,7 @@ def admin_record_attendance(
     return _attendance_to_dict(record)
 
 
-@router.get("/hr/warnings/{employee_id}")
+@router.get("/warnings/{employee_id}")
 def get_employee_warnings(
     employee_id: str,
     db: Session = Depends(get_db),
@@ -3112,7 +3109,7 @@ def get_employee_warnings(
 
 # ─── Leave endpoints ──────────────────────────────────────────────────
 
-@router.get("/hr/leave/requests")
+@router.get("/leave/requests")
 def get_all_leave_requests(
     status: Optional[str] = None,
     employee_id: Optional[str] = None,
@@ -3135,7 +3132,7 @@ def get_all_leave_requests(
     return result
 
 
-@router.get("/hr/leave/balance/{employee_id}")
+@router.get("/leave/balance/{employee_id}")
 def get_leave_balance(
     employee_id: str,
     db: Session = Depends(get_db),
@@ -3184,7 +3181,7 @@ def get_leave_balance(
     }
 
 
-@router.post("/hr/leave/request")
+@router.post("/leave/request")
 def create_leave_request(
     data: LeaveRequestCreate,
     db: Session = Depends(get_db),
@@ -3221,7 +3218,7 @@ def create_leave_request(
     return d
 
 
-@router.put("/hr/leave/requests/{request_id}/approve")
+@router.put("/leave/requests/{request_id}/approve")
 def approve_leave_request(
     request_id: str,
     db: Session = Depends(get_db),
@@ -3248,7 +3245,7 @@ def approve_leave_request(
     return d
 
 
-@router.put("/hr/leave/requests/{request_id}/reject")
+@router.put("/leave/requests/{request_id}/reject")
 def reject_leave_request(
     request_id: str,
     body: LeaveReviewBody,
@@ -3278,7 +3275,7 @@ def reject_leave_request(
 
 def _send_leave_email(emp, req: LeaveRequest, approved: bool):
     try:
-        from notifications import _send_email_async, _email_template
+        from notifications import _email_template, _send_email_async
     except Exception:
         return
 
