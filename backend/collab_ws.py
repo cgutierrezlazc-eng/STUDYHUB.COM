@@ -9,10 +9,10 @@ Endpoint: /ws/doc/{doc_id}?token=JWT_TOKEN
 """
 import logging
 from typing import Dict, Set
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
-from starlette.websockets import WebSocketState
 
-from database import get_db, CollabDocument, CollabDocumentMember, SessionLocal
+from database import CollabDocument, CollabDocumentMember, SessionLocal, get_db
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocketState
 from websocket_manager import manager as chat_manager
 
 logger = logging.getLogger(__name__)
@@ -26,8 +26,8 @@ class DocRoom:
 
     def __init__(self, doc_id: str):
         self.doc_id = doc_id
-        self.clients: Set[WebSocket] = set()
-        self.user_info: Dict[WebSocket, dict] = {}  # ws -> {user_id, name, color}
+        self.clients: set[WebSocket] = set()
+        self.user_info: dict[WebSocket, dict] = {}  # ws -> {user_id, name, color}
 
     async def broadcast(self, data: bytes, exclude: WebSocket = None):
         dead = []
@@ -69,7 +69,7 @@ class DocRoom:
 
 
 # Global document rooms
-_rooms: Dict[str, DocRoom] = {}
+_rooms: dict[str, DocRoom] = {}
 
 CURSOR_COLORS = [
     "#E53E3E", "#38A169", "#D69E2E", "#805AD5",
@@ -96,6 +96,9 @@ async def doc_websocket(
     token: str = Query(default=None),
 ):
     """Yjs collaboration WebSocket — binary relay + presence awareness."""
+
+    # Starlette requiere accept() antes de close() — aceptar primero
+    await websocket.accept()
 
     # 1. Authenticate
     if not token:
@@ -133,9 +136,6 @@ async def doc_websocket(
         user_avatar = user.avatar if user else None
     finally:
         db.close()
-
-    # 3. Accept + join room
-    await websocket.accept()
 
     room = _get_room(doc_id)
     color_index = len(room.clients) % len(CURSOR_COLORS)
