@@ -152,6 +152,12 @@ export default function UserProfile({ userId, onNavigate }: Props) {
   const [lmsConnections, setLmsConnections] = useState<any[]>([]);
   const postImageRef = useRef<HTMLInputElement>(null);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
+  const examAnswersRef = useRef<Record<string, any>>({});
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    examAnswersRef.current = examAnswers;
+  }, [examAnswers]);
 
   useEffect(() => {
     loadProfile();
@@ -424,7 +430,7 @@ export default function UserProfile({ userId, onNavigate }: Props) {
     if (!examClassId) return;
     setExamSubmitting(true);
     try {
-      const result = await api.submitTutoringExam(examClassId, examAnswers);
+      const result = await api.submitTutoringExam(examClassId, examAnswersRef.current);
       setExamResult(result);
       loadStudentTutoringData();
     } catch (err: any) {

@@ -192,10 +192,11 @@ export default function CollabEditor({
 
   useEffect(() => {
     if (!provider) return;
+    let messageHandler: ((event: MessageEvent) => void) | null = null;
     const attach = () => {
       const socket = (provider as any).ws;
       if (socket) {
-        socket.addEventListener('message', (event: MessageEvent) => {
+        messageHandler = (event: MessageEvent) => {
           if (typeof event.data === 'string') {
             try {
               const msg = JSON.parse(event.data);
@@ -204,7 +205,8 @@ export default function CollabEditor({
               /* binary or non-JSON */
             }
           }
-        });
+        };
+        socket.addEventListener('message', messageHandler);
       }
     };
     provider.on('status', ({ status }: any) => {
@@ -213,7 +215,7 @@ export default function CollabEditor({
     attach();
     return () => {
       const socket = (provider as any).ws;
-      if (socket) socket.removeEventListener('message', () => {});
+      if (socket && messageHandler) socket.removeEventListener('message', messageHandler);
     };
   }, [provider]);
 

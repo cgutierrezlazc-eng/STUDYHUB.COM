@@ -1,16 +1,16 @@
 """
 WebSocket endpoint and real-time event handlers for Conniku messaging.
 """
+import contextlib
 import json
 import logging
 from datetime import datetime
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends, Query
-from sqlalchemy.orm import Session
-
-from database import get_db, ConversationParticipant, Message, Conversation, User, gen_id, ModerationQueueItem
-from websocket_manager import manager
+from database import Conversation, ConversationParticipant, Message, ModerationQueueItem, User, gen_id, get_db
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from moderation import check_content, moderate_image
+from sqlalchemy.orm import Session
+from websocket_manager import manager
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ def get_online_count(db: Session = Depends(get_db)):
     if online_ids:
         tutors = db.query(User).filter(
             User.id.in_(online_ids),
-            User.offers_mentoring == True,
+            User.offers_mentoring,
         ).count()
 
     return {
@@ -81,6 +81,7 @@ async def websocket_endpoint(
     await manager.connect(websocket, user_id)
 
     # Notify friends/contacts that user is online
+    db = None
     try:
         db = next(get_db())
         user = db.query(User).filter(User.id == user_id).first()
@@ -111,10 +112,11 @@ async def websocket_endpoint(
                 "user_id": user_id,
                 "username": username
             })
-
-        db.close()
     except Exception as e:
         logger.error(f"[WS] Error during connection setup: {e}")
+    finally:
+        if db:
+            db.close()
 
     # Main message loop
     try:
@@ -147,10 +149,16 @@ async def websocket_endpoint(
             elif msg_type == "typing":
                 conv_id = data.get("conversation_id")
                 if conv_id:
-                    db = next(get_db())
-                    u = db.query(User).filter(User.id == user_id).first()
-                    uname = u.username if u else "unknown"
-                    db.close()
+                    db = None
+                    try:
+                        db = next(get_db())
+                        u = db.query(User).filter(User.id == user_id).first()
+                        uname = u.username if u else "unknown"
+                    except Exception:
+                        uname = "unknown"
+                    finally:
+                        if db:
+                            db.close()
                     await manager.broadcast_to_conversation(conv_id, {
                         "type": "typing",
                         "conversation_id": conv_id,
@@ -327,10 +335,8 @@ async def _handle_message(websocket: WebSocket, user_id: str, data: dict):
             )
             db.add(queue_item)
             db.commit()
-            try:
+            with contextlib.suppress(Exception):
                 _notify_ceo_moderation(db, queue_item, sender)
-            except Exception:
-                pass
             # Notify sender only (pending)
             await websocket.send_json({
                 "type": "message_sent",

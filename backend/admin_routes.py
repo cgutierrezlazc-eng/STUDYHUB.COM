@@ -1,20 +1,29 @@
 """
 Admin routes: user management, moderation, stats.
 """
+import contextlib
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, func
-
-from database import (
-    get_db, User, Message, Conversation, ModerationLog,
-    Friendship, WallPost, BlockedUser, UserReport, PaymentLog, gen_id
-)
-from middleware import require_admin, require_owner
 from auth_routes import user_to_dict
+from database import (
+    BlockedUser,
+    Conversation,
+    Friendship,
+    Message,
+    ModerationLog,
+    PaymentLog,
+    User,
+    UserReport,
+    WallPost,
+    gen_id,
+    get_db,
+)
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from middleware import require_admin, require_owner
+from pydantic import BaseModel
+from sqlalchemy import desc, func
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -29,8 +38,8 @@ class BanRequest(BaseModel):
 def list_users(
     page: int = 1,
     per_page: int = 50,
-    search: Optional[str] = None,
-    filter: Optional[str] = None,  # all | banned | unverified | admin
+    search: str | None = None,
+    filter: str | None = None,  # all | banned | unverified | admin
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -45,11 +54,11 @@ def list_users(
         )
 
     if filter == "banned":
-        query = query.filter(User.is_banned == True)
+        query = query.filter(User.is_banned)
     elif filter == "unverified":
-        query = query.filter(User.email_verified == False)
+        query = query.filter(not User.email_verified)
     elif filter == "admin":
-        query = query.filter(User.is_admin == True)
+        query = query.filter(User.is_admin)
 
     total = query.count()
     users = query.order_by(desc(User.created_at)).offset((page - 1) * per_page).limit(per_page).all()
@@ -135,16 +144,24 @@ def delete_user(user_id: str, admin: User = Depends(require_admin), db: Session 
 
     # Delete related data
     from database import (
-        WallPost, PostLike, PostComment, Friendship, FriendRequest,
-        ConversationParticipant, Message, UserCourseProgress,
-        StudentCV, PushSubscription, UserExerciseHistory,
+        ConversationParticipant,
+        FriendRequest,
+        Friendship,
+        Message,
+        PostComment,
+        PostLike,
+        PushSubscription,
+        StudentCV,
+        UserCourseProgress,
+        UserExerciseHistory,
+        WallPost,
     )
     db.query(PostLike).filter(PostLike.user_id == user_id).delete()
     db.query(PostComment).filter(PostComment.user_id == user_id).delete()
     db.query(WallPost).filter(WallPost.author_id == user_id).delete()
     db.query(WallPost).filter(WallPost.wall_owner_id == user_id).delete()
     db.query(Friendship).filter(
-        (Friendship.user_id == user_id) | (Friendship.friend_id == user_id)
+        (Friendship.requester_id == user_id) | (Friendship.addressee_id == user_id)
     ).delete(synchronize_session=False)
     db.query(FriendRequest).filter(
         (FriendRequest.sender_id == user_id) | (FriendRequest.receiver_id == user_id)
@@ -189,10 +206,7 @@ def _should_keep(user) -> bool:
     fname = (user.first_name or "").lower()
     lname = (user.last_name or "").lower()
     full = f"{fname} {lname}"
-    for k in KEEP_EMAILS:
-        if k in email or k in fname or k in lname or k in full:
-            return True
-    return False
+    return any(k in email or k in fname or k in lname or k in full for k in KEEP_EMAILS)
 
 
 @router.post("/purge-demo-data")
@@ -202,11 +216,20 @@ def purge_demo_data(admin: User = Depends(require_admin), db: Session = Depends(
         raise HTTPException(403, "Solo el propietario puede purgar datos")
 
     from database import (
-        WallPost, PostLike, PostComment, Friendship,
-        ConversationParticipant, Message, UserCourseProgress,
-        StudentCV, PushSubscription, UserExerciseHistory,
+        ConversationParticipant,
+        Friendship,
+        Message,
+        PostComment,
+        PostLike,
+        PushSubscription,
+        StudentCV,
+        UserCourseProgress,
+        UserExerciseHistory,
+        WallPost,
     )
-    from hr_routes import Employee as HREmployee, EmployeeDocument as HREmployeeDocument, PayrollRecord as HRPayrollRecord
+    from hr_routes import Employee as HREmployee
+    from hr_routes import EmployeeDocument as HREmployeeDocument
+    from hr_routes import PayrollRecord as HRPayrollRecord
 
     all_users = db.query(User).all()
     deleted = []
@@ -223,7 +246,7 @@ def purge_demo_data(admin: User = Depends(require_admin), db: Session = Depends(
             db.query(PostLike).filter(PostLike.user_id == uid).delete()
             db.query(PostComment).filter(PostComment.user_id == uid).delete()
             db.query(WallPost).filter((WallPost.author_id == uid) | (WallPost.wall_owner_id == uid)).delete(synchronize_session=False)
-            db.query(Friendship).filter((Friendship.user_id == uid) | (Friendship.friend_id == uid)).delete(synchronize_session=False)
+            db.query(Friendship).filter((Friendship.requester_id == uid) | (Friendship.addressee_id == uid)).delete(synchronize_session=False)
             db.query(ConversationParticipant).filter(ConversationParticipant.user_id == uid).delete()
             db.query(Message).filter(Message.sender_id == uid).delete()
             db.query(UserCourseProgress).filter(UserCourseProgress.user_id == uid).delete()
@@ -258,12 +281,10 @@ def purge_demo_data(admin: User = Depends(require_admin), db: Session = Depends(
             db.delete(emp)
 
     # Clean moderation logs for deleted users
-    try:
+    with contextlib.suppress(Exception):
         db.query(ModerationLog).filter(
             ModerationLog.user_id.in_([d["id"] for d in deleted])
         ).delete(synchronize_session=False)
-    except Exception:
-        pass
 
     db.commit()
 
@@ -286,7 +307,7 @@ def flagged_messages(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Message).filter(Message.is_flagged == True, Message.is_deleted == False)
+    query = db.query(Message).filter(Message.is_flagged, not Message.is_deleted)
     total = query.count()
     messages = query.order_by(desc(Message.created_at)).offset((page - 1) * per_page).limit(per_page).all()
 
@@ -360,11 +381,11 @@ def online_users(admin: User = Depends(require_admin), db: Session = Depends(get
 def admin_stats(admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     return {
         "totalUsers": db.query(User).count(),
-        "activeUsers": db.query(User).filter(User.is_banned == False).count(),
-        "bannedUsers": db.query(User).filter(User.is_banned == True).count(),
-        "unverifiedUsers": db.query(User).filter(User.email_verified == False).count(),
+        "activeUsers": db.query(User).filter(not User.is_banned).count(),
+        "bannedUsers": db.query(User).filter(User.is_banned).count(),
+        "unverifiedUsers": db.query(User).filter(not User.email_verified).count(),
         "totalMessages": db.query(Message).count(),
-        "flaggedMessages": db.query(Message).filter(Message.is_flagged == True, Message.is_deleted == False).count(),
+        "flaggedMessages": db.query(Message).filter(Message.is_flagged, not Message.is_deleted).count(),
         "totalConversations": db.query(Conversation).count(),
         "totalFriendships": db.query(Friendship).filter(Friendship.status == "accepted").count(),
         "totalWallPosts": db.query(WallPost).count(),
@@ -409,7 +430,7 @@ def moderation_logs(
 def list_reports(
     page: int = 1,
     per_page: int = 50,
-    status: Optional[str] = None,
+    status: str | None = None,
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
@@ -567,8 +588,9 @@ def revoke_premium(user_id: str, owner: User = Depends(require_owner), db: Sessi
 @router.get("/financial-summary")
 def financial_summary(owner: User = Depends(require_owner), db: Session = Depends(get_db)):
     """Financial overview for the owner: revenue, taxes, subscriber counts."""
-    from sqlalchemy import extract
     from datetime import datetime, timedelta
+
+    from sqlalchemy import extract
 
     now = datetime.utcnow()
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -614,10 +636,7 @@ def financial_summary(owner: User = Depends(require_owner), db: Session = Depend
             m += 12
             y -= 1
         m_start = datetime(y, m, 1)
-        if m == 12:
-            m_end = datetime(y + 1, 1, 1)
-        else:
-            m_end = datetime(y, m + 1, 1)
+        m_end = datetime(y + 1, 1, 1) if m == 12 else datetime(y, m + 1, 1)
         rev = db.query(func.sum(PaymentLog.amount)).filter(
             PaymentLog.status == "completed",
             PaymentLog.created_at >= m_start,

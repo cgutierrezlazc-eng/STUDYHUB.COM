@@ -1,72 +1,59 @@
-import os
-import json
-import uuid
-import shutil
-import logging
-import traceback
 import base64
+import json
+import logging
+import os
+import shutil
+import traceback
+import uuid
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Optional
 
-from datetime import datetime, timedelta
-
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Request, Body
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import uvicorn
-
-from sqlalchemy.orm import Session
-from sqlalchemy import desc
-from database import init_db, get_db, User, gen_id, DATA_DIR, ChatUsage
-from middleware import get_current_user
-from document_processor import DocumentProcessor
-from ai_engine import AIEngine
 import anthropic as anthropic_lib
-from auth_routes import router as auth_router
-from messaging_routes import router as messaging_router
+import uvicorn
 from admin_routes import router as admin_router
-from social_routes import router as social_router
-from video_routes import router as video_router
 from ai_detection_routes import router as ai_detection_router
-from gamification import router as gamification_router
-from notifications import router as notifications_router
-from calendar_routes import router as calendar_router
-from marketplace_routes import router as marketplace_router
-from community_routes import router as community_router
-from notification_routes import router as notification_router
+from ai_engine import AIEngine
+from ai_workflow_routes import router as ai_workflow_router
+from auth_routes import router as auth_router
 from biblioteca_routes import router as biblioteca_router
+from calendar_routes import router as calendar_router
+from certificate_routes import router as certificate_router
+from chile_tax_routes import router as finance_router
 from collab_routes import router as collab_router
 from collab_ws import router as collab_ws_router
-from job_routes import router as job_router
+from community_routes import router as community_router
+from conference_routes import router as conference_router
 from course_routes import router as course_router
+from cv_routes import router as cv_router
+from database import DATA_DIR, ChatUsage, User, gen_id, get_db, init_db
+from document_processor import DocumentProcessor
+from email_doc_routes import poll_email_inbox as poll_email_docs
+from email_doc_routes import router as email_doc_router
 from event_routes import router as event_router
+from exam_predictor_routes import router as exam_predictor_router
+from fastapi import Body, Depends, FastAPI, File, HTTPException, Request, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from gamification import router as gamification_router
+from hr_routes import daily_refresh_indicators
+from hr_routes import router as hr_router
+from job_routes import router as job_router
+from lms_routes import router as lms_router
+from marketplace_routes import router as marketplace_router
 from mentorship_routes import router as mentorship_router
 from mercadopago_routes import router as mp_router
-from paypal_routes import router as paypal_router
-from study_room_routes import router as study_room_router
-from quiz_system_routes import router as quiz_system_router
-from pomodoro_routes import router as pomodoro_router
-from wellness_routes import router as wellness_router
-from referral_routes import router as referral_router
-from exam_predictor_routes import router as exam_predictor_router
-from chile_tax_routes import router as finance_router
-from rewards_routes import router as rewards_router
-from search_routes import router as search_router
-from news_routes import router as news_router
-from cv_routes import router as cv_router
-from push_routes import router as push_router
-from certificate_routes import router as certificate_router
-from conference_routes import router as conference_router
-from ws_routes import router as ws_router
-from hr_routes import router as hr_router, daily_refresh_indicators
-from tutor_routes import router as tutor_router
-from email_doc_routes import router as email_doc_router, poll_email_inbox as poll_email_docs
-from lms_routes import router as lms_router
-from ai_workflow_routes import router as ai_workflow_router
-from moderation_queue_routes import router as moderation_queue_router
+from messaging_routes import router as messaging_router
+from middleware import get_current_user
+
 # payment_routes (Stripe) removed — using MercadoPago + PayPal only
 from migrations import migrate
+from moderation_queue_routes import router as moderation_queue_router
+from news_routes import router as news_router
+from notification_routes import router as notification_router
+from notifications import router as notifications_router
+from paypal_routes import router as paypal_router
+from pomodoro_routes import router as pomodoro_router
 from prompts import (
     AUDIO_TO_NOTES_PROMPT,
     EXAM_NIGHT_PROMPT,
@@ -74,6 +61,20 @@ from prompts import (
     STUDY_PLAN_PROMPT,
     TRANSLATE_PROMPT,
 )
+from push_routes import router as push_router
+from pydantic import BaseModel
+from quiz_system_routes import router as quiz_system_router
+from referral_routes import router as referral_router
+from rewards_routes import router as rewards_router
+from search_routes import router as search_router
+from social_routes import router as social_router
+from sqlalchemy import desc
+from sqlalchemy.orm import Session
+from study_room_routes import router as study_room_router
+from tutor_routes import router as tutor_router
+from video_routes import router as video_router
+from wellness_routes import router as wellness_router
+from ws_routes import router as ws_router
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
 
@@ -92,6 +93,7 @@ app.add_middleware(
 )
 
 from security_middleware import SecurityHeadersMiddleware
+
 app.add_middleware(SecurityHeadersMiddleware)
 
 # Disable docs in production
@@ -195,9 +197,10 @@ migrate()
 # ─── APScheduler: actualización diaria de indicadores laborales (08:00 Chile) ─
 try:
     import asyncio
+
+    import pytz
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     from apscheduler.triggers.cron import CronTrigger
-    import pytz
 
     _scheduler = AsyncIOScheduler(timezone=pytz.utc)
 
@@ -296,34 +299,40 @@ class ContactFormRequest(BaseModel):
 def contact_send(req: ContactFormRequest):
     """Send contact form to contacto@conniku.com. No authentication required."""
     try:
-        from notifications import _send_email_async, _email_template
+        import html as html_mod
+
+        from notifications import _email_template, _send_email_async
+        safe_name = html_mod.escape(req.name)
+        safe_email = html_mod.escape(req.email)
+        safe_subject = html_mod.escape(req.subject)
+        safe_message = html_mod.escape(req.message)
         body = f"""
             <p><strong>Nueva consulta desde el formulario de contacto de conniku.com</strong></p>
             <table style="width:100%;font-size:13px;border-collapse:collapse;margin-top:12px">
                 <tr>
                     <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666;width:30%">Nombre</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{req.name}</td>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{safe_name}</td>
                 </tr>
                 <tr>
                     <td style="padding:8px 0;border-bottom:1px solid #eee;color:#666">Email remitente</td>
-                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{req.email}</td>
+                    <td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">{safe_email}</td>
                 </tr>
                 <tr>
                     <td style="padding:8px 0;color:#666">Asunto</td>
-                    <td style="padding:8px 0;font-weight:600">{req.subject}</td>
+                    <td style="padding:8px 0;font-weight:600">{safe_subject}</td>
                 </tr>
             </table>
             <div style="margin-top:16px;padding:16px;background:#f8f9fa;border-radius:8px;">
-                <p style="margin:0;font-size:14px;color:#344054;white-space:pre-wrap">{req.message}</p>
+                <p style="margin:0;font-size:14px;color:#344054;white-space:pre-wrap">{safe_message}</p>
             </div>
             <p style="margin-top:16px;font-size:12px;color:#999">
-                Para responder, usa Reply-To: {req.email}
+                Para responder, usa Reply-To: {safe_email}
             </p>
         """
         html = _email_template("Consulta desde Conniku.com", body, sender="contacto")
         _send_email_async(
             "contacto@conniku.com",
-            f"[Formulario Web] {req.subject}",
+            f"[Formulario Web] {safe_subject}",
             html,
             reply_to=req.email,
             email_type="contact",
@@ -332,12 +341,13 @@ def contact_send(req: ContactFormRequest):
         return {"ok": True}
     except Exception as e:
         logger.error(f"Contact form error: {e}")
-        raise HTTPException(500, "No se pudo enviar el mensaje. Inténtalo más tarde.")
+        raise HTTPException(500, "No se pudo enviar el mensaje. Inténtalo más tarde.") from None
 
 
 # ─── Blog Thread ─────────────────────────────────────────────────────────────
 
 from database import BlogThread
+
 
 class BlogPostCreate(BaseModel):
     content: str
@@ -480,9 +490,9 @@ class CreateProjectRequest(BaseModel):
     color: str = "#4f8cff"
 
 class UpdateProjectRequest(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    color: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
+    color: str | None = None
 
 class ChatRequest(BaseModel):
     message: str
@@ -700,7 +710,7 @@ async def import_document_b64(project_id: str, req: ImportDocumentRequest,
     try:
         content = base64.b64decode(req.content_b64)
     except Exception:
-        raise HTTPException(400, "Contenido base64 inválido")
+        raise HTTPException(400, "Contenido base64 inválido") from None
 
     file_size = len(content)
     current_used = user.storage_used_bytes or 0
@@ -822,7 +832,7 @@ def _build_user_context(user: User, db: Session) -> str:
             CalendarEvent.user_id == user.id,
             CalendarEvent.due_date >= datetime.utcnow(),
             CalendarEvent.due_date <= datetime.utcnow() + timedelta(days=14),
-            CalendarEvent.completed == False
+            CalendarEvent.completed.is_(False)
         ).order_by(CalendarEvent.due_date).limit(10).all()
         if upcoming:
             parts.append("\nPROXIMOS EVENTOS (14 dias):")
@@ -850,13 +860,13 @@ def _build_user_context(user: User, db: Session) -> str:
     # Friends (names only)
     try:
         friends_q = db.query(Friendship).filter(
-            ((Friendship.user_id == user.id) | (Friendship.friend_id == user.id)),
+            ((Friendship.requester_id == user.id) | (Friendship.addressee_id == user.id)),
             Friendship.status == "accepted"
         ).limit(15).all()
         if friends_q:
             friend_ids = []
             for f in friends_q:
-                fid = f.friend_id if f.user_id == user.id else f.user_id
+                fid = f.addressee_id if f.requester_id == user.id else f.requester_id
                 friend_ids.append(fid)
             friends = db.query(User).filter(User.id.in_(friend_ids)).all()
             if friends:
@@ -1276,10 +1286,7 @@ Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
                 # Try to extract JSON array from response
                 import re
                 match = re.search(r'\[.*?\]', result, re.DOTALL)
-                if match:
-                    tags = json_mod.loads(match.group())
-                else:
-                    tags = []
+                tags = json_mod.loads(match.group()) if match else []
         else:
             tags = []
         return {"tags": tags[:5]}
@@ -1290,7 +1297,7 @@ Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
 @app.get("/ai/daily-summary")
 def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Generate a personalized daily study summary using GPT-4o Mini (free)."""
-    from database import WallPost, CalendarEvent, StudySession
+    from database import CalendarEvent, StudySession, WallPost
     from sqlalchemy import func
 
     today = datetime.utcnow().date()
@@ -1309,9 +1316,9 @@ def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(
         # Upcoming events
         events = db.query(CalendarEvent).filter(
             CalendarEvent.user_id == user.id,
-            CalendarEvent.date >= str(today)
-        ).order_by(CalendarEvent.date).limit(3).all()
-        event_list = [{"title": e.title, "date": str(e.date)} for e in events]
+            CalendarEvent.due_date >= str(today)
+        ).order_by(CalendarEvent.due_date).limit(3).all()
+        event_list = [{"title": e.title, "date": str(e.due_date)} for e in events]
 
         # Recent posts count
         post_count = db.query(func.count(WallPost.id)).filter(
@@ -1339,7 +1346,8 @@ Responde SOLO con JSON: {"summary": "...", "tip": "...", "mood": "positive|neutr
 
     try:
         result = ai_engine._call_gemini_json(system, context)
-        import json as json_mod, re
+        import json as json_mod
+        import re
         if isinstance(result, str):
             match = re.search(r'\{.*\}', result, re.DOTALL)
             if match:
@@ -1379,7 +1387,8 @@ Se especifico, practico y motivador. No inventes informacion que no esta en el C
 
     try:
         result = ai_engine._call_gemini_json(system, f"CV del estudiante:\n{req.cv_text}")
-        import json as json_mod, re
+        import json as json_mod
+        import re
         if isinstance(result, str):
             match = re.search(r'\{.*\}', result, re.DOTALL)
             if match:
@@ -1463,7 +1472,7 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
     # Here we generate notes from the transcription
 
     import base64
-    audio_b64 = base64.b64encode(content).decode()
+    base64.b64encode(content).decode()
 
     lang = user.language or "es"
 
@@ -1742,7 +1751,6 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
     else:
         image_data = req.image_base64
 
-    lang_name = "español" if req.language == "es" else "inglés" if req.language == "en" else req.language
 
     if not _claude_client:
         return {"solution": "El motor de IA no está disponible en este momento.", "success": False}
@@ -1847,7 +1855,7 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
             filename=f"{req.title}.docx",
         )
     except Exception as e:
-        raise HTTPException(500, f"Error generando documento: {str(e)}")
+        raise HTTPException(500, f"Error generando documento: {str(e)}") from e
 
 
 # ─── Summary generation & export ─────────────────────────────
@@ -1989,10 +1997,7 @@ def generate_study_plan(project_id: str, user: User = Depends(get_current_user),
         result_text = ai_engine._call_gemini(system, user_prompt)
         start = result_text.find('{')
         end = result_text.rfind('}') + 1
-        if start >= 0 and end > start:
-            result = json.loads(result_text[start:end])
-        else:
-            result = json.loads(result_text)
+        result = json.loads(result_text[start:end]) if start >= 0 and end > start else json.loads(result_text)
     except Exception:
         result = {"weakTopics": [], "strongTopics": [], "overallScore": 50,
                   "recommendations": "No se pudo analizar. Sube más documentos.", "dailyPlan": []}
@@ -2074,7 +2079,7 @@ def clock_attendance(data: dict, user: User = Depends(get_current_user), db: Ses
         raise HTTPException(400, "action must be 'in' or 'out'")
 
     # Chile TZ offset (UTC-3 / UTC-4 in DST — use UTC-3 as standard)
-    from datetime import timezone, timedelta
+    from datetime import timedelta, timezone
     chile_tz = timezone(timedelta(hours=-3))
     now_chile = datetime.now(chile_tz)
     date_str = now_chile.strftime("%Y-%m-%d")
