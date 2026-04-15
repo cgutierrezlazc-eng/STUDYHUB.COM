@@ -2,15 +2,15 @@
 Covers: rate limiting, IP blocking, security headers, input sanitization,
 disposable email detection, device fingerprinting, brute force protection.
 """
+import hashlib
 import os
 import re
 import time
-import hashlib
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import Request, HTTPException
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -141,6 +141,13 @@ def generate_device_fingerprint(request: Request) -> str:
 # ─── Security Headers Middleware ─────────────────────────────
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def __call__(self, scope, receive, send):
+        # BaseHTTPMiddleware NO soporta WebSocket — pasar directo a la app
+        if scope["type"] == "websocket":
+            await self.app(scope, receive, send)
+            return
+        await super().__call__(scope, receive, send)
+
     async def dispatch(self, request: Request, call_next):
         # Rate limiting
         ip = get_client_ip(request)
@@ -156,7 +163,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
         response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https:;"
+        response.headers["Content-Security-Policy"] = "default-src 'self' https:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https: wss:;"
         response.headers["Permissions-Policy"] = "camera=(self), microphone=(self), geolocation=()"
 
         # Remove server header
