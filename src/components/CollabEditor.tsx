@@ -15,7 +15,6 @@ import Image from '@tiptap/extension-image';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Collaboration from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 
@@ -140,20 +139,9 @@ export default function CollabEditor({
       Color,
     ];
 
-    // Add collaboration extensions when in collab mode
+    // Add collaboration extension when in collab mode
     if (ydoc) {
       base.push(Collaboration.configure({ document: ydoc }) as any);
-      if (provider) {
-        base.push(
-          CollaborationCursor.configure({
-            provider,
-            user: {
-              name: userName || 'Anonimo',
-              color: userColor || '#2D62C8',
-            },
-          }) as any
-        );
-      }
     }
 
     return base;
@@ -482,30 +470,7 @@ export default function CollabEditor({
           color: var(--text-muted); pointer-events: none; height: 0;
         }
         .tiptap hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-        /* Collaboration cursor styles */
-        .collaboration-cursor__caret {
-          border-left: 2px solid;
-          border-right: none;
-          margin-left: -1px;
-          margin-right: -1px;
-          pointer-events: none;
-          position: relative;
-          word-break: normal;
-        }
-        .collaboration-cursor__label {
-          position: absolute;
-          top: -1.4em;
-          left: -1px;
-          font-size: 11px;
-          font-weight: 600;
-          font-style: normal;
-          line-height: normal;
-          user-select: none;
-          color: #fff;
-          padding: 1px 6px;
-          border-radius: 4px 4px 4px 0;
-          white-space: nowrap;
-        }
+        /* Collaboration cursor styles (reserved for future use) */
       `}</style>
     </div>
   );
