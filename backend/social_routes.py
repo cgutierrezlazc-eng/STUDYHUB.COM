@@ -2,28 +2,46 @@
 Social routes: friendships, wall posts, likes, comments, public profiles.
 """
 import json
-from datetime import datetime
-from typing import Optional, List
-
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
-from sqlalchemy.orm import Session
-from sqlalchemy import or_, and_, desc
+from datetime import UTC, datetime
+from typing import List, Optional
 
 from database import (
-    get_db, User, Friendship, WallPost, PostLike, PostComment, PostReaction, BlockedUser, UserReport,
-    FriendList, FriendListMember, gen_id
+    BlockedUser,
+    FriendList,
+    FriendListMember,
+    Friendship,
+    PostComment,
+    PostLike,
+    PostReaction,
+    User,
+    UserReport,
+    WallPost,
+    gen_id,
+    get_db,
 )
+from fastapi import APIRouter, Depends, HTTPException, Query
 from middleware import get_current_user
 from notification_routes import create_notification
+from pydantic import BaseModel
+from sqlalchemy import and_, desc, func, or_
+from sqlalchemy.orm import Session
+
 try:
-    from notifications import notify_friend_request, notify_friend_accepted, notify_wall_post, notify_mention, notify_comment
+    from notifications import (
+        notify_comment,
+        notify_friend_accepted,
+        notify_friend_request,
+        notify_mention,
+        notify_wall_post,
+    )
 except ImportError:
     notify_friend_request = notify_friend_accepted = notify_wall_post = notify_mention = notify_comment = None
 
 router = APIRouter(prefix="/social", tags=["social"])
 
+import contextlib
 import re
+
 
 def extract_hashtags(content: str) -> list[str]:
     return [tag.lower() for tag in re.findall(r'#(\w+)', content)]
@@ -52,13 +70,11 @@ def process_mentions(db, content: str, actor_id: str, link: str = ""):
         if mentioned and mentioned.id != actor_id:
             from notification_routes import create_notification
             create_notification(db, mentioned.id, "mention",
-                f"Te mencionaron en una publicación",
+                "Te mencionaron en una publicación",
                 body=content[:100], link=link, actor_id=actor_id)
             if notify_mention and actor:
-                try:
+                with contextlib.suppress(Exception):
                     notify_mention(db, mentioned, actor, content[:150])
-                except Exception:
-                    pass
 
 
 # ─── Request Models ────────────────────────────────────────────
@@ -71,7 +87,7 @@ class WallPostBody(BaseModel):
     content: str
     image_url: Optional[str] = None
     visibility: str = "friends"  # public | friends | university | private | specific | list
-    visible_to: Optional[List[str]] = None  # user IDs for "specific" visibility
+    visible_to: Optional[list[str]] = None  # user IDs for "specific" visibility
     visibility_list_id: Optional[str] = None  # friend list ID for "list" visibility
 
 
@@ -338,8 +354,8 @@ def search_users(
     query = f"%{q.lower()}%"
     users = db.query(User).filter(
         User.id != user.id,
-        User.is_banned == False,
-        User.is_ghost == False,
+        User.is_banned.is_(False),
+        User.is_ghost.is_(False),
         or_(
             User.username.ilike(query),
             User.first_name.ilike(query),
@@ -577,18 +593,51 @@ def get_wall_posts(
         # Visitante: solo posts públicos + hitos automáticos
         from sqlalchemy import or_
         query = query.filter(
-            or_(WallPost.visibility == "public", WallPost.is_milestone == True)
+            or_(WallPost.visibility == "public", WallPost.is_milestone)
         )
 
     posts = query.order_by(WallPost.created_at.desc()).offset((page - 1) * per_page).limit(per_page).all()
 
+    if not posts:
+        return []
+
+    # ── Batch-optimized: same pattern as /feed ────────────────
+    from sqlalchemy import func as sqlfunc
+
+    pids = [p.id for p in posts]
+    author_ids = list({p.author_id for p in posts})
+
+    # 1) Authors — 1 query
+    authors_map = {u.id: u for u in db.query(User).filter(User.id.in_(author_ids)).all()}
+
+    # 2) Like counts — 1 query
+    like_counts = dict(db.query(PostLike.post_id, sqlfunc.count(PostLike.id)).filter(
+        PostLike.post_id.in_(pids)).group_by(PostLike.post_id).all())
+
+    # 3) User's likes — 1 query
+    user_liked = {r[0] for r in db.query(PostLike.post_id).filter(
+        PostLike.post_id.in_(pids), PostLike.user_id == user.id).all()}
+
+    # 4) Comment counts — 1 query
+    comment_counts = dict(db.query(PostComment.post_id, sqlfunc.count(PostComment.id)).filter(
+        PostComment.post_id.in_(pids)).group_by(PostComment.post_id).all())
+
+    # 5) Reactions grouped by post + type — 1 query
+    reactions_map: dict = {}
+    for pid, rtype, cnt in db.query(
+        PostReaction.post_id, PostReaction.reaction_type, sqlfunc.count(PostReaction.id)
+    ).filter(PostReaction.post_id.in_(pids)).group_by(
+        PostReaction.post_id, PostReaction.reaction_type
+    ).all():
+        reactions_map.setdefault(pid, {})[rtype] = cnt
+
+    # 6) User's reactions — 1 query
+    user_reactions = dict(db.query(PostReaction.post_id, PostReaction.reaction_type).filter(
+        PostReaction.post_id.in_(pids), PostReaction.user_id == user.id).all())
+
     result = []
     for post in posts:
-        author = db.query(User).filter(User.id == post.author_id).first()
-        like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
-        liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user.id).first() is not None
-        comment_count = db.query(PostComment).filter(PostComment.post_id == post.id).count()
-
+        author = authors_map.get(post.author_id)
         result.append({
             "id": post.id,
             "author": user_brief(author) if author else None,
@@ -599,11 +648,11 @@ def get_wall_posts(
             "visibleTo": json.loads(getattr(post, "visible_to", None) or "[]"),
             "isMilestone": getattr(post, "is_milestone", False),
             "milestoneType": getattr(post, "milestone_type", None),
-            "likes": like_count,
-            "liked": liked,
-            "commentCount": comment_count,
-            "reactions": _get_reactions(db, post.id),
-            "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
+            "likes": like_counts.get(post.id, 0),
+            "liked": post.id in user_liked,
+            "commentCount": comment_counts.get(post.id, 0),
+            "reactions": reactions_map.get(post.id, {}),
+            "userReaction": user_reactions.get(post.id),
             "createdAt": post.created_at.isoformat(),
         })
     return result
@@ -850,17 +899,23 @@ def get_comments(
         PostComment.post_id == post_id
     ).order_by(PostComment.created_at.asc()).all()
 
-    result = []
-    for c in comments:
-        author = db.query(User).filter(User.id == c.author_id).first()
-        result.append({
+    if not comments:
+        return []
+
+    # Batch fetch authors — 1 query instead of N
+    author_ids = list({c.author_id for c in comments})
+    authors_map = {u.id: u for u in db.query(User).filter(User.id.in_(author_ids)).all()}
+
+    return [
+        {
             "id": c.id,
-            "author": user_brief(author) if author else None,
+            "author": user_brief(authors_map[c.author_id]) if c.author_id in authors_map else None,
             "content": c.content,
             "createdAt": c.created_at.isoformat(),
             "editedAt": c.edited_at.isoformat() if getattr(c, 'edited_at', None) else None,
-        })
-    return result
+        }
+        for c in comments
+    ]
 
 
 # ─── Feed (friends' recent posts) ─────────────────────────────
@@ -915,15 +970,32 @@ def get_feed(
     # Get current user's university for "university" visibility filtering
     user_university = getattr(user, "university", None)
 
-    result = []
+    if not posts:
+        return []
+
+    # ── Batch-optimized: ~10 queries total instead of ~160+ ───
+    from database import Poll
+    from sqlalchemy import func as sqlfunc
+
+    # Pre-fetch authors needed for "university" visibility check
+    univ_author_ids = {
+        p.author_id for p in posts
+        if p.author_id != user.id
+        and (getattr(p, "visibility", "friends") or "friends") == "university"
+    }
+    univ_authors: dict = {}
+    if univ_author_ids:
+        univ_authors = {u.id: u for u in db.query(User).filter(User.id.in_(univ_author_ids)).all()}
+
+    # Visibility filtering (only "list" visibility needs per-post query)
+    filtered_posts = []
     for post in posts:
-        # Visibility filtering
         visibility = getattr(post, "visibility", "friends") or "friends"
         if post.author_id != user.id:
             if visibility == "private":
                 continue
             if visibility == "university":
-                post_author = db.query(User).filter(User.id == post.author_id).first()
+                post_author = univ_authors.get(post.author_id)
                 if not user_university or not post_author or getattr(post_author, "university", None) != user_university:
                     continue
             if visibility == "specific":
@@ -941,16 +1013,52 @@ def get_feed(
                         continue
                 else:
                     continue
+        filtered_posts.append(post)
 
-        author = db.query(User).filter(User.id == post.author_id).first()
-        wall_owner = db.query(User).filter(User.id == post.wall_owner_id).first()
-        like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
-        liked = db.query(PostLike).filter(PostLike.post_id == post.id, PostLike.user_id == user.id).first() is not None
-        comment_count = db.query(PostComment).filter(PostComment.post_id == post.id).count()
+    if not filtered_posts:
+        return []
 
-        # Check if post has an associated poll
-        from database import Poll
-        poll = db.query(Poll).filter(Poll.wall_post_id == post.id).first()
+    fpost_ids = [p.id for p in filtered_posts]
+    all_user_ids = list({p.author_id for p in filtered_posts} | {p.wall_owner_id for p in filtered_posts})
+
+    # 1) All users (authors + wall owners) — 1 query
+    users_map = {u.id: u for u in db.query(User).filter(User.id.in_(all_user_ids)).all()}
+
+    # 2) Like counts per post — 1 query
+    like_counts = dict(db.query(PostLike.post_id, sqlfunc.count(PostLike.id)).filter(
+        PostLike.post_id.in_(fpost_ids)).group_by(PostLike.post_id).all())
+
+    # 3) Current user's likes — 1 query
+    user_liked = {r[0] for r in db.query(PostLike.post_id).filter(
+        PostLike.post_id.in_(fpost_ids), PostLike.user_id == user.id).all()}
+
+    # 4) Comment counts per post — 1 query
+    comment_counts = dict(db.query(PostComment.post_id, sqlfunc.count(PostComment.id)).filter(
+        PostComment.post_id.in_(fpost_ids)).group_by(PostComment.post_id).all())
+
+    # 5) Polls by wall_post_id — 1 query
+    polls_map = {p.wall_post_id: p for p in db.query(Poll).filter(Poll.wall_post_id.in_(fpost_ids)).all()}
+
+    # 6) Reactions grouped by post + type — 1 query
+    reactions_map: dict = {}
+    for pid, rtype, cnt in db.query(
+        PostReaction.post_id, PostReaction.reaction_type, sqlfunc.count(PostReaction.id)
+    ).filter(PostReaction.post_id.in_(fpost_ids)).group_by(
+        PostReaction.post_id, PostReaction.reaction_type
+    ).all():
+        reactions_map.setdefault(pid, {})[rtype] = cnt
+
+    # 7) Current user's reactions — 1 query
+    user_reactions = dict(db.query(PostReaction.post_id, PostReaction.reaction_type).filter(
+        PostReaction.post_id.in_(fpost_ids), PostReaction.user_id == user.id).all())
+
+    # ── Build result from pre-fetched data (0 extra queries) ──
+    result = []
+    for post in filtered_posts:
+        author = users_map.get(post.author_id)
+        wall_owner = users_map.get(post.wall_owner_id)
+        visibility = getattr(post, "visibility", "friends") or "friends"
+        poll = polls_map.get(post.id)
 
         result.append({
             "id": post.id,
@@ -963,27 +1071,20 @@ def get_feed(
             "visibleTo": json.loads(getattr(post, "visible_to", None) or "[]"),
             "isMilestone": getattr(post, "is_milestone", False),
             "milestoneType": getattr(post, "milestone_type", None),
-            "likes": like_count,
-            "liked": liked,
-            "commentCount": comment_count,
-            "reactions": _get_reactions(db, post.id),
-            "userReaction": db.query(PostReaction.reaction_type).filter(PostReaction.post_id == post.id, PostReaction.user_id == user.id).scalar(),
+            "likes": like_counts.get(post.id, 0),
+            "liked": post.id in user_liked,
+            "commentCount": comment_counts.get(post.id, 0),
+            "reactions": reactions_map.get(post.id, {}),
+            "userReaction": user_reactions.get(post.id),
             "createdAt": post.created_at.isoformat(),
             "updatedAt": post.updated_at.isoformat() if post.updated_at else None,
             "pollId": poll.id if poll else None,
         })
 
-    # Smart sorting: personalized ranking
+    # Smart sorting: personalized ranking (uses pre-fetched users_map — 0 extra queries)
     if sort == "smart" and result:
         from datetime import datetime, timezone
-        now = datetime.now(timezone.utc)
-
-        # Pre-fetch author info for scoring
-        author_cache = {}
-        for item in result:
-            aid = item["authorId"]
-            if aid not in author_cache:
-                author_cache[aid] = db.query(User).filter(User.id == aid).first()
+        now = datetime.now(UTC)
 
         for item in result:
             score = 0.0
@@ -1002,7 +1103,7 @@ def get_feed(
                 score += 50
 
             # Same career/university boost
-            author = author_cache.get(item["authorId"])
+            author = users_map.get(item["authorId"])
             if author:
                 if author.career and author.career == user.career:
                     score += 30
@@ -1036,12 +1137,12 @@ def get_trending_posts(
     db: Session = Depends(get_db),
 ):
     """Return top 3 trending posts from the user's career field (last 72h)."""
-    from datetime import datetime, timezone, timedelta
+    from datetime import datetime, timedelta, timezone
 
     if not user.career:
         return []
 
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=72)
+    cutoff = datetime.now(UTC) - timedelta(hours=72)
 
     # Get users in the same career
     career_user_ids = [u.id for u in db.query(User.id).filter(User.career == user.career).all()]
@@ -1053,22 +1154,38 @@ def get_trending_posts(
         WallPost.created_at >= cutoff,
     ).order_by(WallPost.created_at.desc()).limit(30).all()
 
+    # Visibility filter: remove private posts not authored by user
+    visible_posts = [
+        p for p in posts
+        if p.author_id == user.id or (getattr(p, "visibility", "friends") or "friends") != "private"
+    ]
+    if not visible_posts:
+        return []
+
+    # ── Batch-optimized (same pattern as /feed) ───────────────
+    from database import Poll
+    from sqlalchemy import func as sqlfunc
+
+    vpost_ids = [p.id for p in visible_posts]
+    author_ids = list({p.author_id for p in visible_posts})
+
+    authors_map = {u.id: u for u in db.query(User).filter(User.id.in_(author_ids)).all()}
+    like_counts = dict(db.query(PostLike.post_id, sqlfunc.count(PostLike.id)).filter(
+        PostLike.post_id.in_(vpost_ids)).group_by(PostLike.post_id).all())
+    comment_counts = dict(db.query(PostComment.post_id, sqlfunc.count(PostComment.id)).filter(
+        PostComment.post_id.in_(vpost_ids)).group_by(PostComment.post_id).all())
+    polls_map = {p.wall_post_id: p for p in db.query(Poll).filter(Poll.wall_post_id.in_(vpost_ids)).all()}
+
     scored = []
-    for post in posts:
-        # Visibility check: skip private posts not authored by user
-        visibility = getattr(post, "visibility", "friends") or "friends"
-        if post.author_id != user.id and visibility == "private":
-            continue
+    now = datetime.now(UTC)
+    for post in visible_posts:
+        lc = like_counts.get(post.id, 0)
+        cc = comment_counts.get(post.id, 0)
+        age_hours = max((now - post.created_at.replace(tzinfo=UTC)).total_seconds() / 3600, 0.5)
+        score = (lc * 3 + cc * 5) / (age_hours ** 0.5)
 
-        author = db.query(User).filter(User.id == post.author_id).first()
-        like_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
-        comment_count = db.query(PostComment).filter(PostComment.post_id == post.id).count()
-
-        age_hours = max((datetime.now(timezone.utc) - post.created_at.replace(tzinfo=timezone.utc)).total_seconds() / 3600, 0.5)
-        score = (like_count * 3 + comment_count * 5) / (age_hours ** 0.5)
-
-        from database import Poll
-        poll = db.query(Poll).filter(Poll.wall_post_id == post.id).first()
+        author = authors_map.get(post.author_id)
+        poll = polls_map.get(post.id)
 
         scored.append({
             "id": post.id,
@@ -1076,8 +1193,8 @@ def get_trending_posts(
             "author": user_brief(author) if author else None,
             "content": post.content,
             "imageUrl": post.image_url,
-            "likes": like_count,
-            "commentCount": comment_count,
+            "likes": lc,
+            "commentCount": cc,
             "createdAt": post.created_at.isoformat(),
             "pollId": poll.id if poll else None,
             "_score": score,
@@ -1204,7 +1321,7 @@ def create_milestone_post(db, user_id, milestone_type, content, visibility="frie
             if new_bio:
                 user_obj.bio = new_bio
                 db.commit()
-    except Exception as e:
+    except Exception:
         pass  # Never block milestone creation
     return post
 
@@ -1398,15 +1515,15 @@ def get_friend_suggestions(
     if user.university:
         same_uni_candidates = db.query(User).filter(
             User.id.notin_(exclude_ids),
-            User.is_banned == False,
-            User.is_ghost == False,
+            User.is_banned.is_(False),
+            User.is_ghost.is_(False),
             func.lower(User.university) == user.university.lower(),
         ).limit(50).all()
 
     other_candidates = db.query(User).filter(
         User.id.notin_(exclude_ids | {c.id for c in same_uni_candidates}),
-        User.is_banned == False,
-        User.is_ghost == False,
+        User.is_banned.is_(False),
+        User.is_ghost.is_(False),
     ).limit(50).all()
 
     candidates = same_uni_candidates + other_candidates
@@ -1609,8 +1726,9 @@ def get_poll(poll_id: str, user: User = Depends(get_current_user), db: Session =
 
 @router.get("/hashtags/trending")
 def trending_hashtags(db: Session = Depends(get_db)):
-    from database import Hashtag
     from datetime import timedelta
+
+    from database import Hashtag
     week_ago = datetime.utcnow() - timedelta(days=7)
     tags = db.query(Hashtag).filter(
         Hashtag.last_used_at >= week_ago
@@ -1674,7 +1792,7 @@ def add_skill(user_id: str, data: dict, user: User = Depends(get_current_user), 
 
 @router.delete("/skills/{skill_id}")
 def remove_skill(skill_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import UserSkill, SkillEndorsement
+    from database import SkillEndorsement, UserSkill
     skill = db.query(UserSkill).filter(UserSkill.id == skill_id, UserSkill.user_id == user.id).first()
     if not skill:
         raise HTTPException(404, "Habilidad no encontrada")
@@ -1686,7 +1804,7 @@ def remove_skill(skill_id: str, user: User = Depends(get_current_user), db: Sess
 
 @router.get("/users/{user_id}/skills")
 def get_skills(user_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import UserSkill, SkillEndorsement
+    from database import SkillEndorsement, UserSkill
     skills = db.query(UserSkill).filter(UserSkill.user_id == user_id).order_by(desc(UserSkill.endorsement_count)).all()
     result = []
     for s in skills:
@@ -1703,7 +1821,7 @@ def get_skills(user_id: str, user: User = Depends(get_current_user), db: Session
 
 @router.post("/skills/{skill_id}/endorse")
 def toggle_endorsement(skill_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import UserSkill, SkillEndorsement
+    from database import SkillEndorsement, UserSkill
     skill = db.query(UserSkill).filter(UserSkill.id == skill_id).first()
     if not skill:
         raise HTTPException(404, "Habilidad no encontrada")
@@ -1905,8 +2023,9 @@ def delete_friend_list(
 # ─── Projects (Portfolio) ─────────────────────────────────
 @router.get("/users/{user_id}/projects")
 def get_projects(user_id: str, db: Session = Depends(get_db)):
-    from database import UserProject
     import json
+
+    from database import UserProject
     projects = db.query(UserProject).filter(UserProject.user_id == user_id).order_by(UserProject.order_index, desc(UserProject.created_at)).all()
     return [{"id": p.id, "title": p.title, "description": p.description,
              "imageUrl": p.image_url, "projectUrl": p.project_url,
@@ -1916,8 +2035,9 @@ def get_projects(user_id: str, db: Session = Depends(get_db)):
 
 @router.post("/users/{user_id}/projects")
 def add_project(user_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import UserProject
     import json
+
+    from database import UserProject
     if user.id != user_id:
         raise HTTPException(403, "Solo puedes agregar proyectos a tu perfil")
     p = UserProject(
@@ -1931,7 +2051,9 @@ def add_project(user_id: str, data: dict, user: User = Depends(get_current_user)
         year=data.get("year"),
         order_index=data.get("orderIndex",0)
     )
-    db.add(p); db.commit(); db.refresh(p)
+    db.add(p)
+    db.commit()
+    db.refresh(p)
     return {"id": p.id, "title": p.title, "techStack": json.loads(p.tech_stack or "[]")}
 
 @router.delete("/projects/{project_id}")
@@ -1940,14 +2062,16 @@ def delete_project(project_id: str, user: User = Depends(get_current_user), db: 
     p = db.query(UserProject).filter(UserProject.id == project_id, UserProject.user_id == user.id).first()
     if not p:
         raise HTTPException(404, "Proyecto no encontrado")
-    db.delete(p); db.commit()
+    db.delete(p)
+    db.commit()
     return {"deleted": True}
 
 # ─── Publications ──────────────────────────────────────────
 @router.get("/users/{user_id}/publications")
 def get_publications(user_id: str, db: Session = Depends(get_db)):
-    from database import UserPublication
     import json
+
+    from database import UserPublication
     pubs = db.query(UserPublication).filter(UserPublication.user_id == user_id).order_by(desc(UserPublication.year), desc(UserPublication.created_at)).all()
     return [{"id": p.id, "type": p.pub_type, "title": p.title, "description": p.description,
              "year": p.year, "url": p.url, "institution": p.institution,
@@ -1956,8 +2080,9 @@ def get_publications(user_id: str, db: Session = Depends(get_db)):
 
 @router.post("/users/{user_id}/publications")
 def add_publication(user_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    from database import UserPublication
     import json
+
+    from database import UserPublication
     if user.id != user_id:
         raise HTTPException(403, "Solo puedes agregar publicaciones a tu perfil")
     p = UserPublication(
@@ -1971,7 +2096,9 @@ def add_publication(user_id: str, data: dict, user: User = Depends(get_current_u
         authors=json.dumps(data.get("authors",[])),
         doi=data.get("doi","")
     )
-    db.add(p); db.commit(); db.refresh(p)
+    db.add(p)
+    db.commit()
+    db.refresh(p)
     return {"id": p.id, "title": p.title, "type": p.pub_type}
 
 @router.delete("/publications/{pub_id}")
@@ -1980,5 +2107,6 @@ def delete_publication(pub_id: str, user: User = Depends(get_current_user), db: 
     p = db.query(UserPublication).filter(UserPublication.id == pub_id, UserPublication.user_id == user.id).first()
     if not p:
         raise HTTPException(404, "Publicación no encontrada")
-    db.delete(p); db.commit()
+    db.delete(p)
+    db.commit()
     return {"deleted": True}
