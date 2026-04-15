@@ -59,7 +59,7 @@ export default function CollabEditor({
     const token = localStorage.getItem('conniku_token') || '';
     const wsUrl = getWsUrl();
 
-    const prov = new WebsocketProvider(wsUrl, `doc/${docId}`, doc, {
+    const prov = new WebsocketProvider(wsUrl, `ws/doc/${docId}`, doc, {
       params: { token },
       connect: true,
       WebSocketPolyfill: WebSocket as any,
