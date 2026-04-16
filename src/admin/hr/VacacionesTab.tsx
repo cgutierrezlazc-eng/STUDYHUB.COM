@@ -227,19 +227,6 @@ export default function VacacionesTab() {
     } catch {}
   };
 
-  // ─── Access check ───
-  if (user?.role !== 'owner') {
-    return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <h2>Acceso Restringido</h2>
-        <p style={{ color: 'var(--text-muted)' }}>
-          Solo el owner puede acceder al modulo de vacaciones.
-        </p>
-      </div>
-    );
-  }
-
   // ─── Computed: vacation balances (from real requests) ───
   const currentYear = new Date().getFullYear();
   const balances = employees
@@ -413,6 +400,19 @@ export default function VacacionesTab() {
     background: color + '20',
     color,
   });
+
+  // ─── Access check (after all hooks) ───
+  if (user?.role !== 'owner') {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
+        <h2>Acceso Restringido</h2>
+        <p style={{ color: 'var(--text-muted)' }}>
+          Solo el owner puede acceder al modulo de vacaciones.
+        </p>
+      </div>
+    );
+  }
 
   // ═══════════════════════════════════════════════════════════════
   // RENDER

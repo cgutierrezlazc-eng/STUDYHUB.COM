@@ -841,19 +841,6 @@ export default function BibliotecaDocumentos() {
   const [search, setSearch] = useState('');
   const [docs, setDocs] = useState<BiblioDoc[]>(BASE_DOCS);
 
-  // CEO-only guard
-  if (user?.role !== 'owner') {
-    return (
-      <div style={{ padding: 60, textAlign: 'center' }}>
-        <Lock size={48} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
-        <h2 style={{ color: '#ef4444', margin: '0 0 8px' }}>Acceso Restringido</h2>
-        <p style={{ color: 'var(--text-muted)' }}>
-          La Biblioteca de Documentos es accesible únicamente para el CEO.
-        </p>
-      </div>
-    );
-  }
-
   useEffect(() => {
     setLoading(true);
     api
@@ -878,6 +865,19 @@ export default function BibliotecaDocumentos() {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
+
+  // CEO-only guard (after all hooks to comply with rules-of-hooks)
+  if (user?.role !== 'owner') {
+    return (
+      <div style={{ padding: 60, textAlign: 'center' }}>
+        <Lock size={48} style={{ color: '#ef4444', margin: '0 auto 16px' }} />
+        <h2 style={{ color: '#ef4444', margin: '0 0 8px' }}>Acceso Restringido</h2>
+        <p style={{ color: 'var(--text-muted)' }}>
+          La Biblioteca de Documentos es accesible únicamente para el CEO.
+        </p>
+      </div>
+    );
+  }
 
   const filteredDocs = docs.filter((d) => {
     const matchFolder = activeFolder === 'all' || d.folder === activeFolder;

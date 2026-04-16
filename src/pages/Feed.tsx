@@ -1851,7 +1851,6 @@ export default function Feed({ onNavigate }: Props) {
                                   padding: '8px 12px',
                                   flex: 1,
                                   position: 'relative',
-                                  group: 'comment',
                                 }}
                               >
                                 <div

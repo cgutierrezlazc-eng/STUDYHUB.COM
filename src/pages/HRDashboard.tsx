@@ -497,17 +497,6 @@ export default function HRDashboard({ onNavigate }: Props) {
       );
   }, []);
 
-  // Check access
-  if (user?.role !== 'owner') {
-    return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
-        <h2>Acceso Restringido</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Solo el owner puede acceder al modulo de RRHH.</p>
-      </div>
-    );
-  }
-
   const loadEmployees = async () => {
     try {
       const data = await api.getEmployees();
@@ -555,6 +544,17 @@ export default function HRDashboard({ onNavigate }: Props) {
     }
     if (activeTab === 'gastos' || activeTab === 'impuestos') loadExpenses();
   }, [activeTab, selectedMonth, selectedYear]);
+
+  // Check access (after all hooks to comply with rules-of-hooks)
+  if (user?.role !== 'owner') {
+    return (
+      <div style={{ padding: 40, textAlign: 'center' }}>
+        <Shield size={48} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
+        <h2>Acceso Restringido</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Solo el owner puede acceder al modulo de RRHH.</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '24px', maxWidth: 1400, margin: '0 auto' }}>

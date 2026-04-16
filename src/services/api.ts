@@ -2082,6 +2082,9 @@ export const api = {
       headers: { Authorization: `Bearer ${token}` },
     });
   },
+
+  getKonniBroadcasts: async () => ({ broadcasts: [] as any[] }),
+  markKonniBroadcastsRead: async () => ({}),
 };
 
 // ─── Push Notifications ─────────────────────────────────────────

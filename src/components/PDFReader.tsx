@@ -112,7 +112,7 @@ export default function PDFReader({
       canvas.width = viewport.width;
       canvas.height = viewport.height;
 
-      await page.render({ canvasContext: ctx, viewport }).promise;
+      await page.render({ canvasContext: ctx, viewport, canvas: null }).promise;
     } catch {
       // Render error — página podría estar corrupta
     }

@@ -15,7 +15,7 @@
 |---------|---------|------------|------|
 | `.husky/pre-commit` | completo | 2026-04-14 | Fix lint-staged: ruff separado del stash |
 | `package.json` | lint-staged config | 2026-04-14 | Removido backend/**/*.py de lint-staged |
-| `src/admin/tools/BibliotecaDocumentos.tsx` | hooks order | 2026-04-14 | Guard movido después de hooks |
+
 | `src/pages/Messages.tsx` | null-safety | 2026-04-14 | 5 Array.isArray guards |
 | `src/pages/Friends.tsx` | null-safety | 2026-04-14 | 4 Array.isArray + 5 optional chaining |
 | `src/pages/Mentorship.tsx` | null-safety | 2026-04-14 | 3 fixes (setMentors, subjects.map) |
@@ -26,5 +26,6 @@
 | `src/pages/UserProfile.tsx` | null-safety | 2026-04-14 | 3 fixes (setFriendsList, setActivityFeed, setComments) |
 | `src/pages/Jobs.tsx` | null-safety | 2026-04-14 | Null-safety en cv.competencies (3 fixes) |
 | `.gitignore` | iCloud rules | 2026-04-14 | Regla para ignorar duplicados iCloud |
-| `src/pages/HRDashboard.tsx` | completo | 2026-04-16 | 9 botones conectados: docs, FES, Previred, PDF nómina, Previred CSV, Excel gastos, Anexo Art.11, Pacto HE Art.32, Descuento Vol. Art.58 |
+| `src/admin/tools/BibliotecaDocumentos.tsx` | hooks order | 2026-04-16 | Guard movido después de hooks (rules-of-hooks fix) |
+| `src/pages/HRDashboard.tsx` | completo | 2026-04-16 | 9 botones HR + rules-of-hooks fix |
 | `backend/hr_routes.py` | completo | 2026-04-16 | 53 rutas, 3 generadores PDF legales (Anexo, Pacto HE, Descuento Vol.) |

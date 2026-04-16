@@ -580,7 +580,9 @@ export default function RemuneracionesTab({
     for (const p of drafts) {
       try {
         await api.approvePayroll(p.id);
-      } catch {}
+      } catch (e: any) {
+        alert('Error al aprobar: ' + (e?.message || 'Error desconocido'));
+      }
     }
     await loadData();
     setActionLoading(false);

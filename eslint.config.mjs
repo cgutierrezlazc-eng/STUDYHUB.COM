@@ -132,6 +132,7 @@ export default [
         CanvasRenderingContext2D: "readonly",
         OffscreenCanvas: "readonly",
         Intl: "readonly",
+        DOMParser: "readonly",
       },
     },
     plugins: {
