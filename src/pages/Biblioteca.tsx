@@ -86,6 +86,24 @@ function stars(r: number) {
 
 const API_BASE = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
 
+const SOURCE_NAMES: Record<string, string> = {
+  user_shared: 'Conniku',
+  gutenberg: 'Project Gutenberg',
+  openstax: 'OpenStax',
+  scielo: 'SciELO Livros',
+  internetarchive: 'Internet Archive',
+};
+
+function generateCitation(doc: LibDoc, style: 'apa' | 'mla' | 'chicago'): string {
+  const author = doc.author || 'Autor desconocido';
+  const title = doc.title || 'Sin título';
+  const year = doc.year ? String(doc.year) : 's.f.';
+  const source = SOURCE_NAMES[doc.source_type] || doc.source_display || '';
+  if (style === 'apa') return `${author}. (${year}). ${title}. ${source}.`;
+  if (style === 'mla') return `${author}. "${title}." ${source}, ${year}.`;
+  return `${author}. ${title}. ${source}, ${year}.`; // chicago
+}
+
 export default function Biblioteca({ onNavigate }: Props) {
   const { user } = useAuth();
 
@@ -125,6 +143,8 @@ export default function Biblioteca({ onNavigate }: Props) {
   const [projects, setProjects] = useState<{ id: string; name: string; color?: string }[]>([]);
   const [cloneLoading, setCloneLoading] = useState(false);
   const [cloneSuccess, setCloneSuccess] = useState('');
+  const [cloneDuplicate, setCloneDuplicate] = useState('');
+  const [citationCopied, setCitationCopied] = useState('');
 
   // Carga datos comunidad
   const loadDocs = useCallback(async () => {
@@ -275,15 +295,25 @@ export default function Biblioteca({ onNavigate }: Props) {
   const executeClone = async (projectId: string) => {
     if (!cloneDoc || cloneLoading) return;
     setCloneLoading(true);
+    setCloneDuplicate('');
     try {
       const res = await api.cloneBibliotecaDoc(cloneDoc.id, projectId);
-      setCloneSuccess(res.project_name || 'tu asignatura');
-      setTimeout(() => {
-        setCloneDoc(null);
-        setCloneSuccess('');
-      }, 2000);
+      if (res.duplicate) {
+        setCloneDuplicate(res.project_name || 'esta asignatura');
+        setTimeout(() => {
+          setCloneDoc(null);
+          setCloneDuplicate('');
+        }, 2500);
+      } else {
+        setCloneSuccess(res.project_name || 'tu asignatura');
+        setTimeout(() => {
+          setCloneDoc(null);
+          setCloneSuccess('');
+        }, 2000);
+      }
     } catch (err: any) {
-      alert(err?.message || 'Error al agregar documento');
+      setCloneDuplicate(err?.message || 'Error al agregar documento');
+      setTimeout(() => setCloneDuplicate(''), 3000);
     }
     setCloneLoading(false);
   };
@@ -1074,6 +1104,24 @@ export default function Biblioteca({ onNavigate }: Props) {
                     {ChevronRight({ size: 14 })} Agregar a mi asignatura
                   </button>
                 )}
+              {/* Botón Citar */}
+              {selected.author && (
+                <div style={{ position: 'relative', display: 'inline-block' }}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      const citation = generateCitation(selected, 'apa');
+                      navigator.clipboard.writeText(citation).then(() => {
+                        setCitationCopied('APA');
+                        setTimeout(() => setCitationCopied(''), 2000);
+                      });
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    📋 {citationCopied ? `${citationCopied} copiado` : 'Citar APA'}
+                  </button>
+                </div>
+              )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>
                 Cerrar
               </button>
@@ -1102,7 +1150,15 @@ export default function Biblioteca({ onNavigate }: Props) {
               ×
             </button>
 
-            {cloneSuccess ? (
+            {cloneDuplicate ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>Ya existe</h3>
+                <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
+                  Este libro ya está en <strong>{cloneDuplicate}</strong>.
+                </p>
+              </div>
+            ) : cloneSuccess ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <div style={{ fontSize: 40, marginBottom: 12 }}>✓</div>
                 <h3 style={{ margin: '0 0 6px', fontSize: 16 }}>Documento agregado</h3>

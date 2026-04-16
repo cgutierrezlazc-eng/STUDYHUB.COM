@@ -160,6 +160,33 @@ def _rewrite_gutenberg_html(html: str, base_url: str) -> str:
     return html
 
 
+_SOURCE_DISPLAY = {
+    "user_shared": "Conniku",
+    "gutenberg": "Project Gutenberg",
+    "openstax": "OpenStax",
+    "scielo": "SciELO Livros",
+    "internetarchive": "Internet Archive",
+}
+
+
+def _generate_citation_apa(title: str, author: str, year: int | None, source_type: str) -> str:
+    """Genera citación en formato APA 7ma edición."""
+    source = _SOURCE_DISPLAY.get(source_type, source_type)
+    author_part = author or "Autor desconocido"
+    year_part = f"({year})" if year else "(s.f.)"
+    title_part = title or "Sin título"
+    return f"{author_part}. {year_part}. {title_part}. {source}."
+
+
+def _generate_citation_mla(title: str, author: str, year: int | None, source_type: str) -> str:
+    """Genera citación en formato MLA 9na edición."""
+    source = _SOURCE_DISPLAY.get(source_type, source_type)
+    author_part = author or "Autor desconocido"
+    title_part = title or "Sin título"
+    year_part = str(year) if year else "s.f."
+    return f'{author_part}. "{title_part}." {source}, {year_part}.'
+
+
 # ─── Project helpers (mirrored from server.py to avoid circular import) ───
 
 def _get_project_dir(project_id: str) -> Path:
@@ -819,6 +846,21 @@ async def clone_to_project(
     if not doc:
         raise HTTPException(404, "Documento no encontrado en la biblioteca")
 
+    # 2b. Verificar duplicados — no clonar el mismo libro dos veces
+    existing_docs = meta.get("documents", [])
+    duplicate = next(
+        (d for d in existing_docs
+         if d.get("source") == "biblioteca" and d.get("library_doc_id") == doc_id),
+        None,
+    )
+    if duplicate:
+        return {
+            "success": False,
+            "duplicate": True,
+            "document_name": duplicate.get("name", ""),
+            "project_name": meta.get("name", ""),
+        }
+
     docs_dir = _get_project_docs_dir(payload.project_id)
     doc_id_new = uuid.uuid4().hex[:12]
     file_name = ""
@@ -906,7 +948,10 @@ async def clone_to_project(
     }
     doc_type = type_map.get(ext, 'other')
 
-    # 6. Actualizar meta.json del proyecto
+    # 6. Generar citación APA
+    citation_apa = _generate_citation_apa(doc.title, doc.author, doc.year, doc.source_type)
+
+    # 7. Actualizar meta.json del proyecto (con metadata para dedup y citación)
     meta.setdefault("documents", []).append({
         "id": doc_id_new,
         "name": file_name,
@@ -916,6 +961,11 @@ async def clone_to_project(
         "uploadedAt": datetime.utcnow().isoformat() + "Z",
         "processed": True,
         "source": "biblioteca",
+        "library_doc_id": doc_id,
+        "library_author": doc.author or "",
+        "library_year": doc.year,
+        "library_title": doc.title or "",
+        "citation_apa": citation_apa,
     })
     _save_project_meta(payload.project_id, meta)
 
@@ -932,4 +982,5 @@ async def clone_to_project(
             "size": file_size,
         },
         "project_name": meta.get("name", ""),
+        "citation_apa": citation_apa,
     }

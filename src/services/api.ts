@@ -2006,6 +2006,7 @@ export const api = {
     author?: string;
     year?: number;
     tags?: string[];
+    rights_confirmed: boolean;
   }) => request('/biblioteca/share', { method: 'POST', body: JSON.stringify(data) }),
   toggleBibliotecaSave: (docId: string) => request(`/biblioteca/${docId}/save`, { method: 'POST' }),
   rateBibliotecaDoc: (docId: string, rating: number) =>
