@@ -153,7 +153,7 @@ const FAQ_SECTIONS: { title: string; icon: React.ReactNode; items: FAQItem[] }[]
       },
       {
         q: '¿Cómo solicito un reembolso?',
-        a: 'Ve a Suscripción → "Solicitar reembolso". Tienes 7 días de garantía desde la primera suscripción. También aplica el derecho de retracto legal chileno (10 días hábiles). Respondemos en 5 días hábiles.',
+        a: 'Ve a Suscripción → "Solicitar reembolso". Tienes derecho de retracto de 10 días hábiles desde la contratación (Art. 3 bis Ley 19.496). Si el servicio fue completamente ejecutado con tu consentimiento durante ese período, el retracto puede no aplicar. Adicionalmente, ofrecemos 7 días de garantía interna. Respondemos en 5 días hábiles.',
         tags: ['reembolso', 'devolver', 'dinero'],
       },
       {
@@ -247,12 +247,12 @@ const FAQ_SECTIONS: { title: string; icon: React.ReactNode; items: FAQItem[] }[]
       },
       {
         q: '¿Dónde se almacenan mis datos?',
-        a: 'En servidores seguros en Estados Unidos (Render.com para backend, Vercel para frontend). Las comunicaciones están cifradas con HTTPS/TLS.',
+        a: 'Tus datos se procesan en servidores seguros en Estados Unidos (Render.com y Vercel), bajo acuerdos de procesamiento de datos (DPA) que garantizan protección equivalente. Esta transferencia internacional se realiza con tu consentimiento al registrarte, conforme al Art. 5 de la Ley 19.628. Todas las comunicaciones están cifradas con HTTPS/TLS.',
         tags: ['servidores', 'almacenamiento', 'seguridad'],
       },
       {
         q: '¿Puedo eliminar todos mis datos?',
-        a: 'Sí. Ve a Perfil → Configuración → "Eliminar mi cuenta y datos". Se eliminan permanentemente todos tus documentos, mensajes, quizzes y datos personales.',
+        a: 'Sí. Ve a Perfil → Configuración → "Eliminar mi cuenta y datos". Se eliminan permanentemente todos tus documentos, mensajes, quizzes y datos personales. Algunos datos pueden retenerse por obligación tributaria hasta por 6 años conforme a la legislación chilena.',
         tags: ['eliminar', 'datos', 'gdpr', 'derecho'],
       },
     ],
@@ -881,6 +881,29 @@ export default function SupportPage({ onNavigate }: Props) {
                   </p>
                 )}
 
+                <p
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.6,
+                    marginBottom: 12,
+                  }}
+                >
+                  Al enviar este formulario, tus datos (nombre, correo y mensaje) serán tratados por
+                  Conniku SpA (RUT 78.395.702-7) exclusivamente para responder tu consulta. Los
+                  datos se procesan en servidores en EE.UU. y se retienen por un máximo de 12 meses.{' '}
+                  <a
+                    href="/privacy"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigate('/privacy');
+                    }}
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    Política de Privacidad
+                  </a>
+                </p>
+
                 <button
                   className="btn btn-primary"
                   onClick={handleSendContact}
@@ -1005,30 +1028,24 @@ export default function SupportPage({ onNavigate }: Props) {
             color: 'var(--text-muted)',
           }}
         >
-          <a
-            onClick={() => onNavigate('/terms')}
-            style={{ color: 'var(--accent)', cursor: 'pointer' }}
-          >
-            Términos y Condiciones
-          </a>
-          <a
-            onClick={() => onNavigate('/privacy')}
-            style={{ color: 'var(--accent)', cursor: 'pointer' }}
-          >
-            Política de Privacidad
-          </a>
-          <a
-            onClick={() => onNavigate('/accessibility')}
-            style={{ color: 'var(--accent)', cursor: 'pointer' }}
-          >
-            Accesibilidad
-          </a>
-          <a
-            onClick={() => onNavigate('/about')}
-            style={{ color: 'var(--accent)', cursor: 'pointer' }}
-          >
-            Acerca de Conniku
-          </a>
+          {[
+            { path: '/terms', label: 'Términos y Condiciones' },
+            { path: '/privacy', label: 'Política de Privacidad' },
+            { path: '/accessibility', label: 'Accesibilidad' },
+            { path: '/about', label: 'Acerca de Conniku' },
+          ].map((link) => (
+            <a
+              key={link.path}
+              href={link.path}
+              onClick={(e) => {
+                e.preventDefault();
+                onNavigate(link.path);
+              }}
+              style={{ color: 'var(--accent)', cursor: 'pointer' }}
+            >
+              {link.label}
+            </a>
+          ))}
         </div>
         <div
           style={{

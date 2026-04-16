@@ -26,7 +26,7 @@ export default function Subscription({ onNavigate }: Props) {
   const { t } = useI18n();
   const [subStatus, setSubStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'semester' | 'annual' | 'sprint'>(
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'semester' | 'yearly' | 'sprint'>(
     'monthly'
   );
   const [localPrices, setLocalPrices] = useState<any>(null);
@@ -267,7 +267,7 @@ export default function Subscription({ onNavigate }: Props) {
                 { key: 'sprint' as const, label: 'Sprint 7 días', save: '' },
                 { key: 'monthly' as const, label: 'Mensual', save: '' },
                 { key: 'semester' as const, label: 'Semestral', save: '-26%' },
-                { key: 'annual' as const, label: 'Anual', save: '-33%' },
+                { key: 'yearly' as const, label: 'Anual', save: '-33%' },
               ].map((opt) => (
                 <button
                   key={opt.key}
@@ -390,7 +390,7 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
                   $
                   {
-                    { monthly: '8.990', semester: '39.990', annual: '79.990', sprint: '3.490' }[
+                    { monthly: '8.990', semester: '39.990', yearly: '79.990', sprint: '3.490' }[
                       selectedPlan
                     ]
                   }
@@ -398,7 +398,7 @@ export default function Subscription({ onNavigate }: Props) {
                     {' '}
                     CLP/
                     {
-                      { monthly: 'mes', semester: 'semestre', annual: 'año', sprint: '7 días' }[
+                      { monthly: 'mes', semester: 'semestre', yearly: 'año', sprint: '7 días' }[
                         selectedPlan
                       ]
                     }
@@ -407,13 +407,13 @@ export default function Subscription({ onNavigate }: Props) {
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   ≈ USD $
                   {
-                    { monthly: '9.49', semester: '41.99', annual: '83.99', sprint: '3.69' }[
+                    { monthly: '9.49', semester: '41.99', yearly: '83.99', sprint: '3.69' }[
                       selectedPlan
                     ]
                   }
                   /
                   {
-                    { monthly: 'mes', semester: 'semestre', annual: 'año', sprint: '7 días' }[
+                    { monthly: 'mes', semester: 'semestre', yearly: 'año', sprint: '7 días' }[
                       selectedPlan
                     ]
                   }
@@ -426,7 +426,7 @@ export default function Subscription({ onNavigate }: Props) {
                     Ahorras $14.950 vs mensual
                   </div>
                 )}
-                {selectedPlan === 'annual' && (
+                {selectedPlan === 'yearly' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
                     Ahorras $27.890 vs mensual
                   </div>
@@ -483,7 +483,7 @@ export default function Subscription({ onNavigate }: Props) {
                 >
                   {selectedPlan === 'sprint'
                     ? 'Pago único · Sin auto-renovación'
-                    : `Cobro automático ${{ monthly: 'mensual', semester: 'semestral', annual: 'anual', sprint: '' }[selectedPlan]} · Cancela cuando quieras`}
+                    : `Cobro automático ${{ monthly: 'mensual', semester: 'semestral', yearly: 'anual', sprint: '' }[selectedPlan]} · Cancela cuando quieras`}
                 </p>
               </div>
             </div>

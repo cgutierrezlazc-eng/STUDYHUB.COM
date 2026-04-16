@@ -617,6 +617,7 @@ export default function SupportChat() {
         <button
           onClick={() => setOpen(true)}
           aria-label="Abrir soporte"
+          data-support-chat-toggle
           style={{
             width: 56,
             height: 56,
