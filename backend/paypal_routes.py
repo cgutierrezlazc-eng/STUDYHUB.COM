@@ -656,6 +656,56 @@ async def submit_refund_request(request: Request, db: Session = Depends(get_db),
 
 # ─── Webhook ──────────────────────────────────────────────────
 
+async def _verify_paypal_signature(request: Request, body: dict) -> bool:
+    """Verifica firma del webhook con la API de PayPal."""
+    if not PAYPAL_WEBHOOK_ID:
+        print("[PayPal] WARNING: PAYPAL_WEBHOOK_ID no configurado — firma no verificada")
+        return True  # Skip si no hay webhook ID configurado (dev)
+
+    headers = request.headers
+    verification_body = {
+        "auth_algo": headers.get("paypal-auth-algo", ""),
+        "cert_url": headers.get("paypal-cert-url", ""),
+        "transmission_id": headers.get("paypal-transmission-id", ""),
+        "transmission_sig": headers.get("paypal-transmission-sig", ""),
+        "transmission_time": headers.get("paypal-transmission-time", ""),
+        "webhook_id": PAYPAL_WEBHOOK_ID,
+        "webhook_event": body,
+    }
+
+    # Si faltan headers de firma, rechazar
+    if not verification_body["transmission_id"] or not verification_body["transmission_sig"]:
+        print("[PayPal] Webhook sin headers de firma — rechazado")
+        return False
+
+    try:
+        base = "https://api-m.sandbox.paypal.com" if PAYPAL_MODE == "sandbox" else "https://api-m.paypal.com"
+        auth = base64.b64encode(f"{PAYPAL_CLIENT_ID}:{PAYPAL_CLIENT_SECRET}".encode()).decode()
+
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            # Obtener access token
+            token_resp = await client.post(
+                f"{base}/v1/oauth2/token",
+                data={"grant_type": "client_credentials"},
+                headers={"Authorization": f"Basic {auth}"},
+            )
+            token_resp.raise_for_status()
+            access_token = token_resp.json()["access_token"]
+
+            # Verificar firma
+            verify_resp = await client.post(
+                f"{base}/v1/notifications/verify-webhook-signature",
+                json=verification_body,
+                headers={"Authorization": f"Bearer {access_token}"},
+            )
+            verify_resp.raise_for_status()
+            result = verify_resp.json()
+            return result.get("verification_status") == "SUCCESS"
+    except Exception as e:
+        print(f"[PayPal] Error verificando firma: {e}")
+        return False
+
+
 @router.post("/webhook")
 async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
     """Handle PayPal webhook notifications."""
@@ -663,6 +713,11 @@ async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
         body = await request.json()
     except Exception:
         return {"received": True, "processed": False}
+
+    # Verificar firma del webhook
+    if not await _verify_paypal_signature(request, body):
+        print("[PayPal] Webhook RECHAZADO — firma inválida")
+        return {"received": True, "processed": False, "reason": "invalid_signature"}
 
     event_type = body.get("event_type", "")
     resource = body.get("resource", {})

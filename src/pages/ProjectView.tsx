@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Project, Document, ChatMessage } from '../types';
 import ChatMessageRenderer from '../components/ChatMessageRenderer';
@@ -1676,7 +1677,10 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     Regenerar
                   </button>
                 </div>
-                <div className="guide-content card" dangerouslySetInnerHTML={{ __html: guide }} />
+                <div
+                  className="guide-content card"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(guide) }}
+                />
               </div>
             )}
           </>
@@ -4053,7 +4057,9 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                 {summaryData.htmlContent && (
                   <div
                     className="lesson-content"
-                    dangerouslySetInnerHTML={{ __html: summaryData.htmlContent }}
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(summaryData.htmlContent),
+                    }}
                     style={{ fontSize: 14, lineHeight: 1.7, color: 'var(--text-primary)' }}
                   />
                 )}

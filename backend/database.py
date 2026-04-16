@@ -204,8 +204,8 @@ class ConversationParticipant(Base):
     __tablename__ = "conversation_participants"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    conversation_id = Column(String(16), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    conversation_id = Column(String(16), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     role = Column(String(20), default="member")  # member | admin
     joined_at = Column(DateTime, default=datetime.utcnow)
     last_read_at = Column(DateTime, nullable=True)
@@ -223,7 +223,7 @@ class Message(Base):
 
     id = Column(String(16), primary_key=True, default=gen_id)
     conversation_id = Column(String(16), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False, index=True)
-    sender_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    sender_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
     message_type = Column(String(20), default="text")  # text | document | system
     document_name = Column(String(255), nullable=True)
@@ -395,8 +395,8 @@ class PostComment(Base):
     __tablename__ = "post_comments"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    post_id = Column(String(16), ForeignKey("wall_posts.id", ondelete="CASCADE"), nullable=False)
-    author_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    post_id = Column(String(16), ForeignKey("wall_posts.id", ondelete="CASCADE"), nullable=False, index=True)
+    author_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     content = Column(Text, nullable=False)
     edited_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -461,7 +461,7 @@ class PaymentLog(Base):
     __tablename__ = "payment_logs"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     provider = Column(String(20), nullable=False)  # stripe | paypal
     transaction_id = Column(String(255), nullable=True)
     amount = Column(Float, nullable=False)
@@ -701,6 +701,7 @@ class CommunityPost(Base):
     content = Column(Text, nullable=False)
     image_url = Column(Text, nullable=True)
     is_pinned = Column(Boolean, default=False)
+    is_announcement = Column(Boolean, default=False)
     like_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)

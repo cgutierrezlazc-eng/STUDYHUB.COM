@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { api } from '../services/api';
 import { Project, QuizQuestion } from '../types';
 
@@ -942,7 +943,9 @@ export default function StudyPaths({ projects, onNavigate }: Props) {
                   </div>
                   <div
                     style={S.guideContent}
-                    dangerouslySetInnerHTML={{ __html: guideContent.replace(/\n/g, '<br/>') }}
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(guideContent.replace(/\n/g, '<br/>')),
+                    }}
                   />
                   {!progress.guideRead && (
                     <button

@@ -787,6 +787,12 @@ async def upload_community_cover(
     ext = "jpg"
     if file.filename and "." in file.filename:
         ext = file.filename.rsplit(".", 1)[-1].lower()
+
+    # Validar tipo de archivo — solo imágenes permitidas
+    allowed_image_exts = {"jpg", "jpeg", "png", "gif", "webp"}
+    if ext not in allowed_image_exts:
+        raise HTTPException(400, f"Tipo de archivo no permitido. Solo: {', '.join(allowed_image_exts)}")
+
     filename = f"{community_id}_{_uuid.uuid4().hex[:8]}.{ext}"
     with open(covers_dir / filename, "wb") as f:
         f.write(content)

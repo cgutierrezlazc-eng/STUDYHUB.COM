@@ -76,9 +76,9 @@ function formatDate(dateStr?: string): string {
 }
 
 function stripHtml(html: string): string {
-  const div = document.createElement('div');
-  div.innerHTML = html;
-  return div.textContent || div.innerText || '';
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  return doc.body.textContent || '';
 }
 
 export default function CeoMail({ onNavigate, defaultAccount = 'all' }: Props) {

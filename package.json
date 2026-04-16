@@ -80,6 +80,8 @@
     "@tiptap/react": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
     "@tiptap/y-tiptap": "^3.0.3",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.4.0",
     "electron-store": "^8.1.0",
     "framer-motion": "^12.38.0",
     "katex": "^0.16.45",

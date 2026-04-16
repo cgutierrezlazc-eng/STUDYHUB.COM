@@ -277,10 +277,18 @@ def get_friends(user: User = Depends(get_current_user), db: Session = Depends(ge
         or_(Friendship.requester_id == user.id, Friendship.addressee_id == user.id),
     ).all()
 
-    friends = []
+    # Batch query: recolectar IDs y cargar todos los users de una vez (evitar N+1)
+    friend_map = {}
     for f in friendships:
-        friend_id = f.addressee_id if f.requester_id == user.id else f.requester_id
-        friend = db.query(User).filter(User.id == friend_id).first()
+        fid = f.addressee_id if f.requester_id == user.id else f.requester_id
+        friend_map[fid] = f
+
+    users = db.query(User).filter(User.id.in_(list(friend_map.keys()))).all() if friend_map else []
+    user_dict = {u.id: u for u in users}
+
+    friends = []
+    for fid, f in friend_map.items():
+        friend = user_dict.get(fid)
         if friend and not getattr(friend, 'is_ghost', False):
             friends.append({**user_brief(friend), "friendshipId": f.id, "since": f.updated_at.isoformat()})
     return friends
@@ -320,9 +328,14 @@ def get_incoming_requests(user: User = Depends(get_current_user), db: Session = 
         Friendship.status == "pending",
     ).all()
 
+    # Batch query para evitar N+1
+    requester_ids = [r.requester_id for r in requests]
+    users = db.query(User).filter(User.id.in_(requester_ids)).all() if requester_ids else []
+    user_dict = {u.id: u for u in users}
+
     result = []
     for r in requests:
-        requester = db.query(User).filter(User.id == r.requester_id).first()
+        requester = user_dict.get(r.requester_id)
         if requester:
             result.append({"id": r.id, "user": user_brief(requester), "createdAt": r.created_at.isoformat()})
     return result
@@ -335,9 +348,14 @@ def get_sent_requests(user: User = Depends(get_current_user), db: Session = Depe
         Friendship.status == "pending",
     ).all()
 
+    # Batch query para evitar N+1
+    addressee_ids = [r.addressee_id for r in requests]
+    users = db.query(User).filter(User.id.in_(addressee_ids)).all() if addressee_ids else []
+    user_dict = {u.id: u for u in users}
+
     result = []
     for r in requests:
-        addressee = db.query(User).filter(User.id == r.addressee_id).first()
+        addressee = user_dict.get(r.addressee_id)
         if addressee:
             result.append({"id": r.id, "user": user_brief(addressee), "createdAt": r.created_at.isoformat()})
     return result

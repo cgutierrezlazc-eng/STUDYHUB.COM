@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import MilestonePopup from '../components/MilestonePopup';
@@ -1446,7 +1447,9 @@ export default function Courses({ onNavigate }: Props) {
                       maxWidth: 720,
                     }}
                     dangerouslySetInnerHTML={{
-                      __html: currentLesson.content || '<p>Contenido no disponible.</p>',
+                      __html: DOMPurify.sanitize(
+                        currentLesson.content || '<p>Contenido no disponible.</p>'
+                      ),
                     }}
                   />
 

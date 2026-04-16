@@ -407,13 +407,22 @@ def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user)
         },
     }
 
+_blog_likes_seen: dict = {}  # (user_id, post_id) → True
+
+
 @app.post("/blog/posts/{post_id}/like")
 def like_blog_post(post_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Like a blog post (increments counter, no dedup)."""
+    """Like a blog post (with dedup per user)."""
+    like_key = (user.id, post_id)
+    if like_key in _blog_likes_seen:
+        post = db.query(BlogThread).filter(BlogThread.id == post_id).first()
+        return {"likes": post.likes if post else 0, "already_liked": True}
+
     post = db.query(BlogThread).filter(BlogThread.id == post_id).first()
     if not post:
         raise HTTPException(404, "Post no encontrado")
     post.likes = (post.likes or 0) + 1
+    _blog_likes_seen[like_key] = True
     db.commit()
     return {"likes": post.likes}
 
