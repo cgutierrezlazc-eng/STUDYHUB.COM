@@ -1694,6 +1694,15 @@ class BlogThread(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+class BlogLike(Base):
+    __tablename__ = "blog_likes"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
+    post_id = Column(String(16), ForeignKey("blog_threads.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "post_id"),)
+
+
 # ─── Collaborative Documents (Trabajos Grupales) ──────────────
 
 class CollabDocument(Base):

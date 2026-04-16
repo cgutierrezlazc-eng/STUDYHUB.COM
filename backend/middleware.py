@@ -44,7 +44,7 @@ if not SECRET_KEY:
     )
 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_DAYS = 7
+ACCESS_TOKEN_EXPIRE_DAYS = 1  # Reducido de 7 para limitar ventana de token robado
 REFRESH_TOKEN_EXPIRE_DAYS = 30
 
 security = HTTPBearer(auto_error=False)

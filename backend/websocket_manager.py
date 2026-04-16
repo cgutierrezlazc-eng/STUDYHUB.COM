@@ -43,6 +43,10 @@ class ConnectionManager:
         """Validate JWT token and return user_id."""
         try:
             payload = jwt.decode(token, _get_secret(), algorithms=["HS256"])
+            # Solo aceptar access tokens (no refresh tokens de 30 días)
+            if payload.get("type") != "access":
+                logger.warning("[WS] Rejected non-access token type")
+                return None
             user_id = payload.get("sub") or payload.get("user_id")
             if not user_id:
                 return None

@@ -20,6 +20,40 @@ _request_counts: dict[str, list[float]] = defaultdict(list)
 _login_attempts: dict[str, list[float]] = defaultdict(list)
 _register_attempts: dict[str, list[float]] = defaultdict(list)
 _blocked_ips: dict[str, float] = {}  # IP -> block_until timestamp
+_last_cleanup: float = 0.0
+_CLEANUP_INTERVAL = 300  # 5 minutos entre limpiezas
+
+
+def _cleanup_rate_limits() -> None:
+    """Purga entradas expiradas de los dicts de rate limiting cada 5 minutos."""
+    global _last_cleanup
+    now = time.time()
+    if now - _last_cleanup < _CLEANUP_INTERVAL:
+        return
+    _last_cleanup = now
+
+    # Limpiar request counts (entradas más viejas de 60s)
+    for ip in list(_request_counts.keys()):
+        _request_counts[ip] = [t for t in _request_counts[ip] if now - t < 60]
+        if not _request_counts[ip]:
+            del _request_counts[ip]
+
+    # Limpiar login attempts (más viejas de 15 min)
+    for ip in list(_login_attempts.keys()):
+        _login_attempts[ip] = [t for t in _login_attempts[ip] if now - t < 900]
+        if not _login_attempts[ip]:
+            del _login_attempts[ip]
+
+    # Limpiar register attempts (más viejas de 1hr)
+    for ip in list(_register_attempts.keys()):
+        _register_attempts[ip] = [t for t in _register_attempts[ip] if now - t < 3600]
+        if not _register_attempts[ip]:
+            del _register_attempts[ip]
+
+    # Limpiar IPs bloqueadas expiradas
+    for ip in list(_blocked_ips.keys()):
+        if _blocked_ips[ip] < now:
+            del _blocked_ips[ip]
 
 # Limits
 RATE_LIMIT_GENERAL = 120       # requests per minute per IP
@@ -149,6 +183,9 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         await super().__call__(scope, receive, send)
 
     async def dispatch(self, request: Request, call_next):
+        # Cleanup periódico de rate limit dicts (cada 5 min)
+        _cleanup_rate_limits()
+
         # Rate limiting
         ip = get_client_ip(request)
         error = check_rate_limit(ip, request.url.path)

@@ -407,22 +407,23 @@ def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user)
         },
     }
 
-_blog_likes_seen: dict = {}  # (user_id, post_id) → True
-
-
 @app.post("/blog/posts/{post_id}/like")
 def like_blog_post(post_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Like a blog post (with dedup per user)."""
-    like_key = (user.id, post_id)
-    if like_key in _blog_likes_seen:
-        post = db.query(BlogThread).filter(BlogThread.id == post_id).first()
-        return {"likes": post.likes if post else 0, "already_liked": True}
+    """Like a blog post (con dedup persistente en DB)."""
+    from database import BlogLike
 
     post = db.query(BlogThread).filter(BlogThread.id == post_id).first()
     if not post:
         raise HTTPException(404, "Post no encontrado")
+
+    # Check si ya dio like (DB-level dedup)
+    existing = db.query(BlogLike).filter_by(user_id=user.id, post_id=post_id).first()
+    if existing:
+        return {"likes": post.likes or 0, "already_liked": True}
+
+    # Registrar like + incrementar contador
+    db.add(BlogLike(id=gen_id(), user_id=user.id, post_id=post_id))
     post.likes = (post.likes or 0) + 1
-    _blog_likes_seen[like_key] = True
     db.commit()
     return {"likes": post.likes}
 
@@ -564,6 +565,36 @@ class TranslateRequest(BaseModel):
 ALLOWED_DOC_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.rtf',
                           '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff'}
 
+# Max file size per upload (50MB)
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+
+
+def validate_file_content(content: bytes, declared_ext: str) -> bool:
+    """Verifica que el contenido real del archivo coincida con la extensión declarada.
+    Previene ataques de renombrar .exe → .pdf."""
+    try:
+        import filetype
+
+        kind = filetype.guess(content)
+        if kind is None:
+            # No se pudo detectar tipo — aceptar solo texto plano
+            return declared_ext in ('.txt', '.csv', '.rtf')
+        detected_ext = f".{kind.extension}"
+        detected_mime = kind.mime
+
+        # Para imágenes: extensión detectada debe ser imagen
+        image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'}
+        if declared_ext in image_exts:
+            return detected_ext in image_exts or detected_mime.startswith('image/')
+
+        # Para documentos: ser flexible pero bloquear ejecutables
+        dangerous_mimes = {'application/x-executable', 'application/x-msdos-program',
+                          'application/x-sh', 'application/javascript'}
+        return detected_mime not in dangerous_mimes
+    except ImportError:
+        # filetype no instalado — pasar sin validación (degradación graceful)
+        return True
+
 
 # --- Project storage helpers ---
 
@@ -660,9 +691,15 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     if ext not in ALLOWED_DOC_EXTENSIONS:
         raise HTTPException(400, f"Tipo de archivo no permitido. Formatos aceptados: {', '.join(ALLOWED_DOC_EXTENSIONS)}")
 
-    # Read file content
+    # Read file content (con limite de tamaño)
     content = await file.read()
     file_size = len(content)
+    if file_size > MAX_UPLOAD_SIZE:
+        raise HTTPException(413, f"Archivo muy grande (máximo {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
+
+    # Validar contenido real del archivo (magic bytes)
+    if not validate_file_content(content, ext):
+        raise HTTPException(400, "El contenido del archivo no coincide con su extensión")
 
     # Check storage limit
     current_used = user.storage_used_bytes or 0
