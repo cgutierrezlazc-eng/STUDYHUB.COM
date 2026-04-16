@@ -64,7 +64,7 @@
     "@tiptap/extension-collaboration": "^3.22.3",
     "@tiptap/extension-collaboration-cursor": "^2.26.2",
     "@tiptap/extension-color": "^3.22.3",
-    "@tiptap/extension-font-family": "3.22.3",
+    "@tiptap/extension-font-family": "^3.22.3",
     "@tiptap/extension-highlight": "^3.22.3",
     "@tiptap/extension-image": "^3.22.3",
     "@tiptap/extension-placeholder": "^3.22.3",

@@ -72,6 +72,7 @@ from social_routes import router as social_router
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 from study_room_routes import router as study_room_router
+from tier_gate import tier_gate
 from tutor_routes import router as tutor_router
 from video_routes import router as video_router
 from wellness_routes import router as wellness_router
@@ -469,40 +470,47 @@ async def serve_community_cover(filename: str):
 # ─── Chat rate limiting (persistent, DB-backed) ─────────────────
 
 def check_chat_limit(user: User, db: Session = None):
-    """Persistent rate limiting via DB. Falls back to no-limit if DB unavailable."""
-    # Obtener límite según plan del usuario
-    plan = getattr(user, 'subscription_tier', 'free') or 'free'
-    limits = {'free': 20, 'pro': 100, 'max': 500}
-    limit = limits.get(plan, 20)
+    """Persistent rate limiting via DB. FAIL-CLOSED: si hay error, bloquear."""
+    from tier_gate import get_effective_tier, get_plan_config, get_window_key
+
+    tier = get_effective_tier(user)
+    plan = get_plan_config(tier)
+    ai_config = plan.get("ai", {}).get("chat_messages", {})
+    limit = ai_config.get("limit", 10)
+
+    # Ilimitado para PRO
+    if limit == -1:
+        return
 
     if db is None:
-        return  # Si no hay DB disponible, permitir
+        raise HTTPException(503, "Servicio temporalmente no disponible")
 
-    today = datetime.utcnow().strftime('%Y-%m-%d')
+    window_key = get_window_key(ai_config.get("window", "daily"))
 
     try:
         usage = db.query(ChatUsage).filter(
             ChatUsage.user_id == str(user.id),
-            ChatUsage.date == today
+            ChatUsage.date == window_key,
         ).first()
 
         if usage is None:
-            usage = ChatUsage(user_id=str(user.id), date=today, count=0)
+            usage = ChatUsage(user_id=str(user.id), date=window_key, count=0)
             db.add(usage)
             db.flush()
 
         if usage.count >= limit:
             raise HTTPException(
-                status_code=429,
-                detail=f"Límite diario de mensajes alcanzado ({limit}). Actualiza tu plan para más."
+                429,
+                f"Limite de mensajes alcanzado ({limit}). Actualiza a Conniku PRO para acceso ilimitado.",
             )
 
         usage.count += 1
         db.commit()
     except HTTPException:
         raise
-    except Exception:
-        pass  # Si hay error de DB, no bloquear al usuario
+    except Exception as e:
+        logger.error("Chat limit DB error: %s", e)
+        raise HTTPException(503, "Servicio temporalmente no disponible") from e
 
 
 # --- Models ---
@@ -1422,7 +1430,7 @@ class CVCoachRequest(BaseModel):
     target_role: str = ""
 
 @app.post("/ai/cv-coach")
-def cv_coach(req: CVCoachRequest, user: User = Depends(get_current_user)):
+def cv_coach(req: CVCoachRequest, user: User = tier_gate("cv_coach")):
     """AI CV Coach — review and improve a CV/resume using GPT-4o Mini (free)."""
     if len(req.cv_text) < 20:
         raise HTTPException(400, "El CV debe tener al menos 20 caracteres")
@@ -1458,7 +1466,7 @@ Se especifico, practico y motivador. No inventes informacion que no esta en el C
 
 
 @app.post("/projects/{project_id}/guide")
-def generate_guide(project_id: str, user: User = Depends(get_current_user)):
+def generate_guide(project_id: str, user: User = tier_gate("guide")):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -1467,7 +1475,7 @@ def generate_guide(project_id: str, user: User = Depends(get_current_user)):
 
 
 @app.post("/projects/{project_id}/quiz")
-def generate_quiz(project_id: str, req: QuizRequest = QuizRequest(), user: User = Depends(get_current_user)):
+def generate_quiz(project_id: str, req: QuizRequest = QuizRequest(), user: User = tier_gate("quiz")):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -1476,7 +1484,7 @@ def generate_quiz(project_id: str, req: QuizRequest = QuizRequest(), user: User 
 
 
 @app.post("/projects/{project_id}/flashcards")
-def generate_flashcards(project_id: str, user: User = Depends(get_current_user)):
+def generate_flashcards(project_id: str, user: User = tier_gate("flashcards")):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -1920,11 +1928,11 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
 # ─── Summary generation & export ─────────────────────────────
 @app.post("/projects/{project_id}/summary")
 def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
-                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+                     user: User = tier_gate("summary"), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user, db)
+    # tier_gate("summary") ya controla el rate limit — no duplicar con check_chat_limit
 
     summary = ai_engine.generate_summary(project_id, user.language or "es", req.detail_level)
 
@@ -2002,11 +2010,11 @@ def export_chat_pdf(project_id: str, req: ExportPdfRequest,
 
 # ─── Concept map ─────────────────────────────────────────────
 @app.post("/projects/{project_id}/concept-map")
-def generate_concept_map(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def generate_concept_map(project_id: str, user: User = tier_gate("concept_map"), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user, db)
+    # tier_gate("concept_map") ya controla el rate limit
     result = ai_engine.generate_concept_map(project_id, user.language or "es")
     return result
 
@@ -2017,17 +2025,17 @@ class VisualExplainRequest(BaseModel):
 
 @app.post("/projects/{project_id}/explain-visual")
 def explain_with_visuals(project_id: str, req: VisualExplainRequest,
-                         user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+                         user: User = tier_gate("explain_visual"), db: Session = Depends(get_db)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    check_chat_limit(user, db)
+    # tier_gate("explain_visual") ya controla el rate limit
     result = ai_engine.explain_with_visuals(project_id, req.topic, user.language or "es")
     return result
 
 
 @app.post("/projects/{project_id}/study-plan")
-def generate_study_plan(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def generate_study_plan(project_id: str, user: User = tier_gate("study_plan"), db: Session = Depends(get_db)):
     """Analyze quiz/flashcard performance and generate personalized study plan."""
     from database import StudyPlan, gen_id
     meta = get_project_meta(project_id)

@@ -1,0 +1,138 @@
+{
+  "plans": {
+    "free": {
+      "name": "Free",
+      "displayName": "Conniku Free",
+      "price": {
+        "clp_monthly": 0,
+        "usd_monthly": 0
+      },
+      "limits": {
+        "max_subjects": 3,
+        "max_group_docs": 2,
+        "max_saved_versions": 3,
+        "storage_bytes": 104857600,
+        "xp_multiplier": 1.0
+      },
+      "ai": {
+        "chat_messages": { "limit": 10, "window": "daily" },
+        "guide": { "limit": 1, "window": "weekly" },
+        "quiz": { "limit": 2, "window": "weekly" },
+        "flashcards": { "limit": 1, "window": "weekly" },
+        "summary": { "limit": 1, "window": "weekly" },
+        "concept_map": { "limit": 0, "window": "daily" },
+        "study_plan": { "limit": 0, "window": "weekly" },
+        "exam_predictor": { "limit": 0, "window": "weekly" },
+        "math_scan": { "limit": 1, "window": "daily" },
+        "math_natural": { "limit": 3, "window": "daily" },
+        "video_youtube": { "limit": 0, "window": "weekly" },
+        "video_upload": { "limit": 0, "window": "weekly" },
+        "audio_to_notes": { "limit": 0, "window": "weekly" },
+        "exam_night": { "limit": 0, "window": "daily" },
+        "explain_visual": { "limit": 0, "window": "daily" },
+        "cv_coach": { "limit": 1, "window": "monthly" },
+        "cv_parse": { "limit": 1, "window": "monthly" },
+        "search_ai": { "limit": 0, "window": "daily" },
+        "biblioteca_clone": { "limit": 0, "window": "weekly" },
+        "konni_coach": { "limit": 3, "window": "total" },
+        "konni_coach_words_free": 20,
+        "konni_detect_ai": false,
+        "support_chat": { "limit": 10, "window": "daily" },
+        "daily_summary": true,
+        "auto_tag": true,
+        "bio_generate": { "limit": 1, "window": "total" }
+      },
+      "features": {
+        "can_export": false,
+        "can_download_docs": false,
+        "can_create_conference": false,
+        "can_create_study_room": false,
+        "can_lms_sync_docs": false,
+        "can_lms_sync_calendar": false,
+        "can_detect_ai": false,
+        "contribution_metrics": false,
+        "executive_showcase": false,
+        "attendance_log": false
+      }
+    },
+    "pro": {
+      "name": "Conniku PRO",
+      "displayName": "Conniku PRO",
+      "price": {
+        "clp_monthly": 8990,
+        "clp_semester": 39990,
+        "clp_annual": 79990,
+        "clp_sprint_week": 3490,
+        "usd_monthly": 9.49,
+        "usd_semester": 41.99,
+        "usd_annual": 83.99,
+        "usd_sprint_week": 3.69,
+        "iva_included": true,
+        "iva_rate": 0.19
+      },
+      "limits": {
+        "max_subjects": -1,
+        "max_group_docs": -1,
+        "max_saved_versions": -1,
+        "storage_bytes": 2147483648,
+        "xp_multiplier": 1.5
+      },
+      "ai": {
+        "chat_messages": { "limit": -1, "window": "daily" },
+        "guide": { "limit": -1, "window": "daily" },
+        "quiz": { "limit": -1, "window": "daily" },
+        "flashcards": { "limit": -1, "window": "daily" },
+        "summary": { "limit": -1, "window": "daily" },
+        "concept_map": { "limit": -1, "window": "daily" },
+        "study_plan": { "limit": -1, "window": "weekly" },
+        "exam_predictor": { "limit": -1, "window": "weekly" },
+        "math_scan": { "limit": -1, "window": "daily" },
+        "math_natural": { "limit": -1, "window": "daily" },
+        "video_youtube": { "limit": -1, "window": "weekly" },
+        "video_upload": { "limit": -1, "window": "weekly" },
+        "audio_to_notes": { "limit": -1, "window": "weekly" },
+        "exam_night": { "limit": -1, "window": "daily" },
+        "explain_visual": { "limit": -1, "window": "daily" },
+        "cv_coach": { "limit": -1, "window": "weekly" },
+        "cv_parse": { "limit": -1, "window": "monthly" },
+        "search_ai": { "limit": -1, "window": "daily" },
+        "biblioteca_clone": { "limit": -1, "window": "weekly" },
+        "konni_coach": { "limit": -1, "window": "daily" },
+        "konni_coach_words_free": -1,
+        "konni_detect_ai": true,
+        "support_chat": { "limit": -1, "window": "daily" },
+        "daily_summary": true,
+        "auto_tag": true,
+        "bio_generate": { "limit": -1, "window": "total" }
+      },
+      "features": {
+        "can_export": true,
+        "can_download_docs": true,
+        "can_create_conference": true,
+        "can_create_study_room": true,
+        "can_lms_sync_docs": true,
+        "can_lms_sync_calendar": true,
+        "can_detect_ai": true,
+        "contribution_metrics": true,
+        "executive_showcase": true,
+        "attendance_log": true
+      }
+    }
+  },
+  "sprint": {
+    "duration_days": 7,
+    "max_per_semester": 2,
+    "auto_renew": false,
+    "grants_tier": "pro"
+  },
+  "group_discount": {
+    "min_members": 3,
+    "discount_percent": 15
+  },
+  "grace_period_days": 30,
+  "retry_payment_days": [0, 3, 5],
+  "notification_days_before": [7, 1],
+  "reset_hour_chile": 6,
+  "min_age": 18,
+  "supported_languages": ["es", "en", "pt"]
+}

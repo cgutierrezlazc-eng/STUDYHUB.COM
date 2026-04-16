@@ -35,39 +35,40 @@ PAYPAL_API = (
 PLANS = {
     "pro_monthly": {
         "name": "Conniku PRO - Mensual",
-        "price": "6.99",
+        "price": "9.49",
         "currency": "USD",
         "tier": "pro",
         "interval_unit": "MONTH",
         "interval_count": 1,
-        "storage_bytes": 1073741824,  # 1 GB
+        "storage_bytes": 2147483648,  # 2 GB
+    },
+    "pro_semester": {
+        "name": "Conniku PRO - Semestral (5 meses)",
+        "price": "41.99",
+        "currency": "USD",
+        "tier": "pro",
+        "interval_unit": "MONTH",
+        "interval_count": 5,
+        "storage_bytes": 2147483648,  # 2 GB
     },
     "pro_yearly": {
         "name": "Conniku PRO - Anual",
-        "price": "50.99",
+        "price": "83.99",
         "currency": "USD",
         "tier": "pro",
         "interval_unit": "YEAR",
         "interval_count": 1,
-        "storage_bytes": 1073741824,
+        "storage_bytes": 2147483648,  # 2 GB
     },
-    "max_monthly": {
-        "name": "Conniku MAX - Mensual",
-        "price": "10.99",
+    "pro_sprint": {
+        "name": "Conniku PRO - Sprint Examenes (1 semana)",
+        "price": "3.69",
         "currency": "USD",
-        "tier": "max",
-        "interval_unit": "MONTH",
-        "interval_count": 1,
-        "storage_bytes": 3221225472,  # 3 GB
-    },
-    "max_yearly": {
-        "name": "Conniku MAX - Anual",
-        "price": "90.99",
-        "currency": "USD",
-        "tier": "max",
-        "interval_unit": "YEAR",
-        "interval_count": 1,
-        "storage_bytes": 3221225472,
+        "tier": "pro",
+        "interval_unit": "DAY",
+        "interval_count": 7,
+        "storage_bytes": 2147483648,  # 2 GB
+        "auto_renew": False,
     },
 }
 
@@ -803,7 +804,7 @@ async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
                     db.commit()
 
         elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":
-            sub_id = resource.get("id", "")
+            _sub_id = resource.get("id", "")  # noqa: F841 — reservado para logging futuro
             custom_id = resource.get("custom_id", "{}")
             try:
                 meta = json.loads(custom_id)

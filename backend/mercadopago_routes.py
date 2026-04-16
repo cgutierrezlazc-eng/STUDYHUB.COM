@@ -30,39 +30,40 @@ MP_API = "https://api.mercadopago.com"
 PLANS = {
     "pro_monthly": {
         "title": "Conniku PRO — Mensual",
-        "price": 6490,
+        "price": 8990,
         "currency": "CLP",
         "tier": "pro",
         "frequency": 1,
         "frequency_type": "months",
-        "storage_bytes": 1073741824,  # 1 GB
+        "storage_bytes": 2147483648,  # 2 GB
+    },
+    "pro_semester": {
+        "title": "Conniku PRO — Semestral (5 meses)",
+        "price": 39990,
+        "currency": "CLP",
+        "tier": "pro",
+        "frequency": 5,
+        "frequency_type": "months",
+        "storage_bytes": 2147483648,  # 2 GB
     },
     "pro_yearly": {
         "title": "Conniku PRO — Anual",
-        "price": 45990,
+        "price": 79990,
         "currency": "CLP",
         "tier": "pro",
         "frequency": 12,
         "frequency_type": "months",
-        "storage_bytes": 1073741824,
+        "storage_bytes": 2147483648,  # 2 GB
     },
-    "max_monthly": {
-        "title": "Conniku MAX — Mensual",
-        "price": 9990,
+    "pro_sprint": {
+        "title": "Conniku PRO — Sprint Exámenes (1 semana)",
+        "price": 3490,
         "currency": "CLP",
-        "tier": "max",
-        "frequency": 1,
-        "frequency_type": "months",
-        "storage_bytes": 3221225472,  # 3 GB
-    },
-    "max_yearly": {
-        "title": "Conniku MAX — Anual",
-        "price": 81990,
-        "currency": "CLP",
-        "tier": "max",
-        "frequency": 12,
-        "frequency_type": "months",
-        "storage_bytes": 3221225472,
+        "tier": "pro",
+        "frequency": 7,
+        "frequency_type": "days",
+        "storage_bytes": 2147483648,  # 2 GB
+        "auto_renew": False,
     },
 }
 
@@ -155,7 +156,7 @@ async def create_mp_subscription(data: dict, user: User = Depends(get_current_us
                 "plan": plan_key,
             }
     except httpx.HTTPError as e:
-        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}")
+        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}") from e
 
 
 # ─── Create Checkout (one-time payment) ───────────────────────
@@ -221,7 +222,7 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
                 "plan": plan_key,
             }
     except httpx.HTTPError as e:
-        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}")
+        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}") from e
 
 
 # ─── Create Class Checkout ────────────────────────────────────
@@ -362,7 +363,7 @@ async def create_mp_class_checkout(data: dict, user: User = Depends(get_current_
                 "enrollment_id": enrollment.id,
             }
     except httpx.HTTPError as e:
-        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}")
+        raise HTTPException(500, f"Error de conexion con Mercado Pago: {str(e)}") from e
 
 
 # ─── Webhook ──────────────────────────────────────────────────
@@ -733,7 +734,7 @@ async def cancel_mp_subscription(request: Request, user: User = Depends(get_curr
                 result = resp.json()
                 raise HTTPException(resp.status_code, result.get("message", "Error al cancelar"))
     except httpx.HTTPError as e:
-        raise HTTPException(500, f"Error de conexion: {str(e)}")
+        raise HTTPException(500, f"Error de conexion: {str(e)}") from e
 
 
 # ─── Plans & Prices ──────────────────────────────────────────

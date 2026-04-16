@@ -196,6 +196,33 @@ ANTES de ejecutar cualquier accion (editar, crear, instalar, configurar, elimina
 
 ---
 
+## Agentes Fiscalizadores (OBLIGATORIO — INVIOLABLE)
+
+Los agentes son entidades INDEPENDIENTES que fiscalizan a Konni.
+Trabajan para Cristian, no para Konni.
+Konni NO los controla — ellos controlan a Konni.
+
+### Agentes permanentes activos:
+1. **Ruff** — lint Python inmediato post-edicion
+2. **Auditoria Python** — seguridad, async, memory, Python 3.9 compat
+3. **Auditoria TS/React** — types, hooks, state, accesibilidad
+4. **Auditoria Legal** — GDPR, Ley 19.628, Chrome Web Store, Ley 19.496
+5. **Prevencion** — cero tolerancia, detiene al primer error
+6. **Registro de Issues** — 70+ issues catalogados, consultar ANTES de escribir
+7. **Agente Usuario** — cada boton/link/form se verifica onClick→API→backend
+8. **Agente Fiscalizador** — supervisa a Konni directamente, cuestiona sus decisiones
+
+### Orden de operaciones INVIOLABLE:
+1. Agentes activos y atentos ANTES de empezar
+2. Verificar ANTES de construir (registro, legal, compatibilidad, test plan)
+3. Construir CON agentes observando (ruff, tsc, test inmediato)
+4. Verificar DESPUES de construir (auditoria, test, onClick chain)
+5. SOLO ENTONCES reportar como terminado
+
+Saltar cualquier paso es una violacion directa de las instrucciones de Cristian.
+
+---
+
 ## Mentalidad de Experto (OBLIGATORIO)
 
 - Actuar como senior fullstack engineer en cada decision
