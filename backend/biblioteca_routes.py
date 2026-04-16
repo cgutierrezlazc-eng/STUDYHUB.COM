@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import re
 import shutil
 import time
@@ -44,10 +45,12 @@ from database import (
 )
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
-from middleware import get_current_user
+from middleware import get_current_user, require_owner
 from pydantic import BaseModel
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger("biblioteca")
 
 router = APIRouter(prefix="/biblioteca", tags=["biblioteca"])
 
@@ -474,6 +477,39 @@ def cache_stats(user: User = Depends(get_current_user)):
     stats = get_cache_stats()
     stats["search_cache_entries"] = len(_search_cache)
     return stats
+
+
+# ─── POST /biblioteca/v2/prefetch ────────────────────────────
+# Trigger manual de pre-descarga de libros populares (solo owner/admin)
+_prefetch_running = False
+
+
+@router.post("/v2/prefetch")
+async def trigger_prefetch(
+    user: User = Depends(require_owner),
+):
+    """Trigger manual de pre-descarga (solo CEO/owner). Ejecuta en background."""
+    import asyncio
+
+    global _prefetch_running
+    if _prefetch_running:
+        return {"status": "already_running", "message": "Ya hay una pre-descarga en curso"}
+
+    async def _run_prefetch() -> None:
+        global _prefetch_running
+        _prefetch_running = True
+        try:
+            from biblioteca_prefetch import prefetch_all
+
+            result = await prefetch_all()
+            logger.info("Prefetch completado: %s", result)
+        except Exception:
+            logger.exception("Error en prefetch background task")
+        finally:
+            _prefetch_running = False
+
+    asyncio.create_task(_run_prefetch())
+    return {"status": "started", "message": "Pre-descarga iniciada en background"}
 
 
 # ─── GET/POST /biblioteca/v2/progress ─────────────────────────
