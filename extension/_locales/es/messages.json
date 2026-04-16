@@ -1,0 +1,10 @@
+{
+  "appName": {
+    "message": "Conniku",
+    "description": "Nombre de la extension"
+  },
+  "appDescription": {
+    "message": "Sincroniza tu campus virtual con Conniku. Cursos, documentos, calendario y notas — todo automatico.",
+    "description": "Descripcion de la extension"
+  }
+}

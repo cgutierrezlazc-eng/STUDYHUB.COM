@@ -1,0 +1,76 @@
+{
+  "manifest_version": 3,
+  "name": "Conniku",
+  "version": "1.0.0",
+  "description": "Sincroniza tu campus virtual con Conniku. Cursos, documentos, calendario y notas — todo automatico.",
+  "default_locale": "es",
+
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://studyhub-api-bpco.onrender.com/*"
+  ],
+
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.edu/*",
+        "https://*.edu.cl/*",
+        "https://*.edu.co/*",
+        "https://*.edu.mx/*",
+        "https://*.edu.pe/*",
+        "https://*.edu.ar/*",
+        "https://*.edu.br/*",
+        "https://*.edu.es/*",
+        "https://*.ac.uk/*",
+        "https://*.edu.au/*",
+        "https://*.instructure.com/*",
+        "https://*.blackboard.com/*",
+        "https://*.brightspace.com/*",
+        "https://*.udalba.cl/*",
+        "https://*.moodle.org/*",
+        "https://*.moodlecloud.com/*"
+      ],
+      "js": ["detector.js"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": ["injector.js", "passive-interceptor.js"],
+      "matches": ["https://*.edu/*", "https://*.edu.cl/*", "https://*.edu.co/*", "https://*.edu.mx/*", "https://*.instructure.com/*", "https://*.blackboard.com/*", "https://*.udalba.cl/*", "https://*.moodlecloud.com/*"]
+    }
+  ]
+}

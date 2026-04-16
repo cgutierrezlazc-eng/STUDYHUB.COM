@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conniku Extension — 3 Opciones de Diseño</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0f0f14;
+    color: #e0e0e0;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 40px;
+  }
+
+  /* Tab selector */
+  .tab-bar {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 40px;
+    background: #1a1a24;
+    border-radius: 12px;
+    padding: 4px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: transparent;
+    color: #888;
+  }
+  .tab-btn.active {
+    background: #4f8cff;
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(79,140,255,0.3);
+  }
+  .tab-btn:hover:not(.active) { color: #ccc; }
+
+  /* Layout */
+  .options-row {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+  .options-row.active { display: flex; }
+
+  .state-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
+    width: 100%;
+    max-width: 1400px;
+  }
+
+  .popup-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .state-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4f8cff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Chrome popup frame */
+  .chrome-frame {
+    width: 380px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.06);
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* OPCION A — OCEANO                           */
+  /* ═══════════════════════════════════════════ */
+  .opt-a {
+    --bg: #0c1829;
+    --bg-card: #111f36;
+    --bg-hover: #162a47;
+    --border: rgba(79,140,255,0.15);
+    --accent: #4f8cff;
+    --accent-glow: rgba(79,140,255,0.15);
+    --text: #e4eaf5;
+    --text-muted: #7a8fac;
+    --success: #34d399;
+    --warning: #fbbf24;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* OPCION B — DARK MINIMAL                     */
+  /* ═══════════════════════════════════════════ */
+  .opt-b {
+    --bg: #111111;
+    --bg-card: #1a1a1a;
+    --bg-hover: #222222;
+    --border: rgba(255,255,255,0.08);
+    --accent: #ffffff;
+    --accent-glow: rgba(255,255,255,0.05);
+    --text: #f0f0f0;
+    --text-muted: #666666;
+    --success: #22c55e;
+    --warning: #eab308;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* OPCION C — GLASSMORPHISM                    */
+  /* ═══════════════════════════════════════════ */
+  .opt-c {
+    --bg: linear-gradient(135deg, #0f0c29 0%, #1a1145 50%, #24243e 100%);
+    --bg-card: rgba(255,255,255,0.06);
+    --bg-hover: rgba(255,255,255,0.10);
+    --border: rgba(255,255,255,0.12);
+    --accent: #a78bfa;
+    --accent-glow: rgba(167,139,250,0.15);
+    --text: #f0eeff;
+    --text-muted: #9390b0;
+    --success: #4ade80;
+    --warning: #fbbf24;
+  }
+
+  /* ═══════════════════════════════════════════ */
+  /* SHARED POPUP STYLES                         */
+  /* ═══════════════════════════════════════════ */
+  .popup {
+    width: 380px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    overflow: hidden;
+  }
+  .opt-a .popup, .opt-b .popup { background: var(--bg); }
+  .opt-c .popup { background: var(--bg); }
+
+  /* Header */
+  .popup-header {
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .popup-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .popup-logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .opt-a .popup-logo-icon { background: linear-gradient(135deg, #4f8cff, #2563eb); }
+  .opt-b .popup-logo-icon { background: #fff; color: #000; }
+  .opt-c .popup-logo-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+  .popup-logo-text {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .popup-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+  }
+  .popup-status-dot.offline { background: var(--text-muted); box-shadow: none; }
+
+  /* Body */
+  .popup-body { padding: 16px 20px; }
+
+  /* Platform detected banner */
+  .platform-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+  }
+  .opt-a .platform-banner { background: var(--accent-glow); }
+  .opt-b .platform-banner { background: var(--bg-card); }
+  .opt-c .platform-banner { background: var(--bg-card); backdrop-filter: blur(10px); }
+
+  .platform-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .opt-a .platform-icon { background: rgba(79,140,255,0.2); }
+  .opt-b .platform-icon { background: rgba(255,255,255,0.08); }
+  .opt-c .platform-icon { background: rgba(167,139,250,0.2); }
+
+  .platform-info { flex: 1; }
+  .platform-name { font-weight: 600; font-size: 13px; }
+  .platform-url { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Course list */
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding: 0 2px;
+  }
+
+  .course-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .course-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .course-item:hover { background: var(--bg-hover); }
+
+  .course-check {
+    width: 18px;
+    height: 18px;
+    border-radius: 5px;
+    border: 2px solid var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 11px;
+    transition: all 0.15s;
+  }
+  .course-check.checked {
+    border-color: var(--accent);
+    color: #fff;
+  }
+  .opt-a .course-check.checked { background: var(--accent); }
+  .opt-b .course-check.checked { background: #fff; color: #000; }
+  .opt-c .course-check.checked { background: var(--accent); }
+
+  .course-name { font-size: 13px; font-weight: 500; flex: 1; line-height: 1.3; }
+  .course-files { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #fff;
+    letter-spacing: -0.2px;
+  }
+  .opt-a .btn-primary { background: linear-gradient(135deg, #4f8cff, #2563eb); }
+  .opt-b .btn-primary { background: #fff; color: #000; }
+  .opt-c .btn-primary { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text);
+    margin-top: 8px;
+    transition: all 0.15s;
+  }
+  .btn-secondary:hover { background: var(--bg-hover); }
+
+  /* Footer */
+  .popup-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+  .popup-footer a { color: var(--accent); text-decoration: none; }
+
+  /* ═══ STATE: Login ═══ */
+  .login-body {
+    padding: 32px 20px;
+    text-align: center;
+  }
+  .login-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 16px;
+  }
+  .opt-a .login-icon { background: linear-gradient(135deg, #4f8cff, #2563eb); }
+  .opt-b .login-icon { background: #fff; }
+  .opt-c .login-icon { background: linear-gradient(135deg, #a78bfa, #7c3aed); }
+
+  .login-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .login-desc { font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 24px; }
+
+  /* ═══ STATE: No Moodle ═══ */
+  .no-moodle-body {
+    padding: 28px 20px;
+    text-align: center;
+  }
+  .no-moodle-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.6;
+  }
+  .no-moodle-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .no-moodle-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; }
+
+  .supported-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .supported-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+
+  /* ═══ STATE: Syncing ═══ */
+  .sync-progress {
+    padding: 6px 0;
+  }
+  .sync-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 13px;
+  }
+  .sync-step-icon { width: 20px; text-align: center; font-size: 14px; }
+  .sync-step-text { flex: 1; }
+  .sync-step.done { color: var(--success); }
+  .sync-step.active { color: var(--text); font-weight: 600; }
+  .sync-step.pending { color: var(--text-muted); }
+
+  .sync-bar {
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-card);
+    margin: 12px 0 8px;
+    overflow: hidden;
+  }
+  .sync-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+  .opt-a .sync-bar-fill { background: var(--accent); }
+  .opt-b .sync-bar-fill { background: #fff; }
+  .opt-c .sync-bar-fill { background: var(--accent); }
+
+  /* ═══ STATE: Synced ═══ */
+  .synced-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .summary-card {
+    padding: 14px 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+  .summary-number { font-size: 22px; font-weight: 700; }
+  .opt-a .summary-number { color: var(--accent); }
+  .opt-b .summary-number { color: #fff; }
+  .opt-c .summary-number { color: var(--accent); }
+  .summary-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .last-sync { font-size: 11px; color: var(--text-muted); text-align: center; margin-bottom: 12px; }
+
+  /* Section header */
+  .section-header {
+    font-size: 18px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.4;
+  }
+
+  /* Glassmorphism extras for option C */
+  .opt-c .course-item {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(4px);
+  }
+  .opt-c .summary-card {
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(8px);
+  }
+  .opt-c .platform-banner {
+    backdrop-filter: blur(12px);
+  }
+</style>
+</head>
+<body>
+
+<h1>Conniku Extension — Popup UI</h1>
+<p class="subtitle">3 opciones de diseno para revision. Cada opcion muestra 5 estados del popup.</p>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="showOption('a')">A — Oceano</button>
+  <button class="tab-btn" onclick="showOption('b')">B — Dark Minimal</button>
+  <button class="tab-btn" onclick="showOption('c')">C — Glassmorphism</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPCION A — OCEANO                                              -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="options-row active" id="option-a">
+<div class="state-group">
+
+  <!-- State 1: Login -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 1 — Sin sesion</span>
+    <div class="chrome-frame opt-a">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot offline"></div>
+        </div>
+        <div class="login-body">
+          <div class="login-icon">C</div>
+          <div class="login-title">Bienvenido a Conniku</div>
+          <div class="login-desc">Conecta tu campus virtual para sincronizar tus cursos, documentos y calendario automaticamente.</div>
+          <button class="btn-primary">Iniciar sesion con Conniku</button>
+          <button class="btn-secondary">Crear cuenta gratis</button>
+        </div>
+        <div class="popup-footer">
+          <span>v1.0.0</span>
+          <a href="#">conniku.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 2: No Moodle -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 2 — Sin campus detectado</span>
+    <div class="chrome-frame opt-a">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="no-moodle-body">
+          <div class="no-moodle-icon">🎓</div>
+          <div class="no-moodle-title">Navega a tu campus virtual</div>
+          <div class="no-moodle-desc">Abre la pagina de tu universidad y Conniku detectara tu plataforma automaticamente.</div>
+          <div class="supported-list">
+            <span class="supported-tag">Moodle</span>
+            <span class="supported-tag">Canvas</span>
+            <span class="supported-tag">Blackboard</span>
+            <span class="supported-tag">Brightspace</span>
+            <span class="supported-tag">Sakai</span>
+          </div>
+          <button class="btn-secondary">Ingresar URL manualmente</button>
+        </div>
+        <div class="popup-footer">
+          <span>Cristian G.</span>
+          <a href="#">Configuracion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 3: Courses detected -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 3 — Cursos detectados</span>
+    <div class="chrome-frame opt-a">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">6 asignaturas detectadas</div>
+          <div class="section-sub">Selecciona las que quieres sincronizar con Conniku</div>
+
+          <div class="course-list">
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Calculo II</div>
+              <div class="course-files">8 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Fisica General</div>
+              <div class="course-files">12 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Programacion I</div>
+              <div class="course-files">15 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Ingles Intermedio</div>
+              <div class="course-files">5 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Electivo: Musica (anterior)</div>
+              <div class="course-files">3 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Intro a la Ingenieria (ant.)</div>
+              <div class="course-files">6 docs</div>
+            </div>
+          </div>
+
+          <button class="btn-primary">Crear asignaturas en Conniku</button>
+        </div>
+        <div class="popup-footer">
+          <span>4 seleccionadas</span>
+          <a href="#">Seleccionar todas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 4: Syncing -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 4 — Sincronizando</span>
+    <div class="chrome-frame opt-a">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot" style="background:#fbbf24;box-shadow:0 0 8px #fbbf24"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">Sincronizando...</div>
+          <div class="section-sub">No cierres esta pestana mientras se completa</div>
+
+          <div class="sync-progress">
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">4 asignaturas creadas</span>
+            </div>
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">40 documentos detectados</span>
+            </div>
+            <div class="sync-step active">
+              <span class="sync-step-icon">⟳</span>
+              <span class="sync-step-text">Descargando documentos... (23/40)</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Sincronizar calendario</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Importar calificaciones</span>
+            </div>
+          </div>
+
+          <div class="sync-bar">
+            <div class="sync-bar-fill" style="width:57%"></div>
+          </div>
+          <div style="text-align:center;font-size:11px;color:var(--text-muted)">57% completado</div>
+        </div>
+        <div class="popup-footer">
+          <span>Fisica General — Guia_Lab_3.pdf</span>
+          <span>2.3 MB</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 5: Synced -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 5 — Sincronizado</span>
+    <div class="chrome-frame opt-a">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="synced-summary">
+            <div class="summary-card">
+              <div class="summary-number">4</div>
+              <div class="summary-label">Asignaturas</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">40</div>
+              <div class="summary-label">Documentos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">12</div>
+              <div class="summary-label">Eventos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">6</div>
+              <div class="summary-label">Notas</div>
+            </div>
+          </div>
+
+          <div class="last-sync">Ultima sincronizacion: hace 2 minutos</div>
+
+          <button class="btn-primary">Actualizar ahora</button>
+          <button class="btn-secondary">Abrir Mi Universidad</button>
+        </div>
+        <div class="popup-footer">
+          <span>2 docs nuevos detectados</span>
+          <a href="#">Ver cambios</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPCION B — DARK MINIMAL                                        -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="options-row" id="option-b">
+<div class="state-group">
+
+  <!-- State 1: Login -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 1 — Sin sesion</span>
+    <div class="chrome-frame opt-b">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot offline"></div>
+        </div>
+        <div class="login-body">
+          <div class="login-icon" style="color:#000;font-size:28px;font-weight:800">C</div>
+          <div class="login-title">Bienvenido a Conniku</div>
+          <div class="login-desc">Conecta tu campus virtual para sincronizar tus cursos, documentos y calendario automaticamente.</div>
+          <button class="btn-primary">Iniciar sesion con Conniku</button>
+          <button class="btn-secondary">Crear cuenta gratis</button>
+        </div>
+        <div class="popup-footer">
+          <span>v1.0.0</span>
+          <a href="#">conniku.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 2: No Moodle -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 2 — Sin campus detectado</span>
+    <div class="chrome-frame opt-b">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="no-moodle-body">
+          <div class="no-moodle-icon">🎓</div>
+          <div class="no-moodle-title">Navega a tu campus virtual</div>
+          <div class="no-moodle-desc">Abre la pagina de tu universidad y Conniku detectara tu plataforma automaticamente.</div>
+          <div class="supported-list">
+            <span class="supported-tag">Moodle</span>
+            <span class="supported-tag">Canvas</span>
+            <span class="supported-tag">Blackboard</span>
+            <span class="supported-tag">Brightspace</span>
+            <span class="supported-tag">Sakai</span>
+          </div>
+          <button class="btn-secondary">Ingresar URL manualmente</button>
+        </div>
+        <div class="popup-footer">
+          <span>Cristian G.</span>
+          <a href="#">Configuracion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 3: Courses detected -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 3 — Cursos detectados</span>
+    <div class="chrome-frame opt-b">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">6 asignaturas detectadas</div>
+          <div class="section-sub">Selecciona las que quieres sincronizar con Conniku</div>
+
+          <div class="course-list">
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Calculo II</div>
+              <div class="course-files">8 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Fisica General</div>
+              <div class="course-files">12 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Programacion I</div>
+              <div class="course-files">15 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Ingles Intermedio</div>
+              <div class="course-files">5 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Electivo: Musica (anterior)</div>
+              <div class="course-files">3 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Intro a la Ingenieria (ant.)</div>
+              <div class="course-files">6 docs</div>
+            </div>
+          </div>
+
+          <button class="btn-primary">Crear asignaturas en Conniku</button>
+        </div>
+        <div class="popup-footer">
+          <span>4 seleccionadas</span>
+          <a href="#">Seleccionar todas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 4: Syncing -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 4 — Sincronizando</span>
+    <div class="chrome-frame opt-b">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot" style="background:#eab308;box-shadow:0 0 8px #eab308"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">Sincronizando...</div>
+          <div class="section-sub">No cierres esta pestana mientras se completa</div>
+
+          <div class="sync-progress">
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">4 asignaturas creadas</span>
+            </div>
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">40 documentos detectados</span>
+            </div>
+            <div class="sync-step active">
+              <span class="sync-step-icon">⟳</span>
+              <span class="sync-step-text">Descargando documentos... (23/40)</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Sincronizar calendario</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Importar calificaciones</span>
+            </div>
+          </div>
+
+          <div class="sync-bar">
+            <div class="sync-bar-fill" style="width:57%"></div>
+          </div>
+          <div style="text-align:center;font-size:11px;color:var(--text-muted)">57% completado</div>
+        </div>
+        <div class="popup-footer">
+          <span>Fisica General — Guia_Lab_3.pdf</span>
+          <span>2.3 MB</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 5: Synced -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 5 — Sincronizado</span>
+    <div class="chrome-frame opt-b">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="synced-summary">
+            <div class="summary-card">
+              <div class="summary-number">4</div>
+              <div class="summary-label">Asignaturas</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">40</div>
+              <div class="summary-label">Documentos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">12</div>
+              <div class="summary-label">Eventos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">6</div>
+              <div class="summary-label">Notas</div>
+            </div>
+          </div>
+
+          <div class="last-sync">Ultima sincronizacion: hace 2 minutos</div>
+
+          <button class="btn-primary">Actualizar ahora</button>
+          <button class="btn-secondary">Abrir Mi Universidad</button>
+        </div>
+        <div class="popup-footer">
+          <span>2 docs nuevos detectados</span>
+          <a href="#">Ver cambios</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- OPCION C — GLASSMORPHISM                                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="options-row" id="option-c">
+<div class="state-group">
+
+  <!-- State 1: Login -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 1 — Sin sesion</span>
+    <div class="chrome-frame opt-c">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot offline"></div>
+        </div>
+        <div class="login-body">
+          <div class="login-icon" style="font-size:28px;font-weight:800;color:#fff">C</div>
+          <div class="login-title">Bienvenido a Conniku</div>
+          <div class="login-desc">Conecta tu campus virtual para sincronizar tus cursos, documentos y calendario automaticamente.</div>
+          <button class="btn-primary">Iniciar sesion con Conniku</button>
+          <button class="btn-secondary">Crear cuenta gratis</button>
+        </div>
+        <div class="popup-footer">
+          <span>v1.0.0</span>
+          <a href="#">conniku.com</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 2: No Moodle -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 2 — Sin campus detectado</span>
+    <div class="chrome-frame opt-c">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="no-moodle-body">
+          <div class="no-moodle-icon">🎓</div>
+          <div class="no-moodle-title">Navega a tu campus virtual</div>
+          <div class="no-moodle-desc">Abre la pagina de tu universidad y Conniku detectara tu plataforma automaticamente.</div>
+          <div class="supported-list">
+            <span class="supported-tag">Moodle</span>
+            <span class="supported-tag">Canvas</span>
+            <span class="supported-tag">Blackboard</span>
+            <span class="supported-tag">Brightspace</span>
+            <span class="supported-tag">Sakai</span>
+          </div>
+          <button class="btn-secondary">Ingresar URL manualmente</button>
+        </div>
+        <div class="popup-footer">
+          <span>Cristian G.</span>
+          <a href="#">Configuracion</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 3: Courses detected -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 3 — Cursos detectados</span>
+    <div class="chrome-frame opt-c">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">6 asignaturas detectadas</div>
+          <div class="section-sub">Selecciona las que quieres sincronizar con Conniku</div>
+
+          <div class="course-list">
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Calculo II</div>
+              <div class="course-files">8 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Fisica General</div>
+              <div class="course-files">12 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Programacion I</div>
+              <div class="course-files">15 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check checked">✓</div>
+              <div class="course-name">Ingles Intermedio</div>
+              <div class="course-files">5 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Electivo: Musica (anterior)</div>
+              <div class="course-files">3 docs</div>
+            </div>
+            <div class="course-item">
+              <div class="course-check">  </div>
+              <div class="course-name" style="color:var(--text-muted)">Intro a la Ingenieria (ant.)</div>
+              <div class="course-files">6 docs</div>
+            </div>
+          </div>
+
+          <button class="btn-primary">Crear asignaturas en Conniku</button>
+        </div>
+        <div class="popup-footer">
+          <span>4 seleccionadas</span>
+          <a href="#">Seleccionar todas</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 4: Syncing -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 4 — Sincronizando</span>
+    <div class="chrome-frame opt-c">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot" style="background:#fbbf24;box-shadow:0 0 8px #fbbf24"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="section-header">Sincronizando...</div>
+          <div class="section-sub">No cierres esta pestana mientras se completa</div>
+
+          <div class="sync-progress">
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">4 asignaturas creadas</span>
+            </div>
+            <div class="sync-step done">
+              <span class="sync-step-icon">✓</span>
+              <span class="sync-step-text">40 documentos detectados</span>
+            </div>
+            <div class="sync-step active">
+              <span class="sync-step-icon">⟳</span>
+              <span class="sync-step-text">Descargando documentos... (23/40)</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Sincronizar calendario</span>
+            </div>
+            <div class="sync-step pending">
+              <span class="sync-step-icon">○</span>
+              <span class="sync-step-text">Importar calificaciones</span>
+            </div>
+          </div>
+
+          <div class="sync-bar">
+            <div class="sync-bar-fill" style="width:57%"></div>
+          </div>
+          <div style="text-align:center;font-size:11px;color:var(--text-muted)">57% completado</div>
+        </div>
+        <div class="popup-footer">
+          <span>Fisica General — Guia_Lab_3.pdf</span>
+          <span>2.3 MB</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- State 5: Synced -->
+  <div class="popup-wrapper">
+    <span class="state-label">Estado 5 — Sincronizado</span>
+    <div class="chrome-frame opt-c">
+      <div class="popup">
+        <div class="popup-header">
+          <div class="popup-logo">
+            <div class="popup-logo-icon">C</div>
+            <span class="popup-logo-text">Conniku</span>
+          </div>
+          <div class="popup-status-dot"></div>
+        </div>
+        <div class="popup-body">
+          <div class="platform-banner">
+            <div class="platform-icon">🎓</div>
+            <div class="platform-info">
+              <div class="platform-name">Moodle — Universidad del Alba</div>
+              <div class="platform-url">campusvirtual.udalba.cl</div>
+            </div>
+          </div>
+
+          <div class="synced-summary">
+            <div class="summary-card">
+              <div class="summary-number">4</div>
+              <div class="summary-label">Asignaturas</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">40</div>
+              <div class="summary-label">Documentos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">12</div>
+              <div class="summary-label">Eventos</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-number">6</div>
+              <div class="summary-label">Notas</div>
+            </div>
+          </div>
+
+          <div class="last-sync">Ultima sincronizacion: hace 2 minutos</div>
+
+          <button class="btn-primary">Actualizar ahora</button>
+          <button class="btn-secondary">Abrir Mi Universidad</button>
+        </div>
+        <div class="popup-footer">
+          <span>2 docs nuevos detectados</span>
+          <a href="#">Ver cambios</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function showOption(opt) {
+  document.querySelectorAll('.options-row').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('option-' + opt).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
