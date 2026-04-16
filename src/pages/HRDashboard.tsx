@@ -7079,13 +7079,149 @@ function InspeccionTrabajoTab({ employees }: { employees: Employee[] }) {
               >
                 <FileText size={14} /> Constancia de Vacaciones
               </button>
-              <button style={btnSmall}>
+              <button
+                style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
+                disabled={!certificadoEmp}
+                onClick={async () => {
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (!emp) return;
+                  const clause = prompt(
+                    'Cláusula que se modifica (ej: Tercera sobre Remuneraciones):'
+                  );
+                  if (!clause) return;
+                  const prevText = prompt('Texto anterior de la cláusula:');
+                  if (!prevText) return;
+                  const newText = prompt('Nuevo texto/condición:');
+                  if (!newText) return;
+                  const effectiveDate = prompt('Fecha de vigencia (YYYY-MM-DD):');
+                  if (!effectiveDate) return;
+                  try {
+                    const token = localStorage.getItem('conniku_token');
+                    const base =
+                      (import.meta as any).env?.VITE_API_URL ||
+                      'https://studyhub-api-bpco.onrender.com';
+                    const res = await fetch(`${base}/hr/documents/generate/anexo`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                      },
+                      body: JSON.stringify({
+                        employee_id: emp.id,
+                        clause_modified: clause,
+                        previous_text: prevText,
+                        new_text: newText,
+                        effective_date: effectiveDate,
+                      }),
+                    });
+                    if (!res.ok) throw new Error(`Error ${res.status}`);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `anexo_contrato_${emp.firstName}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (e: any) {
+                    alert(e?.message || 'Error al generar anexo');
+                  }
+                }}
+              >
                 <FileText size={14} /> Anexo de Contrato
               </button>
-              <button style={btnSmall}>
+              <button
+                style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
+                disabled={!certificadoEmp}
+                onClick={async () => {
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (!emp) return;
+                  const reason = prompt('Necesidad temporal que justifica horas extra:');
+                  if (!reason) return;
+                  const startDate = prompt('Fecha inicio (YYYY-MM-DD):');
+                  if (!startDate) return;
+                  const endDate = prompt('Fecha término (YYYY-MM-DD, máx 3 meses):');
+                  if (!endDate) return;
+                  try {
+                    const token = localStorage.getItem('conniku_token');
+                    const base =
+                      (import.meta as any).env?.VITE_API_URL ||
+                      'https://studyhub-api-bpco.onrender.com';
+                    const res = await fetch(`${base}/hr/documents/generate/pacto-horas-extra`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                      },
+                      body: JSON.stringify({
+                        employee_id: emp.id,
+                        reason,
+                        start_date: startDate,
+                        end_date: endDate,
+                        max_hours_daily: 2,
+                      }),
+                    });
+                    if (!res.ok) throw new Error(`Error ${res.status}`);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `pacto_horas_extra_${emp.firstName}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (e: any) {
+                    alert(e?.message || 'Error al generar pacto');
+                  }
+                }}
+              >
                 <FileText size={14} /> Pacto de Horas Extra
               </button>
-              <button style={btnSmall}>
+              <button
+                style={{ ...btnSmall, opacity: certificadoEmp ? 1 : 0.5 }}
+                disabled={!certificadoEmp}
+                onClick={async () => {
+                  const emp = employees.find((e) => e.id === certificadoEmp);
+                  if (!emp) return;
+                  const concept = prompt('Concepto del descuento (ej: Crédito CCAF, Seguro):');
+                  if (!concept) return;
+                  const pct = prompt('Porcentaje de remuneración bruta (ej: 10, máx 15):');
+                  if (!pct) return;
+                  const beneficiary = prompt('Beneficiario del pago (institución/acreedor):');
+                  if (!beneficiary) return;
+                  const startDate = prompt('Fecha inicio (YYYY-MM-DD):');
+                  if (!startDate) return;
+                  try {
+                    const token = localStorage.getItem('conniku_token');
+                    const base =
+                      (import.meta as any).env?.VITE_API_URL ||
+                      'https://studyhub-api-bpco.onrender.com';
+                    const res = await fetch(`${base}/hr/documents/generate/descuento-voluntario`, {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                      },
+                      body: JSON.stringify({
+                        employee_id: emp.id,
+                        concept,
+                        percentage: parseFloat(pct) || 0,
+                        beneficiary,
+                        start_date: startDate,
+                        periodicity: 'mensual',
+                      }),
+                    });
+                    if (!res.ok) throw new Error(`Error ${res.status}`);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `descuento_voluntario_${emp.firstName}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch (e: any) {
+                    alert(e?.message || 'Error al generar autorización');
+                  }
+                }}
+              >
                 <FileText size={14} /> Autorizacion de Descuento Voluntario
               </button>
             </div>

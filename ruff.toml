@@ -18,6 +18,8 @@ ignore = [
   "F401",   # imported but unused (a veces intencional)
   "B008",   # function call in default argument (FastAPI Depends() lo usa)
   "UP007",  # Optional vs X | None (compatibilidad)
+  "UP035",  # typing.List/Dict deprecated — necesario para Python 3.9 compat
+  "UP045",  # Optional[X] vs X | None — Pydantic en 3.9 no soporta X | None
 ]
 
 [lint.per-file-ignores]

@@ -5,6 +5,7 @@ All monetary values are in CLP unless otherwise noted.
 """
 import contextlib
 import hashlib
+import io
 import json
 import logging
 import os
@@ -2278,6 +2279,197 @@ def export_payroll_pdf(
         media_type="application/pdf",
         headers={"Content-Disposition": f"attachment; filename=liquidacion_{year}_{month:02d}.pdf"},
     )
+
+
+# ─── Generadores de documentos legales chilenos ────────────────
+
+
+class AnexoContractRequest(BaseModel):
+    employee_id: str
+    clause_modified: str  # "Tercera sobre Remuneraciones"
+    previous_text: str    # texto anterior de la cláusula
+    new_text: str         # nuevo texto/condición
+    effective_date: str   # fecha de vigencia "2026-05-01"
+    reason: str = ""      # motivo del cambio
+
+
+class PactoHorasExtraRequest(BaseModel):
+    employee_id: str
+    reason: str           # necesidad temporal que justifica
+    max_hours_daily: int = 2  # max 2 por ley
+    work_days: str = "Lunes a Viernes"
+    start_date: str
+    end_date: str         # max 3 meses desde start_date
+    compensation_type: str = "pago"  # "pago" o "feriado"
+
+
+class DescuentoVoluntarioRequest(BaseModel):
+    employee_id: str
+    concept: str          # concepto/destino del descuento
+    amount: int = 0       # monto fijo CLP (0 si es porcentaje)
+    percentage: float = 0  # % de remuneración bruta (0 si es monto fijo)
+    beneficiary: str      # institución/acreedor
+    start_date: str
+    end_date: str = ""    # vacío = indefinido
+    periodicity: str = "mensual"
+
+
+def _generate_legal_pdf(html_content: str, filename: str):
+    """Helper: genera PDF desde HTML con xhtml2pdf y retorna StreamingResponse."""
+    try:
+        from xhtml2pdf import pisa
+
+        pdf_buffer = io.BytesIO()
+        status = pisa.CreatePDF(io.StringIO(html_content), dest=pdf_buffer)
+        if status.err:
+            raise ValueError(f"xhtml2pdf error: {status.err}")
+    except Exception as exc:
+        raise HTTPException(500, f"Error al generar PDF: {exc}") from None
+
+    from fastapi.responses import StreamingResponse
+
+    pdf_buffer.seek(0)
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.post("/documents/generate/anexo")
+def generate_anexo_contrato(
+    body: AnexoContractRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Genera Anexo de Contrato de Trabajo (Art. 11 Código del Trabajo)."""
+    _require_hr_access(user)
+    emp = db.query(Employee).filter(Employee.id == body.employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    today = datetime.utcnow().strftime("%d de %B de %Y")
+    html = f"""
+    <html><body style="font-family:Arial,sans-serif; font-size:12px; padding:30px; max-width:700px; margin:0 auto;">
+    <h2 style="text-align:center;">ANEXO DE CONTRATO DE TRABAJO</h2>
+    <p style="text-align:center; color:#666;">(Art. 11 Código del Trabajo)</p>
+    <hr/>
+    <p>En Santiago, a {today}, entre:</p>
+    <p><strong>EMPLEADOR:</strong> Conniku SpA, RUT 78.395.702-7, representada legalmente.</p>
+    <p><strong>TRABAJADOR:</strong> {emp.first_name} {emp.last_name}, RUT {emp.rut}, cargo {emp.position}.</p>
+    <p>Las partes acuerdan modificar el contrato de trabajo vigente suscrito con fecha {emp.start_date}, en los siguientes términos:</p>
+    <h3>CLÁUSULA MODIFICADA</h3>
+    <p><strong>Cláusula:</strong> {body.clause_modified}</p>
+    <p><strong>Texto anterior:</strong> {body.previous_text}</p>
+    <p><strong>Nuevo texto:</strong> {body.new_text}</p>
+    <p><strong>Vigencia:</strong> A partir del {body.effective_date}</p>
+    {"<p><strong>Motivo:</strong> " + body.reason + "</p>" if body.reason else ""}
+    <p style="margin-top:20px;">En todo lo demás, el contrato de trabajo se mantiene en los mismos términos y condiciones pactados originalmente.</p>
+    <p>Se firma el presente anexo en dos ejemplares, quedando uno en poder de cada parte.</p>
+    <div style="display:flex; justify-content:space-between; margin-top:60px;">
+        <div style="text-align:center; width:45%;"><hr/><p><strong>EMPLEADOR</strong></p><p>Conniku SpA</p></div>
+        <div style="text-align:center; width:45%;"><hr/><p><strong>TRABAJADOR</strong></p><p>{emp.first_name} {emp.last_name}</p><p>RUT {emp.rut}</p></div>
+    </div>
+    <p style="margin-top:40px; font-size:10px; color:#999; text-align:center;">Documento generado por Conniku — Art. 11 Código del Trabajo</p>
+    </body></html>
+    """
+    safe_name = f"{emp.first_name}_{emp.last_name}".replace(" ", "_")
+    return _generate_legal_pdf(html, f"anexo_contrato_{safe_name}.pdf")
+
+
+@router.post("/documents/generate/pacto-horas-extra")
+def generate_pacto_horas_extra(
+    body: PactoHorasExtraRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Genera Pacto de Horas Extraordinarias (Art. 32 Código del Trabajo)."""
+    _require_hr_access(user)
+    emp = db.query(Employee).filter(Employee.id == body.employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    if body.max_hours_daily > 2:
+        raise HTTPException(400, "Máximo legal: 2 horas extraordinarias diarias (Art. 32 CT)")
+
+    today = datetime.utcnow().strftime("%d de %B de %Y")
+    compensation = "un recargo del 50% sobre el valor de la hora ordinaria" if body.compensation_type == "pago" else "días adicionales de feriado (1,5 días por cada hora extraordinaria)"
+
+    html = f"""
+    <html><body style="font-family:Arial,sans-serif; font-size:12px; padding:30px; max-width:700px; margin:0 auto;">
+    <h2 style="text-align:center;">PACTO DE HORAS EXTRAORDINARIAS</h2>
+    <p style="text-align:center; color:#666;">(Art. 32 Código del Trabajo)</p>
+    <hr/>
+    <p>En Santiago, a {today}, entre:</p>
+    <p><strong>EMPLEADOR:</strong> Conniku SpA, RUT 78.395.702-7.</p>
+    <p><strong>TRABAJADOR:</strong> {emp.first_name} {emp.last_name}, RUT {emp.rut}, cargo {emp.position}.</p>
+    <h3>ACUERDAN:</h3>
+    <p><strong>PRIMERO:</strong> Que por necesidades temporales de la empresa, específicamente: {body.reason}, se requiere que el trabajador preste servicios en jornada extraordinaria.</p>
+    <p><strong>SEGUNDO:</strong> El trabajador se compromete a trabajar un máximo de {body.max_hours_daily} hora(s) extraordinaria(s) diaria(s), los días {body.work_days}.</p>
+    <p><strong>TERCERO:</strong> El presente pacto tendrá vigencia desde el {body.start_date} hasta el {body.end_date}.</p>
+    <p><strong>CUARTO:</strong> Las horas extraordinarias serán compensadas con {compensation}, conforme al Art. 32 del Código del Trabajo.</p>
+    <p><strong>QUINTO:</strong> El presente pacto se celebra de manera voluntaria por ambas partes y podrá ser revocado por cualquiera de ellas con aviso previo.</p>
+    <div style="display:flex; justify-content:space-between; margin-top:60px;">
+        <div style="text-align:center; width:45%;"><hr/><p><strong>EMPLEADOR</strong></p><p>Conniku SpA</p></div>
+        <div style="text-align:center; width:45%;"><hr/><p><strong>TRABAJADOR</strong></p><p>{emp.first_name} {emp.last_name}</p><p>RUT {emp.rut}</p></div>
+    </div>
+    <p style="margin-top:40px; font-size:10px; color:#999; text-align:center;">Documento generado por Conniku — Art. 32 Código del Trabajo</p>
+    </body></html>
+    """
+    safe_name = f"{emp.first_name}_{emp.last_name}".replace(" ", "_")
+    return _generate_legal_pdf(html, f"pacto_horas_extra_{safe_name}.pdf")
+
+
+@router.post("/documents/generate/descuento-voluntario")
+def generate_descuento_voluntario(
+    body: DescuentoVoluntarioRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Genera Autorización de Descuento Voluntario (Art. 58 Código del Trabajo)."""
+    _require_hr_access(user)
+    emp = db.query(Employee).filter(Employee.id == body.employee_id).first()
+    if not emp:
+        raise HTTPException(404, "Empleado no encontrado")
+
+    if body.percentage > 15:
+        raise HTTPException(400, "Máximo legal: 15% de remuneración bruta por descuento individual (Art. 58 CT)")
+
+    today = datetime.utcnow().strftime("%d de %B de %Y")
+    amount_desc = f"${body.amount:,} CLP mensuales".replace(",", ".") if body.amount else f"{body.percentage}% de la remuneración bruta total"
+    end_desc = f"hasta el {body.end_date}" if body.end_date else "de forma indefinida, hasta revocación por escrito del trabajador"
+
+    html = f"""
+    <html><body style="font-family:Arial,sans-serif; font-size:12px; padding:30px; max-width:700px; margin:0 auto;">
+    <h2 style="text-align:center;">AUTORIZACIÓN DE DESCUENTO VOLUNTARIO</h2>
+    <p style="text-align:center; color:#666;">(Art. 58 Código del Trabajo)</p>
+    <hr/>
+    <p>En Santiago, a {today}, el trabajador:</p>
+    <p><strong>{emp.first_name} {emp.last_name}</strong>, RUT {emp.rut}, cargo {emp.position}, de la empresa Conniku SpA, RUT 78.395.702-7,</p>
+    <p>DECLARA y AUTORIZA lo siguiente:</p>
+    <h3>PRIMERO: VOLUNTARIEDAD</h3>
+    <p>Que de manera libre y voluntaria, sin presión alguna del empleador, autoriza el descuento descrito a continuación.</p>
+    <h3>SEGUNDO: CONCEPTO</h3>
+    <p>El descuento corresponde a: <strong>{body.concept}</strong></p>
+    <h3>TERCERO: MONTO</h3>
+    <p>El monto del descuento será de <strong>{amount_desc}</strong>.</p>
+    <h3>CUARTO: BENEFICIARIO</h3>
+    <p>El descuento será depositado/pagado a: <strong>{body.beneficiary}</strong></p>
+    <h3>QUINTO: VIGENCIA</h3>
+    <p>Este descuento se aplicará con periodicidad {body.periodicity}, comenzando el {body.start_date}, {end_desc}.</p>
+    <h3>SEXTO: LÍMITE LEGAL</h3>
+    <p>El trabajador declara conocer que, conforme al Art. 58 del Código del Trabajo, los descuentos voluntarios no pueden exceder el 15% de la remuneración bruta total por concepto individual, ni el 45% en su totalidad (sumando descuentos legales y voluntarios).</p>
+    <h3>SÉPTIMO: REVOCACIÓN</h3>
+    <p>El trabajador podrá revocar esta autorización en cualquier momento mediante comunicación escrita al empleador.</p>
+    <div style="display:flex; justify-content:space-between; margin-top:60px;">
+        <div style="text-align:center; width:45%;"><hr/><p><strong>TRABAJADOR</strong></p><p>{emp.first_name} {emp.last_name}</p><p>RUT {emp.rut}</p></div>
+        <div style="text-align:center; width:45%;"><hr/><p><strong>EMPLEADOR</strong></p><p>Conniku SpA</p></div>
+    </div>
+    <p style="margin-top:40px; font-size:10px; color:#999; text-align:center;">Documento generado por Conniku — Art. 58 Código del Trabajo</p>
+    </body></html>
+    """
+    safe_name = f"{emp.first_name}_{emp.last_name}".replace(" ", "_")
+    return _generate_legal_pdf(html, f"descuento_voluntario_{safe_name}.pdf")
 
 
 @router.get("/payroll/previred/{year}/{month}")
