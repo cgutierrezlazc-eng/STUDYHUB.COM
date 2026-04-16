@@ -4496,10 +4496,38 @@ function ContratosTab({ employees, onRefresh }: { employees: Employee[]; onRefre
                     <button style={btnSmall} onClick={() => setContractEmployee(emp)}>
                       <FileText size={14} /> Generar Contrato
                     </button>
-                    <button style={btnSmall}>
+                    <button
+                      style={btnSmall}
+                      onClick={async () => {
+                        try {
+                          const docs = await api.getEmployeeDocuments(emp.id);
+                          const contract = (Array.isArray(docs) ? docs : docs.documents || []).find(
+                            (d: any) => d.document_type === 'contrato' && !d.fes_signed
+                          );
+                          if (!contract) {
+                            alert('No hay contrato pendiente de firma para este empleado.');
+                            return;
+                          }
+                          if (
+                            confirm(
+                              `¿Firmar electrónicamente el contrato de ${emp.firstName} ${emp.lastName}? (Firma Electrónica Simple — Ley 19.799)`
+                            )
+                          ) {
+                            await api.fesSignDocument(contract.id);
+                            alert('Contrato firmado exitosamente.');
+                          }
+                        } catch (e: any) {
+                          alert(e?.message || 'Error al firmar');
+                        }
+                      }}
+                    >
                       <PenTool size={14} /> Firmar
                     </button>
-                    <button style={btnSmall}>
+                    <button
+                      style={{ ...btnSmall, opacity: 0.5, cursor: 'not-allowed' }}
+                      disabled
+                      title="Generador de Anexo — próximamente"
+                    >
                       <FileText size={14} /> Anexo
                     </button>
                   </div>
@@ -5080,7 +5108,10 @@ function PreviredTab({
             <button style={btnPrimary}>
               <Download size={16} /> Descargar Planilla Previred
             </button>
-            <button style={btnSecondary}>
+            <button
+              style={btnSecondary}
+              onClick={() => window.open('https://www.previred.com', '_blank')}
+            >
               <Globe size={16} /> Ir a Previred.com
             </button>
           </div>
