@@ -410,7 +410,9 @@ def extension_sync(
     except Exception as e:
         db.rollback()
         logger.exception("[EXT-SYNC] Error during sync: %s", e)
-        raise HTTPException(500, "Error interno durante la sincronizacion") from e
+        import traceback
+        tb = traceback.format_exc()
+        raise HTTPException(500, f"Sync error: {type(e).__name__}: {e}\n{tb[-500:]}") from e
 
 
 # ── Endpoint para obtener calificaciones ──────────────────────
