@@ -93,6 +93,7 @@ const MyTutorDashboard = React.lazy(() => import('./pages/MyTutorDashboard'));
 const ClassRoom = React.lazy(() => import('./pages/ClassRoom'));
 const PublicTutorPage = React.lazy(() => import('./pages/PublicTutorPage'));
 const MiUniversidad = React.lazy(() => import('./pages/MiUniversidad'));
+const SupportPage = React.lazy(() => import('./pages/SupportPage'));
 
 // ─── Page loading spinner ────────────────────────────────────────
 function PageLoader() {
@@ -883,6 +884,10 @@ export default function App() {
                 <Route
                   path="/checkout"
                   element={<Checkout onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/soporte"
+                  element={<SupportPage onNavigate={(path) => navigate(path)} />}
                 />
                 <Route path="*" element={<NotFound onNavigate={(path) => navigate(path)} />} />
               </Routes>

@@ -492,6 +492,12 @@ export default function Sidebar({
       >
         {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
       </button>
+      <button
+        className={`nav-item ${currentPath === '/soporte' ? 'active' : ''}`}
+        onClick={() => onNavigate('/soporte')}
+      >
+        {Icons.support(IC.support)} Soporte
+      </button>
     </nav>
   );
 }

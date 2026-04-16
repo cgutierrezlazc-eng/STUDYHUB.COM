@@ -335,6 +335,24 @@ export const Icons = {
       </svg>
     </Icon>
   ),
+  support: (c: string) => (
+    <Icon color={c}>
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth={sw}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <circle cx="12" cy="12" r="10" fill="white" fillOpacity={0.18} />
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    </Icon>
+  ),
   lightbulb: (c: string) => (
     <Icon color={c}>
       <svg
@@ -503,6 +521,7 @@ export const IC = {
   settings: '#64748B', // pizarra
   diamond: '#B05280', // rosa suave
   lightbulb: '#C07840', // ámbar sobrio
+  support: '#2A9890', // teal suave
   building: '#5865C4', // índigo suave
   library: '#C07840', // ámbar sobrio
   hr: '#7558B0', // violeta suave
