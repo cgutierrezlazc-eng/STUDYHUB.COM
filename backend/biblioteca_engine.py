@@ -152,7 +152,7 @@ class GutenbergAdapter(SourceAdapter):
         }
 
     def _normalize(self, b: dict) -> dict:
-        formats = b.get("formats", {})
+        formats = b.get("formats") or {}
         read_url = (
             formats.get("text/html")
             or formats.get("text/html; charset=utf-8")
@@ -161,13 +161,14 @@ class GutenbergAdapter(SourceAdapter):
             or ""
         )
         cover_url = formats.get("image/jpeg") or ""
-        authors = ", ".join(a.get("name", "") for a in b.get("authors", []))
-        subjects = b.get("subjects", [])
+        authors_raw = b.get("authors") or []
+        authors = ", ".join(a.get("name") or "" for a in authors_raw)
+        subjects = b.get("subjects") or []
         category = _map_category(subjects)
 
         return {
             "id": f"gutenberg-{b['id']}",
-            "title": b.get("title", "Sin título"),
+            "title": b.get("title") or "Sin título",
             "author": authors or "Autor desconocido",
             "description": "; ".join(subjects[:3]) if subjects else "",
             "category": category,
@@ -176,9 +177,9 @@ class GutenbergAdapter(SourceAdapter):
             "has_file": False,
             "embed_url": read_url,
             "cover_url": cover_url,
-            "language": ", ".join(b.get("languages", [])),
+            "language": ", ".join(b.get("languages") or []),
             "is_saved": False,
-            "views": b.get("download_count", 0),
+            "views": b.get("download_count") or 0,
             "rating": 0,
             "rating_count": 0,
             "tags": subjects[:5],
@@ -294,50 +295,49 @@ class OpenStaxAdapter(SourceAdapter):
         }
 
     def _normalize(self, item: dict) -> dict:
-        page_id = item.get("id", 0)
-        meta = item.get("meta", {})
+        page_id = item.get("id") or 0
+        meta = item.get("meta") or {}
 
-        # Autores: extraer senior authors
-        authors_raw = item.get("authors", [])
+        # Autores: extraer senior authors (todos los .get usan `or` para null-safety)
+        authors_raw = item.get("authors") or []
         author_names = []
         for a in authors_raw:
-            val = a.get("value", {})
+            val = a.get("value") or {}
             if val.get("senior_author"):
-                author_names.append(val.get("name", ""))
+                author_names.append(val.get("name") or "")
         if not author_names:
-            # Si no hay senior authors, tomar los primeros 3
             author_names = [
-                a.get("value", {}).get("name", "")
+                (a.get("value") or {}).get("name") or ""
                 for a in authors_raw[:3]
             ]
         author_str = ", ".join(n for n in author_names if n) or "OpenStax"
 
         # Subjects → categoría
-        subjects = item.get("book_subjects", [])
-        subject_names = [s.get("subject_name", "") for s in subjects]
+        subjects = item.get("book_subjects") or []
+        subject_names = [s.get("subject_name") or "" for s in subjects]
         category = _map_category(subject_names)
 
         # Categorías finas para tags
-        categories = item.get("book_categories", [])
-        tags = [c.get("subject_category", "") for c in categories if c.get("subject_category")]
+        categories = item.get("book_categories") or []
+        tags = [c.get("subject_category") or "" for c in categories if c.get("subject_category")]
         if not tags:
             tags = subject_names[:3]
 
         # Año de publicación
-        publish_date = item.get("publish_date", "")
+        publish_date = item.get("publish_date") or ""
         year = None
         if publish_date and len(publish_date) >= 4:
             with contextlib.suppress(ValueError):
                 year = int(publish_date[:4])
 
         # Descripción limpia
-        description = _strip_html(item.get("description", ""))
+        description = _strip_html(item.get("description") or "")
         if len(description) > 300:
             description = description[:297] + "..."
 
         # License
-        license_name = item.get("license_name", "")
-        license_version = item.get("license_version", "")
+        license_name = item.get("license_name") or ""
+        license_version = item.get("license_version") or ""
         license_str = f"{license_name} {license_version}".strip()
         if not license_str:
             license_str = "CC-BY 4.0"
@@ -346,7 +346,7 @@ class OpenStaxAdapter(SourceAdapter):
         is_nc = "noncommercial" in license_name.lower() or "-nc" in license_str.lower()
 
         pdf_url = item.get("high_resolution_pdf_url") or item.get("low_resolution_pdf_url") or ""
-        read_url = item.get("webview_rex_link", "")
+        read_url = item.get("webview_rex_link") or ""
 
         # Para libros NC: no ofrecer PDF (usar webview de OpenStax directo)
         if is_nc:
@@ -354,7 +354,7 @@ class OpenStaxAdapter(SourceAdapter):
 
         return {
             "id": f"openstax-{page_id}",
-            "title": item.get("title", "Sin título"),
+            "title": item.get("title") or "Sin título",
             "author": author_str,
             "description": description,
             "category": category,
@@ -362,8 +362,8 @@ class OpenStaxAdapter(SourceAdapter):
             "source_display": self.display_name,
             "has_file": False,
             "embed_url": pdf_url,
-            "cover_url": item.get("cover_url", ""),
-            "language": meta.get("locale", "en"),
+            "cover_url": item.get("cover_url") or "",
+            "language": meta.get("locale") or "en",
             "is_saved": False,
             "views": 0,
             "rating": 0,
@@ -372,13 +372,13 @@ class OpenStaxAdapter(SourceAdapter):
             "year": year,
             "pages": None,
             "license": license_str,
-            "license_url": item.get("license_url", ""),
+            "license_url": item.get("license_url") or "",
             "is_nc": is_nc,
             "copyright_holder": "Rice University",
             "read_url": read_url,
             "pdf_url": pdf_url,
             "openstax_id": page_id,
-            "openstax_slug": meta.get("slug", ""),
+            "openstax_slug": meta.get("slug") or "",
         }
 
     async def download_content(self, external_id: str) -> tuple[bytes, str, dict]:
@@ -529,7 +529,7 @@ class SciELOAdapter(SourceAdapter):
 
         return {
             "id": f"scielo-{scielo_id}",
-            "title": b.get("title", "Sin título"),
+            "title": b.get("title") or "Sin título",
             "author": author_str,
             "description": description,
             "category": category,
@@ -643,18 +643,18 @@ class InternetArchiveAdapter(SourceAdapter):
         }
 
     def _normalize(self, doc: dict) -> dict:
-        identifier = doc.get("identifier", "")
-        title = doc.get("title", "Sin título")
-        creator = _ensure_str(doc.get("creator", ""))
-        raw_desc = _ensure_str(doc.get("description", ""))
+        identifier = doc.get("identifier") or ""
+        title = doc.get("title") or "Sin título"
+        creator = _ensure_str(doc.get("creator"))
+        raw_desc = _ensure_str(doc.get("description"))
         description = _strip_html(raw_desc)
         if len(description) > 300:
             description = description[:297] + "..."
         subjects = _ensure_list(doc.get("subject"))
-        language = _ensure_str(doc.get("language", ""))
-        license_url = doc.get("licenseurl", "")
-        date_str = str(doc.get("date", ""))
-        downloads = doc.get("downloads", 0)
+        language = _ensure_str(doc.get("language"))
+        license_url = doc.get("licenseurl") or ""
+        date_str = str(doc.get("date") or "")
+        downloads = doc.get("downloads") or 0
 
         year = None
         if date_str and len(date_str) >= 4:
