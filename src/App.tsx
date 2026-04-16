@@ -11,6 +11,9 @@ import RightPanel from './components/RightPanel';
 import MobileBottomNav from './components/MobileBottomNav';
 import NewProjectModal from './components/NewProjectModal';
 import Onboarding from './components/Onboarding';
+import OnboardingWizard from './components/OnboardingWizard';
+import FocusMode from './components/FocusMode';
+import { useFocusMode } from './hooks/useFocusMode';
 import WelcomeModal from './components/WelcomeModal';
 import ErrorBoundary from './components/ErrorBoundary';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
@@ -161,6 +164,7 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { isFocusMode, exitFocus } = useFocusMode();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -906,13 +910,19 @@ export default function App() {
       )}
 
       {showOnboarding && (
-        <Onboarding
+        <OnboardingWizard
           onComplete={() => {
             setShowOnboarding(false);
+            api.completeOnboarding().catch(() => {});
           }}
-          onNavigate={(path) => navigate(path)}
+          onSkip={() => {
+            setShowOnboarding(false);
+            api.completeOnboarding().catch(() => {});
+          }}
         />
       )}
+
+      {isFocusMode && <FocusMode onExit={exitFocus} />}
 
       {showMobileUI && (
         <MobileBottomNav currentPath={location.pathname} onNavigate={(path) => navigate(path)} />

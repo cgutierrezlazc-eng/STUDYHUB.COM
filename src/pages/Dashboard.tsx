@@ -4,6 +4,9 @@ import { useI18n } from '../services/i18n';
 import { api } from '../services/api';
 import { Project } from '../types';
 import MilestonePopup from '../components/MilestonePopup';
+import RitualScreen from '../components/RitualScreen';
+import StreakBanner from '../components/StreakBanner';
+import CelebrationModal from '../components/CelebrationModal';
 import {
   Flame,
   BookOpen,
@@ -489,69 +492,26 @@ export default function Dashboard({ projects, onNavigate, onNewProject }: Props)
   const isNewUser = projects.length === 0 && (stats?.xp || 0) < 50;
   const dailyQuote = getDailyQuote();
 
+  // Celebration milestone
+  const [celebrationMilestone, setCelebrationMilestone] = useState<number | null>(null);
+  useEffect(() => {
+    const streakDays = stats?.streakDays || 0;
+    const milestones = [7, 14, 30, 60, 100];
+    if (milestones.includes(streakDays)) {
+      const key = `celebration_${streakDays}`;
+      if (!localStorage.getItem(key)) {
+        setCelebrationMilestone(streakDays);
+        localStorage.setItem(key, '1');
+      }
+    }
+  }, [stats?.streakDays]);
+
   return (
     <>
       <div className="page-header page-enter">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <div>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-              {getGreetingIcon()} {t(`welcome.${user?.gender || 'unspecified'}`)}, {user?.firstName}
-              !
-            </h2>
-            <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              {DAY_NAMES[now.getDay()]} {now.getDate()} de {MONTH_NAMES[now.getMonth()]}{' '}
-              {now.getFullYear()} · Semana {weekNum}
-            </p>
-          </div>
-
-          {/* Streak — solo usuarios activos */}
-          {!isNewUser && stats && (stats.streakDays || 0) > 0 && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                background: 'linear-gradient(135deg, #ff6b3520, #ff9a5620)',
-                border: '2px solid #ff6b35',
-                borderRadius: 16,
-                padding: '10px 18px',
-              }}
-            >
-              <span>{Flame({ size: 28, color: '#ff6b35' })}</span>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: '#ff6b35', lineHeight: 1 }}>
-                  {stats.streakDays || 0}
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>
-                  {stats.streakDays === 1 ? 'día' : 'días'} de racha
-                </div>
-              </div>
-              {(stats.streakFreezes || 0) > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                    background: 'var(--bg-secondary)',
-                    borderRadius: 8,
-                    padding: '4px 8px',
-                    fontSize: 11,
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  {Shield({ size: 14 })} {stats.streakFreezes}
-                </div>
-              )}
-            </div>
-          )}
+        <RitualScreen onNavigate={onNavigate} />
+        <div style={{ marginTop: 12 }}>
+          <StreakBanner />
         </div>
       </div>
 
@@ -1310,6 +1270,13 @@ export default function Dashboard({ projects, onNavigate, onNewProject }: Props)
           description={milestonePopup.description}
           icon={milestonePopup.icon}
           onClose={() => setMilestonePopup(null)}
+        />
+      )}
+
+      {celebrationMilestone && (
+        <CelebrationModal
+          milestoneDays={celebrationMilestone}
+          onClose={() => setCelebrationMilestone(null)}
         />
       )}
     </>
