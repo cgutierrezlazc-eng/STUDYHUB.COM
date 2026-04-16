@@ -307,7 +307,7 @@ def flagged_messages(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    query = db.query(Message).filter(Message.is_flagged, not Message.is_deleted)
+    query = db.query(Message).filter(Message.is_flagged, Message.is_deleted.is_(False))
     total = query.count()
     messages = query.order_by(desc(Message.created_at)).offset((page - 1) * per_page).limit(per_page).all()
 
