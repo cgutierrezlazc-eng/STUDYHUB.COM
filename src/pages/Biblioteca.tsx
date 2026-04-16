@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { BookOpen, Search, Star, ChevronRight } from '../components/Icons';
+import PDFReader from '../components/PDFReader';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -219,12 +220,46 @@ export default function Biblioteca({ onNavigate }: Props) {
     }
   };
 
-  const openReader = (doc: LibDoc) => {
+  // ── Progreso de lectura ──
+  const [savedProgress, setSavedProgress] = useState<{
+    current_page: number;
+    total_pages: number;
+  } | null>(null);
+
+  const isPDFSource = (doc: LibDoc): boolean =>
+    doc.source_type === 'openstax' ||
+    doc.source_type === 'scielo' ||
+    (doc.source_type === 'user_shared' && doc.has_file && (doc.embed_url || '').endsWith('.pdf'));
+
+  const openReader = async (doc: LibDoc) => {
     setSelected(null);
     setIframeLoaded(false);
     setIframeError(false);
+    setSavedProgress(null);
     setReading(doc);
+
+    // Cargar progreso guardado para PDFs
+    if (isPDFSource(doc)) {
+      const extId = doc.id.replace(/^(openstax|scielo|gutenberg|ia)-/, '');
+      try {
+        const progress = await api.getReadingProgress(doc.source_type, extId);
+        if (progress && progress.current_page > 1) {
+          setSavedProgress(progress);
+        }
+      } catch {
+        // Sin progreso guardado — empezar desde página 1
+      }
+    }
   };
+
+  const handlePageChange = useCallback(
+    (page: number, total: number) => {
+      if (!reading) return;
+      const extId = reading.id.replace(/^(openstax|scielo|gutenberg|ia)-/, '');
+      api.saveReadingProgress(reading.source_type, extId, page, total).catch(() => {});
+    },
+    [reading]
+  );
 
   const openCloneModal = async (doc: LibDoc) => {
     setCloneDoc(doc);
@@ -1194,159 +1229,176 @@ export default function Biblioteca({ onNavigate }: Props) {
           }}
         >
           <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          {/* Toolbar */}
-          <div
-            style={{
-              height: 48,
-              background: '#0F172A',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 16px',
-              flexShrink: 0,
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{reading.title}</span>
-            <div style={{ display: 'flex', gap: 8 }}>
-              {reading.source_type === 'user_shared' && (
-                <button
-                  onClick={() => toggleSave(reading)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: reading.is_saved ? '#F59E0B' : '#94A3B8',
-                    fontSize: 13,
-                  }}
-                >
-                  <Star size={16} fill={reading.is_saved ? 'currentColor' : 'none'} />{' '}
-                  {reading.is_saved ? 'Guardado' : 'Guardar'}
-                </button>
-              )}
-              <button
-                onClick={() => setReading(null)}
-                style={{
-                  background: 'rgba(255,255,255,0.1)',
-                  border: 'none',
-                  color: '#fff',
-                  borderRadius: 6,
-                  padding: '4px 12px',
-                  cursor: 'pointer',
-                  fontSize: 13,
-                }}
-              >
-                ✕ Cerrar
-              </button>
-            </div>
-          </div>
 
-          {/* Iframe con loading state */}
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            {!iframeLoaded && (
-              <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: '#0D1526',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 16,
-                  zIndex: 1,
-                }}
-              >
-                {iframeError ? (
-                  <>
-                    <div style={{ fontSize: 40, marginBottom: 4 }}>⚠️</div>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
-                      No se pudo cargar el libro
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
-                      El servidor no respondió a tiempo
-                    </p>
-                    <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-                      <button
-                        onClick={() => {
-                          setIframeError(false);
-                          setIframeLoaded(false);
-                          setIframeRetry((r) => r + 1);
-                        }}
-                        style={{
-                          padding: '8px 16px',
-                          borderRadius: 8,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                          background: 'rgba(255,255,255,0.1)',
-                          color: '#fff',
-                          fontSize: 13,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Reintentar
-                      </button>
-                      {(reading.embed_url || reading.gutenberg_id) && (
-                        <a
-                          href={
-                            reading.source_type === 'gutenberg' && reading.gutenberg_id
-                              ? `https://www.gutenberg.org/ebooks/${reading.gutenberg_id}`
-                              : reading.embed_url || '#'
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{
-                            padding: '8px 16px',
-                            borderRadius: 8,
-                            border: 'none',
-                            background: '#3b82f6',
-                            color: '#fff',
-                            fontSize: 13,
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Abrir en la fuente original →
-                        </a>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      style={{
-                        width: 40,
-                        height: 40,
-                        border: '3px solid rgba(255,255,255,0.1)',
-                        borderTopColor: '#3b82f6',
-                        borderRadius: '50%',
-                        animation: 'spin 0.9s linear infinite',
-                      }}
-                    />
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0 }}>
-                      Cargando libro…
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
-                      Esto puede tardar algunos segundos
-                    </p>
-                  </>
-                )}
-              </div>
-            )}
-            <iframe
-              key={`${getViewUrl(reading)}_${iframeRetry}`}
-              src={getViewUrl(reading)}
-              style={{
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                display: iframeLoaded ? 'block' : 'none',
-                background: '#0D1526',
-              }}
+          {isPDFSource(reading) ? (
+            /* ── PDF Reader (pdfjs-dist) ── */
+            <PDFReader
+              url={getViewUrl(reading)}
               title={reading.title}
-              allowFullScreen
-              onLoad={() => setIframeLoaded(true)}
+              initialPage={savedProgress?.current_page}
+              onPageChange={handlePageChange}
+              onClose={() => setReading(null)}
               onError={() => setIframeError(true)}
             />
-          </div>
+          ) : (
+            <>
+              {/* Toolbar para iframe */}
+              <div
+                style={{
+                  height: 48,
+                  background: '#0F172A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '0 16px',
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>
+                  {reading.title}
+                </span>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  {reading.source_type === 'user_shared' && (
+                    <button
+                      onClick={() => toggleSave(reading)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: reading.is_saved ? '#F59E0B' : '#94A3B8',
+                        fontSize: 13,
+                      }}
+                    >
+                      <Star size={16} fill={reading.is_saved ? 'currentColor' : 'none'} />{' '}
+                      {reading.is_saved ? 'Guardado' : 'Guardar'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setReading(null)}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      border: 'none',
+                      color: '#fff',
+                      borderRadius: 6,
+                      padding: '4px 12px',
+                      cursor: 'pointer',
+                      fontSize: 13,
+                    }}
+                  >
+                    ✕ Cerrar
+                  </button>
+                </div>
+              </div>
+
+              {/* Iframe con loading state */}
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                {!iframeLoaded && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: '#0D1526',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 16,
+                      zIndex: 1,
+                    }}
+                  >
+                    {iframeError ? (
+                      <>
+                        <div style={{ fontSize: 40, marginBottom: 4 }}>⚠️</div>
+                        <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
+                          No se pudo cargar el libro
+                        </p>
+                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
+                          El servidor no respondió a tiempo
+                        </p>
+                        <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                          <button
+                            onClick={() => {
+                              setIframeError(false);
+                              setIframeLoaded(false);
+                              setIframeRetry((r) => r + 1);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              borderRadius: 8,
+                              border: '1px solid rgba(255,255,255,0.2)',
+                              background: 'rgba(255,255,255,0.1)',
+                              color: '#fff',
+                              fontSize: 13,
+                              cursor: 'pointer',
+                            }}
+                          >
+                            Reintentar
+                          </button>
+                          {(reading.embed_url || reading.gutenberg_id) && (
+                            <a
+                              href={
+                                reading.source_type === 'gutenberg' && reading.gutenberg_id
+                                  ? `https://www.gutenberg.org/ebooks/${reading.gutenberg_id}`
+                                  : reading.embed_url || '#'
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                padding: '8px 16px',
+                                borderRadius: 8,
+                                border: 'none',
+                                background: '#3b82f6',
+                                color: '#fff',
+                                fontSize: 13,
+                                textDecoration: 'none',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              Abrir en la fuente original →
+                            </a>
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            border: '3px solid rgba(255,255,255,0.1)',
+                            borderTopColor: '#3b82f6',
+                            borderRadius: '50%',
+                            animation: 'spin 0.9s linear infinite',
+                          }}
+                        />
+                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0 }}>
+                          Cargando libro…
+                        </p>
+                        <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
+                          Esto puede tardar algunos segundos
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+                <iframe
+                  key={`${getViewUrl(reading)}_${iframeRetry}`}
+                  src={getViewUrl(reading)}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                    display: iframeLoaded ? 'block' : 'none',
+                    background: '#0D1526',
+                  }}
+                  title={reading.title}
+                  allowFullScreen
+                  onLoad={() => setIframeLoaded(true)}
+                  onError={() => setIframeError(true)}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
     </>

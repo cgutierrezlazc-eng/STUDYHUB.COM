@@ -37,6 +37,7 @@ from database import (
     LibraryDocument,
     LibraryDocumentRating,
     LibraryDocumentSave,
+    ReadingProgress,
     User,
     gen_id,
     get_db,
@@ -446,6 +447,66 @@ def cache_stats(user: User = Depends(get_current_user)):
     stats = get_cache_stats()
     stats["search_cache_entries"] = len(_search_cache)
     return stats
+
+
+# ─── GET/POST /biblioteca/v2/progress ─────────────────────────
+# Progreso de lectura por libro
+
+class ProgressRequest(BaseModel):
+    current_page: int  # >= 1
+    total_pages: int   # >= 0
+
+
+@router.get("/v2/progress/{source}/{external_id}")
+def get_progress(
+    source: str,
+    external_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Obtener progreso de lectura de un libro."""
+    progress = db.query(ReadingProgress).filter_by(
+        user_id=user.id, source=source, external_id=external_id,
+    ).first()
+    if not progress:
+        return {"current_page": 1, "total_pages": 0, "last_read_at": None}
+    return {
+        "current_page": progress.current_page,
+        "total_pages": progress.total_pages,
+        "last_read_at": progress.last_read_at.isoformat() if progress.last_read_at else None,
+    }
+
+
+@router.post("/v2/progress/{source}/{external_id}")
+def save_progress(
+    source: str,
+    external_id: str,
+    payload: ProgressRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Guardar o actualizar progreso de lectura (upsert)."""
+    if payload.current_page < 1 or payload.total_pages < 0:
+        raise HTTPException(400, "Valores de página inválidos")
+    progress = db.query(ReadingProgress).filter_by(
+        user_id=user.id, source=source, external_id=external_id,
+    ).first()
+    if progress:
+        progress.current_page = payload.current_page
+        progress.total_pages = payload.total_pages
+        progress.last_read_at = datetime.utcnow()
+    else:
+        progress = ReadingProgress(
+            id=gen_id(),
+            user_id=user.id,
+            source=source,
+            external_id=external_id,
+            current_page=payload.current_page,
+            total_pages=payload.total_pages,
+        )
+        db.add(progress)
+    db.commit()
+    return {"success": True}
 
 
 # ─── GET /biblioteca/v2/search ────────────────────────────────

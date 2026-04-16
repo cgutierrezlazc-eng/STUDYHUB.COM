@@ -8,10 +8,19 @@ from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import (
-    create_engine, Column, String, Integer, Boolean, DateTime, Text,
-    ForeignKey, Float, UniqueConstraint, Index
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    create_engine,
 )
-from sqlalchemy.orm import declarative_base, sessionmaker, relationship
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 # Use persistent disk mount if available (Render), fallback to home dir (local dev)
 _persistent_mount = os.environ.get("RENDER_DISK_MOUNT_PATH")
@@ -27,7 +36,7 @@ if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
     engine = create_engine(DATABASE_URL, echo=False, pool_pre_ping=True, pool_size=5, max_overflow=10)
-    print(f"Using PostgreSQL database")
+    print("Using PostgreSQL database")
 else:
     engine = create_engine(f"sqlite:///{DB_PATH}", echo=False)
     print(f"Using SQLite database at {DB_PATH}")
@@ -541,6 +550,18 @@ class LibraryDocumentRating(Base):
     rating = Column(Integer, nullable=False)   # 1-5
     created_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("document_id", "user_id"),)
+
+
+class ReadingProgress(Base):
+    __tablename__ = "reading_progress"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    source = Column(String(30), nullable=False)
+    external_id = Column(String(100), nullable=False)
+    current_page = Column(Integer, default=1)
+    total_pages = Column(Integer, default=0)
+    last_read_at = Column(DateTime, default=datetime.utcnow)
+    __table_args__ = (UniqueConstraint("user_id", "source", "external_id"),)
 
 
 class DocumentRating(Base):
@@ -1455,7 +1476,8 @@ class ChatUsage(Base):
 
 def _ensure_columns():
     """Add missing columns to existing tables (lightweight auto-migration)."""
-    from sqlalchemy import text as _t, inspect as _inspect
+    from sqlalchemy import inspect as _inspect
+    from sqlalchemy import text as _t
     insp = _inspect(engine)
     migrations = [
         # cv_profiles
@@ -1789,6 +1811,7 @@ def init_db():
 def _seed_owner_cv(db, owner):
     """Populate owner CV with full professional data on startup using raw SQL."""
     import json as _json
+
     from sqlalchemy import text as _text
     try:
         # Check if cv_profiles table exists and if owner already has a CV

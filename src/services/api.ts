@@ -2037,6 +2037,13 @@ export const api = {
     if (params?.page) p.set('page', String(params.page));
     return request(`/biblioteca/v2/search?${p.toString()}`);
   },
+  getReadingProgress: (source: string, externalId: string) =>
+    request(`/biblioteca/v2/progress/${source}/${externalId}`),
+  saveReadingProgress: (source: string, externalId: string, page: number, total: number) =>
+    request(`/biblioteca/v2/progress/${source}/${externalId}`, {
+      method: 'POST',
+      body: JSON.stringify({ current_page: page, total_pages: total }),
+    }),
 
   // ─── Collaborative Documents (Trabajos Grupales) ────────────────
   collabList: (status = 'active') => request(`/collab?status=${status}`),
