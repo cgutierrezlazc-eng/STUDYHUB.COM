@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conniku — Command Bar (Cmd+K) Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent:       #4F46E5;
+      --accent-hover: #6366F1;
+      --accent-glow:  rgba(79, 70, 229, 0.18);
+      --teal:         #0D9488;
+      --teal-soft:    rgba(13, 148, 136, 0.15);
+      --bg:           #0F172A;
+      --card:         #1E293B;
+      --card-hover:   #243047;
+      --border:       rgba(255,255,255,0.07);
+      --border-focus: rgba(79, 70, 229, 0.55);
+      --text-primary: #F1F5F9;
+      --text-secondary:#94A3B8;
+      --text-muted:   #475569;
+      --shortcut-bg:  rgba(255,255,255,0.06);
+      --shortcut-border: rgba(255,255,255,0.10);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      overflow: hidden;
+    }
+
+    /* ── App background (simulate the Conniku UI behind the overlay) ── */
+    .app-bg {
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79,70,229,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 80% 85%, rgba(13,148,136,0.09) 0%, transparent 55%),
+        var(--bg);
+      z-index: 0;
+    }
+
+    /* Fake sidebar for context */
+    .fake-sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 220px;
+      background: #131c2e;
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .fake-logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent-hover);
+      letter-spacing: -0.5px;
+      margin-bottom: 18px;
+      padding: 0 8px;
+    }
+    .fake-logo span { color: var(--teal); }
+    .fake-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: default;
+    }
+    .fake-nav-item.active {
+      background: rgba(79,70,229,0.15);
+      color: var(--accent-hover);
+    }
+    .fake-nav-item .nav-icon { font-size: 15px; }
+
+    .fake-main {
+      position: fixed;
+      left: 220px; right: 0; top: 0; bottom: 0;
+      z-index: 1;
+      padding: 28px 32px;
+    }
+    .fake-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px;
+    }
+    .fake-title { font-size: 20px; font-weight: 600; color: var(--text-primary); }
+    .fake-cmd-hint {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px; color: var(--text-muted);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .fake-cmd-hint:hover {
+      background: rgba(79,70,229,0.1);
+      border-color: var(--border-focus);
+      color: var(--text-secondary);
+    }
+    .fake-cmd-hint kbd {
+      background: var(--shortcut-bg);
+      border: 1px solid var(--shortcut-border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-family: inherit;
+      font-size: 11px;
+    }
+
+    /* ── Backdrop ── */
+    .backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.18s ease;
+      pointer-events: none;
+    }
+    .backdrop.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── Command modal ── */
+    .cmd-modal {
+      position: fixed;
+      top: 18%; left: 50%;
+      transform: translateX(-50%) translateY(-12px);
+      width: min(640px, calc(100vw - 32px));
+      background: #16213a;
+      border: 1px solid rgba(79,70,229,0.3);
+      border-radius: 16px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.04),
+        0 24px 64px rgba(0,0,0,0.65),
+        0 0 80px rgba(79,70,229,0.12);
+      z-index: 101;
+      overflow: hidden;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
+    }
+    .cmd-modal.visible {
+      opacity: 1;
+      pointer-events: all;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── Search input area ── */
+    .cmd-search {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .cmd-search-icon {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+    .cmd-search.has-value .cmd-search-icon { color: var(--accent-hover); }
+
+    .cmd-input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-primary);
+      caret-color: var(--accent-hover);
+    }
+    .cmd-input::placeholder { color: var(--text-muted); }
+
+    .cmd-clear {
+      flex-shrink: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 22px; height: 22px;
+      border: none;
+      background: rgba(255,255,255,0.07);
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 13px;
+      transition: all 0.12s;
+    }
+    .cmd-clear:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+    .cmd-search.has-value .cmd-clear { display: flex; }
+
+    /* ── Results area ── */
+    .cmd-results {
+      max-height: 420px;
+      overflow-y: auto;
+      padding: 8px 0;
+      scroll-behavior: smooth;
+    }
+    .cmd-results::-webkit-scrollbar { width: 4px; }
+    .cmd-results::-webkit-scrollbar-track { background: transparent; }
+    .cmd-results::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+    /* ── Category group ── */
+    .cmd-group { margin-bottom: 4px; }
+    .cmd-group-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 10px 20px 6px;
+    }
+
+    /* ── Individual result ── */
+    .cmd-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 16px;
+      margin: 0 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.08s, box-shadow 0.08s;
+      position: relative;
+      outline: none;
+    }
+    .cmd-item:hover,
+    .cmd-item.selected {
+      background: var(--card-hover);
+    }
+    .cmd-item.selected {
+      background: rgba(79,70,229,0.18);
+      box-shadow: inset 0 0 0 1px rgba(79,70,229,0.25);
+    }
+    .cmd-item.selected .cmd-item-title { color: var(--text-primary); }
+
+    .cmd-item-icon {
+      flex-shrink: 0;
+      width: 34px; height: 34px;
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.1s;
+    }
+    .cmd-item.selected .cmd-item-icon {
+      background: var(--accent-glow);
+      border-color: rgba(79,70,229,0.3);
+    }
+
+    .cmd-item-body { flex: 1; min-width: 0; }
+    .cmd-item-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.08s;
+    }
+    .cmd-item-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cmd-item-shortcut {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .cmd-item-shortcut kbd {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--shortcut-bg);
+      border: 1px solid var(--shortcut-border);
+      border-radius: 5px;
+      padding: 2px 6px;
+      line-height: 1.4;
+    }
+    .cmd-item.selected .cmd-item-shortcut kbd {
+      background: rgba(79,70,229,0.12);
+      border-color: rgba(79,70,229,0.25);
+      color: var(--accent-hover);
+    }
+
+    /* Highlight match */
+    .cmd-item-title mark {
+      background: none;
+      color: var(--accent-hover);
+      font-weight: 600;
+    }
+
+    /* Empty state */
+    .cmd-empty {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 36px 20px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .cmd-empty-icon { font-size: 30px; opacity: 0.5; }
+
+    /* ── Footer ── */
+    .cmd-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 18px;
+      border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.15);
+    }
+    .cmd-footer-hints {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .cmd-hint-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .cmd-hint-item kbd {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--shortcut-bg);
+      border: 1px solid var(--shortcut-border);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+    .cmd-footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .cmd-footer-brand strong { color: var(--accent-hover); font-weight: 600; }
+
+    /* ── Trigger button (demo) ── */
+    .demo-trigger {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 200;
+      box-shadow: 0 4px 24px rgba(79,70,229,0.4);
+      transition: all 0.15s;
+      letter-spacing: -0.2px;
+    }
+    .demo-trigger:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 6px 32px rgba(79,70,229,0.55);
+      transform: translateX(-50%) translateY(-1px);
+    }
+    .demo-trigger kbd {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 5px;
+      padding: 2px 7px;
+    }
+
+    /* ── Separator between groups ── */
+    .cmd-separator {
+      height: 1px;
+      background: var(--border);
+      margin: 6px 16px;
+    }
+
+    /* ── Recent tag ── */
+    .tag-recent {
+      display: inline-flex;
+      align-items: center;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: var(--teal);
+      background: var(--teal-soft);
+      border: 1px solid rgba(13,148,136,0.2);
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* scrollbar for webkit */
+    * { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+
+    @media (max-width: 640px) {
+      .fake-sidebar { display: none; }
+      .fake-main { left: 0; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Simulated app background ── -->
+<div class="app-bg"></div>
+
+<!-- Fake sidebar -->
+<div class="fake-sidebar">
+  <div class="fake-logo">Conni<span>ku</span></div>
+  <div class="fake-nav-item active">
+    <span class="nav-icon">🏠</span> Inicio
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">📚</span> Asignaturas
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">🧠</span> Estudio
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">📖</span> Biblioteca
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">👥</span> Grupos
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">📅</span> Calendario
+  </div>
+  <div class="fake-nav-item">
+    <span class="nav-icon">🏛️</span> Universidad
+  </div>
+</div>
+
+<!-- Fake main content -->
+<div class="fake-main">
+  <div class="fake-topbar">
+    <div class="fake-title">Inicio</div>
+    <div class="fake-cmd-hint" id="topbarHint">
+      <span>Buscar o ejecutar...</span>
+      <kbd>⌘</kbd><kbd>K</kbd>
+    </div>
+  </div>
+</div>
+
+<!-- ── Backdrop ── -->
+<div class="backdrop" id="backdrop"></div>
+
+<!-- ── Command modal ── -->
+<div class="cmd-modal" id="cmdModal" role="dialog" aria-modal="true" aria-label="Barra de comandos">
+
+  <!-- Search -->
+  <div class="cmd-search" id="cmdSearch">
+    <svg class="cmd-search-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="8.5" cy="8.5" r="5.5"/>
+      <path d="M15 15l-3-3" stroke-linecap="round"/>
+    </svg>
+    <input
+      type="text"
+      class="cmd-input"
+      id="cmdInput"
+      placeholder="Buscar asignaturas, herramientas, páginas..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button class="cmd-clear" id="cmdClear" aria-label="Limpiar búsqueda">✕</button>
+  </div>
+
+  <!-- Results -->
+  <div class="cmd-results" id="cmdResults">
+
+    <div class="cmd-group" data-group="asignaturas">
+      <div class="cmd-group-label">Asignaturas</div>
+
+      <div class="cmd-item" data-title="Cálculo II" data-sub="MAT2001 · Matemáticas" tabindex="-1">
+        <div class="cmd-item-icon">📐</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Cálculo II <span class="tag-recent">Reciente</span></div>
+          <div class="cmd-item-sub">MAT2001 · Matemáticas</div>
+        </div>
+        <div class="cmd-item-shortcut"></div>
+      </div>
+
+      <div class="cmd-item" data-title="Física Mecánica" data-sub="FIS1010 · Ciencias Básicas" tabindex="-1">
+        <div class="cmd-item-icon">⚙️</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Física Mecánica</div>
+          <div class="cmd-item-sub">FIS1010 · Ciencias Básicas</div>
+        </div>
+        <div class="cmd-item-shortcut"></div>
+      </div>
+    </div>
+
+    <div class="cmd-separator"></div>
+
+    <div class="cmd-group" data-group="herramientas">
+      <div class="cmd-group-label">Herramientas</div>
+
+      <div class="cmd-item" data-title="Generar Quiz" data-sub="Crea preguntas de práctica automáticamente" tabindex="-1">
+        <div class="cmd-item-icon">🎯</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Generar Quiz</div>
+          <div class="cmd-item-sub">Crea preguntas de práctica automáticamente</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>⌘</kbd><kbd>Q</kbd>
+        </div>
+      </div>
+
+      <div class="cmd-item" data-title="Crear Flashcards" data-sub="Convierte tus apuntes en tarjetas de memoria" tabindex="-1">
+        <div class="cmd-item-icon">🃏</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Crear Flashcards</div>
+          <div class="cmd-item-sub">Convierte tus apuntes en tarjetas de memoria</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>⌘</kbd><kbd>F</kbd>
+        </div>
+      </div>
+
+      <div class="cmd-item" data-title="Subir documento" data-sub="PDF, Word, imagen — máx. 25 MB" tabindex="-1">
+        <div class="cmd-item-icon">📤</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Subir documento</div>
+          <div class="cmd-item-sub">PDF, Word, imagen — máx. 25 MB</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>⌘</kbd><kbd>U</kbd>
+        </div>
+      </div>
+
+      <div class="cmd-item" data-title="Buscar en mis notas" data-sub="Búsqueda semántica entre todos tus apuntes" tabindex="-1">
+        <div class="cmd-item-icon">🔍</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Buscar en mis notas</div>
+          <div class="cmd-item-sub">Búsqueda semántica entre todos tus apuntes</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>⌘</kbd><kbd>N</kbd>
+        </div>
+      </div>
+    </div>
+
+    <div class="cmd-separator"></div>
+
+    <div class="cmd-group" data-group="paginas">
+      <div class="cmd-group-label">Páginas</div>
+
+      <div class="cmd-item" data-title="Biblioteca Virtual" data-sub="+13 fuentes académicas unificadas" tabindex="-1">
+        <div class="cmd-item-icon">📖</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Biblioteca Virtual</div>
+          <div class="cmd-item-sub">+13 fuentes académicas unificadas</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>G</kbd><kbd>B</kbd>
+        </div>
+      </div>
+
+      <div class="cmd-item" data-title="Mi Universidad" data-sub="Noticias, eventos y trámites de tu casa de estudios" tabindex="-1">
+        <div class="cmd-item-icon">🏛️</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Mi Universidad</div>
+          <div class="cmd-item-sub">Noticias, eventos y trámites de tu casa de estudios</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>G</kbd><kbd>U</kbd>
+        </div>
+      </div>
+    </div>
+
+    <div class="cmd-separator" id="separatorAcciones"></div>
+
+    <div class="cmd-group" data-group="acciones">
+      <div class="cmd-group-label">Acciones rápidas</div>
+
+      <div class="cmd-item" data-title="Nuevo grupo de estudio" data-sub="Crea una sala colaborativa con tus compañeros" tabindex="-1">
+        <div class="cmd-item-icon">👥</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Nuevo grupo de estudio</div>
+          <div class="cmd-item-sub">Crea una sala colaborativa con tus compañeros</div>
+        </div>
+        <div class="cmd-item-shortcut"></div>
+      </div>
+
+      <div class="cmd-item" data-title="Ver calendario de pruebas" data-sub="Fechas importantes de tus ramos" tabindex="-1">
+        <div class="cmd-item-icon">📅</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Ver calendario de pruebas</div>
+          <div class="cmd-item-sub">Fechas importantes de tus ramos</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>G</kbd><kbd>C</kbd>
+        </div>
+      </div>
+
+      <div class="cmd-item" data-title="Cambiar tema" data-sub="Alterna entre modo oscuro y claro" tabindex="-1">
+        <div class="cmd-item-icon">🌗</div>
+        <div class="cmd-item-body">
+          <div class="cmd-item-title">Cambiar tema</div>
+          <div class="cmd-item-sub">Alterna entre modo oscuro y claro</div>
+        </div>
+        <div class="cmd-item-shortcut">
+          <kbd>⌘</kbd><kbd>.</kbd>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Empty state -->
+    <div class="cmd-empty" id="cmdEmpty">
+      <div class="cmd-empty-icon">🔎</div>
+      <div>Sin resultados para "<span id="emptyQuery"></span>"</div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="cmd-footer">
+    <div class="cmd-footer-hints">
+      <div class="cmd-hint-item"><kbd>↑</kbd><kbd>↓</kbd> navegar</div>
+      <div class="cmd-hint-item"><kbd>Enter</kbd> seleccionar</div>
+      <div class="cmd-hint-item"><kbd>Esc</kbd> cerrar</div>
+    </div>
+    <div class="cmd-footer-brand">
+      <strong>Conniku</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Demo trigger -->
+<button class="demo-trigger" id="demoTrigger">
+  Abrir Command Bar
+  <kbd>⌘K</kbd>
+</button>
+
+<script>
+  (function () {
+    const modal    = document.getElementById('cmdModal');
+    const backdrop = document.getElementById('backdrop');
+    const input    = document.getElementById('cmdInput');
+    const clearBtn = document.getElementById('cmdClear');
+    const search   = document.getElementById('cmdSearch');
+    const results  = document.getElementById('cmdResults');
+    const empty    = document.getElementById('cmdEmpty');
+    const emptyQ   = document.getElementById('emptyQuery');
+    const trigger  = document.getElementById('demoTrigger');
+    const topbar   = document.getElementById('topbarHint');
+
+    let isOpen = false;
+    let selectedIdx = -1;
+    let visibleItems = [];
+
+    // ── Open / close ──────────────────────────────────────
+    function open() {
+      isOpen = true;
+      modal.classList.add('visible');
+      backdrop.classList.add('visible');
+      input.value = '';
+      search.classList.remove('has-value');
+      renderAll('');
+      selectedIdx = 0;
+      updateSelected();
+      requestAnimationFrame(() => input.focus());
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close() {
+      isOpen = false;
+      modal.classList.remove('visible');
+      backdrop.classList.remove('visible');
+      input.blur();
+      document.body.style.overflow = '';
+    }
+
+    // ── Render / filter ───────────────────────────────────
+    const allItems = Array.from(results.querySelectorAll('.cmd-item'));
+    const groups   = Array.from(results.querySelectorAll('.cmd-group'));
+    const seps     = Array.from(results.querySelectorAll('.cmd-separator'));
+
+    function normalize(str) {
+      return str.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function highlight(text, query) {
+      if (!query) return text;
+      const norm  = normalize(text);
+      const normQ = normalize(query);
+      const idx   = norm.indexOf(normQ);
+      if (idx === -1) return text;
+      return (
+        text.slice(0, idx) +
+        '<mark>' + text.slice(idx, idx + query.length) + '</mark>' +
+        text.slice(idx + query.length)
+      );
+    }
+
+    function renderAll(query) {
+      const q = query.trim();
+      visibleItems = [];
+
+      // Filter items
+      allItems.forEach(item => {
+        const title = item.dataset.title || '';
+        const sub   = item.dataset.sub || '';
+        const match = !q || normalize(title).includes(normalize(q)) || normalize(sub).includes(normalize(q));
+
+        item.style.display = match ? '' : 'none';
+        if (match) {
+          // Highlight title
+          const titleEl = item.querySelector('.cmd-item-title');
+          // Strip existing marks
+          titleEl.innerHTML = titleEl.innerHTML.replace(/<\/?mark>/g, '').replace(/<span.*?<\/span>/, m => m); // keep tags intact
+          const rawTitle = titleEl.textContent;
+          const tagMatch = titleEl.querySelector('.tag-recent');
+          const tagHTML  = tagMatch ? tagMatch.outerHTML : '';
+          const cleanTitle = rawTitle.replace('Reciente', '').trim();
+          titleEl.innerHTML = highlight(cleanTitle, q) + (tagHTML ? ' ' + tagHTML : '');
+
+          visibleItems.push(item);
+        }
+      });
+
+      // Show/hide groups
+      groups.forEach(group => {
+        const any = Array.from(group.querySelectorAll('.cmd-item')).some(i => i.style.display !== 'none');
+        group.style.display = any ? '' : 'none';
+      });
+
+      // Show/hide separators (hide if next visible group is hidden)
+      seps.forEach(sep => {
+        let next = sep.nextElementSibling;
+        while (next && !next.classList.contains('cmd-group')) next = next.nextElementSibling;
+        sep.style.display = (next && next.style.display !== 'none') ? '' : 'none';
+      });
+
+      // Empty state
+      const hasResults = visibleItems.length > 0;
+      empty.style.display = hasResults ? 'none' : 'flex';
+      if (!hasResults) emptyQ.textContent = q;
+
+      selectedIdx = hasResults ? 0 : -1;
+      updateSelected();
+    }
+
+    // ── Keyboard navigation ───────────────────────────────
+    function updateSelected() {
+      allItems.forEach(i => i.classList.remove('selected'));
+      if (selectedIdx >= 0 && selectedIdx < visibleItems.length) {
+        visibleItems[selectedIdx].classList.add('selected');
+        visibleItems[selectedIdx].scrollIntoView({ block: 'nearest' });
+      }
+    }
+
+    function selectNext()  { if (visibleItems.length) { selectedIdx = (selectedIdx + 1) % visibleItems.length; updateSelected(); } }
+    function selectPrev()  { if (visibleItems.length) { selectedIdx = (selectedIdx - 1 + visibleItems.length) % visibleItems.length; updateSelected(); } }
+
+    function activateSelected() {
+      if (selectedIdx >= 0 && visibleItems[selectedIdx]) {
+        const item = visibleItems[selectedIdx];
+        flashItem(item);
+        const title = item.dataset.title;
+        setTimeout(() => {
+          close();
+          // In the real app this would navigate
+        }, 260);
+      }
+    }
+
+    function flashItem(item) {
+      item.style.background = 'rgba(79,70,229,0.35)';
+      setTimeout(() => { item.style.background = ''; }, 220);
+    }
+
+    // ── Events ────────────────────────────────────────────
+    input.addEventListener('input', () => {
+      const val = input.value;
+      search.classList.toggle('has-value', val.length > 0);
+      renderAll(val);
+    });
+
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      search.classList.remove('has-value');
+      renderAll('');
+      input.focus();
+    });
+
+    document.addEventListener('keydown', e => {
+      // Open with Cmd+K / Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        isOpen ? close() : open();
+        return;
+      }
+      if (!isOpen) return;
+
+      switch (e.key) {
+        case 'Escape':
+          e.preventDefault();
+          close();
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          selectNext();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          selectPrev();
+          break;
+        case 'Enter':
+          e.preventDefault();
+          activateSelected();
+          break;
+        case 'Tab':
+          e.preventDefault();
+          e.shiftKey ? selectPrev() : selectNext();
+          break;
+      }
+    });
+
+    backdrop.addEventListener('click', close);
+    trigger.addEventListener('click', open);
+    topbar.addEventListener('click', open);
+
+    allItems.forEach((item, i) => {
+      item.addEventListener('mouseenter', () => {
+        selectedIdx = visibleItems.indexOf(item);
+        updateSelected();
+      });
+      item.addEventListener('click', () => {
+        selectedIdx = visibleItems.indexOf(item);
+        updateSelected();
+        activateSelected();
+      });
+    });
+
+    // Auto-open after short delay for demo purposes
+    setTimeout(open, 600);
+  })();
+</script>
+</body>
+</html>

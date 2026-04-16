@@ -29,6 +29,7 @@ export default function Sidebar({
   const { t } = useI18n();
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [tutorStatus, setTutorStatus] = useState<string | null>(null);
+  const [showMore, setShowMore] = useState(false);
   const [adminPanelOpen, setAdminPanelOpen] = useState(currentPath.startsWith('/admin-panel'));
   const [openAdminCat, setOpenAdminCat] = useState<string | null>(
     currentPath.startsWith('/admin-panel')
@@ -318,8 +319,28 @@ export default function Sidebar({
         </div>
       )}
 
-      {/* ══ SOCIAL ══ */}
-      <SepLabel label={t('sidebar.social')} />
+      {/* ══ 5 ITEMS PRINCIPALES ══ */}
+      <button
+        className={`nav-item ${currentPath === '/dashboard' || isActive('/study-rooms') || isActive('/study-paths') ? 'active' : ''}`}
+        onClick={() => onNavigate('/dashboard')}
+      >
+        {Icons.bookOpen(IC.rooms)} Estudiar
+      </button>
+      <button
+        className={`nav-item ${isActive('/messages') || isActive('/events') || isActive('/friends') ? 'active' : ''}`}
+        onClick={() => onNavigate('/messages')}
+      >
+        {Icons.messageCircle(IC.messages)} Social
+        {unreadMessages > 0 && (
+          <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
+        )}
+      </button>
+      <button
+        className={`nav-item ${isActive('/gamification') ? 'active' : ''}`}
+        onClick={() => onNavigate('/gamification')}
+      >
+        {Icons.barChart(IC.dashboard)} Mi Progreso
+      </button>
       <button
         className={`nav-item ${currentPath === '/my-profile' || currentPath === `/user/${user?.id}` ? 'active' : ''}`}
         onClick={() => onNavigate('/my-profile')}
@@ -327,106 +348,137 @@ export default function Sidebar({
         {Icons.user(IC.profile)} {t('sidebar.myProfile')}
       </button>
 
+      {/* ══ MÁS — sección expandible ══ */}
       <button
-        className={`nav-item ${isActive('/communities') || isActive('/friends') ? 'active' : ''}`}
-        onClick={() => onNavigate('/communities')}
+        className="nav-item"
+        onClick={() => setShowMore((prev) => !prev)}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
       >
-        {Icons.globe(IC.globe)} {t('sidebar.communities')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/events') ? 'active' : ''}`}
-        onClick={() => onNavigate('/events')}
-      >
-        {Icons.calendar(IC.events)} {t('sidebar.events')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/messages') ? 'active' : ''}`}
-        onClick={() => onNavigate('/messages')}
-      >
-        {Icons.messageCircle(IC.messages)} {t('sidebar.messages')}
-        {unreadMessages > 0 && (
-          <span className="nav-item-badge">{unreadMessages > 99 ? '99+' : unreadMessages}</span>
-        )}
-      </button>
-
-      {/* ══ ACADÉMICO ══ */}
-      <SepLabel label={t('sidebar.academic')} />
-
-      <button
-        className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
-        onClick={() => onNavigate('/courses')}
-      >
-        {Icons.diploma(IC.courses)} Cursos
-      </button>
-      <button
-        className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`}
-        onClick={() => onNavigate('/study-rooms')}
-      >
-        {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/study-paths') ? 'active' : ''}`}
-        onClick={() => onNavigate('/study-paths')}
-      >
-        {Icons.bookOpen(IC.rooms)} Rutas de Estudio
-      </button>
-      <button
-        className={`nav-item ${isActive('/gamification') ? 'active' : ''}`}
-        onClick={() => onNavigate('/gamification')}
-      >
-        {Icons.sparkles(IC.ai)} Logros
-      </button>
-      <button
-        className={`nav-item ${isActive('/search') ? 'active' : ''}`}
-        onClick={() => onNavigate('/search')}
-      >
-        {Icons.search(IC.search)} {t('sidebar.search')}
-      </button>
-      <button
-        className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`}
-        onClick={() => onNavigate('/calendar')}
-      >
-        {Icons.calendar(IC.calendar)} {t('sidebar.calendar')}
-      </button>
-      <button
-        className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`}
-        onClick={() => onNavigate('/marketplace')}
-      >
-        {Icons.fileText(IC.notes)} {t('sidebar.notes')}
-      </button>
-      <button
-        className={`nav-item ${isActive('/biblioteca') ? 'active' : ''}`}
-        onClick={() => onNavigate('/biblioteca')}
-      >
-        {Icons.bookOpen(IC.rooms)} Biblioteca
-      </button>
-      <button
-        className={`nav-item ${isActive('/group-docs') ? 'active' : ''}`}
-        onClick={() => onNavigate('/group-docs')}
-      >
-        {Icons.fileText(IC.notes)} Trabajos Grupales
-      </button>
-      <button
-        className={`nav-item ${isActive('/tutores') ? 'active' : ''}`}
-        onClick={() => onNavigate('/tutores')}
-      >
-        {Icons.tutors(IC.tutors)} Tutores
-      </button>
-      <button
-        className={`nav-item ${currentPath === '/dashboard' ? 'active' : ''}`}
-        onClick={() => onNavigate('/dashboard')}
-      >
-        {Icons.barChart(IC.dashboard)} {t('sidebar.dashboard')}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {Icons.compass(IC.compass)} Más
+        </span>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          style={{
+            transition: 'transform 0.25s ease',
+            transform: showMore ? 'rotate(180deg)' : 'rotate(0deg)',
+            opacity: 0.5,
+            flexShrink: 0,
+          }}
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
       </button>
 
-      {/* ══ BOLSA DEL TRABAJO ══ */}
-      <SepLabel label={t('sidebar.jobBoard')} />
-      <button
-        className={`nav-item ${isActive('/jobs') ? 'active' : ''}`}
-        onClick={() => onNavigate('/jobs')}
+      <div
+        style={{
+          maxHeight: showMore ? 600 : 0,
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease',
+        }}
       >
-        {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
-      </button>
+        <button
+          className={`nav-item ${isActive('/biblioteca') ? 'active' : ''}`}
+          onClick={() => onNavigate('/biblioteca')}
+        >
+          {Icons.bookOpen(IC.rooms)} Biblioteca
+        </button>
+        <button
+          className={`nav-item ${currentPath === '/calendar' ? 'active' : ''}`}
+          onClick={() => onNavigate('/calendar')}
+        >
+          {Icons.calendar(IC.calendar)} {t('sidebar.calendar')}
+        </button>
+        <button
+          className={`nav-item ${isActive('/communities') ? 'active' : ''}`}
+          onClick={() => onNavigate('/communities')}
+        >
+          {Icons.globe(IC.globe)} {t('sidebar.communities')}
+        </button>
+        <button
+          className={`nav-item ${isActive('/courses') ? 'active' : ''}`}
+          onClick={() => onNavigate('/courses')}
+        >
+          {Icons.diploma(IC.courses)} Cursos
+        </button>
+        <button
+          className={`nav-item ${isActive('/tutores') ? 'active' : ''}`}
+          onClick={() => onNavigate('/tutores')}
+        >
+          {Icons.tutors(IC.tutors)} Tutores
+        </button>
+        <button
+          className={`nav-item ${isActive('/search') ? 'active' : ''}`}
+          onClick={() => onNavigate('/search')}
+        >
+          {Icons.search(IC.search)} {t('sidebar.search')}
+        </button>
+        <button
+          className={`nav-item ${isActive('/group-docs') ? 'active' : ''}`}
+          onClick={() => onNavigate('/group-docs')}
+        >
+          {Icons.fileText(IC.notes)} Trabajos Grupales
+        </button>
+        <button
+          className={`nav-item ${isActive('/events') ? 'active' : ''}`}
+          onClick={() => onNavigate('/events')}
+        >
+          {Icons.calendar(IC.events)} {t('sidebar.events')}
+        </button>
+        <button
+          className={`nav-item ${isActive('/study-rooms') ? 'active' : ''}`}
+          onClick={() => onNavigate('/study-rooms')}
+        >
+          {Icons.bookOpen(IC.rooms)} {t('sidebar.studyRooms')}
+        </button>
+        <button
+          className={`nav-item ${isActive('/study-paths') ? 'active' : ''}`}
+          onClick={() => onNavigate('/study-paths')}
+        >
+          {Icons.bookOpen(IC.rooms)} Rutas de Estudio
+        </button>
+        <button
+          className={`nav-item ${currentPath === '/marketplace' ? 'active' : ''}`}
+          onClick={() => onNavigate('/marketplace')}
+        >
+          {Icons.fileText(IC.notes)} {t('sidebar.notes')}
+        </button>
+
+        {/* ── Bolsa de Trabajo ── */}
+        <button
+          className={`nav-item ${isActive('/jobs') ? 'active' : ''}`}
+          onClick={() => onNavigate('/jobs')}
+        >
+          {Icons.briefcase(IC.jobs)} {t('sidebar.jobBoard')}
+        </button>
+
+        {/* ── Suscripción y Soporte ── */}
+        <button
+          className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`}
+          onClick={() => onNavigate('/subscription')}
+        >
+          {Icons.diamond(IC.diamond)} {t('sidebar.subscription')}
+        </button>
+        <button
+          className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`}
+          onClick={() => onNavigate('/suggestions')}
+        >
+          {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
+        </button>
+        <button
+          className={`nav-item ${currentPath === '/soporte' ? 'active' : ''}`}
+          onClick={() => onNavigate('/soporte')}
+        >
+          {Icons.support(IC.support)} Soporte
+        </button>
+      </div>
 
       {/* ══ MI TUTORÍA (solo tutores) ══ */}
       {user?.offersMentoring && tutorStatus && (
@@ -477,27 +529,6 @@ export default function Sidebar({
           )}
         </>
       )}
-
-      {/* ══ SOPORTE ══ */}
-      <SepLabel label={t('sidebar.support')} />
-      <button
-        className={`nav-item ${currentPath === '/subscription' ? 'active' : ''}`}
-        onClick={() => onNavigate('/subscription')}
-      >
-        {Icons.diamond(IC.diamond)} {t('sidebar.subscription')}
-      </button>
-      <button
-        className={`nav-item ${currentPath === '/suggestions' ? 'active' : ''}`}
-        onClick={() => onNavigate('/suggestions')}
-      >
-        {Icons.lightbulb(IC.lightbulb)} {t('sidebar.suggestions')}
-      </button>
-      <button
-        className={`nav-item ${currentPath === '/soporte' ? 'active' : ''}`}
-        onClick={() => onNavigate('/soporte')}
-      >
-        {Icons.support(IC.support)} Soporte
-      </button>
     </nav>
   );
 }

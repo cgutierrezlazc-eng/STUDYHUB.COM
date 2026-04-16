@@ -16,6 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import AppAvailableBanner from './components/AppAvailableBanner';
 import SupportChat from './components/SupportChat';
+import CommandBar from './components/CommandBar';
 
 import Landing from './pages/Landing';
 import { Project } from './types';
@@ -626,6 +627,7 @@ export default function App() {
     <div
       className={`app-layout ${showMobileUI ? 'mobile-layout' : ''} ${showTabletUI ? 'tablet-layout' : ''}`}
     >
+      <CommandBar onNavigate={(path) => navigate(path)} />
       <TopBar
         onNavigate={(path) => navigate(path)}
         onMenuToggle={() => setSidebarOpen(!sidebarOpen)}

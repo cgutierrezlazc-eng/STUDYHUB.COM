@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conniku — Onboarding en 60 segundos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary:      #4F46E5;
+      --primary-light:#EEF2FF;
+      --primary-dark: #3730A3;
+      --accent:       #0D9488;
+      --accent-light: #CCFBF1;
+      --success:      #16A34A;
+      --success-light:#DCFCE7;
+      --warning:      #D97706;
+      --bg:           #FFFFFF;
+      --bg-soft:      #F8FAFC;
+      --bg-card:      #FFFFFF;
+      --border:       #E2E8F0;
+      --border-focus: #4F46E5;
+      --text-primary: #0F172A;
+      --text-secondary:#475569;
+      --text-muted:   #94A3B8;
+      --shadow-sm:    0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+      --shadow-md:    0 4px 6px -1px rgba(0,0,0,.08), 0 2px 4px -1px rgba(0,0,0,.05);
+      --shadow-lg:    0 10px 15px -3px rgba(0,0,0,.08), 0 4px 6px -2px rgba(0,0,0,.04);
+      --shadow-xl:    0 20px 25px -5px rgba(0,0,0,.1), 0 10px 10px -5px rgba(0,0,0,.04);
+      --radius:       12px;
+      --radius-lg:    20px;
+      --radius-full:  9999px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-soft);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(79,70,229,.12) 0%, transparent 70%),
+        var(--bg-soft);
+    }
+
+    /* ── Card ── */
+    .wizard-card {
+      width: 100%;
+      max-width: 560px;
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xl);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── Header ── */
+    .wizard-header {
+      padding: 20px 28px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    /* ── Timer ── */
+    .timer-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-soft);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-full);
+      padding: 5px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all .3s ease;
+    }
+
+    .timer-badge.warning { border-color: #FDE68A; background: #FFFBEB; color: var(--warning); }
+    .timer-badge.urgent  { border-color: #FECACA; background: #FEF2F2; color: #DC2626; }
+
+    .timer-icon { font-size: 14px; }
+
+    .timer-ring {
+      width: 18px;
+      height: 18px;
+      position: relative;
+    }
+
+    .timer-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .timer-ring circle {
+      fill: none;
+      stroke-width: 2.5;
+      stroke-linecap: round;
+    }
+
+    .timer-ring .track  { stroke: var(--border); }
+    .timer-ring .fill   { stroke: var(--primary); transition: stroke-dashoffset .9s linear; }
+
+    /* ── Progress bar ── */
+    .progress-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .progress-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .step-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .step-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: all .3s ease;
+      cursor: pointer;
+    }
+
+    .step-dot.active {
+      background: var(--primary);
+      transform: scale(1.25);
+    }
+
+    .step-dot.done {
+      background: var(--accent);
+    }
+
+    .progress-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+      border-radius: var(--radius-full);
+      transition: width .5s cubic-bezier(.4,0,.2,1);
+    }
+
+    /* ── Steps viewport ── */
+    .steps-viewport {
+      overflow: hidden;
+      position: relative;
+    }
+
+    .steps-track {
+      display: flex;
+      transition: transform .45s cubic-bezier(.4,0,.2,1);
+      will-change: transform;
+    }
+
+    .step-panel {
+      min-width: 100%;
+      padding: 28px 28px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── Step heading ── */
+    .step-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.25;
+      letter-spacing: -.4px;
+    }
+
+    .step-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* ── Form elements ── */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 15px;
+      color: var(--text-primary);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+
+    select.form-control {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── University tag chips ── */
+    .quick-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: var(--radius-full);
+      font-size: 12px;
+      font-weight: 500;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all .2s ease;
+      white-space: nowrap;
+    }
+
+    .chip:hover, .chip.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .chip-icon { font-size: 13px; }
+
+    /* ── Upload zone ── */
+    .upload-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-lg);
+      padding: 36px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all .25s ease;
+      background: var(--bg-soft);
+      text-align: center;
+    }
+
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .upload-icon-wrap {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      transition: transform .3s ease;
+    }
+
+    .upload-zone:hover .upload-icon-wrap {
+      transform: translateY(-3px);
+    }
+
+    .upload-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .upload-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .file-types {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .file-badge {
+      padding: 3px 9px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .4px;
+    }
+
+    .file-badge.pdf  { background: #FEE2E2; color: #DC2626; }
+    .file-badge.docx { background: #DBEAFE; color: #1D4ED8; }
+    .file-badge.pptx { background: #FEF9C3; color: #B45309; }
+
+    /* ── Upload progress ── */
+    .upload-progress {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .upload-progress.visible { display: flex; }
+
+    .upload-file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .upload-file-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #FEE2E2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .upload-file-info {
+      flex: 1;
+    }
+
+    .upload-file-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .upload-file-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .upload-status-icon {
+      font-size: 20px;
+    }
+
+    .progress-line {
+      height: 4px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+    }
+
+    .progress-line-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 1.5s cubic-bezier(.4,0,.2,1);
+      width: 0%;
+    }
+
+    /* ── Quiz preview (Step 4) ── */
+    .success-header {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background: var(--success-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+      animation: pop-in .5s cubic-bezier(.175,.885,.32,1.275);
+    }
+
+    @keyframes pop-in {
+      0%   { transform: scale(0); opacity: 0; }
+      80%  { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .success-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -.4px;
+    }
+
+    .success-sub {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+    }
+
+    .quiz-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .quiz-label::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .quiz-questions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quiz-question {
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      background: var(--bg);
+      animation: slide-up .4s ease both;
+    }
+
+    .quiz-question:nth-child(1) { animation-delay: .1s; }
+    .quiz-question:nth-child(2) { animation-delay: .22s; }
+    .quiz-question:nth-child(3) { animation-delay: .34s; }
+
+    @keyframes slide-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .quiz-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .quiz-text {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    .quiz-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--accent-light);
+      color: var(--accent);
+      margin-top: 6px;
+    }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .stat-cell {
+      background: var(--bg-soft);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .stat-key {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Footer ── */
+    .wizard-footer {
+      padding: 20px 28px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all .2s ease;
+      outline: none;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #6D28D9 100%);
+      color: white;
+      flex: 1;
+      box-shadow: 0 4px 14px rgba(79,70,229,.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(79,70,229,.45);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(79,70,229,.3);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, var(--success) 0%, #15803D 100%);
+      color: white;
+      flex: 1;
+      box-shadow: 0 4px 14px rgba(22,163,74,.35);
+    }
+
+    .btn-success:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(22,163,74,.45);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 8px 12px;
+    }
+
+    .btn-ghost:hover { color: var(--text-secondary); }
+
+    .btn-back {
+      background: var(--bg-soft);
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border);
+      padding: 11px 16px;
+      flex-shrink: 0;
+    }
+
+    .btn-back:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    .btn-icon { font-size: 16px; }
+
+    /* ── Skip row ── */
+    .skip-row {
+      text-align: center;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 580px) {
+      .page { padding: 0; }
+
+      .wizard-card {
+        border-radius: 0;
+        box-shadow: none;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .steps-viewport { flex: 1; }
+
+      .step-panel { padding: 24px 20px 0; }
+
+      .wizard-header { padding: 20px 20px 0; }
+
+      .wizard-footer { padding: 16px 20px 28px; }
+
+      .form-row { grid-template-columns: 1fr; }
+
+      .step-title { font-size: 20px; }
+    }
+
+    /* ── Micro animations ── */
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .4; }
+    }
+
+    .uploading-pulse {
+      animation: pulse-ring 1.2s ease-in-out infinite;
+    }
+
+    .checkmark-anim {
+      display: inline-block;
+      animation: pop-in .4s cubic-bezier(.175,.885,.32,1.275) .2s both;
+    }
+
+    /* ── Tooltip hint ── */
+    .input-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    /* ── Konni badge ── */
+    .konni-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+      border: 1.5px solid rgba(79,70,229,.2);
+      border-radius: var(--radius-full);
+      padding: 5px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+
+    .konni-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse-ring 1.8s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+  <div class="wizard-card" id="wizardCard">
+
+    <!-- ══ HEADER ══ -->
+    <div class="wizard-header">
+      <div class="header-row">
+        <div class="logo">
+          <div class="logo-icon">C</div>
+          Conniku
+        </div>
+
+        <div class="timer-badge" id="timerBadge">
+          <div class="timer-ring">
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <circle class="track" cx="9" cy="9" r="6.5" />
+              <circle class="fill" id="timerCircle" cx="9" cy="9" r="6.5"
+                stroke-dasharray="40.84"
+                stroke-dashoffset="0" />
+            </svg>
+          </div>
+          <span id="timerText">60s</span>
+        </div>
+      </div>
+
+      <div class="progress-section">
+        <div class="progress-meta">
+          <span class="step-label" id="stepLabel">Paso 1 de 4</span>
+          <div class="step-dots">
+            <div class="step-dot active" data-step="0" onclick="goToStep(0)"></div>
+            <div class="step-dot"        data-step="1" onclick="goToStep(1)"></div>
+            <div class="step-dot"        data-step="2" onclick="goToStep(2)"></div>
+            <div class="step-dot"        data-step="3" onclick="goToStep(3)"></div>
+          </div>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressFill" style="width:25%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STEPS VIEWPORT ══ -->
+    <div class="steps-viewport">
+      <div class="steps-track" id="stepsTrack">
+
+        <!-- ════ STEP 1 — Universidad y Carrera ════ -->
+        <div class="step-panel" id="step0">
+          <div>
+            <div class="step-title">¿Qué estudias? 🎓</div>
+            <div class="step-subtitle">Te ayudamos a organizar tu contenido según tu carrera y universidad.</div>
+          </div>
+
+          <div class="quick-chips" id="uniChips">
+            <div class="chip" onclick="selectChip(this, 'uni')"><span class="chip-icon">🏛️</span> PUC</div>
+            <div class="chip" onclick="selectChip(this, 'uni')"><span class="chip-icon">🌊</span> UDP</div>
+            <div class="chip" onclick="selectChip(this, 'uni')"><span class="chip-icon">🏔️</span> UAI</div>
+            <div class="chip" onclick="selectChip(this, 'uni')"><span class="chip-icon">⚙️</span> USACH</div>
+            <div class="chip" onclick="selectChip(this, 'uni')"><span class="chip-icon">🌿</span> UChile</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Universidad</label>
+            <select class="form-control" id="uniSelect">
+              <option value="" disabled selected>Selecciona tu universidad</option>
+              <optgroup label="Tradicionales (CRUCH)">
+                <option>Universidad de Chile</option>
+                <option>Pontificia Universidad Católica de Chile</option>
+                <option>Universidad de Concepción</option>
+                <option>Universidad Técnica Federico Santa María</option>
+                <option>Universidad de Santiago de Chile (USACH)</option>
+                <option>Universidad Austral de Chile</option>
+                <option>Universidad de La Frontera</option>
+                <option>Universidad de Valparaíso</option>
+                <option>Universidad de Atacama</option>
+              </optgroup>
+              <optgroup label="Privadas acreditadas">
+                <option>Universidad del Desarrollo (UDD)</option>
+                <option>Universidad Adolfo Ibáñez (UAI)</option>
+                <option>Universidad Diego Portales (UDP)</option>
+                <option>Universidad de Los Andes</option>
+                <option>Universidad Finis Terrae</option>
+                <option>Universidad San Sebastián</option>
+                <option>Universidad Mayor</option>
+                <option>Universidad Autónoma de Chile</option>
+              </optgroup>
+              <optgroup label="IP y CFT">
+                <option>INACAP</option>
+                <option>Duoc UC</option>
+                <option>Santo Tomás</option>
+                <option>AIEP</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Carrera</label>
+              <select class="form-control" id="careerSelect">
+                <option value="" disabled selected>Tu carrera</option>
+                <optgroup label="Ingeniería">
+                  <option>Ingeniería Civil</option>
+                  <option>Ingeniería Informática</option>
+                  <option>Ingeniería Comercial</option>
+                  <option>Ingeniería Industrial</option>
+                  <option>Ingeniería Mecánica</option>
+                  <option>Ingeniería Eléctrica</option>
+                </optgroup>
+                <optgroup label="Salud">
+                  <option>Medicina</option>
+                  <option>Enfermería</option>
+                  <option>Kinesiología</option>
+                  <option>Odontología</option>
+                  <option>Psicología</option>
+                  <option>Nutrición y Dietética</option>
+                </optgroup>
+                <optgroup label="Ciencias">
+                  <option>Matemática</option>
+                  <option>Física</option>
+                  <option>Química</option>
+                  <option>Biología</option>
+                </optgroup>
+                <optgroup label="Humanidades y Sociales">
+                  <option>Derecho</option>
+                  <option>Pedagogía</option>
+                  <option>Periodismo</option>
+                  <option>Diseño</option>
+                  <option>Arquitectura</option>
+                </optgroup>
+                <optgroup label="Negocios">
+                  <option>Administración de Empresas</option>
+                  <option>Contador Auditor</option>
+                  <option>Marketing</option>
+                  <option>Finanzas</option>
+                </optgroup>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Año cursado</label>
+              <select class="form-control">
+                <option value="" disabled selected>Año</option>
+                <option>1° año</option>
+                <option>2° año</option>
+                <option>3° año</option>
+                <option>4° año</option>
+                <option>5° año</option>
+                <option>Postgrado</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════ STEP 2 — Primera asignatura ════ -->
+        <div class="step-panel" id="step1">
+          <div>
+            <div class="step-title">Crea tu primera asignatura 📚</div>
+            <div class="step-subtitle">Organiza tus cursos por semestre. Después podrás agregar todos los que quieras.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nombre de la asignatura</label>
+            <input class="form-control" id="subjectName" type="text"
+              placeholder="Ej: Cálculo II, Fundamentos de Programación…" />
+            <div class="input-hint">Puedes usar el nombre oficial del ramo o uno más corto.</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Semestre</label>
+              <select class="form-control" id="semesterSelect">
+                <option value="" disabled selected>Semestre</option>
+                <option selected>2026-1</option>
+                <option>2026-2</option>
+                <option>2025-2</option>
+                <option>2025-1</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Color</label>
+              <select class="form-control">
+                <option>🟣 Violeta</option>
+                <option>🔵 Azul</option>
+                <option>🟢 Verde</option>
+                <option>🔴 Rojo</option>
+                <option>🟡 Amarillo</option>
+                <option>🟠 Naranjo</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Preview card -->
+          <div style="border: 1.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 14px; background: var(--bg-soft);">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; color: white; font-size: 22px; flex-shrink: 0;">📐</div>
+            <div style="flex:1">
+              <div style="font-size: 14px; font-weight: 700; color: var(--text-primary);" id="subjectPreviewName">Cálculo II</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">Semestre 2026-1 · 0 documentos</div>
+            </div>
+            <div class="konni-badge"><div class="konni-dot"></div>Konni lista</div>
+          </div>
+        </div>
+
+        <!-- ════ STEP 3 — Subir documento ════ -->
+        <div class="step-panel" id="step2">
+          <div>
+            <div class="step-title">Sube tu primer documento 📄</div>
+            <div class="step-subtitle">Konni lo analiza y genera resúmenes, flashcards y ejercicios automáticamente.</div>
+          </div>
+
+          <!-- Upload zone -->
+          <div class="upload-zone" id="uploadZone"
+            onclick="startUploadSimulation()"
+            ondragover="event.preventDefault(); this.classList.add('drag-over')"
+            ondragleave="this.classList.remove('drag-over')"
+            ondrop="event.preventDefault(); this.classList.remove('drag-over'); startUploadSimulation()">
+            <div class="upload-icon-wrap">📎</div>
+            <div>
+              <div class="upload-title">Arrastra tu archivo aquí</div>
+              <div class="upload-sub">o <span style="color:var(--primary);font-weight:600;">haz clic para seleccionar</span></div>
+            </div>
+            <div class="file-types">
+              <span class="file-badge pdf">PDF</span>
+              <span class="file-badge docx">DOCX</span>
+              <span class="file-badge pptx">PPTX</span>
+            </div>
+            <div class="upload-sub" style="margin-top:-4px">Máximo 50 MB</div>
+          </div>
+
+          <!-- Progress state (hidden initially) -->
+          <div class="upload-progress" id="uploadProgress">
+            <div class="upload-file-row">
+              <div class="upload-file-icon">📕</div>
+              <div class="upload-file-info">
+                <div class="upload-file-name">Apuntes_Cálculo_II.pdf</div>
+                <div class="upload-file-meta" id="uploadFileMeta">Subiendo… 0%</div>
+              </div>
+              <div class="upload-status-icon" id="uploadStatusIcon">⏳</div>
+            </div>
+            <div class="progress-line">
+              <div class="progress-line-fill" id="uploadFill"></div>
+            </div>
+          </div>
+
+          <!-- What Konni does -->
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:.6px;">Konni procesará el documento y generará:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:var(--radius-full); background:var(--primary-light); color:var(--primary); font-size:13px; font-weight:500;">✨ Resumen ejecutivo</div>
+              <div style="display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:var(--radius-full); background:var(--accent-light); color:var(--accent); font-size:13px; font-weight:500;">🃏 Flashcards</div>
+              <div style="display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:var(--radius-full); background:var(--success-light); color:var(--success); font-size:13px; font-weight:500;">❓ Quiz de práctica</div>
+              <div style="display:flex; align-items:center; gap:6px; padding:7px 12px; border-radius:var(--radius-full); background:#FEF3C7; color:var(--warning); font-size:13px; font-weight:500;">📝 Guía de estudio</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ════ STEP 4 — ¡Listo! ════ -->
+        <div class="step-panel" id="step3">
+          <div class="success-header">
+            <div class="success-icon">🎉</div>
+            <div class="success-title">¡Listo, ya puedes estudiar!</div>
+            <div class="success-sub">Konni analizó tu documento y generó contenido de estudio en segundos.</div>
+          </div>
+
+          <div class="stats-strip">
+            <div class="stat-cell">
+              <div class="stat-value">12</div>
+              <div class="stat-key">Flashcards</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-value">5</div>
+              <div class="stat-key">Conceptos clave</div>
+            </div>
+            <div class="stat-cell">
+              <div class="stat-value">3</div>
+              <div class="stat-key">Preguntas quiz</div>
+            </div>
+          </div>
+
+          <div>
+            <div class="quiz-label">Vista previa del Quiz generado</div>
+          </div>
+
+          <div class="quiz-questions">
+            <div class="quiz-question">
+              <div class="quiz-num">1</div>
+              <div>
+                <div class="quiz-text">¿Cuál es la condición necesaria para que una función sea diferenciable en un punto?</div>
+                <div class="quiz-tag">Definición</div>
+              </div>
+            </div>
+            <div class="quiz-question">
+              <div class="quiz-num">2</div>
+              <div>
+                <div class="quiz-text">Calcula la derivada de f(x) = x³ − 4x + 7 en x = 2 usando la regla de la potencia.</div>
+                <div class="quiz-tag">Ejercicio</div>
+              </div>
+            </div>
+            <div class="quiz-question">
+              <div class="quiz-num">3</div>
+              <div>
+                <div class="quiz-text">¿En qué se diferencia la integral definida de la indefinida? Da un ejemplo de cada una.</div>
+                <div class="quiz-tag">Comprensión</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /steps-track -->
+    </div><!-- /steps-viewport -->
+
+    <!-- ══ FOOTER ══ -->
+    <div class="wizard-footer">
+      <div class="footer-actions" id="footerActions">
+        <!-- populated by JS -->
+      </div>
+      <div class="skip-row">
+        <button class="btn btn-ghost" onclick="skipOnboarding()">Saltar por ahora</button>
+      </div>
+    </div>
+
+  </div><!-- /wizard-card -->
+</div><!-- /page -->
+
+<script>
+  /* ── State ── */
+  let currentStep = 0;
+  const TOTAL_STEPS = 4;
+  let timerValue = 60;
+  let timerInterval = null;
+  let uploadDone = false;
+
+  const CIRCUMFERENCE = 40.84; // 2π × 6.5
+
+  /* ── DOM refs ── */
+  const stepsTrack    = document.getElementById('stepsTrack');
+  const progressFill  = document.getElementById('progressFill');
+  const stepLabel     = document.getElementById('stepLabel');
+  const timerText     = document.getElementById('timerText');
+  const timerBadge    = document.getElementById('timerBadge');
+  const timerCircle   = document.getElementById('timerCircle');
+  const footerActions = document.getElementById('footerActions');
+
+  /* ── Init ── */
+  renderFooter();
+  startTimer();
+
+  /* ── Timer ── */
+  function startTimer() {
+    timerInterval = setInterval(() => {
+      timerValue--;
+      timerText.textContent = timerValue + 's';
+
+      // SVG ring
+      const pct = timerValue / 60;
+      timerCircle.style.strokeDashoffset = CIRCUMFERENCE * (1 - pct);
+
+      // Color states
+      timerBadge.classList.remove('warning', 'urgent');
+      if (timerValue <= 10) {
+        timerBadge.classList.add('urgent');
+        timerCircle.style.stroke = '#DC2626';
+      } else if (timerValue <= 25) {
+        timerBadge.classList.add('warning');
+        timerCircle.style.stroke = '#D97706';
+      }
+
+      if (timerValue <= 0) {
+        clearInterval(timerInterval);
+        timerText.textContent = '0s';
+      }
+    }, 1000);
+  }
+
+  /* ── Navigation ── */
+  function goToStep(n) {
+    if (n < 0 || n >= TOTAL_STEPS) return;
+    currentStep = n;
+    stepsTrack.style.transform = `translateX(-${currentStep * 100}%)`;
+
+    // Progress bar
+    const pct = ((currentStep + 1) / TOTAL_STEPS) * 100;
+    progressFill.style.width = pct + '%';
+
+    // Label
+    stepLabel.textContent = `Paso ${currentStep + 1} de ${TOTAL_STEPS}`;
+
+    // Dots
+    document.querySelectorAll('.step-dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'done');
+      if (i < currentStep) dot.classList.add('done');
+      else if (i === currentStep) dot.classList.add('active');
+    });
+
+    renderFooter();
+
+    // Step 4 special: stop timer
+    if (currentStep === 3) {
+      clearInterval(timerInterval);
+      timerText.textContent = '✓';
+      timerBadge.style.borderColor = '#86EFAC';
+      timerBadge.style.background = 'var(--success-light)';
+      timerBadge.style.color = 'var(--success)';
+      timerCircle.style.stroke = 'var(--success)';
+      timerCircle.style.strokeDashoffset = '0';
+    }
+  }
+
+  function nextStep() {
+    // Step 2: check if upload done
+    if (currentStep === 2 && !uploadDone) {
+      startUploadSimulation(true); // force-start then proceed
+      return;
+    }
+    goToStep(currentStep + 1);
+  }
+
+  function prevStep() {
+    goToStep(currentStep - 1);
+  }
+
+  /* ── Footer buttons ── */
+  function renderFooter() {
+    footerActions.innerHTML = '';
+
+    if (currentStep === 0) {
+      // Step 1: just Next
+      footerActions.innerHTML = `
+        <button class="btn btn-primary" onclick="nextStep()">
+          Continuar <span class="btn-icon">→</span>
+        </button>`;
+    } else if (currentStep === 1 || currentStep === 2) {
+      footerActions.innerHTML = `
+        <button class="btn btn-back" onclick="prevStep()">← Atrás</button>
+        <button class="btn btn-primary" onclick="nextStep()">
+          ${currentStep === 2 ? 'Analizar documento' : 'Continuar'} <span class="btn-icon">→</span>
+        </button>`;
+    } else if (currentStep === 3) {
+      footerActions.innerHTML = `
+        <button class="btn btn-success" onclick="finishOnboarding()" style="font-size:16px; padding:14px 24px;">
+          🚀 Comenzar a estudiar
+        </button>`;
+    }
+  }
+
+  /* ── Upload simulation ── */
+  function startUploadSimulation(proceedAfter = false) {
+    if (uploadDone) { goToStep(currentStep + 1); return; }
+
+    const zone = document.getElementById('uploadZone');
+    const prog = document.getElementById('uploadProgress');
+    const fill = document.getElementById('uploadFill');
+    const meta = document.getElementById('uploadFileMeta');
+    const icon = document.getElementById('uploadStatusIcon');
+
+    zone.style.display = 'none';
+    prog.classList.add('visible');
+
+    let pct = 0;
+    const interval = setInterval(() => {
+      pct += Math.random() * 18 + 6;
+      if (pct >= 100) pct = 100;
+      fill.style.width = pct + '%';
+      meta.textContent = pct < 100
+        ? `Subiendo… ${Math.round(pct)}%`
+        : '¡Listo! Analizando con Konni…';
+      icon.textContent = pct < 100 ? '⏳' : '✅';
+
+      if (pct >= 100) {
+        clearInterval(interval);
+        uploadDone = true;
+        setTimeout(() => {
+          // Re-render footer so the button changes
+          renderFooter();
+          goToStep(currentStep + 1);
+        }, 900);
+      }
+    }, 200);
+  }
+
+  /* ── Subject preview ── */
+  document.addEventListener('input', (e) => {
+    if (e.target.id === 'subjectName') {
+      const val = e.target.value.trim();
+      document.getElementById('subjectPreviewName').textContent =
+        val || 'Nombre de la asignatura';
+    }
+  });
+
+  /* ── University quick chips → select ── */
+  const uniMap = {
+    'PUC':    'Pontificia Universidad Católica de Chile',
+    'UDP':    'Universidad Diego Portales (UDP)',
+    'UAI':    'Universidad Adolfo Ibáñez (UAI)',
+    'USACH':  'Universidad de Santiago de Chile (USACH)',
+    'UChile': 'Universidad de Chile',
+  };
+
+  function selectChip(el, _group) {
+    el.closest('.quick-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const label = el.textContent.trim().replace(/^[^\s]+\s/, '');
+    const full = uniMap[label] || label;
+    const sel = document.getElementById('uniSelect');
+    for (const opt of sel.options) {
+      if (opt.text === full) { sel.value = full; break; }
+    }
+  }
+
+  /* ── Skip / Finish ── */
+  function skipOnboarding() {
+    // Subtle confirmation UI — in mockup just fast-forward to step 4
+    if (currentStep < 3) goToStep(3);
+  }
+
+  function finishOnboarding() {
+    // Mock — show a thank-you flash
+    const card = document.getElementById('wizardCard');
+    card.style.transform = 'scale(.97)';
+    card.style.opacity = '0';
+    card.style.transition = 'transform .4s ease, opacity .4s ease';
+    setTimeout(() => {
+      card.innerHTML = `
+        <div style="padding:64px 40px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:20px;">
+          <div style="font-size:64px; animation: pop-in .5s ease both;">✅</div>
+          <div style="font-size:24px; font-weight:800; color:var(--text-primary);">¡Bienvenido a Conniku!</div>
+          <div style="font-size:15px; color:var(--text-secondary); max-width:320px; line-height:1.6;">
+            Tu cuenta está lista. Konni está procesando tu documento en segundo plano.
+          </div>
+          <button class="btn btn-primary" style="margin-top:8px; max-width:260px; width:100%;" onclick="location.reload()">
+            Ver mi panel de estudios →
+          </button>
+          <button class="btn btn-ghost" onclick="location.reload()">Reiniciar mockup</button>
+        </div>`;
+      card.style.transform = 'scale(1)';
+      card.style.opacity = '1';
+    }, 400);
+  }
+
+  /* ── Keyboard nav ── */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'Enter' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'INPUT') {
+      if (currentStep < 3) nextStep();
+    }
+    if (e.key === 'ArrowLeft' && currentStep > 0) prevStep();
+  });
+</script>
+</body>
+</html>
