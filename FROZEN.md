@@ -26,3 +26,5 @@
 | `src/pages/UserProfile.tsx` | null-safety | 2026-04-14 | 3 fixes (setFriendsList, setActivityFeed, setComments) |
 | `src/pages/Jobs.tsx` | null-safety | 2026-04-14 | Null-safety en cv.competencies (3 fixes) |
 | `.gitignore` | iCloud rules | 2026-04-14 | Regla para ignorar duplicados iCloud |
+| `src/pages/HRDashboard.tsx` | completo | 2026-04-16 | 9 botones conectados: docs, FES, Previred, PDF nómina, Previred CSV, Excel gastos, Anexo Art.11, Pacto HE Art.32, Descuento Vol. Art.58 |
+| `backend/hr_routes.py` | completo | 2026-04-16 | 53 rutas, 3 generadores PDF legales (Anexo, Pacto HE, Descuento Vol.) |

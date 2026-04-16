@@ -16,6 +16,7 @@ import {
   Send,
   Download,
 } from '../components/Icons';
+import TierGate from '../components/TierGate';
 
 const CollabEditor = lazy(() => import('../components/CollabEditor'));
 
@@ -359,26 +360,28 @@ export default function GroupDocEditor({ onNavigate }: Props) {
           {/* Save version */}
           {/* Export */}
           <div style={{ position: 'relative' }}>
-            <button
-              onClick={() => {
-                const menu = document.getElementById('export-menu');
-                if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-              }}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                background: 'transparent',
-                color: 'var(--text-secondary)',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              {Download({ size: 14 })} Exportar
-            </button>
+            <TierGate feature="can_export" onNavigate={onNavigate}>
+              <button
+                onClick={() => {
+                  const menu = document.getElementById('export-menu');
+                  if (menu) menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {Download({ size: 14 })} Exportar
+              </button>
+            </TierGate>
             <div
               id="export-menu"
               style={{
@@ -395,67 +398,71 @@ export default function GroupDocEditor({ onNavigate }: Props) {
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
               }}
             >
-              <button
-                onClick={async () => {
-                  document.getElementById('export-menu')!.style.display = 'none';
-                  if (pendingContent.current && docId) await saveContent(pendingContent.current);
-                  const res = await api.collabExportPdf(docId!);
-                  if (res.ok) {
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${doc?.title || 'documento'}.pdf`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  } else {
-                    alert('Error exportando PDF');
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'var(--text-primary)',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  borderBottom: '1px solid var(--border)',
-                }}
-              >
-                Descargar PDF
-              </button>
-              <button
-                onClick={async () => {
-                  document.getElementById('export-menu')!.style.display = 'none';
-                  if (pendingContent.current && docId) await saveContent(pendingContent.current);
-                  const res = await api.collabExportDocx(docId!);
-                  if (res.ok) {
-                    const blob = await res.blob();
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${doc?.title || 'documento'}.docx`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                  } else {
-                    alert('Error exportando DOCX');
-                  }
-                }}
-                style={{
-                  width: '100%',
-                  padding: '10px 14px',
-                  border: 'none',
-                  background: 'transparent',
-                  color: 'var(--text-primary)',
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                }}
-              >
-                Descargar Word
-              </button>
+              <TierGate feature="can_download_docs" onNavigate={onNavigate}>
+                <button
+                  onClick={async () => {
+                    document.getElementById('export-menu')!.style.display = 'none';
+                    if (pendingContent.current && docId) await saveContent(pendingContent.current);
+                    const res = await api.collabExportPdf(docId!);
+                    if (res.ok) {
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${doc?.title || 'documento'}.pdf`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } else {
+                      alert('Error exportando PDF');
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    borderBottom: '1px solid var(--border)',
+                  }}
+                >
+                  Descargar PDF
+                </button>
+              </TierGate>
+              <TierGate feature="can_download_docs" onNavigate={onNavigate}>
+                <button
+                  onClick={async () => {
+                    document.getElementById('export-menu')!.style.display = 'none';
+                    if (pendingContent.current && docId) await saveContent(pendingContent.current);
+                    const res = await api.collabExportDocx(docId!);
+                    if (res.ok) {
+                      const blob = await res.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `${doc?.title || 'documento'}.docx`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } else {
+                      alert('Error exportando DOCX');
+                    }
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px',
+                    border: 'none',
+                    background: 'transparent',
+                    color: 'var(--text-primary)',
+                    fontSize: 13,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  Descargar Word
+                </button>
+              </TierGate>
             </div>
           </div>
 

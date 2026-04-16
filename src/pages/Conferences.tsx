@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { Video, Users, Clock, Calendar, Plus, X, FileText, Mic } from '../components/Icons';
+import TierGate from '../components/TierGate';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -259,7 +260,7 @@ export default function Conferences({ onNavigate }: Props) {
             Sesiones de video en vivo y grabadas
           </p>
         </div>
-        {isPro ? (
+        <TierGate feature="can_create_conference" onNavigate={onNavigate}>
           <button
             onClick={() => setShowCreate(true)}
             className="btn-primary"
@@ -276,22 +277,7 @@ export default function Conferences({ onNavigate }: Props) {
           >
             {Plus()} Nueva conferencia
           </button>
-        ) : (
-          <button
-            onClick={() => onNavigate('/subscription')}
-            style={{
-              background: 'var(--bg-tertiary)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
-              borderRadius: 10,
-              padding: '10px 20px',
-              cursor: 'pointer',
-              fontSize: 13,
-            }}
-          >
-            Plan Pro requerido para crear
-          </button>
-        )}
+        </TierGate>
       </div>
 
       {/* Tabs */}

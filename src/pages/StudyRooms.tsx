@@ -22,6 +22,7 @@ import {
   Shield,
   Lock,
 } from '../components/Icons';
+import TierGate from '../components/TierGate';
 
 /* ── Types ── */
 interface ChatMessage {
@@ -949,9 +950,11 @@ export default function StudyRooms({ onNavigate }: Props) {
             >
               {Clock({ size: 14 })} Mis Sesiones
             </button>
-            <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-              + Crear Sala
-            </button>
+            <TierGate feature="can_create_study_room" onNavigate={onNavigate}>
+              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
+                + Crear Sala
+              </button>
+            </TierGate>
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { BookOpen, Search, Star, ChevronRight } from '../components/Icons';
 import PDFReader from '../components/PDFReader';
+import TierGate from '../components/TierGate';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -1097,13 +1098,15 @@ export default function Biblioteca({ onNavigate }: Props) {
               {(selected.has_file || selected.embed_url) &&
                 (selected.source_type === 'user_shared' ||
                   selected.source_type === 'gutenberg') && (
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => openCloneModal(selected)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                  >
-                    {ChevronRight({ size: 14 })} Agregar a mi asignatura
-                  </button>
+                  <TierGate feature="biblioteca_clone" onNavigate={onNavigate}>
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => openCloneModal(selected)}
+                      style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      {ChevronRight({ size: 14 })} Agregar a mi asignatura
+                    </button>
+                  </TierGate>
                 )}
               {/* Botón Citar */}
               {selected.title && (

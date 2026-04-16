@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DOMPurify from 'dompurify';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Project, Document, ChatMessage } from '../types';
 import ChatMessageRenderer from '../components/ChatMessageRenderer';
+import TierGate from '../components/TierGate';
 import { api } from '../services/api';
 import {
   FileText,
@@ -81,6 +82,7 @@ function formatSize(bytes: number) {
 export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
   const { id } = useParams<{ id: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const project = projects.find((p) => p.id === id);
   const initialTab = (
     ['docs', 'chat', 'guide', 'quiz', 'flashcards', 'summary', 'live'].includes(
@@ -1073,13 +1075,15 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                       onChange={(e) => setYoutubeUrl(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleAddYoutube()}
                     />
-                    <button
-                      className="btn btn-primary btn-sm"
-                      onClick={handleAddYoutube}
-                      disabled={addingVideo}
-                    >
-                      {addingVideo ? '...' : 'Agregar'}
-                    </button>
+                    <TierGate feature="video_youtube" onNavigate={(p) => navigate(p)}>
+                      <button
+                        className="btn btn-primary btn-sm"
+                        onClick={handleAddYoutube}
+                        disabled={addingVideo}
+                      >
+                        {addingVideo ? '...' : 'Agregar'}
+                      </button>
+                    </TierGate>
                   </div>
                   <div
                     style={{
@@ -1098,14 +1102,16 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     style={{ display: 'none' }}
                     onChange={handleVideoUpload}
                   />
-                  <button
-                    className="btn btn-secondary"
-                    style={{ width: '100%' }}
-                    onClick={() => videoInputRef.current?.click()}
-                    disabled={addingVideo}
-                  >
-                    {FolderOpen()} Seleccionar archivo
-                  </button>
+                  <TierGate feature="video_upload" onNavigate={(p) => navigate(p)}>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ width: '100%' }}
+                      onClick={() => videoInputRef.current?.click()}
+                      disabled={addingVideo}
+                    >
+                      {FolderOpen()} Seleccionar archivo
+                    </button>
+                  </TierGate>
                   <button
                     className="btn btn-secondary btn-sm"
                     style={{ marginTop: 8 }}
@@ -1187,20 +1193,22 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     </button>
                     <div className="chat-action-sep" />
                     <span className="chat-action-label">Exportar</span>
-                    <button
-                      className="chat-action-btn"
-                      onClick={handleExportChatWord}
-                      title="Exportar chat completo a Word (.docx)"
-                    >
-                      {FileText()} Word
-                    </button>
-                    <button
-                      className="chat-action-btn"
-                      onClick={handleExportChatExcel}
-                      title="Exportar chat a Excel/CSV"
-                    >
-                      {Download()} Excel
-                    </button>
+                    <TierGate feature="can_export" onNavigate={(p) => navigate(p)}>
+                      <button
+                        className="chat-action-btn"
+                        onClick={handleExportChatWord}
+                        title="Exportar chat completo a Word (.docx)"
+                      >
+                        {FileText()} Word
+                      </button>
+                      <button
+                        className="chat-action-btn"
+                        onClick={handleExportChatExcel}
+                        title="Exportar chat a Excel/CSV"
+                      >
+                        {Download()} Excel
+                      </button>
+                    </TierGate>
                   </>
                 )}
               </div>
@@ -3935,24 +3943,26 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
                     <>{Sparkles()} Generar Resumen</>
                   )}
                 </button>
-                <button
-                  onClick={async () => {
-                    if (!project) return;
-                    setIsGeneratingMap(true);
-                    try {
-                      const data = await api.generateConceptMap(project.id);
-                      setConceptMap(data);
-                    } catch (err: any) {
-                      console.error(err);
-                    }
-                    setIsGeneratingMap(false);
-                  }}
-                  disabled={isGeneratingMap || !project?.documents.length}
-                  className="btn btn-secondary"
-                  style={{ height: 42, padding: '0 20px', whiteSpace: 'nowrap' }}
-                >
-                  {isGeneratingMap ? <>{Hourglass()} ...</> : <>{Map()} Mapa Conceptual</>}
-                </button>
+                <TierGate feature="concept_map" onNavigate={(p) => navigate(p)}>
+                  <button
+                    onClick={async () => {
+                      if (!project) return;
+                      setIsGeneratingMap(true);
+                      try {
+                        const data = await api.generateConceptMap(project.id);
+                        setConceptMap(data);
+                      } catch (err: any) {
+                        console.error(err);
+                      }
+                      setIsGeneratingMap(false);
+                    }}
+                    disabled={isGeneratingMap || !project?.documents.length}
+                    className="btn btn-secondary"
+                    style={{ height: 42, padding: '0 20px', whiteSpace: 'nowrap' }}
+                  >
+                    {isGeneratingMap ? <>{Hourglass()} ...</> : <>{Map()} Mapa Conceptual</>}
+                  </button>
+                </TierGate>
               </div>
               {!project?.documents.length && (
                 <p style={{ margin: '12px 0 0', fontSize: 13, color: 'var(--text-muted)' }}>
@@ -4289,9 +4299,11 @@ export default function ProjectView({ projects, onUpdate, onDelete }: Props) {
               </p>
 
               {!isRecording && !recordedBlob && (
-                <button className="btn btn-primary" onClick={handleStartRecording}>
-                  ⏺ Iniciar Grabación
-                </button>
+                <TierGate feature="audio_to_notes" onNavigate={(p) => navigate(p)}>
+                  <button className="btn btn-primary" onClick={handleStartRecording}>
+                    ⏺ Iniciar Grabación
+                  </button>
+                </TierGate>
               )}
 
               {isRecording && (

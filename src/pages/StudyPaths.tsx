@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { api } from '../services/api';
 import { Project, QuizQuestion } from '../types';
+import TierGate from '../components/TierGate';
 
 interface Props {
   projects: Project[];
@@ -1305,15 +1306,17 @@ export default function StudyPaths({ projects, onNavigate }: Props) {
                     Genera un plan de estudio personalizado de 7 d\u00edas basado en tus resultados
                     del quiz y temas d\u00e9biles.
                   </p>
-                  <button
-                    style={{ ...S.btn, ...S.btnPrimary, ...(planLoading ? S.btnDisabled : {}) }}
-                    onClick={handleGeneratePlan}
-                    disabled={planLoading}
-                  >
-                    {planLoading
-                      ? '\u23F3 Generando plan...'
-                      : '\uD83D\uDCCB Generar plan personalizado'}
-                  </button>
+                  <TierGate feature="study_plan" onNavigate={onNavigate}>
+                    <button
+                      style={{ ...S.btn, ...S.btnPrimary, ...(planLoading ? S.btnDisabled : {}) }}
+                      onClick={handleGeneratePlan}
+                      disabled={planLoading}
+                    >
+                      {planLoading
+                        ? '\u23F3 Generando plan...'
+                        : '\uD83D\uDCCB Generar plan personalizado'}
+                    </button>
+                  </TierGate>
                 </div>
               ) : (
                 <div>
