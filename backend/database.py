@@ -1581,10 +1581,11 @@ def _ensure_columns():
         ("tutor_documents", "file_mime", "VARCHAR(100)"),
         # users — last_seen for online presence
         ("users", "last_seen", "TIMESTAMP"),
-        # lms_courses — link to conniku project
+        # lms_courses — campos que se agregaron al modelo despues de create_all
         ("lms_courses", "conniku_project_id", "VARCHAR(255)"),
-        # lms_courses — nombre personalizado por el usuario (sync usa .name interno)
         ("lms_courses", "display_name", "VARCHAR(500)"),
+        ("lms_courses", "startdate", "INTEGER DEFAULT 0"),
+        ("lms_courses", "enddate", "INTEGER DEFAULT 0"),
         # calendar_events — campos LMS sync
         ("calendar_events", "source", "VARCHAR(20) DEFAULT 'manual'"),
         ("calendar_events", "lms_event_id", "VARCHAR(200)"),
