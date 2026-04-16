@@ -20,6 +20,14 @@ ignore = [
   "UP007",  # Optional vs X | None (compatibilidad)
   "UP035",  # typing.List/Dict deprecated — necesario para Python 3.9 compat
   "UP045",  # Optional[X] vs X | None — Pydantic en 3.9 no soporta X | None
+  "E711",   # comparison to None — SQLAlchemy requiere == None, no 'is None'
+  "E712",   # comparison to True/False — SQLAlchemy requiere == True, no 'is True'
+  "E722",   # bare except — legacy code, arreglar oportunísticamente
+  "B904",   # raise from — legacy code, arreglar oportunísticamente
+  "F541",   # f-string sin placeholders — cosmético
+  "SIM105", # contextlib.suppress — preferencia de estilo
+  "SIM114", # combine if branches — preferencia de estilo
+  "I001",   # import sort — legacy, arreglar oportunísticamente
 ]
 
 [lint.per-file-ignores]

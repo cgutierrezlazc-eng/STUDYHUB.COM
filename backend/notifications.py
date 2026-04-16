@@ -1002,3 +1002,48 @@ def send_test_email(
         html, email_type="test", from_account=account,
     )
     return {"status": "queued", "message": f"Email de prueba enviado a {data.to_email} desde {account}@conniku.com"}
+
+
+# ─── SUBSCRIPTION RENEWAL REMINDERS ─────────────────────────
+# Sends pre-renewal emails 7 days and 1 day before subscription expiry.
+# Called daily by APScheduler (server.py).
+
+def check_renewal_reminders():
+    """Envía emails 7 días y 1 día antes de renovación de suscripción PRO."""
+    from database import SessionLocal, User
+    from sqlalchemy import func
+
+    db = SessionLocal()
+    alerts_sent = []
+    try:
+        today = date.today()
+        for days_before in [7, 1]:
+            target_date = today + __import__("datetime").timedelta(days=days_before)
+            users = db.query(User).filter(
+                User.subscription_status.in_(["active", "trial"]),
+                User.subscription_tier == "pro",
+                func.date(User.subscription_expires_at) == target_date,
+            ).all()
+
+            for u in users:
+                if not u.email:
+                    continue
+                plural = "s" if days_before > 1 else ""
+                subject = f"Tu suscripción Conniku PRO se renueva en {days_before} día{plural}"
+                body = (
+                    f"<p>Hola {u.first_name},</p>"
+                    f"<p>Te recordamos que tu suscripción <strong>Conniku PRO</strong> se renovará "
+                    f"automáticamente el <strong>{target_date.strftime('%d/%m/%Y')}</strong>.</p>"
+                    f"<p>Si deseas cancelar antes de la renovación, puedes hacerlo desde tu panel de suscripción.</p>"
+                    f"<p style=\"font-size:13px;color:#6B7280\">Recuerda que tienes derecho a retracto dentro de los "
+                    f"10 días hábiles siguientes a cada cobro (Ley 19.496, Art. 3 bis).</p>"
+                )
+                html = _email_template(subject, body, "Ver mi Suscripción", f"{FRONTEND_URL}/subscription")
+                _send_email_async(u.email, f"Conniku — {subject}", html, email_type="renewal_reminder")
+                alerts_sent.append({"user": u.email, "days_before": days_before})
+                print(f"[Renewal] Reminder sent to {u.email} — {days_before} day{plural} before expiry")
+    except Exception as e:
+        print(f"[Renewal Error] {e}")
+    finally:
+        db.close()
+    return alerts_sent

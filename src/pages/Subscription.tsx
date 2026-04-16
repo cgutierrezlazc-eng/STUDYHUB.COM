@@ -579,6 +579,41 @@ export default function Subscription({ onNavigate }: Props) {
               </div>
             </div>
 
+            {/* Derecho de Retracto — Ley 19.496 Art. 3 bis */}
+            <div
+              style={{
+                maxWidth: 700,
+                margin: '24px auto 0',
+                padding: '14px 18px',
+                background: 'var(--bg-secondary)',
+                borderRadius: 10,
+                border: '1px solid var(--border-subtle)',
+                fontSize: 12,
+                color: 'var(--text-muted)',
+                lineHeight: 1.6,
+              }}
+            >
+              <strong style={{ color: 'var(--text-secondary)' }}>
+                Derecho de retracto (Ley 19.496, Art. 3 bis):
+              </strong>{' '}
+              Puedes ejercer tu derecho de retracto dentro de los 10 días hábiles siguientes a la
+              contratación. Para ejercerlo, utiliza la opción &quot;Solicitar reembolso&quot; en tu
+              panel de suscripción o escríbenos a{' '}
+              <span style={{ color: 'var(--accent)' }}>contacto@conniku.com</span>. El reembolso se
+              procesará dentro de 30 días corridos. Consulta nuestros{' '}
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onNavigate('/terminos');
+                }}
+                style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+              >
+                Términos de Servicio
+              </a>{' '}
+              para más detalles.
+            </div>
+
             {/* FAQ */}
             <div style={{ maxWidth: 700, margin: '32px auto 0' }}>
               <h3 style={{ fontSize: 16, marginBottom: 16 }}>{t('sub.faqTitle')}</h3>

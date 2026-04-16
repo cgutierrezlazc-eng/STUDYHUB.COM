@@ -416,8 +416,8 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
             age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
             if age < 18:
                 raise HTTPException(403, "Debes tener al menos 18 años para registrarte")
-        except ValueError:
-            pass  # Invalid date format, skip check
+        except ValueError as exc:
+            raise HTTPException(400, "Formato de fecha de nacimiento inválido (usar YYYY-MM-DD)") from exc
     else:
         raise HTTPException(400, "Fecha de nacimiento es obligatoria")
 

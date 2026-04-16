@@ -233,8 +233,25 @@ try:
             replace_existing=True,
         )
 
+        # Subscription renewal reminders — 09:00 Chile = 13:00 UTC
+        from notifications import check_renewal_reminders
+
+        async def _async_renewal_reminders():
+            try:
+                result = check_renewal_reminders()
+                logging.getLogger(__name__).info(f"[Renewal] Scheduled check: {len(result)} reminders sent")
+            except Exception as e:
+                logging.getLogger(__name__).error(f"[Renewal] Scheduled check error: {e}")
+
+        _scheduler.add_job(
+            _async_renewal_reminders,
+            CronTrigger(hour=13, minute=0, timezone=pytz.utc),  # 09:00 Chile = 13:00 UTC
+            id="renewal_reminders",
+            replace_existing=True,
+        )
+
         _scheduler.start()
-        logging.getLogger(__name__).info("APScheduler started — HR indicators 08:00 CL + email docs every 30 min")
+        logging.getLogger(__name__).info("APScheduler started — HR indicators 08:00 CL + email docs every 30 min + renewal reminders 09:00 CL")
 
     @app.on_event("shutdown")
     async def stop_scheduler():
