@@ -425,15 +425,323 @@ class OpenStaxAdapter(SourceAdapter):
         return "https://openstax.org/subjects"
 
 
+# ─── SciELO Adapter ──────────────────────────────────────────
+
+# Cache del catálogo completo en memoria (2,360 libros, sin paginación en API)
+_scielo_catalog: dict = {"items": [], "ts": 0}
+_SCIELO_CATALOG_TTL = 43200  # 12 horas
+
+_SCIELO_API_URL = "https://books.scielo.org/api/v1/books/"
+
+
+class SciELOAdapter(SourceAdapter):
+    """Adapter para SciELO Books — libros académicos latinoamericanos."""
+
+    name = "scielo"
+    display_name = "SciELO Livros"
+
+    async def _get_catalog(self) -> list[dict]:
+        """Retorna catálogo completo, cacheado en memoria 12hr."""
+        now = time.time()
+        if _scielo_catalog["items"] and (now - _scielo_catalog["ts"]) < _SCIELO_CATALOG_TTL:
+            return _scielo_catalog["items"]
+
+        client = get_http_client()
+        resp = await client.get(_SCIELO_API_URL)
+        resp.raise_for_status()
+        raw_books = resp.json()
+
+        # La API retorna un array directo, no un objeto con "items"
+        if isinstance(raw_books, dict):
+            raw_books = raw_books.get("items", raw_books.get("results", []))
+
+        items = [
+            self._normalize(b)
+            for b in raw_books
+            if isinstance(b, dict) and b.get("_id")
+        ]
+
+        _scielo_catalog["items"] = items
+        _scielo_catalog["ts"] = now
+        return items
+
+    async def search(self, query: str = "", lang: str = "", page: int = 1) -> dict:
+        catalog = await self._get_catalog()
+
+        if query.strip():
+            q_lower = query.strip().lower()
+            catalog = [
+                item for item in catalog
+                if q_lower in item["title"].lower()
+                or q_lower in item["author"].lower()
+                or q_lower in item["description"].lower()
+            ]
+
+        if lang:
+            catalog = [
+                item for item in catalog
+                if lang in item.get("language", "")
+            ]
+
+        # Solo mostrar libros que tienen archivo descargable
+        catalog = [item for item in catalog if item.get("pdf_url") or item.get("embed_url")]
+
+        per_page = 24
+        start = (page - 1) * per_page
+        return {
+            "items": catalog[start : start + per_page],
+            "total": len(catalog),
+            "page": page,
+        }
+
+    def _normalize(self, b: dict) -> dict:
+        scielo_id = b.get("_id", "")
+
+        # Extraer autores de todos los roles (creators puede ser dict o list)
+        authors: list[str] = []
+        creators = b.get("creators")
+        if isinstance(creators, dict):
+            for role_list in creators.values():
+                if isinstance(role_list, list):
+                    for entry in role_list:
+                        if isinstance(entry, list) and entry and entry[0]:
+                            authors.append(str(entry[0]))
+                        elif isinstance(entry, str) and entry:
+                            authors.append(entry)
+        author_str = ", ".join(authors[:3]) or "Autor desconocido"
+
+        # Synopsis como descripción (puede ser str o list)
+        synopsis = _ensure_str(b.get("synopsis"))
+        description = synopsis[:300] + "..." if len(synopsis) > 300 else synopsis
+        category = _map_category([synopsis])
+
+        # Fix HTTP → HTTPS en todas las URIs
+        pdf_uri = (b.get("pdf_file") or {}).get("uri", "")
+        epub_uri = (b.get("epub_file") or {}).get("uri", "")
+        cover_uri = (b.get("cover") or {}).get("uri", "")
+
+        pdf_url = pdf_uri.replace("http://", "https://", 1) if pdf_uri else ""
+        epub_url = epub_uri.replace("http://", "https://", 1) if epub_uri else ""
+        cover_url = cover_uri.replace("http://", "https://", 1) if cover_uri else ""
+
+        year_str = b.get("year", "")
+        year = int(year_str) if isinstance(year_str, str) and year_str.isdigit() else None
+
+        return {
+            "id": f"scielo-{scielo_id}",
+            "title": b.get("title", "Sin título"),
+            "author": author_str,
+            "description": description,
+            "category": category,
+            "source_type": "scielo",
+            "source_display": self.display_name,
+            "has_file": False,
+            "embed_url": pdf_url or epub_url,
+            "cover_url": cover_url,
+            "language": b.get("language", ""),
+            "is_saved": False,
+            "views": 0,
+            "rating": 0,
+            "rating_count": 0,
+            "tags": [],
+            "year": year,
+            "pages": None,
+            "license": "Open Access (SciELO)",
+            "license_url": "",
+            "is_nc": False,
+            "copyright_holder": b.get("publisher", ""),
+            "read_url": f"https://books.scielo.org/id/{scielo_id}/",
+            "pdf_url": pdf_url,
+            "scielo_id": scielo_id,
+        }
+
+    async def download_content(self, external_id: str) -> tuple[bytes, str, dict]:
+        """Descarga PDF de un libro SciELO."""
+        catalog = await self._get_catalog()
+        book = next(
+            (item for item in catalog if item.get("scielo_id") == external_id),
+            None,
+        )
+
+        pdf_url = book.get("pdf_url", "") if book else ""
+        if not pdf_url:
+            msg = f"No se encontró PDF para SciELO book {external_id}"
+            raise ValueError(msg)
+
+        async with httpx.AsyncClient(
+            timeout=120.0, follow_redirects=True,
+            headers={"User-Agent": _CONNIKU_USER_AGENT},
+        ) as dl_client:
+            resp = await dl_client.get(pdf_url)
+            resp.raise_for_status()
+            return resp.content, "book.pdf", {"pdf_url": pdf_url}
+
+    def get_content_url(self, external_id: str) -> str | None:
+        return f"https://books.scielo.org/id/{external_id}/"
+
+
+# ─── Internet Archive Adapter ───────────────────────────────
+
+_IA_SEARCH_URL = "https://archive.org/advancedsearch.php"
+_IA_LANG_MAP = {"es": "spa", "pt": "por", "en": "eng", "fr": "fre", "de": "ger"}
+
+
+def _ensure_str(value: object) -> str:
+    """Normaliza campos de IA que pueden ser str o list[str]."""
+    if isinstance(value, list):
+        return "; ".join(str(v) for v in value)
+    return str(value) if value else ""
+
+
+def _ensure_list(value: object) -> list[str]:
+    """Normaliza campos de IA que pueden ser str o list[str]."""
+    if isinstance(value, list):
+        return [str(v) for v in value]
+    return [str(value)] if value else []
+
+
+class InternetArchiveAdapter(SourceAdapter):
+    """Adapter para Internet Archive — millones de libros Open Access."""
+
+    name = "internetarchive"
+    display_name = "Internet Archive"
+
+    async def search(self, query: str = "", lang: str = "", page: int = 1) -> dict:
+        per_page = 24
+        q_parts = ["mediatype:texts", "licenseurl:*creativecommons*"]
+
+        if query.strip():
+            # Escapar caracteres especiales de Solr para prevenir query injection
+            solr_special = r'[+\-&|!(){}[\]^"~*?:\\/]'
+            escaped = re.sub(solr_special, r"\\\g<0>", query.strip())
+            q_parts.append(f"(title:({escaped}) OR subject:({escaped}))")
+        if lang:
+            ia_lang = _IA_LANG_MAP.get(lang, lang)
+            q_parts.append(f"language:{ia_lang}")
+
+        params = {
+            "q": " AND ".join(q_parts),
+            "output": "json",
+            "rows": per_page,
+            "start": (page - 1) * per_page,
+            "fl": "identifier,title,creator,description,subject,language,licenseurl,date,downloads",
+            "sort": "downloads desc",
+        }
+
+        client = get_http_client()
+        resp = await client.get(_IA_SEARCH_URL, params=params)
+        resp.raise_for_status()
+        data = resp.json()
+
+        response = data.get("response", {})
+        docs = response.get("docs", [])
+
+        return {
+            "items": [self._normalize(doc) for doc in docs],
+            "total": response.get("numFound", 0),
+            "page": page,
+        }
+
+    def _normalize(self, doc: dict) -> dict:
+        identifier = doc.get("identifier", "")
+        title = doc.get("title", "Sin título")
+        creator = _ensure_str(doc.get("creator", ""))
+        raw_desc = _ensure_str(doc.get("description", ""))
+        description = _strip_html(raw_desc)
+        if len(description) > 300:
+            description = description[:297] + "..."
+        subjects = _ensure_list(doc.get("subject"))
+        language = _ensure_str(doc.get("language", ""))
+        license_url = doc.get("licenseurl", "")
+        date_str = str(doc.get("date", ""))
+        downloads = doc.get("downloads", 0)
+
+        year = None
+        if date_str and len(date_str) >= 4:
+            with contextlib.suppress(ValueError):
+                year = int(date_str[:4])
+
+        is_nc = "-nc" in license_url.lower()
+        category = _map_category(subjects + [title])
+
+        return {
+            "id": f"ia-{identifier}",
+            "title": title,
+            "author": creator or "Autor desconocido",
+            "description": description,
+            "category": category,
+            "source_type": "internetarchive",
+            "source_display": self.display_name,
+            "has_file": False,
+            "embed_url": f"https://archive.org/embed/{identifier}",
+            "cover_url": f"https://archive.org/services/img/{identifier}",
+            "language": language,
+            "is_saved": False,
+            "views": downloads or 0,
+            "rating": 0,
+            "rating_count": 0,
+            "tags": subjects[:5],
+            "year": year,
+            "pages": None,
+            "license": license_url,
+            "license_url": license_url,
+            "is_nc": is_nc,
+            "copyright_holder": "",
+            "read_url": f"https://archive.org/details/{identifier}",
+            "pdf_url": None,
+            "ia_identifier": identifier,
+        }
+
+    async def download_content(self, external_id: str) -> tuple[bytes, str, dict]:
+        """Descarga PDF de un libro de Internet Archive (2 pasos: metadata → download)."""
+        # Paso 1: obtener lista de archivos
+        client = get_http_client()
+        resp = await client.get(f"https://archive.org/metadata/{external_id}/files")
+        resp.raise_for_status()
+        files = resp.json().get("result", [])
+
+        # Paso 2: buscar PDF, fallback EPUB
+        pdf_file = next((f for f in files if f.get("format") == "Text PDF"), None)
+        epub_file = next((f for f in files if f.get("format") == "EPUB"), None)
+        target = pdf_file or epub_file
+        if not target:
+            msg = f"No se encontró PDF/EPUB para IA item {external_id}"
+            raise ValueError(msg)
+
+        filename = target.get("name", "")
+        if not filename:
+            msg = f"Archivo sin nombre para IA item {external_id}"
+            raise ValueError(msg)
+        ext = ".pdf" if target.get("format") == "Text PDF" else ".epub"
+        from urllib.parse import quote
+        url = f"https://archive.org/download/{external_id}/{quote(filename)}"
+
+        # Descargar (archivos pueden ser grandes)
+        async with httpx.AsyncClient(
+            timeout=120.0, follow_redirects=True,
+            headers={"User-Agent": _CONNIKU_USER_AGENT},
+        ) as dl_client:
+            resp = await dl_client.get(url)
+            resp.raise_for_status()
+            return resp.content, f"book{ext}", {"pdf_url": url, "ia_filename": filename}
+
+    def get_content_url(self, external_id: str) -> str | None:
+        return f"https://archive.org/details/{external_id}"
+
+
 # ─── Unified Search Engine ───────────────────────────────────
 
 # Instancias globales de los adapters
 _gutenberg_adapter = GutenbergAdapter()
 _openstax_adapter = OpenStaxAdapter()
+_scielo_adapter = SciELOAdapter()
+_ia_adapter = InternetArchiveAdapter()
 
 _ALL_ADAPTERS: dict[str, SourceAdapter] = {
     "gutenberg": _gutenberg_adapter,
     "openstax": _openstax_adapter,
+    "scielo": _scielo_adapter,
+    "internetarchive": _ia_adapter,
 }
 
 

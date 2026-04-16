@@ -19,7 +19,13 @@ interface LibDoc {
   language?: string;
   rating?: number;
   rating_count?: number;
-  source_type: 'user_shared' | 'open_library' | 'gutenberg' | 'openstax';
+  source_type:
+    | 'user_shared'
+    | 'open_library'
+    | 'gutenberg'
+    | 'openstax'
+    | 'scielo'
+    | 'internetarchive';
   has_file: boolean;
   embed_url?: string;
   tags?: string[];
@@ -36,6 +42,8 @@ interface LibDoc {
   gutenberg_id?: number;
   openstax_id?: number;
   openstax_slug?: string;
+  scielo_id?: string;
+  ia_identifier?: string;
 }
 
 const CATEGORIES = [
@@ -161,7 +169,7 @@ export default function Biblioteca({ onNavigate }: Props) {
     try {
       const res = await api.searchBibliotecaUnified({
         q: search,
-        sources: 'openstax',
+        sources: 'openstax,scielo,internetarchive',
         page: acPage,
       });
       setAcDocs(res.items || []);
@@ -259,6 +267,24 @@ export default function Biblioteca({ onNavigate }: Props) {
       const extId = doc.id.replace('openstax-', '');
       return `${API_BASE}/biblioteca/v2/openstax/${extId}/read`;
     }
+    // SciELO: servir PDF desde cache
+    if (doc.source_type === 'scielo') {
+      if (doc.is_nc && doc.read_url) {
+        return doc.read_url;
+      }
+      const extId = doc.id.replace('scielo-', '');
+      return `${API_BASE}/biblioteca/v2/scielo/${extId}/read`;
+    }
+    // Internet Archive: NC → leer en archive.org; CC-BY → embed BookReader
+    if (doc.source_type === 'internetarchive') {
+      if (doc.is_nc && doc.read_url) {
+        return doc.read_url;
+      }
+      // IA BookReader es embeddable — usar embed_url directo
+      if (doc.embed_url) return doc.embed_url;
+      const extId = doc.id.replace('ia-', '');
+      return `${API_BASE}/biblioteca/v2/internetarchive/${extId}/read`;
+    }
     if (doc.embed_url) return doc.embed_url;
     return '';
   };
@@ -281,8 +307,8 @@ export default function Biblioteca({ onNavigate }: Props) {
                   : 'Recursos académicos compartidos por la comunidad'
                 : sourceTab === 'academicos'
                   ? acTotal > 0
-                    ? `${acTotal} textbooks universitarios — OpenStax`
-                    : 'Textbooks universitarios gratuitos — OpenStax'
+                    ? `${acTotal} recursos académicos — OpenStax, SciELO, Internet Archive`
+                    : 'Textbooks y libros académicos gratuitos'
                   : pdTotal > 0
                     ? `${pdTotal.toLocaleString()} libros en Project Gutenberg`
                     : 'Libros de dominio público — Project Gutenberg'}
@@ -612,18 +638,18 @@ export default function Biblioteca({ onNavigate }: Props) {
                     marginBottom: 2,
                   }}
                 >
-                  OpenStax — Textbooks universitarios gratuitos
+                  Biblioteca Académica — 3 fuentes
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  Libros de Cálculo, Física, Química, Biología, Economía y más. Licencia Creative
-                  Commons — lectura gratuita dentro de Conniku.
+                  OpenStax (textbooks), SciELO (Latinoamérica), Internet Archive (millones de
+                  libros). Licencias Creative Commons — lectura gratuita dentro de Conniku.
                 </div>
               </div>
             </div>
 
             {acLoading ? (
               <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-                Buscando en OpenStax...
+                Buscando recursos académicos...
               </div>
             ) : acDocs.length === 0 ? (
               <div className="empty-state" style={{ padding: 60 }}>
@@ -834,11 +860,28 @@ export default function Biblioteca({ onNavigate }: Props) {
                       background:
                         selected.source_type === 'user_shared'
                           ? 'rgba(16,185,129,0.12)'
-                          : 'rgba(37,99,235,0.12)',
-                      color: selected.source_type === 'user_shared' ? '#10B981' : '#2563EB',
+                          : selected.source_type === 'openstax'
+                            ? 'rgba(139,92,246,0.12)'
+                            : selected.source_type === 'scielo'
+                              ? 'rgba(14,165,233,0.12)'
+                              : selected.source_type === 'internetarchive'
+                                ? 'rgba(234,88,12,0.12)'
+                                : 'rgba(37,99,235,0.12)',
+                      color:
+                        selected.source_type === 'user_shared'
+                          ? '#10B981'
+                          : selected.source_type === 'openstax'
+                            ? '#8B5CF6'
+                            : selected.source_type === 'scielo'
+                              ? '#0EA5E9'
+                              : selected.source_type === 'internetarchive'
+                                ? '#EA580C'
+                                : '#2563EB',
                     }}
                   >
-                    {selected.source_type === 'user_shared' ? 'Comunidad' : 'Biblioteca Online'}
+                    {selected.source_type === 'user_shared'
+                      ? 'Comunidad'
+                      : selected.source_display || 'Biblioteca Online'}
                   </span>
                   <span
                     style={{
@@ -1379,7 +1422,11 @@ function BookCard({
                 ? 'rgba(16,185,129,0.9)'
                 : doc.source_type === 'openstax'
                   ? 'rgba(139,92,246,0.9)'
-                  : 'rgba(37,99,235,0.9)',
+                  : doc.source_type === 'scielo'
+                    ? 'rgba(14,165,233,0.9)'
+                    : doc.source_type === 'internetarchive'
+                      ? 'rgba(234,88,12,0.9)'
+                      : 'rgba(37,99,235,0.9)',
             color: '#fff',
           }}
         >
@@ -1387,7 +1434,11 @@ function BookCard({
             ? 'Comunidad'
             : doc.source_type === 'openstax'
               ? 'OpenStax'
-              : 'Online'}
+              : doc.source_type === 'scielo'
+                ? 'SciELO'
+                : doc.source_type === 'internetarchive'
+                  ? 'Archive'
+                  : 'Online'}
         </span>
       </div>
 
@@ -1513,20 +1564,32 @@ function BookRow({
                 ? 'rgba(16,185,129,0.12)'
                 : doc.source_type === 'openstax'
                   ? 'rgba(139,92,246,0.12)'
-                  : 'rgba(37,99,235,0.12)',
+                  : doc.source_type === 'scielo'
+                    ? 'rgba(14,165,233,0.12)'
+                    : doc.source_type === 'internetarchive'
+                      ? 'rgba(234,88,12,0.12)'
+                      : 'rgba(37,99,235,0.12)',
             color:
               doc.source_type === 'user_shared'
                 ? '#10B981'
                 : doc.source_type === 'openstax'
                   ? '#8B5CF6'
-                  : '#2563EB',
+                  : doc.source_type === 'scielo'
+                    ? '#0EA5E9'
+                    : doc.source_type === 'internetarchive'
+                      ? '#EA580C'
+                      : '#2563EB',
           }}
         >
           {doc.source_type === 'user_shared'
             ? 'Comunidad'
             : doc.source_type === 'openstax'
               ? 'OpenStax'
-              : 'Online'}
+              : doc.source_type === 'scielo'
+                ? 'SciELO'
+                : doc.source_type === 'internetarchive'
+                  ? 'Archive'
+                  : 'Online'}
         </span>
         {doc.source_type === 'user_shared' && (
           <button
