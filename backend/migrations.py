@@ -3,9 +3,10 @@ Database migrations for Conniku.
 Adds new columns to existing tables. Safe to run multiple times.
 Uses SQLAlchemy so it works with both PostgreSQL and SQLite.
 """
-import os
 import logging
-from sqlalchemy import text, inspect
+import os
+
+from sqlalchemy import inspect, text
 
 logger = logging.getLogger("conniku.migrations")
 
@@ -286,11 +287,10 @@ def migrate():
         from pathlib import Path
         config_file = Path(os.environ.get("DATA_DIR", "/data")) / "config.json"
         admin_email = ""
+        import contextlib
         if config_file.exists():
-            try:
+            with contextlib.suppress(Exception):
                 admin_email = json.loads(config_file.read_text()).get("admin_email", "").lower()
-            except Exception:
-                pass
         if not admin_email:
             admin_email = os.environ.get("ADMIN_EMAIL", "").lower()
         if admin_email:
@@ -315,6 +315,24 @@ def migrate():
                 )
             """))
             logger.info("Created blog_threads table.")
+
+    # ─── university_connections: add missing columns ──────────────
+    if inspector.has_table("university_connections"):
+        uc_cols = {c["name"] for c in inspector.get_columns("university_connections")}
+        uc_new = [
+            ("last_visited_at", "TIMESTAMP"),
+            ("platform_name", "VARCHAR(255) DEFAULT ''"),
+        ]
+        for col_name, col_type in uc_new:
+            if col_name not in uc_cols:
+                try:
+                    with engine.begin() as conn:
+                        conn.execute(text(
+                            f'ALTER TABLE university_connections ADD COLUMN {col_name} {col_type}'
+                        ))
+                    logger.info(f"Added university_connections.{col_name}")
+                except Exception as e:
+                    logger.warning(f"Could not add university_connections.{col_name}: {e}")
 
     logger.info("Migrations complete.")
 
