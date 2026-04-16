@@ -15,7 +15,8 @@ from typing import Literal, Optional
 from database import Base, CalendarEvent, User, gen_id, get_db
 from fastapi import APIRouter, Depends, HTTPException
 from middleware import get_current_user
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Session
 
@@ -53,7 +54,12 @@ VALID_PLATFORMS = Literal["moodle", "canvas", "blackboard", "brightspace", "saka
 VALID_EVENT_TYPES = Literal["task", "deadline", "exam", "class", "forum"]
 
 
-class ExtCourse(BaseModel):
+class _CamelModel(BaseModel):
+    """Base que acepta camelCase (JS) y snake_case (Python)."""
+    model_config = ConfigDict(populate_by_name=True, alias_generator=to_camel)
+
+
+class ExtCourse(_CamelModel):
     external_id: str = Field(max_length=100)
     name: str = Field(max_length=500)
     short_name: Optional[str] = Field(None, max_length=100)
@@ -64,7 +70,7 @@ class ExtCourse(BaseModel):
     platform: str = Field(max_length=30)
 
 
-class ExtFile(BaseModel):
+class ExtFile(_CamelModel):
     external_id: str = Field(max_length=200)
     course_external_id: str = Field(max_length=100)
     name: str = Field(max_length=500)
@@ -77,7 +83,7 @@ class ExtFile(BaseModel):
     time_modified: Optional[int] = None
 
 
-class ExtEvent(BaseModel):
+class ExtEvent(_CamelModel):
     external_id: str = Field(max_length=100)
     title: str = Field(max_length=500)
     description: Optional[str] = Field(None, max_length=5000)
@@ -90,7 +96,7 @@ class ExtEvent(BaseModel):
     submission_status: Optional[str] = Field(None, max_length=30)
 
 
-class ExtGrade(BaseModel):
+class ExtGrade(_CamelModel):
     external_id: str = Field(max_length=200)
     course_external_id: str = Field(max_length=100)
     item_name: str = Field(max_length=500)
@@ -102,7 +108,7 @@ class ExtGrade(BaseModel):
     time_modified: Optional[int] = None
 
 
-class SyncPayload(BaseModel):
+class SyncPayload(_CamelModel):
     platform: str = Field(max_length=30)
     base_url: str = Field(max_length=500)
     site_name: str = Field(max_length=200)
