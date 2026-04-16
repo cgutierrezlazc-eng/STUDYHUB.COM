@@ -4648,7 +4648,29 @@ function RemuneracionesTab({ payroll, employees, month, year, onRefresh }: any) 
         <button onClick={handleCalculate} disabled={calculating} style={btnPrimary}>
           <Calculator size={16} /> {calculating ? 'Calculando...' : 'Calcular Nomina'}
         </button>
-        <button style={btnSecondary}>
+        <button
+          style={btnSecondary}
+          onClick={async () => {
+            try {
+              const token = localStorage.getItem('conniku_token');
+              const base =
+                (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+              const res = await fetch(`${base}/hr/payroll/${year}/${month}/export-pdf`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+              });
+              if (!res.ok) throw new Error(`Error ${res.status}`);
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `liquidacion_${year}_${String(month).padStart(2, '0')}.pdf`;
+              a.click();
+              URL.revokeObjectURL(url);
+            } catch (e: any) {
+              alert(e?.message || 'Error al exportar PDF');
+            }
+          }}
+        >
           <Download size={16} /> Exportar PDF
         </button>
       </div>
@@ -5105,7 +5127,55 @@ function PreviredTab({
 
           {/* Actions */}
           <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
-            <button style={btnPrimary}>
+            <button
+              style={btnPrimary}
+              disabled={!data || !data.employees?.length}
+              onClick={() => {
+                if (!data?.employees?.length) return;
+                const months = [
+                  '',
+                  'Enero',
+                  'Febrero',
+                  'Marzo',
+                  'Abril',
+                  'Mayo',
+                  'Junio',
+                  'Julio',
+                  'Agosto',
+                  'Septiembre',
+                  'Octubre',
+                  'Noviembre',
+                  'Diciembre',
+                ];
+                const lines = [
+                  'RUT;NOMBRE;AFP;MONTO_AFP;SALUD;MONTO_SALUD;AFC_TRABAJADOR;AFC_EMPLEADOR;SIS;MUTUAL;RENTA_IMPONIBLE',
+                ];
+                for (const emp of data.employees) {
+                  lines.push(
+                    [
+                      emp.rut,
+                      emp.name,
+                      emp.afp,
+                      Math.round(emp.afpAmount),
+                      emp.healthSystem,
+                      Math.round(emp.healthAmount),
+                      Math.round(emp.afcEmployee),
+                      Math.round(emp.afcEmployer),
+                      Math.round(emp.sis),
+                      Math.round(emp.mutual),
+                      Math.round(emp.taxableIncome),
+                    ].join(';')
+                  );
+                }
+                const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Previred_${months[month]}_${year}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+              }}
+            >
               <Download size={16} /> Descargar Planilla Previred
             </button>
             <button
@@ -5235,7 +5305,51 @@ function GastosTab({ expenses, month, year, onRefresh, showAdd, setShowAdd }: an
         >
           <Plus size={16} /> Agregar Gasto
         </button>
-        <button style={btnSecondary}>
+        <button
+          style={btnSecondary}
+          disabled={!expenses?.length}
+          onClick={() => {
+            if (!expenses?.length) return;
+            const months = [
+              '',
+              'Enero',
+              'Febrero',
+              'Marzo',
+              'Abril',
+              'Mayo',
+              'Junio',
+              'Julio',
+              'Agosto',
+              'Septiembre',
+              'Octubre',
+              'Noviembre',
+              'Diciembre',
+            ];
+            const lines = ['Categoría;Descripción;Monto CLP;Monto USD;Fecha;Proveedor;Estado'];
+            for (const e of expenses) {
+              lines.push(
+                [
+                  e.category || '',
+                  e.description || '',
+                  e.amountClp || 0,
+                  e.amountUsd || '',
+                  e.date || '',
+                  e.vendor || '',
+                  e.status || '',
+                ].join(';')
+              );
+            }
+            const blob = new Blob(['\ufeff' + lines.join('\n')], {
+              type: 'text/csv;charset=utf-8;',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Gastos_${months[month]}_${year}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+        >
           <Download size={16} /> Exportar Excel
         </button>
       </div>

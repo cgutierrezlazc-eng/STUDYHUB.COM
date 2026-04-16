@@ -2169,6 +2169,117 @@ def mark_payroll_paid(
     return {"payroll": _payroll_to_dict(pr), "message": "Nomina marcada como pagada"}
 
 
+@router.get("/payroll/{year}/{month}/export-pdf")
+def export_payroll_pdf(
+    year: int,
+    month: int,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Genera PDF de liquidaciones de nómina del mes (Art. 54 Código del Trabajo)."""
+    _require_hr_access(user)
+
+    records = (
+        db.query(PayrollRecord)
+        .filter(PayrollRecord.period_year == year, PayrollRecord.period_month == month)
+        .all()
+    )
+    if not records:
+        raise HTTPException(404, "No hay nómina calculada para este período")
+
+    # Obtener datos de empleados
+    emp_ids = [r.employee_id for r in records]
+    employees = db.query(Employee).filter(Employee.id.in_(emp_ids)).all()
+    emp_map = {e.id: e for e in employees}
+
+    months_es = [
+        "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+    ]
+
+    def fmt(n: float) -> str:
+        return f"${int(n):,}".replace(",", ".")
+
+    # Generar HTML de la liquidación
+    html_parts = []
+    for rec in records:
+        emp = emp_map.get(rec.employee_id)
+        if not emp:
+            continue
+        d = _payroll_to_dict(rec)
+        html_parts.append(f"""
+        <div style="page-break-after:always; font-family:Arial,sans-serif; font-size:12px; padding:20px;">
+            <h2 style="text-align:center; margin-bottom:5px;">LIQUIDACIÓN DE REMUNERACIONES</h2>
+            <p style="text-align:center; color:#666; margin-top:0;">{months_es[month]} {year}</p>
+            <hr/>
+            <table style="width:100%; margin-bottom:15px;">
+                <tr><td><strong>Empleador:</strong> Conniku SpA</td><td><strong>RUT Empresa:</strong> 78.395.702-7</td></tr>
+                <tr><td><strong>Trabajador:</strong> {emp.first_name} {emp.last_name}</td><td><strong>RUT:</strong> {emp.rut}</td></tr>
+                <tr><td><strong>Cargo:</strong> {emp.position}</td><td><strong>Fecha ingreso:</strong> {emp.start_date}</td></tr>
+            </table>
+            <h3 style="background:#2D62C8; color:#fff; padding:5px 10px; font-size:13px;">HABERES</h3>
+            <table style="width:100%; border-collapse:collapse;">
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Sueldo Base</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('gross_salary',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Gratificación Legal</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('gratificacion',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Horas Extra ({d.get('overtime_hours',0)} hrs)</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('overtime_amount',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Bonos</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('bonuses',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Colación</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('colacion',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Movilización</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right;">{fmt(d.get('movilizacion',0))}</td></tr>
+                <tr style="font-weight:bold; background:#f0f0f0;">
+                    <td style="padding:6px;">Total Haberes</td>
+                    <td style="padding:6px; text-align:right;">{fmt(d.get('total_haberes_imponibles',0) + d.get('total_haberes_no_imponibles',0))}</td></tr>
+            </table>
+            <h3 style="background:#DC2626; color:#fff; padding:5px 10px; font-size:13px; margin-top:15px;">DESCUENTOS</h3>
+            <table style="width:100%; border-collapse:collapse;">
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">AFP {emp.afp} ({emp.afp_rate or 11.44}%)</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right; color:#DC2626;">-{fmt(d.get('afp_employee',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Salud {emp.health_system} ({emp.health_rate or 7}%)</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right; color:#DC2626;">-{fmt(d.get('health_employee',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Seguro Cesantía AFC</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right; color:#DC2626;">-{fmt(d.get('afc_employee',0))}</td></tr>
+                <tr><td style="padding:4px; border-bottom:1px solid #eee;">Impuesto Único 2da Cat.</td>
+                    <td style="padding:4px; border-bottom:1px solid #eee; text-align:right; color:#DC2626;">-{fmt(d.get('tax_amount',0))}</td></tr>
+                <tr style="font-weight:bold; background:#fef2f2;">
+                    <td style="padding:6px;">Total Descuentos</td>
+                    <td style="padding:6px; text-align:right; color:#DC2626;">-{fmt(d.get('total_deductions',0))}</td></tr>
+            </table>
+            <div style="margin-top:20px; padding:12px; background:#f0fdf4; border:2px solid #10B981; text-align:center;">
+                <span style="font-size:18px; font-weight:bold; color:#059669;">LÍQUIDO A PAGAR: {fmt(d.get('net_salary',0))}</span>
+            </div>
+            <p style="margin-top:20px; font-size:10px; color:#999; text-align:center;">
+                Documento generado por Conniku — Art. 54 Código del Trabajo
+            </p>
+        </div>
+        """)
+
+    full_html = f"<html><body>{''.join(html_parts)}</body></html>"
+
+    try:
+        from xhtml2pdf import pisa
+
+        pdf_buffer = io.BytesIO()
+        status = pisa.CreatePDF(io.StringIO(full_html), dest=pdf_buffer)
+        if status.err:
+            raise ValueError(f"xhtml2pdf error: {status.err}")
+    except Exception as exc:
+        raise HTTPException(500, f"Error al generar PDF: {exc}") from None
+
+    from fastapi.responses import StreamingResponse
+
+    pdf_buffer.seek(0)
+    return StreamingResponse(
+        pdf_buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=liquidacion_{year}_{month:02d}.pdf"},
+    )
+
+
 @router.get("/payroll/previred/{year}/{month}")
 def get_previred_data(
     year: int,
