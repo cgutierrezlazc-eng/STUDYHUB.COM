@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import tierData from '../../shared/tier-limits.json';
 import {
   Gem,
   CheckCircle,
@@ -20,6 +21,44 @@ import {
 interface Props {
   onNavigate: (path: string) => void;
 }
+
+// Precios desde tier-limits.json (fuente de verdad compartida con backend)
+const proPrice = tierData.plans.pro.price;
+
+const PLAN_PRICES: Record<string, { clp: string; usd: string; label: string; period: string }> = {
+  sprint: {
+    clp: proPrice.clp_sprint_week.toLocaleString('es-CL'),
+    usd: proPrice.usd_sprint_week.toFixed(2),
+    label: 'Sprint 7 días',
+    period: '7 días',
+  },
+  monthly: {
+    clp: proPrice.clp_monthly.toLocaleString('es-CL'),
+    usd: proPrice.usd_monthly.toFixed(2),
+    label: 'Mensual',
+    period: 'mes',
+  },
+  semester: {
+    clp: proPrice.clp_semester.toLocaleString('es-CL'),
+    usd: proPrice.usd_semester.toFixed(2),
+    label: 'Semestral',
+    period: 'semestre',
+  },
+  yearly: {
+    clp: proPrice.clp_annual.toLocaleString('es-CL'),
+    usd: proPrice.usd_annual.toFixed(2),
+    label: 'Anual',
+    period: 'año',
+  },
+};
+
+// Ahorros calculados dinámicamente
+const SAVINGS = {
+  semester: Math.round(proPrice.clp_monthly * 6 - proPrice.clp_semester),
+  yearly: Math.round(proPrice.clp_monthly * 12 - proPrice.clp_annual),
+  semesterPct: Math.round((1 - proPrice.clp_semester / (proPrice.clp_monthly * 6)) * 100),
+  yearlyPct: Math.round((1 - proPrice.clp_annual / (proPrice.clp_monthly * 12)) * 100),
+};
 
 export default function Subscription({ onNavigate }: Props) {
   const { user } = useAuth();
@@ -264,10 +303,18 @@ export default function Subscription({ onNavigate }: Props) {
               }}
             >
               {[
-                { key: 'sprint' as const, label: 'Sprint 7 días', save: '' },
-                { key: 'monthly' as const, label: 'Mensual', save: '' },
-                { key: 'semester' as const, label: 'Semestral', save: '-26%' },
-                { key: 'yearly' as const, label: 'Anual', save: '-33%' },
+                { key: 'sprint' as const, label: PLAN_PRICES.sprint.label, save: '' },
+                { key: 'monthly' as const, label: PLAN_PRICES.monthly.label, save: '' },
+                {
+                  key: 'semester' as const,
+                  label: PLAN_PRICES.semester.label,
+                  save: `-${SAVINGS.semesterPct}%`,
+                },
+                {
+                  key: 'yearly' as const,
+                  label: PLAN_PRICES.yearly.label,
+                  save: `-${SAVINGS.yearlyPct}%`,
+                },
               ].map((opt) => (
                 <button
                   key={opt.key}
@@ -388,47 +435,26 @@ export default function Subscription({ onNavigate }: Props) {
                   {Star({ size: 14 })} Conniku PRO
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  $
-                  {
-                    { monthly: '8.990', semester: '39.990', yearly: '79.990', sprint: '3.490' }[
-                      selectedPlan
-                    ]
-                  }
+                  ${PLAN_PRICES[selectedPlan].clp}
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>
                     {' '}
-                    CLP/
-                    {
-                      { monthly: 'mes', semester: 'semestre', yearly: 'año', sprint: '7 días' }[
-                        selectedPlan
-                      ]
-                    }
+                    CLP/{PLAN_PRICES[selectedPlan].period}
                   </span>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  ≈ USD $
-                  {
-                    { monthly: '9.49', semester: '41.99', yearly: '83.99', sprint: '3.69' }[
-                      selectedPlan
-                    ]
-                  }
-                  /
-                  {
-                    { monthly: 'mes', semester: 'semestre', yearly: 'año', sprint: '7 días' }[
-                      selectedPlan
-                    ]
-                  }
+                  ≈ USD ${PLAN_PRICES[selectedPlan].usd}/{PLAN_PRICES[selectedPlan].period}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
                   IVA incluido
                 </div>
                 {selectedPlan === 'semester' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
-                    Ahorras $14.950 vs mensual
+                    Ahorras ${SAVINGS.semester.toLocaleString('es-CL')} vs mensual
                   </div>
                 )}
                 {selectedPlan === 'yearly' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
-                    Ahorras $27.890 vs mensual
+                    Ahorras ${SAVINGS.yearly.toLocaleString('es-CL')} vs mensual
                   </div>
                 )}
                 {selectedPlan === 'sprint' && (
