@@ -1504,7 +1504,13 @@ def save_legal_obligations(
 #  EMPLOYEE DOCUMENTS
 # ═══════════════════════════════════════════════════════════════════
 
-VALID_DOC_TYPES = {"contrato", "anexo", "job_description", "liquidacion", "certificado", "finiquito", "otro"}
+VALID_DOC_TYPES = {
+    "contrato", "anexo", "job_description", "liquidacion", "certificado", "finiquito",
+    "ci", "pasaporte", "afp", "isapre", "fonasa", "antecedentes", "academico", "titulo",
+    "residencia", "foto_carnet", "finiquito_anterior", "situacion_militar",
+    "cargas_familiares", "cuenta_bancaria", "examen_preocupacional", "riohs",
+    "etica", "equipos", "adicional", "otro",
+}
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "uploads", "hr_documents")
 os.makedirs(UPLOAD_DIR, exist_ok=True)

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
+import EmployeeDocumentsDrawer from '../components/EmployeeDocumentsDrawer';
 import {
   Users,
   UserPlus,
@@ -2061,6 +2062,7 @@ function EmployeeDetail({
 }) {
   const [documents, setDocuments] = useState<any[]>([]);
   const [detailTab, setDetailTab] = useState<'info' | 'docs' | 'liquidaciones'>('info');
+  const [docsDrawerOpen, setDocsDrawerOpen] = useState(false);
 
   useEffect(() => {
     api
@@ -2197,7 +2199,7 @@ function EmployeeDetail({
               }}
             >
               <h3 style={{ margin: 0, fontSize: 16 }}>Carpeta Personal</h3>
-              <button style={btnPrimary}>
+              <button style={btnPrimary} onClick={() => setDocsDrawerOpen(true)}>
                 <Upload size={14} /> Subir Documento
               </button>
             </div>
@@ -2340,6 +2342,20 @@ function EmployeeDetail({
           </div>
         )}
       </div>
+
+      {/* Drawer de documentos — módulo aislado */}
+      <EmployeeDocumentsDrawer
+        isOpen={docsDrawerOpen}
+        onClose={() => setDocsDrawerOpen(false)}
+        employeeId={employee.id}
+        employeeName={`${employee.firstName} ${employee.lastName}`}
+        employeeRut={employee.rut}
+        salary={employee.grossSalary || 0}
+        afpName={employee.afp || 'No especificada'}
+        afpRate={11.44}
+        healthPlan={employee.healthSystem || 'Fonasa'}
+        healthRate={7}
+      />
     </div>
   );
 }

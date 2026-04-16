@@ -16,7 +16,6 @@
 | `.husky/pre-commit` | completo | 2026-04-14 | Fix lint-staged: ruff separado del stash |
 | `package.json` | lint-staged config | 2026-04-14 | Removido backend/**/*.py de lint-staged |
 | `src/admin/tools/BibliotecaDocumentos.tsx` | hooks order | 2026-04-14 | Guard movido después de hooks |
-| `src/pages/HRDashboard.tsx` | hooks order | 2026-04-14 | Guard movido después de useEffect |
 | `src/pages/Messages.tsx` | null-safety | 2026-04-14 | 5 Array.isArray guards |
 | `src/pages/Friends.tsx` | null-safety | 2026-04-14 | 4 Array.isArray + 5 optional chaining |
 | `src/pages/Mentorship.tsx` | null-safety | 2026-04-14 | 3 fixes (setMentors, subjects.map) |
