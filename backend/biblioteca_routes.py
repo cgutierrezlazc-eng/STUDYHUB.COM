@@ -45,7 +45,7 @@ from database import (
 )
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
-from middleware import get_current_user, require_owner
+from middleware import get_current_user, get_current_user_optional, require_owner
 from pydantic import BaseModel
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
@@ -254,10 +254,10 @@ def list_biblioteca(
     source_type: str = Query(default=""),
     page: int = Query(default=1, ge=1),
     limit: int = Query(default=24, ge=1, le=100),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user_optional),
     db: Session = Depends(get_db),
 ):
-    """Listar documentos de la biblioteca con búsqueda y filtros."""
+    """Listar documentos de la biblioteca con búsqueda y filtros. Guest-accessible."""
     q_obj = db.query(LibraryDocument).filter(LibraryDocument.is_active.is_(True))
 
     if q:
@@ -280,7 +280,7 @@ def list_biblioteca(
         .all()
     )
 
-    saved_ids = _get_saved_ids(user.id, db)
+    saved_ids = _get_saved_ids(user.id, db) if user else set()
     return {
         "items": [_doc_to_dict(d, saved_ids) for d in docs],
         "total": total,
@@ -422,7 +422,7 @@ async def public_domain_search(
     q: str = Query(default=""),
     lang: str = Query(default=""),
     page: int = Query(default=1, ge=1),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user_optional),
 ):
     """Busca libros de dominio público en Project Gutenberg vía gutendex.com.
     Resultados cacheados en memoria por 1 hora."""
@@ -580,7 +580,7 @@ async def v2_unified_search(
     sources: str = Query(default=""),
     lang: str = Query(default=""),
     page: int = Query(default=1, ge=1),
-    user: User = Depends(get_current_user),
+    user: User = Depends(get_current_user_optional),
 ):
     """Búsqueda unificada en Gutenberg + OpenStax (y futuras fuentes)."""
     source_list = [s.strip() for s in sources.split(",") if s.strip()] or None
@@ -761,7 +761,7 @@ def get_document(
     doc.views = (doc.views or 0) + 1
     db.commit()
 
-    saved_ids = _get_saved_ids(user.id, db)
+    saved_ids = _get_saved_ids(user.id, db) if user else set()
     return _doc_to_dict(doc, saved_ids)
 
 

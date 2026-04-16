@@ -463,6 +463,82 @@ export default function App() {
       );
     }
 
+    // ── Guest Mode: rutas accesibles sin login ──
+    const guestPaths = ['/biblioteca', '/courses', '/communities', '/jobs'];
+    const isGuestRoute = guestPaths.some((p) => location.pathname.startsWith(p));
+
+    if (isGuestRoute) {
+      return (
+        <div style={{ minHeight: '100vh', background: 'var(--bg-primary)' }}>
+          {/* TopBar minimal para guest */}
+          <div
+            style={{
+              height: 56,
+              background: 'var(--bg-secondary)',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0 20px',
+              position: 'sticky',
+              top: 0,
+              zIndex: 100,
+            }}
+          >
+            <div
+              style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
+              onClick={() => navigate('/')}
+            >
+              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--accent)' }}>conniku</span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => setAuthView('login')}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 8,
+                  border: '1px solid var(--border-color)',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Ingresar
+              </button>
+              <button
+                onClick={() => setAuthView('register')}
+                style={{
+                  padding: '6px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Registrarse
+              </button>
+            </div>
+          </div>
+          {/* Guest content area */}
+          <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 16px' }}>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route
+                  path="/biblioteca"
+                  element={<Biblioteca onNavigate={(path) => navigate(path)} />}
+                />
+              </Routes>
+            </Suspense>
+          </div>
+        </div>
+      );
+    }
+
     const authSEO =
       authView === 'login'
         ? PAGE_SEO.login
