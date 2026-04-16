@@ -112,9 +112,14 @@ def conversation_to_dict(conv: Conversation, user_id: str, db: Session) -> dict:
         ConversationParticipant.conversation_id == conv.id
     ).all()
 
+    # Batch query: cargar todos los users de una vez (evitar N+1)
+    user_ids = [p.user_id for p in participants]
+    users = db.query(User).filter(User.id.in_(user_ids)).all() if user_ids else []
+    user_dict = {u.id: u for u in users}
+
     part_users = []
     for p in participants:
-        u = db.query(User).filter(User.id == p.user_id).first()
+        u = user_dict.get(p.user_id)
         if u:
             part_users.append({**user_brief(u), "role": p.role})
 

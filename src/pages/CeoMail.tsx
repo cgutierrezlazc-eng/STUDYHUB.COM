@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
@@ -1450,8 +1451,9 @@ export default function CeoMail({ onNavigate, defaultAccount = 'all' }: Props) {
               <div
                 className="mail-reading-body"
                 dangerouslySetInnerHTML={{
-                  __html:
-                    selectedEmail.body || `<p style="color:#999;">${t('ceomail.noContent')}</p>`,
+                  __html: DOMPurify.sanitize(
+                    selectedEmail.body || `<p style="color:#999;">${t('ceomail.noContent')}</p>`
+                  ),
                 }}
               />
             </>

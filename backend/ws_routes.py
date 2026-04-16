@@ -136,7 +136,15 @@ async def websocket_endpoint(
             elif msg_type == "subscribe":
                 conv_id = data.get("conversation_id")
                 if conv_id:
-                    manager.subscribe_conversation(user_id, conv_id)
+                    # Verificar que el usuario es participante de la conversación
+                    is_member = db.query(ConversationParticipant).filter(
+                        ConversationParticipant.conversation_id == conv_id,
+                        ConversationParticipant.user_id == user_id,
+                    ).first()
+                    if is_member:
+                        manager.subscribe_conversation(user_id, conv_id)
+                    else:
+                        await websocket.send_json({"type": "error", "message": "No tienes acceso a esta conversación"})
 
             elif msg_type == "unsubscribe":
                 conv_id = data.get("conversation_id")
