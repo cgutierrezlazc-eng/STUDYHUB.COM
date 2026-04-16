@@ -48,6 +48,12 @@ class LmsGrade(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
+# Crear tabla lms_grades si no existe (se importa despues de init_db)
+from database import engine
+
+LmsGrade.__table__.create(engine, checkfirst=True)
+
+
 # ── Modelos de request (Pydantic) ─────────────────────────────
 
 VALID_PLATFORMS = Literal["moodle", "canvas", "blackboard", "brightspace", "sakai", "teams", "classroom", "other"]
