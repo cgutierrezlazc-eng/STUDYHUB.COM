@@ -88,6 +88,7 @@ const API_BASE = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api
 
 const SOURCE_NAMES: Record<string, string> = {
   user_shared: 'Conniku',
+  open_library: 'Open Library',
   gutenberg: 'Project Gutenberg',
   openstax: 'OpenStax',
   scielo: 'SciELO Livros',
@@ -1105,16 +1106,22 @@ export default function Biblioteca({ onNavigate }: Props) {
                   </button>
                 )}
               {/* Botón Citar */}
-              {selected.author && (
+              {selected.title && (
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                   <button
                     className="btn btn-secondary"
                     onClick={() => {
                       const citation = generateCitation(selected, 'apa');
-                      navigator.clipboard.writeText(citation).then(() => {
-                        setCitationCopied('APA');
-                        setTimeout(() => setCitationCopied(''), 2000);
-                      });
+                      navigator.clipboard.writeText(citation).then(
+                        () => {
+                          setCitationCopied('APA');
+                          setTimeout(() => setCitationCopied(''), 2000);
+                        },
+                        () => {
+                          setCitationCopied('Error');
+                          setTimeout(() => setCitationCopied(''), 2000);
+                        }
+                      );
                     }}
                     style={{ display: 'flex', alignItems: 'center', gap: 4 }}
                   >
