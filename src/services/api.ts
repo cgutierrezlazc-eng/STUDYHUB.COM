@@ -2023,6 +2023,21 @@ export const api = {
       body: JSON.stringify({ project_id: projectId }),
     }),
 
+  // ─── Biblioteca v2 (búsqueda unificada) ─────────────────────
+  searchBibliotecaUnified: (params?: {
+    q?: string;
+    sources?: string;
+    lang?: string;
+    page?: number;
+  }) => {
+    const p = new URLSearchParams();
+    if (params?.q) p.set('q', params.q);
+    if (params?.sources) p.set('sources', params.sources);
+    if (params?.lang) p.set('lang', params.lang);
+    if (params?.page) p.set('page', String(params.page));
+    return request(`/biblioteca/v2/search?${p.toString()}`);
+  },
+
   // ─── Collaborative Documents (Trabajos Grupales) ────────────────
   collabList: (status = 'active') => request(`/collab?status=${status}`),
   collabGet: (id: string) => request(`/collab/${id}`),

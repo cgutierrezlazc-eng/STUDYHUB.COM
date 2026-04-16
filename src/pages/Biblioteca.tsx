@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
-import { BookOpen, Search, Star, X, ChevronRight } from '../components/Icons';
+import { BookOpen, Search, Star, ChevronRight } from '../components/Icons';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -19,13 +19,23 @@ interface LibDoc {
   language?: string;
   rating?: number;
   rating_count?: number;
-  source_type: 'user_shared' | 'open_library' | 'gutenberg';
+  source_type: 'user_shared' | 'open_library' | 'gutenberg' | 'openstax';
   has_file: boolean;
   embed_url?: string;
   tags?: string[];
   views?: number;
   is_saved: boolean;
   shared_by?: string;
+  source_display?: string;
+  license?: string;
+  license_url?: string;
+  is_nc?: boolean;
+  copyright_holder?: string;
+  pdf_url?: string;
+  read_url?: string;
+  gutenberg_id?: number;
+  openstax_id?: number;
+  openstax_slug?: string;
 }
 
 const CATEGORIES = [
@@ -70,8 +80,8 @@ const API_BASE = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api
 export default function Biblioteca({ onNavigate }: Props) {
   const { user } = useAuth();
 
-  // ── Source tab: 'comunidad' | 'publica' ──
-  const [sourceTab, setSourceTab] = useState<'comunidad' | 'publica'>('comunidad');
+  // ── Source tab ──
+  const [sourceTab, setSourceTab] = useState<'comunidad' | 'academicos' | 'publica'>('comunidad');
 
   const [docs, setDocs] = useState<LibDoc[]>([]);
   const [total, setTotal] = useState(0);
@@ -88,6 +98,12 @@ export default function Biblioteca({ onNavigate }: Props) {
   const [pdLoading, setPdLoading] = useState(false);
   const [pdPage, setPdPage] = useState(1);
   const [pdLang, setPdLang] = useState('es');
+
+  // ── Académicos (OpenStax) state ──
+  const [acDocs, setAcDocs] = useState<LibDoc[]>([]);
+  const [acTotal, setAcTotal] = useState(0);
+  const [acLoading, setAcLoading] = useState(false);
+  const [acPage, setAcPage] = useState(1);
 
   const [selected, setSelected] = useState<LibDoc | null>(null);
   const [reading, setReading] = useState<LibDoc | null>(null);
@@ -139,12 +155,34 @@ export default function Biblioteca({ onNavigate }: Props) {
     if (sourceTab === 'publica') loadPublicDomain();
   }, [loadPublicDomain, sourceTab]);
 
+  // Carga libros académicos (OpenStax)
+  const loadAcademicos = useCallback(async () => {
+    setAcLoading(true);
+    try {
+      const res = await api.searchBibliotecaUnified({
+        q: search,
+        sources: 'openstax',
+        page: acPage,
+      });
+      setAcDocs(res.items || []);
+      setAcTotal(res.total || 0);
+    } catch {
+      setAcDocs([]);
+    }
+    setAcLoading(false);
+  }, [search, acPage]);
+
+  useEffect(() => {
+    if (sourceTab === 'academicos') loadAcademicos();
+  }, [loadAcademicos, sourceTab]);
+
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => {
       setSearch(searchInput);
       setPage(1);
       setPdPage(1);
+      setAcPage(1);
     }, 400);
     return () => clearTimeout(t);
   }, [searchInput]);
@@ -167,6 +205,7 @@ export default function Biblioteca({ onNavigate }: Props) {
       const res = await api.toggleBibliotecaSave(doc.id);
       setDocs((prev) => prev.map((d) => (d.id === doc.id ? { ...d, is_saved: res.saved } : d)));
       if (selected?.id === doc.id) setSelected((s) => (s ? { ...s, is_saved: res.saved } : s));
+      if (reading?.id === doc.id) setReading((r) => (r ? { ...r, is_saved: res.saved } : r));
     } catch {
       /* offline */
     }
@@ -212,6 +251,14 @@ export default function Biblioteca({ onNavigate }: Props) {
     if (doc.source_type === 'gutenberg' && doc.embed_url) {
       return `${API_BASE}/biblioteca/gutenberg-read?url=${encodeURIComponent(doc.embed_url)}`;
     }
+    // OpenStax: CC-BY → servir PDF desde cache; CC-BY-NC-SA → leer en OpenStax directo
+    if (doc.source_type === 'openstax') {
+      if (doc.is_nc && doc.read_url) {
+        return doc.read_url;
+      }
+      const extId = doc.id.replace('openstax-', '');
+      return `${API_BASE}/biblioteca/v2/openstax/${extId}/read`;
+    }
     if (doc.embed_url) return doc.embed_url;
     return '';
   };
@@ -232,9 +279,13 @@ export default function Biblioteca({ onNavigate }: Props) {
                 ? total > 0
                   ? `${total} recurso${total !== 1 ? 's' : ''} de la comunidad`
                   : 'Recursos académicos compartidos por la comunidad'
-                : pdTotal > 0
-                  ? `${pdTotal.toLocaleString()} libros en Project Gutenberg`
-                  : 'Libros de dominio público — Project Gutenberg'}
+                : sourceTab === 'academicos'
+                  ? acTotal > 0
+                    ? `${acTotal} textbooks universitarios — OpenStax`
+                    : 'Textbooks universitarios gratuitos — OpenStax'
+                  : pdTotal > 0
+                    ? `${pdTotal.toLocaleString()} libros en Project Gutenberg`
+                    : 'Libros de dominio público — Project Gutenberg'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -314,6 +365,22 @@ export default function Biblioteca({ onNavigate }: Props) {
             📚 Comunidad
           </button>
           <button
+            onClick={() => setSourceTab('academicos')}
+            style={{
+              padding: '6px 16px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 13,
+              background: sourceTab === 'academicos' ? 'var(--bg-primary)' : 'transparent',
+              color: sourceTab === 'academicos' ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: sourceTab === 'academicos' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+            }}
+          >
+            🎓 Académicos
+          </button>
+          <button
             onClick={() => setSourceTab('publica')}
             style={{
               padding: '6px 16px',
@@ -391,7 +458,7 @@ export default function Biblioteca({ onNavigate }: Props) {
               </button>
             ))}
           </div>
-        ) : (
+        ) : sourceTab === 'publica' ? (
           <div
             style={{
               display: 'flex',
@@ -434,7 +501,7 @@ export default function Biblioteca({ onNavigate }: Props) {
               </button>
             ))}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ── Body ── */}
@@ -513,6 +580,97 @@ export default function Biblioteca({ onNavigate }: Props) {
                   className="btn btn-secondary btn-sm"
                   disabled={page >= pages_total}
                   onClick={() => setPage((p) => p + 1)}
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
+          </>
+        ) : sourceTab === 'academicos' ? (
+          /* ══ ACADÉMICOS (OpenStax) ══ */
+          <>
+            {/* Info banner */}
+            <div
+              style={{
+                display: 'flex',
+                gap: 10,
+                alignItems: 'flex-start',
+                padding: '12px 16px',
+                background: 'rgba(139,92,246,0.06)',
+                border: '1px solid rgba(139,92,246,0.15)',
+                borderRadius: 10,
+                marginBottom: 18,
+              }}
+            >
+              <span style={{ fontSize: 20, flexShrink: 0 }}>🎓</span>
+              <div>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                    marginBottom: 2,
+                  }}
+                >
+                  OpenStax — Textbooks universitarios gratuitos
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                  Libros de Cálculo, Física, Química, Biología, Economía y más. Licencia Creative
+                  Commons — lectura gratuita dentro de Conniku.
+                </div>
+              </div>
+            </div>
+
+            {acLoading ? (
+              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
+                Buscando en OpenStax...
+              </div>
+            ) : acDocs.length === 0 ? (
+              <div className="empty-state" style={{ padding: 60 }}>
+                <div className="empty-state-icon">📖</div>
+                <h3>Sin resultados</h3>
+                <p>
+                  {search
+                    ? 'No se encontraron textbooks con ese término'
+                    : 'Explora textbooks universitarios buscando un tema'}
+                </p>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                  gap: 16,
+                }}
+              >
+                {acDocs.map((doc) => (
+                  <BookCard
+                    key={doc.id}
+                    doc={doc}
+                    onOpen={() => setSelected(doc)}
+                    onSave={(e) => e.stopPropagation()}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* Paginación Académicos */}
+            {acTotal > 24 && (
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  disabled={acPage === 1}
+                  onClick={() => setAcPage((p) => p - 1)}
+                >
+                  ← Anterior
+                </button>
+                <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+                  Página {acPage} / {Math.ceil(acTotal / 24)}
+                </span>
+                <button
+                  className="btn btn-secondary btn-sm"
+                  disabled={acDocs.length < 24}
+                  onClick={() => setAcPage((p) => p + 1)}
                 >
                   Siguiente →
                 </button>
@@ -731,8 +889,25 @@ export default function Biblioteca({ onNavigate }: Props) {
                   }}
                 >
                   {selected.pages && <span>{selected.pages} págs.</span>}
-                  {selected.views !== undefined && <span>{selected.views} vistas</span>}
+                  {selected.views !== undefined && selected.views > 0 && (
+                    <span>{selected.views} vistas</span>
+                  )}
                   {selected.shared_by && <span>Por {selected.shared_by}</span>}
+                  {selected.source_display && <span>Fuente: {selected.source_display}</span>}
+                  {selected.copyright_holder && <span>&copy; {selected.copyright_holder}</span>}
+                  {selected.license &&
+                    (selected.license_url ? (
+                      <a
+                        href={selected.license_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: 'var(--text-muted)', textDecoration: 'underline' }}
+                      >
+                        {selected.license}
+                      </a>
+                    ) : (
+                      <span>{selected.license}</span>
+                    ))}
                 </div>
               </div>
             </div>
@@ -770,36 +945,38 @@ export default function Biblioteca({ onNavigate }: Props) {
             )}
 
             <div style={{ display: 'flex', gap: 8, marginTop: 20, flexWrap: 'wrap' }}>
-              {(selected.has_file || selected.embed_url) &&
-                (selected.source_type === 'gutenberg' ? (
-                  <>
-                    <button
-                      className="btn btn-primary"
-                      style={{ flex: 1 }}
-                      onClick={() => openReader(selected)}
-                    >
-                      {BookOpen({ size: 14 })} Leer en Conniku
-                    </button>
-                    <a
-                      href={`https://www.gutenberg.org/ebooks/${(selected as any).gutenberg_id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn btn-secondary"
-                      style={{ textDecoration: 'none' }}
-                    >
-                      🌐 Abrir en Gutenberg
-                    </a>
-                  </>
-                ) : (
-                  <button
-                    className="btn btn-primary"
-                    style={{ flex: 1 }}
-                    onClick={() => openReader(selected)}
-                  >
-                    {BookOpen({ size: 14 })} Leer dentro de Conniku
-                  </button>
-                ))}
-              {selected.source_type !== 'gutenberg' && (
+              {(selected.has_file || selected.embed_url) && (
+                <button
+                  className="btn btn-primary"
+                  style={{ flex: 1 }}
+                  onClick={() => openReader(selected)}
+                >
+                  {BookOpen({ size: 14 })} Leer en Conniku
+                </button>
+              )}
+              {selected.source_type === 'gutenberg' && selected.gutenberg_id && (
+                <a
+                  href={`https://www.gutenberg.org/ebooks/${selected.gutenberg_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  🌐 Abrir en Gutenberg
+                </a>
+              )}
+              {selected.source_type === 'openstax' && selected.read_url && (
+                <a
+                  href={selected.read_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  🌐 Leer en OpenStax
+                </a>
+              )}
+              {selected.source_type === 'user_shared' && (
                 <button
                   className={`btn ${selected.is_saved ? 'btn-primary' : 'btn-secondary'}`}
                   onClick={() => toggleSave(selected)}
@@ -808,15 +985,17 @@ export default function Biblioteca({ onNavigate }: Props) {
                   {selected.is_saved ? 'Guardado' : 'Guardar'}
                 </button>
               )}
-              {(selected.has_file || selected.embed_url) && (
-                <button
-                  className="btn btn-secondary"
-                  onClick={() => openCloneModal(selected)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
-                >
-                  {ChevronRight({ size: 14 })} Agregar a mi asignatura
-                </button>
-              )}
+              {(selected.has_file || selected.embed_url) &&
+                (selected.source_type === 'user_shared' ||
+                  selected.source_type === 'gutenberg') && (
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => openCloneModal(selected)}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    {ChevronRight({ size: 14 })} Agregar a mi asignatura
+                  </button>
+                )}
               <button className="btn btn-secondary" onClick={() => setSelected(null)}>
                 Cerrar
               </button>
@@ -971,6 +1150,7 @@ export default function Biblioteca({ onNavigate }: Props) {
             flexDirection: 'column',
           }}
         >
+          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
           {/* Toolbar */}
           <div
             style={{
@@ -985,19 +1165,21 @@ export default function Biblioteca({ onNavigate }: Props) {
           >
             <span style={{ color: '#fff', fontSize: 14, fontWeight: 600 }}>{reading.title}</span>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                onClick={() => toggleSave(reading)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: reading.is_saved ? '#F59E0B' : '#94A3B8',
-                  fontSize: 13,
-                }}
-              >
-                <Star size={16} fill={reading.is_saved ? 'currentColor' : 'none'} />{' '}
-                {reading.is_saved ? 'Guardado' : 'Guardar'}
-              </button>
+              {reading.source_type === 'user_shared' && (
+                <button
+                  onClick={() => toggleSave(reading)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: reading.is_saved ? '#F59E0B' : '#94A3B8',
+                    fontSize: 13,
+                  }}
+                >
+                  <Star size={16} fill={reading.is_saved ? 'currentColor' : 'none'} />{' '}
+                  {reading.is_saved ? 'Guardado' : 'Guardar'}
+                </button>
+              )}
               <button
                 onClick={() => setReading(null)}
                 style={{
@@ -1059,11 +1241,11 @@ export default function Biblioteca({ onNavigate }: Props) {
                       >
                         Reintentar
                       </button>
-                      {(reading.embed_url || (reading as any).gutenberg_id) && (
+                      {(reading.embed_url || reading.gutenberg_id) && (
                         <a
                           href={
-                            reading.source_type === 'gutenberg' && (reading as any).gutenberg_id
-                              ? `https://www.gutenberg.org/ebooks/${(reading as any).gutenberg_id}`
+                            reading.source_type === 'gutenberg' && reading.gutenberg_id
+                              ? `https://www.gutenberg.org/ebooks/${reading.gutenberg_id}`
                               : reading.embed_url || '#'
                           }
                           target="_blank"
@@ -1193,11 +1375,19 @@ function BookCard({
             padding: '2px 7px',
             borderRadius: 8,
             background:
-              doc.source_type === 'user_shared' ? 'rgba(16,185,129,0.9)' : 'rgba(37,99,235,0.9)',
+              doc.source_type === 'user_shared'
+                ? 'rgba(16,185,129,0.9)'
+                : doc.source_type === 'openstax'
+                  ? 'rgba(139,92,246,0.9)'
+                  : 'rgba(37,99,235,0.9)',
             color: '#fff',
           }}
         >
-          {doc.source_type === 'user_shared' ? 'Comunidad' : 'Online'}
+          {doc.source_type === 'user_shared'
+            ? 'Comunidad'
+            : doc.source_type === 'openstax'
+              ? 'OpenStax'
+              : 'Online'}
         </span>
       </div>
 
@@ -1226,22 +1416,24 @@ function BookCard({
           >
             {doc.title}
           </h4>
-          <button
-            onClick={onSave}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 2,
-              flexShrink: 0,
-            }}
-          >
-            <Star
-              size={15}
-              fill={doc.is_saved ? '#F59E0B' : 'none'}
-              color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
-            />
-          </button>
+          {doc.source_type === 'user_shared' && (
+            <button
+              onClick={onSave}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 2,
+                flexShrink: 0,
+              }}
+            >
+              <Star
+                size={15}
+                fill={doc.is_saved ? '#F59E0B' : 'none'}
+                color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
+              />
+            </button>
+          )}
         </div>
         <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3 }}>
           {doc.author}
@@ -1317,22 +1509,37 @@ function BookRow({
             padding: '2px 8px',
             borderRadius: 8,
             background:
-              doc.source_type === 'user_shared' ? 'rgba(16,185,129,0.12)' : 'rgba(37,99,235,0.12)',
-            color: doc.source_type === 'user_shared' ? '#10B981' : '#2563EB',
+              doc.source_type === 'user_shared'
+                ? 'rgba(16,185,129,0.12)'
+                : doc.source_type === 'openstax'
+                  ? 'rgba(139,92,246,0.12)'
+                  : 'rgba(37,99,235,0.12)',
+            color:
+              doc.source_type === 'user_shared'
+                ? '#10B981'
+                : doc.source_type === 'openstax'
+                  ? '#8B5CF6'
+                  : '#2563EB',
           }}
         >
-          {doc.source_type === 'user_shared' ? 'Comunidad' : 'Online'}
+          {doc.source_type === 'user_shared'
+            ? 'Comunidad'
+            : doc.source_type === 'openstax'
+              ? 'OpenStax'
+              : 'Online'}
         </span>
-        <button
-          onClick={onSave}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
-        >
-          <Star
-            size={14}
-            fill={doc.is_saved ? '#F59E0B' : 'none'}
-            color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
-          />
-        </button>
+        {doc.source_type === 'user_shared' && (
+          <button
+            onClick={onSave}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+          >
+            <Star
+              size={14}
+              fill={doc.is_saved ? '#F59E0B' : 'none'}
+              color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
+            />
+          </button>
+        )}
       </div>
     </div>
   );

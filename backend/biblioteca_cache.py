@@ -12,11 +12,9 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-from collections.abc import Callable
+import re
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 from database import DATA_DIR
 
@@ -24,31 +22,29 @@ CACHE_DIR = DATA_DIR / "biblioteca" / "cache"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Per-key asyncio locks: previene descarga doble del mismo libro
-_download_locks: dict[tuple, asyncio.Lock] = {}
-_locks_mutex: asyncio.Lock | None = None
-
-
-def _get_locks_mutex() -> asyncio.Lock:
-    """Lazy init del mutex para evitar RuntimeError en Python 3.12+."""
-    global _locks_mutex
-    if _locks_mutex is None:
-        _locks_mutex = asyncio.Lock()
-    return _locks_mutex
+_download_locks: dict = {}
+_locks_mutex = asyncio.Lock()
 
 
 async def _get_lock(source: str, external_id: str) -> asyncio.Lock:
     """Retorna (creando si no existe) el asyncio.Lock para este libro."""
     key = (source, external_id)
-    mutex = _get_locks_mutex()
-    async with mutex:
+    async with _locks_mutex:
         if key not in _download_locks:
             _download_locks[key] = asyncio.Lock()
         return _download_locks[key]
 
 
+def _sanitize_path_component(value: str) -> str:
+    """Sanitiza un componente de path para prevenir path traversal."""
+    return re.sub(r'[/\\.\s]', '_', value)
+
+
 def _book_dir(source: str, external_id: str) -> Path:
     """Retorna DATA_DIR/biblioteca/cache/{source}/{external_id}/"""
-    return CACHE_DIR / source / external_id
+    safe_source = _sanitize_path_component(source)
+    safe_id = _sanitize_path_component(external_id)
+    return CACHE_DIR / safe_source / safe_id
 
 
 def _meta_path(source: str, external_id: str) -> Path:
@@ -119,7 +115,10 @@ def write_to_cache(
     book = _book_dir(source, external_id)
     book.mkdir(parents=True, exist_ok=True)
     content_path = book / filename
-    content_path.write_bytes(data)
+    # Escritura atómica: write .tmp → rename (previene archivos corruptos si crash mid-write)
+    tmp_content = content_path.with_suffix(content_path.suffix + ".tmp")
+    tmp_content.write_bytes(data)
+    tmp_content.rename(content_path)
     _write_meta(source, external_id, {
         **meta,
         "filename": filename,

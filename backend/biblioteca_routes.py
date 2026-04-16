@@ -19,7 +19,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional  # noqa: UP035 — required for Pydantic on Python 3.9
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 import httpx
 from biblioteca_cache import (
@@ -27,8 +27,11 @@ from biblioteca_cache import (
     get_cached_path,
     get_or_download,
     is_cached,
+    read_meta,
     write_to_cache,
 )
+from biblioteca_engine import get_adapter
+from biblioteca_engine import unified_search as engine_search
 from database import (
     DATA_DIR,
     LibraryDocument,
@@ -65,6 +68,20 @@ _GUTENBERG_ORIGINS = (
 
 _GUTENBERG_USER_AGENT = "Conniku/1.0 (educational reader; +https://conniku.com)"
 
+_GUTENBERG_ALLOWED_HOSTS = {"www.gutenberg.org", "gutenberg.org"}
+
+
+def _is_valid_gutenberg_url(url: str) -> bool:
+    """Valida que una URL sea genuinamente de gutenberg.org (no gutenberg.org.evil.com)."""
+    try:
+        parsed = urlparse(url)
+        return (
+            parsed.scheme in ("http", "https")
+            and parsed.hostname in _GUTENBERG_ALLOWED_HOSTS
+        )
+    except Exception:
+        return False
+
 
 def _extract_gutenberg_id(url: str) -> str:
     """Extrae ID numérico de una URL de Gutenberg, o hash MD5 como fallback.
@@ -89,8 +106,26 @@ def _extract_gutenberg_id(url: str) -> str:
     return hashlib.md5(url.encode()).hexdigest()[:16]
 
 
+def _strip_pg_license(html: str) -> str:
+    """Remueve el bloque de licencia/trademark de Project Gutenberg del HTML.
+    Requerido por la PG License cuando el HTML se modifica (CSS, URL rewriting)."""
+    # PG license blocks siempre contienen "Project Gutenberg License" o "gutenberg.org/license"
+    html = re.sub(
+        r'<(pre|small|p)[^>]*>.*?Project Gutenberg License.*?</\1>',
+        '', html, flags=re.IGNORECASE | re.DOTALL,
+    )
+    html = re.sub(
+        r'<(pre|small|p)[^>]*>.*?gutenberg\.org/license.*?</\1>',
+        '', html, flags=re.IGNORECASE | re.DOTALL,
+    )
+    return html
+
+
 def _rewrite_gutenberg_html(html: str, base_url: str) -> str:
-    """Reescribe URLs relativas a absolutas e inyecta estilos de lectura."""
+    """Reescribe URLs relativas a absolutas, remueve PG trademark, e inyecta estilos."""
+    # Remover trademark de PG (requerido al modificar el HTML)
+    html = _strip_pg_license(html)
+
     def make_abs(match: re.Match) -> str:
         attr, quote, val = match.group(1), match.group(2), match.group(3)
         if val.startswith(("http://", "https://", "//", "#", "data:", "javascript:")):
@@ -127,7 +162,9 @@ def _rewrite_gutenberg_html(html: str, base_url: str) -> str:
 # ─── Project helpers (mirrored from server.py to avoid circular import) ───
 
 def _get_project_dir(project_id: str) -> Path:
-    return PROJECTS_DIR / project_id
+    # Sanitizar para prevenir path traversal (patrón del registro de errores)
+    safe_id = re.sub(r'[/\\.\s]', '_', project_id)
+    return PROJECTS_DIR / safe_id
 
 def _get_project_docs_dir(project_id: str) -> Path:
     d = _get_project_dir(project_id) / "documents"
@@ -167,7 +204,7 @@ def _doc_to_dict(doc: LibraryDocument, saved_ids: set | None = None) -> dict:
         "rating": rating_avg,
         "rating_count": doc.rating_count or 0,
         "is_saved": (doc.id in saved_ids) if saved_ids is not None else False,
-        "shared_by": doc.shared_by.full_name or doc.shared_by.username if doc.shared_by else None,
+        "shared_by": f"{doc.shared_by.first_name} {doc.shared_by.last_name}".strip() or doc.shared_by.username if doc.shared_by else None,
         "created_at": doc.created_at.isoformat() if doc.created_at else None,
     }
 
@@ -232,6 +269,7 @@ class ShareDocRequest(BaseModel):
     author: str = ""
     year: Optional[int] = None  # noqa: UP045
     tags: List[str] = []  # noqa: UP006
+    rights_confirmed: bool = False  # usuario confirma que tiene derechos
 
 
 @router.post("/share")
@@ -245,6 +283,13 @@ def share_document_to_library(
     Hace copia independiente: si el usuario borra el original, la biblioteca no se ve afectada.
     """
     import json as _json
+
+    # Verificar certificación de derechos (requerido por Ley 17.336 Chile)
+    if not payload.rights_confirmed:
+        raise HTTPException(
+            400,
+            "Debes confirmar que tienes derechos para compartir este documento.",
+        )
 
     # Leer meta del proyecto
     meta_path = PROJECTS_DIR / payload.project_id / "meta.json"
@@ -272,7 +317,7 @@ def share_document_to_library(
     doc = LibraryDocument(
         id=gen_id(),
         title=payload.title,
-        author=payload.author or (user.full_name or user.username or ""),
+        author=payload.author or (f"{user.first_name} {user.last_name}".strip() or user.username or ""),
         description=payload.description,
         category=payload.category,
         language="Español",
@@ -403,6 +448,88 @@ def cache_stats(user: User = Depends(get_current_user)):
     return stats
 
 
+# ─── GET /biblioteca/v2/search ────────────────────────────────
+# Búsqueda unificada en todas las fuentes
+@router.get("/v2/search")
+async def v2_unified_search(
+    q: str = Query(default=""),
+    sources: str = Query(default=""),
+    lang: str = Query(default=""),
+    page: int = Query(default=1, ge=1),
+    user: User = Depends(get_current_user),
+):
+    """Búsqueda unificada en Gutenberg + OpenStax (y futuras fuentes)."""
+    source_list = [s.strip() for s in sources.split(",") if s.strip()] or None
+    return await engine_search(query=q, sources=source_list, lang=lang, page=page)
+
+
+# ─── GET /biblioteca/v2/{source}/{external_id}/read ──────────
+# Sirve contenido desde cache o descarga bajo demanda
+@router.get("/v2/{source}/{external_id}/read")
+async def v2_read_content(
+    source: str,
+    external_id: str,
+):
+    """Sirve un libro desde cache local. Si no está cacheado, lo descarga primero.
+    No requiere auth para que el iframe pueda cargarlo directamente."""
+    adapter = get_adapter(source)
+    if not adapter:
+        raise HTTPException(400, f"Fuente desconocida: {source}")
+
+    # Intentar servir desde cache
+    cached = get_cached_path(source, external_id)
+    if cached and cached.stat().st_size > 100:
+        # Determinar tipo de respuesta por extensión
+        if cached.suffix == ".pdf":
+            return FileResponse(
+                path=str(cached),
+                media_type="application/pdf",
+                headers={"Content-Disposition": "inline", "X-Frame-Options": "SAMEORIGIN"},
+            )
+        # HTML (Gutenberg)
+        raw_html = cached.read_text(encoding="utf-8", errors="replace")
+        # Para Gutenberg, aplicar reescritura de URLs
+        if source == "gutenberg":
+            meta = read_meta(source, external_id)
+            source_url = meta.get("source_url", "")
+            if source_url:
+                base_url = source_url.rsplit("/", 1)[0] + "/"
+                raw_html = _rewrite_gutenberg_html(raw_html, base_url)
+        return HTMLResponse(content=raw_html, media_type="text/html; charset=utf-8")
+
+    # Cache miss — descargar y cachear
+    try:
+        content_bytes, filename, extra_meta = await adapter.download_content(external_id)
+    except (httpx.HTTPError, ValueError) as e:
+        fallback_url = adapter.get_content_url(external_id)
+        if fallback_url:
+            from fastapi.responses import RedirectResponse
+
+            return RedirectResponse(url=fallback_url)
+        raise HTTPException(503, f"No se pudo descargar: {e}") from None
+
+    # Escribir al cache CON el extra_meta completo (source_url, pdf_url, etc.)
+    content_path = write_to_cache(
+        source, external_id, content_bytes, filename,
+        meta={"source": source, "external_id": external_id, **extra_meta},
+    )
+
+    if content_path.suffix == ".pdf":
+        return FileResponse(
+            path=str(content_path),
+            media_type="application/pdf",
+            headers={"Content-Disposition": "inline", "X-Frame-Options": "SAMEORIGIN"},
+        )
+    raw_html = content_path.read_text(encoding="utf-8", errors="replace")
+    if source == "gutenberg":
+        meta_data = read_meta(source, external_id)
+        source_url = meta_data.get("source_url", "")
+        if source_url:
+            base_url = source_url.rsplit("/", 1)[0] + "/"
+            raw_html = _rewrite_gutenberg_html(raw_html, base_url)
+    return HTMLResponse(content=raw_html, media_type="text/html; charset=utf-8")
+
+
 # ─── GET /biblioteca/gutenberg-read ──────────────────────────
 # Proxy del HTML de Gutenberg — ahora con cache en disco.
 # Primera lectura: descarga y guarda. Siguientes: sirve desde cache.
@@ -416,7 +543,7 @@ async def gutenberg_proxy(
     cachea, y sirve. Reescribe URLs relativas y aplica estilos de lectura.
     """
     # 1. Validar que la URL sea de Gutenberg
-    if not any(url.startswith(o) for o in _GUTENBERG_ORIGINS):
+    if not _is_valid_gutenberg_url(url):
         raise HTTPException(400, "Solo se permiten URLs de Project Gutenberg")
 
     # 2. Extraer ID para cache
@@ -654,7 +781,7 @@ async def clone_to_project(
 
     elif doc.source_type == "gutenberg" and doc.embed_url:
         # Obtener HTML de Gutenberg — desde cache si existe, si no descargar
-        if not any(doc.embed_url.startswith(o) for o in _GUTENBERG_ORIGINS):
+        if not _is_valid_gutenberg_url(doc.embed_url):
             raise HTTPException(400, "URL de origen no permitida")
 
         external_id = _extract_gutenberg_id(doc.embed_url)
