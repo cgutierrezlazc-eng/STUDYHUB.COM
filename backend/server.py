@@ -32,6 +32,7 @@ from email_doc_routes import poll_email_inbox as poll_email_docs
 from email_doc_routes import router as email_doc_router
 from event_routes import router as event_router
 from exam_predictor_routes import router as exam_predictor_router
+from extension_sync_routes import router as extension_sync_router
 from fastapi import Body, Depends, FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
@@ -282,6 +283,7 @@ app.include_router(hr_router)
 app.include_router(tutor_router)
 app.include_router(email_doc_router)
 app.include_router(lms_router)
+app.include_router(extension_sync_router)
 app.include_router(ai_workflow_router)
 app.include_router(moderation_queue_router)
 # app.include_router(payment_router)  # Stripe removed
