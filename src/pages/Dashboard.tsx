@@ -457,7 +457,9 @@ export default function Dashboard({ projects, onNavigate, onNewProject }: Props)
       .getCalendarEvents()
       .then((d) => {
         const today = new Date().toISOString().split('T')[0];
-        const upcoming = (d || []).filter((e: any) => e.date >= today).slice(0, 4);
+        const upcoming = (d || [])
+          .filter((e: any) => (e.dueDate || e.date || e.due_date) >= today)
+          .slice(0, 4);
         setEvents(upcoming);
       })
       .catch(() => {});

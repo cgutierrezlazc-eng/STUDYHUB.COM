@@ -384,10 +384,12 @@ def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user)
         raise HTTPException(400, "El contenido no puede exceder 2000 caracteres")
     if getattr(user, 'is_banned', False):
         raise HTTPException(403, "Tu cuenta está suspendida")
+    import html as _html
+
     post = BlogThread(
         id=gen_id(),
         user_id=user.id,
-        content=req.content.strip(),
+        content=_html.escape(req.content.strip()),
     )
     db.add(post)
     db.commit()
@@ -441,6 +443,15 @@ ai_engine = AIEngine()  # GPT-4o Mini — all AI features (chat, quizzes, guides
 async def serve_cover_photo(filename: str):
     """Serve uploaded cover photo files."""
     file_path = COVERS_DIR / filename
+    if not file_path.exists():
+        raise HTTPException(404, "Imagen no encontrada")
+    return FileResponse(str(file_path))
+
+
+@app.get("/uploads/community_covers/{filename}")
+async def serve_community_cover(filename: str):
+    """Serve uploaded community cover images."""
+    file_path = DATA_DIR / "uploads" / "community_covers" / filename
     if not file_path.exists():
         raise HTTPException(404, "Imagen no encontrada")
     return FileResponse(str(file_path))

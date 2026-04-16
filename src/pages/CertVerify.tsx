@@ -23,8 +23,9 @@ interface CertData {
   institution: string;
 }
 
-export default function CertVerify() {
-  const { code } = useParams<{ code: string }>();
+export default function CertVerify({ code: codeProp }: { code?: string }) {
+  const params = useParams<{ code: string }>();
+  const code = codeProp || params.code;
   const [cert, setCert] = useState<CertData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

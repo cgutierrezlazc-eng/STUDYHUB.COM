@@ -1,19 +1,18 @@
 """Academic search engine with AI summaries and safe content filtering."""
-import os
 import json
-import urllib.request
+import os
 import urllib.parse
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
+from ai_engine import AIEngine
+from database import User, UserDownload, gen_id, get_db
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import FileResponse
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, func
-
-from database import get_db, User, UserDownload, gen_id
 from middleware import get_current_user, get_tier, get_tier_limits, require_tier
-from ai_engine import AIEngine
+from sqlalchemy import desc, func
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/search", tags=["search"])
 ai_engine = AIEngine()
@@ -229,6 +228,24 @@ def download_to_conniku(data: dict, user: User = Depends(get_current_user), db: 
 
     if not url:
         raise HTTPException(400, "URL requerida")
+
+    # SSRF protection: block private IPs and non-HTTP schemes
+    import ipaddress as _ip
+    import socket as _socket
+    from urllib.parse import urlparse as _urlparse
+
+    try:
+        parsed = _urlparse(url)
+        if parsed.scheme not in ("http", "https"):
+            raise HTTPException(400, "Solo se permiten URLs HTTP/HTTPS")
+        hostname = parsed.hostname or ""
+        resolved = _socket.getaddrinfo(hostname, None, _socket.AF_UNSPEC, _socket.SOCK_STREAM)
+        for _, _, _, _, addr in resolved:
+            ip = _ip.ip_address(addr[0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                raise HTTPException(400, "URLs a redes internas no permitidas")
+    except (_socket.gaierror, ValueError):
+        raise HTTPException(400, "URL inválida") from None
 
     # Check storage quota
     limits = get_tier_limits(user)

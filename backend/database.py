@@ -369,8 +369,8 @@ class PostLike(Base):
     __tablename__ = "post_likes"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    post_id = Column(String(16), ForeignKey("wall_posts.id", ondelete="CASCADE"), nullable=False)
-    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    post_id = Column(String(16), ForeignKey("wall_posts.id", ondelete="CASCADE"), nullable=False, index=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     post = relationship("WallPost", back_populates="likes")
@@ -562,6 +562,36 @@ class ReadingProgress(Base):
     total_pages = Column(Integer, default=0)
     last_read_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("user_id", "source", "external_id"),)
+
+
+class UserProject(Base):
+    __tablename__ = "user_projects"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    title = Column(String(200), default="")
+    description = Column(Text, default="")
+    image_url = Column(Text, default="")
+    project_url = Column(Text, default="")
+    tech_stack = Column(Text, default="[]")
+    category = Column(String(50), default="personal")
+    year = Column(Integer, nullable=True)
+    order_index = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class UserPublication(Base):
+    __tablename__ = "user_publications"
+    id = Column(String(16), primary_key=True, default=gen_id)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    pub_type = Column(String(50), default="paper")
+    title = Column(String(300), default="")
+    description = Column(Text, default="")
+    year = Column(Integer, nullable=True)
+    url = Column(Text, default="")
+    institution = Column(String(255), default="")
+    authors = Column(Text, default="[]")
+    doi = Column(String(255), default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class DocumentRating(Base):

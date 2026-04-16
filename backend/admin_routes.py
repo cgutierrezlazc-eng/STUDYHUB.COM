@@ -56,7 +56,7 @@ def list_users(
     if filter == "banned":
         query = query.filter(User.is_banned)
     elif filter == "unverified":
-        query = query.filter(not User.email_verified)
+        query = query.filter(User.email_verified.is_(False))
     elif filter == "admin":
         query = query.filter(User.is_admin)
 
@@ -381,11 +381,11 @@ def online_users(admin: User = Depends(require_admin), db: Session = Depends(get
 def admin_stats(admin: User = Depends(require_admin), db: Session = Depends(get_db)):
     return {
         "totalUsers": db.query(User).count(),
-        "activeUsers": db.query(User).filter(not User.is_banned).count(),
+        "activeUsers": db.query(User).filter(User.is_banned.is_(False)).count(),
         "bannedUsers": db.query(User).filter(User.is_banned).count(),
-        "unverifiedUsers": db.query(User).filter(not User.email_verified).count(),
+        "unverifiedUsers": db.query(User).filter(User.email_verified.is_(False)).count(),
         "totalMessages": db.query(Message).count(),
-        "flaggedMessages": db.query(Message).filter(Message.is_flagged, not Message.is_deleted).count(),
+        "flaggedMessages": db.query(Message).filter(Message.is_flagged, Message.is_deleted.is_(False)).count(),
         "totalConversations": db.query(Conversation).count(),
         "totalFriendships": db.query(Friendship).filter(Friendship.status == "accepted").count(),
         "totalWallPosts": db.query(WallPost).count(),

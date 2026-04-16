@@ -440,9 +440,10 @@ export default function App() {
       );
     }
     if (location.pathname.startsWith('/cert/')) {
+      const certCode = location.pathname.replace('/cert/', '');
       return (
         <Suspense fallback={<PageLoader />}>
-          <CertVerify />
+          <CertVerify code={certCode} />
         </Suspense>
       );
     }

@@ -2227,7 +2227,7 @@ export default function Courses({ onNavigate }: Props) {
                         onClick={async () => {
                           try {
                             const id = cert.certId || cert.certificateId;
-                            const token = localStorage.getItem('token');
+                            const token = localStorage.getItem('conniku_token');
                             const base =
                               (import.meta as any).env?.VITE_API_URL ||
                               'https://studyhub-api-bpco.onrender.com';

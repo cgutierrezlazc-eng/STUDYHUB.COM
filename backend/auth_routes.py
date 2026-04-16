@@ -1,26 +1,24 @@
 """
 Auth routes: registration, login, profile, email verification, username management.
 """
-import os
-import re
-import random
-import string
 import hashlib
 import html
 import logging
-from datetime import datetime, date, timedelta
-from typing import Optional
+import os
+import random
+import re
+import string
 from collections import defaultdict
+from datetime import date, datetime, timedelta
+from typing import Optional
 
 import bcrypt
-
-from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, File, Form, Body
-from pydantic import BaseModel, EmailStr
-from sqlalchemy.orm import Session
-from sqlalchemy import func, or_
-
-from database import get_db, User, UserSession, gen_id, DATA_DIR, TutoringRequest
+from database import DATA_DIR, TutoringRequest, User, UserSession, gen_id, get_db
+from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
+from pydantic import BaseModel, EmailStr
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 logger = logging.getLogger(__name__)
@@ -232,18 +230,18 @@ class RegisterRequest(BaseModel):
     birth_date: str = ""
     bio: str = ""
     avatar: str = ""
-    username: Optional[str] = None
+    username: str | None = None
     tos_accepted: bool = False
-    referral_code: Optional[str] = None
+    referral_code: str | None = None
     academic_status: str = "estudiante"
-    graduation_status_year: Optional[int] = None
-    title_year: Optional[int] = None
+    graduation_status_year: int | None = None
+    title_year: int | None = None
     offers_mentoring: bool = False
     mentoring_services: list = []
     mentoring_subjects: list = []
     mentoring_description: str = ""
     mentoring_price_type: str = "free"
-    mentoring_price_per_hour: Optional[float] = None
+    mentoring_price_per_hour: float | None = None
     professional_title: str = ""
     study_start_date: str = ""
 
@@ -254,38 +252,38 @@ class LoginRequest(BaseModel):
 
 
 class UpdateProfileRequest(BaseModel):
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
-    gender: Optional[str] = None
-    language: Optional[str] = None
-    language_skill: Optional[str] = None
-    secondary_languages: Optional[list] = None
-    platform_language: Optional[str] = None
-    university: Optional[str] = None
-    career: Optional[str] = None
-    semester: Optional[int] = None
-    phone: Optional[str] = None
-    birth_date: Optional[str] = None
-    bio: Optional[str] = None
-    avatar: Optional[str] = None
-    theme: Optional[str] = None
-    academic_status: Optional[str] = None
-    graduation_status_year: Optional[int] = None
-    title_year: Optional[int] = None
-    offers_mentoring: Optional[bool] = None
-    mentoring_services: Optional[list] = None
-    mentoring_subjects: Optional[list] = None
-    mentoring_description: Optional[str] = None
-    mentoring_price_type: Optional[str] = None
-    mentoring_price_per_hour: Optional[float] = None
-    professional_title: Optional[str] = None
-    study_start_date: Optional[str] = None
-    cover_photo: Optional[str] = None
-    cover_type: Optional[str] = None
-    email_notif_enabled: Optional[bool] = None
-    email_notif_friend_posts: Optional[bool] = None
-    email_notif_friend_requests: Optional[bool] = None
-    email_notif_direct_messages: Optional[bool] = None
+    first_name: str | None = None
+    last_name: str | None = None
+    gender: str | None = None
+    language: str | None = None
+    language_skill: str | None = None
+    secondary_languages: list | None = None
+    platform_language: str | None = None
+    university: str | None = None
+    career: str | None = None
+    semester: int | None = None
+    phone: str | None = None
+    birth_date: str | None = None
+    bio: str | None = None
+    avatar: str | None = None
+    theme: str | None = None
+    academic_status: str | None = None
+    graduation_status_year: int | None = None
+    title_year: int | None = None
+    offers_mentoring: bool | None = None
+    mentoring_services: list | None = None
+    mentoring_subjects: list | None = None
+    mentoring_description: str | None = None
+    mentoring_price_type: str | None = None
+    mentoring_price_per_hour: float | None = None
+    professional_title: str | None = None
+    study_start_date: str | None = None
+    cover_photo: str | None = None
+    cover_type: str | None = None
+    email_notif_enabled: bool | None = None
+    email_notif_friend_posts: bool | None = None
+    email_notif_friend_requests: bool | None = None
+    email_notif_direct_messages: bool | None = None
 
 
 class ForgotPasswordRequest(BaseModel):
@@ -542,7 +540,7 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
         if ceo_email:
             ceo_user = db.query(User).filter(User.email == ceo_email).first()
             if ceo_user and ceo_user.id != user.id:
-                from database import Friendship, Conversation, ConversationParticipant, Message
+                from database import Conversation, ConversationParticipant, Friendship, Message
                 # Create bidirectional friendship
                 existing = db.query(Friendship).filter(
                     ((Friendship.requester_id == user.id) & (Friendship.addressee_id == ceo_user.id)) |
@@ -591,7 +589,7 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
 
     # Send verification email
     try:
-        from notifications import _send_email_async, _email_template
+        from notifications import _email_template, _send_email_async
         verify_body = f"""
             <p>Hola <strong>{req.first_name}</strong>,</p>
             <p>Bienvenido a Conniku. Tu código de verificación es:</p>
@@ -611,7 +609,8 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
 
     # Send welcome chat message with prizes info
     try:
-        from database import Conversation, ConversationParticipant, Message, gen_id as _gen_id
+        from database import Conversation, ConversationParticipant, Message
+        from database import gen_id as _gen_id
         # Create a system conversation for welcome
         conv = Conversation(
             id=_gen_id(),
@@ -707,8 +706,8 @@ class GoogleAuthRequest(BaseModel):
 @router.post("/google")
 def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = Depends(get_db)):
     """Authenticate with Google credential. Creates account if needed."""
-    from google.oauth2 import id_token
     from google.auth.transport import requests as google_requests
+    from google.oauth2 import id_token
 
     # Rate limit
     client_ip = request.client.host if request and request.client else "unknown"
@@ -859,6 +858,7 @@ def get_me(user: User = Depends(get_current_user)):
 @router.put("/me")
 def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     import json as _json
+
     from social_routes import create_milestone_post
 
     # Save old values for milestone detection
@@ -882,6 +882,10 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
         # Convert camelCase to snake_case for db fields
         db_key = key
         if hasattr(user, db_key):
+            # Sanitize text fields to prevent stored XSS
+            if isinstance(value, str):
+                import html as _html
+                value = _html.escape(value)
             setattr(user, db_key, value)
 
     # Detect milestone-worthy changes
@@ -919,9 +923,11 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
 
 def _generate_bio_text(user: User, db) -> str:
     """Call Claude to generate a professional bio from user profile, CV data, and completed courses."""
-    import os, json as _json
+    import json as _json
+    import os
+
     import anthropic as _anthropic
-    from database import WallPost, UserCourseProgress, Course
+    from database import Course, UserCourseProgress, WallPost
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:
@@ -1062,7 +1068,7 @@ async def update_cover_photo(
     else:
         raise HTTPException(400, "Debes enviar una imagen o seleccionar una plantilla.")
 
-    setattr(user, 'cover_position_y', max(0, min(100, position_y)))
+    user.cover_position_y = max(0, min(100, position_y))
     db.commit()
     return {
         "coverPhoto": user.cover_photo,
@@ -1169,7 +1175,7 @@ def forgot_password(req: ForgotPasswordRequest, request: Request = None, db: Ses
 
     # Send reset code via email
     try:
-        from notifications import _send_email_async, _email_template
+        from notifications import _email_template, _send_email_async
         reset_body = f"""
             <p>Hola <strong>{user.first_name}</strong>,</p>
             <p>Recibimos una solicitud para restablecer tu contraseña. Tu código es:</p>
@@ -1405,8 +1411,8 @@ def respond_tutoring_request(
 
 @router.get("/tutors")
 def list_tutors(
-    subject: Optional[str] = None,
-    price_type: Optional[str] = None,
+    subject: str | None = None,
+    price_type: str | None = None,
     db: Session = Depends(get_db),
 ):
     """List users who offer mentoring, with optional filters."""
@@ -1462,7 +1468,7 @@ def submit_suggestion(req: SuggestionRequest, user: User = Depends(get_current_u
     type_labels = {"feature": "Nueva Funcionalidad", "bug": "Reporte de Error", "improvement": "Mejora", "other": "Otro"}
     type_label = type_labels.get(req.type, req.type)
     try:
-        from notifications import _send_email_async, _email_template
+        from notifications import _email_template, _send_email_async
         body = f"""
             <p><strong>Nueva sugerencia de usuario</strong></p>
             <table style="width:100%;font-size:13px;border-collapse:collapse">
@@ -1483,7 +1489,7 @@ def submit_suggestion(req: SuggestionRequest, user: User = Depends(get_current_u
 def account_closure_feedback(req: AccountClosureFeedback, user: User = Depends(get_current_user)):
     """Send account closure feedback to CEO email."""
     try:
-        from notifications import _send_email_async, _email_template
+        from notifications import _email_template, _send_email_async
         body = f"""
             <p><strong>Usuario solicita cerrar cuenta</strong></p>
             <table style="width:100%;font-size:13px;border-collapse:collapse">
@@ -1508,29 +1514,71 @@ def delete_account(user: User = Depends(get_current_user), db: Session = Depends
     user_id = user.id
 
     from database import (
-        ConversationParticipant, Message, Conversation,
-        WallPost, PostComment, PostLike, PostReaction, PostShare, PostBookmark,
-        Friendship, BlockedUser, UserReport,
-        ConversationFolder, ConversationFolderItem,
-        FriendList, FriendListMember,
-        ModerationLog, VideoDocument, PaymentLog,
-        StudySession, SharedDocument, DocumentRating,
-        CalendarEvent, LeagueMembership, InAppNotification,
-        CommunityMember, CommunityPost, CommunityPostLike, CommunityPostComment,
-        Poll, PollOption, PollVote,
         AcademicMilestone,
-        JobListing, JobApplication, UserCareerStatus, StudentCV,
-        UserCourseProgress, UserExerciseHistory, Certificate,
-        SocialMediaAccount, CrossPost, RecruiterProfile,
-        TutoringListing, TutoringListingRequest, TutoringRequest,
-        StudyEvent, EventRSVP,
-        UserSkill, SkillEndorsement,
-        MentorProfile, MentorshipRelation,
-        StudyPlan, StudyRoom, StudyRoomParticipant,
-        QuizHistory, ScheduledQuiz, FlashcardReview,
-        MoodCheckIn, ClassAttendance, UserDownload,
-        UserSession, PushSubscription,
-        VideoConference, ConferenceParticipant,
+        BlockedUser,
+        CalendarEvent,
+        Certificate,
+        ClassAttendance,
+        CommunityMember,
+        CommunityPost,
+        CommunityPostComment,
+        CommunityPostLike,
+        ConferenceParticipant,
+        Conversation,
+        ConversationFolder,
+        ConversationFolderItem,
+        ConversationParticipant,
+        CrossPost,
+        DocumentRating,
+        EventRSVP,
+        FlashcardReview,
+        FriendList,
+        FriendListMember,
+        Friendship,
+        InAppNotification,
+        JobApplication,
+        JobListing,
+        LeagueMembership,
+        MentorProfile,
+        MentorshipRelation,
+        Message,
+        ModerationLog,
+        MoodCheckIn,
+        PaymentLog,
+        Poll,
+        PollOption,
+        PollVote,
+        PostBookmark,
+        PostComment,
+        PostLike,
+        PostReaction,
+        PostShare,
+        PushSubscription,
+        QuizHistory,
+        RecruiterProfile,
+        ScheduledQuiz,
+        SharedDocument,
+        SkillEndorsement,
+        SocialMediaAccount,
+        StudentCV,
+        StudyEvent,
+        StudyPlan,
+        StudyRoom,
+        StudyRoomParticipant,
+        StudySession,
+        TutoringListing,
+        TutoringListingRequest,
+        TutoringRequest,
+        UserCareerStatus,
+        UserCourseProgress,
+        UserDownload,
+        UserExerciseHistory,
+        UserReport,
+        UserSession,
+        UserSkill,
+        VideoConference,
+        VideoDocument,
+        WallPost,
     )
 
     # ── Push subscriptions & sessions ──
@@ -1863,7 +1911,7 @@ def _derive_prefix(university_name: str) -> str:
         if key in name_lower:
             return code
     # Fallback: initials of significant words
-    SKIP = {'de', 'del', 'la', 'los', 'las', 'el', 'y', 'e', 'en', 'of', 'the', 'y'}
+    SKIP = {'de', 'del', 'la', 'los', 'las', 'el', 'y', 'e', 'en', 'of', 'the'}
     words = [w for w in name_lower.split() if w not in SKIP and len(w) > 1]
     initials = ''.join(w[0] for w in words[:6]).upper()
     return initials[:3].ljust(3, 'X') if initials else 'CON'

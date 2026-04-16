@@ -2,20 +2,19 @@
 Uses Checkout Pro for one-time payments and Preapproval API for subscriptions.
 Docs: https://www.mercadopago.cl/developers/es/docs
 """
-import os
-import json
-import hmac
 import hashlib
-import httpx
+import hmac
+import json
+import os
 from datetime import datetime, timedelta
 
+import httpx
+from database import PaymentLog, TermsAcceptance, User, gen_id, get_db
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-
-from database import get_db, User, PaymentLog, gen_id, TermsAcceptance
 from middleware import get_current_user
-from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
+from sqlalchemy.orm import Session
+from tutor_routes import CONNIKU_COMMISSION_RATE, TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile
 
 router = APIRouter(prefix="/payments/mp", tags=["mercadopago"])
 
@@ -393,7 +392,7 @@ async def mp_webhook(request: Request, db: Session = Depends(get_db)):
 
             if received_hash and computed != received_hash:
                 print(f"[MP Webhook] ⚠️ Signature mismatch - received={received_hash[:16]}... computed={computed[:16]}...")
-                # Log but don't reject — some notifications may not have signature
+                return {"status": "rejected", "reason": "signature_mismatch"}
 
     try:
         body = await request.json()
@@ -538,7 +537,7 @@ async def _process_payment(payment_id: str, db: Session):
             link="/subscription")
         db.commit()
 
-        from notifications import send_subscription_email, _send_email_async, _email_template, CEO_EMAIL
+        from notifications import CEO_EMAIL, _email_template, _send_email_async, send_subscription_email
         send_subscription_email(user, tier.upper(), "activated")
 
         # Notify CEO

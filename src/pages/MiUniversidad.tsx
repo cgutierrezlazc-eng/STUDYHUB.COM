@@ -4931,7 +4931,7 @@ function ItemRow({
   // For files: use proxy download (avoids exposing LMS tokens)
   // For URLs/pages: open directly (no auth needed)
   const downloadUrl = isFile ? api.lmsDownloadUrl(item.id) : item.item_url;
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('conniku_token');
 
   return (
     <div

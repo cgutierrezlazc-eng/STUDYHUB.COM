@@ -2,19 +2,18 @@
 Uses PayPal Orders API v2 for one-time payments and Subscriptions API for recurring.
 Docs: https://developer.paypal.com/docs/api/orders/v2/
 """
-import os
-import json
-import httpx
 import base64
+import json
+import os
 from datetime import datetime, timedelta
 
+import httpx
+from database import PaymentLog, RefundRequest, TermsAcceptance, User, gen_id, get_db
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy.orm import Session
-
-from database import get_db, User, PaymentLog, gen_id, TermsAcceptance, RefundRequest
 from middleware import get_current_user
-from tutor_routes import TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile, CONNIKU_COMMISSION_RATE
+from sqlalchemy.orm import Session
+from tutor_routes import CONNIKU_COMMISSION_RATE, TutorClass, TutorClassEnrollment, TutorPayment, TutorProfile
 
 router = APIRouter(prefix="/payments/paypal", tags=["paypal"])
 
@@ -237,13 +236,13 @@ async def capture_order(order_id: str, db: Session = Depends(get_db), user=Depen
         # Update user subscription
         user.subscription_tier = tier
         user.subscription_status = "active"
-        user.storage_limit = plan["storage_bytes"]
+        user.storage_limit_bytes = plan["storage_bytes"]
 
         # Set expiry based on plan
         if "yearly" in plan_id:
-            user.subscription_expires = datetime.utcnow() + timedelta(days=365)
+            user.subscription_expires_at = datetime.utcnow() + timedelta(days=365)
         else:
-            user.subscription_expires = datetime.utcnow() + timedelta(days=30)
+            user.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
 
         db.commit()
 
@@ -253,11 +252,10 @@ async def capture_order(order_id: str, db: Session = Depends(get_db), user=Depen
                 id=gen_id(),
                 user_id=user.id,
                 provider="paypal",
-                event_type="payment.captured",
+                transaction_id=capture_data.get("id", ""),
                 amount=float(amount.get("value", 0)),
                 currency=amount.get("currency_code", "USD"),
                 status="completed",
-                metadata_json=json.dumps(capture_data),
             )
             db.add(log)
             db.commit()
@@ -619,7 +617,7 @@ async def submit_refund_request(request: Request, db: Session = Depends(get_db),
 
     # Notify CEO
     try:
-        from notifications import _send_email_async, _email_template, CEO_EMAIL
+        from notifications import CEO_EMAIL, _email_template, _send_email_async
         reason_labels = {
             "duplicate_charge": "Cargo duplicado",
             "unauthorized": "Cargo no autorizado / fraude",
@@ -714,11 +712,11 @@ async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
                     plan = PLANS.get(plan_id, PLANS["pro_monthly"])
                     user.subscription_tier = tier
                     user.subscription_status = "active"
-                    user.storage_limit = plan["storage_bytes"]
+                    user.storage_limit_bytes = plan["storage_bytes"]
                     if "yearly" in plan_id:
-                        user.subscription_expires = datetime.utcnow() + timedelta(days=365)
+                        user.subscription_expires_at = datetime.utcnow() + timedelta(days=365)
                     else:
-                        user.subscription_expires = datetime.utcnow() + timedelta(days=30)
+                        user.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
                     db.commit()
 
                     amount = float(resource.get("amount", {}).get("value", 0))
@@ -742,11 +740,11 @@ async def paypal_webhook(request: Request, db: Session = Depends(get_db)):
                     plan = PLANS.get(plan_id, PLANS["pro_monthly"])
                     user.subscription_tier = tier
                     user.subscription_status = "active"
-                    user.storage_limit = plan["storage_bytes"]
+                    user.storage_limit_bytes = plan["storage_bytes"]
                     if "yearly" in plan_id:
-                        user.subscription_expires = datetime.utcnow() + timedelta(days=365)
+                        user.subscription_expires_at = datetime.utcnow() + timedelta(days=365)
                     else:
-                        user.subscription_expires = datetime.utcnow() + timedelta(days=30)
+                        user.subscription_expires_at = datetime.utcnow() + timedelta(days=30)
                     db.commit()
 
         elif event_type == "BILLING.SUBSCRIPTION.CANCELLED":
@@ -870,7 +868,7 @@ async def _ensure_billing_plan(token: str, product_id: str, plan: dict, plan_id:
 def _notify_ceo_paypal(user, amount: float, currency: str, tier: str, event: str):
     """Send CEO notification for PayPal payment events."""
     try:
-        from notifications import _send_email_async, CEO_EMAIL
+        from notifications import CEO_EMAIL, _send_email_async
         html = f"""
         <div style="font-family:system-ui;padding:20px">
             <h2 style="color:#003087">PayPal — {event}</h2>

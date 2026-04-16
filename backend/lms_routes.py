@@ -13,17 +13,25 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+from database import (
+    DATA_DIR,
+    CalendarEvent,
+    InAppNotification,
+    LMSCourse,
+    LMSSyncItem,
+    SessionLocal,
+    UniversityConnection,
+    User,
+    UserNotificationPrefs,
+    gen_id,
+    get_db,
+)
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import Response
+from middleware import decode_token as jwt_decode
+from middleware import get_current_user, get_current_user_optional
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-
-from database import (
-    get_db, DATA_DIR, User, UniversityConnection, LMSCourse, LMSSyncItem,
-    CalendarEvent, UserNotificationPrefs, InAppNotification, gen_id,
-    SessionLocal,
-)
-from middleware import get_current_user, get_current_user_optional, decode_token as jwt_decode
 
 log = logging.getLogger(__name__)
 router = APIRouter(prefix="/lms", tags=["lms"])
@@ -181,7 +189,7 @@ def moodle_get_contents(base_url: str, token: str, course_id: int) -> list:
         return []
 
 
-def moodle_download_file(file_url: str, token: str) -> Optional[bytes]:
+def moodle_download_file(file_url: str, token: str) -> bytes | None:
     """Download a Moodle file appending the token."""
     sep = "&" if "?" in file_url else "?"
     url = f"{file_url}{sep}token={token}"
@@ -243,7 +251,7 @@ def canvas_get_files(base_url: str, token: str, course_id) -> list:
         return []
 
 
-def canvas_download_file(url: str, token: str) -> Optional[bytes]:
+def canvas_download_file(url: str, token: str) -> bytes | None:
     try:
         r = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=30)
         if r.status_code == 200:
@@ -395,6 +403,25 @@ def connect_lms(
     Los cursos se obtienen en segundo plano para evitar timeout.
     """
     base_url = _clean_url(req.api_url)
+
+    # SSRF protection: block private IPs
+    import ipaddress as _ip
+    import socket as _socket
+    from urllib.parse import urlparse as _urlparse
+
+    try:
+        parsed = _urlparse(base_url)
+        if parsed.scheme not in ("http", "https"):
+            raise HTTPException(400, "Solo se permiten URLs HTTP/HTTPS")
+        hostname = parsed.hostname or ""
+        resolved = _socket.getaddrinfo(hostname, None, _socket.AF_UNSPEC, _socket.SOCK_STREAM)
+        for _, _, _, _, addr in resolved:
+            ip = _ip.ip_address(addr[0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved:
+                raise HTTPException(400, "URLs a redes internas no permitidas")
+    except (_socket.gaierror, ValueError):
+        raise HTTPException(400, "URL del LMS inválida") from None
+
     platform_type = req.platform_type
     info = {}
 
@@ -968,7 +995,7 @@ def sync_item(item_id: str, req: SyncItemRequest,
 
     # Download the file from platform
     token, _ = _decode_token(conn)
-    content_bytes: Optional[bytes] = None
+    content_bytes: bytes | None = None
 
     try:
         if conn.platform_type == "moodle":
@@ -1496,7 +1523,7 @@ def _maybe_send_alerts(db, user_id: str, event_type: str,
         if 0 < seconds_left <= 15 * 60 and getattr(prefs, "cal_inapp", True):
             _create_alert_notification(
                 db, user_id,
-                f"🎥 Clase en 15 minutos",
+                "🎥 Clase en 15 minutos",
                 f"{title}" + (f" · {course_name}" if course_name else ""),
             )
     # Tareas/exámenes/foros: alerta 24h antes
@@ -1863,7 +1890,7 @@ def download_item(item_id: str,
 
     # Download from LMS
     token, _ = _decode_token(conn)
-    content_bytes: Optional[bytes] = None
+    content_bytes: bytes | None = None
 
     try:
         if conn.platform_type == "moodle":
@@ -1958,7 +1985,7 @@ def bulk_import_course(course_id: str,
     docs_dir.mkdir(exist_ok=True)
 
     for item in pending:
-        content_bytes: Optional[bytes] = None
+        content_bytes: bytes | None = None
 
         # Try cached content first
         if item.file_content_b64:

@@ -1633,7 +1633,7 @@ export const api = {
   deleteEmployee: (id: string) => request(`/hr/employees/${id}`, { method: 'DELETE' }),
   getEmployeeDocuments: (id: string) => request(`/hr/employees/${id}/documents`),
   downloadEmployeeDocument: async (docId: string) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('conniku_token');
     const base = (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
     const res = await fetch(`${base}/hr/documents/${docId}/download`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -1668,8 +1668,8 @@ export const api = {
     formData.append('document_type', documentType);
     formData.append('name', name);
     const API_BASE =
-      (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com/api';
-    const token = localStorage.getItem('token');
+      (import.meta as any).env?.VITE_API_URL || 'https://studyhub-api-bpco.onrender.com';
+    const token = localStorage.getItem('conniku_token');
     return fetch(`${API_BASE}/hr/employees/${employeeId}/documents`, {
       method: 'POST',
       headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -1712,9 +1712,9 @@ export const api = {
     }),
 
   // ─── Legal Obligations ────────────────────────────────────
-  getLegalObligations: () => request('/legal-obligations'),
+  getLegalObligations: () => request('/hr/legal-obligations'),
   saveLegalObligations: (items: any[]) =>
-    request('/legal-obligations', { method: 'POST', body: JSON.stringify({ items }) }),
+    request('/hr/legal-obligations', { method: 'POST', body: JSON.stringify({ items }) }),
 
   // ─── Tutores / Prestadores Externos ────────────────────────
   applyAsTutor: (data: any) =>
