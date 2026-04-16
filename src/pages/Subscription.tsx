@@ -8,7 +8,6 @@ import {
   Hourglass,
   ClipboardList,
   Star,
-  Crown,
   BookOpen,
   Brain,
   Rocket,
@@ -27,10 +26,11 @@ export default function Subscription({ onNavigate }: Props) {
   const { t } = useI18n();
   const [subStatus, setSubStatus] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('monthly');
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'semester' | 'annual' | 'sprint'>(
+    'monthly'
+  );
   const [localPrices, setLocalPrices] = useState<any>(null);
   const [mpPlans, setMpPlans] = useState<any>(null);
-  const [selectedTier, setSelectedTier] = useState<'pro' | 'max'>('pro');
 
   // Cancel gate modal
   const [showCancelGate, setShowCancelGate] = useState(false);
@@ -86,7 +86,7 @@ export default function Subscription({ onNavigate }: Props) {
 
   const handleSubscribe = async () => {
     setLoading(true);
-    const planKey = `${selectedTier}_${selectedPlan}`;
+    const planKey = `pro_${selectedPlan}`;
     try {
       // 1. Mercado Pago (Chile/LATAM — pesos chilenos)
       const result = await api.createMpCheckout(planKey);
@@ -254,48 +254,51 @@ export default function Subscription({ onNavigate }: Props) {
         {!isActive && (
           <>
             {/* Billing Toggle */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 24 }}>
-              <button
-                onClick={() => setSelectedPlan('monthly')}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: 8,
-                  border: `2px solid ${selectedPlan === 'monthly' ? 'var(--accent)' : 'var(--border)'}`,
-                  background: selectedPlan === 'monthly' ? 'rgba(37,99,235,0.08)' : 'transparent',
-                  color: selectedPlan === 'monthly' ? 'var(--accent)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
-                {t('sub.monthly')}
-              </button>
-              <button
-                onClick={() => setSelectedPlan('yearly')}
-                style={{
-                  padding: '8px 20px',
-                  borderRadius: 8,
-                  border: `2px solid ${selectedPlan === 'yearly' ? 'var(--accent)' : 'var(--border)'}`,
-                  background: selectedPlan === 'yearly' ? 'rgba(37,99,235,0.08)' : 'transparent',
-                  color: selectedPlan === 'yearly' ? 'var(--accent)' : 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  fontSize: 14,
-                }}
-              >
-                {t('sub.yearly')}{' '}
-                <span style={{ fontSize: 11, color: 'var(--accent-green)', marginLeft: 4 }}>
-                  {t('sub.save33')}
-                </span>
-              </button>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 6,
+                marginBottom: 24,
+                flexWrap: 'wrap',
+              }}
+            >
+              {[
+                { key: 'sprint' as const, label: 'Sprint 7 días', save: '' },
+                { key: 'monthly' as const, label: 'Mensual', save: '' },
+                { key: 'semester' as const, label: 'Semestral', save: '-26%' },
+                { key: 'annual' as const, label: 'Anual', save: '-33%' },
+              ].map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setSelectedPlan(opt.key)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: `2px solid ${selectedPlan === opt.key ? 'var(--accent)' : 'var(--border)'}`,
+                    background: selectedPlan === opt.key ? 'rgba(37,99,235,0.08)' : 'transparent',
+                    color: selectedPlan === opt.key ? 'var(--accent)' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                    fontSize: 13,
+                  }}
+                >
+                  {opt.label}
+                  {opt.save && (
+                    <span style={{ fontSize: 10, color: 'var(--accent-green)', marginLeft: 4 }}>
+                      {opt.save}
+                    </span>
+                  )}
+                </button>
+              ))}
             </div>
 
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '1fr 1fr 1fr',
-                gap: 16,
-                maxWidth: 900,
+                gridTemplateColumns: '1fr 1fr',
+                gap: 20,
+                maxWidth: 700,
                 margin: '0 auto',
               }}
             >
@@ -329,15 +332,16 @@ export default function Subscription({ onNavigate }: Props) {
                     color: 'var(--text-secondary)',
                   }}
                 >
-                  <li>✓ {t('sub.basic2Subjects')}</li>
-                  <li>✓ {t('sub.basic20Queries')}</li>
-                  <li>✓ {t('sub.basicSocial')}</li>
-                  <li>✓ {t('sub.basicCourses')}</li>
-                  <li>✓ {t('sub.basic100mb')}</li>
-                  <li>✓ {t('sub.basicDiagnostic')}</li>
-                  <li style={{ color: 'var(--text-muted)' }}>✗ {t('sub.noExportDocx')}</li>
-                  <li style={{ color: 'var(--text-muted)' }}>✗ {t('sub.noExamPredictor')}</li>
-                  <li style={{ color: 'var(--text-muted)' }}>✗ {t('sub.noPostJobs')}</li>
+                  <li>✓ 3 asignaturas</li>
+                  <li>✓ 10 mensajes/día</li>
+                  <li>✓ 2 quizzes/semana</li>
+                  <li>✓ 1 guía/semana</li>
+                  <li>✓ Red social completa</li>
+                  <li>✓ Cursos gratuitos</li>
+                  <li>✓ 100 MB almacenamiento</li>
+                  <li style={{ color: 'var(--text-muted)' }}>✗ Exportar documentos</li>
+                  <li style={{ color: 'var(--text-muted)' }}>✗ Predictor de exámenes</li>
+                  <li style={{ color: 'var(--text-muted)' }}>✗ Mapas conceptuales</li>
                 </ul>
                 <button
                   className="btn btn-secondary"
@@ -381,27 +385,60 @@ export default function Subscription({ onNavigate }: Props) {
                     gap: 4,
                   }}
                 >
-                  {Star({ size: 14 })} {t('sub.pro')}
+                  {Star({ size: 14 })} Conniku PRO
                 </div>
                 <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '7.490' : '71.900'}
+                  $
+                  {
+                    { monthly: '8.990', semester: '39.990', annual: '79.990', sprint: '3.490' }[
+                      selectedPlan
+                    ]
+                  }
                   <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>
                     {' '}
-                    CLP/{selectedPlan === 'monthly' ? t('sub.perMonth') : t('sub.perYear')}
+                    CLP/
+                    {
+                      { monthly: 'mes', semester: 'semestre', annual: 'año', sprint: '7 días' }[
+                        selectedPlan
+                      ]
+                    }
                   </span>
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  ≈ USD ${selectedPlan === 'monthly' ? '8' : '77'}/
-                  {selectedPlan === 'monthly' ? t('sub.perMonth') : t('sub.perYear')}
+                  ≈ USD $
+                  {
+                    { monthly: '9.49', semester: '41.99', annual: '83.99', sprint: '3.69' }[
+                      selectedPlan
+                    ]
+                  }
+                  /
+                  {
+                    { monthly: 'mes', semester: 'semestre', annual: 'año', sprint: '7 días' }[
+                      selectedPlan
+                    ]
+                  }
                 </div>
-                {selectedPlan === 'yearly' && (
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>
+                  IVA incluido
+                </div>
+                {selectedPlan === 'semester' && (
                   <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
-                    {t('sub.proMonthlySavings')}
+                    Ahorras $14.950 vs mensual
+                  </div>
+                )}
+                {selectedPlan === 'annual' && (
+                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
+                    Ahorras $27.890 vs mensual
+                  </div>
+                )}
+                {selectedPlan === 'sprint' && (
+                  <div style={{ fontSize: 13, color: 'var(--accent-orange)', marginBottom: 20 }}>
+                    Máximo 2 por semestre · Sin auto-renovación
                   </div>
                 )}
                 {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
                 <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
-                  {t('sub.proDesc')}
+                  Todo lo que necesitas para dominar tus estudios
                 </div>
                 <ul
                   style={{
@@ -413,26 +450,28 @@ export default function Subscription({ onNavigate }: Props) {
                     color: 'var(--text-secondary)',
                   }}
                 >
-                  <li>✓ {t('sub.pro8Subjects')}</li>
-                  <li>✓ {t('sub.pro200Queries')}</li>
-                  <li>✓ {t('sub.proNoAds')}</li>
-                  <li>✓ {t('sub.proExportDocx')}</li>
-                  <li>✓ {t('sub.proCommunities')}</li>
-                  <li>✓ {t('sub.proExamPredictor')}</li>
-                  <li>✓ {t('sub.proCvGenerator')}</li>
-                  <li>✓ {t('sub.pro2gb')}</li>
-                  <li>✓ {t('sub.pro20xp')}</li>
+                  <li>✓ Asignaturas ilimitadas</li>
+                  <li>✓ Chat ilimitado</li>
+                  <li>✓ Quizzes y flashcards ilimitados</li>
+                  <li>✓ Exportar a Word y PDF</li>
+                  <li>✓ Predictor de exámenes</li>
+                  <li>✓ Mapas conceptuales</li>
+                  <li>✓ Planes de estudio</li>
+                  <li>✓ 2 GB almacenamiento</li>
+                  <li>✓ Sync universidad (LMS)</li>
+                  <li>✓ 1.5x XP en gamificación</li>
                 </ul>
                 <button
                   className="btn btn-primary"
                   style={{ width: '100%', marginTop: 20 }}
-                  onClick={() => {
-                    setSelectedTier('pro');
-                    handleSubscribe();
-                  }}
+                  onClick={handleSubscribe}
                   disabled={loading}
                 >
-                  {loading ? t('sub.processing') : t('sub.startFreeTrial')}
+                  {loading
+                    ? 'Procesando...'
+                    : selectedPlan === 'sprint'
+                      ? 'Activar Sprint'
+                      : 'Comenzar prueba gratuita'}
                 </button>
                 <p
                   style={{
@@ -442,113 +481,9 @@ export default function Subscription({ onNavigate }: Props) {
                     marginTop: 8,
                   }}
                 >
-                  {t('sub.autoBilling')}{' '}
-                  {selectedPlan === 'monthly' ? t('sub.monthlyBilling') : t('sub.yearlyBilling')} ·{' '}
-                  {t('sub.cancelAnytime')}
-                </p>
-              </div>
-
-              {/* MAX Plan */}
-              <div
-                className="u-card"
-                style={{
-                  padding: 24,
-                  border: '2px solid var(--accent-purple)',
-                  position: 'relative',
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: -12,
-                    right: 16,
-                    background: 'var(--accent-purple)',
-                    color: '#fff',
-                    padding: '4px 12px',
-                    borderRadius: 12,
-                    fontSize: 11,
-                    fontWeight: 700,
-                  }}
-                >
-                  {t('sub.premium')}
-                </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: 'var(--accent-purple)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    marginBottom: 8,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 4,
-                  }}
-                >
-                  {Crown({ size: 14 })} {t('sub.max')}
-                </div>
-                <div style={{ fontSize: 32, fontWeight: 700, marginBottom: 4 }}>
-                  ${selectedPlan === 'monthly' ? '11.990' : '115.900'}
-                  <span style={{ fontSize: 14, fontWeight: 400, color: 'var(--text-muted)' }}>
-                    {' '}
-                    CLP/{selectedPlan === 'monthly' ? t('sub.perMonth') : t('sub.perYear')}
-                  </span>
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  ≈ USD ${selectedPlan === 'monthly' ? '13' : '125'}/
-                  {selectedPlan === 'monthly' ? t('sub.perMonth') : t('sub.perYear')}
-                </div>
-                {selectedPlan === 'yearly' && (
-                  <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 20 }}>
-                    {t('sub.maxMonthlySavings')}
-                  </div>
-                )}
-                {selectedPlan === 'monthly' && <div style={{ height: 20, marginBottom: 20 }} />}
-                <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
-                  {t('sub.maxDesc')}
-                </div>
-                <ul
-                  style={{
-                    listStyle: 'none',
-                    padding: 0,
-                    margin: 0,
-                    fontSize: 13,
-                    lineHeight: 2.2,
-                    color: 'var(--text-secondary)',
-                  }}
-                >
-                  <li>✓ {t('sub.maxUnlimited')}</li>
-                  <li>✓ {t('sub.maxPostJobs')}</li>
-                  <li>✓ {t('sub.maxStudyRooms')}</li>
-                  <li>✓ {t('sub.maxPortfolio')}</li>
-                  <li>✓ {t('sub.max10gb')}</li>
-                  <li>✓ {t('sub.max50xp')}</li>
-                  <li>✓ {t('sub.maxPrioritySupport')}</li>
-                  <li>✓ {t('sub.maxEarlyAccess')}</li>
-                  <li>✓ {t('sub.maxExclusiveBadge')}</li>
-                </ul>
-                <button
-                  className="btn btn-primary"
-                  style={{ width: '100%', marginTop: 20, background: 'var(--accent-purple)' }}
-                  onClick={() => {
-                    setSelectedTier('max');
-                    handleSubscribe();
-                  }}
-                  disabled={loading}
-                >
-                  {loading ? t('sub.processing') : t('sub.activateMax')}
-                </button>
-                <p
-                  style={{
-                    fontSize: 11,
-                    color: 'var(--text-muted)',
-                    textAlign: 'center',
-                    marginTop: 8,
-                  }}
-                >
-                  {t('sub.autoBillingSecure')}{' '}
-                  {selectedPlan === 'monthly' ? t('sub.monthlyBilling') : t('sub.yearlyBilling')} ·{' '}
-                  {t('sub.securePay')}
+                  {selectedPlan === 'sprint'
+                    ? 'Pago único · Sin auto-renovación'
+                    : `Cobro automático ${{ monthly: 'mensual', semester: 'semestral', annual: 'anual', sprint: '' }[selectedPlan]} · Cancela cuando quieras`}
                 </p>
               </div>
             </div>
