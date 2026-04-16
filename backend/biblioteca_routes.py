@@ -8,25 +8,42 @@ Fuentes de documentos:
 
 Principio: todo se visualiza DENTRO de Conniku. Si un libro no permite embed, no se incluye.
 """
+from __future__ import annotations
+
+import hashlib
 import json
+import re
 import shutil
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional  # noqa: UP035 — required for Pydantic on Python 3.9
+from urllib.parse import urljoin
 
 import httpx
+from biblioteca_cache import (
+    get_cache_stats,
+    get_cached_path,
+    get_or_download,
+    is_cached,
+    write_to_cache,
+)
+from database import (
+    DATA_DIR,
+    LibraryDocument,
+    LibraryDocumentRating,
+    LibraryDocumentSave,
+    User,
+    gen_id,
+    get_db,
+)
 from fastapi import APIRouter, Depends, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
+from middleware import get_current_user
 from pydantic import BaseModel
 from sqlalchemy import desc, func, or_
 from sqlalchemy.orm import Session
-
-from database import (
-    DATA_DIR, LibraryDocument, LibraryDocumentRating, LibraryDocumentSave,
-    User, gen_id, get_db,
-)
-from middleware import get_current_user
 
 router = APIRouter(prefix="/biblioteca", tags=["biblioteca"])
 
@@ -34,6 +51,77 @@ LIBRARY_DIR = DATA_DIR / "biblioteca"
 LIBRARY_DIR.mkdir(exist_ok=True)
 
 PROJECTS_DIR = DATA_DIR / "projects"
+
+# ─── Cache de búsqueda en memoria (patrón hr_routes.py) ─────
+_search_cache: dict = {}  # key → {"data": ..., "ts": float}
+_SEARCH_CACHE_TTL = 3600  # 1 hora
+_SEARCH_CACHE_MAX = 200   # máximo de entradas, evicta las más antiguas
+
+# Allowed Gutenberg origins (reutilizado en múltiples endpoints)
+_GUTENBERG_ORIGINS = (
+    "https://www.gutenberg.org", "http://www.gutenberg.org",
+    "https://gutenberg.org", "http://gutenberg.org",
+)
+
+_GUTENBERG_USER_AGENT = "Conniku/1.0 (educational reader; +https://conniku.com)"
+
+
+def _extract_gutenberg_id(url: str) -> str:
+    """Extrae ID numérico de una URL de Gutenberg, o hash MD5 como fallback.
+    Formatos conocidos:
+      /files/12345/12345-h/12345-h.htm
+      /ebooks/12345
+      /cache/epub/12345/pg12345-images.html
+    """
+    # /files/ID/ — formato más común
+    m = re.search(r'/files/(\d+)/', url)
+    if m:
+        return m.group(1)
+    # /cache/epub/ID/ — formato alternativo HTML
+    m = re.search(r'/cache/epub/(\d+)/', url)
+    if m:
+        return m.group(1)
+    # /ebooks/ID — página del libro
+    m = re.search(r'/ebooks/(\d+)', url)
+    if m:
+        return m.group(1)
+    # Último recurso: hash estable del URL
+    return hashlib.md5(url.encode()).hexdigest()[:16]
+
+
+def _rewrite_gutenberg_html(html: str, base_url: str) -> str:
+    """Reescribe URLs relativas a absolutas e inyecta estilos de lectura."""
+    def make_abs(match: re.Match) -> str:
+        attr, quote, val = match.group(1), match.group(2), match.group(3)
+        if val.startswith(("http://", "https://", "//", "#", "data:", "javascript:")):
+            return match.group(0)
+        abs_val = urljoin(base_url, val)
+        return f'{attr}={quote}{abs_val}{quote}'
+
+    html = re.sub(
+        r'(href|src)=(["\'])(?!http|//|#|data:|javascript:)([^"\']+)\2',
+        make_abs, html, flags=re.IGNORECASE,
+    )
+
+    reading_styles = """
+<style>
+  body { max-width: 820px; margin: 0 auto; padding: 24px 20px 60px;
+         font-family: Georgia, 'Times New Roman', serif; font-size: 17px;
+         line-height: 1.75; color: #e8eeff; background: #0d1526; }
+  a { color: #60a5fa; }
+  h1,h2,h3,h4 { color: #fff; }
+  img { max-width: 100%; height: auto; }
+  pre, code { font-size: 14px; white-space: pre-wrap; }
+</style>
+"""
+    if "</head>" in html:
+        html = html.replace("</head>", reading_styles + "</head>", 1)
+    elif "<body" in html:
+        html = html.replace("<body", reading_styles + "<body", 1)
+    else:
+        html = reading_styles + html
+
+    return html
 
 
 # ─── Project helpers (mirrored from server.py to avoid circular import) ───
@@ -102,7 +190,7 @@ def list_biblioteca(
     db: Session = Depends(get_db),
 ):
     """Listar documentos de la biblioteca con búsqueda y filtros."""
-    q_obj = db.query(LibraryDocument).filter(LibraryDocument.is_active == True)
+    q_obj = db.query(LibraryDocument).filter(LibraryDocument.is_active.is_(True))
 
     if q:
         term = f"%{q.lower()}%"
@@ -142,8 +230,8 @@ class ShareDocRequest(BaseModel):
     description: str = ""
     category: str
     author: str = ""
-    year: Optional[int] = None
-    tags: List[str] = []
+    year: Optional[int] = None  # noqa: UP045
+    tags: List[str] = []  # noqa: UP006
 
 
 @router.post("/share")
@@ -260,7 +348,16 @@ async def public_domain_search(
     page: int = Query(default=1, ge=1),
     user: User = Depends(get_current_user),
 ):
-    """Busca libros de dominio público en Project Gutenberg vía gutendex.com."""
+    """Busca libros de dominio público en Project Gutenberg vía gutendex.com.
+    Resultados cacheados en memoria por 1 hora."""
+    # Cache en memoria (patrón hr_routes.py)
+    cache_key = f"{q.strip().lower()}|{lang}|{page}"
+    now = time.time()
+    if cache_key in _search_cache:
+        entry = _search_cache[cache_key]
+        if now - entry["ts"] < _SEARCH_CACHE_TTL:
+            return entry["data"]
+
     params: dict = {"page": page}
     if q.strip():
         params["search"] = q.strip()
@@ -274,86 +371,94 @@ async def public_domain_search(
             resp.raise_for_status()
             data = resp.json()
     except httpx.HTTPError:
-        raise HTTPException(503, "No se pudo conectar con Project Gutenberg. Intenta de nuevo.")
+        raise HTTPException(503, "No se pudo conectar con Project Gutenberg. Intenta de nuevo.") from None
     books = [b for b in data.get("results", []) if any(
         k.startswith("text/html") or k.startswith("text/plain")
         for k in b.get("formats", {})
     )]
-    return {
+    result = {
         "items": [_gutenberg_book_to_dict(b) for b in books],
         "total": data.get("count", 0),
         "page": page,
         "next": data.get("next"),
     }
 
+    # Guardar en cache (con evicción si supera el máximo)
+    _search_cache[cache_key] = {"data": result, "ts": now}
+    if len(_search_cache) > _SEARCH_CACHE_MAX:
+        # Evictar las entradas más antiguas
+        oldest = sorted(_search_cache, key=lambda k: _search_cache[k]["ts"])
+        for k in oldest[: len(_search_cache) - _SEARCH_CACHE_MAX]:
+            _search_cache.pop(k, None)
+    return result
+
+
+# ─── GET /biblioteca/cache-stats ────────────────────────────
+# Estadísticas del cache (para panel CEO / admin)
+@router.get("/cache-stats")
+def cache_stats(user: User = Depends(get_current_user)):
+    """Estadísticas del cache de libros: total, espacio usado, por fuente."""
+    stats = get_cache_stats()
+    stats["search_cache_entries"] = len(_search_cache)
+    return stats
+
 
 # ─── GET /biblioteca/gutenberg-read ──────────────────────────
-# Proxy del HTML de Gutenberg para evitar X-Frame-Options blockeo
+# Proxy del HTML de Gutenberg — ahora con cache en disco.
+# Primera lectura: descarga y guarda. Siguientes: sirve desde cache.
 @router.get("/gutenberg-read")
 async def gutenberg_proxy(
     url: str = Query(..., description="URL del archivo HTML en Gutenberg"),
     user: User = Depends(get_current_user),
 ):
     """
-    Descarga el HTML del libro desde Gutenberg y lo sirve desde nuestro dominio,
-    reescribiendo URLs relativas para que los recursos (CSS, imágenes) carguen correctamente.
+    Sirve un libro de Gutenberg desde cache local (si existe) o lo descarga,
+    cachea, y sirve. Reescribe URLs relativas y aplica estilos de lectura.
     """
-    # Validar que la URL sea de Gutenberg (seguridad básica)
-    allowed_origins = ("https://www.gutenberg.org", "http://www.gutenberg.org",
-                       "https://gutenberg.org", "http://gutenberg.org")
-    if not any(url.startswith(o) for o in allowed_origins):
+    # 1. Validar que la URL sea de Gutenberg
+    if not any(url.startswith(o) for o in _GUTENBERG_ORIGINS):
         raise HTTPException(400, "Solo se permiten URLs de Project Gutenberg")
 
-    try:
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            resp = await client.get(url, headers={
-                "User-Agent": "Conniku/1.0 (educational reader; +https://conniku.com)"
-            })
-            resp.raise_for_status()
-            content_type = resp.headers.get("content-type", "text/html")
-    except httpx.HTTPStatusError as e:
-        raise HTTPException(e.response.status_code, f"Gutenberg respondió con error {e.response.status_code}")
-    except httpx.RequestError:
-        raise HTTPException(503, "No se pudo conectar con Project Gutenberg")
+    # 2. Extraer ID para cache
+    external_id = _extract_gutenberg_id(url)
 
-    # Calcular base URL para reescribir recursos relativos
-    from urllib.parse import urljoin
-    import re as _re
-    base_url = url.rsplit("/", 1)[0] + "/"
-
-    html = resp.text
-
-    # Reescribir href/src relativos para que apunten a Gutenberg directamente
-    def make_abs(match: _re.Match) -> str:
-        attr, quote, val = match.group(1), match.group(2), match.group(3)
-        if val.startswith(("http://", "https://", "//", "#", "data:", "javascript:")):
-            return match.group(0)
-        abs_val = urljoin(base_url, val)
-        return f'{attr}={quote}{abs_val}{quote}'
-
-    html = _re.sub(r'(href|src)=(["\'])(?!http|//|#|data:|javascript:)([^"\']+)\2',
-                   make_abs, html, flags=_re.IGNORECASE)
-
-    # Inyectar estilos básicos de lectura si es HTML puro sin body styling
-    reading_styles = """
-<style>
-  body { max-width: 820px; margin: 0 auto; padding: 24px 20px 60px;
-         font-family: Georgia, 'Times New Roman', serif; font-size: 17px;
-         line-height: 1.75; color: #e8eeff; background: #0d1526; }
-  a { color: #60a5fa; }
-  h1,h2,h3,h4 { color: #fff; }
-  img { max-width: 100%; height: auto; }
-  pre, code { font-size: 14px; white-space: pre-wrap; }
-</style>
-"""
-    if "</head>" in html:
-        html = html.replace("</head>", reading_styles + "</head>", 1)
-    elif "<body" in html:
-        html = html.replace("<body", reading_styles + "<body", 1)
+    # 3. Intentar servir desde cache (validar que no esté vacío/corrupto)
+    cached = get_cached_path("gutenberg", external_id)
+    if cached and cached.stat().st_size > 100:
+        raw_html = cached.read_text(encoding="utf-8", errors="replace")
     else:
-        html = reading_styles + html
+        # 4. Cache miss — descargar y cachear (siempre como UTF-8)
+        async def _download() -> bytes:
+            async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                resp = await client.get(url, headers={
+                    "User-Agent": _GUTENBERG_USER_AGENT,
+                })
+                resp.raise_for_status()
+                # resp.text decodifica correctamente (httpx detecta charset),
+                # luego re-encode a UTF-8 para cache consistente
+                return resp.text.encode("utf-8")
 
-    from fastapi.responses import HTMLResponse
+        try:
+            content_path = await get_or_download(
+                source="gutenberg",
+                external_id=external_id,
+                download_fn=_download,
+                filename="book.html",
+                meta={"source_url": url},
+            )
+            raw_html = content_path.read_text(encoding="utf-8", errors="replace")
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(
+                e.response.status_code,
+                f"Gutenberg respondió con error {e.response.status_code}",
+            ) from None
+        except httpx.RequestError:
+            raise HTTPException(503, "No se pudo conectar con Project Gutenberg") from None
+
+    # 5. Reescribir URLs + inyectar estilos (se aplica al servir, no al cachear)
+    base_url = url.rsplit("/", 1)[0] + "/"
+    html = _rewrite_gutenberg_html(raw_html, base_url)
+
     return HTMLResponse(content=html, media_type="text/html; charset=utf-8")
 
 
@@ -370,7 +475,7 @@ def serve_document_file(
     """
     doc = db.query(LibraryDocument).filter(
         LibraryDocument.id == doc_id,
-        LibraryDocument.is_active == True,
+        LibraryDocument.is_active.is_(True),
     ).first()
     if not doc or not doc.file_path:
         raise HTTPException(404, "Archivo no encontrado")
@@ -396,7 +501,7 @@ def get_document(
 ):
     doc = db.query(LibraryDocument).filter(
         LibraryDocument.id == doc_id,
-        LibraryDocument.is_active == True,
+        LibraryDocument.is_active.is_(True),
     ).first()
     if not doc:
         raise HTTPException(404, "Documento no encontrado")
@@ -449,7 +554,7 @@ def get_saved(
         return {"items": []}
     docs = db.query(LibraryDocument).filter(
         LibraryDocument.id.in_(ids),
-        LibraryDocument.is_active == True,
+        LibraryDocument.is_active.is_(True),
     ).all()
     saved_set = set(ids)
     return {"items": [_doc_to_dict(d, saved_set) for d in docs]}
@@ -521,7 +626,7 @@ async def clone_to_project(
     # 2. Obtener documento de biblioteca
     doc = db.query(LibraryDocument).filter(
         LibraryDocument.id == doc_id,
-        LibraryDocument.is_active == True,
+        LibraryDocument.is_active.is_(True),
     ).first()
     if not doc:
         raise HTTPException(404, "Documento no encontrado en la biblioteca")
@@ -548,30 +653,39 @@ async def clone_to_project(
         file_size = file_path.stat().st_size
 
     elif doc.source_type == "gutenberg" and doc.embed_url:
-        # Descargar HTML de Gutenberg y extraer texto plano
-        allowed_origins = (
-            "https://www.gutenberg.org", "http://www.gutenberg.org",
-            "https://gutenberg.org", "http://gutenberg.org",
-        )
-        if not any(doc.embed_url.startswith(o) for o in allowed_origins):
+        # Obtener HTML de Gutenberg — desde cache si existe, si no descargar
+        if not any(doc.embed_url.startswith(o) for o in _GUTENBERG_ORIGINS):
             raise HTTPException(400, "URL de origen no permitida")
 
-        try:
-            async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-                resp = await client.get(doc.embed_url, headers={
-                    "User-Agent": "Conniku/1.0 (educational reader; +https://conniku.com)"
-                })
-                resp.raise_for_status()
-                html = resp.text
-        except httpx.HTTPError:
-            raise HTTPException(503, "No se pudo descargar el libro de Gutenberg")
+        external_id = _extract_gutenberg_id(doc.embed_url)
+        cached = get_cached_path("gutenberg", external_id)
+
+        if cached:
+            # Cache hit — leer desde disco local
+            html = cached.read_text(encoding="utf-8", errors="replace")
+        else:
+            # Cache miss — descargar y cachear para futuros reads
+            try:
+                async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+                    resp = await client.get(doc.embed_url, headers={
+                        "User-Agent": _GUTENBERG_USER_AGENT,
+                    })
+                    resp.raise_for_status()
+                    html = resp.text
+                # Cachear como UTF-8 (resp.text ya está decodificado correctamente
+                # por httpx; resp.content podría ser Latin-1/Windows-1252 raw)
+                write_to_cache(
+                    "gutenberg", external_id, html.encode("utf-8"),
+                    "book.html", {"source_url": doc.embed_url},
+                )
+            except httpx.HTTPError:
+                raise HTTPException(503, "No se pudo descargar el libro de Gutenberg") from None
 
         # Extraer texto plano del HTML
-        import re
         text_content = re.sub(r'<[^>]+>', '', html)
         text_content = re.sub(r'\s+', ' ', text_content).strip()
 
-        # Guardar como .txt
+        # Guardar como .txt en el proyecto
         safe_title = re.sub(r'[^\w\s-]', '', doc.title or "libro")[:80].strip()
         file_name = f"{safe_title}.txt"
         file_path = docs_dir / file_name
@@ -585,8 +699,8 @@ async def clone_to_project(
         raise HTTPException(400, "Este documento no se puede clonar (sin archivo ni URL)")
 
     # 4. Extraer texto e indexar en AI engine
-    from document_processor import DocumentProcessor
     from ai_engine import AIEngine
+    from document_processor import DocumentProcessor
 
     processor = DocumentProcessor()
     engine = AIEngine()

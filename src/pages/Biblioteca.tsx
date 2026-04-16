@@ -92,6 +92,8 @@ export default function Biblioteca({ onNavigate }: Props) {
   const [selected, setSelected] = useState<LibDoc | null>(null);
   const [reading, setReading] = useState<LibDoc | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [iframeError, setIframeError] = useState(false);
+  const [iframeRetry, setIframeRetry] = useState(0);
 
   // ── Clone-to-workspace state ──
   const [cloneDoc, setCloneDoc] = useState<LibDoc | null>(null);
@@ -147,6 +149,13 @@ export default function Biblioteca({ onNavigate }: Props) {
     return () => clearTimeout(t);
   }, [searchInput]);
 
+  // Timeout fallback: si el iframe no carga en 20s, mostrar error con link directo
+  useEffect(() => {
+    if (!reading || iframeLoaded || iframeError) return;
+    const timer = setTimeout(() => setIframeError(true), 20_000);
+    return () => clearTimeout(timer);
+  }, [reading, iframeLoaded, iframeError]);
+
   const handleCategoryChange = (val: string) => {
     setCategory(val);
     setPage(1);
@@ -166,6 +175,7 @@ export default function Biblioteca({ onNavigate }: Props) {
   const openReader = (doc: LibDoc) => {
     setSelected(null);
     setIframeLoaded(false);
+    setIframeError(false);
     setReading(doc);
   };
 
@@ -1021,50 +1031,95 @@ export default function Biblioteca({ onNavigate }: Props) {
                   zIndex: 1,
                 }}
               >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    border: '3px solid rgba(255,255,255,0.1)',
-                    borderTopColor: '#3b82f6',
-                    borderRadius: '50%',
-                    animation: 'spin 0.9s linear infinite',
-                  }}
-                />
-                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0 }}>
-                  Cargando libro desde Project Gutenberg…
-                </p>
-                <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
-                  Esto puede tardar algunos segundos
-                </p>
-                <a
-                  href={`https://www.gutenberg.org/ebooks/${(reading as any).gutenberg_id || ''}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    marginTop: 8,
-                    color: '#60a5fa',
-                    fontSize: 12,
-                    textDecoration: 'underline',
-                  }}
-                >
-                  ¿Tarda mucho? Abrir en Gutenberg →
-                </a>
+                {iframeError ? (
+                  <>
+                    <div style={{ fontSize: 40, marginBottom: 4 }}>⚠️</div>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, margin: 0 }}>
+                      No se pudo cargar el libro
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, margin: 0 }}>
+                      El servidor no respondió a tiempo
+                    </p>
+                    <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                      <button
+                        onClick={() => {
+                          setIframeError(false);
+                          setIframeLoaded(false);
+                          setIframeRetry((r) => r + 1);
+                        }}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: 8,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          background: 'rgba(255,255,255,0.1)',
+                          color: '#fff',
+                          fontSize: 13,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Reintentar
+                      </button>
+                      {(reading.embed_url || (reading as any).gutenberg_id) && (
+                        <a
+                          href={
+                            reading.source_type === 'gutenberg' && (reading as any).gutenberg_id
+                              ? `https://www.gutenberg.org/ebooks/${(reading as any).gutenberg_id}`
+                              : reading.embed_url || '#'
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            padding: '8px 16px',
+                            borderRadius: 8,
+                            border: 'none',
+                            background: '#3b82f6',
+                            color: '#fff',
+                            fontSize: 13,
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Abrir en la fuente original →
+                        </a>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        border: '3px solid rgba(255,255,255,0.1)',
+                        borderTopColor: '#3b82f6',
+                        borderRadius: '50%',
+                        animation: 'spin 0.9s linear infinite',
+                      }}
+                    />
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, margin: 0 }}>
+                      Cargando libro…
+                    </p>
+                    <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, margin: 0 }}>
+                      Esto puede tardar algunos segundos
+                    </p>
+                  </>
+                )}
               </div>
             )}
             <iframe
-              key={getViewUrl(reading)}
+              key={`${getViewUrl(reading)}_${iframeRetry}`}
               src={getViewUrl(reading)}
               style={{
                 width: '100%',
                 height: '100%',
                 border: 'none',
-                display: iframeLoaded ? 'block' : 'block',
+                display: iframeLoaded ? 'block' : 'none',
                 background: '#0D1526',
               }}
               title={reading.title}
               allowFullScreen
               onLoad={() => setIframeLoaded(true)}
+              onError={() => setIframeError(true)}
             />
           </div>
         </div>
