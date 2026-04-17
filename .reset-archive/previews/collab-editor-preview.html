@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CollabEditor Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      --bg-primary: #1e1e2e;
+      --bg-secondary: #252536;
+      --text-primary: #e0e0ef;
+      --text-secondary: #9090a8;
+      --text-muted: #55556a;
+      --border: #353550;
+      --accent: #4285f4;
+    }
+    #root { height: 100vh; display: flex; flex-direction: column; }
+    #loading {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9090a8;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      background: #1e1e2e;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">Cargando editor...</div>
+  <div id="root" style="display:none"></div>
+
+  <script type="module">
+    // Import via Vite dev server transforms
+    import React from '/node_modules/.vite/deps/react.js';
+    import ReactDOMClient from '/node_modules/.vite/deps/react-dom_client.js';
+    import CollabEditor from '/src/components/CollabEditor.tsx';
+
+    const { createRoot } = ReactDOMClient;
+
+    const sampleContent = `
+      <h1>Documento de ejemplo</h1>
+      <p>Este es el nuevo editor de <strong>Conniku</strong> con diseño estilo Google Docs.
+      Puedes usar <em>cursiva</em>, <u>subrayado</u>, y <s>tachado</s>.</p>
+      <h2>Características del editor</h2>
+      <ul>
+        <li>Barra de herramientas profesional con íconos SVG</li>
+        <li>Página blanca centrada sobre fondo gris</li>
+        <li>Selector de fuente y tamaño tipográfico</li>
+        <li>Paleta de colores de texto y resaltado</li>
+        <li>Conteo de palabras y caracteres en tiempo real</li>
+      </ul>
+      <h3>Listas de tareas</h3>
+      <ul data-type="taskList">
+        <li data-type="taskItem" data-checked="true">
+          <label><input type="checkbox" checked /></label>
+          <div>Diseño de toolbar con SVGs</div>
+        </li>
+        <li data-type="taskItem" data-checked="false">
+          <label><input type="checkbox" /></label>
+          <div>Simulación de página de papel</div>
+        </li>
+      </ul>
+      <h3>Código de ejemplo</h3>
+      <pre><code>function hola() {
+  console.log("Conniku — Editor Colaborativo");
+}</code></pre>
+      <blockquote>
+        <p>El conocimiento es poder cuando se comparte. — Conniku</p>
+      </blockquote>
+    `;
+
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('root').style.display = 'flex';
+    document.getElementById('root').style.flexDirection = 'column';
+
+    const root = createRoot(document.getElementById('root'));
+    root.render(
+      React.createElement(CollabEditor, {
+        content: sampleContent,
+        onUpdate: (html) => console.log('Updated, length:', html.length),
+        editable: true,
+      })
+    );
+  </script>
+</body>
+</html>
