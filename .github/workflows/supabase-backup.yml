@@ -235,7 +235,9 @@ jobs:
             });
 
       - name: Send email notification
-        if: ${{ secrets.SMTP_USER != '' && secrets.SMTP_PASS != '' }}
+        if: ${{ env.HAS_SMTP == 'true' }}
+        env:
+          HAS_SMTP: ${{ (secrets.SMTP_USER != '' && secrets.SMTP_PASS != '') && 'true' || 'false' }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
