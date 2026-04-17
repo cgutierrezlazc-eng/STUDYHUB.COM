@@ -1,0 +1,32 @@
+# .claude/frozen-files.txt
+#
+# GENERADO AUTOMATICAMENTE - NO EDITAR DIRECTAMENTE
+#
+# Ultima regeneracion: 2026-04-17 04:19:14
+# Fuente: FROZEN.md (raiz del repo)
+# Regenerado por: .claude/scripts/regen-frozen-list.sh
+#
+# Formato: una ruta relativa al root del repo por linea.
+# Lineas que empiezan con # son comentarios.
+# Soporta globs basicos (* y ?).
+#
+# Para modificar: editar FROZEN.md, este archivo se regenera
+# automaticamente al guardar.
+#
+# Leido por: .claude/scripts/check-frozen.sh (hook PreToolUse)
+
+.gitignore
+.husky/pre-commit
+backend/hr_routes.py
+package.json
+src/admin/tools/BibliotecaDocumentos.tsx
+src/pages/Communities.tsx
+src/pages/Conferences.tsx
+src/pages/Dashboard.tsx
+src/pages/Friends.tsx
+src/pages/GroupDocEditor.tsx
+src/pages/HRDashboard.tsx
+src/pages/Jobs.tsx
+src/pages/Mentorship.tsx
+src/pages/Messages.tsx
+src/pages/UserProfile.tsx

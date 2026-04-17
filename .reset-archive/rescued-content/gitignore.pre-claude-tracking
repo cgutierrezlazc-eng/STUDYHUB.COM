@@ -48,12 +48,8 @@ npm-debug.log*
 logo-options.html
 profile-mockups.html
 
-# Claude - ignorar runtime pero trackear código fuente del sistema
-.claude/logs/
-.claude/session.lock
-.claude/UNFREEZE_ACTIVE
-.claude/*.cache
-.claude/*.tmp
+# Claude
+.claude/
 
 # IDE / JDK
 .jdk/

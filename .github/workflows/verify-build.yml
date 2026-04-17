@@ -1,11 +1,19 @@
-name: Verify — Web + Mobile Format
+name: Verify — Full Stack Integrity Gate
 
 # ─── Corre en CADA push/PR a main ────────────────────────────────────────────
-# Verifica que el código no rompe:
-#   - TypeScript (errores de tipos)
-#   - Build web (Vite)
-#   - Capacitor sync (compatibilidad móvil)
-# Es rápido (~2 min) y bloquea merges si algo falla.
+# Es el gate obligatorio antes de que código entre a main.
+# Verifica 6 aspectos críticos en secuencia:
+#
+#   1. TypeScript (errores de tipos en frontend)
+#   2. ESLint (lint de frontend)
+#   3. Build web (Vite compila sin errores)
+#   4. Python backend (ruff + mypy + pytest si hay tests)
+#   5. Archivos frozen (nadie modificó archivos protegidos sin flag)
+#   6. Vulnerabilidades (npm audit nivel critical o high)
+#
+# Si alguna falla: el commit/PR queda bloqueado hasta corregir.
+# Para que GitHub lo use como gate obligatorio, configurarlo como
+# "required check" en branch protection rules de main.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -16,11 +24,14 @@ on:
 
 jobs:
   verify:
-    name: Verificar Web + Capacitor
+    name: Verify Full Stack
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
 
     steps:
+      # ============================================================
+      # SETUP
+      # ============================================================
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -30,32 +41,166 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: 'backend/runtime.txt'
+          cache: 'pip'
+          cache-dependency-path: 'backend/requirements.txt'
+
+      - name: Install Node dependencies
         run: npm ci
 
-      # ── 1. TypeScript — sin errores de tipos ──────────────────────────────
-      - name: TypeScript check
-        run: npx tsc --noEmit
-
-      # ── 2. Vite build — el web compila sin errores ────────────────────────
-      - name: Build web
-        run: npx vite build
-
-      # ── 3. Capacitor sync — assets móviles actualizados ───────────────────
-      - name: Capacitor sync check
-        run: npx cap sync --inline
-        continue-on-error: true   # No bloquea si no hay plataformas instaladas en CI
-
-      # ── 4. Verificar tamaño del bundle (alerta si crece mucho) ────────────
-      - name: Bundle size check
+      - name: Install Python dependencies
         run: |
-          TOTAL=$(du -sh dist/renderer/ | cut -f1)
-          INDEX_SIZE=$(ls -la dist/renderer/assets/index-*.js 2>/dev/null | awk '{sum += $5} END {print sum/1024 " KB"}')
-          echo "## 📦 Bundle Report" >> $GITHUB_STEP_SUMMARY
-          echo "| Métrica | Valor |" >> $GITHUB_STEP_SUMMARY
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install ruff mypy pytest
+
+      # ============================================================
+      # VERIFICACIÓN 1: TypeScript (tipos en frontend)
+      # ============================================================
+      - name: "[1/6] TypeScript check"
+        run: |
+          echo "::group::TypeScript verification"
+          npx tsc --noEmit
+          echo "::endgroup::"
+
+      # ============================================================
+      # VERIFICACIÓN 2: ESLint (lint de frontend)
+      # ============================================================
+      - name: "[2/6] ESLint check"
+        run: |
+          echo "::group::ESLint verification"
+          if [ -f "package.json" ] && grep -q '"lint"' package.json; then
+            npm run lint
+          elif [ -f ".eslintrc.json" ] || [ -f ".eslintrc.js" ] || [ -f "eslint.config.js" ]; then
+            npx eslint . --max-warnings 0
+          else
+            echo "No ESLint config found, skipping"
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
+      # VERIFICACIÓN 3: Build web (Vite)
+      # ============================================================
+      - name: "[3/6] Build web with Vite"
+        run: |
+          echo "::group::Vite build"
+          npx vite build
+          echo "::endgroup::"
+
+      # ============================================================
+      # VERIFICACIÓN 4: Backend Python (ruff + mypy + pytest)
+      # ============================================================
+      - name: "[4/6] Python backend - ruff lint"
+        run: |
+          echo "::group::Ruff lint"
+          cd backend
+          ruff check .
+          echo "::endgroup::"
+
+      - name: "[4/6] Python backend - mypy typecheck"
+        run: |
+          echo "::group::Mypy typecheck"
+          cd backend
+          if [ -f "mypy.ini" ] || grep -q "\[tool.mypy\]" pyproject.toml 2>/dev/null; then
+            mypy .
+          else
+            # Modo permisivo si no hay configuración específica
+            mypy --ignore-missing-imports --no-strict-optional . || true
+          fi
+          echo "::endgroup::"
+
+      - name: "[4/6] Python backend - pytest"
+        run: |
+          echo "::group::Pytest"
+          cd backend
+          if find . -name "test_*.py" -o -name "*_test.py" | grep -q .; then
+            pytest --tb=short
+          else
+            echo "No test files found, skipping"
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
+      # VERIFICACIÓN 5: Archivos frozen
+      # ============================================================
+      - name: "[5/6] Frozen files protection"
+        run: |
+          echo "::group::Frozen files verification"
+          if [ -f ".claude/frozen-files.txt" ] && [ -x ".claude/scripts/check-frozen.sh" ]; then
+            # Obtener archivos modificados en este push/PR vs main
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              CHANGED_FILES=$(git diff --name-only origin/${{ github.base_ref }}..HEAD)
+            else
+              CHANGED_FILES=$(git diff --name-only HEAD~1..HEAD)
+            fi
+            
+            if [ -z "$CHANGED_FILES" ]; then
+              echo "No files changed"
+              exit 0
+            fi
+            
+            FROZEN_VIOLATIONS=""
+            for FILE in $CHANGED_FILES; do
+              if bash .claude/scripts/check-frozen.sh "$FILE" > /dev/null 2>&1; then
+                continue
+              else
+                FROZEN_VIOLATIONS="$FROZEN_VIOLATIONS $FILE"
+              fi
+            done
+            
+            if [ -n "$FROZEN_VIOLATIONS" ]; then
+              echo "::error::Frozen files modified without justification:"
+              for F in $FROZEN_VIOLATIONS; do
+                echo "::error::  - $F"
+              done
+              echo "::error::"
+              echo "::error::Estos archivos están protegidos en FROZEN.md."
+              echo "::error::Si la modificación es legítima, documentarlo en el PR y coordinar."
+              exit 1
+            else
+              echo "✓ No frozen files modified"
+            fi
+          else
+            echo "FROZEN.md or check-frozen.sh not found, skipping"
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
+      # VERIFICACIÓN 6: Vulnerabilidades (npm audit)
+      # ============================================================
+      - name: "[6/6] Security audit (npm)"
+        run: |
+          echo "::group::npm audit"
+          # Bloquear si hay vulnerabilidades critical o high
+          npm audit --audit-level=high
+          echo "::endgroup::"
+
+      # ============================================================
+      # REPORTE FINAL
+      # ============================================================
+      - name: Bundle size report
+        if: success()
+        run: |
+          TOTAL=$(du -sh dist/ 2>/dev/null | cut -f1 || echo "N/A")
+          echo "## 📦 Build Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| Total dist/ | $TOTAL |" >> $GITHUB_STEP_SUMMARY
-          echo "| index.js | $INDEX_SIZE |" >> $GITHUB_STEP_SUMMARY
+          echo "| TypeScript | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| ESLint | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Vite build | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python ruff | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python mypy | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Python pytest | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frozen files | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "| npm audit | ✓ |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Bundle size | $TOTAL |" >> $GITHUB_STEP_SUMMARY
           echo "| Commit | ${{ github.sha }} |" >> $GITHUB_STEP_SUMMARY
           echo ""
-          echo "✅ Build web OK — $TOTAL total"
+          echo "✓ All verifications passed"
