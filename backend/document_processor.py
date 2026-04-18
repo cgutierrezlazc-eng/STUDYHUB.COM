@@ -99,12 +99,13 @@ class DocumentProcessor:
         return "\n\n".join(parts)
 
     def _extract_txt(self, path: str) -> str:
-        with open(path, 'r', encoding='utf-8', errors='replace') as f:
+        with open(path, encoding='utf-8', errors='replace') as f:
             return f.read()
 
     def _extract_image(self, path: str) -> str:
         """Extract text from image via OpenAI Vision API, fallback to placeholder."""
-        import os, base64
+        import os
+        import base64
         from pathlib import Path as _Path
         openai_key = os.environ.get("OPENAI_API_KEY", "")
         if not openai_key:

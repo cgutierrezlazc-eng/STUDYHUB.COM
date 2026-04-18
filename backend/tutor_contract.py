@@ -274,8 +274,8 @@ def generate_tutor_contract(tutor_data: dict) -> bytes:
     DARK_TEXT = HexColor("#1A1A2E")
     MEDIUM_TEXT = HexColor("#3D3D5C")
     LIGHT_TEXT = HexColor("#6B7280")
-    ACCENT_LINE = HexColor("#2D62C8")
-    BG_LIGHT = HexColor("#F8FAFC")
+    _ACCENT_LINE = HexColor("#2D62C8")
+    _BG_LIGHT = HexColor("#F8FAFC")
 
     # ── Styles ───────────────────────────────────────────────────
     styles = getSampleStyleSheet()

@@ -418,7 +418,7 @@ def execute_upgrade(data: dict, user: User = Depends(get_current_user), db: Sess
             raise HTTPException(503, "Precio Max no configurado")
 
         # Update subscription with proration
-        updated = stripe.Subscription.modify(
+        stripe.Subscription.modify(
             current_sub.id,
             items=[{
                 "id": current_sub["items"]["data"][0]["id"],

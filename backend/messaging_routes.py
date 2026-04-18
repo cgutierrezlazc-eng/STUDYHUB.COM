@@ -38,7 +38,7 @@ class CreateConversationRequest(BaseModel):
     type: str  # direct | group_study
     name: Optional[str] = None
     description: Optional[str] = None
-    participant_ids: List[str] = []
+    participant_ids: list[str] = []
 
 
 class SendMessageRequest(BaseModel):

@@ -343,8 +343,10 @@ def get_community_posts(community_id: str, page: int = 1,
 
 
 @router.post("/posts/{post_id}/like")
-def like_community_post(post_id: str, data: dict = {},
+def like_community_post(post_id: str, data: dict = None,
                         user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    if data is None:
+        data = {}
     post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
     if not post:
         raise HTTPException(404, "Post no encontrado")
@@ -473,7 +475,6 @@ def get_trending_communities(
     db: Session = Depends(get_db),
 ):
     """Communities with most activity in the last 7 days."""
-    from sqlalchemy import func
     from datetime import timedelta
 
     week_ago = datetime.utcnow() - timedelta(days=7)

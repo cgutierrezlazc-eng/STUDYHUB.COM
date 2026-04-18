@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfil de Usuario — CONNIKU Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-primary: #0d1117;
+    --bg-card: #161b22;
+    --bg-hover: #21262d;
+    --border: #30363d;
+    --border-subtle: #21262d;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #6e7681;
+    --accent: #2D62C8;
+    --accent-blue: #58a6ff;
+    --radius: 12px;
+  }
+  body { background: var(--bg-primary); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; max-width: 860px; margin: 0 auto; }
+  .card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 500; }
+  .badge-blue { background: rgba(45,98,200,0.15); color: #58a6ff; }
+  .badge-green { background: rgba(34,197,94,0.12); color: #4ade80; }
+  .badge-purple { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  /* Cover */
+  .cover { height: 180px; background: linear-gradient(135deg, #1e1b4b 0%, #3730a3 50%, #6366f1 100%); border-radius: var(--radius) var(--radius) 0 0; position: relative; }
+  .cover-edit { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  /* Avatar */
+  .avatar-wrap { position: relative; margin-top: -46px; margin-left: 24px; display: inline-block; }
+  .avatar { width: 92px; height: 92px; border-radius: 50%; border: 4px solid var(--bg-primary); background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: #fff; overflow: hidden; }
+  /* Header info */
+  .profile-header { padding: 0 24px 20px; }
+  .name-row { display: flex; justify-content: space-between; align-items: flex-start; margin-top: 12px; }
+  .name { font-size: 22px; font-weight: 700; }
+  .username { font-size: 14px; color: var(--text-muted); margin-top: 2px; }
+  .bio { font-size: 14px; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+  .action-btns { display: flex; gap: 8px; }
+  .btn { border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-secondary { background: var(--bg-hover); color: var(--text-primary); border: 1px solid var(--border); }
+  /* Stats bar */
+  .stats-bar { display: flex; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); }
+  .stat { flex: 1; text-align: center; padding: 10px 4px; border-right: 1px solid var(--border-subtle); }
+  .stat:last-child { border-right: none; }
+  .stat-val { font-size: 16px; font-weight: 700; }
+  .stat-lbl { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+  /* Tabs */
+  .tabs { display: flex; gap: 0; overflow-x: auto; border-bottom: 1px solid var(--border-subtle); margin: 0 0 16px; background: var(--bg-card); border-radius: var(--radius); padding: 4px 8px; }
+  .tab { padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--text-muted); cursor: pointer; border: none; background: none; border-radius: 8px; white-space: nowrap; transition: all 0.15s; }
+  .tab.active { background: rgba(45,98,200,0.15); color: var(--accent-blue); font-weight: 600; }
+  /* Skills */
+  .skills-wrap { display: flex; flex-wrap: wrap; gap: 10px; padding: 4px 0; }
+  .skill-chip { display: flex; align-items: center; gap: 8px; background: var(--bg-hover); border: 1px solid var(--border-subtle); border-radius: 24px; padding: 8px 16px; transition: all 0.2s; }
+  .skill-chip.endorsed { background: rgba(45,98,200,0.12); border-color: var(--accent); }
+  .skill-name { font-size: 14px; font-weight: 500; }
+  .skill-count { background: var(--accent); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 600; }
+  .skill-endorse { background: none; border: none; cursor: pointer; font-size: 14px; padding: 0; }
+  /* Portfolio grid */
+  .portfolio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .proj-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius); overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; }
+  .proj-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+  .proj-thumb { height: 120px; display: flex; align-items: center; justify-content: center; font-size: 40px; }
+  .proj-body { padding: 14px 16px; }
+  .proj-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .proj-desc { font-size: 13px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .tech-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+  .tech-tag { font-size: 11px; background: rgba(45,98,200,0.1); color: var(--accent-blue); border-radius: 8px; padding: 2px 8px; font-weight: 500; }
+  .proj-footer { display: flex; justify-content: space-between; align-items: center; }
+  .proj-cat { font-size: 11px; color: var(--text-muted); }
+  .proj-link { font-size: 12px; color: var(--accent-blue); text-decoration: none; font-weight: 500; }
+  /* Publications */
+  .pub-list { display: flex; flex-direction: column; gap: 12px; }
+  .pub-item { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius); padding: 16px 20px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .pub-body { flex: 1; }
+  .pub-type { font-size: 12px; font-weight: 600; border-radius: 8px; padding: 2px 10px; display: inline-block; margin-bottom: 6px; }
+  .pub-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .pub-meta { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+  .pub-desc { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+  .pub-link { font-size: 13px; color: var(--accent-blue); text-decoration: none; margin-top: 6px; display: inline-block; }
+  /* Section headers */
+  .section-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .section-hdr h3 { font-size: 18px; font-weight: 700; }
+  /* Sidebar - About mini */
+  .sidebar { display: flex; flex-direction: column; gap: 12px; }
+  .info-item { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--text-secondary); padding: 4px 0; }
+  .info-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .wall-layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+  .add-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+
+<!-- Cover + Avatar -->
+<div class="card" style="margin-bottom:2px; overflow:hidden;">
+  <div class="cover">
+    <button class="cover-edit">✏️ Cambiar portada</button>
+  </div>
+  <div class="avatar-wrap">
+    <div class="avatar">CG</div>
+  </div>
+  <div class="profile-header">
+    <div class="name-row">
+      <div>
+        <div class="name">Cristian González</div>
+        <div class="username">@cgutierrez · <span style="color:var(--text-secondary)">Ingeniería Civil · Universidad de Chile</span></div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+          <span class="badge badge-blue">✓ Email verificado</span>
+          <span class="badge badge-purple">Owner / CEO</span>
+          <span class="badge" style="background:var(--bg-hover);color:var(--text-secondary);">Semestre 8</span>
+        </div>
+        <div class="bio" style="margin-top:10px;max-width:480px;">Fundador de Conniku SpA. Apasionado por la tecnología educativa y el impacto social en Chile 🇨🇱</div>
+      </div>
+      <div class="action-btns">
+        <button class="btn btn-primary">💬 Mensaje</button>
+        <button class="btn btn-secondary">👥 Agregar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Stats bar — NEW -->
+<div class="card stats-bar" style="margin-bottom:4px;border-radius:var(--radius);">
+  <div class="stat"><div class="stat-val">24</div><div class="stat-lbl">📝 Posts</div></div>
+  <div class="stat"><div class="stat-val">142</div><div class="stat-lbl">👥 Amigos</div></div>
+  <div class="stat"><div class="stat-val">7</div><div class="stat-lbl">🎓 Cursos</div></div>
+  <div class="stat"><div class="stat-val">11</div><div class="stat-lbl">⚡ Skills</div></div>
+  <div class="stat"><div class="stat-val">1,204</div><div class="stat-lbl">📅 Días</div></div>
+</div>
+
+<!-- Tabs — NEW tabs: ⚡ Habilidades, 🗂 Portfolio, 📚 Publicaciones -->
+<div class="tabs">
+  <button class="tab active">📋 Muro</button>
+  <button class="tab">ℹ️ Info</button>
+  <button class="tab">🖼 Fotos</button>
+  <button class="tab">👥 Amigos</button>
+  <button class="tab">🎓 Cursos</button>
+  <button class="tab" style="background:rgba(45,98,200,0.1);color:var(--accent-blue);font-weight:600;">⚡ Habilidades</button>
+  <button class="tab">🗂 Portfolio</button>
+  <button class="tab">📚 Publicaciones</button>
+  <button class="tab">📄 CV</button>
+</div>
+
+<!-- TAB: Habilidades (highlighted as active) -->
+<div class="card" style="padding:24px;margin-bottom:16px;">
+  <div class="section-hdr">
+    <h3>⚡ Habilidades & Competencias</h3>
+    <input placeholder="Agregar habilidad... (Enter)" style="background:var(--bg-hover);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;color:var(--text-primary);outline:none;width:220px;" />
+  </div>
+  <div class="label">Con respaldo de otros usuarios</div>
+  <div class="skills-wrap">
+    <div class="skill-chip endorsed"><span class="skill-name">React</span><span class="skill-count">12</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip endorsed"><span class="skill-name">TypeScript</span><span class="skill-count">9</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip endorsed"><span class="skill-name">Python</span><span class="skill-count">8</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip endorsed"><span class="skill-name">FastAPI</span><span class="skill-count">6</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip endorsed"><span class="skill-name">PostgreSQL</span><span class="skill-count">4</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Machine Learning</span><span class="skill-count">3</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Liderazgo</span><span class="skill-count">7</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Diseño UX/UI</span><span class="skill-count">5</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Inglés avanzado</span><span class="skill-count">2</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Emprendimiento</span><span class="skill-count">11</span><button class="skill-endorse">👍</button></div>
+    <div class="skill-chip"><span class="skill-name">Node.js</span><span class="skill-count">3</span><button class="skill-endorse">👍</button></div>
+  </div>
+</div>
+
+<!-- TAB: Portfolio -->
+<div style="margin-bottom:16px;">
+  <div class="section-hdr">
+    <h3>🗂 Portfolio de Proyectos</h3>
+    <button class="add-btn">+ Agregar Proyecto</button>
+  </div>
+  <div class="portfolio-grid">
+    <div class="proj-card">
+      <div class="proj-thumb" style="background:linear-gradient(135deg,#1e1b4b,#6366f1);">🗂</div>
+      <div class="proj-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="proj-title">Conniku Platform</div>
+          <span style="font-size:11px;color:var(--text-muted);background:var(--bg-hover);border-radius:10px;padding:2px 8px;">2025</span>
+        </div>
+        <div class="proj-desc">Plataforma social universitaria todo-en-uno con mensajería en tiempo real, comunidades, cursos y más.</div>
+        <div class="tech-tags">
+          <span class="tech-tag">React</span>
+          <span class="tech-tag">FastAPI</span>
+          <span class="tech-tag">PostgreSQL</span>
+          <span class="tech-tag">WebSocket</span>
+        </div>
+        <div class="proj-footer">
+          <span class="proj-cat">🎓 Académico</span>
+          <a href="#" class="proj-link">Ver proyecto →</a>
+        </div>
+      </div>
+    </div>
+    <div class="proj-card">
+      <div class="proj-thumb" style="background:linear-gradient(135deg,#065f46,#22c55e);">🤖</div>
+      <div class="proj-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="proj-title">AI Study Assistant</div>
+          <span style="font-size:11px;color:var(--text-muted);background:var(--bg-hover);border-radius:10px;padding:2px 8px;">2024</span>
+        </div>
+        <div class="proj-desc">Asistente de estudio con IA que genera resúmenes, flashcards y quizzes a partir de documentos.</div>
+        <div class="tech-tags">
+          <span class="tech-tag">Python</span>
+          <span class="tech-tag">Gemini API</span>
+          <span class="tech-tag">LangChain</span>
+        </div>
+        <div class="proj-footer">
+          <span class="proj-cat">⚙️ Personal</span>
+          <a href="#" class="proj-link">Ver proyecto →</a>
+        </div>
+      </div>
+    </div>
+    <div class="proj-card">
+      <div class="proj-thumb" style="background:linear-gradient(135deg,#7c2d12,#f97316);">📊</div>
+      <div class="proj-body">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <div class="proj-title">HR Automation Suite</div>
+          <span style="font-size:11px;color:var(--text-muted);background:var(--bg-hover);border-radius:10px;padding:2px 8px;">2026</span>
+        </div>
+        <div class="proj-desc">Sistema de gestión RRHH con cumplimiento ley laboral chilena, liquidaciones y contratos automáticos.</div>
+        <div class="tech-tags">
+          <span class="tech-tag">TypeScript</span>
+          <span class="tech-tag">React</span>
+          <span class="tech-tag">PDFKit</span>
+        </div>
+        <div class="proj-footer">
+          <span class="proj-cat">💼 Laboral</span>
+          <a href="#" class="proj-link">Ver proyecto →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB: Publicaciones -->
+<div>
+  <div class="section-hdr">
+    <h3>📚 Publicaciones & Investigaciones</h3>
+    <button class="add-btn">+ Agregar</button>
+  </div>
+  <div class="pub-list">
+    <div class="pub-item">
+      <div class="pub-body">
+        <span class="pub-type" style="color:#16a34a;background:rgba(22,163,74,0.12);">📗 Libro</span>
+        <div class="pub-title">Tecnología Educativa en Latinoamérica: Desafíos y Oportunidades</div>
+        <div class="pub-meta">🏛️ Editorial Universitaria · 2025</div>
+        <div class="pub-desc">Análisis del ecosistema edtech latinoamericano con foco en accesibilidad y adopción tecnológica en universidades públicas.</div>
+        <a href="#" class="pub-link">🔗 Ver publicación</a>
+      </div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-body">
+        <span class="pub-type" style="color:#7c3aed;background:rgba(124,58,237,0.12);">🎓 Tesis</span>
+        <div class="pub-title">Modelos de Retención Estudiantil Basados en Redes Sociales Académicas</div>
+        <div class="pub-meta">🏛️ Universidad de Chile · 2024</div>
+        <div class="pub-desc">Estudio sobre cómo las plataformas sociales de aprendizaje impactan en la deserción universitaria en Chile.</div>
+        <a href="#" class="pub-link">🔗 Ver publicación</a>
+      </div>
+    </div>
+    <div class="pub-item">
+      <div class="pub-body">
+        <span class="pub-type" style="color:#dc2626;background:rgba(220,38,38,0.12);">🔬 Investigación</span>
+        <div class="pub-title">Efectividad del Aprendizaje Activo Mediado por IA en Educación Superior</div>
+        <div class="pub-meta">🏛️ CONICYT · 2023</div>
+        <div class="pub-desc">Análisis comparativo de métodos de aprendizaje activo con soporte de inteligencia artificial en estudiantes de primer año.</div>
+        <a href="#" class="pub-link">🔗 Ver publicación</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

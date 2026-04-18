@@ -143,10 +143,10 @@ def _moodle_get_token_from_password(base_url: str, username: str, password: str)
 
 # ── Moodle ────────────────────────────────────────────────────
 
-def _moodle_call(base_url: str, token: str, function: str, params: dict = {}) -> dict:
+def _moodle_call(base_url: str, token: str, function: str, params: dict = None) -> dict:
     url = f"{base_url}/webservice/rest/server.php"
     p = {"wstoken": token, "wsfunction": function, "moodlewsrestformat": "json"}
-    p.update(params)
+    p.update(params or {})
     try:
         r = requests.get(url, params=p, timeout=TIMEOUT, verify=True)
         r.raise_for_status()
@@ -204,7 +204,7 @@ def moodle_download_file(file_url: str, token: str) -> bytes | None:
 
 # ── Canvas ────────────────────────────────────────────────────
 
-def canvas_get(base_url: str, token: str, path: str, params: dict = {}) -> any:
+def canvas_get(base_url: str, token: str, path: str, params: dict = None) -> any:
     url = f"{base_url}/api/v1{path}"
     headers = {"Authorization": f"Bearer {token}"}
     items = []

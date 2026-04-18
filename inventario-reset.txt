@@ -1,0 +1,93 @@
+INVENTARIO DE RESET - 2026-04-17 03:23 UTC
+======================================================
+
+### Sección A: archivos agent_*.md ###
+
+### Sección B: archivos *_agent.md ###
+
+### Sección C: markdowns en raíz con nombre tipo agente ###
+-rw-r--r--@ 1 cristiang.  staff  13297 Apr 16 13:03 CLAUDE.md
+-rw-r--r--@ 1 cristiang.  staff   2080 Apr 16 17:28 FROZEN.md
+-rw-r--r--@ 1 cristiang.  staff   5539 Apr 14 11:16 MOBILE_RELEASE_GUIDE.md
+-rw-r--r--@ 1 cristiang.  staff   2016 Apr 14 11:16 README.md
+-rw-r--r--@ 1 cristiang.  staff   6604 Mar 30 14:09 code-reviewer.md
+-rw-r--r--@ 1 cristiang.  staff   6577 Mar 30 14:10 debugger.md
+
+### Sección D: contenido de .claude ###
+total 216
+drwxr-xr-x@ 14 cristiang.  staff    448 Apr 16 18:04 .
+drwxr-xr-x@ 60 cristiang.  staff   1920 Apr 16 23:23 ..
+-rw-r--r--@  1 cristiang.  staff   6148 Apr 14 23:18 .DS_Store
+-rw-r--r--@  1 cristiang.  staff   8075 Apr  4 13:45 cert-preview.html
+-rw-r--r--@  1 cristiang.  staff   3002 Apr 15 01:58 collab-editor-preview.html
+drwxr-xr-x@  7 cristiang.  staff    224 Apr 14 10:37 commands
+drwxr-xr-x@  5 cristiang.  staff    160 Apr 16 13:31 hooks
+-rw-r--r--@  1 cristiang.  staff    330 Apr 12 13:48 launch.json
+-rw-r--r--@  1 cristiang.  staff  17225 Apr  9 17:24 profile-preview.html
+-rw-r--r--@  1 cristiang.  staff    747 Apr  6 02:21 serve.js
+-rw-r--r--@  1 cristiang.  staff   3645 Apr 16 18:04 settings.json
+-rw-r--r--@  1 cristiang.  staff  49958 Apr 15 15:10 settings.local.json
+-rw-r--r--@  1 cristiang.  staff    456 Apr  3 09:02 start-backend.js
+drwxr-xr-x@  5 cristiang.  staff    160 Apr 16 18:47 worktrees
+
+### Sección E: agentes dentro de .claude/agents ###
+
+### Sección F: worktrees de .claude ###
+total 0
+drwxr-xr-x@  5 cristiang.  staff   160 Apr 16 18:47 .
+drwxr-xr-x@ 14 cristiang.  staff   448 Apr 16 18:04 ..
+drwxr-xr-x@ 45 cristiang.  staff  1440 Apr 16 17:42 elastic-goodall
+drwxr-xr-x@ 43 cristiang.  staff  1376 Apr 16 19:36 kind-fermat-e17480
+drwxr-xr-x@ 40 cristiang.  staff  1280 Apr 15 22:54 trusting-bouman
+
+### Sección G: peso de .claude y subcarpetas ###
+693M	.claude
+693M	.claude/worktrees
+ 52K	.claude/settings.local.json
+ 20K	.claude/profile-preview.html
+ 20K	.claude/commands
+ 12K	.claude/hooks
+8.0K	.claude/cert-preview.html
+4.0K	.claude/start-backend.js
+4.0K	.claude/settings.json
+4.0K	.claude/serve.js
+4.0K	.claude/launch.json
+4.0K	.claude/collab-editor-preview.html
+
+### Sección H: settings.json y archivos de configuración ###
+.claude/settings.json
+.claude/settings.local.json
+.claude/commands/freeze.md
+.claude/commands/status.md
+.claude/commands/verify.md
+.claude/commands/audit.md
+.claude/commands/unfreeze.md
+
+### Sección I: hooks de .claude ###
+total 24
+drwxr-xr-x@  5 cristiang.  staff  160 Apr 16 13:31 .
+drwxr-xr-x@ 14 cristiang.  staff  448 Apr 16 18:04 ..
+-rwxr-xr-x@  1 cristiang.  staff  927 Apr 16 13:31 check-frozen.sh
+-rwxr-xr-x@  1 cristiang.  staff  561 Apr 14 10:35 check-syntax-backend.sh
+-rwxr-xr-x@  1 cristiang.  staff  857 Apr 14 10:35 check-syntax-frontend.sh
+
+### Sección J: comandos personalizados ###
+total 40
+drwxr-xr-x@  7 cristiang.  staff   224 Apr 14 10:37 .
+drwxr-xr-x@ 14 cristiang.  staff   448 Apr 16 18:04 ..
+-rw-r--r--@  1 cristiang.  staff  1093 Apr 14 10:35 audit.md
+-rw-r--r--@  1 cristiang.  staff   661 Apr 14 10:27 freeze.md
+-rw-r--r--@  1 cristiang.  staff   773 Apr 14 10:35 status.md
+-rw-r--r--@  1 cristiang.  staff   541 Apr 14 10:27 unfreeze.md
+-rw-r--r--@  1 cristiang.  staff   992 Apr 14 10:27 verify.md
+
+### Sección K: archivos de memoria y feedback ###
+
+### Sección L: carpeta memory/ ###
+total 16
+drwxr-xr-x@  4 cristiang.  staff   128 Apr 15 16:38 .
+drwxr-xr-x@ 60 cristiang.  staff  1920 Apr 16 23:23 ..
+-rw-r--r--@  1 cristiang.  staff  1198 Apr 13 20:50 project_pending_tasks.md
+-rw-r--r--   1 cristiang.  staff  1903 Apr 15 16:38 session_checkpoint.md
+
+### Sección M: registry_issues y archivos de seguimiento ###

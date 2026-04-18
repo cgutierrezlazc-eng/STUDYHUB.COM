@@ -1,0 +1,109 @@
+{
+  "_documentation": {
+    "purpose": "Configuración de Claude Code para el repo Conniku",
+    "version": "2.0",
+    "fecha_reset": "2026-04-17",
+    "notas": [
+      "Reemplaza completamente al settings.json del sistema Konni",
+      "Hooks bloqueantes activos: capa mecánica que impide violar reglas",
+      "Permisos genéricos conservados, hipergranulares obsoletos eliminados",
+      "Hooks apuntan a .claude/scripts/ (nuevo), no .claude/hooks/ (viejo)"
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "Bash(curl:*)",
+      "Bash(npx cap:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx husky:*)",
+      "Bash(npm test:*)",
+      "Bash(npm run:*)",
+      "Bash(git remote:*)",
+      "Bash(git rm:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(git stash:*)",
+      "Bash(git pull:*)",
+      "Bash(git fetch:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git status)",
+      "Bash(git branch:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(python3 -m py_compile:*)",
+      "Bash(python3 -m json.tool:*)",
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "Bash(mypy:*)",
+      "Bash(pytest:*)",
+      "Bash(uvicorn:*)",
+      "Bash(alembic:*)",
+      "Read(/tmp/**)",
+      "WebFetch(domain:docs.moodle.org)",
+      "WebFetch(domain:moodledev.io)",
+      "WebFetch(domain:fastapi.tiangolo.com)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "mcp__claude_ai_Vercel__list_deployments",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-lock.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/session-cleanup.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/check-frozen.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/post-edit-verify.sh",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/scripts/regen-frozen-list.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

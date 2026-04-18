@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build output
+dist/
+build/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.production
+
+# Data (local dev only)
+*.db
+*.sqlite
+*.sqlite3
+
+# Conniku local data
+backend/conniku_data/
+
+# Capacitor native builds
+android/app/build/
+android/build/
+android/app/build.old/
+android/.kotlin/
+android/*.keystore
+!android/conniku-release.keystore
+ios/App/Pods/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Temp files
+*.tmp
+logo-options.html
+profile-mockups.html
+
+# Claude
+.claude/
+
+# IDE / JDK
+.jdk/
+
+# Binaries / installers
+*.dmg
+
+# Screenshots and images not needed in repo
+screenshots/
+*.png
+!public/*.png
+!src/**/*.png
+public/logo_original.png
+
+# Large/personal media
+*.jpeg
+*.jpg
+*.mp4
+*.mov
+
+# PDFs (personal docs)
+*.pdf
+
+# Seed/test scripts
+seed_*.py
+seed_*.js
+
+# Mac files
+Thumbs.db
+.DS_Store
+.vercel

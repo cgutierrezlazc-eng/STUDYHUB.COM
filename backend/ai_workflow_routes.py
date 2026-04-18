@@ -70,7 +70,7 @@ class MarketingGenerateRequest(BaseModel):
 class MarketingCalendarRequest(BaseModel):
     month: int
     year: int
-    platforms: List[str] = ["instagram", "linkedin", "tiktok"]
+    platforms: list[str] = ["instagram", "linkedin", "tiktok"]
     posts_per_week: int = 3
 
 
@@ -99,7 +99,7 @@ class TestPlanRequest(BaseModel):
 class DesignBriefRequest(BaseModel):
     type: str = Field(..., description="landing_page | social_graphic | email_template | app_screen | logo")
     description: str
-    brand_colors: List[str] = ["#2D62C8", "#4f8cff", "#1a2332"]
+    brand_colors: list[str] = ["#2D62C8", "#4f8cff", "#1a2332"]
     style: str = "moderno, limpio, profesional"
 
 

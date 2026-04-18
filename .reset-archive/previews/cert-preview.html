@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Certificado Conniku</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: system-ui, -apple-system, sans-serif; background: rgba(0,0,0,0.6); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+  .cert-modal {
+    width: 800px; max-width: 95vw; height: 566px;
+    background: #fff; position: relative;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    overflow: hidden; border-radius: 4px;
+  }
+  .cert-modal .cert-side-accent { position: absolute; top: 0; left: 0; width: 6px; height: 100%; }
+  .cert-modal .cert-corner { position: absolute; top: 0; right: 0; width: 180px; height: 180px; opacity: 0.04; }
+  .cert-modal .cert-top { display: flex; justify-content: space-between; align-items: flex-start; padding: 44px 54px 0; }
+  .cert-modal .cert-logo { display: flex; align-items: center; gap: 9px; }
+  .cert-modal .cert-logomark { width: 30px; height: 30px; border-radius: 8px; background: #1A3A7A; display: flex; align-items: center; justify-content: center; }
+  .cert-modal .cert-logotype { font-size: 22px; font-weight: 700; color: #1A3A7A; letter-spacing: -0.05em; }
+  .cert-modal .cert-logotype em { font-style: normal; color: #C4882A; }
+  .cert-modal .cert-id-box { font-family: 'SF Mono', monospace; font-size: 10px; color: #bbb; text-align: right; line-height: 1.5; }
+  .cert-modal .cert-body { padding: 30px 54px 0; }
+  .cert-modal .cert-label { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: #aaa; margin-bottom: 3px; }
+  .cert-modal .cert-title { font-family: Georgia, serif; font-size: 26px; color: #1a1a1a; font-weight: 300; margin-bottom: 26px; }
+  .cert-modal .cert-name { font-size: 38px; font-weight: 700; color: #1a1a1a; margin-bottom: 10px; line-height: 1.1; }
+  .cert-modal .cert-divider { width: 56px; height: 3px; margin-bottom: 18px; border-radius: 2px; }
+  .cert-modal .cert-course { font-size: 17px; font-weight: 600; color: #333; margin-bottom: 7px; }
+  .cert-modal .cert-desc { font-size: 12.5px; color: #888; line-height: 1.6; max-width: 430px; }
+  .cert-modal .cert-footer { position: absolute; bottom: 44px; left: 54px; right: 54px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .cert-modal .cert-badge { width: 74px; height: 74px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-direction: column; border: 2px solid; }
+  .cert-modal .cert-badge svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .cert-modal .cert-badge .badge-text { font-size: 7px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+  .cert-modal .cert-meta { position: absolute; bottom: 18px; left: 54px; right: 54px; display: flex; justify-content: space-between; font-size: 9px; color: #ccc; }
+  .cert-actions { display: flex; gap: 12px; margin-top: 16px; }
+  .cert-actions button { display: flex; align-items: center; gap: 8px; padding: 10px 22px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+  .cert-actions button svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .btn-print { background: #f5f5f5; color: #333; border: 1px solid #ddd !important; }
+  .btn-pdf { background: #1A3A7A; color: #fff; }
+  .btn-close-cert { background: #f5f5f5; color: #666; border: 1px solid #ddd !important; }
+</style>
+</head>
+<body>
+  <div class="cert-modal">
+    <div class="cert-side-accent" style="background: #2D8A56;"></div>
+    <div class="cert-corner"><svg viewBox="0 0 200 200"><circle cx="200" cy="0" r="200" fill="#2D8A56"/></svg></div>
+    <div class="cert-top">
+      <div class="cert-logo">
+        <div class="cert-logomark"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg></div>
+        <div class="cert-logotype">conni<em>ku</em></div>
+      </div>
+      <div class="cert-id-box">
+        Constancia No.<br>
+        <strong>CNK-2026-00847</strong><br>
+        <a href="#" style="font-size: 8px; color: #1A3A7A; text-decoration: underline;">conniku.com/verify/CNK-2026-00847</a>
+      </div>
+    </div>
+    <div class="cert-body">
+      <div class="cert-label">Certificate of completion</div>
+      <div class="cert-title">Constancia de Finalizacion</div>
+      <div class="cert-name">Maria Gonzalez Herrera</div>
+      <div class="cert-divider" style="background: #2D8A56;"></div>
+      <div class="cert-course">Fundamentos del Liderazgo</div>
+      <div class="cert-desc">Ha completado satisfactoriamente los 3 modulos (6 lecciones) de este programa de desarrollo de habilidades, con un total de 18 horas de formacion, cubriendo competencias en liderazgo, gestion de equipos y pensamiento estrategico.</div>
+      <div style="display: flex; gap: 16px; margin-top: 10px; font-size: 10px; color: #aaa;">
+        <span>3 modulos</span><span>6 lecciones</span><span>18 horas de formacion</span><span>Categoria: Liderazgo</span>
+      </div>
+    </div>
+    <div class="cert-footer">
+      <div style="display: flex; gap: 24px; align-items: flex-end;">
+        <div style="border: 2px solid #1A3A7A; border-radius: 8px; padding: 8px 16px; display: flex; align-items: center; gap: 10px;">
+          <div style="width: 32px; height: 32px; background: #1A3A7A; border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <svg viewBox="0 0 40 40" style="width: 18px; height: 18px;"><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-dasharray="56 19"/></svg>
+          </div>
+          <div>
+            <div style="font-size: 10px; font-weight: 700; color: #1A3A7A; letter-spacing: 0.05em;">CONNIKU LEARNING</div>
+            <div style="font-size: 7px; color: #7B8BB2; letter-spacing: 0.08em; text-transform: uppercase;">Documento verificado digitalmente</div>
+            <div style="font-size: 7px; color: #aaa;">Emitido: 03/04/2026 — ID: CNK-2026-00847</div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align: center;">
+        <div class="cert-badge" style="border-color: #2D8A56; color: #2D8A56;">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          <div class="badge-text">Validado</div>
+        </div>
+        <a href="#" style="display: block; font-size: 9px; color: #2D8A56; text-decoration: underline; margin-top: 4px; font-weight: 600;">Validar aqui</a>
+        <div style="font-size: 7px; color: #aaa; margin-top: 2px;">conniku.com/validar/CNK-2026-00847</div>
+      </div>
+    </div>
+    <div class="cert-meta">
+      <span>Emitido: 3 de abril, 2026</span>
+      <span style="max-width: 380px; text-align: center;">Esta constancia acredita la finalizacion del programa. No confiere credito academico ni equivale a un titulo de una institucion acreditada.</span>
+      <a href="#" style="color: #1A3A7A; text-decoration: underline; font-weight: 500;">conniku.com/validar/CNK-2026-00847</a>
+    </div>
+  </div>
+  <div class="cert-actions">
+    <button class="btn-print"><svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Imprimir</button>
+    <button class="btn-pdf"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Guardar PDF</button>
+    <button class="btn-close-cert"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Cerrar</button>
+  </div>
+</body>
+</html>

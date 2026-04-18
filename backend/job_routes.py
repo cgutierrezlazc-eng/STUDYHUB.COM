@@ -733,7 +733,7 @@ def search_candidates_as_recruiter(search: str = "", career: str = "",
                                     university: str = "", page: int = 1,
                                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Recruiter-only: search candidates with visible CVs."""
-    from database import RecruiterProfile, StudentCV
+    from database import RecruiterProfile
     recruiter = db.query(RecruiterProfile).filter(
         RecruiterProfile.user_id == user.id,
         RecruiterProfile.verification_status == "verified"

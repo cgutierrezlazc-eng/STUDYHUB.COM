@@ -207,14 +207,14 @@ TIER_LIMITS = {
 
 def get_tier(user):
     tier = getattr(user, 'subscription_tier', 'free') or 'free'
-    status = getattr(user, 'subscription_status', 'trial') or 'trial'
+    sub_status = getattr(user, 'subscription_status', 'trial') or 'trial'
     role = getattr(user, 'role', 'user') or 'user'
     # Owner and admin always get max tier
-    if role in ("owner", "admin") or status == "owner":
+    if role in ("owner", "admin") or sub_status == "owner":
         return "max"
-    if tier == "max" and status == "active":
+    if tier == "max" and sub_status == "active":
         return "max"
-    if tier == "pro" and status in ("active", "trial"):
+    if tier == "pro" and sub_status in ("active", "trial"):
         return "pro"
     return "free"
 

@@ -62,7 +62,7 @@ def calculate_fraud_score(referrer: User, referred: User, referred_ip: str, db: 
         r1 = (referrer.first_name + referrer.last_name).lower().replace(" ", "")
         r2 = (referred.first_name + referred.last_name).lower().replace(" ", "")
         if len(r1) > 3 and len(r2) > 3:
-            common = sum(1 for a, b in zip(r1, r2) if a == b) / max(len(r1), len(r2))
+            common = sum(1 for a, b in zip(r1, r2, strict=False) if a == b) / max(len(r1), len(r2))
             if common > 0.7:
                 score += FRAUD_SIGNALS["similar_name"]
                 signals.append("Nombre similar al referidor")
@@ -185,5 +185,5 @@ def admin_fraud_report(admin: User = Depends(get_current_user), db: Session = De
     return {
         "totalReferrals": db.query(func.sum(User.referral_count)).scalar() or 0,
         "suspiciousAccounts": suspicious,
-        "blockedIps": len(_blocked_ips) if hasattr(globals().get('_blocked_ips', {}), '__len__') else 0,
+        "blockedIps": 0,  # TODO: implementar sistema de IP blocking para fraud detection
     }

@@ -764,7 +764,7 @@ def submit_quiz(course_id: str, data: dict,
 
     course = db.query(Course).filter(Course.id == course_id).first()
     return {
-        "score": score, "passed": passed, "correct": correct, "total": len(questions),
+        "score": score, "passed": passed, "correct": correct, "total": len(pool),
         "certificateId": progress.certificate_id if passed else None,
         "courseTitle": course.title if course else "",
         "rewardsGranted": rewards_granted,

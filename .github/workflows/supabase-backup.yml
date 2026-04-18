@@ -1,0 +1,256 @@
+name: Backup — Supabase Daily
+
+# ─── Backup diario automático de base de datos Supabase ─────────────────────
+# Hace dump completo de Postgres, lo sube a Backblaze B2, y conserva
+# los últimos 90 días. Si algo falla, crea issue automático y envía email.
+#
+# Requiere estos secrets configurados en GitHub Secrets:
+#   - SUPABASE_DB_URL       (URL completa de conexión Postgres)
+#   - B2_APPLICATION_KEY_ID (ID de clave de aplicación B2)
+#   - B2_APPLICATION_KEY    (clave secreta B2)
+#   - B2_BUCKET_NAME        (nombre del bucket de backups)
+#   - NOTIFY_EMAIL          (email para notificaciones)
+#   - SMTP_USER             (usuario SMTP para enviar emails)
+#   - SMTP_PASS             (password de aplicación SMTP)
+#
+# Si secrets faltan: el workflow arranca pero falla en primer paso
+# con mensaje claro. No expone credenciales en logs.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  # Programado: diario a las 3 AM hora Chile (UTC-4 estándar / UTC-3 verano)
+  # Configurado en UTC. 07:00 UTC = 03:00 Chile estándar (abril-septiembre)
+  schedule:
+    - cron: '0 7 * * *'
+  
+  # Manual: permite disparar desde GitHub Actions UI si hace falta
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Motivo del backup manual'
+        required: false
+        default: 'Backup manual solicitado'
+
+jobs:
+  backup:
+    name: Dump + Upload + Rotate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ============================================================
+      # PASO 1: verificar que secrets están configurados
+      # ============================================================
+      - name: Verify secrets
+        run: |
+          MISSING=""
+          [ -z "${{ secrets.SUPABASE_DB_URL }}" ] && MISSING="$MISSING SUPABASE_DB_URL"
+          [ -z "${{ secrets.B2_APPLICATION_KEY_ID }}" ] && MISSING="$MISSING B2_APPLICATION_KEY_ID"
+          [ -z "${{ secrets.B2_APPLICATION_KEY }}" ] && MISSING="$MISSING B2_APPLICATION_KEY"
+          [ -z "${{ secrets.B2_BUCKET_NAME }}" ] && MISSING="$MISSING B2_BUCKET_NAME"
+          [ -z "${{ secrets.NOTIFY_EMAIL }}" ] && MISSING="$MISSING NOTIFY_EMAIL"
+          
+          if [ -n "$MISSING" ]; then
+            echo "::error::Secrets faltantes:$MISSING"
+            echo "::error::Configurar en: Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+          echo "✓ Todos los secrets configurados"
+
+      # ============================================================
+      # PASO 2: instalar herramientas necesarias
+      # ============================================================
+      - name: Install pg_dump (PostgreSQL 16 client)
+        run: |
+          sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16
+
+      - name: Install B2 CLI
+        run: |
+          pip install --upgrade b2
+
+      # ============================================================
+      # PASO 3: hacer dump de base de datos
+      # ============================================================
+      - name: Dump database
+        id: dump
+        run: |
+          TIMESTAMP=$(date -u +%Y%m%d-%H%M%S)
+          BACKUP_FILE="conniku-backup-${TIMESTAMP}.sql.gz"
+          
+          echo "Iniciando dump..."
+          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+            --no-owner \
+            --no-acl \
+            --clean \
+            --if-exists \
+            --no-password \
+            | gzip -9 > "$BACKUP_FILE"
+          
+          SIZE=$(du -h "$BACKUP_FILE" | cut -f1)
+          LINES=$(gunzip -c "$BACKUP_FILE" | wc -l)
+          
+          echo "✓ Dump completado"
+          echo "  Archivo: $BACKUP_FILE"
+          echo "  Tamaño comprimido: $SIZE"
+          echo "  Líneas SQL: $LINES"
+          
+          # Guardar para pasos siguientes
+          echo "backup_file=$BACKUP_FILE" >> $GITHUB_OUTPUT
+          echo "backup_size=$SIZE" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+
+      # ============================================================
+      # PASO 4: verificar integridad del dump
+      # ============================================================
+      - name: Verify dump integrity
+        run: |
+          BACKUP_FILE="${{ steps.dump.outputs.backup_file }}"
+          
+          # Verificar que se puede descomprimir
+          if ! gunzip -t "$BACKUP_FILE"; then
+            echo "::error::El archivo de backup está corrupto"
+            exit 1
+          fi
+          
+          # Verificar que contiene sentencias SQL esperadas
+          if ! gunzip -c "$BACKUP_FILE" | head -100 | grep -q "PostgreSQL database dump"; then
+            echo "::error::El dump no tiene encabezado válido de PostgreSQL"
+            exit 1
+          fi
+          
+          echo "✓ Integridad del dump verificada"
+
+      # ============================================================
+      # PASO 5: subir a Backblaze B2
+      # ============================================================
+      - name: Upload to B2
+        id: upload
+        run: |
+          BACKUP_FILE="${{ steps.dump.outputs.backup_file }}"
+          
+          # Autenticar con B2
+          b2 account authorize "${{ secrets.B2_APPLICATION_KEY_ID }}" "${{ secrets.B2_APPLICATION_KEY }}"
+          
+          # Subir archivo
+          echo "Subiendo $BACKUP_FILE a b2://${{ secrets.B2_BUCKET_NAME }}/..."
+          b2 file upload "${{ secrets.B2_BUCKET_NAME }}" "$BACKUP_FILE" "backups/$BACKUP_FILE"
+          
+          echo "✓ Backup subido a B2"
+          echo "b2_path=backups/$BACKUP_FILE" >> $GITHUB_OUTPUT
+
+      # ============================================================
+      # PASO 6: rotación (eliminar backups mayores a 90 días)
+      # ============================================================
+      - name: Rotate old backups
+        run: |
+          echo "Rotando backups mayores a 90 días..."
+          
+          # Listar archivos en backups/, filtrar por edad
+          CUTOFF_DATE=$(date -u -d '90 days ago' +%Y%m%d 2>/dev/null || date -u -v-90d +%Y%m%d)
+          
+          b2 ls --long "b2://${{ secrets.B2_BUCKET_NAME }}/backups/" | while read -r LINE; do
+            FILE_NAME=$(echo "$LINE" | awk '{print $NF}')
+            FILE_DATE=$(echo "$FILE_NAME" | grep -oE '[0-9]{8}' | head -1)
+            
+            if [ -n "$FILE_DATE" ] && [ "$FILE_DATE" -lt "$CUTOFF_DATE" ]; then
+              echo "  Eliminando: $FILE_NAME (fecha: $FILE_DATE, cutoff: $CUTOFF_DATE)"
+              b2 file delete "b2://${{ secrets.B2_BUCKET_NAME }}/$FILE_NAME" || true
+            fi
+          done
+          
+          echo "✓ Rotación completada"
+
+      # ============================================================
+      # PASO 7: limpieza local
+      # ============================================================
+      - name: Cleanup local file
+        if: always()
+        run: |
+          BACKUP_FILE="${{ steps.dump.outputs.backup_file }}"
+          if [ -f "$BACKUP_FILE" ]; then
+            rm -f "$BACKUP_FILE"
+            echo "✓ Archivo local limpiado"
+          fi
+
+      # ============================================================
+      # PASO 8: reporte final de éxito
+      # ============================================================
+      - name: Success report
+        if: success()
+        run: |
+          echo "## 📦 Backup Completado" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Detalle | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|---|---|" >> $GITHUB_STEP_SUMMARY
+          echo "| Archivo | ${{ steps.dump.outputs.backup_file }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Tamaño | ${{ steps.dump.outputs.backup_size }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Timestamp | ${{ steps.dump.outputs.timestamp }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Destino | b2://${{ secrets.B2_BUCKET_NAME }}/${{ steps.upload.outputs.b2_path }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Retención | 90 días |" >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # JOB DE NOTIFICACIÓN SI FALLÓ
+  # ============================================================
+  notify-failure:
+    name: Notify failure
+    needs: backup
+    if: failure()
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Create issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔴 Backup falló - ${new Date().toISOString().slice(0, 10)}`;
+            const body = `
+            ## Backup automático de Supabase falló
+            
+            **Fecha:** ${new Date().toISOString()}
+            **Workflow run:** [${context.runId}](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+            
+            ### Acciones requeridas
+            1. Revisar los logs del workflow para identificar la causa
+            2. Corregir el problema subyacente
+            3. Ejecutar backup manual con workflow_dispatch
+            4. Cerrar este issue cuando el backup siguiente sea exitoso
+            
+            ### Posibles causas
+            - Credenciales expiradas o incorrectas
+            - Supabase no accesible
+            - Backblaze B2 no accesible o bucket inexistente
+            - Espacio insuficiente en runner
+            - Cambios en schema de base de datos
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'backup', 'urgent']
+            });
+
+      - name: Send email notification
+        if: ${{ env.HAS_SMTP == 'true' }}
+        env:
+          HAS_SMTP: ${{ (secrets.SMTP_USER != '' && secrets.SMTP_PASS != '') && 'true' || 'false' }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USER }}
+          password: ${{ secrets.SMTP_PASS }}
+          subject: "🔴 Conniku: Backup falló"
+          to: ${{ secrets.NOTIFY_EMAIL }}
+          from: "Conniku Backup <${{ secrets.SMTP_USER }}>"
+          body: |
+            El backup automático de Supabase falló.
+            
+            Revisar detalles: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            Un issue fue creado automáticamente en el repositorio.

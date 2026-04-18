@@ -1,0 +1,93 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp:*)",
+      "Bash(curl:*)",
+      "Bash(npx cap:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx eslint:*)",
+      "Bash(npx vite:*)",
+      "Bash(npx husky:*)",
+      "Bash(git remote:*)",
+      "Bash(git rm:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(python3 -m py_compile:*)",
+      "Bash(python3 -m ruff:*)",
+      "Read(//Users/cristiang./Desktop/CONNIKU/**)",
+      "Read(//tmp/**)",
+      "mcp__claude_ai_Vercel__list_deployments",
+      "mcp__claude_ai_Vercel__get_deployment_build_logs",
+      "Bash(awk '/rules-of-hooks/{found=1} found && /^\\\\/Users/{print; found=0}')",
+      "Bash(awk -F: 'NR>0{print NR\": \"$0}')",
+      "Bash(sed -n '508,512p' /tmp/eslint_output.txt)",
+      "Bash(sed -n '544,548p' /tmp/eslint_output.txt)",
+      "Bash(grep -rn 'compliance.status\\\\|compliance-status' server.py chile_tax_routes.py notifications.py *.py)",
+      "Bash(grep -rn 'upgrade.prorate\\\\|execute.upgrade' *.py)",
+      "Bash(awk '/^export const api = \\\\{/,/^};/' src/services/api.ts)",
+      "Bash(awk '/^export const api = \\\\{/,/^};/' /Users/cristiang./CONNIKU/src/services/api.ts)",
+      "Bash(grep -rn 'compliance' *.py)",
+      "Bash(grep -rn 'attendance/clock\\\\b' *.py)",
+      "Bash(grep -rn 'attendance/mine\\\\b' *.py)",
+      "Bash(ls /Users/cristiang./CONNIKU/.env*)",
+      "WebFetch(domain:docs.moodle.org)",
+      "WebFetch(domain:moodledev.io)",
+      "WebFetch(domain:chrome-stats.com)",
+      "WebFetch(domain:fossies.org)",
+      "Bash(pkill -f \"conniku-chrome-test3\")",
+      "Bash(node -c /Users/cristiang./CONNIKU/extension/dist/detector.js)",
+      "Bash(node -c /Users/cristiang./CONNIKU/extension/dist/extractor.js)",
+      "Bash(node -c /Users/cristiang./CONNIKU/extension/dist/injector.js)",
+      "Bash(grep \"API_BASE\" /Users/cristiang./CONNIKU/extension/dist/popup/chunks/constants-*.js)",
+      "Bash(git stash *)",
+      "Bash(git pull *)",
+      "Bash(sort -k6,7 -r)",
+      "Bash(sed -n '1893,1900p' backend/server.py)",
+      "Bash(sed -n '1975,1982p' backend/server.py)",
+      "Bash(sed -n '1990,1997p' backend/server.py)",
+      "Bash(git fetch *)",
+      "Bash(open /Users/cristiang./CONNIKU/docs/mockups/01-command-bar.html)",
+      "Bash(open /Users/cristiang./CONNIKU/docs/mockups/02-ritual-screen.html)",
+      "Bash(open /Users/cristiang./CONNIKU/docs/mockups/03-sidebar-simplified.html)",
+      "Bash(open /Users/cristiang./CONNIKU/docs/mockups/04-onboarding-60s.html)",
+      "Bash(open /Users/cristiang./CONNIKU/docs/mockups/05-streaks-celebrations.html)",
+      "Bash(grep -c \"\\\\\"IA\\\\\"\" /Users/cristiang./CONNIKU/src/pages/*.tsx /Users/cristiang./CONNIKU/src/components/*.tsx)",
+      "Bash(grep -v \":0$\")",
+      "Bash(grep -c \"\\\\bIA\\\\b\" /Users/cristiang./CONNIKU/src/pages/*.tsx /Users/cristiang./CONNIKU/src/components/*.tsx)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-frozen.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-syntax-frontend.sh",
+            "timeout": 30
+          },
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-syntax-backend.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
