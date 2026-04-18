@@ -42,12 +42,37 @@ from database import (
     get_db,
 )
 from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
-from starlette.websockets import WebSocketState
-from websocket_manager import manager as chat_manager
+from jose import ExpiredSignatureError, JWTError, jwt
+from middleware import ALGORITHM as JWT_ALGORITHM
+from middleware import SECRET_KEY as JWT_SECRET
 
 logger = logging.getLogger("conniku.workspaces_ws")
 
 router = APIRouter(tags=["workspaces-ws"])
+
+# Límites de validación de payloads WS (asimétricos con REST por diseño de canal)
+MAX_CHAT_CONTENT_CHARS = 4000  # paridad con Pydantic REST
+MAX_BINARY_RELAY_BYTES = 1_048_576  # 1 MiB — tope para update Yjs / awareness
+
+
+def _authenticate_token(token: str) -> tuple[str | None, int]:
+    """Decode JWT localmente para distinguir expirado (4010) vs inválido (4001).
+
+    Retorna (user_id, close_code). user_id es None si falla.
+    close_code es 0 si todo OK, 4010 si expirado, 4001 si inválido u otro error.
+    """
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "access":
+            return None, 4001
+        user_id = payload.get("sub") or payload.get("user_id")
+        if not user_id:
+            return None, 4001
+        return user_id, 0
+    except ExpiredSignatureError:
+        return None, 4010
+    except JWTError:
+        return None, 4001
 
 
 class WorkspaceRoom:
@@ -134,13 +159,14 @@ async def workspace_websocket(
     await websocket.accept()
 
     # 1. Autenticación — token en query string (decisión D7: patrón V1)
+    # Decodificación local para distinguir 4010 (expirado) vs 4001 (inválido).
     if not token:
         await websocket.close(code=4001, reason="Token requerido")
         return
 
-    user_id = await chat_manager.authenticate(websocket, token)
+    user_id, err_code = _authenticate_token(token)
     if not user_id:
-        await websocket.close(code=4001, reason="Token inválido")
+        await websocket.close(code=err_code, reason="Autenticación fallida")
         return
 
     # 2. Verificar acceso al workspace document
@@ -207,7 +233,17 @@ async def workspace_websocket(
 
             if message.get("bytes"):
                 # Bytes: update Yjs o awareness binario — relay a otros sin persistir
-                await room.broadcast_bytes(message["bytes"], exclude=websocket)
+                raw_bytes = message["bytes"]
+                if len(raw_bytes) > MAX_BINARY_RELAY_BYTES:
+                    logger.warning(
+                        "[WorkspaceWS] Binario de %d bytes excede tope (%d) — descartado; user %s doc %s",
+                        len(raw_bytes),
+                        MAX_BINARY_RELAY_BYTES,
+                        user_id,
+                        doc_id,
+                    )
+                    continue
+                await room.broadcast_bytes(raw_bytes, exclude=websocket)
 
             elif message.get("text"):
                 # Text JSON: puede ser chat.message, presence u otros
@@ -223,6 +259,15 @@ async def workspace_websocket(
                     # Persistir en BD antes de broadcast (decisión D4)
                     content = (payload.get("data") or {}).get("content", "").strip()
                     if not content:
+                        continue
+                    if len(content) > MAX_CHAT_CONTENT_CHARS:
+                        logger.warning(
+                            "[WorkspaceWS] Mensaje de %d chars excede tope (%d) — descartado; user %s doc %s",
+                            len(content),
+                            MAX_CHAT_CONTENT_CHARS,
+                            user_id,
+                            doc_id,
+                        )
                         continue
 
                     db = SessionLocal()

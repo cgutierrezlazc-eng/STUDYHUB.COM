@@ -324,3 +324,79 @@ def test_ws_chat_message_no_persiste_bytes(ws_setup) -> None:
     # No debe haber nuevos mensajes en BD
     final_count = db.query(WorkspaceMessage).filter(WorkspaceMessage.workspace_id == doc_id).count()
     assert final_count == initial_count
+
+
+# ─── Tests de fixes Capa 2 (iteración robustez) ───────────────────
+
+
+def test_ws_conectar_token_expirado_cierra_4010(ws_setup) -> None:
+    """Token JWT expirado debe cerrar con close code 4010 (distinto de 4001)."""
+    from datetime import datetime, timedelta
+
+    from jose import jwt
+    from starlette.websockets import WebSocketDisconnect as WSD
+
+    client, _, _, _, doc_id, owner, _, _ = ws_setup
+
+    secret = os.environ["JWT_SECRET"]
+    expired_exp = datetime.utcnow() - timedelta(hours=1)
+    expired_token = jwt.encode(
+        {"sub": owner.id, "exp": expired_exp, "type": "access"},
+        secret,
+        algorithm="HS256",
+    )
+
+    with (
+        pytest.raises(WSD) as excinfo,
+        client.websocket_connect(f"/workspaces/ws/{doc_id}?token={expired_token}") as ws,
+    ):
+        ws.receive_json()
+
+    assert excinfo.value.code == 4010
+
+
+def test_ws_chat_message_excesivo_descartado(ws_setup) -> None:
+    """Mensaje de chat >4000 chars se descarta (no persiste, no se broadcastea)."""
+    from database import WorkspaceMessage  # type: ignore
+
+    client, token_owner, _, _, doc_id, _, _, db = ws_setup
+    initial_count = db.query(WorkspaceMessage).filter(WorkspaceMessage.workspace_id == doc_id).count()
+
+    oversized = "x" * 5000  # supera MAX_CHAT_CONTENT_CHARS=4000
+
+    with client.websocket_connect(f"/workspaces/ws/{doc_id}?token={token_owner}") as ws:
+        ws.receive_json()  # presence inicial
+        ws.send_json({"type": "chat.message", "data": {"content": oversized}})
+        # Enviar segundo mensaje corto para confirmar que la conexión sigue viva
+        ws.send_json({"type": "chat.message", "data": {"content": "ok"}})
+        # Solo recibimos el del segundo (el grande fue descartado)
+        msg = ws.receive_json()
+        assert msg["data"]["content"] == "ok"
+
+    # BD: solo el corto persiste
+    final_count = db.query(WorkspaceMessage).filter(WorkspaceMessage.workspace_id == doc_id).count()
+    assert final_count == initial_count + 1
+
+
+def test_ws_binary_relay_excesivo_descartado(ws_setup) -> None:
+    """Update binario >1MiB se descarta (no se broadcastea)."""
+    client, token_owner, token_editor, _, doc_id, _, _, _ = ws_setup
+
+    with client.websocket_connect(f"/workspaces/ws/{doc_id}?token={token_owner}") as ws_owner:
+        ws_owner.receive_json()  # presence inicial
+
+        with client.websocket_connect(f"/workspaces/ws/{doc_id}?token={token_editor}") as ws_editor:
+            ws_owner.receive_json()  # presence actualizada
+            ws_editor.receive_json()  # presence inicial del editor
+
+            # Binario excesivo (>1 MiB) — debe descartarse sin broadcast
+            oversized_bytes = b"\x00" * (1_048_576 + 100)
+            ws_owner.send_bytes(oversized_bytes)
+
+            # Seguido de uno normal para confirmar que la conexión sigue viva
+            small = b"\x01small"
+            ws_owner.send_bytes(small)
+
+            # Editor solo recibe el pequeño
+            received = ws_editor.receive_bytes()
+            assert received == small
