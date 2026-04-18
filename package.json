@@ -99,6 +99,8 @@
     "lowlight": "^3.3.0",
     "pdfjs-dist": "^5.4.624",
     "y-prosemirror": "^1.3.7",
+    "@lexical/yjs": "^0.21.0",
+    "y-indexeddb": "^9.0.12",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.30"
   },
