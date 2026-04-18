@@ -27,6 +27,74 @@ vi.mock('../../services/workspacesApi', () => ({
   validateInviteToken: vi.fn().mockResolvedValue({ valid: false }),
   createWorkspace: vi.fn(),
   deleteWorkspace: vi.fn(),
+  // Funciones nuevas de bloque 2b
+  listChatMessages: vi.fn().mockResolvedValue({ messages: [] }),
+  sendChatMessage: vi.fn(),
+  deleteChatMessage: vi.fn(),
+  updateContributionMetric: vi.fn(),
+  updateWorkspace: vi.fn().mockResolvedValue({}),
+}));
+
+// Mock de yjsProvider (bloque 2b) para evitar conexión WS real en routing tests
+vi.mock('../../services/yjsProvider', () => ({
+  createWorkspaceProvider: vi.fn().mockReturnValue({
+    ydoc: {
+      on: vi.fn(),
+      off: vi.fn(),
+      getText: vi.fn().mockReturnValue({ observe: vi.fn(), unobserve: vi.fn(), length: 0 }),
+    },
+    provider: {
+      connect: vi.fn(),
+      disconnect: vi.fn(),
+      destroy: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+    },
+    awareness: {
+      setLocalStateField: vi.fn(),
+      getStates: vi.fn().mockReturnValue(new Map()),
+      on: vi.fn(),
+      off: vi.fn(),
+    },
+    indexeddbPersistence: { on: vi.fn(), destroy: vi.fn() },
+    status$: { get: vi.fn().mockReturnValue('disconnected') },
+    destroy: vi.fn(),
+    forceReconnect: vi.fn(),
+  }),
+  calcBackoffMs: vi.fn().mockReturnValue(1000),
+}));
+
+// Mock de hooks de colaboración para evitar que el routing test toque Y.Doc real
+vi.mock('../../hooks/useAutoSave', () => ({
+  useAutoSave: vi.fn().mockReturnValue({ saveStatus: 'saved' }),
+}));
+
+vi.mock('../../hooks/useCharContributionTracker', () => ({
+  useCharContributionTracker: vi.fn(),
+}));
+
+// Mock de y-websocket y y-indexeddb para evitar errores de módulo en routing tests
+vi.mock('y-websocket', () => ({
+  WebsocketProvider: vi.fn().mockImplementation(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+    destroy: vi.fn(),
+    on: vi.fn(),
+    off: vi.fn(),
+    awareness: {
+      setLocalStateField: vi.fn(),
+      getStates: vi.fn().mockReturnValue(new Map()),
+      on: vi.fn(),
+      off: vi.fn(),
+    },
+  })),
+}));
+
+vi.mock('y-indexeddb', () => ({
+  IndexeddbPersistence: vi.fn().mockImplementation(() => ({
+    on: vi.fn(),
+    destroy: vi.fn(),
+  })),
 }));
 
 import WorkspacesList from '../../pages/Workspaces/WorkspacesList';

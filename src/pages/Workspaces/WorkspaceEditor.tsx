@@ -2,23 +2,55 @@
  * Página /workspaces/:id — Editor principal del workspace.
  * Layout 3 zonas: sidebar izquierdo + documento central (Lexical) + panel derecho.
  *
- * En 2a: zona central funcional, zonas derecha e izquierda son scaffolding.
- * Sin Yjs (2b), sin Athena (2c), sin APA/math (2d).
+ * En 2b: integra colaboración Yjs (provider + auto-save + contribution tracker).
+ * Sin Athena (2c), sin APA/math (2d).
  *
- * Bloque 2a Fundación.
+ * Bloque 2b Colaboración.
  */
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import * as Y from 'yjs';
 import type { EditorState } from 'lexical';
+import type { WebsocketProvider } from 'y-websocket';
 import { getWorkspace, listMembers, updateWorkspace } from '../../services/workspacesApi';
 import type { Workspace, WorkspaceMember } from '../../../shared/workspaces-types';
 import ThreeZoneLayout from '../../components/workspaces/Layout/ThreeZoneLayout';
 import LexicalEditor from '../../components/workspaces/Editor/LexicalEditor';
+import { createWorkspaceProvider, type WorkspaceProviderHandle } from '../../services/yjsProvider';
+import { useAutoSave } from '../../hooks/useAutoSave';
+import { useCharContributionTracker } from '../../hooks/useCharContributionTracker';
+import { getAuthorColor } from '../../components/workspaces/authorColors';
 
 interface Props {
   onNavigate: (path: string) => void;
 }
+
+const TOKEN_KEY = 'conniku_token';
+const USER_NAME_KEY = 'conniku_user_name';
+const USER_ID_KEY = 'conniku_user_id';
+const USER_AVATAR_KEY = 'conniku_user_avatar';
+
+function getCurrentUser() {
+  const userId = localStorage.getItem(USER_ID_KEY) ?? 'guest';
+  const name = localStorage.getItem(USER_NAME_KEY) ?? userId;
+  const avatar = localStorage.getItem(USER_AVATAR_KEY) ?? undefined;
+  const color = getAuthorColor(userId);
+  return { userId, name, avatar, color };
+}
+
+function getCurrentMemberId(members: WorkspaceMember[], userId: string): string | null {
+  return members.find((m) => m.user_id === userId)?.id ?? null;
+}
+
+// Awareness vacío para usar como fallback cuando no hay provider
+const NOOP_AWARENESS = {
+  getStates: () => new Map(),
+  on: () => {},
+  off: () => {},
+  setLocalStateField: () => {},
+  clientID: 0,
+} as unknown as WebsocketProvider['awareness'];
 
 export default function WorkspaceEditor({ onNavigate }: Props) {
   const { id } = useParams<{ id: string }>();
@@ -26,10 +58,33 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
 
+  // ── Provider Yjs ──────────────────────────────────────────────────
+  const [providerHandle, setProviderHandle] = useState<WorkspaceProviderHandle | null>(null);
+  const currentUser = useMemo(() => getCurrentUser(), []);
+
+  useEffect(() => {
+    if (!id) return;
+    // Verificar que hay token antes de crear provider
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) return;
+
+    const handle = createWorkspaceProvider(`conniku-ws-${id}`, currentUser);
+    setProviderHandle(handle);
+
+    return () => {
+      handle.destroy();
+      setProviderHandle(null);
+    };
+  }, [id, currentUser]);
+
+  // ── Y.Doc de fallback (sin provider activo) ───────────────────────
+  // Se usa cuando el provider aún no está listo, para no pasar null a los hooks.
+  const fallbackYdocRef = useRef(new Y.Doc());
+
+  // ── Carga inicial del workspace ───────────────────────────────────
   useEffect(() => {
     if (!id) return;
     Promise.all([getWorkspace(id), listMembers(id)])
@@ -42,25 +97,61 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // ── Auto-save ─────────────────────────────────────────────────────
+  const activeYdoc = providerHandle?.ydoc ?? fallbackYdocRef.current;
+  const activeAwareness = providerHandle?.awareness ?? NOOP_AWARENESS;
+
+  const { saveStatus } = useAutoSave({
+    ydoc: activeYdoc,
+    docId: id ?? '',
+    currentUserId: currentUser.userId,
+    awareness: activeAwareness,
+    updateFn: (docId, patch) => updateWorkspace(docId, patch),
+    debounceMs: 2000,
+  });
+
+  // ── Contribution tracker ──────────────────────────────────────────
+  const memberId = getCurrentMemberId(members, currentUser.userId);
+  useCharContributionTracker({
+    ydoc: activeYdoc,
+    docId: id ?? '',
+    memberId: memberId ?? '',
+    enabled: !!providerHandle && !!memberId,
+    flushMs: 30_000,
+  });
+
+  // ── Manejo de cambios del editor (modo no-colaborativo) ───────────
   const handleEditorChange = useCallback((_editorState: EditorState) => {
-    // En 2a solo marcamos "sin guardar". Auto-save real viene en 2b.
-    setSaveStatus('unsaved');
+    // En modo colaborativo, useAutoSave escucha el Y.Doc directamente.
+    // Callback vacío por compatibilidad con la firma de LexicalEditor.
   }, []);
 
+  // ── Guardar título ────────────────────────────────────────────────
   const handleTitleSave = () => {
     if (!id || !titleDraft.trim() || titleDraft === workspace?.title) {
       setEditingTitle(false);
       return;
     }
-    setSaveStatus('saving');
     updateWorkspace(id, { title: titleDraft.trim() })
       .then((updated) => {
         setWorkspace(updated);
-        setSaveStatus('saved');
       })
-      .catch(() => setSaveStatus('unsaved'))
+      .catch(() => {})
       .finally(() => setEditingTitle(false));
   };
+
+  // ── Estado de conexión para el chat ──────────────────────────────
+  const isConnected = providerHandle ? providerHandle.status$.get() === 'connected' : false;
+
+  // ── Awareness: usuarios online ────────────────────────────────────
+  const [onlineUserIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!providerHandle) return;
+    // En una implementación futura, suscribirse a los cambios de awareness
+    // para actualizar onlineUserIds en tiempo real.
+    // Por ahora, el set vacío indica "sin datos de presencia aún".
+  }, [providerHandle]);
 
   if (loading) {
     return (
@@ -83,6 +174,16 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   }
 
   if (!workspace) return null;
+
+  // ── Configuración de colaboración para LexicalEditor ─────────────
+  const collaborationConfig = providerHandle
+    ? {
+        ydoc: providerHandle.ydoc,
+        provider: providerHandle.provider,
+        awareness: providerHandle.awareness,
+        userMeta: currentUser,
+      }
+    : undefined;
 
   return (
     <div className="ws-editor-page">
@@ -127,10 +228,12 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
           )}
         </div>
 
+        {/* Indicador de guardado — conectado al estado real del hook useAutoSave */}
         <div className="ws-editor-save-status" aria-live="polite">
           {saveStatus === 'saved' && <span className="ws-save-saved">Guardado</span>}
           {saveStatus === 'saving' && <span className="ws-save-saving">Guardando...</span>}
           {saveStatus === 'unsaved' && <span className="ws-save-unsaved">Sin guardar</span>}
+          {saveStatus === 'offline' && <span className="ws-save-offline">Sin conexión</span>}
         </div>
 
         <nav className="ws-editor-nav" aria-label="Opciones del documento">
@@ -145,8 +248,19 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
       </header>
 
       {/* Layout 3 zonas */}
-      <ThreeZoneLayout members={members}>
-        <LexicalEditor onChange={handleEditorChange} />
+      <ThreeZoneLayout
+        members={members}
+        chatEnabled={true}
+        isConnected={isConnected}
+        docId={id ?? ''}
+        currentUser={currentUser}
+        onlineUserIds={onlineUserIds}
+      >
+        <LexicalEditor
+          onChange={handleEditorChange}
+          namespace={`conniku-ws-${id}`}
+          collaborationConfig={collaborationConfig}
+        />
       </ThreeZoneLayout>
     </div>
   );
