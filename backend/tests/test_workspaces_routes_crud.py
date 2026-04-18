@@ -437,19 +437,25 @@ def test_post_version_restore(client_and_user) -> None:
 # ─── Invite token ─────────────────────────────────────────────────
 
 
-def test_get_invite_token_invalido_retorna_404(client_and_user) -> None:
+def test_get_invite_token_invalido_retorna_valid_false(client_and_user) -> None:
+    """Token inexistente: HTTP 200 con valid=false (no 404, para no filtrar
+    existencia de tokens a un atacante)."""
     client, h_owner, _, _, _, _ = client_and_user
     resp = client.get("/workspaces/invite/tokeninvalidoXXXXX", headers=h_owner)
-    assert resp.status_code == 404
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["valid"] is False
+    assert body["workspace_id"] is None
+    assert body["workspace_title"] is None
 
 
 def test_get_invite_token_valido_retorna_metadata(client_and_user) -> None:
-    """Cuando existe un share_link_token en la BD, devuelve metadata del workspace."""
+    """Token válido en BD: HTTP 200 con valid=true + metadata alineada con
+    el tipo InviteTokenInfo del frontend (llaves workspace_id, workspace_title,
+    owner_name, proposed_role)."""
     client, h_owner, _, _, _, db = client_and_user
-    from database import WorkspaceDocument, gen_id  # type: ignore
-    from sqlalchemy import func, select
+    from database import WorkspaceDocument  # type: ignore
 
-    # Obtener el owner desde la BD usando la app
     resp_create = client.post(
         "/workspaces",
         json={"title": "Doc compartido"},
@@ -464,7 +470,11 @@ def test_get_invite_token_valido_retorna_metadata(client_and_user) -> None:
 
     resp = client.get("/workspaces/invite/testtoken12345678", headers=h_owner)
     assert resp.status_code == 200
-    assert resp.json()["title"] == "Doc compartido"
+    body = resp.json()
+    assert body["valid"] is True
+    assert body["workspace_id"] == doc_id
+    assert body["workspace_title"] == "Doc compartido"
+    assert body["proposed_role"] == "editor"
 
 
 # ─── Contribution metric (sub-bloque 2b) ─────────────────────────
