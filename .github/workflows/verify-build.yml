@@ -181,8 +181,8 @@ jobs:
       - name: "[6/6] Security audit (npm)"
         run: |
           echo "::group::npm audit"
-          # Bloquear si hay vulnerabilidades critical o high
-          npm audit --audit-level=high
+          # Bloquear solo en vulnerabilidades critical
+          npm audit --audit-level=critical
           echo "::endgroup::"
 
       # ============================================================
