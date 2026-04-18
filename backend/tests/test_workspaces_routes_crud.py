@@ -112,11 +112,11 @@ def client_and_user(test_app):
     db.commit()
     db.refresh(other)
 
-    # Crear JWT de prueba
+    # Crear JWT de prueba — "type": "access" requerido por middleware.decode_token.
     secret = os.environ["JWT_SECRET"]
     exp = datetime.utcnow() + timedelta(hours=1)
-    token_owner = jwt.encode({"sub": owner.id, "exp": exp}, secret, algorithm="HS256")
-    token_other = jwt.encode({"sub": other.id, "exp": exp}, secret, algorithm="HS256")
+    token_owner = jwt.encode({"sub": owner.id, "exp": exp, "type": "access"}, secret, algorithm="HS256")
+    token_other = jwt.encode({"sub": other.id, "exp": exp, "type": "access"}, secret, algorithm="HS256")
 
     headers_owner = {"Authorization": f"Bearer {token_owner}"}
     headers_other = {"Authorization": f"Bearer {token_other}"}
@@ -465,3 +465,159 @@ def test_get_invite_token_valido_retorna_metadata(client_and_user) -> None:
     resp = client.get("/workspaces/invite/testtoken12345678", headers=h_owner)
     assert resp.status_code == 200
     assert resp.json()["title"] == "Doc compartido"
+
+
+# ─── Contribution metric (sub-bloque 2b) ─────────────────────────
+
+
+def test_patch_contribution_propio_miembro_ok(client_and_user) -> None:
+    """El propio miembro puede incrementar su contador de caracteres."""
+    client, h_owner, h_other, owner, other, db = client_and_user
+    from database import WorkspaceMember  # type: ignore
+
+    resp_create = client.post(
+        "/workspaces",
+        json={"title": "Doc contribution test"},
+        headers=h_owner,
+    )
+    doc_id = resp_create.json()["id"]
+
+    # El owner ya es miembro con rol 'owner'. Obtenemos su member_id.
+    members_resp = client.get(f"/workspaces/{doc_id}/members", headers=h_owner)
+    owner_member = next(m for m in members_resp.json()["members"] if m["role"] == "owner")
+    member_id = owner_member["id"]
+
+    resp = client.patch(
+        f"/workspaces/{doc_id}/members/{member_id}/contribution",
+        json={"delta_chars": 150},
+        headers=h_owner,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["id"] == member_id
+    assert data["charsContributed"] >= 150
+
+
+def test_patch_contribution_otro_usuario_retorna_403(client_and_user) -> None:
+    """Otro usuario no puede incrementar el contador de un miembro ajeno."""
+    client, h_owner, h_other, owner, other, db = client_and_user
+    from database import WorkspaceMember  # type: ignore
+
+    resp_create = client.post(
+        "/workspaces",
+        json={"title": "Doc contribution 403 test"},
+        headers=h_owner,
+    )
+    doc_id = resp_create.json()["id"]
+
+    # Agregar other como editor
+    member = WorkspaceMember(
+        workspace_id=doc_id,
+        user_id=other.id,
+        role="editor",
+        invited_at=__import__("datetime").datetime.utcnow(),
+        joined_at=__import__("datetime").datetime.utcnow(),
+    )
+    db.add(member)
+    db.commit()
+    db.refresh(member)
+
+    # owner intenta incrementar el contador del miembro 'other' → 403
+    resp = client.patch(
+        f"/workspaces/{doc_id}/members/{member.id}/contribution",
+        json={"delta_chars": 50},
+        headers=h_owner,
+    )
+    assert resp.status_code == 403
+
+
+def test_patch_contribution_delta_negativo_retorna_422(client_and_user) -> None:
+    """Delta negativo es rechazado con 422 (validación Pydantic ge=0)."""
+    client, h_owner, _, owner, _, db = client_and_user
+
+    resp_create = client.post(
+        "/workspaces",
+        json={"title": "Doc contribution neg test"},
+        headers=h_owner,
+    )
+    doc_id = resp_create.json()["id"]
+
+    members_resp = client.get(f"/workspaces/{doc_id}/members", headers=h_owner)
+    owner_member = next(m for m in members_resp.json()["members"] if m["role"] == "owner")
+    member_id = owner_member["id"]
+
+    resp = client.patch(
+        f"/workspaces/{doc_id}/members/{member_id}/contribution",
+        json={"delta_chars": -10},
+        headers=h_owner,
+    )
+    # Pydantic ge=0 retorna 422 Unprocessable Entity
+    assert resp.status_code == 422
+
+
+# ─── content_yjs en PATCH workspace (sub-bloque 2b) ──────────────
+
+
+def test_patch_workspace_content_yjs_por_viewer_retorna_403(client_and_user) -> None:
+    """Un viewer no puede actualizar content_yjs."""
+    client, h_owner, h_other, _, other, db = client_and_user
+    from database import WorkspaceMember  # type: ignore
+
+    resp_create = client.post(
+        "/workspaces",
+        json={"title": "Doc yjs viewer test"},
+        headers=h_owner,
+    )
+    doc_id = resp_create.json()["id"]
+
+    member = WorkspaceMember(
+        workspace_id=doc_id,
+        user_id=other.id,
+        role="viewer",
+        invited_at=__import__("datetime").datetime.utcnow(),
+        joined_at=__import__("datetime").datetime.utcnow(),
+    )
+    db.add(member)
+    db.commit()
+
+    resp = client.patch(
+        f"/workspaces/{doc_id}",
+        json={"content_yjs": "base64yjssnapshot=="},
+        headers=h_other,
+    )
+    assert resp.status_code == 403
+
+
+def test_patch_workspace_content_yjs_por_editor_ok_y_refleja_en_get(client_and_user) -> None:
+    """Un editor puede actualizar content_yjs y el GET lo refleja."""
+    client, h_owner, h_other, owner, other, db = client_and_user
+    from database import WorkspaceMember  # type: ignore
+
+    resp_create = client.post(
+        "/workspaces",
+        json={"title": "Doc yjs editor test"},
+        headers=h_owner,
+    )
+    doc_id = resp_create.json()["id"]
+
+    member = WorkspaceMember(
+        workspace_id=doc_id,
+        user_id=other.id,
+        role="editor",
+        invited_at=__import__("datetime").datetime.utcnow(),
+        joined_at=__import__("datetime").datetime.utcnow(),
+    )
+    db.add(member)
+    db.commit()
+
+    resp_patch = client.patch(
+        f"/workspaces/{doc_id}",
+        json={"content_yjs": "dGVzdHNuYXBzaG90"},
+        headers=h_other,
+    )
+    assert resp_patch.status_code == 200
+
+    # GET debe reflejar el nuevo snapshot
+    resp_get = client.get(f"/workspaces/{doc_id}", headers=h_owner)
+    assert resp_get.status_code == 200
+    assert resp_get.json()["contentYjs"] == "dGVzdHNuYXBzaG90"
