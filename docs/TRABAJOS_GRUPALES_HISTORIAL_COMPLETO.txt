@@ -1,0 +1,728 @@
+================================================================================
+HISTORIAL COMPLETO DE TRABAJOS GRUPALES / GROUP DOC EDITOR
+Proyecto: Conniku
+Generado: 2026-04-15
+Periodo cubierto: 2026-04-10 al 2026-04-16
+================================================================================
+
+Este documento contiene el historial exhaustivo de TODOS los commits que
+tocaron los archivos relacionados al modulo "Trabajos Grupales" (colaboracion
+en documentos tipo Google Docs entre estudiantes). Se incluye:
+  - Mensaje completo de commit (con descripcion palabra por palabra)
+  - Archivos modificados y cantidad de lineas
+  - Cambios clave con detalle tecnico
+  - Estado final del modulo
+
+ARCHIVOS CUBIERTOS:
+  - src/pages/GroupDocs.tsx         (listado de documentos)
+  - src/pages/GroupDocEditor.tsx    (editor de documento individual)
+  - src/components/CollabEditor.tsx (editor Tiptap + Yjs collaboration)
+  - backend/collab_routes.py        (CRUD, members, versions, chat, export, Athena)
+  - backend/collab_ws.py            (WebSocket relay Yjs)
+  - backend/database.py             (modelos CollabDocument, Member, Version, Message)
+
+
+================================================================================
+FASE 1 — FOUNDATION (commit 18534e6)
+================================================================================
+Fecha: 2026-04-13
+Autor: Cristian G.
+Titulo: "feat: Trabajos Grupales — Fase 1 (foundation)"
+
+MENSAJE COMPLETO DEL COMMIT:
+----
+feat: Trabajos Grupales — Fase 1 (foundation)
+
+Backend: CollabDocument, CollabDocumentMember, CollabDocumentVersion models
++ collab_routes.py with full CRUD, member management, version history,
+and user search for invites.
+Frontend: GroupDocs page with create modal, member search, document grid,
+rename/delete. API functions + route + sidebar nav.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (7 archivos, +1030 lineas):
+  backend/collab_routes.py   | 385 ++++++++++++++++++++++++++++++
+  backend/database.py        |  52 +++++
+  backend/server.py          |   2 +
+  src/App.tsx                |   3 +
+  src/components/Sidebar.tsx |   6 +
+  src/pages/GroupDocs.tsx    | 568 +++++++++++++++++++++++++++++++++++++++++++++
+  src/services/api.ts        |  14 ++
+
+LO QUE SE CONSTRUYO:
+  - Modelo CollabDocument (id, title, owner_id, content, course_name, etc.)
+  - Modelo CollabDocumentMember (doc_id, user_id, role: owner/editor/viewer)
+  - Modelo CollabDocumentVersion (doc_id, content, created_at, created_by)
+  - Endpoints CRUD: crear, listar, renombrar, eliminar documentos
+  - Gestion de miembros: agregar, cambiar rol, remover
+  - Historial de versiones con endpoint para restaurar
+  - Busqueda de usuarios para invitar
+  - Pagina GroupDocs.tsx con grid de documentos, modal de creacion,
+    busqueda de miembros para invitar
+  - Ruta /group-docs en App.tsx
+  - Link "Trabajos Grupales" en Sidebar
+
+
+================================================================================
+FASE 2 — TIPTAP EDITOR (commit 54573e8)
+================================================================================
+Fecha: 2026-04-13
+Autor: Cristian G.
+Titulo: "feat: Trabajos Grupales — Fase 2 (Tiptap editor)"
+
+MENSAJE COMPLETO DEL COMMIT:
+----
+feat: Trabajos Grupales — Fase 2 (Tiptap editor)
+
+Rich text editor with Tiptap: bold, italic, underline, headings,
+lists, task lists, tables, images, code blocks, alignment, highlight.
+Document editor page with auto-save (2s debounce), member management
+panel, and version history panel with restore capability.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (5 archivos, +1924 -14 lineas):
+  package-lock.json               | 1069 ++++++++++++++++++++++++++++++++++++++-
+  package.json                    |   19 +-
+  src/App.tsx                     |    3 +-
+  src/components/CollabEditor.tsx |  368 ++++++++++++++
+  src/pages/GroupDocEditor.tsx    |  479 ++++++++++++++++++
+
+LO QUE SE CONSTRUYO:
+  - Integracion de Tiptap (rich text editor React)
+  - Componente CollabEditor con extensiones:
+    * StarterKit (bold, italic, h1-h3, listas)
+    * Underline
+    * Task lists con checkbox
+    * Tablas (insert/delete row/col/header)
+    * Imagenes (por URL)
+    * Code blocks
+    * Text alignment (left/center/right/justify)
+    * Highlight (marcar texto)
+  - Pagina GroupDocEditor con:
+    * Auto-save cada 2 segundos despues de cambio (debounced)
+    * Panel lateral de miembros con cambio de rol
+    * Panel de historial de versiones con restore
+    * Toolbar basico de formato
+  - Dependencias Tiptap agregadas a package.json
+
+
+================================================================================
+FASE 3 — REAL-TIME COLLABORATION (commit 3ff4008)
+================================================================================
+Fecha: 2026-04-13
+Autor: Cristian G.
+Titulo: "feat: Trabajos Grupales — Fase 3 (real-time collaboration)"
+
+MENSAJE COMPLETO DEL COMMIT:
+----
+feat: Trabajos Grupales — Fase 3 (real-time collaboration)
+
+Backend: WebSocket relay server at /ws/doc/{doc_id} with JWT auth,
+document access control, and presence broadcasting.
+Frontend: Yjs CRDT integration via @tiptap/extension-collaboration,
+multi-user cursors via CollaborationCursor, online presence indicator
+in toolbar. Auto-syncs between connected clients via binary WebSocket.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (6 archivos, +625 -206 lineas):
+  backend/collab_ws.py            | 189 +++++++++++++++++
+  backend/server.py               |   2 +
+  package-lock.json               | 180 +++++++++++++-
+  package.json                    |   8 +-
+  src/components/CollabEditor.tsx | 449 ++++++++++++++++++++------------------
+  src/pages/GroupDocEditor.tsx    |   3 +
+
+LO QUE SE CONSTRUYO:
+  - Backend collab_ws.py: WebSocket relay server
+    * Ruta: /ws/doc/{doc_id}
+    * Autenticacion JWT en handshake
+    * Validacion de acceso al documento (owner/member)
+    * Relay bidireccional de mensajes binarios entre clientes
+    * Broadcast de presencia (usuarios conectados)
+  - Frontend CollabEditor:
+    * Integracion Yjs (CRDT) via @tiptap/extension-collaboration
+    * Multi-user cursors con CollaborationCursor
+    * Indicador de presencia online en toolbar
+    * Sincronizacion automatica sobre WebSocket binario
+
+
+================================================================================
+FASE 4 — CHAT SIDEBAR (commit 416cfa9)
+================================================================================
+Fecha: 2026-04-13
+Autor: Cristian G.
+Titulo: "feat: Trabajos Grupales — Fase 4 (chat sidebar)"
+
+MENSAJE COMPLETO DEL COMMIT:
+----
+feat: Trabajos Grupales — Fase 4 (chat sidebar)
+
+Backend: CollabDocumentMessage model + REST endpoints for chat within
+documents, with WebSocket broadcast to connected clients.
+Frontend: Chat sidebar panel in document editor with real-time messages,
+polling fallback, message bubbles, and mutual-exclusive panel switching
+(chat/members/versions).
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (4 archivos, +218 -4 lineas):
+  backend/collab_routes.py     |  65 +++++++++++++++++++
+  backend/database.py          |  11 ++++
+  src/pages/GroupDocEditor.tsx | 144 +++++++++++++++++++++++++++++++++++++++++--
+  src/services/api.ts          |   2 +
+
+LO QUE SE CONSTRUYO:
+  - Modelo CollabDocumentMessage (doc_id, user_id, content, created_at)
+  - Endpoints REST:
+    * GET /collab/{doc_id}/messages — listar mensajes
+    * POST /collab/{doc_id}/messages — enviar mensaje (broadcast WS)
+  - Frontend:
+    * Panel lateral de chat con mensajes en burbujas
+    * Real-time via WebSocket + polling fallback
+    * Switch exclusivo entre paneles: chat/miembros/versiones
+
+
+================================================================================
+FASE 5 — EXPORT PDF/DOCX (commit 658e767)
+================================================================================
+Fecha: 2026-04-13
+Autor: Cristian G.
+Titulo: "feat: Trabajos Grupales — Fase 5 (export PDF/DOCX)"
+
+MENSAJE COMPLETO DEL COMMIT:
+----
+feat: Trabajos Grupales — Fase 5 (export PDF/DOCX)
+
+Backend: Export endpoints /collab/{id}/export/pdf and /export/docx.
+PDF via xhtml2pdf with styled HTML template. DOCX via python-docx
+with heading/list/paragraph extraction from HTML content.
+Frontend: Export dropdown menu in editor toolbar with PDF and Word
+download buttons. Saves pending content before export.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (3 archivos, +200 -1 lineas):
+  backend/collab_routes.py     | 134 +++++++++++++++++++++++++++++++++++++++++++
+  src/pages/GroupDocEditor.tsx |  59 ++++++++++++++++++-
+  src/services/api.ts          |   8 +++
+
+LO QUE SE CONSTRUYO:
+  - Endpoint POST /collab/{doc_id}/export/pdf
+    * Usa xhtml2pdf + pisa
+    * Wrap en HTML completo con estilos
+    * Download con nombre del documento
+  - Endpoint POST /collab/{doc_id}/export/docx
+    * Usa python-docx
+    * Extrae headings (h1-h3), listas (ul/ol), parrafos (p)
+    * Convierte estilos basicos
+  - Frontend:
+    * Dropdown "Exportar" en toolbar del editor
+    * Boton PDF y Word
+    * Guarda contenido pendiente antes de exportar
+
+
+================================================================================
+COMMIT 018eae2 — "fix: GroupDocs crash + CV embebido en UserProfile"
+================================================================================
+Fecha: 2026-04-14 21:16:46
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+fix: GroupDocs crash + CV embebido en UserProfile
+
+- GroupDocs: fix "Cannot read properties of undefined (reading 'doc')"
+  - Defensive array check en loadDocs: Array.isArray(data)
+  - Null-safe access a doc.members con (doc.members || [])
+- CVProfile: agregar prop embedded para renderizar sin banner
+- UserProfile: embeber CVProfile editable en tab CV (owner)
+- UserProfile: CV read-only formato Conniku para visitantes
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (3 archivos, +553 -832 lineas):
+  src/pages/CVProfile.tsx   | 380 +++++++++---------
+  src/pages/GroupDocs.tsx   |  11 +-
+  src/pages/UserProfile.tsx | 994 +++++++++++++++++-----------------------------
+
+CAMBIOS CLAVE EN GroupDocs.tsx:
+  - loadDocs() ahora hace Array.isArray(data) antes de setear estado
+  - Acceso a doc.members protegido con (doc.members || [])
+  - Fix del crash cuando el backend devuelve undefined/null
+
+
+================================================================================
+COMMIT f895ea7 / e979d61 — "fix(collab): corregir ruta WebSocket"
+================================================================================
+Fecha: 2026-04-14/15 (dos commits con el mismo contenido)
+
+MENSAJE COMPLETO:
+----
+fix(collab): corregir ruta WebSocket para Trabajos Grupales
+
+Frontend conectaba a doc/{docId} pero backend escucha en /ws/doc/{doc_id}.
+Sin el prefijo /ws, el WebSocket nunca establecía conexión.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVO MODIFICADO:
+  src/components/CollabEditor.tsx
+
+CAMBIO: URL de conexion WebSocket corregida para incluir prefijo /ws
+
+
+================================================================================
+COMMIT 3018212 / b9accf3 — "fix(ws): accept WebSocket antes de close"
+================================================================================
+Fecha: 2026-04-14/15 (dos commits con el mismo contenido)
+
+MENSAJE COMPLETO:
+----
+fix(ws): accept WebSocket antes de close para evitar HTTP 500
+
+Starlette requiere websocket.accept() antes de websocket.close().
+Sin esto, el handler lanzaba una excepcion no capturada → HTTP 500.
+
+Ahora: accept primero, luego validar auth/acceso, cerrar si falla.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVO MODIFICADO:
+  backend/collab_ws.py
+
+CAMBIO: Orden de operaciones en el handler WebSocket — accept primero,
+luego validar, cerrar con codigo de error si la validacion falla.
+
+
+================================================================================
+COMMIT 4fa10c4 — "fix(ws): SecurityHeadersMiddleware bloqueaba WebSocket"
+================================================================================
+Fecha: 2026-04-15 02:30:00
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+fix(ws): SecurityHeadersMiddleware bloqueaba WebSocket con 403
+
+BaseHTTPMiddleware de Starlette no soporta conexiones WebSocket.
+Cuando llegaba un upgrade request, el middleware lo interceptaba
+y devolvía HTTP 403 — matando toda la colaboración en tiempo real.
+
+Fix:
+- Override __call__ para que WebSocket pase directo a la app
+- Agregado wss: a connect-src en CSP headers
+- ruff fix: imports reordenados
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVO MODIFICADO:
+  backend/security_middleware.py
+
+CAMBIOS CLAVE:
+  - __call__ override: si scope["type"] == "websocket", pasa directo a self.app
+  - CSP header: agregado "wss:" a connect-src para permitir conexiones WebSocket
+  - Imports reordenados por ruff
+
+
+================================================================================
+COMMIT abcdffc / 36468e2 — "feat: rediseño editor Trabajos Grupales estilo Google Docs"
+================================================================================
+Fecha: 2026-04-15 02:01:04
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+feat: rediseño editor Trabajos Grupales estilo Google Docs
+
+- Paper simulation: fondo gris, hoja blanca centrada (816px) con sombra y márgenes 96px
+- Toolbar profesional con iconos SVG: undo/redo, estilos, fuentes, tamaño, colores
+- Selector de fuente: 8 familias con preview en su propia tipografía
+- Selector de tamaño: 14 tamaños (8-72pt) con input editable y +/-
+- Color picker: paleta de 64 colores para texto, 18 para resaltado
+- Selector de estilo: Texto normal, Título 1/2/3 con vista previa
+- Link, imagen, tabla, horizontal rule, blockquote, code block
+- Alineación: izquierda, centro, derecha, justificado
+- Listas: viñetas, numerada, tareas con checkbox
+- Indent/outdent para listas anidadas
+- Status bar: conteo de palabras, caracteres, modo edición/lectura
+- Documento siempre claro (#fff fondo, #1a1a1a texto) independiente del tema
+- FontFamily extension añadida (@tiptap/extension-font-family@3.22.3)
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS MODIFICADOS (3 archivos, +1282 -267 lineas):
+  package-lock.json               |   14 +
+  package.json                    |    1 +
+  src/components/CollabEditor.tsx | 1534 ++++++++++++++++++++++++++++++++-------
+
+LO QUE SE CONSTRUYO EN DETALLE:
+
+1. PAPER SIMULATION:
+   - Fondo gris (#f1f3f4) alrededor del editor
+   - Hoja blanca centrada con ancho fijo 816px (tamano carta)
+   - Sombra (box-shadow) simulando papel
+   - Margenes internos de 96px (1 pulgada)
+
+2. TOOLBAR PROFESIONAL:
+   - Iconos SVG inline (no fuentes de iconos)
+   - Grupos: Deshacer/Rehacer | Estilos | Fuentes | Tamaños | Colores
+   - Separadores verticales entre grupos
+
+3. SELECTOR DE FUENTE:
+   - 8 familias: Arial, Calibri, Comic Sans MS, Courier New, Georgia,
+     Helvetica, Times New Roman, Trebuchet MS
+   - Cada opcion del dropdown se muestra en su propia tipografia
+
+4. SELECTOR DE TAMAÑO:
+   - 14 tamaños predefinidos: 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 48, 72 pt
+   - Input editable (permite valores personalizados)
+   - Botones +/- para incrementar/decrementar
+
+5. COLOR PICKER:
+   - Paleta de 64 colores para color de texto
+   - Paleta de 18 colores para resaltado (highlight)
+   - Popup debajo del boton con grid visual
+
+6. SELECTOR DE ESTILO:
+   - Opciones: Texto normal, Titulo 1, Titulo 2, Titulo 3
+   - Cada opcion se muestra con el estilo correspondiente (vista previa)
+
+7. ELEMENTOS INSERTABLES:
+   - Link (con dialog para URL)
+   - Imagen (por URL)
+   - Tabla (3x3 inicial, luego insert/delete row/col)
+   - Horizontal rule
+   - Blockquote
+   - Code block
+
+8. ALINEACION:
+   - Izquierda, centro, derecha, justificado
+   - Aplicada al parrafo actual
+
+9. LISTAS:
+   - Viñetas (bullet list)
+   - Numerada (ordered list)
+   - Tareas con checkbox (task list)
+   - Indent/outdent para listas anidadas
+
+10. STATUS BAR:
+    - Conteo de palabras en tiempo real
+    - Conteo de caracteres
+    - Indicador: "Modo edicion" o "Modo lectura"
+
+11. ESTILOS INDEPENDIENTES DEL TEMA:
+    - Documento siempre con fondo #fff y texto #1a1a1a
+    - Independiente del tema (dark/light) del resto de la app
+
+12. DEPENDENCIA NUEVA:
+    - @tiptap/extension-font-family@3.22.3
+
+
+================================================================================
+COMMIT 9bab5b3 — "fix: remover CollaborationCursor incompatible"
+================================================================================
+Fecha: 2026-04-15 (despues del rediseño)
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+fix: remover CollaborationCursor incompatible que crasheaba Trabajos Grupales
+
+collaboration-cursor@3.0.0 usa y-prosemirror internamente, pero
+collaboration@3.22.3 usa @tiptap/y-tiptap. Al inicializar el editor,
+el cursor plugin intentaba leer ySyncPluginState.doc → undefined → crash:
+"Cannot read properties of undefined (reading 'doc')"
+
+No existe version compatible de collaboration-cursor para 3.22.x.
+Se remueve hasta que Tiptap publique una version alineada.
+La colaboracion de contenido (Yjs sync) sigue funcionando.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVO MODIFICADO:
+  src/components/CollabEditor.tsx
+
+CAMBIO CRITICO:
+  - Se REMOVIO la extension CollaborationCursor
+  - Sin esto: CRASH en inicializacion
+  - Con esto: colaboracion de contenido funciona pero NO hay cursores
+    de otros usuarios visibles en tiempo real
+  - Nota: esperar que Tiptap publique version compatible para restaurar
+
+
+================================================================================
+COMMIT 945d6ea — "fix(deps): upgrade tiptap collaboration-cursor v2→v3"
+================================================================================
+Fecha: 2026-04-15
+
+MENSAJE COMPLETO:
+----
+fix(deps): upgrade tiptap collaboration-cursor v2→v3 to fix Vercel deploys
+
+(Solo package.json y package-lock.json)
+----
+
+ARCHIVOS MODIFICADOS:
+  package-lock.json
+  package.json
+
+CONTEXTO: Este commit intento resolver problemas de compatibilidad, pero
+  el problema real se soluciono despues con la remocion en 9bab5b3.
+
+
+================================================================================
+COMMIT 5de6bb3 — "fix: null-safety en 9 páginas"
+================================================================================
+Fecha: 2026-04-14 23:52:02
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+fix: null-safety en 9 páginas — prevenir crashes por API responses vacías
+
+Array.isArray guards y optional chaining en setters que reciben
+datos de API sin validar. Previene TypeError cuando el backend
+devuelve null/undefined en vez de arrays.
+
+Archivos: Messages, Friends, Mentorship, GroupDocEditor, Dashboard,
+Communities, Conferences, UserProfile, Jobs.
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+CAMBIO ESPECIFICO EN GroupDocEditor.tsx:
+  - setVersions(data) → setVersions(Array.isArray(data) ? data : data?.versions || data?.items || [])
+  - Aplicado tambien a setMessages y otros setters que reciben arrays del API
+
+
+================================================================================
+COMMIT d0c0e49 — "feat: Athena AI + Landing v2 + TTS + Sala de Estudio + limpieza modulos"
+================================================================================
+Fecha: 2026-04-15 03:16:18
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+feat: Athena AI + Landing v2 + TTS + Sala de Estudio + limpieza modulos
+
+- Athena: asistente contextual en Trabajos Grupales (backend endpoint +
+  panel 360px con analisis automatico, chat, sugerencias rapidas)
+- Landing v2: dark theme moderno, scoped CSS, -2500 lineas
+- TTS: Web Speech API hook (es-CL) + toolbar en BookReader
+- Sala de Estudio: tab en Comunidades con Pomodoro + ambient sounds
+- Eliminados: StudyPaths.tsx (1514 ln) + StudyRooms.tsx (1166 ln)
+- Sidebar/App.tsx: rutas y nav items removidos
+- Plan estrategico v2 compilado (docs/)
+
+Net: +1400 / -5529 lineas
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+----
+
+ARCHIVOS RELEVANTES A TRABAJOS GRUPALES:
+  backend/collab_routes.py      (+127 lineas — endpoint Athena)
+  src/pages/GroupDocEditor.tsx  (+327 lineas — panel Athena completo)
+
+LO QUE SE AGREGO — ATHENA (asistente contextual):
+
+BACKEND (backend/collab_routes.py):
+  - Constante ATHENA_SYSTEM (system prompt para Athena):
+    * Se presenta como "experta academica humana"
+    * REGLA ABSOLUTA: nunca se identifica como IA
+    * Habla en espanol chileno natural
+    * Si preguntan que es: "Soy Athena, tu compañera de redaccion y experta academica"
+    * Formato de respuesta en 3 secciones:
+      1. CORRECCIONES (gramatica/ortografia)
+      2. CONTENIDO (investigacion y datos del tema)
+      3. SUGERENCIAS (mejoras de redaccion/estructura)
+
+  - Funcion _strip_html(html): limpia HTML y colapsa whitespace
+  - Endpoint POST /collab/{doc_id}/athena:
+    * Action "analyze": Analiza todo el documento
+      - Limita contenido a 3000 chars
+      - Usa konni_engine.call_konni con ATHENA_SYSTEM
+    * Action "chat": Chat directo con contexto del documento
+      - Incluye titulo, materia, contenido (2000 chars)
+      - Mantiene historial de 10 mensajes
+      - Responde como experta humana
+
+FRONTEND (src/pages/GroupDocEditor.tsx):
+  - Estados agregados:
+    * showAthena, athenaMessages, athenaInput, athenaLoading
+    * athenaAnalysis, athenaAnalyzing
+    * athenaEndRef (para auto-scroll)
+    * athenaDebounce (para analisis automatico)
+
+  - triggerAthenaAnalysis():
+    * Se dispara al cambiar contenido del documento
+    * Debounce de 5 segundos
+    * Solo activa si el panel Athena esta abierto
+    * Requiere minimo 30 chars de contenido
+
+  - handleAthenaSend(): Envia mensaje al chat de Athena
+  - handleAthenaRefresh(): Re-analiza el documento manualmente
+
+  - UI: Panel lateral de 360px con:
+    * Header con icono Sparkles, "Athena — Experta academica"
+    * Boton Lightbulb para re-analizar
+    * Boton X para cerrar
+    * Seccion de analisis automatico (collapsible, max 220px)
+      - Indicador animado "Analizando documento..."
+      - Texto del analisis con formato whitespace-pre-wrap
+    * Area de chat:
+      - Mensajes en burbujas (usuario a la derecha, Athena a la izquierda)
+      - Estado vacio con 4 sugerencias iniciales:
+        1. "Revisa mi ortografia y gramatica"
+        2. "Investiga sobre el tema del documento"
+        3. "Sugiere como mejorar la redaccion"
+        4. "Agrega referencias academicas"
+    * Input de chat con boton Enviar
+
+
+================================================================================
+COMMIT 2620817 — "fix: 7 critical/high bugs"
+================================================================================
+Fecha: 2026-04-15 18:59:41
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+fix: 7 critical/high bugs — Friendship columns, CalendarEvent, XSS,
+WebSocket leak, CollabEditor memory leak, exam timer + lint cleanup
+----
+
+CAMBIO ESPECIFICO EN CollabEditor.tsx (memory leak fix):
+  - Antes: addEventListener('message', ...) sin removeEventListener
+    → leak de listeners en unmount
+  - Despues:
+    * Se guarda referencia en variable messageHandler
+    * Se agrega cleanup en useEffect return que hace removeEventListener
+
+
+================================================================================
+COMMIT a5363ac — "feat: Frontend TierGate — bloqueo visual de features PRO"
+================================================================================
+Fecha: 2026-04-16 14:19:38
+Autor: Cristian G.
+
+MENSAJE COMPLETO:
+----
+feat: Frontend TierGate — bloqueo visual de features PRO
+
+- useTier hook: resuelve tier desde user + shared/tier-limits.json
+- TierGate component: overlay PRO + badge candado en features bloqueadas
+- UpgradeModal: modal con beneficios, precios, CTA a /suscripcion
+- Integrado en 6 páginas: ProjectView (5 features), StudyPaths,
+  Biblioteca, Conferences, StudyRooms, GroupDocEditor
+
+Features bloqueadas para free: concept_map, video_youtube, video_upload,
+audio_to_notes, study_plan, biblioteca_clone, can_export,
+can_download_docs, can_create_conference, can_create_study_room
+
+Co-Authored-By: Claude Opus 4.6 (1M context) <noreply@anthropic.com>
+----
+
+CAMBIO ESPECIFICO EN GroupDocEditor.tsx:
+  - Import agregado: TierGate
+  - Aplicado a feature "can_export" (PDF/DOCX download bloqueado en free)
+
+
+================================================================================
+RESUMEN FINAL — ESTADO DEL MODULO TRABAJOS GRUPALES
+================================================================================
+
+COMPONENTES ACTIVOS:
+  1. GroupDocs.tsx — Listado de documentos del usuario
+  2. GroupDocEditor.tsx — Editor individual (Tiptap + Yjs + chat + Athena)
+  3. CollabEditor.tsx — Componente Tiptap con paper simulation Google Docs
+  4. collab_routes.py — CRUD, miembros, versiones, chat, export PDF/DOCX, Athena
+  5. collab_ws.py — WebSocket relay para sincronizacion Yjs
+
+FEATURES IMPLEMENTADAS:
+  [OK] Crear/renombrar/eliminar documentos
+  [OK] Gestion de miembros (owner/editor/viewer)
+  [OK] Historial de versiones con restore
+  [OK] Editor rico con Tiptap (bold, italic, headings, tablas, imagenes, etc.)
+  [OK] Auto-save cada 2 segundos
+  [OK] Paper simulation estilo Google Docs
+  [OK] Toolbar profesional (fuentes, tamaños, colores, estilos)
+  [OK] Export PDF (xhtml2pdf) y DOCX (python-docx)
+  [OK] Chat sidebar con mensajes en tiempo real
+  [OK] Yjs CRDT para colaboracion multi-usuario
+  [OK] Athena AI — asistente contextual (analiza + chatea)
+  [OK] Null-safety en todos los setters de arrays
+  [OK] Memory leak fix en event listeners
+  [OK] TierGate en export (bloqueo para usuarios free)
+
+FEATURES ROTAS/NO IMPLEMENTADAS:
+  [X] CollaborationCursor (cursores de otros usuarios)
+      - Removido en 9bab5b3 por incompatibilidad de versiones
+      - Pendiente: esperar version compatible de Tiptap
+
+BUGS HISTORICOS CORREGIDOS:
+  - GroupDocs crash: "Cannot read properties of undefined (reading 'doc')"
+  - WebSocket ruta incorrecta (/doc/ en vez de /ws/doc/)
+  - WebSocket HTTP 500 (accept antes de close)
+  - SecurityHeadersMiddleware bloqueaba WebSocket con 403
+  - CollabEditor memory leak por event listener sin cleanup
+
+
+================================================================================
+ARCHIVOS EN FROZEN.md RELACIONADOS
+================================================================================
+  - src/pages/GroupDocs.tsx | completo | 2026-04-15 | Lista de documentos grupales
+  - backend/collab_ws.py    | completo | 2026-04-15 | WebSocket relay Yjs
+
+
+================================================================================
+COMMITS RELACIONADOS — ORDEN CRONOLOGICO
+================================================================================
+
+Fase de construccion original (2026-04-13):
+  18534e6 — feat: Trabajos Grupales — Fase 1 (foundation)
+  54573e8 — feat: Trabajos Grupales — Fase 2 (Tiptap editor)
+  3ff4008 — feat: Trabajos Grupales — Fase 3 (real-time collaboration)
+  416cfa9 — feat: Trabajos Grupales — Fase 4 (chat sidebar)
+  658e767 — feat: Trabajos Grupales — Fase 5 (export PDF/DOCX)
+
+Fixes durante auditoria (2026-04-14 al 2026-04-15):
+  018eae2 — fix: GroupDocs crash + CV embebido en UserProfile
+  5de6bb3 — fix: null-safety en 9 paginas
+  e979d61 — fix(collab): corregir ruta WebSocket
+  b9accf3 — fix(ws): accept WebSocket antes de close
+  4fa10c4 — fix(ws): SecurityHeadersMiddleware bloqueaba WebSocket
+  36468e2 — feat: rediseño editor estilo Google Docs
+  945d6ea — fix(deps): upgrade tiptap collaboration-cursor v2→v3
+  9bab5b3 — fix: remover CollaborationCursor incompatible
+  d0c0e49 — feat: Athena AI + limpieza modulos
+  2620817 — fix: 7 critical/high bugs (memory leak CollabEditor)
+  a5363ac — feat: Frontend TierGate
+
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================
+
+Este documento fue generado por Claude (Konni) el 2026-04-15 por peticion
+expresa de Cristian Gutierrez Lazcano (CEO de Conniku SpA) para que un
+especialista externo pueda analizar todo el trabajo realizado en el modulo
+Trabajos Grupales y diagnosticar cualquier problema.
+
+Cualquier duda sobre algun commit puede verificarse con:
+  git show <hash>        — ver diff completo
+  git log <hash> -1      — ver mensaje completo
+  git blame <archivo>    — ver linea por linea quien la escribio
