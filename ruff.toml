@@ -27,6 +27,13 @@ ignore = [
   "F541",   # f-string sin placeholders — cosmético
   "SIM105", # contextlib.suppress — preferencia de estilo
   "SIM114", # combine if branches — preferencia de estilo
+  "SIM102", # collapsible if — preferencia de estilo, legibilidad explícita
+  "SIM103", # needless bool — preferencia de estilo
+  "SIM108", # if-else vs ternary — preferencia de estilo, legibilidad
+  "SIM202", # negate-not-equal — preferencia de estilo
+  "E701",   # multiple statements on one line — estilo compacto intencional
+  "E741",   # ambiguous variable name — falsos positivos en contexto matemático
+  "UP042",  # str+Enum → StrEnum — cambio de herencia con posibles side effects en serialización
   "I001",   # import sort — legacy, arreglar oportunísticamente
 ]
 
