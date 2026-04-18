@@ -40,7 +40,8 @@
         "support_chat": { "limit": 10, "window": "daily" },
         "daily_summary": true,
         "auto_tag": true,
-        "bio_generate": { "limit": 1, "window": "total" }
+        "bio_generate": { "limit": 1, "window": "total" },
+        "athena_workspace": { "limit": 3, "window": "daily" }
       },
       "features": {
         "can_export": false,
@@ -103,7 +104,8 @@
         "support_chat": { "limit": -1, "window": "daily" },
         "daily_summary": true,
         "auto_tag": true,
-        "bio_generate": { "limit": -1, "window": "total" }
+        "bio_generate": { "limit": -1, "window": "total" },
+        "athena_workspace": { "limit": -1, "window": "daily" }
       },
       "features": {
         "can_export": true,

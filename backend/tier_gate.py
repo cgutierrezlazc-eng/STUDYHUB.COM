@@ -225,6 +225,7 @@ _UPGRADE_MESSAGES = {
     "biblioteca_clone": "Clonar a asignatura disponible con Conniku PRO",
     "konni_coach": "Konni Coach ilimitado con Conniku PRO",
     "support_chat": "Has alcanzado el limite de mensajes de soporte hoy",
+    "athena_workspace": "Has alcanzado tu cupo diario de Athena. Mejora a Conniku Pro para interacciones ilimitadas.",
 }
 
 
