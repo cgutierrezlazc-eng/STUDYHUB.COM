@@ -121,7 +121,7 @@ echo ""
 echo "${BOLD}[3/3] Sintaxis de archivos críticos (JSON, bash, yaml)${NC}"
 
 SYNTAX_ERRORS=0
-STAGED_CRITICAL=$(git diff --cached --name-only | grep -E '\.(json|sh|yml|yaml)$')
+STAGED_CRITICAL=$(git diff --cached --name-only | grep -E '\.(json|sh|yml|yaml)$' || true)
 
 if [ -z "$STAGED_CRITICAL" ]; then
     echo "${GREEN}    OK: ningún archivo crítico en este commit${NC}"
