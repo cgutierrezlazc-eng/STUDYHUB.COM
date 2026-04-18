@@ -111,7 +111,7 @@ class AIEngine:
 
             if results and results['documents']:
                 context_parts = []
-                for doc, meta in zip(results['documents'][0], results['metadatas'][0]):
+                for doc, meta in zip(results['documents'][0], results['metadatas'][0], strict=True):
                     context_parts.append(f"[Fuente: {meta['filename']}]\n{doc}")
                 return "\n\n---\n\n".join(context_parts)
         except Exception:
@@ -662,14 +662,14 @@ Asegúrate de que el HTML en htmlContent sea completo y pueda renderizarse direc
             if results and results['documents']:
                 doc_chunks = []
                 for doc_content, doc_meta, doc_cid in zip(
-                    results['documents'], results['metadatas'], results['ids']
+                    results['documents'], results['metadatas'], results['ids'],
+                    strict=True,
                 ):
                     if doc_cid.startswith(f"{doc_id}_chunk_"):
                         doc_chunks.append((doc_meta.get('chunk_index', 0), doc_content, doc_meta.get('filename', '')))
 
                 doc_chunks.sort(key=lambda x: x[0])
                 if doc_chunks:
-                    filename = doc_chunks[0][2]
                     doc_text = "\n".join([chunk[1] for chunk in doc_chunks])
         except Exception:
             pass

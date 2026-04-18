@@ -209,7 +209,7 @@ def calculate_income_tax(taxable_income_clp: int) -> int:
 
     income_in_utm = taxable_income_clp / UTM_VALUE
 
-    for lower, upper, rate, deductible in TAX_BRACKETS:
+    for _lower, upper, rate, deductible in TAX_BRACKETS:
         if income_in_utm <= upper:
             tax_utm = income_in_utm * rate - deductible
             return max(0, int(tax_utm * UTM_VALUE))

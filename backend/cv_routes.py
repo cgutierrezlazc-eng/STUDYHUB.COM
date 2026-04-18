@@ -211,7 +211,6 @@ def parse_cv_sections_heuristic(text: str) -> dict:
 
     # Build experience as list of entries
     if section_content["experience"]:
-        raw_exp = "\n".join(section_content["experience"])
         result["experience"] = [{
             "company": "",
             "title": "",
@@ -417,8 +416,8 @@ def generate_cv_pdf(cv_data: dict, user_data: dict) -> bytes:
         ACCENT = HexColor("#2563EB")      # Conniku blue
         ACCENT_SOFT = HexColor("#DBEAFE") # light blue bg
         DIVIDER = HexColor("#E2E8F0")     # thin lines
-        WHITE = HexColor("#FFFFFF")
-        BG_HEADER = HexColor("#F8FAFC")   # subtle header bg
+        _WHITE = HexColor("#FFFFFF")
+        _BG_HEADER = HexColor("#F8FAFC")   # subtle header bg
 
         # ── Margins ──
         ML = 50   # margin left

@@ -33,11 +33,11 @@ class ConnectionManager:
 
     def __init__(self):
         # user_id -> set of WebSocket connections (supports multiple tabs/devices)
-        self.active_connections: Dict[str, Set[WebSocket]] = {}
+        self.active_connections: dict[str, set[WebSocket]] = {}
         # conversation_id -> set of user_ids currently subscribed
-        self.conversation_subscribers: Dict[str, Set[str]] = {}
+        self.conversation_subscribers: dict[str, set[str]] = {}
         # websocket -> user_id reverse lookup
-        self.ws_to_user: Dict[WebSocket, str] = {}
+        self.ws_to_user: dict[WebSocket, str] = {}
 
     async def authenticate(self, websocket: WebSocket, token: str) -> Optional[str]:
         """Validate JWT token and return user_id."""

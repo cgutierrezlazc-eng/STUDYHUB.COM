@@ -481,7 +481,7 @@ class TutorApplyRequest(BaseModel):
     career: str = ""
     experience_years: int = 0
     bio: str = ""
-    specialties: List[str] = []
+    specialties: list[str] = []
     individual_rate: float = 0
     group_2_rate: float = 0
     group_3_rate: float = 0
@@ -501,7 +501,7 @@ class TutorProfileUpdate(BaseModel):
     career: Optional[str] = None
     experience_years: Optional[int] = None
     bio: Optional[str] = None
-    specialties: Optional[List[str]] = None
+    specialties: Optional[list[str]] = None
     individual_rate: Optional[float] = None
     group_2_rate: Optional[float] = None
     group_3_rate: Optional[float] = None
@@ -541,7 +541,7 @@ class ProgramCreateRequest(BaseModel):
     materials_description: str = ""
     max_students: int = Field(default=1, ge=1, le=5)
     price_per_student: Optional[float] = None
-    sessions: List[dict]  # [{"title": "Sesion 1: Intro", "description": "...", "scheduled_at": "...", "duration_minutes": 60, "zoom_link": ""}]
+    sessions: list[dict]  # [{"title": "Sesion 1: Intro", "description": "...", "scheduled_at": "...", "duration_minutes": 60, "zoom_link": ""}]
 
 
 class ClassRateRequest(BaseModel):
@@ -585,7 +585,7 @@ class AvailabilitySlot(BaseModel):
 
 
 class SetAvailabilityRequest(BaseModel):
-    slots: List[AvailabilitySlot]
+    slots: list[AvailabilitySlot]
 
 
 class BlockedDateRequest(BaseModel):
@@ -602,7 +602,7 @@ class OwnerTutorApplyRequest(BaseModel):
     professional_title: str = "Fundador Conniku"
     institution: str = ""
     bio: str = ""
-    specialties: List[str] = []
+    specialties: list[str] = []
 
 
 VALID_TUTOR_STATUS = {"pending_review", "approved", "rejected", "suspended", "appealing"}
@@ -2088,7 +2088,6 @@ def report_tutor_noshow(
         raise HTTPException(status_code=403, detail="No estas inscrito en esta clase")
 
     # Class must be past its scheduled time to report no-show
-    class_end = cls.scheduled_at + timedelta(minutes=cls.duration_minutes)
     if datetime.utcnow() < cls.scheduled_at:
         raise HTTPException(status_code=400, detail="La clase aun no ha comenzado")
 

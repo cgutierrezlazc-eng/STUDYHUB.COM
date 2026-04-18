@@ -85,7 +85,7 @@ def join_room(room_id: str, user: User = Depends(get_current_user), db: Session 
     return {"meetingUrl": room.meeting_url, "currentParticipants": room.current_participants}
 
 @router.post("/{room_id}/leave")
-def leave_room(room_id: str, data: dict = {}, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def leave_room(room_id: str, data: dict = None, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     room = db.query(StudyRoom).filter(StudyRoom.id == room_id).first()
     p = db.query(StudyRoomParticipant).filter(
         StudyRoomParticipant.room_id == room_id, StudyRoomParticipant.user_id == user.id

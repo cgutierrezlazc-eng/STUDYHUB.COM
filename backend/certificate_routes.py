@@ -127,11 +127,13 @@ def generate_certificate_for_user(user: User, course_id: str, course_name: str,
 @router.post("/generate/{course_id}")
 def generate_certificate(
     course_id: str,
-    data: dict = {},
+    data: dict = None,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Generate a certificate for a completed course."""
+    if data is None:
+        data = {}
     course_name = data.get("courseName", "Curso")
     course_area = data.get("courseArea", "default")
     hours = data.get("hours", 0)
