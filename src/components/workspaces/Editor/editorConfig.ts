@@ -2,7 +2,17 @@
  * Configuración base del editor Lexical para Workspaces.
  * Lista de nodos, namespace y handler de errores.
  *
- * Bloque 2a Fundación. Sin Math, APA, TOC ni Yjs (son 2b/2c/2d).
+ * Bloque 2a Fundación. Sin Math, APA, TOC (son 2c/2d).
+ *
+ * NOTA DE COLABORACIÓN (bloque 2b):
+ * Cuando el editor se usa con Yjs (CollaborationPlugin), el namespace debe
+ * ser único por documento: "conniku-ws-{docId}".
+ * Yjs usa el namespace como clave del mapa de documentos (yjsDocMap).
+ * Si dos documentos usan el mismo namespace en tabs distintas, interferirán.
+ * Ver decisión D7 del plan 2b y riesgo 5.7.
+ *
+ * Uso correcto en WorkspaceEditor.tsx:
+ *   namespace={`conniku-ws-${id}`}
  */
 
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';

@@ -3,7 +3,11 @@ Workspaces v2 — Redacción Colaborativa de Documentos Académicos.
 
 Endpoints REST del módulo Workspaces. Prefijo /workspaces.
 En sub-bloque 2a: CRUD de workspaces, miembros y versiones.
-No incluye: Yjs WS (2b), Athena (2c), export/rúbrica/math/share (2d).
+En sub-bloque 2b: chat grupal (GET/POST/DELETE /chat/messages),
+    contribution metric (PATCH /members/{id}/contribution),
+    content_yjs en PatchWorkspaceRequest.
+No incluye: Yjs WS (2b, en workspaces_ws.py), Athena (2c),
+    export/rúbrica/math/share (2d).
 
 Patrón: sigue el estilo de collab_routes.py con _check_access helper.
 """
@@ -18,6 +22,7 @@ from database import (
     User,
     WorkspaceDocument,
     WorkspaceMember,
+    WorkspaceMessage,
     WorkspaceVersion,
     gen_id,
     get_db,
@@ -147,6 +152,20 @@ def _version_to_dict(v: WorkspaceVersion) -> dict:
     }
 
 
+def _message_to_dict(m: WorkspaceMessage) -> dict:
+    """Serializa WorkspaceMessage a dict JSON.
+
+    Patrón consistente con _member_to_dict y _version_to_dict.
+    """
+    return {
+        "id": m.id,
+        "workspaceId": m.workspace_id,
+        "userId": m.user_id,
+        "content": m.content,
+        "createdAt": m.created_at.isoformat() if m.created_at else "",
+    }
+
+
 # ─── Pydantic schemas ─────────────────────────────────────────────
 #
 # Config:
@@ -187,6 +206,9 @@ class PatchWorkspaceRequest(_WorkspaceBaseRequest):
     options: Optional[str] = None
     cover_data: Optional[str] = None
     is_completed: Optional[bool] = None
+    # content_yjs: snapshot Yjs base64 persistido desde el cliente (sub-bloque 2b).
+    # Pass-through opaco — el servidor no decodifica ni valida el contenido binario.
+    content_yjs: Optional[str] = None
 
 
 class AddMemberRequest(BaseModel):
@@ -201,6 +223,16 @@ class PatchMemberRequest(BaseModel):
 class CreateVersionRequest(_WorkspaceBaseRequest):
     content_yjs: str
     label: Optional[str] = Field(None, max_length=100)
+
+
+class CreateMessageRequest(BaseModel):
+    # min_length no se usa aquí para retornar 400 (no 422) en mensajes vacíos.
+    # La validación de contenido vacío se hace en el handler.
+    content: str = Field(..., max_length=4000)
+
+
+class ContributionDeltaRequest(BaseModel):
+    delta_chars: int = Field(..., ge=0)
 
 
 # ─── CRUD de workspaces ───────────────────────────────────────────
@@ -416,6 +448,9 @@ def patch_workspace(
         doc.cover_data = data.cover_data
     if data.is_completed is not None:
         doc.is_completed = data.is_completed
+    if data.content_yjs is not None:
+        # Snapshot Yjs base64 — pass-through, sin validación del contenido binario.
+        doc.content_yjs = data.content_yjs
 
     doc.updated_at = datetime.utcnow()
     db.commit()
@@ -646,3 +681,159 @@ def restore_version(
 
     members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc.id).all()
     return _workspace_to_dict(doc, [_member_to_dict(m) for m in members])
+
+
+# ─── Chat grupal ──────────────────────────────────────────────────
+#
+# Sub-bloque 2b. Historia completa visible para todos los miembros
+# (decisión §1.2.1 #2 — no filtrar por joined_at).
+
+
+@router.get("/{doc_id}/chat/messages")
+def list_chat_messages(
+    doc_id: str,
+    limit: int = 50,
+    before: Optional[str] = None,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Lista los mensajes del chat grupal del workspace.
+
+    Paginación: ``limit`` (máx 50) y ``before`` (ID del mensaje, retorna
+    los anteriores a ese mensaje en orden descendente de creación).
+    Historia completa visible para todos los miembros (decisión 2b §1.2.1 #2).
+    """
+    _check_access(doc_id, user, db)
+
+    query = db.query(WorkspaceMessage).filter(WorkspaceMessage.workspace_id == doc_id)
+
+    if before:
+        pivot = db.query(WorkspaceMessage).filter(WorkspaceMessage.id == before).first()
+        if pivot and pivot.created_at:
+            query = query.filter(WorkspaceMessage.created_at < pivot.created_at)
+
+    messages = query.order_by(WorkspaceMessage.created_at.desc()).limit(min(limit, 50)).all()
+    # Retornar en orden cronológico ascendente para la UI
+    return {"messages": [_message_to_dict(m) for m in reversed(messages)]}
+
+
+@router.post("/{doc_id}/chat/messages", status_code=201)
+def create_chat_message(
+    doc_id: str,
+    data: CreateMessageRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Envía un mensaje al chat grupal del workspace.
+
+    Requiere ser owner o miembro (cualquier rol). Valida que el contenido
+    no esté vacío (ya validado por Pydantic min_length=1, pero también
+    rejected por strip).
+    """
+    _check_access(doc_id, user, db)
+
+    content = data.content.strip()
+    if not content:
+        raise HTTPException(400, "El contenido del mensaje no puede estar vacío")
+
+    msg = WorkspaceMessage(
+        workspace_id=doc_id,
+        user_id=user.id,
+        content=content,
+        created_at=datetime.utcnow(),
+    )
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    logger.info(
+        "Chat message created: doc=%s user=%s msg=%s",
+        doc_id,
+        user.id,
+        msg.id,
+    )
+    return _message_to_dict(msg)
+
+
+@router.delete("/{doc_id}/chat/messages/{msg_id}")
+def delete_chat_message(
+    doc_id: str,
+    msg_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Elimina un mensaje del chat grupal.
+
+    Puede eliminar:
+    - El autor del mensaje.
+    - El owner del workspace.
+    Cualquier otro miembro recibe 403.
+    """
+    # Verificar acceso al workspace (cualquier rol)
+    doc, _ = _check_access(doc_id, user, db)
+
+    msg = (
+        db.query(WorkspaceMessage)
+        .filter(
+            WorkspaceMessage.id == msg_id,
+            WorkspaceMessage.workspace_id == doc_id,
+        )
+        .first()
+    )
+    if not msg:
+        raise HTTPException(404, "Mensaje no encontrado")
+
+    is_msg_author = msg.user_id == user.id
+    is_workspace_owner = doc.owner_id == user.id
+
+    if not is_msg_author and not is_workspace_owner:
+        raise HTTPException(403, "Solo el autor del mensaje o el owner del workspace pueden eliminarlo")
+
+    db.delete(msg)
+    db.commit()
+    return {"ok": True}
+
+
+# ─── Contribution metric ──────────────────────────────────────────
+#
+# Sub-bloque 2b. PATCH periódico desde cliente cada 30s (decisión D6).
+
+
+@router.patch("/{doc_id}/members/{member_id}/contribution")
+def patch_member_contribution(
+    doc_id: str,
+    member_id: str,
+    data: ContributionDeltaRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Incrementa el contador de caracteres contribuidos por un miembro.
+
+    Solo el usuario dueño del ``member_id`` puede actualizar su propio
+    contador (validación user.id == member.user_id, 403 en caso contrario).
+    ``delta_chars`` debe ser no negativo; 0 se acepta como no-op válido.
+    """
+    _check_access(doc_id, user, db)
+
+    member = (
+        db.query(WorkspaceMember)
+        .filter(
+            WorkspaceMember.id == member_id,
+            WorkspaceMember.workspace_id == doc_id,
+        )
+        .first()
+    )
+    if not member:
+        raise HTTPException(404, "Miembro no encontrado")
+
+    if member.user_id != user.id:
+        raise HTTPException(403, "Solo puedes actualizar tu propia contribución")
+
+    member.chars_contributed = (member.chars_contributed or 0) + data.delta_chars
+    db.commit()
+    db.refresh(member)
+
+    return {
+        "id": member.id,
+        "charsContributed": member.chars_contributed,
+    }

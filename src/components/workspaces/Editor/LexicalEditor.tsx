@@ -1,9 +1,15 @@
 /**
  * Editor principal de Workspaces basado en Lexical (Meta).
- * Plugins activos en 2a: RichText, History, List, Link, AutoFocus, OnChange.
- * Sin Yjs (2b), sin Math/APA/TOC (2d), sin Athena (2c).
  *
- * Bloque 2a Fundación.
+ * Plugins activos en 2a: RichText, History, List, Link, AutoFocus, OnChange.
+ * En 2b: si collaborationConfig está presente, History se reemplaza por
+ * CollaborationPlugin de @lexical/yjs (que tiene su propio UndoManager),
+ * y se agrega CursorPresence para cursores remotos "Figma-style".
+ *
+ * La prop collaborationConfig es opcional: sin ella, el editor funciona
+ * exactamente igual que en 2a (sin breaking changes).
+ *
+ * Bloque 2b Colaboración.
  */
 
 import React from 'react';
@@ -19,6 +25,25 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import type { EditorState } from 'lexical';
 import { getEditorConfig } from './editorConfig';
 import Toolbar from './Toolbar';
+import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
+import type { Provider } from '@lexical/yjs';
+import type { WebsocketProvider } from 'y-websocket';
+import type * as Y from 'yjs';
+import CursorPresence from './CursorPresence';
+
+// ─── Tipos de props ───────────────────────────────────────────────────────────
+
+export interface CollaborationConfig {
+  ydoc: Y.Doc;
+  provider: WebsocketProvider;
+  awareness: WebsocketProvider['awareness'];
+  userMeta: {
+    userId: string;
+    name: string;
+    color?: string;
+    avatar?: string;
+  };
+}
 
 interface LexicalEditorProps {
   /** Callback invocado en cada cambio del estado del editor */
@@ -29,10 +54,20 @@ interface LexicalEditorProps {
   placeholder?: string;
   /** Clase CSS adicional para el wrapper externo */
   className?: string;
-  /** Namespace del editor (útil para múltiples instancias) */
+  /**
+   * Namespace del editor.
+   * En modo colaboración debe ser único por doc: "conniku-ws-{docId}".
+   * Si no se pasa, se usa 'conniku-workspace' (modo solo 2a).
+   */
   namespace?: string;
   /** Si es true, el editor es de solo lectura */
   readOnly?: boolean;
+  /**
+   * Configuración de colaboración Yjs (bloque 2b).
+   * Si está presente, se usa CollaborationPlugin y CursorPresence.
+   * Si es undefined, el editor funciona como en 2a.
+   */
+  collaborationConfig?: CollaborationConfig;
 }
 
 export default function LexicalEditor({
@@ -41,11 +76,23 @@ export default function LexicalEditor({
   className = '',
   namespace = 'conniku-workspace',
   readOnly = false,
+  collaborationConfig,
 }: LexicalEditorProps) {
   const initialConfig = {
     ...getEditorConfig(namespace),
     editable: !readOnly,
   };
+
+  const isCollaborative = !!collaborationConfig;
+
+  // ── providerFactory para CollaborationPlugin ──────────────────────
+  function providerFactory(_id: string, yjsDocMap: Map<string, Y.Doc>): Provider {
+    if (!collaborationConfig) {
+      throw new Error('collaborationConfig es requerido en modo colaborativo');
+    }
+    yjsDocMap.set(_id, collaborationConfig.ydoc);
+    return collaborationConfig.provider as unknown as Provider;
+  }
 
   return (
     <LexicalComposer initialConfig={initialConfig}>
@@ -63,7 +110,27 @@ export default function LexicalEditor({
             }
             ErrorBoundary={LexicalErrorBoundary}
           />
-          <HistoryPlugin />
+
+          {/* HistoryPlugin solo en modo no-colaborativo.
+              En modo colaborativo, @lexical/yjs instancia su propio UndoManager. */}
+          {!isCollaborative && <HistoryPlugin />}
+
+          {/* CollaborationPlugin en modo colaborativo */}
+          {isCollaborative && collaborationConfig && (
+            <CollaborationPlugin
+              id={namespace}
+              providerFactory={providerFactory}
+              username={collaborationConfig.userMeta.name}
+              cursorColor={collaborationConfig.userMeta.color ?? '#A855F7'}
+              shouldBootstrap={false}
+            />
+          )}
+
+          {/* Cursores remotos "Figma-style" */}
+          {isCollaborative && collaborationConfig && (
+            <CursorPresence awareness={collaborationConfig.awareness} />
+          )}
+
           <ListPlugin />
           <LinkPlugin />
           <AutoFocusPlugin />

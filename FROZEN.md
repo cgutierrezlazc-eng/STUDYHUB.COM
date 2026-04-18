@@ -32,3 +32,4 @@
 | `shared/legal_texts.py` | completo | 2026-04-18 | bloque-1-auth-edad: fuente de verdad del texto canónico + hash SHA-256. Editar requiere bump AGE_DECLARATION_VERSION y actualizar espejo .ts (test CI valida sincronía) |
 | `shared/legal_texts.ts` | completo | 2026-04-18 | bloque-1-auth-edad: espejo TypeScript del texto canónico. Hash hardcoded debe coincidir con shared/legal_texts.py |
 | `scripts/verify-legal-texts-sync.sh` | completo | 2026-04-18 | bloque-1-auth-edad: gate CI que valida sincronía hash Python↔TS. Si divergen, bloquea merge |
+| `backend/collab_ws.py` | completo | 2026-04-18 | bloque-2b: V1 Trabajos Grupales en producción. Referencia de patrón para workspaces_ws.py. Prohibido modificar mientras coexista con V2 Workspaces |

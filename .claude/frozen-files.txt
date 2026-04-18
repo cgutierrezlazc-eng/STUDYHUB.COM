@@ -2,7 +2,7 @@
 #
 # GENERADO AUTOMATICAMENTE - NO EDITAR DIRECTAMENTE
 #
-# Ultima regeneracion: 2026-04-18 03:53:21
+# Ultima regeneracion: 2026-04-18 12:31:56
 # Fuente: FROZEN.md (raiz del repo)
 # Regenerado por: .claude/scripts/regen-frozen-list.sh
 #
@@ -17,6 +17,7 @@
 
 .gitignore
 .husky/pre-commit
+backend/collab_ws.py
 backend/hr_routes.py
 package.json
 scripts/verify-legal-texts-sync.sh

@@ -77,6 +77,7 @@ from tutor_routes import router as tutor_router
 from video_routes import router as video_router
 from wellness_routes import router as wellness_router
 from workspaces_routes import router as workspaces_router
+from workspaces_ws import router as workspaces_ws_router
 from ws_routes import router as ws_router
 
 app = FastAPI(title="Conniku Backend", version="2.0.0")
@@ -306,6 +307,7 @@ app.include_router(extension_sync_router)
 app.include_router(ai_workflow_router)
 app.include_router(moderation_queue_router)
 app.include_router(workspaces_router)
+app.include_router(workspaces_ws_router)
 # app.include_router(payment_router)  # Stripe removed
 
 
