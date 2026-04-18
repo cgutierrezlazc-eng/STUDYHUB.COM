@@ -1,6 +1,6 @@
 # Pendientes del proyecto Conniku — maestro priorizado
 
-**Última actualización**: 2026-04-18 tras cierre del Bloque 1 auth+edad.
+**Última actualización**: 2026-04-18 tras Capa 5 sub-bloque 2b Workspaces.
 
 Este archivo consolida todos los pendientes conocidos para que Tori pueda
 presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
@@ -210,6 +210,20 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 ---
 
 ## 🆕 Módulos nuevos que Cristian quiere (fuera del Bloque 2 Workspaces)
+
+### Limpieza tier MAX legacy (bloque futuro previo a 2c Athena)
+- **Qué**: eliminar todas las referencias al string `"max"` en backend (config ya tiene solo `free` + `pro`/Conniku Pro)
+- **Ubicaciones**: `backend/server.py` (~6 `require_tier(user, "max")`), `backend/seed_ceo_profile.py:107`, `backend/tutor_contract.py:78`, `backend/migrations/add_workspaces_tables.sql:100`, `docs/plans/bloque-2-workspaces/plan-maestro.md:47,138`
+- **Origen**: confirmado por Cristian 2026-04-18 — el plan MAX ya no existe ni está considerado para futuro
+- **Decisión**: hacerlo como flujo-refactor dedicado antes de abrir Bloque 2c (Athena depende del tier system)
+- **Memoria**: `memory/project_tier_max_cleanup.md`
+
+### Sub-bloque 2b Workspaces — iter-2 post-deploy (baja prioridad)
+- **Origen**: hallazgos de code-reviewer Capa 2 + gap-finder Capa 5 del 2b
+- Los 3 CRÍTICOS (docId prefix, userId guest, freeze collab_ws) + 1 ALTO (VITE_API_URL) + los MODERADO/INFORMATIVO del code-reviewer fueron corregidos antes del deploy preview
+- Pendiente menor:
+  - Actualizar `docs/plans/bloque-2-workspaces/plan-maestro.md:47,138` para reemplazar "Free/PRO/MAX" → "Free/Conniku Pro" (parte del refactor tier MAX)
+  - Tests adicionales de producción real con dos navegadores abiertos simultáneamente (inspección humana Capa 6)
 
 ### Chat conversacional en Biblioteca
 - **Qué**: dentro de la página Biblioteca, un chat donde el usuario pregunta algo puntual
