@@ -1075,7 +1075,7 @@ PWA movil: Chrome > menu 3 puntos > Agregar a pantalla de inicio.
 === TERMINOS Y CONDICIONES (resumen para usuarios) ===
 Puedes responder preguntas sobre los terminos de Conniku con esta informacion:
 
-ELEGIBILIDAD: Debes ser mayor de 18 anos (o tener autorizacion del representante legal). Una sola cuenta por persona.
+ELEGIBILIDAD: Debes ser mayor de 18 anos. Una sola cuenta por persona. Conniku no permite cuentas de menores de edad.
 
 QUE ES CONNIKU: Empresa de tecnologia (Conniku SpA, Santiago, Chile). NO es institucion educativa acreditada por el Ministerio de Educacion. Los certificados emitidos son constancias de finalizacion interna, NO titulos academicos ni certificaciones oficiales.
 

@@ -13,10 +13,11 @@ from datetime import date, datetime, timedelta
 from typing import Optional
 
 import bcrypt
-from database import DATA_DIR, TutoringRequest, User, UserSession, gen_id, get_db
+from database import DATA_DIR, TutoringRequest, User, UserAgreement, UserSession, gen_id, get_db
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request, UploadFile
 from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
 from pydantic import BaseModel, EmailStr
+from shared.legal_texts import AGE_DECLARATION_HASH, AGE_DECLARATION_VERSION
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -58,6 +59,55 @@ def verify_password(password: str, stored: str) -> bool:
         salt, hashed = stored.split(':', 1)
         return hashlib.sha256(f"{salt}:{password}".encode()).hexdigest() == hashed
     return False
+
+
+# ─── Legal agreements (CLAUDE.md §Verificación de edad - Componente 3) ─
+
+def _get_client_ip(request: Request | None) -> str | None:
+    """Extrae IP del request respetando X-Forwarded-For (proxies tipo Render).
+
+    Toma la primera IP de la lista (la del cliente real), no la del último proxy.
+    """
+    if not request:
+        return None
+    xff = request.headers.get("x-forwarded-for", "")
+    if xff:
+        return xff.split(",")[0].strip()
+    if request.client and request.client.host:
+        return request.client.host
+    return None
+
+
+def record_age_declaration(
+    db: Session,
+    user_id: str,
+    request: Request | None,
+    user_timezone: str | None,
+    document_type: str = "age_declaration",
+    text_version: str = AGE_DECLARATION_VERSION,
+    text_version_hash: str = AGE_DECLARATION_HASH,
+) -> UserAgreement:
+    """Registra aceptación del checkbox declarativo de edad.
+
+    Crea una fila en user_agreements con los 7 campos probatorios exigidos
+    por CLAUDE.md §Componente 3 (timestamp UTC, zona horaria, IP, user-agent,
+    hash del texto aceptado, user_id, versión).
+
+    Debe llamarse DENTRO de la misma transacción que crea al User. El
+    commit lo ejecuta el caller.
+    """
+    agreement = UserAgreement(
+        user_id=user_id,
+        document_type=document_type,
+        text_version=text_version,
+        text_version_hash=text_version_hash,
+        accepted_at_utc=datetime.utcnow(),
+        user_timezone=user_timezone,
+        client_ip=_get_client_ip(request),
+        user_agent=request.headers.get("user-agent", "") if request else None,
+    )
+    db.add(agreement)
+    return agreement
 
 
 # ─── Username content moderation ───────────────────────────────
@@ -232,6 +282,13 @@ class RegisterRequest(BaseModel):
     avatar: str = ""
     username: str | None = None
     tos_accepted: bool = False
+    # Componente 2 de CLAUDE.md §Verificación de edad: checkbox declarativo de 5 puntos.
+    age_declaration_accepted: bool = False
+    # Hash SHA-256 hex del texto exacto que vio el usuario; debe coincidir con
+    # shared.legal_texts.AGE_DECLARATION_HASH o se rechaza (detecta tampering/cache stale).
+    accepted_text_version_hash: str = ""
+    # Zona horaria del cliente en el momento del registro (Intl.DateTimeFormat().resolvedOptions().timeZone).
+    user_timezone: str | None = None
     referral_code: str | None = None
     academic_status: str = "estudiante"
     graduation_status_year: int | None = None
@@ -415,13 +472,33 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
             today = date.today()
             age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
             if age < 18:
-                raise HTTPException(403, "Debes tener al menos 18 años para registrarte")
+                raise HTTPException(
+                    403,
+                    "Conniku es una plataforma exclusiva para personas mayores de 18 años. "
+                    "No podemos procesar tu registro.",
+                )
         except ValueError as exc:
             raise HTTPException(400, "Formato de fecha de nacimiento inválido (usar YYYY-MM-DD)") from exc
     else:
         raise HTTPException(400, "Fecha de nacimiento es obligatoria")
 
-    # TOS must be accepted
+    # Declaración de edad (checkbox de 5 puntos, CLAUDE.md §Componente 2).
+    # Dos validaciones independientes:
+    #   1. Checkbox marcado (age_declaration_accepted = True)
+    #   2. Hash del texto recibido coincide con el canónico (detecta tampering o cache stale)
+    if not req.age_declaration_accepted:
+        raise HTTPException(
+            400,
+            "Debes aceptar la declaración de edad para continuar con el registro.",
+        )
+    if req.accepted_text_version_hash != AGE_DECLARATION_HASH:
+        raise HTTPException(
+            400,
+            "La versión del texto aceptado no coincide. Recarga la página e intenta de nuevo.",
+        )
+
+    # TOS debe aceptarse (mantenido por compatibilidad con Subscription/UI legada;
+    # la fuente de verdad probatoria es la tabla user_agreements, no este boolean).
     if not req.tos_accepted:
         raise HTTPException(400, "Debes aceptar los términos de servicio")
 
@@ -502,6 +579,17 @@ def register(req: RegisterRequest, request: Request = None, db: Session = Depend
     )
 
     db.add(user)
+    db.flush()  # asegura user.id disponible sin soltar la transacción
+
+    # Registrar aceptación del checkbox declarativo de edad como evidencia probatoria
+    # (CLAUDE.md §Componente 3). Va en la misma transacción que la creación del user.
+    record_age_declaration(
+        db=db,
+        user_id=user.id,
+        request=request,
+        user_timezone=req.user_timezone,
+    )
+
     db.commit()
     db.refresh(user)
 
@@ -701,6 +789,13 @@ def login(req: LoginRequest, request: Request = None, db: Session = Depends(get_
 
 class GoogleAuthRequest(BaseModel):
     credential: str  # Google JWT token
+    # Campos opcionales para registro nuevo (CLAUDE.md §Componente 2).
+    # Solo requeridos cuando Google OAuth crea una cuenta nueva; usuarios
+    # existentes hacen login sin volver a pedirlos.
+    date_of_birth: str | None = None  # ISO YYYY-MM-DD
+    age_declaration_accepted: bool = False
+    accepted_text_version_hash: str = ""
+    user_timezone: str | None = None
 
 
 @router.post("/google")
@@ -745,7 +840,40 @@ def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = D
             user.avatar = avatar
         db.commit()
     else:
-        # New user — create account
+        # Nueva cuenta Google: exigir los mismos componentes de CLAUDE.md
+        # §Verificación de edad que el registro email+password. Si el cliente
+        # no los envía, devolvemos 403 con `requires_age_declaration` para que
+        # el frontend muestre el modal post-OAuth y reintente.
+        if (
+            not req.age_declaration_accepted
+            or not req.date_of_birth
+            or req.accepted_text_version_hash != AGE_DECLARATION_HASH
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "requires_age_declaration": True,
+                    "message": (
+                        "Para crear una cuenta con Google debes confirmar tu fecha de "
+                        "nacimiento y aceptar la declaración de edad."
+                    ),
+                },
+            )
+
+        # Validar edad 18+ con fecha enviada por el cliente.
+        try:
+            birth = date.fromisoformat(req.date_of_birth)
+            today = date.today()
+            age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
+        except ValueError as exc:
+            raise HTTPException(400, "Formato de fecha de nacimiento inválido (usar YYYY-MM-DD)") from exc
+        if age < 18:
+            raise HTTPException(
+                403,
+                "Conniku es una plataforma exclusiva para personas mayores de 18 años. "
+                "No podemos procesar tu registro.",
+            )
+
         username = generate_username(first_name, db)
         user = User(
             id=gen_id(),
@@ -763,7 +891,7 @@ def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = D
             career="",
             semester=1,
             phone="",
-            birth_date="",
+            birth_date=req.date_of_birth,
             bio="",
             provider="google",
             email_verified=True,  # Google already verified the email
@@ -782,6 +910,16 @@ def google_auth(req: GoogleAuthRequest, request: Request = None, db: Session = D
             trial_started_at=datetime.utcnow(),
         )
         db.add(user)
+        db.flush()
+
+        # Registrar aceptación del checkbox declarativo (evidencia probatoria).
+        record_age_declaration(
+            db=db,
+            user_id=user.id,
+            request=request,
+            user_timezone=req.user_timezone,
+        )
+
         db.commit()
         db.refresh(user)
 

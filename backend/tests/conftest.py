@@ -18,10 +18,11 @@ for _path in (_BACKEND_DIR, _REPO_ROOT):
     if _path not in sys.path:
         sys.path.insert(0, _path)
 
-# Forzar que el módulo database use SQLite in-memory para los tests.
-# Debe establecerse ANTES de importar database para que la variable de entorno
-# sea leída al construir el engine.
-os.environ["DATABASE_URL"] = "sqlite:///:memory:"
+# NO forzar DATABASE_URL: database.py tiene una rama que aplica parámetros
+# específicos de Postgres (pool_size, max_overflow) cuando DATABASE_URL está
+# set, y eso revienta con SQLite. Dejamos DATABASE_URL unset para que use
+# la rama SQLite local, y los fixtures crean su propio engine in-memory.
+os.environ.pop("DATABASE_URL", None)
 os.environ.setdefault("JWT_SECRET", "test-secret-do-not-use-in-production")
 os.environ.setdefault("OWNER_PASSWORD", "test-owner-password")
 os.environ.setdefault("CORS_ORIGINS", "http://localhost:5173")
@@ -58,24 +59,36 @@ def db_session() -> Generator[Session, None, None]:
 
 @pytest.fixture
 def test_user_factory(db_session: Session):
-    """Factory para crear usuarios de prueba."""
+    """Factory para crear usuarios de prueba.
+
+    Usa campos mínimos requeridos por el modelo User actual: email, username,
+    user_number, first_name, last_name. Los demás campos toman defaults de la
+    definición del modelo.
+    """
     from database import User  # type: ignore
 
     created: list[User] = []
+    counter = {"n": 1000}  # base para user_number único
 
     def _create(
         email: str = "test@conniku.com",
-        name: str = "Test User",
-        date_of_birth: datetime | None = None,
+        first_name: str = "Test",
+        last_name: str = "User",
+        birth_date: str = "2000-01-01",
         is_admin: bool = False,
     ) -> User:
+        counter["n"] += 1
+        username_slug = email.split("@")[0].replace(".", "").replace("+", "")[:40]
         user = User(
             email=email,
-            name=name,
+            username=username_slug + str(counter["n"]),
+            user_number=counter["n"],
             password_hash="$2b$04$test.hash.placeholder",  # bcrypt dummy
-            date_of_birth=date_of_birth or datetime(2000, 1, 1, tzinfo=UTC),
+            first_name=first_name,
+            last_name=last_name,
+            birth_date=birth_date,
             is_admin=is_admin,
-            created_at=datetime.now(UTC),
+            created_at=datetime.now(UTC).replace(tzinfo=None),
         )
         db_session.add(user)
         db_session.commit()
@@ -89,4 +102,7 @@ def test_user_factory(db_session: Session):
     for user in created:
         if user in db_session:
             db_session.delete(user)
-    db_session.commit()
+    try:
+        db_session.commit()
+    except Exception:
+        db_session.rollback()
