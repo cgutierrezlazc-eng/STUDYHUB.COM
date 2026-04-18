@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<title>02 · Editor principal — 3 zonas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0F1419;
+  --bg-elevated: #161C23;
+  --bg-card: #1A2028;
+  --bg-hover: #222A34;
+  --bg-paper: #FFFEFB;
+  --border: #232B36;
+  --border-subtle: #1C232B;
+  --text: #E8EDF3;
+  --text-muted: #8B95A4;
+  --text-dim: #525E6E;
+  --accent: #2D62C8;
+  --accent-soft: rgba(45,98,200,0.12);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --purple: #A855F7;
+  --pink: #EC4899;
+  --cyan: #06B6D4;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+
+  --user-color: #A855F7; /* usuario actual: morado */
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: 'ss01', 'cv11';
+}
+
+.back { position: fixed; top: 14px; left: 14px; z-index: 1000; font-family: var(--mono); font-size: 10px; color: var(--text-dim); text-decoration: none; padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-elevated); }
+
+/* ── App ── */
+.app { display: grid; grid-template-rows: 52px 1fr; height: 100vh; }
+
+/* ── Topbar ── */
+.topbar { display: flex; align-items: center; padding: 0 20px; background: var(--bg-elevated); border-bottom: 1px solid var(--border-subtle); gap: 16px; }
+.topbar-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.back-link { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 7px; color: var(--text-muted); cursor: pointer; }
+.back-link:hover { background: var(--bg-hover); color: var(--text); }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--text-muted); }
+.breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb .sep { color: var(--text-dim); }
+.doc-title-top { font-family: var(--serif); font-size: 14.5px; font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+.star-btn { color: var(--warning); cursor: pointer; font-size: 14px; }
+.save-indicator { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10.5px; color: var(--text-dim); }
+.save-indicator::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+.topbar-center { display: flex; gap: 2px; }
+.mode-btn { padding: 6px 12px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 7px; font-size: 12px; font-family: var(--sans); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.mode-btn:hover { background: var(--bg-hover); color: var(--text); }
+.mode-btn.active { background: var(--accent-soft); color: var(--text); border-color: rgba(45,98,200,0.3); }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.collab-presence { display: flex; align-items: center; }
+.presence-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--bg-elevated); display: grid; place-items: center; font-size: 11px; font-weight: 600; color: white; margin-left: -6px; position: relative; cursor: pointer; }
+.presence-dot:first-child { margin-left: 0; }
+.presence-dot::after { content: ''; position: absolute; bottom: -1px; right: -1px; width: 8px; height: 8px; border-radius: 50%; background: var(--success); border: 2px solid var(--bg-elevated); }
+.presence-dot.inactive::after { background: var(--text-dim); }
+.btn-share { padding: 7px 14px; background: var(--accent); color: white; border: none; border-radius: 7px; font-family: var(--sans); font-weight: 500; font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.btn-share:hover { background: #3B75E0; }
+.btn-menu { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; color: var(--text-muted); cursor: pointer; }
+.btn-menu:hover { background: var(--bg-hover); color: var(--text); }
+
+/* ── Main body ── */
+.body { display: grid; grid-template-columns: 260px 1fr 360px; height: calc(100vh - 52px); }
+
+/* ── Sidebar left (TOC + Miembros + Rúbrica) ── */
+.sidebar-left { background: var(--bg); border-right: 1px solid var(--border-subtle); overflow-y: auto; padding: 20px 4px 20px 20px; }
+.panel { margin-bottom: 26px; }
+.panel-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.panel-head h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+.panel-head .action { font-size: 11px; color: var(--text-dim); cursor: pointer; }
+.panel-head .action:hover { color: var(--text); }
+
+/* TOC */
+.toc-item { padding: 5px 10px; font-size: 12.5px; color: var(--text-muted); cursor: pointer; border-radius: 5px; position: relative; border-left: 2px solid transparent; }
+.toc-item:hover { color: var(--text); background: var(--bg-hover); }
+.toc-item.level-1 { padding-left: 10px; font-weight: 500; color: var(--text); }
+.toc-item.level-2 { padding-left: 22px; }
+.toc-item.level-3 { padding-left: 34px; font-size: 11.5px; }
+.toc-item.active { background: var(--accent-soft); color: var(--text); border-left-color: var(--accent); }
+
+/* Members */
+.member-row { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 7px; cursor: pointer; }
+.member-row:hover { background: var(--bg-hover); }
+.member-avatar { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 600; color: white; flex-shrink: 0; }
+.member-info { flex: 1; min-width: 0; }
+.member-name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-contrib { font-family: var(--mono); font-size: 9.5px; color: var(--text-dim); }
+.contrib-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 3px; overflow: hidden; position: relative; }
+.contrib-bar-fill { height: 100%; border-radius: 2px; }
+.member-role { font-family: var(--mono); font-size: 9px; color: var(--text-dim); padding: 1px 5px; border: 1px solid var(--border); border-radius: 3px; letter-spacing: 0.03em; }
+
+/* Rubric */
+.rubric-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; position: relative; }
+.rubric-item:hover { border-color: var(--accent); }
+.rubric-item.done { background: rgba(16,185,129,0.05); border-color: rgba(16,185,129,0.3); }
+.rubric-item.partial { background: rgba(245,158,11,0.04); border-color: rgba(245,158,11,0.3); }
+.rubric-check { font-size: 14px; margin-right: 8px; vertical-align: middle; display: inline-block; width: 16px; }
+.rubric-item.done .rubric-check { color: var(--success); }
+.rubric-item.partial .rubric-check { color: var(--warning); }
+.rubric-item.pending .rubric-check { color: var(--text-dim); }
+.rubric-text { font-size: 11.5px; color: var(--text); line-height: 1.4; display: inline; }
+.rubric-points { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 6px; display: block; padding-left: 24px; }
+
+.rubric-progress { padding: 12px; background: var(--bg-elevated); border-radius: 8px; margin-bottom: 12px; }
+.rubric-progress-text { font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
+.rubric-progress-text strong { color: var(--success); }
+.rubric-progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.rubric-progress-fill { height: 100%; background: linear-gradient(90deg, var(--success) 0%, #34D399 100%); width: 65%; border-radius: 3px; }
+
+/* ── Document area (center) ── */
+.doc-area { background: #2a3038; overflow-y: auto; padding: 32px 48px 200px; position: relative; }
+.doc-area::before { content: ''; position: fixed; top: 52px; left: 260px; right: 360px; height: 40px; background: linear-gradient(to bottom, #2a3038, transparent); z-index: 5; pointer-events: none; }
+
+.floating-toolbar {
+  position: sticky; top: 12px; z-index: 10;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  display: flex; gap: 2px; align-items: center;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+  width: fit-content;
+  margin: 0 auto 24px;
+}
+.tb-btn { padding: 6px 10px; background: transparent; border: none; color: var(--text-muted); border-radius: 6px; font-family: var(--sans); font-size: 12.5px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.tb-btn:hover { background: var(--bg-hover); color: var(--text); }
+.tb-btn.active { background: var(--accent-soft); color: var(--text); }
+.tb-sep { width: 1px; height: 18px; background: var(--border); margin: 0 4px; }
+.tb-select { padding: 6px 10px; background: transparent; border: none; color: var(--text-muted); border-radius: 6px; font-family: var(--sans); font-size: 12.5px; cursor: pointer; }
+.tb-select:hover { background: var(--bg-hover); color: var(--text); }
+
+/* Paper */
+.paper {
+  background: var(--bg-paper);
+  color: #1a1a1a;
+  max-width: 816px; /* tamaño carta */
+  margin: 0 auto;
+  padding: 72px 96px 96px; /* 2.54cm margins approx */
+  box-shadow: 0 30px 80px -20px rgba(0,0,0,0.6);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 12pt;
+  line-height: 2.0;
+  min-height: 80vh;
+  position: relative;
+}
+
+.page-number { position: absolute; top: 24px; right: 96px; font-family: var(--mono); font-size: 10pt; color: #999; }
+
+.paper h1 { font-family: 'Times New Roman', serif; font-size: 14pt; font-weight: 700; text-align: center; margin: 0 0 24px; color: #000; line-height: 1.4; }
+.paper h2 { font-family: 'Times New Roman', serif; font-size: 13pt; font-weight: 700; text-align: left; margin: 36px 0 16px; color: #000; }
+.paper p { margin: 0 0 0; text-indent: 1.27cm; color: #1a1a1a; }
+.paper p + p { margin-top: 0; }
+.paper p.no-indent { text-indent: 0; }
+.paper p.author { text-align: center; text-indent: 0; margin: 0 0 8px; font-weight: 400; }
+.paper p.institution { text-align: center; text-indent: 0; margin: 0 0 48px; }
+
+/* Collaborative cursor (Figma-style) */
+.collab-cursor {
+  position: absolute;
+  pointer-events: none;
+  width: 2px;
+  height: 24px;
+  z-index: 3;
+}
+.collab-cursor::after {
+  content: attr(data-user);
+  position: absolute;
+  top: -22px;
+  left: -2px;
+  background: var(--cursor-color);
+  color: white;
+  font-family: var(--sans);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px 4px 4px 0;
+  white-space: nowrap;
+}
+.cursor-maria { --cursor-color: #10B981; background: #10B981; top: 320px; left: 280px; }
+.cursor-juan { --cursor-color: #F59E0B; background: #F59E0B; top: 540px; left: 400px; }
+
+/* Highlighted selection (Athena analyzed) */
+.athena-highlight {
+  background: rgba(45,98,200,0.15);
+  border-bottom: 2px solid var(--accent);
+  cursor: pointer;
+  position: relative;
+}
+
+/* Comment pin */
+.comment-pin {
+  position: absolute;
+  right: -60px;
+  width: 32px; height: 32px;
+  border-radius: 50% 50% 50% 2px;
+  background: var(--warning);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  transform: rotate(-10deg);
+  cursor: pointer;
+  box-shadow: 0 4px 12px -4px rgba(0,0,0,0.4);
+}
+
+/* ── Athena Panel (right) ── */
+.athena-panel { background: var(--bg); border-left: 1px solid var(--border-subtle); overflow-y: auto; display: flex; flex-direction: column; }
+.athena-head { padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.athena-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #667EEA 0%, #764BA2 50%, #F093FB 100%); display: grid; place-items: center; color: white; font-family: var(--serif); font-weight: 600; font-size: 13px; }
+.athena-title { flex: 1; }
+.athena-title h4 { font-family: var(--serif); font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+.athena-title span { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.02em; }
+.athena-head .btn-icon { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; color: var(--text-muted); cursor: pointer; font-size: 14px; }
+.athena-head .btn-icon:hover { background: var(--bg-hover); color: var(--text); }
+
+.staging-box { padding: 16px 20px; background: var(--bg-elevated); border-bottom: 1px solid var(--border-subtle); }
+.staging-label { font-family: var(--mono); font-size: 10px; color: var(--user-color); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.staging-label::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--user-color); }
+.staging-content { background: var(--bg); border: 1px dashed var(--user-color); border-radius: 8px; padding: 12px; font-size: 12.5px; line-height: 1.55; color: var(--text); min-height: 80px; }
+.staging-content em { color: var(--text-muted); font-style: italic; }
+.staging-actions { display: flex; gap: 6px; margin-top: 10px; }
+.stage-btn { flex: 1; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 11.5px; font-family: var(--sans); cursor: pointer; font-weight: 500; }
+.stage-btn.primary { background: var(--accent); border-color: var(--accent); }
+.stage-btn.primary:hover { background: #3B75E0; }
+.stage-btn:hover { background: var(--bg-hover); }
+
+.athena-suggestion-badge {
+  margin: 14px 20px 0; padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.08) 100%);
+  border: 1px solid rgba(118,75,162,0.3);
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  position: relative; overflow: hidden;
+}
+.athena-suggestion-badge::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--user-color); }
+.suggestion-icon { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(135deg, #667EEA, #764BA2); display: grid; place-items: center; font-size: 13px; flex-shrink: 0; }
+.suggestion-text { font-size: 12px; color: var(--text); line-height: 1.4; flex: 1; }
+.suggestion-arrow { color: var(--text-muted); font-size: 14px; }
+
+.athena-analysis { padding: 16px 20px; border-bottom: 1px solid var(--border-subtle); max-height: 260px; overflow-y: auto; }
+.analysis-section { margin-bottom: 16px; }
+.analysis-section:last-child { margin-bottom: 0; }
+.analysis-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; display: inline-block; padding: 2px 7px; border-radius: 4px; }
+.analysis-label.corrections { background: rgba(239,68,68,0.12); color: #F87171; }
+.analysis-label.content { background: rgba(6,182,212,0.12); color: var(--cyan); }
+.analysis-label.suggestions { background: rgba(16,185,129,0.12); color: var(--success); }
+.analysis-text { font-size: 12.5px; line-height: 1.55; color: var(--text-muted); margin-bottom: 4px; }
+.analysis-text strong { color: var(--text); font-weight: 500; }
+.analysis-text .highlight { color: var(--accent); }
+.analysis-text u { text-decoration: line-through; color: #F87171; font-style: normal; }
+
+/* Chat area */
+.athena-chat { padding: 12px 20px; flex: 1; overflow-y: auto; }
+.chat-title { font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+.msg { display: flex; gap: 10px; margin-bottom: 14px; }
+.msg-athena { }
+.msg-user { flex-direction: row-reverse; }
+.msg-avatar { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 10px; font-weight: 600; flex-shrink: 0; }
+.msg-athena .msg-avatar { background: linear-gradient(135deg, #667EEA, #764BA2); color: white; font-family: var(--serif); }
+.msg-user .msg-avatar { background: var(--user-color); color: white; }
+.msg-bubble { background: var(--bg-elevated); padding: 9px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.5; max-width: 78%; color: var(--text); }
+.msg-user .msg-bubble { background: var(--accent); color: white; border-radius: 12px 12px 4px 12px; }
+.msg-athena .msg-bubble { border-radius: 12px 12px 12px 4px; }
+
+.chat-input { padding: 12px 20px 16px; border-top: 1px solid var(--border-subtle); background: var(--bg); }
+.rate-limit-bar { font-family: var(--mono); font-size: 9.5px; color: var(--text-dim); margin-bottom: 8px; display: flex; justify-content: space-between; }
+.rate-limit-bar .upgrade-link { color: var(--accent); cursor: pointer; }
+.input-box { display: flex; gap: 6px; align-items: flex-end; }
+.input-box textarea { flex: 1; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text); padding: 9px 12px; border-radius: 10px; font-family: var(--sans); font-size: 12.5px; resize: none; outline: none; min-height: 36px; line-height: 1.4; }
+.input-box textarea:focus { border-color: var(--accent); }
+.send-btn { width: 36px; height: 36px; display: grid; place-items: center; background: var(--accent); border: none; border-radius: 10px; color: white; cursor: pointer; }
+.quick-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.quick-btn { font-family: var(--sans); font-size: 11px; padding: 5px 10px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 100px; color: var(--text-muted); cursor: pointer; }
+.quick-btn:hover { border-color: var(--accent); color: var(--text); }
+
+/* ── Chat grupal inferior ── */
+.group-chat-fab {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(calc(-50% - 50px));
+  background: var(--bg-elevated); border: 1px solid var(--border);
+  border-radius: 100px; padding: 10px 18px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; z-index: 20;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.6);
+}
+.group-chat-fab:hover { border-color: var(--accent); }
+.chat-avatars { display: flex; }
+.chat-avatars .presence-dot { width: 22px; height: 22px; border-width: 2px; font-size: 10px; margin-left: -4px; }
+.chat-avatars .presence-dot:first-child { margin-left: 0; }
+.chat-avatars .presence-dot::after { display: none; }
+.fab-text { font-size: 12px; color: var(--text); font-weight: 500; }
+.fab-count { font-family: var(--mono); font-size: 10px; padding: 2px 6px; background: var(--danger); color: white; border-radius: 10px; font-weight: 600; }
+
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← índice</a>
+
+<div class="app">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="back-link">←</div>
+      <div class="breadcrumb">
+        <a>Workspaces</a>
+        <span class="sep">/</span>
+        <a>Historia Universal</a>
+        <span class="sep">/</span>
+      </div>
+      <div class="doc-title-top">Combate Naval de Iquique — análisis histórico</div>
+      <span class="star-btn">★</span>
+      <div class="save-indicator">Guardado · hace 2s</div>
+    </div>
+
+    <div class="topbar-center">
+      <button class="mode-btn active">⎘ Editar</button>
+      <button class="mode-btn">⦿ Lectura</button>
+      <button class="mode-btn">☾ Enfoque</button>
+      <button class="mode-btn">▶ Presentación</button>
+    </div>
+
+    <div class="topbar-right">
+      <div class="collab-presence">
+        <div class="presence-dot" style="background: #A855F7">C</div>
+        <div class="presence-dot" style="background: #10B981">M</div>
+        <div class="presence-dot" style="background: #F59E0B">J</div>
+        <div class="presence-dot inactive" style="background: #06B6D4">D</div>
+      </div>
+      <button class="btn-share">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M12 4a2 2 0 100-4 2 2 0 000 4zM12 16a2 2 0 100-4 2 2 0 000 4zM4 10a2 2 0 100-4 2 2 0 000 4zM10.5 3l-5 3M10.5 13l-5-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Compartir
+      </button>
+      <div class="btn-menu">⋯</div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Índice</h3>
+          <span class="action">↻</span>
+        </div>
+        <div class="toc-item level-1 active">1. Contexto histórico</div>
+        <div class="toc-item level-2">1.1 Guerra del Pacífico</div>
+        <div class="toc-item level-2">1.2 Fuerzas navales</div>
+        <div class="toc-item level-1">2. Desarrollo del combate</div>
+        <div class="toc-item level-2">2.1 Posición inicial</div>
+        <div class="toc-item level-3">2.1.a Esmeralda vs Huáscar</div>
+        <div class="toc-item level-3">2.1.b Covadonga vs Independencia</div>
+        <div class="toc-item level-2">2.2 Abordaje de Prat</div>
+        <div class="toc-item level-2">2.3 Hundimiento Esmeralda</div>
+        <div class="toc-item level-1">3. Consecuencias estratégicas</div>
+        <div class="toc-item level-1">4. Análisis historiográfico</div>
+        <div class="toc-item level-1">Referencias APA 7</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Colaboradores</h3>
+          <span class="action">+ Invitar</span>
+        </div>
+        <div class="member-row">
+          <div class="member-avatar" style="background: #A855F7">CG</div>
+          <div class="member-info">
+            <div class="member-name">Cristian Gutiérrez <span style="color: var(--text-dim); font-weight: 400;">(tú)</span></div>
+            <div class="member-contrib">42% · 2.847 caracteres</div>
+            <div class="contrib-bar"><div class="contrib-bar-fill" style="width: 42%; background: #A855F7;"></div></div>
+          </div>
+          <span class="member-role">OWNER</span>
+        </div>
+        <div class="member-row">
+          <div class="member-avatar" style="background: #10B981">MJ</div>
+          <div class="member-info">
+            <div class="member-name">María Jofré</div>
+            <div class="member-contrib">31% · 2.106 caracteres</div>
+            <div class="contrib-bar"><div class="contrib-bar-fill" style="width: 31%; background: #10B981;"></div></div>
+          </div>
+          <span class="member-role">EDITOR</span>
+        </div>
+        <div class="member-row">
+          <div class="member-avatar" style="background: #F59E0B">JM</div>
+          <div class="member-info">
+            <div class="member-name">Juan Miranda</div>
+            <div class="member-contrib">22% · 1.492 caracteres</div>
+            <div class="contrib-bar"><div class="contrib-bar-fill" style="width: 22%; background: #F59E0B;"></div></div>
+          </div>
+          <span class="member-role">EDITOR</span>
+        </div>
+        <div class="member-row">
+          <div class="member-avatar" style="background: #06B6D4">DR</div>
+          <div class="member-info">
+            <div class="member-name">Daniela Rojas</div>
+            <div class="member-contrib">5% · 342 caracteres</div>
+            <div class="contrib-bar"><div class="contrib-bar-fill" style="width: 5%; background: #06B6D4;"></div></div>
+          </div>
+          <span class="member-role">VIEWER</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Rúbrica</h3>
+          <span class="action">Ver todo</span>
+        </div>
+        <div class="rubric-progress">
+          <div class="rubric-progress-text">
+            <span>5/8 criterios</span>
+            <strong>65%</strong>
+          </div>
+          <div class="rubric-progress-bar"><div class="rubric-progress-fill"></div></div>
+        </div>
+        <div class="rubric-item done">
+          <span class="rubric-check">✓</span>
+          <span class="rubric-text">Introducción con contexto histórico</span>
+          <span class="rubric-points">15 / 15 puntos</span>
+        </div>
+        <div class="rubric-item done">
+          <span class="rubric-check">✓</span>
+          <span class="rubric-text">Identificación de actores principales</span>
+          <span class="rubric-points">10 / 10 puntos</span>
+        </div>
+        <div class="rubric-item done">
+          <span class="rubric-check">✓</span>
+          <span class="rubric-text">Descripción cronológica</span>
+          <span class="rubric-points">20 / 20 puntos</span>
+        </div>
+        <div class="rubric-item done">
+          <span class="rubric-check">✓</span>
+          <span class="rubric-text">Mín. 3 fuentes bibliográficas APA 7</span>
+          <span class="rubric-points">10 / 10 puntos</span>
+        </div>
+        <div class="rubric-item partial">
+          <span class="rubric-check">◐</span>
+          <span class="rubric-text">Análisis consecuencias estratégicas</span>
+          <span class="rubric-points">10 / 15 puntos</span>
+        </div>
+        <div class="rubric-item pending">
+          <span class="rubric-check">○</span>
+          <span class="rubric-text">Comparación con historiografía</span>
+          <span class="rubric-points">0 / 15 puntos</span>
+        </div>
+        <div class="rubric-item pending">
+          <span class="rubric-check">○</span>
+          <span class="rubric-text">Conclusión crítica</span>
+          <span class="rubric-points">0 / 10 puntos</span>
+        </div>
+        <div class="rubric-item pending">
+          <span class="rubric-check">○</span>
+          <span class="rubric-text">Formato y presentación</span>
+          <span class="rubric-points">0 / 5 puntos</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- DOCUMENT -->
+    <div class="doc-area">
+      <div class="floating-toolbar">
+        <button class="tb-btn">↶</button>
+        <button class="tb-btn">↷</button>
+        <div class="tb-sep"></div>
+        <select class="tb-select"><option>Texto normal</option><option>Título 1</option><option>Título 2</option></select>
+        <select class="tb-select"><option>Times New Roman</option></select>
+        <select class="tb-select"><option>12pt</option></select>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" style="font-weight: 700;">B</button>
+        <button class="tb-btn" style="font-style: italic;">I</button>
+        <button class="tb-btn" style="text-decoration: underline;">U</button>
+        <button class="tb-btn" style="text-decoration: line-through;">S</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn">A▼</button>
+        <button class="tb-btn">⬛▼</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn">≡</button>
+        <button class="tb-btn">⦁</button>
+        <button class="tb-btn">1.</button>
+        <button class="tb-btn">☑</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn">🔗</button>
+        <button class="tb-btn">🖼</button>
+        <button class="tb-btn">▦</button>
+        <button class="tb-btn">∑</button>
+        <button class="tb-btn">💬</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" style="color: var(--accent);">+ APA</button>
+      </div>
+
+      <div class="paper">
+        <div class="page-number">1</div>
+        <h1>Combate Naval de Iquique:<br>análisis histórico-militar en el marco de la Guerra del Pacífico</h1>
+        <p class="author">Cristian Gutiérrez, María Jofré, Juan Miranda y Daniela Rojas</p>
+        <p class="institution">Escuela de Historia, Universidad de Chile · HIS-3120 · Prof. Méndez R.</p>
+
+        <h2>1. Contexto histórico</h2>
+        <p>El 21 de mayo de 1879 marca un punto de inflexión en la Guerra del Pacífico, conflicto armado que enfrentó a Chile contra la alianza conformada por Bolivia y Perú entre 1879 y 1884 <span class="athena-highlight">(Bulnes, 1955)</span>. El combate naval desarrollado frente a las costas de Iquique, pese a su resultado táctico adverso para la escuadra chilena con el hundimiento de la corbeta Esmeralda, adquirió posteriormente una dimensión simbólica que trascendió el cálculo estratégico inmediato del enfrentamiento.</p>
+        <p>La posición geoestratégica de Iquique durante el siglo XIX se explica fundamentalmente por tres factores económicos convergentes: la explotación intensiva de los yacimientos salitreros del desierto de Atacama, la infraestructura portuaria desarrollada para la exportación del nitrato, y la presencia de capital británico asociado a dicha industria extractiva.</p>
+        <p>Como señala Sater (2007), «el bloqueo naval peruano sobre Iquique pretendía neutralizar la capacidad exportadora chilena y, por extensión, su capacidad de financiar el esfuerzo bélico terrestre». Esta interpretación resulta consistente con los análisis posteriores de la historiografía militar...</p>
+
+        <!-- Collaborative cursors -->
+        <div class="collab-cursor cursor-maria" data-user="María"></div>
+
+        <h2>2. Desarrollo del combate</h2>
+        <p>La mañana del 21 de mayo encontró a la escuadra chilena, al mando del capitán de fragata Arturo Prat Chacón, patrullando las aguas de Iquique con la corbeta Esmeralda y la goleta Covadonga. La llegada intempestiva del monitor Huáscar y la fragata blindada Independencia, bajo el mando de Miguel Grau Seminario...</p>
+
+        <div class="collab-cursor cursor-juan" data-user="Juan"></div>
+
+        <p>El abordaje de Prat sobre el Huáscar, aunque tácticamente infructuoso y fatal para el comandante chileno, produjo un efecto moral desproporcionado a su resultado material <span style="background: rgba(245,158,11,0.15); border-bottom: 2px dotted var(--warning); cursor: pointer;">(DIFUMINADO: revisar con Athena)</span>.</p>
+
+        <!-- Comment pin -->
+        <div class="comment-pin" style="top: 660px;">3</div>
+      </div>
+    </div>
+
+    <!-- ATHENA PANEL -->
+    <aside class="athena-panel">
+      <div class="athena-head">
+        <div class="athena-avatar">A</div>
+        <div class="athena-title">
+          <h4>Athena</h4>
+          <span>Experta académica</span>
+        </div>
+        <div class="btn-icon">💡</div>
+        <div class="btn-icon">✕</div>
+      </div>
+
+      <!-- Staging privado -->
+      <div class="staging-box">
+        <div class="staging-label">Tu borrador · privado</div>
+        <div class="staging-content">
+          La batalla de Iquique fue un evento muy importante que marcó la historia naval de Chile y <em>tengo que agregar datos del Huáscar pero no se como redactarlo formal...</em>
+        </div>
+        <div class="staging-actions">
+          <button class="stage-btn">Rechazar</button>
+          <button class="stage-btn">Modificar</button>
+          <button class="stage-btn primary">↗ Enviar al doc</button>
+        </div>
+      </div>
+
+      <!-- Athena sugerencia activa -->
+      <div class="athena-suggestion-badge">
+        <div class="suggestion-icon">✦</div>
+        <div class="suggestion-text">
+          <strong>Athena</strong> tiene una sugerencia para tu párrafo sobre el Huáscar. Reescritura formal con cita APA.
+        </div>
+        <div class="suggestion-arrow">→</div>
+      </div>
+
+      <!-- Analysis -->
+      <div class="athena-analysis">
+        <div class="analysis-section">
+          <span class="analysis-label corrections">CORRECCIONES</span>
+          <p class="analysis-text">En la cita «<u>Bulnes, 1955</u>» falta la página específica. APA 7 exige incluir el número de página para citas textuales: <strong>(Bulnes, 1955, p. 147)</strong>.</p>
+        </div>
+        <div class="analysis-section">
+          <span class="analysis-label content">CONTENIDO</span>
+          <p class="analysis-text">El monitor <strong>Huáscar</strong> fue construido en Gran Bretaña por Laird Brothers (Birkenhead, 1865), originalmente para la armada peruana. Desplazamiento 1.180 toneladas, blindaje de 114 mm en la torreta giratoria Coles. Tras su captura en Angamos (8 oct 1879), se integró a la armada chilena como buque-museo. Hoy conservado en Talcahuano.</p>
+        </div>
+        <div class="analysis-section">
+          <span class="analysis-label suggestions">SUGERENCIAS</span>
+          <p class="analysis-text">Considera desarrollar <span class="highlight">el análisis de consecuencias estratégicas</span> con comparación a otros combates navales del siglo XIX. La rúbrica aún lo marca como pendiente (15 puntos).</p>
+        </div>
+      </div>
+
+      <!-- Chat -->
+      <div class="athena-chat">
+        <div class="chat-title">Chat privado con Athena</div>
+        <div class="msg msg-user">
+          <div class="msg-avatar">C</div>
+          <div class="msg-bubble">¿Qué libros específicos de historia naval me recomendarías para profundizar?</div>
+        </div>
+        <div class="msg msg-athena">
+          <div class="msg-avatar">A</div>
+          <div class="msg-bubble">Para historia naval chilena del siglo XIX, te sugeriría tres obras fundamentales: <strong>Sater (2007)</strong>, <em>Chile and the War of the Pacific</em>, es el más riguroso en inglés. En español, <strong>Gonzalo Bulnes (1955)</strong>, <em>Guerra del Pacífico</em>, sigue siendo referencia canónica pese a su antigüedad. Y no pierdas de vista a <strong>Ravest Mora (2008)</strong>, con enfoque más reciente y crítico.</div>
+        </div>
+        <div class="msg msg-user">
+          <div class="msg-avatar">C</div>
+          <div class="msg-bubble">Gracias, ¿el de Sater está en la Biblioteca Conniku?</div>
+        </div>
+        <div class="msg msg-athena">
+          <div class="msg-avatar">A</div>
+          <div class="msg-bubble">Tendría que verificarlo, pero por lo que recuerdo sí estaba indexado. Te sugiero buscarlo directamente en el catálogo de tu Biblioteca Conniku para confirmar disponibilidad del texto completo.</div>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input">
+        <div class="rate-limit-bar">
+          <span>12 / 50 análisis este mes · PRO</span>
+          <span class="upgrade-link">↑ Upgrade MAX</span>
+        </div>
+        <div class="input-box">
+          <textarea placeholder="Pregunta algo a Athena..."></textarea>
+          <button class="send-btn">↑</button>
+        </div>
+        <div class="quick-actions">
+          <button class="quick-btn">✎ Revisa mi ortografía</button>
+          <button class="quick-btn">📖 Investiga el tema</button>
+          <button class="quick-btn">✨ Mejora redacción</button>
+          <button class="quick-btn">📚 Agrega referencias</button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- Chat grupal FAB -->
+<div class="group-chat-fab">
+  <div class="chat-avatars">
+    <div class="presence-dot" style="background: #10B981">M</div>
+    <div class="presence-dot" style="background: #F59E0B">J</div>
+    <div class="presence-dot" style="background: #06B6D4">D</div>
+  </div>
+  <span class="fab-text">Chat del grupo</span>
+  <span class="fab-count">4</span>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<title>01 · Lista de Workspaces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0F1419;
+  --bg-elevated: #161C23;
+  --bg-card: #1A2028;
+  --bg-hover: #222A34;
+  --border: #232B36;
+  --border-subtle: #1C232B;
+  --text: #E8EDF3;
+  --text-muted: #8B95A4;
+  --text-dim: #525E6E;
+  --accent: #2D62C8;
+  --accent-soft: rgba(45,98,200,0.12);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --purple: #A855F7;
+  --pink: #EC4899;
+  --cyan: #06B6D4;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 90% 40% at 20% 0%, rgba(45,98,200,0.05), transparent 50%);
+  color: var(--text);
+  min-height: 100vh;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Back link ── */
+.back { position: fixed; top: 20px; left: 20px; z-index: 100; font-family: var(--mono); font-size: 11px; color: var(--text-dim); text-decoration: none; padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg-elevated); }
+.back:hover { color: var(--text); border-color: var(--accent); }
+
+/* ── App shell ── */
+.app { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
+
+/* ── Sidebar ── */
+.sidebar { background: var(--bg); border-right: 1px solid var(--border-subtle); padding: 24px 16px; display: flex; flex-direction: column; }
+.logo { display: flex; align-items: center; gap: 10px; padding: 8px 12px; margin-bottom: 28px; }
+.logo-mark { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, var(--accent) 0%, #5B84D9 100%); display: grid; place-items: center; font-weight: 700; font-size: 14px; color: white; letter-spacing: -0.02em; }
+.logo-name { font-family: var(--serif); font-size: 17px; font-weight: 500; letter-spacing: -0.01em; }
+.nav-section { margin-bottom: 20px; }
+.nav-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em; text-transform: uppercase; padding: 0 12px 8px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 7px; font-size: 13px; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+.nav-item:hover { background: var(--bg-hover); color: var(--text); }
+.nav-item.active { background: var(--accent-soft); color: var(--text); font-weight: 500; }
+.nav-item.active::before { content: ''; width: 2px; height: 14px; background: var(--accent); border-radius: 2px; margin-left: -12px; margin-right: 10px; }
+.nav-icon { width: 16px; height: 16px; display: grid; place-items: center; opacity: 0.8; }
+.nav-badge { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+.folder-tree .nav-item { padding-left: 28px; font-size: 12.5px; }
+.folder-tree .nav-item::before { content: none; }
+.user-card { margin-top: auto; padding: 12px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 10px; }
+.avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: white; flex-shrink: 0; }
+.user-info { min-width: 0; flex: 1; }
+.user-name { font-size: 12.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.user-plan { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: 0.05em; }
+
+/* ── Main ── */
+.main { padding: 48px 56px; overflow-y: auto; }
+.main-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 40px; gap: 24px; }
+h1 { font-family: var(--serif); font-size: 44px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.05; }
+h1 em { font-style: italic; color: var(--text-muted); font-weight: 400; }
+.page-sub { color: var(--text-muted); font-size: 14.5px; margin-top: 6px; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 18px; border-radius: 10px;
+  background: var(--accent); color: white; border: none;
+  font-family: var(--sans); font-size: 13.5px; font-weight: 500;
+  cursor: pointer; letter-spacing: -0.005em;
+  box-shadow: 0 8px 16px -8px rgba(45,98,200,0.5);
+  transition: all 0.2s;
+}
+.btn-primary:hover { background: #3B75E0; transform: translateY(-1px); }
+
+/* ── Toolbar ── */
+.toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border-subtle); }
+.search { flex: 1; position: relative; max-width: 420px; }
+.search input { width: 100%; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text); padding: 10px 14px 10px 38px; border-radius: 10px; font-family: var(--sans); font-size: 13.5px; outline: none; }
+.search input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.search::before { content: ''; position: absolute; left: 14px; top: 50%; width: 14px; height: 14px; border: 1.5px solid var(--text-dim); border-radius: 50%; transform: translateY(-50%); }
+.search::after { content: ''; position: absolute; left: 23px; top: 50%; width: 6px; height: 1.5px; background: var(--text-dim); transform: translate(2px, 5px) rotate(45deg); transform-origin: left center; }
+.kbd { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-family: var(--mono); font-size: 10px; color: var(--text-dim); padding: 3px 6px; border: 1px solid var(--border); border-radius: 4px; background: var(--bg); }
+.filter { padding: 9px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 10px; font-size: 13px; color: var(--text-muted); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.filter:hover { color: var(--text); border-color: var(--accent); }
+.filter.active { color: var(--text); border-color: var(--accent); background: var(--accent-soft); }
+.view-toggle { margin-left: auto; display: flex; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.view-toggle button { padding: 5px 10px; background: transparent; color: var(--text-dim); border: none; cursor: pointer; border-radius: 5px; font-size: 11px; font-family: var(--mono); }
+.view-toggle button.active { background: var(--bg-hover); color: var(--text); }
+
+/* ── Favorites strip ── */
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 32px 0 16px; }
+.section-head h2 { font-family: var(--serif); font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+.section-head .count { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+
+.fav-strip { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 12px; }
+.fav-card { flex: 0 0 240px; padding: 16px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+.fav-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.fav-card .star { position: absolute; top: 14px; right: 14px; color: var(--warning); font-size: 14px; }
+.fav-card-title { font-family: var(--serif); font-size: 15px; font-weight: 500; margin-bottom: 6px; letter-spacing: -0.01em; padding-right: 24px; }
+.fav-card-meta { font-size: 11.5px; color: var(--text-dim); }
+
+/* ── Docs grid ── */
+.docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.doc {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+.doc:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 24px 48px -16px rgba(0,0,0,0.5); }
+.doc-preview {
+  height: 140px; position: relative; overflow: hidden;
+  background: white;
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-preview .doc-body { transform: scale(0.7); transform-origin: top left; width: 143%; }
+.doc-preview h3 { font-family: var(--serif); font-size: 14px; color: #1a1a1a; font-weight: 600; margin-bottom: 6px; line-height: 1.2; }
+.doc-preview p { font-size: 8.5px; color: #4a4a4a; line-height: 1.6; margin-bottom: 5px; }
+.doc-preview .doc-meta-gray { color: #888; font-size: 7px; margin-bottom: 8px; }
+.doc-meta-bottom { padding: 14px 16px 16px; }
+.doc-title { font-family: var(--serif); font-size: 15px; font-weight: 500; letter-spacing: -0.01em; margin-bottom: 4px; line-height: 1.3; }
+.doc-course { font-size: 11.5px; color: var(--text-dim); font-family: var(--mono); letter-spacing: 0.02em; margin-bottom: 12px; }
+.doc-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.collab-dots { display: flex; }
+.collab-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--bg-elevated); display: grid; place-items: center; font-size: 9px; font-weight: 600; color: white; margin-left: -6px; }
+.collab-dot:first-child { margin-left: 0; }
+.collab-dot.more { background: var(--bg-hover); color: var(--text-muted); font-size: 8px; }
+.doc-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); }
+
+/* Accent badges on docs */
+.doc-badge { position: absolute; top: 12px; left: 12px; font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.05em; padding: 3px 7px; border-radius: 4px; text-transform: uppercase; font-weight: 500; z-index: 1; }
+.doc-badge.apa7 { background: rgba(45,98,200,0.9); color: white; }
+.doc-badge.ieee { background: rgba(168,85,247,0.9); color: white; }
+.doc-badge.drafting { background: rgba(245,158,11,0.9); color: #1a1a1a; }
+.doc-badge.complete { background: rgba(16,185,129,0.9); color: white; }
+
+.doc-progress { height: 3px; background: rgba(255,255,255,0.08); margin: 0; overflow: hidden; }
+.doc-progress-fill { height: 100%; background: var(--accent); }
+.doc-progress-fill.green { background: var(--success); }
+.doc-progress-fill.amber { background: var(--warning); }
+
+/* Color variations for doc previews */
+.doc:nth-child(2n) .doc-preview { background: #FFFCF5; }
+.doc:nth-child(3n) .doc-preview { background: #F8FAFF; }
+.doc:nth-child(5n) .doc-preview { background: #FFF8F5; }
+
+.empty-state { text-align: center; padding: 80px 20px; color: var(--text-dim); }
+
+/* Status bar top */
+.status-bar { display: flex; align-items: center; gap: 24px; padding: 12px 20px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 28px; font-size: 12.5px; }
+.status-bar-item { display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+.status-bar-item strong { color: var(--text); font-weight: 500; }
+.status-bar-item .dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-bar-item .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+.status-bar-item .dot.pro { background: var(--accent); }
+</style>
+</head>
+<body>
+<a class="back" href="index.html">← índice</a>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">C</div>
+      <div class="logo-name">Conniku</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Principal</div>
+      <div class="nav-item">
+        <span class="nav-icon">⌂</span> Dashboard
+      </div>
+      <div class="nav-item active">
+        <span class="nav-icon">📄</span> Workspaces
+        <span class="nav-badge">14</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">📚</span> Biblioteca
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">🎓</span> Mi universidad
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">💬</span> Mensajes
+        <span class="nav-badge">3</span>
+      </div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Mis carpetas</div>
+      <div class="nav-item">📁 Semestre 2026-1</div>
+      <div class="folder-tree">
+        <div class="nav-item">Cálculo III</div>
+        <div class="nav-item">Historia Universal</div>
+        <div class="nav-item">Metodología</div>
+      </div>
+      <div class="nav-item">📁 Tesis de grado</div>
+      <div class="nav-item">📁 Ensayos personales</div>
+      <div class="nav-item">+ Nueva carpeta</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Compartido conmigo</div>
+      <div class="nav-item">Grupo Hist. 2026</div>
+      <div class="nav-item">Laboratorio Física</div>
+    </div>
+
+    <div class="user-card">
+      <div class="avatar">CG</div>
+      <div class="user-info">
+        <div class="user-name">Cristian Gutiérrez</div>
+        <div class="user-plan">PLAN PRO</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="main-head">
+      <div>
+        <h1>Tus <em>workspaces</em></h1>
+        <div class="page-sub">Documentos colaborativos con Athena como compañera de redacción.</div>
+      </div>
+      <button class="btn-primary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Nuevo workspace
+      </button>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-bar-item"><span class="dot online"></span><strong>María J.</strong> escribiendo en "Combate Naval de Iquique"</div>
+      <div class="status-bar-item" style="margin-left: auto;"><span class="dot pro"></span>Plan PRO · 42 / 50 análisis Athena este mes</div>
+    </div>
+
+    <div class="toolbar">
+      <div class="search">
+        <input placeholder="Buscar en todos tus workspaces, contenido, autores...">
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="filter active">Todos</button>
+      <button class="filter">Míos</button>
+      <button class="filter">Compartidos</button>
+      <button class="filter">Terminados</button>
+      <button class="filter">⊘ Filtros</button>
+      <div class="view-toggle">
+        <button class="active">GRID</button>
+        <button>LISTA</button>
+      </div>
+    </div>
+
+    <!-- Favorites -->
+    <div class="section-head">
+      <h2>Favoritos</h2>
+      <span class="count">4 / ⭐</span>
+    </div>
+    <div class="fav-strip">
+      <div class="fav-card">
+        <span class="star">★</span>
+        <div class="fav-card-title">Tesis · Movimiento estudiantil 2011</div>
+        <div class="fav-card-meta">Hace 2h · 3 colaboradores · 47 pág.</div>
+      </div>
+      <div class="fav-card">
+        <span class="star">★</span>
+        <div class="fav-card-title">Informe Cálculo III — Derivadas parciales</div>
+        <div class="fav-card-meta">Ayer · 2 colaboradores · 12 pág.</div>
+      </div>
+      <div class="fav-card">
+        <span class="star">★</span>
+        <div class="fav-card-title">Ensayo · Pedagogía crítica de Freire</div>
+        <div class="fav-card-meta">3 días · Tú solo · 18 pág.</div>
+      </div>
+      <div class="fav-card">
+        <span class="star">★</span>
+        <div class="fav-card-title">Acta grupo estudio Filosofía</div>
+        <div class="fav-card-meta">1 semana · 5 colaboradores · 6 pág.</div>
+      </div>
+    </div>
+
+    <!-- All docs -->
+    <div class="section-head">
+      <h2>Semestre 2026-1 · Cálculo III</h2>
+      <span class="count">6 documentos</span>
+    </div>
+    <div class="docs-grid">
+
+      <div class="doc">
+        <div class="doc-badge apa7">APA 7</div>
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Informe de Laboratorio 4: Integración por partes</h3>
+            <p class="doc-meta-gray">Cristian Gutiérrez · MAT-2030 · 2026</p>
+            <p>La integración por partes es una técnica fundamental derivada directamente de la regla del producto del cálculo diferencial. La fórmula estándar se expresa como ∫u dv = uv − ∫v du, donde se selecciona estratégicamente...</p>
+            <p>En el presente informe se abordan tres casos específicos de aplicación, considerando tanto funciones polinómicas como exponenciales y logarítmicas. El análisis se sustenta en la obra de Stewart (2020) y complementariamente en...</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill" style="width: 72%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Informe Laboratorio 4</div>
+          <div class="doc-course">MAT-2030 · INTEGRACIÓN</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #A855F7">C</div>
+              <div class="collab-dot" style="background: #10B981">M</div>
+              <div class="collab-dot" style="background: #F59E0B">J</div>
+            </div>
+            <span class="doc-time">hace 12 min</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc">
+        <div class="doc-badge drafting">Borrador</div>
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Resumen Teorema Fundamental del Cálculo</h3>
+            <p class="doc-meta-gray">Cristian G. · MAT-2030 · Apuntes personales</p>
+            <p>El Teorema Fundamental del Cálculo establece la conexión profunda entre diferenciación e integración, considerados clásicamente como operaciones opuestas. La primera parte del teorema afirma que si f es continua en [a,b]...</p>
+            <p>Demostración rigurosa:</p>
+            <p>Sea F(x) = ∫ₐˣ f(t) dt. Entonces F'(x) = f(x)...</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill amber" style="width: 34%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Resumen TFC</div>
+          <div class="doc-course">MAT-2030 · TEORÍA</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #A855F7">C</div>
+            </div>
+            <span class="doc-time">hace 3 días</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc">
+        <div class="doc-badge complete">Terminado</div>
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Serie de Taylor y aproximaciones polinomiales</h3>
+            <p class="doc-meta-gray">Grupo 4 · MAT-2030 · Entrega: 05 abril</p>
+            <p>Las series de Taylor permiten expresar funciones como sumas infinitas de términos calculados a partir de sus derivadas en un punto específico. Esta propiedad las convierte en una herramienta potente para aproximar...</p>
+            <p>Aplicaciones prácticas en ingeniería:</p>
+            <p>• Simulación numérica de sistemas físicos</p>
+            <p>• Linealización local de ecuaciones no lineales</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill green" style="width: 100%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Serie de Taylor — trabajo final</div>
+          <div class="doc-course">MAT-2030 · EXAMEN FINAL</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #A855F7">C</div>
+              <div class="collab-dot" style="background: #EC4899">L</div>
+              <div class="collab-dot" style="background: #06B6D4">D</div>
+              <div class="collab-dot more">+2</div>
+            </div>
+            <span class="doc-time">07 abril</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc">
+        <div class="doc-badge apa7">APA 7</div>
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Ejercitación semana 6 — Límites multivariables</h3>
+            <p class="doc-meta-gray">Cristian G. · MAT-2030</p>
+            <p>Ejercicio 1. Calcule lim (x,y)→(0,0) de (x²y)/(x²+y²). Solución: usando coordenadas polares x = r cos θ, y = r sen θ, obtenemos (r³ cos²θ sen θ)/(r²) = r cos²θ sen θ → 0 cuando r → 0...</p>
+            <p>Ejercicio 2. Determine si es continua f(x,y) = ...</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill" style="width: 58%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Ejercitación S6</div>
+          <div class="doc-course">MAT-2030 · TAREAS</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #A855F7">C</div>
+              <div class="collab-dot" style="background: #10B981">M</div>
+            </div>
+            <span class="doc-time">ayer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc">
+        <div class="doc-badge apa7">APA 7</div>
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Trabajo grupal — Aplicaciones del gradiente en ingeniería térmica</h3>
+            <p class="doc-meta-gray">Grupo 2 · MAT-2030 · Borrador v3</p>
+            <p>El gradiente de un campo escalar ∇f representa la dirección de máxima variación y su magnitud indica la tasa de cambio en dicha dirección. En ingeniería térmica, esta propiedad es fundamental para...</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill" style="width: 45%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Gradiente en ingeniería térmica</div>
+          <div class="doc-course">MAT-2030 · GRUPAL</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #F59E0B">J</div>
+              <div class="collab-dot" style="background: #06B6D4">D</div>
+              <div class="collab-dot" style="background: #A855F7">C</div>
+            </div>
+            <span class="doc-time">hace 2h</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc">
+        <div class="doc-preview">
+          <div class="doc-body">
+            <h3>Notas personales — Dudas de la clase del lunes</h3>
+            <p class="doc-meta-gray">Cristian G. · Personal</p>
+            <p>Profesor Méndez mencionó el criterio de la razón pero no entendí del todo cuándo converge... revisar Stewart cap. 11.6. Athena me aclaró que el criterio se basa en...</p>
+          </div>
+        </div>
+        <div class="doc-progress"><div class="doc-progress-fill" style="width: 12%"></div></div>
+        <div class="doc-meta-bottom">
+          <div class="doc-title">Notas — Clase lunes</div>
+          <div class="doc-course">MAT-2030 · PERSONAL</div>
+          <div class="doc-footer">
+            <div class="collab-dots">
+              <div class="collab-dot" style="background: #A855F7">C</div>
+            </div>
+            <span class="doc-time">hace 5 días</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

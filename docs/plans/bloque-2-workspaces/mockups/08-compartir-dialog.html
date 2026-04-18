@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es-CL"><head>
+<meta charset="UTF-8"><title>08 · Compartir</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1419;--bg-elevated:#161C23;--bg-card:#1A2028;--bg-hover:#222A34;--border:#232B36;--border-subtle:#1C232B;--text:#E8EDF3;--text-muted:#8B95A4;--text-dim:#525E6E;--accent:#2D62C8;--accent-soft:rgba(45,98,200,0.12);--success:#10B981;--warning:#F59E0B;--danger:#EF4444;--purple:#A855F7;--pink:#EC4899;--cyan:#06B6D4;--serif:'Fraunces',Georgia,serif;--sans:'Inter',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);background-image:radial-gradient(ellipse at 50% 0%,rgba(45,98,200,0.06),transparent 50%);color:var(--text);min-height:100vh;display:grid;place-items:center;padding:40px 20px;-webkit-font-smoothing:antialiased}
+.back{position:fixed;top:14px;left:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-elevated);z-index:10}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:1}
+.modal{position:relative;z-index:2;background:var(--bg-elevated);border:1px solid var(--border);border-radius:18px;width:100%;max-width:580px;overflow:hidden;box-shadow:0 40px 100px -20px rgba(0,0,0,0.8)}
+
+.modal-head{padding:22px 26px 18px;border-bottom:1px solid var(--border-subtle)}
+.modal-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.modal-head h2{font-family:var(--serif);font-size:22px;font-weight:500;letter-spacing:-0.02em;margin-bottom:4px;line-height:1.2}
+.modal-head .sub{color:var(--text-muted);font-size:13px;line-height:1.4}
+.modal-head .close{width:32px;height:32px;display:grid;place-items:center;color:var(--text-muted);border-radius:8px;background:transparent;border:none;cursor:pointer;font-size:18px}
+.modal-head .close:hover{background:var(--bg-hover);color:var(--text)}
+
+.tabs{display:flex;padding:0 26px;background:var(--bg-card);border-bottom:1px solid var(--border-subtle)}
+.tab{padding:12px 18px;font-size:13px;color:var(--text-muted);cursor:pointer;position:relative;font-weight:500;letter-spacing:-0.005em}
+.tab.active{color:var(--text)}
+.tab.active::after{content:'';position:absolute;bottom:-1px;left:18px;right:18px;height:2px;background:var(--accent);border-radius:2px 2px 0 0}
+.tab:hover{color:var(--text)}
+
+.body{padding:22px 26px}
+
+/* Invite section */
+.invite-row{display:flex;gap:8px;margin-bottom:16px}
+.invite-row input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-family:var(--sans);font-size:14px;outline:none}
+.invite-row input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.role-select{background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 12px;border-radius:10px;font-family:var(--sans);font-size:13px;cursor:pointer;min-width:140px}
+.btn{padding:11px 18px;border-radius:10px;border:none;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer}
+.btn-primary{background:var(--accent);color:white;box-shadow:0 8px 16px -8px rgba(45,98,200,0.5)}
+.btn-primary:hover{background:#3B75E0}
+
+.section-head{font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-dim);margin:20px 0 10px;display:flex;justify-content:space-between;align-items:baseline}
+.section-head .count{font-family:var(--mono);color:var(--text-muted)}
+
+.member-list{background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.member{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border-subtle)}
+.member:last-child{border-bottom:none}
+.member-avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;color:white;flex-shrink:0}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:13.5px;font-weight:500}
+.member-email{font-family:var(--mono);font-size:11px;color:var(--text-dim);margin-top:1px}
+.member-role-btn{background:var(--bg-elevated);border:1px solid var(--border);padding:6px 12px;border-radius:7px;font-family:var(--sans);font-size:11.5px;color:var(--text);cursor:pointer;display:flex;align-items:center;gap:4px;min-width:90px;justify-content:center}
+.member-role-btn:hover{border-color:var(--accent)}
+.member-role-btn.owner{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.3);color:#FCD34D;cursor:default}
+.member-menu{color:var(--text-dim);cursor:pointer;padding:6px;font-size:14px}
+.member-menu:hover{color:var(--text)}
+.pending-badge{font-family:var(--mono);font-size:9px;background:rgba(245,158,11,0.12);color:#FBBF24;padding:2px 7px;border-radius:100px;letter-spacing:0.05em;font-weight:500}
+
+/* Link section */
+.link-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.link-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.link-head h5{font-family:var(--serif);font-size:15px;font-weight:500;letter-spacing:-0.01em;margin-bottom:4px}
+.link-head p{font-size:12px;color:var(--text-muted);line-height:1.4}
+.toggle-switch{width:36px;height:20px;background:var(--border);border-radius:100px;position:relative;flex-shrink:0;cursor:pointer}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:white;transition:transform 0.2s}
+.toggle-switch.on{background:var(--accent)}
+.toggle-switch.on::after{transform:translateX(16px)}
+
+.link-url{display:flex;gap:6px;align-items:center;margin-bottom:12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:8px;padding:4px}
+.link-url input{flex:1;background:transparent;border:none;color:var(--text-muted);padding:8px 10px;font-family:var(--mono);font-size:12px;outline:none}
+.link-url button{background:var(--accent);border:none;color:white;padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+.link-url button:hover{background:#3B75E0}
+
+.link-meta{display:flex;gap:12px;flex-wrap:wrap}
+.link-chip{font-family:var(--mono);font-size:10.5px;padding:4px 8px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:100px;color:var(--text-muted);display:flex;align-items:center;gap:5px}
+.link-chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+.link-options{margin-top:14px;padding-top:14px;border-top:1px solid var(--border-subtle)}
+.link-option{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:12.5px;color:var(--text-muted)}
+.link-option:hover{color:var(--text)}
+.link-option .opt-icon{font-size:15px}
+.link-option input[type="text"],.link-option input[type="date"]{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:5px 9px;border-radius:6px;font-family:var(--sans);font-size:12px;margin-left:auto;outline:none}
+
+/* Social share icons */
+.social-row{display:flex;gap:8px;margin-top:12px}
+.social-btn{flex:1;padding:10px 12px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--sans);font-size:12px;font-weight:500}
+.social-btn:hover{border-color:var(--accent);color:var(--text)}
+.social-btn-icon{font-size:14px}
+
+.modal-foot{padding:16px 26px;background:var(--bg-card);border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center}
+.foot-left{font-size:11.5px;color:var(--text-dim);display:flex;align-items:center;gap:8px}
+.foot-left .pill{font-family:var(--mono);font-size:9.5px;padding:2px 7px;background:var(--accent-soft);color:var(--accent);border-radius:100px;letter-spacing:0.05em}
+.foot-actions{display:flex;gap:8px}
+.btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-secondary:hover{background:var(--bg-hover)}
+
+/* Info banner */
+.info-banner{margin-top:16px;padding:12px 14px;background:linear-gradient(135deg,rgba(45,98,200,0.06),rgba(168,85,247,0.04));border:1px solid rgba(45,98,200,0.2);border-radius:10px;display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45;color:var(--text-muted)}
+.info-banner strong{color:var(--text)}
+.info-banner-icon{font-size:18px;flex-shrink:0;margin-top:-2px}
+</style></head><body>
+<a class="back" href="index.html">← índice</a>
+<div class="backdrop"></div>
+
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-head-row">
+      <div>
+        <h2>Compartir workspace</h2>
+        <div class="sub">Combate Naval de Iquique — análisis histórico</div>
+      </div>
+      <button class="close">✕</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">👥 Personas</div>
+    <div class="tab">🔗 Enlace</div>
+    <div class="tab">📧 Email masivo</div>
+  </div>
+
+  <div class="body">
+
+    <div class="invite-row">
+      <input placeholder="Correo electrónico o nombre de usuario Conniku">
+      <select class="role-select">
+        <option>Editor</option>
+        <option>Viewer</option>
+      </select>
+      <button class="btn btn-primary">Invitar</button>
+    </div>
+
+    <div class="info-banner">
+      <span class="info-banner-icon">💡</span>
+      <div><strong>Permisos Conniku:</strong> Owner (tú) controla features del doc, invitaciones y eliminación. Editor puede escribir y usar Athena. Viewer solo lee y comenta si lo habilitas.</div>
+    </div>
+
+    <div class="section-head">
+      <span>Con acceso</span>
+      <span class="count">4 personas</span>
+    </div>
+
+    <div class="member-list">
+      <div class="member">
+        <div class="member-avatar" style="background:#A855F7">CG</div>
+        <div class="member-info">
+          <div class="member-name">Cristian Gutiérrez <span style="color:var(--text-dim);font-weight:400;font-size:11px">(tú)</span></div>
+          <div class="member-email">ceo@conniku.com</div>
+        </div>
+        <button class="member-role-btn owner">⭐ Owner</button>
+        <div class="member-menu">⋯</div>
+      </div>
+
+      <div class="member">
+        <div class="member-avatar" style="background:#10B981">MJ</div>
+        <div class="member-info">
+          <div class="member-name">María Jofré Salinas</div>
+          <div class="member-email">maria.jofre@uchile.cl</div>
+        </div>
+        <button class="member-role-btn">✎ Editor ▾</button>
+        <div class="member-menu">⋯</div>
+      </div>
+
+      <div class="member">
+        <div class="member-avatar" style="background:#F59E0B">JM</div>
+        <div class="member-info">
+          <div class="member-name">Juan Miranda Cortés</div>
+          <div class="member-email">jmiranda@uchile.cl</div>
+        </div>
+        <button class="member-role-btn">✎ Editor ▾</button>
+        <div class="member-menu">⋯</div>
+      </div>
+
+      <div class="member">
+        <div class="member-avatar" style="background:#06B6D4">DR</div>
+        <div class="member-info">
+          <div class="member-name">Daniela Rojas Prieto</div>
+          <div class="member-email">drojas@uchile.cl</div>
+        </div>
+        <button class="member-role-btn">👁 Viewer ▾</button>
+        <div class="member-menu">⋯</div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <span>Pendientes de aceptar</span>
+      <span class="count">1</span>
+    </div>
+
+    <div class="member-list">
+      <div class="member">
+        <div class="member-avatar" style="background:var(--bg-hover);color:var(--text-dim)">?</div>
+        <div class="member-info">
+          <div class="member-name">sofia.pino@uchile.cl <span class="pending-badge">INVITADA HACE 2H</span></div>
+          <div class="member-email">Rol propuesto: Editor · expira en 5 días</div>
+        </div>
+        <div class="member-menu">⋯</div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:28px">
+      <span>Enlace público (solo lectura)</span>
+    </div>
+
+    <div class="link-box">
+      <div class="link-head">
+        <div>
+          <h5>Cualquier persona con el enlace</h5>
+          <p>Puede leer el documento sin crear cuenta Conniku.</p>
+        </div>
+        <div class="toggle-switch on"></div>
+      </div>
+
+      <div class="link-url">
+        <input value="https://conniku.com/w/share/x7Q9m2K8pL3Rv5N1" readonly>
+        <button>📋 Copiar</button>
+      </div>
+
+      <div class="link-meta">
+        <div class="link-chip active">👁 Solo lectura</div>
+        <div class="link-chip">💬 Comentar · OFF</div>
+        <div class="link-chip">⬇ Descargar · OFF</div>
+        <div class="link-chip">🖨 Imprimir · OFF</div>
+      </div>
+
+      <div class="link-options">
+        <div class="link-option">
+          <span class="opt-icon">🕐</span>
+          <span>Expira el</span>
+          <input type="date" value="2026-05-18">
+        </div>
+        <div class="link-option">
+          <span class="opt-icon">🔒</span>
+          <span>Protegido con contraseña</span>
+          <div class="toggle-switch" style="margin-left:auto"></div>
+        </div>
+        <div class="link-option">
+          <span class="opt-icon">📊</span>
+          <span>Visitas · analytics</span>
+          <div class="toggle-switch on" style="margin-left:auto"></div>
+        </div>
+      </div>
+
+      <div class="social-row">
+        <button class="social-btn"><span class="social-btn-icon">✉</span> Email</button>
+        <button class="social-btn"><span class="social-btn-icon">💬</span> WhatsApp</button>
+        <button class="social-btn"><span class="social-btn-icon">𝕏</span> Twitter</button>
+        <button class="social-btn"><span class="social-btn-icon">📱</span> QR</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-foot">
+    <div class="foot-left">
+      <span class="pill">PLAN PRO</span>
+      <span>Enlaces públicos disponibles · hasta 25 activos · 3 en uso</span>
+    </div>
+    <div class="foot-actions">
+      <button class="btn btn-secondary">Cerrar</button>
+    </div>
+  </div>
+</div>
+</body></html>

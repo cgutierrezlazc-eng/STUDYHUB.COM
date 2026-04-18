@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es-CL"><head>
+<meta charset="UTF-8"><title>03 · Crear documento</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1419;--bg-elevated:#161C23;--bg-card:#1A2028;--bg-hover:#222A34;--border:#232B36;--border-subtle:#1C232B;--text:#E8EDF3;--text-muted:#8B95A4;--text-dim:#525E6E;--accent:#2D62C8;--accent-soft:rgba(45,98,200,0.12);--success:#10B981;--warning:#F59E0B;--purple:#A855F7;--serif:'Fraunces',Georgia,serif;--sans:'Inter',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);background-image:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(45,98,200,0.06),transparent 50%);color:var(--text);min-height:100vh;display:grid;place-items:center;-webkit-font-smoothing:antialiased;padding:40px 20px}
+.back{position:fixed;top:14px;left:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-elevated);z-index:10}
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);z-index:1}
+.modal{position:relative;z-index:2;background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;width:100%;max-width:720px;max-height:calc(100vh - 80px);overflow-y:auto;box-shadow:0 40px 80px -20px rgba(0,0,0,0.6)}
+.modal-head{padding:28px 32px 20px;border-bottom:1px solid var(--border-subtle)}
+.modal-kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;color:var(--accent);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.modal-kicker::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.modal-head h2{font-family:var(--serif);font-size:32px;font-weight:500;letter-spacing:-0.025em;line-height:1.1;margin-bottom:8px}
+.modal-head p{color:var(--text-muted);font-size:14px;line-height:1.5}
+.steps{display:flex;gap:4px;margin-top:20px}
+.step{flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;position:relative}
+.step.active{background:var(--accent)}
+.step-labels{display:flex;gap:4px;margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:0.05em;text-transform:uppercase}
+.step-labels>span{flex:1}
+.step-labels>span.active{color:var(--accent)}
+.modal-body{padding:28px 32px}
+.form-row{margin-bottom:24px}
+.form-label{font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.form-label .req{color:var(--accent)}
+.form-label .hint{font-family:var(--sans);text-transform:none;letter-spacing:0;color:var(--text-dim);font-size:11.5px;margin-left:auto}
+.input,.textarea,.select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-family:var(--sans);font-size:14px;outline:none;transition:all 0.15s}
+.input:focus,.textarea:focus,.select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.textarea{resize:vertical;min-height:64px;line-height:1.5}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.radio-group{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.radio-card{padding:14px 12px;background:var(--bg);border:1px solid var(--border);border-radius:10px;cursor:pointer;text-align:center;transition:all 0.15s}
+.radio-card:hover{border-color:var(--text-muted)}
+.radio-card.active{border-color:var(--accent);background:var(--accent-soft)}
+.radio-card .edition{font-family:var(--serif);font-size:20px;font-weight:500;color:var(--text)}
+.radio-card .year{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:0.05em}
+.template-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.template{aspect-ratio:3/4;background:var(--bg);border:1px solid var(--border);border-radius:8px;position:relative;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;padding:10px 8px;transition:all 0.15s}
+.template:hover{border-color:var(--accent)}
+.template.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.template-preview{flex:1;background:white;border-radius:4px;padding:8px;margin-bottom:6px;position:relative}
+.template-preview::before,.template-preview::after{content:'';position:absolute;background:#ddd;height:1.5px;border-radius:1px}
+.template-preview::before{top:20%;left:15%;right:15%}
+.template-preview::after{top:30%;left:15%;width:40%}
+.template-preview .line{position:absolute;background:#e5e5e5;height:1px;border-radius:1px;left:15%;right:15%}
+.template-preview .line:nth-child(1){top:55%}
+.template-preview .line:nth-child(2){top:62%;right:30%}
+.template-preview .line:nth-child(3){top:69%}
+.template-preview .line:nth-child(4){top:76%;right:40%}
+.template-preview .logo{position:absolute;top:5%;left:50%;transform:translateX(-50%);width:20px;height:20px;border-radius:50%;background:var(--accent)}
+.template-name{font-family:var(--sans);font-size:10.5px;font-weight:500;color:var(--text);text-align:center}
+.rubric-upload{border:1.5px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:all 0.15s}
+.rubric-upload:hover{border-color:var(--accent);background:var(--accent-soft)}
+.rubric-upload .icon{font-size:28px;margin-bottom:10px;display:block;opacity:0.6}
+.rubric-upload h4{font-family:var(--sans);font-size:13px;font-weight:500;margin-bottom:4px}
+.rubric-upload p{color:var(--text-dim);font-size:11.5px}
+.rubric-alt{display:flex;gap:8px;margin-top:10px;justify-content:center}
+.rubric-alt button{font-size:11px;color:var(--text-muted);background:var(--bg);border:1px solid var(--border);padding:5px 10px;border-radius:6px;cursor:pointer;font-family:var(--sans)}
+.rubric-alt button:hover{color:var(--text);border-color:var(--accent)}
+.features-section{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-top:8px}
+.features-section h4{font-family:var(--serif);font-size:15px;font-weight:500;margin-bottom:4px}
+.features-section .sub{font-size:12px;color:var(--text-muted);margin-bottom:16px}
+.feature-toggle{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-subtle);cursor:pointer}
+.feature-toggle:last-child{border-bottom:none}
+.toggle-switch{width:32px;height:18px;background:var(--border);border-radius:100px;position:relative;flex-shrink:0;margin-top:2px;transition:background 0.2s;cursor:pointer}
+.toggle-switch::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:white;transition:transform 0.2s}
+.toggle-switch.on{background:var(--accent)}
+.toggle-switch.on::after{transform:translateX(14px)}
+.feature-info{flex:1}
+.feature-info h5{font-size:13px;font-weight:500;margin-bottom:2px}
+.feature-info p{font-size:11.5px;color:var(--text-dim);line-height:1.4}
+.feature-badge{font-family:var(--mono);font-size:9px;padding:2px 6px;border-radius:4px;letter-spacing:0.05em;text-transform:uppercase;font-weight:500}
+.feature-badge.pro{background:rgba(45,98,200,0.15);color:var(--accent)}
+.modal-foot{padding:20px 32px;border-top:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:center;background:var(--bg-card);border-radius:0 0 16px 16px}
+.foot-help{font-size:12px;color:var(--text-dim)}
+.foot-help kbd{font-family:var(--mono);background:var(--bg-elevated);border:1px solid var(--border);padding:2px 5px;border-radius:3px;font-size:10px}
+.btn-group{display:flex;gap:8px}
+.btn{padding:10px 18px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer}
+.btn:hover{background:var(--bg-hover)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:white;box-shadow:0 8px 16px -8px rgba(45,98,200,0.5)}
+.btn-primary:hover{background:#3B75E0}
+</style></head><body>
+<a class="back" href="index.html">← índice</a>
+<div class="backdrop"></div>
+
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-kicker">Nuevo workspace</div>
+    <h2>Comencemos con lo esencial.</h2>
+    <p>Configura tu documento antes de escribir. Puedes cambiar estas opciones después si cambias de idea.</p>
+    <div class="steps"><div class="step active"></div><div class="step active"></div><div class="step"></div></div>
+    <div class="step-labels"><span class="active">1. Básico</span><span class="active">2. Formato</span><span>3. Athena y features</span></div>
+  </div>
+
+  <div class="modal-body">
+
+    <div class="form-row">
+      <label class="form-label">Título del documento <span class="req">*</span></label>
+      <input class="input" value="Combate Naval de Iquique — análisis histórico" autofocus>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-row">
+        <label class="form-label">Materia / curso <span class="hint">opcional</span></label>
+        <input class="input" value="HIS-3120 · Historia Universal" placeholder="Código de la materia">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Profesor/a <span class="hint">opcional</span></label>
+        <input class="input" value="Dr. Ricardo Méndez">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Descripción breve <span class="hint">útil para Athena</span></label>
+      <textarea class="textarea" placeholder="Ej: Ensayo de 10 páginas sobre el Combate Naval de Iquique del 21 de mayo de 1879, analizando su dimensión militar, política y simbólica...">Ensayo grupal de análisis histórico-militar sobre el Combate Naval de Iquique. Formato APA 7. Extensión objetivo: 10-12 páginas. Grupo de 4 estudiantes.</textarea>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Formato de citación <span class="req">*</span></label>
+      <div class="radio-group">
+        <div class="radio-card active">
+          <div class="edition">APA 7</div>
+          <div class="year">2019 — actual</div>
+        </div>
+        <div class="radio-card">
+          <div class="edition">APA 6</div>
+          <div class="year">2010 — legacy</div>
+        </div>
+        <div class="radio-card" style="opacity: 0.5; cursor: not-allowed;">
+          <div class="edition">IEEE · Chicago · MLA</div>
+          <div class="year">próximamente</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Plantilla inicial <span class="hint">define la estructura del doc</span></label>
+      <div class="template-grid">
+        <div class="template active">
+          <div class="template-preview">
+            <div class="logo"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+          <div class="template-name">En blanco + tapa APA</div>
+        </div>
+        <div class="template">
+          <div class="template-preview">
+            <div class="logo"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+          <div class="template-name">Ensayo académico</div>
+        </div>
+        <div class="template">
+          <div class="template-preview">
+            <div class="logo"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+          <div class="template-name">Informe de laboratorio</div>
+        </div>
+        <div class="template">
+          <div class="template-preview">
+            <div class="logo"></div>
+            <div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div>
+          </div>
+          <div class="template-name">Tesis / memoria</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-label">Rúbrica de evaluación <span class="hint">Athena la lee y genera checklist automático</span></label>
+      <div class="rubric-upload">
+        <span class="icon">📋</span>
+        <h4>Arrastra aquí la rúbrica (PDF, DOCX, imagen) o pega el texto</h4>
+        <p>Athena parseará los criterios y los mostrará como checklist lateral. Al terminar el doc, alerta si algún criterio queda pendiente.</p>
+        <div class="rubric-alt">
+          <button>📄 Seleccionar archivo</button>
+          <button>📝 Pegar texto</button>
+          <button>✎ Escribir criterios manualmente</button>
+          <button>⏭ Omitir por ahora</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="features-section">
+        <h4>Features activables para este documento</h4>
+        <div class="sub">Como owner, decides qué habilitar. Los otros miembros heredan esta configuración. Cambiable después desde Configuración del doc.</div>
+
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Athena AI · compañera de redacción</h5>
+            <p>Sugiere correcciones, investiga temas, propone mejoras. Privado por usuario.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Chat del grupo</h5>
+            <p>Conversación informal entre miembros, privada al workspace.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Comentarios inline</h5>
+            <p>Anotar sobre texto seleccionado con hilo de respuestas.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Matemáticas avanzadas</h5>
+            <p>LaTeX, ecuaciones visuales, SymPy, gráficos. Útil para STEM.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch"></div>
+          <div class="feature-info">
+            <h5>Enlace público de solo lectura <span class="feature-badge pro">PRO</span></h5>
+            <p>Comparte el doc con URL pública sin login. Útil para presentaciones.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch"></div>
+          <div class="feature-info">
+            <h5>Dictado por voz y TTS</h5>
+            <p>Dicta texto al documento · escucha lectura en voz alta.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Índice automático (TOC)</h5>
+            <p>Se genera desde los títulos automáticamente.</p>
+          </div>
+        </div>
+        <div class="feature-toggle">
+          <div class="toggle-switch on"></div>
+          <div class="feature-info">
+            <h5>Versiones e historial</h5>
+            <p>Cada cambio queda archivado. Puedes restaurar versiones anteriores.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal-foot">
+    <div class="foot-help">
+      <kbd>ESC</kbd> cancelar · <kbd>↵</kbd> siguiente paso
+    </div>
+    <div class="btn-group">
+      <button class="btn">← Atrás</button>
+      <button class="btn btn-primary">Siguiente: Invitar miembros →</button>
+    </div>
+  </div>
+</div>
+</body></html>

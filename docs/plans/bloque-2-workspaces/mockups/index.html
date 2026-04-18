@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="UTF-8">
+<title>Workspaces v2 — Mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0F1419;
+  --bg-elevated: #161C23;
+  --bg-hover: #1C242D;
+  --border: #232B36;
+  --border-subtle: #1A2028;
+  --text: #E8EDF3;
+  --text-muted: #8B95A4;
+  --text-dim: #525E6E;
+  --accent: #2D62C8;
+  --accent-hover: #3B75E0;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --serif: 'Fraunces', Georgia, serif;
+  --sans: 'Inter', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(45,98,200,0.08), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(16,185,129,0.04), transparent 50%);
+  color: var(--text);
+  min-height: 100vh;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 1200px; margin: 0 auto; padding: 80px 48px; }
+header { margin-bottom: 80px; border-bottom: 1px solid var(--border); padding-bottom: 48px; }
+.brand {
+  display: inline-flex; align-items: center; gap: 12px;
+  font-family: var(--mono); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 24px;
+}
+.brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 16px var(--accent); }
+h1 {
+  font-family: var(--serif); font-size: 72px; font-weight: 500;
+  line-height: 1.02; letter-spacing: -0.035em; margin-bottom: 20px;
+  color: var(--text);
+}
+h1 em { font-style: italic; color: var(--text-muted); font-weight: 400; }
+.subtitle {
+  font-size: 19px; line-height: 1.55; color: var(--text-muted);
+  max-width: 680px; font-weight: 400;
+}
+.meta {
+  display: flex; gap: 32px; margin-top: 32px; flex-wrap: wrap;
+  font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+}
+.meta span strong { color: var(--text); font-weight: 500; }
+
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  text-decoration: none;
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(45,98,200,0.06) 0%, transparent 50%);
+  opacity: 0; transition: opacity 0.3s;
+}
+.card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -12px rgba(45,98,200,0.3);
+}
+.card:hover::before { opacity: 1; }
+.card-num {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim); letter-spacing: 0.08em;
+  margin-bottom: 16px; display: block;
+}
+.card h3 {
+  font-family: var(--serif); font-size: 22px; font-weight: 500;
+  letter-spacing: -0.02em; margin-bottom: 10px; line-height: 1.25;
+}
+.card p {
+  font-size: 13.5px; line-height: 1.55; color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.card-arrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--mono); font-size: 11px; font-weight: 500;
+  color: var(--accent); letter-spacing: 0.05em; text-transform: uppercase;
+}
+.card-arrow svg { transition: transform 0.3s; }
+.card:hover .card-arrow svg { transform: translateX(4px); }
+
+.section-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+  color: var(--text-dim); text-transform: uppercase;
+  margin: 80px 0 24px; display: block;
+}
+.section-label::before { content: '— '; }
+
+.decisions {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px 32px; padding: 32px; border: 1px solid var(--border);
+  border-radius: 12px; background: var(--bg-elevated);
+}
+.decision { display: flex; justify-content: space-between; gap: 16px; font-size: 13px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; }
+.decision:last-child, .decision:nth-last-child(2) { border-bottom: none; }
+.decision-key { color: var(--text-muted); font-family: var(--mono); font-size: 11px; }
+.decision-val { color: var(--text); font-weight: 500; text-align: right; }
+
+.footnote {
+  margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border);
+  font-size: 13px; color: var(--text-dim); font-style: italic;
+}
+@media (max-width: 800px) {
+  .grid { grid-template-columns: 1fr; }
+  .decisions { grid-template-columns: 1fr; }
+  h1 { font-size: 48px; }
+  .container { padding: 40px 24px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="brand">
+      <div class="brand-dot"></div>
+      Workspaces v2 · Mockups · 2026-04-18
+    </div>
+    <h1>Workspaces <em>reimaginado</em> desde cero.</h1>
+    <p class="subtitle">
+      Módulo nuevo de redacción colaborativa para estudiantes universitarios chilenos y latinoamericanos. Editor Lexical + Yjs, Athena AI como compañera de redacción, formato APA 7 nativo, rúbricas evaluables automáticas, matemáticas avanzadas, y tres vías de comunicación claras en un solo lienzo.
+    </p>
+    <div class="meta">
+      <span><strong>51+</strong> features</span>
+      <span><strong>4</strong> sub-bloques (2a→2d)</span>
+      <span><strong>21</strong> decisiones consolidadas</span>
+      <span>Motor: <strong>Lexical</strong> (Meta)</span>
+      <span>Collab: <strong>Yjs CRDT</strong></span>
+    </div>
+  </header>
+
+  <div class="grid">
+    <a class="card" href="01-lista-workspaces.html">
+      <span class="card-num">01 / DASHBOARD</span>
+      <h3>Lista de workspaces</h3>
+      <p>Grid de documentos, carpetas jerárquicas, búsqueda, filtros, favoritos. Punto de entrada al módulo.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="02-editor-principal.html">
+      <span class="card-num">02 / EDITOR</span>
+      <h3>Editor principal (3 zonas)</h3>
+      <p>Documento central paper-style, panel Athena con staging privado, chat grupal inferior, sidebar con índice y rúbrica.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="03-crear-documento.html">
+      <span class="card-num">03 / ONBOARDING</span>
+      <h3>Crear documento</h3>
+      <p>Diálogo inicial con título, materia, edición APA, plantilla, carga de rúbrica y features activables por el owner.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="04-tapa-editable.html">
+      <span class="card-num">04 / CUBIERTA</span>
+      <h3>Tapa del documento</h3>
+      <p>Editor de portada con plantillas institucional/estándar, campos título/autor/profesor/semestre. Guardable como template.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="05-athena-panel-detallado.html">
+      <span class="card-num">05 / ATHENA</span>
+      <h3>Panel Athena detallado</h3>
+      <p>Análisis en 3 secciones (Correcciones / Contenido / Sugerencias), chat privado, rate-limit visible, CTA upgrade.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="06-modo-enfoque.html">
+      <span class="card-num">06 / FOCUS</span>
+      <h3>Modo enfoque</h3>
+      <p>Distracción cero. Solo el documento y una toolbar mínima flotante. Para escribir sin ruido.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="07-vista-mobile.html">
+      <span class="card-num">07 / MÓVIL</span>
+      <h3>Vista mobile responsive</h3>
+      <p>Desktop adaptado a móvil. Lectura, comentarios y Athena mantienen su poder en pantalla pequeña.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+    <a class="card" href="08-compartir-dialog.html">
+      <span class="card-num">08 / COMPARTIR</span>
+      <h3>Diálogo de compartir</h3>
+      <p>URL pública con invitación embebida, invitación directa por email, permisos owner/editor/viewer.</p>
+      <span class="card-arrow">Abrir <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8m0 0L7 3m4 4l-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+    </a>
+  </div>
+
+  <span class="section-label">Decisiones consolidadas</span>
+  <div class="decisions">
+    <div class="decision"><span class="decision-key">Nombre</span><span class="decision-val">Workspaces</span></div>
+    <div class="decision"><span class="decision-key">Motor editor</span><span class="decision-val">Lexical (Meta)</span></div>
+    <div class="decision"><span class="decision-key">Colaboración</span><span class="decision-val">Yjs CRDT + WebSocket</span></div>
+    <div class="decision"><span class="decision-key">IA</span><span class="decision-val">Athena · Claude Haiku 4.5</span></div>
+    <div class="decision"><span class="decision-key">Formato</span><span class="decision-val">APA 7 (+ IEEE/Chicago/MLA)</span></div>
+    <div class="decision"><span class="decision-key">Matemáticas</span><span class="decision-val">KaTeX + MathLive + SymPy</span></div>
+    <div class="decision"><span class="decision-key">Identidad visual</span><span class="decision-val">Híbrido · Temas Conniku + tipografía propia</span></div>
+    <div class="decision"><span class="decision-key">Prioridad</span><span class="decision-val">Desktop-first · mobile decente</span></div>
+    <div class="decision"><span class="decision-key">Tapa</span><span class="decision-val">Plantillas institucional/estándar</span></div>
+    <div class="decision"><span class="decision-key">Rúbricas</span><span class="decision-val">Upload + checklist automática</span></div>
+    <div class="decision"><span class="decision-key">Edición Athena</span><span class="decision-val">Sugerir + botón Aplicar</span></div>
+    <div class="decision"><span class="decision-key">Historial Athena</span><span class="decision-val">Privado por usuario</span></div>
+  </div>
+
+  <p class="footnote">
+    Mockups estáticos HTML generados el 2026-04-18 durante jornada nocturna. Revisión y aprobación por Cristian pendiente al regreso. Cualquier pantalla puede ajustarse antes de implementar en React.
+  </p>
+</div>
+</body>
+</html>

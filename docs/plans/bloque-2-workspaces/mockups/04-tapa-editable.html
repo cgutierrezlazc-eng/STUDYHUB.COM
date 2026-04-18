@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es-CL"><head>
+<meta charset="UTF-8"><title>04 · Tapa editable</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0F1419;--bg-elevated:#161C23;--bg-hover:#222A34;--border:#232B36;--border-subtle:#1C232B;--text:#E8EDF3;--text-muted:#8B95A4;--text-dim:#525E6E;--accent:#2D62C8;--accent-soft:rgba(45,98,200,0.12);--success:#10B981;--warning:#F59E0B;--serif:'Fraunces',Georgia,serif;--sans:'Inter',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+.back{position:fixed;top:14px;left:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-elevated);z-index:10}
+.topbar{padding:14px 24px;background:var(--bg-elevated);border-bottom:1px solid var(--border-subtle);display:flex;align-items:center;gap:14px}
+.topbar h1{font-family:var(--serif);font-size:16px;font-weight:500;letter-spacing:-0.01em}
+.topbar .sub{font-family:var(--mono);font-size:11px;color:var(--text-dim)}
+.topbar .actions{margin-left:auto;display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--text);font-family:var(--sans);font-size:12.5px;font-weight:500;cursor:pointer}
+.btn:hover{background:var(--bg-hover)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:white}
+.btn-primary:hover{background:#3B75E0}
+.app{display:grid;grid-template-columns:300px 1fr 320px;height:calc(100vh - 60px)}
+.sidebar{background:var(--bg);border-right:1px solid var(--border-subtle);padding:24px 20px;overflow-y:auto}
+.panel-head{font-family:var(--mono);font-size:10.5px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.template-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;cursor:pointer;transition:all 0.15s}
+.template-card:hover{border-color:var(--accent)}
+.template-card.active{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.template-thumb{aspect-ratio:3/4;background:#fafafa;border-radius:6px;padding:14px 10px;font-family:'Times New Roman',serif;color:#333;position:relative;overflow:hidden;font-size:5.5px;line-height:1.3}
+.template-thumb .logo-box{position:absolute;top:10%;left:50%;transform:translateX(-50%);width:18%;height:10%;background:#ddd;border-radius:3px}
+.template-thumb .t-title{position:absolute;top:28%;left:10%;right:10%;text-align:center;font-weight:700;font-size:7px}
+.template-thumb .t-sub{position:absolute;top:42%;left:15%;right:15%;text-align:center;font-size:5px;color:#666}
+.template-thumb .t-author{position:absolute;top:62%;left:15%;right:15%;text-align:center;font-size:5px}
+.template-thumb .t-date{position:absolute;bottom:8%;left:10%;right:10%;text-align:center;font-size:5px;color:#666}
+.template-name{font-size:11.5px;font-weight:500;margin-top:8px;text-align:center;color:var(--text)}
+.template-meta{font-family:var(--mono);font-size:9px;color:var(--text-dim);text-align:center;margin-top:2px}
+.preview-area{background:#2a3038;overflow-y:auto;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px}
+.paper-cover{background:white;color:#1a1a1a;width:100%;max-width:612px;aspect-ratio:8.5/11;padding:100px 96px;font-family:'Times New Roman',serif;font-size:12pt;box-shadow:0 30px 80px -20px rgba(0,0,0,0.7);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+.cover-logo{width:70px;height:70px;background:linear-gradient(135deg,#2D62C8 0%,#5B84D9 100%);border-radius:12px;display:grid;place-items:center;color:white;font-family:var(--serif);font-size:36px;font-weight:600;margin-bottom:40px;box-shadow:0 10px 30px -10px rgba(45,98,200,0.4)}
+.cover-university{font-size:11pt;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px;color:#4a4a4a}
+.cover-faculty{font-size:10pt;margin-bottom:4px;color:#4a4a4a;letter-spacing:0.1em;text-transform:uppercase}
+.cover-career{font-size:10pt;color:#666;margin-bottom:80px}
+.cover-title{font-family:'Times New Roman',serif;font-size:22pt;font-weight:700;line-height:1.25;margin-bottom:14px;color:#000;max-width:90%}
+.cover-subtitle{font-family:'Times New Roman',serif;font-size:13pt;font-style:italic;color:#444;margin-bottom:60px}
+.cover-presented{font-size:10pt;color:#666;margin-bottom:8px}
+.cover-authors{font-size:11pt;line-height:1.7;margin-bottom:40px}
+.cover-author-name{font-weight:500;color:#111}
+.cover-prof-label{font-size:10pt;color:#666;margin-bottom:4px}
+.cover-prof{font-size:11pt;color:#111;margin-bottom:80px}
+.cover-city-date{position:absolute;bottom:96px;left:0;right:0;text-align:center;font-size:11pt;color:#333}
+.editable{outline:1px dashed transparent;transition:outline 0.15s;cursor:text}
+.editable:hover{outline-color:var(--accent)}
+.editable:focus{outline:2px solid var(--accent);outline-offset:4px;background:rgba(45,98,200,0.04)}
+.field-panel{background:var(--bg);border-left:1px solid var(--border-subtle);padding:24px 20px;overflow-y:auto}
+.field-group{margin-bottom:22px}
+.field-label{font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.field-label .lock{font-size:10px;color:var(--text-dim)}
+.field-input{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:8px;font-family:var(--sans);font-size:13px;outline:none}
+.field-input:focus{border-color:var(--accent)}
+.field-input[readonly]{background:var(--bg);color:var(--text-dim)}
+.save-template-box{background:linear-gradient(135deg,rgba(45,98,200,0.08),rgba(168,85,247,0.05));border:1px solid rgba(45,98,200,0.2);border-radius:10px;padding:14px;margin-top:24px}
+.save-template-box h4{font-family:var(--serif);font-size:14px;font-weight:500;margin-bottom:4px}
+.save-template-box p{font-size:11.5px;color:var(--text-muted);line-height:1.45;margin-bottom:10px}
+.save-template-box button{width:100%;padding:8px;background:var(--accent);color:white;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.preset-chip{padding:6px 8px;font-size:11px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;text-align:center;font-family:var(--sans)}
+.preset-chip:hover{border-color:var(--accent);color:var(--text)}
+</style></head><body>
+<a class="back" href="index.html">← índice</a>
+
+<div class="topbar">
+  <h1>Editor de tapa</h1>
+  <span class="sub">Combate Naval de Iquique · HIS-3120</span>
+  <div class="actions">
+    <button class="btn">↶ Deshacer</button>
+    <button class="btn">👁 Vista previa</button>
+    <button class="btn btn-primary">✓ Aplicar tapa al documento</button>
+  </div>
+</div>
+
+<div class="app">
+  <!-- Templates sidebar -->
+  <aside class="sidebar">
+    <div class="panel-head">
+      <span>Plantillas institucionales</span>
+    </div>
+
+    <div class="template-card active">
+      <div class="template-thumb">
+        <div class="logo-box"></div>
+        <div class="t-title">Combate Naval de Iquique</div>
+        <div class="t-sub">Análisis histórico</div>
+        <div class="t-author">Cristian Gutiérrez · María Jofré<br>Juan Miranda · Daniela Rojas</div>
+        <div class="t-date">Santiago, Chile · 2026</div>
+      </div>
+      <div class="template-name">U. de Chile — Historia</div>
+      <div class="template-meta">ESTÁNDAR APA 7</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb">
+        <div class="logo-box" style="background:#0052cc"></div>
+        <div class="t-title" style="font-family:sans-serif">TÍTULO DEL DOCUMENTO</div>
+        <div class="t-sub" style="font-family:sans-serif">subtítulo opcional</div>
+        <div class="t-author" style="font-family:sans-serif">Nombre Apellido</div>
+        <div class="t-date" style="font-family:sans-serif">2026</div>
+      </div>
+      <div class="template-name">PUC — Ingeniería</div>
+      <div class="template-meta">IEEE STYLE</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb">
+        <div class="logo-box" style="background:#006847"></div>
+        <div class="t-title">Facultad de Ciencias</div>
+        <div class="t-sub">Documento académico</div>
+        <div class="t-author">Autor(es)</div>
+        <div class="t-date">USACH · 2026</div>
+      </div>
+      <div class="template-name">USACH — Ciencias</div>
+      <div class="template-meta">APA 7</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb">
+        <div class="logo-box" style="background:#c41e3a"></div>
+        <div class="t-title" style="font-family:'Fraunces',serif">Ensayo</div>
+        <div class="t-sub" style="font-style:italic">investigación académica</div>
+        <div class="t-author">Autor</div>
+        <div class="t-date">2026</div>
+      </div>
+      <div class="template-name">UDEC — Humanidades</div>
+      <div class="template-meta">APA 7</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb" style="background:#fffce0">
+        <div class="logo-box" style="background:#333"></div>
+        <div class="t-title">Tesis de grado</div>
+        <div class="t-sub">memoria de titulación</div>
+        <div class="t-author">Candidato</div>
+        <div class="t-date">2026</div>
+      </div>
+      <div class="template-name">USM — Ingeniería civil</div>
+      <div class="template-meta">IEEE</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb" style="background:#fff">
+        <div style="position:absolute;inset:0;border:2px double #999;margin:8px"></div>
+        <div class="t-title" style="top:32%">Documento minimalista</div>
+        <div class="t-author">Autor</div>
+        <div class="t-date">2026</div>
+      </div>
+      <div class="template-name">Minimalista</div>
+      <div class="template-meta">GENÉRICO</div>
+    </div>
+
+    <div class="template-card">
+      <div class="template-thumb" style="background:#0F1419;color:white">
+        <div class="logo-box" style="background:#2D62C8"></div>
+        <div class="t-title" style="color:white">DOCUMENTO MODERNO</div>
+        <div class="t-sub" style="color:#8B95A4">estilo contemporáneo</div>
+        <div class="t-author" style="color:white">Autor</div>
+        <div class="t-date" style="color:#8B95A4">2026</div>
+      </div>
+      <div class="template-name">Moderno dark</div>
+      <div class="template-meta">CONTEMPORÁNEO</div>
+    </div>
+
+    <div class="template-card" style="border-style:dashed;opacity:0.7">
+      <div class="template-thumb" style="display:grid;place-items:center;background:var(--bg-elevated);color:var(--text-muted)">
+        <span style="font-size:18px">+</span>
+      </div>
+      <div class="template-name">Plantilla en blanco</div>
+      <div class="template-meta">DESDE CERO</div>
+    </div>
+  </aside>
+
+  <!-- Preview -->
+  <div class="preview-area">
+    <div class="paper-cover">
+      <div class="cover-logo">U</div>
+      <div class="cover-university editable" contenteditable="false">Universidad de Chile</div>
+      <div class="cover-faculty editable">Facultad de Filosofía y Humanidades</div>
+      <div class="cover-career editable">Escuela de Historia</div>
+
+      <div class="cover-title editable" contenteditable="false">Combate Naval de Iquique: análisis histórico-militar en el marco de la Guerra del Pacífico</div>
+      <div class="cover-subtitle editable">21 de mayo de 1879 y su dimensión simbólica</div>
+
+      <div class="cover-presented">Presentado por:</div>
+      <div class="cover-authors">
+        <div class="editable"><span class="cover-author-name">Cristian Gutiérrez Lazcano</span></div>
+        <div class="editable"><span class="cover-author-name">María Jofré Salinas</span></div>
+        <div class="editable"><span class="cover-author-name">Juan Miranda Cortés</span></div>
+        <div class="editable"><span class="cover-author-name">Daniela Rojas Prieto</span></div>
+      </div>
+
+      <div class="cover-prof-label">Profesor guía:</div>
+      <div class="cover-prof editable">Dr. Ricardo Méndez Rojas</div>
+
+      <div class="cover-city-date editable">
+        Santiago de Chile, 2026
+      </div>
+    </div>
+  </div>
+
+  <!-- Fields panel -->
+  <aside class="field-panel">
+    <div class="field-group">
+      <label class="field-label">Título principal <span class="lock">🔒 requerido</span></label>
+      <input class="field-input" value="Combate Naval de Iquique: análisis histórico-militar en el marco de la Guerra del Pacífico">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Subtítulo</label>
+      <input class="field-input" value="21 de mayo de 1879 y su dimensión simbólica">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Universidad</label>
+      <input class="field-input" value="Universidad de Chile">
+      <div class="presets">
+        <div class="preset-chip">U. de Chile</div>
+        <div class="preset-chip">PUC</div>
+        <div class="preset-chip">USACH</div>
+        <div class="preset-chip">UDEC</div>
+        <div class="preset-chip">USM</div>
+        <div class="preset-chip">UAI</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Facultad</label>
+      <input class="field-input" value="Facultad de Filosofía y Humanidades">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Escuela / carrera</label>
+      <input class="field-input" value="Escuela de Historia">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Autor(es)</label>
+      <input class="field-input" value="Cristian Gutiérrez, María Jofré, Juan Miranda, Daniela Rojas">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Profesor/a guía</label>
+      <input class="field-input" value="Dr. Ricardo Méndez Rojas">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Materia / asignatura</label>
+      <input class="field-input" value="HIS-3120 · Historia Universal">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Semestre</label>
+      <input class="field-input" value="2026-1">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Ciudad</label>
+      <input class="field-input" value="Santiago de Chile">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Año</label>
+      <input class="field-input" value="2026" style="max-width: 120px;">
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Logo institucional</label>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <div style="width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(135deg, #2D62C8, #5B84D9); display: grid; place-items: center; color: white; font-family: var(--serif); font-size: 20px; font-weight: 600;">U</div>
+        <button class="btn" style="flex: 1; font-size: 11.5px;">↑ Subir logo personalizado</button>
+      </div>
+    </div>
+
+    <div class="save-template-box">
+      <h4>Guarda esta tapa como plantilla</h4>
+      <p>La tendrás disponible en tus próximos workspaces. Puedes marcarla como estándar personal o compartirla con tu grupo de estudio.</p>
+      <button>+ Guardar como "Tapa U. de Chile · Historia 2026"</button>
+    </div>
+  </aside>
+</div>
+</body></html>

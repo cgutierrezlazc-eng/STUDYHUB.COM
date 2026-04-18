@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es-CL"><head>
+<meta charset="UTF-8"><title>06 · Modo enfoque</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0D12;--bg-elevated:#131820;--border:#1E2630;--text:#E8EDF3;--text-muted:#8B95A4;--text-dim:#525E6E;--accent:#2D62C8;--warning:#F59E0B;--serif:'Fraunces',Georgia,serif;--sans:'Inter',-apple-system,sans-serif;--mono:'JetBrains Mono',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;overflow:hidden;height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 50% 120%,rgba(45,98,200,0.05),transparent 60%);pointer-events:none}
+.back{position:fixed;top:14px;left:14px;font-family:var(--mono);font-size:10px;color:var(--text-dim);text-decoration:none;padding:6px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-elevated);z-index:100}
+
+/* Status minimal */
+.status{position:fixed;top:20px;right:24px;display:flex;align-items:center;gap:16px;font-family:var(--mono);font-size:11px;color:var(--text-dim);z-index:30;padding:8px 14px;background:rgba(19,24,32,0.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:100px}
+.status-item{display:flex;align-items:center;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%}
+.dot.green{background:#10B981;box-shadow:0 0 6px #10B981}
+
+/* Exit focus */
+.exit-focus{position:fixed;top:20px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(19,24,32,0.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:100px;font-family:var(--mono);font-size:11px;color:var(--text-muted);cursor:pointer;z-index:30}
+.exit-focus:hover{color:var(--text)}
+.exit-focus kbd{font-family:var(--mono);background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px;font-size:9px}
+
+/* Paper centered */
+.canvas{height:100vh;overflow-y:auto;display:flex;justify-content:center;padding:80px 20px}
+.paper{background:#FFFEFB;color:#1a1a1a;max-width:720px;width:100%;padding:80px 110px;border-radius:4px;box-shadow:0 50px 120px -30px rgba(0,0,0,0.8);font-family:'Times New Roman',Times,serif;font-size:13pt;line-height:2.0;min-height:90vh;position:relative}
+.paper h1{font-family:var(--serif);font-size:32px;font-weight:500;text-align:center;margin:0 0 12px;color:#000;line-height:1.15;letter-spacing:-0.02em}
+.paper .subtitle{text-align:center;color:#666;font-family:var(--serif);font-style:italic;font-size:15px;margin-bottom:60px}
+.paper h2{font-family:'Times New Roman',serif;font-size:16pt;font-weight:700;margin:32px 0 14px;color:#000}
+.paper p{margin:0;text-indent:1.27cm;color:#1a1a1a}
+.paper p.no-indent{text-indent:0}
+.paper .cursor-line{display:inline-block;width:2px;background:var(--accent);vertical-align:-3px;animation:blink 1.1s ease-in-out infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+.sentence-focus{background:rgba(45,98,200,0.06);padding:2px 4px;margin:0 -4px;border-radius:3px}
+
+/* Minimal toolbar */
+.mini-toolbar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);display:flex;gap:2px;background:rgba(22,28,35,0.85);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:5px;z-index:30;box-shadow:0 20px 40px -10px rgba(0,0,0,0.5)}
+.mini-btn{width:32px;height:32px;display:grid;place-items:center;background:transparent;border:none;color:var(--text-muted);border-radius:7px;cursor:pointer;font-family:var(--sans);font-size:13px}
+.mini-btn:hover{background:rgba(255,255,255,0.06);color:var(--text)}
+.mini-btn.active{background:rgba(45,98,200,0.2);color:var(--text)}
+.mini-sep{width:1px;background:rgba(255,255,255,0.06);margin:4px 2px}
+
+/* Word counter */
+.wc-badge{position:fixed;bottom:32px;right:24px;padding:8px 14px;background:rgba(19,24,32,0.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:100px;font-family:var(--mono);font-size:11px;color:var(--text-muted);z-index:30;display:flex;align-items:center;gap:12px}
+.wc-badge strong{color:var(--text)}
+.wc-ring{width:22px;height:22px;border-radius:50%;background:conic-gradient(var(--warning) 0deg 230deg,rgba(255,255,255,0.06) 230deg);display:grid;place-items:center;position:relative}
+.wc-ring::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--bg)}
+.wc-ring-text{position:relative;z-index:1;font-size:8px;color:var(--text)}
+
+/* Typewriter mode indicator */
+.mode-indicator{position:fixed;bottom:32px;left:24px;padding:8px 14px;background:rgba(19,24,32,0.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.06);border-radius:100px;font-family:var(--mono);font-size:10.5px;color:var(--text-dim);z-index:30;display:flex;align-items:center;gap:8px}
+.mode-indicator-icon{width:12px;height:12px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+
+/* Inspirational */
+.q-nook{position:fixed;top:80px;left:50%;transform:translateX(-50%);max-width:520px;font-family:var(--serif);font-style:italic;font-size:14px;color:var(--text-dim);text-align:center;opacity:0.4}
+</style></head><body>
+<a class="back" href="index.html">← índice</a>
+
+<div class="exit-focus">
+  <span>Modo enfoque activado</span>
+  <span>·</span>
+  <kbd>ESC</kbd>
+  <span>salir</span>
+</div>
+
+<div class="status">
+  <div class="status-item"><span class="dot green"></span>Guardado · hace 3s</div>
+  <span>·</span>
+  <div class="status-item">⌘K atajos</div>
+</div>
+
+<div class="q-nook">«La concentración es la raíz de todas las capacidades humanas.» — Bruce Lee</div>
+
+<div class="canvas">
+  <div class="paper">
+    <h1>Combate Naval de Iquique</h1>
+    <div class="subtitle">análisis histórico-militar · 21 de mayo de 1879</div>
+
+    <h2>1. Contexto histórico</h2>
+    <p>El 21 de mayo de 1879 marca un punto de inflexión en la Guerra del Pacífico, conflicto armado que enfrentó a Chile contra la alianza conformada por Bolivia y Perú entre 1879 y 1884. El combate naval desarrollado frente a las costas de Iquique, pese a su resultado táctico adverso para la escuadra chilena con el hundimiento de la corbeta Esmeralda, adquirió posteriormente una dimensión simbólica que trascendió el cálculo estratégico inmediato del enfrentamiento.</p>
+
+    <p>La posición geoestratégica de Iquique durante el siglo XIX se explica fundamentalmente por tres factores económicos convergentes: la explotación intensiva de los yacimientos salitreros del desierto de Atacama, la infraestructura portuaria desarrollada para la exportación del nitrato hacia los mercados europeos, y la presencia significativa de capital británico asociado a dicha industria extractiva.</p>
+
+    <p class="sentence-focus">Como señala Sater (2007), «el bloqueo naval peruano sobre Iquique pretendía neutralizar la capacidad exportadora chilena y, por extensión, su capacidad de financiar el esfuerzo bélico terrestre». Esta interpretación resulta consistente con los análisis posteriores de la historiografía militar latinoamericana que sitúan al control del Pacífico como clave determinante del desenlace del conflicto<span class="cursor-line">&nbsp;</span></p>
+
+    <h2>2. Desarrollo del combate</h2>
+    <p>La mañana del 21 de mayo encontró a la escuadra chilena, al mando del capitán de fragata Arturo Prat Chacón, patrullando las aguas de Iquique con la corbeta Esmeralda y la goleta Covadonga...</p>
+  </div>
+</div>
+
+<!-- Mini toolbar -->
+<div class="mini-toolbar">
+  <button class="mini-btn" title="Deshacer">↶</button>
+  <button class="mini-btn" title="Rehacer">↷</button>
+  <div class="mini-sep"></div>
+  <button class="mini-btn active" style="font-weight:700" title="Negrita">B</button>
+  <button class="mini-btn" style="font-style:italic" title="Cursiva">I</button>
+  <button class="mini-btn" style="text-decoration:underline" title="Subrayado">U</button>
+  <div class="mini-sep"></div>
+  <button class="mini-btn" title="Cita">❝</button>
+  <button class="mini-btn" title="Comentar">💬</button>
+  <div class="mini-sep"></div>
+  <button class="mini-btn" title="Fórmula">∑</button>
+  <button class="mini-btn" title="APA cita">[A]</button>
+</div>
+
+<div class="wc-badge">
+  <div class="wc-ring"><span class="wc-ring-text">64%</span></div>
+  <div>
+    <strong>1.284</strong> palabras
+    <span style="color: var(--text-dim);">· meta 2.000</span>
+  </div>
+</div>
+
+<div class="mode-indicator">
+  <span class="mode-indicator-icon"></span>
+  Modo typewriter · línea actual centrada
+</div>
+
+</body></html>
