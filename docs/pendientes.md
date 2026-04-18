@@ -209,6 +209,18 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 
 ---
 
+## 🆕 Módulos nuevos que Cristian quiere (fuera del Bloque 2 Workspaces)
+
+### Chat conversacional en Biblioteca
+- **Qué**: dentro de la página Biblioteca, un chat donde el usuario pregunta algo puntual
+- **Respuesta esperada**: link directo al libro/paper de la Biblioteca Conniku que contiene la información
+- **Origen**: solicitado por Cristian 2026-04-18 al responder Athena-5 del Bloque 2
+- **Bloque sugerido**: módulo dedicado posterior a Workspaces (no mezclar)
+- **Why no integrar a Athena en Workspaces**: Cristian prefiere no gastar tokens/recursos conectando Athena con Biblioteca. La funcionalidad vive mejor como chat propio de Biblioteca, con su propia UX.
+- **Cuándo presentarlo**: cuando Cristian pida "pendientes" o cuando toquemos el módulo Biblioteca
+
+---
+
 ## Bloques sugeridos por orden de prioridad recomendado
 
 1. **Bloque 2**: Trabajos Grupales seguridad + estabilidad (C1 + A11 + tests mínimos)
