@@ -24,6 +24,7 @@ import { getAuthorColor } from '../components/workspaces/authorColors';
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
 const TOKEN_KEY = 'conniku_token';
+const REFRESH_TOKEN_KEY = 'conniku_refresh_token';
 const BACKOFF_BASE_MS = 1000;
 const BACKOFF_MAX_MS = 30_000;
 
@@ -80,6 +81,40 @@ export function calcBackoffMs(attempt: number): number {
 
 function getToken(): string {
   return localStorage.getItem(TOKEN_KEY) ?? '';
+}
+
+/**
+ * Intenta refrescar el access token vía /auth/refresh.
+ * Retorna el nuevo token si tiene éxito, null si el refresh también falló.
+ * Limpia localStorage en caso de fallo (usuario debe re-loguearse).
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  const refreshTok = localStorage.getItem(REFRESH_TOKEN_KEY);
+  if (!refreshTok) return null;
+
+  const apiBase =
+    (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL ||
+    'https://studyhub-api-bpco.onrender.com';
+
+  try {
+    const res = await fetch(`${apiBase}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshTok }),
+    });
+    if (!res.ok) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      return null;
+    }
+    const data = await res.json();
+    const newToken = data.access_token as string;
+    if (!newToken) return null;
+    localStorage.setItem(TOKEN_KEY, newToken);
+    return newToken;
+  } catch {
+    return null;
+  }
 }
 
 function getWsBase(): string {
@@ -186,17 +221,45 @@ export function createWorkspaceProvider(
     if (FATAL_CLOSE_CODES.has(event.code)) {
       fatalError = true;
       currentStatus = 'fatal';
-      // Limpiar timer pendiente de reconexión
       if (reconnectTimer !== null) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
     } else if (event.code === TOKEN_EXPIRED_CODE) {
-      // Token expirado: no fatal. WorkspaceEditor manejará el refresh.
+      // Token expirado: intentar refresh y reconectar con nuevo token.
       fatalError = false;
       currentStatus = 'disconnected';
+      void handleTokenExpired();
     }
   });
+
+  // ── Flujo de refresh → reconnect al recibir 4010 ──────────────────
+  async function handleTokenExpired(): Promise<void> {
+    if (destroyed) return;
+    const newToken = await refreshAccessToken();
+    if (destroyed) return;
+
+    if (!newToken) {
+      // Refresh falló → fatal (usuario debe re-loguearse)
+      fatalError = true;
+      currentStatus = 'fatal';
+      if (reconnectTimer !== null) {
+        clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+      }
+      return;
+    }
+
+    // Reconstruir URL con nuevo token y reconectar
+    const newUrl = buildWsUrl(docId, newToken);
+    (provider as unknown as { url: string }).url = newUrl;
+    reconnectAttempt = 0;
+    if (reconnectTimer !== null) {
+      clearTimeout(reconnectTimer);
+      reconnectTimer = null;
+    }
+    provider.connect();
+  }
 
   // ── Handler window.online ─────────────────────────────────────────
   function handleOnline(): void {

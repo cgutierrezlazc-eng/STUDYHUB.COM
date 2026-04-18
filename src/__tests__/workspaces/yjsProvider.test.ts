@@ -202,3 +202,130 @@ describe('createWorkspaceProvider', () => {
     removeSpy.mockRestore();
   });
 });
+
+// ─── Tests del flujo refresh token (close code 4010) ───────────────────────────
+
+describe('refreshAccessToken + flujo 4010', () => {
+  const originalFetch = globalThis.fetch;
+  let fetchMock: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    fetchMock = vi.fn();
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock;
+    localStorage.clear();
+    localStorage.setItem('conniku_refresh_token', 'refresh-xyz');
+
+    MockWebsocketProvider.mockImplementation(() => mockProviderInstance);
+    MockIndexeddbPersistence.mockImplementation(() => mockIndexedDbInstance);
+    vi.clearAllMocks();
+    mockProviderInstance.awareness.setLocalStateField.mockClear();
+    mockProviderInstance.awareness.getStates.mockReturnValue(new Map());
+  });
+
+  afterEach(() => {
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = originalFetch;
+    localStorage.clear();
+  });
+
+  it('refreshAccessToken retorna nuevo token al éxito y lo guarda en localStorage', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ access_token: 'new-token-abc' }),
+    });
+
+    const { refreshAccessToken } = await import('../../services/yjsProvider');
+    const result = await refreshAccessToken();
+
+    expect(result).toBe('new-token-abc');
+    expect(localStorage.getItem('conniku_token')).toBe('new-token-abc');
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/auth/refresh'),
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ refresh_token: 'refresh-xyz' }),
+      })
+    );
+  });
+
+  it('refreshAccessToken retorna null y limpia tokens si el refresh es 401', async () => {
+    localStorage.setItem('conniku_token', 'old-token');
+    fetchMock.mockResolvedValue({ ok: false, status: 401, json: () => Promise.resolve({}) });
+
+    const { refreshAccessToken } = await import('../../services/yjsProvider');
+    const result = await refreshAccessToken();
+
+    expect(result).toBeNull();
+    expect(localStorage.getItem('conniku_token')).toBeNull();
+    expect(localStorage.getItem('conniku_refresh_token')).toBeNull();
+  });
+
+  it('refreshAccessToken retorna null si no hay refresh token en localStorage', async () => {
+    localStorage.removeItem('conniku_refresh_token');
+
+    const { refreshAccessToken } = await import('../../services/yjsProvider');
+    const result = await refreshAccessToken();
+
+    expect(result).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('al recibir close 4010, llama refresh y reconecta con el nuevo token', async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ access_token: 'refreshed-token-123' }),
+    });
+
+    const { createWorkspaceProvider } = await import('../../services/yjsProvider');
+    createWorkspaceProvider('doc-4010', USER_META);
+
+    // Localizar el handler de 'connection-close' registrado durante init
+    const closeCalls = mockProviderInstance.on.mock.calls.filter(
+      (call: unknown[]) => call[0] === 'connection-close'
+    );
+    expect(closeCalls.length).toBeGreaterThanOrEqual(1);
+    const closeHandler = closeCalls[0][1] as (evt: { code: number } | null) => void;
+
+    // Resetear connect para contar la reconexión post-refresh
+    mockProviderInstance.connect.mockClear();
+
+    // Disparar close 4010
+    closeHandler({ code: 4010 });
+
+    // Esperar resolución del refresh y reconexión
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        expect.stringContaining('/auth/refresh'),
+        expect.any(Object)
+      );
+    });
+    await vi.waitFor(() => {
+      expect(mockProviderInstance.connect).toHaveBeenCalled();
+    });
+
+    expect(localStorage.getItem('conniku_token')).toBe('refreshed-token-123');
+  });
+
+  it('al recibir 4010 con refresh fallido, queda en estado fatal y no reconecta', async () => {
+    fetchMock.mockResolvedValue({ ok: false, status: 401, json: () => Promise.resolve({}) });
+
+    const { createWorkspaceProvider } = await import('../../services/yjsProvider');
+    const handle = createWorkspaceProvider('doc-4010-fail', USER_META);
+
+    const closeCalls = mockProviderInstance.on.mock.calls.filter(
+      (call: unknown[]) => call[0] === 'connection-close'
+    );
+    const closeHandler = closeCalls[0][1] as (evt: { code: number } | null) => void;
+
+    mockProviderInstance.connect.mockClear();
+    closeHandler({ code: 4010 });
+
+    await vi.waitFor(() => {
+      expect(fetchMock).toHaveBeenCalled();
+    });
+    // Microtask flush para que el setState de 'fatal' termine
+    await new Promise((r) => setTimeout(r, 0));
+
+    expect(handle.status$.get()).toBe('fatal');
+    expect(mockProviderInstance.connect).not.toHaveBeenCalled();
+  });
+});

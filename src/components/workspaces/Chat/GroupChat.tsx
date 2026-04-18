@@ -204,7 +204,8 @@ export default function GroupChat({
           placeholder={isConnected ? 'Escribe un mensaje... (Enter para enviar)' : 'Sin conexión'}
           disabled={!isConnected}
           rows={2}
-          maxLength={2000}
+          // 4000: paridad con backend MAX_CHAT_CONTENT_CHARS y REST Pydantic max_length.
+          maxLength={4000}
           aria-label="Mensaje"
           aria-disabled={!isConnected}
         />
