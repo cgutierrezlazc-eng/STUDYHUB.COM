@@ -13,6 +13,9 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Paquete compartido entre backend (Python) y frontend (TS espejo).
+      // Ver tsconfig.json paths y scripts/verify-legal-texts-sync.sh.
+      shared: path.resolve(__dirname, './shared'),
     },
     dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
   },

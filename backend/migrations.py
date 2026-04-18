@@ -334,6 +334,49 @@ def migrate():
                 except Exception as e:
                     logger.warning(f"Could not add university_connections.{col_name}: {e}")
 
+    # ─── user_agreements (Bloque 1 auth+edad) ──────────────────────
+    # Tabla probatoria de aceptación de textos legales por usuario.
+    # CLAUDE.md §Verificación de edad - Componente 3.
+    # SQLAlchemy create_all() ya creó la tabla si no existía. Aquí
+    # ejecutamos el backfill retroactivo (SQL plano) para usuarios
+    # registrados antes del Bloque 1.
+    if inspector.has_table("user_agreements") and inspector.has_table("users"):
+        try:
+            with engine.begin() as conn:
+                # Contar usuarios sin aceptación registrada
+                result = conn.execute(text("""
+                    SELECT COUNT(*) FROM users u
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM user_agreements ua
+                        WHERE ua.user_id = u.id
+                        AND ua.document_type LIKE 'age_declaration%'
+                    )
+                """))
+                pending = result.scalar() or 0
+                if pending > 0:
+                    conn.execute(text("""
+                        INSERT INTO user_agreements (
+                            user_id, document_type, text_version,
+                            text_version_hash, accepted_at_utc, created_at
+                        )
+                        SELECT
+                            u.id,
+                            'age_declaration_legacy',
+                            'legacy',
+                            'legacy_no_hash_available',
+                            COALESCE(u.tos_accepted_at, u.created_at),
+                            CURRENT_TIMESTAMP
+                        FROM users u
+                        WHERE NOT EXISTS (
+                            SELECT 1 FROM user_agreements ua
+                            WHERE ua.user_id = u.id
+                            AND ua.document_type LIKE 'age_declaration%'
+                        )
+                    """))
+                    logger.info(f"Backfilled {pending} legacy age_declaration rows in user_agreements")
+        except Exception as e:
+            logger.warning(f"Could not backfill user_agreements: {e}")
+
     logger.info("Migrations complete.")
 
 

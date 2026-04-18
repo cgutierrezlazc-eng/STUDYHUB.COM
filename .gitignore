@@ -52,8 +52,13 @@ profile-mockups.html
 .claude/logs/
 .claude/session.lock
 .claude/UNFREEZE_ACTIVE
+.claude/worktrees/
 .claude/*.cache
 .claude/*.tmp
+
+# Metadata interna de procesos de reset (no va a repo público)
+inventario-reset.txt
+plan-fase-*.md
 
 # IDE / JDK
 .jdk/

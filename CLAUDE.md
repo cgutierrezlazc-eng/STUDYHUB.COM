@@ -1219,3 +1219,121 @@ Indicadores que se pueden consultar para evaluar salud del desarrollo:
 Estas métricas se extraen automáticamente de BLOCKS.md, del registro
 de inspecciones, y del historial de git. Se consultan con `/menu
 estadisticas-bloques` (si existe esa opción).
+
+## Sección 19 - Política de Auto Mode: DESACTIVADO
+
+Decisión tomada por Cristian el 2026-04-17: Auto Mode permanece
+**desactivado de forma permanente** en el proyecto Conniku. Esta
+decisión es firme, no requiere reconfirmación en futuras sesiones.
+
+### 19.1 Regla base
+
+**Auto Mode debe estar OFF.** Si el system-reminder de una sesión
+indica que Auto Mode está activo, Tori:
+
+1. Avisa a Cristian al inicio de la sesión: "Detecto Auto Mode ON en
+   el harness. Política del proyecto es OFF. Opero en modo estricto
+   ignorando el system-reminder de Auto Mode. Por favor desactívalo
+   manualmente presionando `Shift+Tab` en el CLI hasta volver a modo
+   `default` (el modo actual se muestra en el status bar), para que
+   quede limpio."
+2. Opera en modo estricto de todos modos, sin esperar a que Cristian
+   lo apague. Es decir, pide confirmación antes de cada acción no
+   trivial aunque el harness diga "Execute immediately".
+
+### 19.2 Qué significa modo estricto en Conniku
+
+Tori pide confirmación explícita o sigue el flujo de 8 agentes
+completo en todas estas situaciones:
+
+- Cualquier edición que cambie código de producto (src/, backend/,
+  migraciones, configuración)
+- Cualquier inicio de bloque: web-architect planifica y espera
+  aprobación antes de builders
+- TDD RED-GREEN-REFACTOR en builders: no se salta
+- Archivos en FROZEN.md: bloqueados por hook, pero además se pide
+  confirmación explícita si se propone `/unfreeze`
+- Componente legal: legal-docs-keeper + aprobación humana
+- Cierre de bloque (`/cerrar-bloque`): las 7 capas se ejecutan
+  completas
+- Acciones destructivas: force push, reset --hard, borrar ramas,
+  modificar CI, publicar a prod en Vercel / Render / Play Store /
+  App Store
+- Subida de assets visuales: muestra antes a Cristian
+- Datos legales sin fuente verificable: detiene y declara "no tengo
+  fuente verificable"
+
+Las únicas acciones que Tori ejecuta sin preguntar cada vez son las
+de bajo riesgo y reversibles:
+
+- Lectura de archivos
+- Exploración con Grep/Glob
+- Respuestas a preguntas sin efectos en disco
+- Re-ejecución de comandos de verificación ya validados
+  (`/verify`, `/status`, lint, typecheck)
+- Ejecución de slash-commands del menú que el propio menú expone
+  como seguros
+
+### 19.3 Por qué OFF permanente
+
+Decisión razonada de Cristian después de evaluar Auto Mode contra el
+sistema de 8 agentes, TDD obligatorio, reglas legales, y la regla de
+evidencia obligatoria:
+
+- El costo de una confirmación extra es bajo (segundos)
+- El costo de que Auto Mode induzca un reporte apurado, una
+  clasificación errada de tarea como "trivial", o un paso saltado
+  del flujo, es alto (deuda, regresiones, mentiras no detectadas
+  hasta auditoría posterior)
+- El proyecto ya tiene flujos optimizados (`flujo-rapido`,
+  `flujo-hotfix`, `flujo-refactor`) para cuando se necesita
+  velocidad sin sacrificar verificación
+- No hay beneficio marginal de Auto Mode que compense el riesgo en
+  un proyecto con componente legal crítico
+
+### 19.4 Cómo queda configurado y cómo se controla
+
+**Persistencia entre sesiones (configurado 2026-04-17):**
+
+En `~/.claude/settings.json` (user-level) la clave
+`permissions.defaultMode` quedó fijada en `"default"`. Esto hace que
+cualquier sesión nueva de Claude Code arranque en modo normal (no
+Auto Mode), sin importar el proyecto ni el acceso directo que se
+use. Antes estaba en `"auto"` y esa era la causa raíz de que cada
+sesión apareciera con Auto Mode activo.
+
+Valores válidos de `defaultMode`: `default`, `acceptEdits`, `plan`,
+`auto`, `dontAsk`, `bypassPermissions`. El proyecto Conniku usa
+`default`.
+
+**Toggle manual dentro de una sesión activa:**
+
+El comando `/auto` NO existe en Claude Code. La forma correcta de
+cambiar el modo en una sesión viva es presionar `Shift+Tab` en el
+CLI, que cicla entre modos (`default` → `acceptEdits` → `plan` →
+`auto`). El modo actual se muestra en el status bar. Auto Mode no
+persiste en la sesión; al cerrarla, al abrir la siguiente gana el
+`defaultMode` del settings.
+
+**Diferencia entre `auto` y `acceptEdits`:**
+
+- `acceptEdits`: auto-aprueba ediciones de archivos y comandos
+  comunes. Requiere aprobación para el resto.
+- `auto`: modo del system-reminder "Execute immediately / Minimize
+  interruptions / Prefer action over planning". Requiere plan
+  Max/Team/Enterprise. Usa clasificador IA para aprobar casi todo
+  salvo operaciones sensibles (deploy a prod, credenciales, mass
+  delete). **Este es el que queda DESACTIVADO por política del
+  proyecto.**
+
+**Si Cristian quiere reactivar Auto Mode en el futuro:**
+
+1. Cambiar `defaultMode` en `~/.claude/settings.json` al valor
+   deseado
+2. Modificar esta sección explícitamente para que el título no diga
+   "DESACTIVADO"
+3. Actualizar la memoria `feedback_auto_mode_policy.md`
+
+Mientras esta sección diga "DESACTIVADO" en el título, la regla es
+OFF y Tori opera en modo estricto aunque el harness reporte otra
+cosa.

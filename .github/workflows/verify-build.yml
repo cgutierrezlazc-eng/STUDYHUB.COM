@@ -131,6 +131,34 @@ jobs:
           echo "::endgroup::"
 
       # ============================================================
+      # Frontend — Vitest (TDD obligatorio según CLAUDE.md)
+      # ============================================================
+      - name: "[4/6] Frontend tests - vitest"
+        run: |
+          echo "::group::Vitest"
+          if grep -q '"test"' package.json; then
+            npm run test -- --reporter=default
+          else
+            echo "No test script in package.json, skipping"
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
+      # Sincronía de textos legales entre Python y TypeScript
+      # (CLAUDE.md §Verificación de edad)
+      # ============================================================
+      - name: "[4/6] Legal texts sync (Python ↔ TypeScript)"
+        run: |
+          echo "::group::Legal texts sync"
+          if [ -x "scripts/verify-legal-texts-sync.sh" ]; then
+            bash scripts/verify-legal-texts-sync.sh
+          else
+            echo "::error::scripts/verify-legal-texts-sync.sh missing or not executable"
+            exit 1
+          fi
+          echo "::endgroup::"
+
+      # ============================================================
       # VERIFICACIÓN 5: Archivos frozen
       # ============================================================
       - name: "[5/6] Frozen files protection"

@@ -2,7 +2,7 @@
 #
 # GENERADO AUTOMATICAMENTE - NO EDITAR DIRECTAMENTE
 #
-# Ultima regeneracion: 2026-04-17 04:19:14
+# Ultima regeneracion: 2026-04-18 03:53:21
 # Fuente: FROZEN.md (raiz del repo)
 # Regenerado por: .claude/scripts/regen-frozen-list.sh
 #
@@ -19,6 +19,9 @@
 .husky/pre-commit
 backend/hr_routes.py
 package.json
+scripts/verify-legal-texts-sync.sh
+shared/legal_texts.py
+shared/legal_texts.ts
 src/admin/tools/BibliotecaDocumentos.tsx
 src/pages/Communities.tsx
 src/pages/Conferences.tsx

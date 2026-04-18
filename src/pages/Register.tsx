@@ -5,6 +5,7 @@ import { Gender, Language } from '../types';
 import { api } from '../services/api';
 import TermsOfService from '../components/TermsOfService';
 import { getCurrencyForCountry, formatUsdToLocal } from '../utils/currency';
+import { AGE_DECLARATION_HASH, AGE_DECLARATION_TEXT_V1 } from 'shared/legal_texts';
 import {
   searchUniversities,
   getUniversitiesForCountry,
@@ -125,6 +126,13 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
     username: '',
     country: 'CL',
     tosAccepted: false,
+    // Componente 2 CLAUDE.md §Verificación de edad: checkbox declarativo
+    // de 5 puntos. El hash y la zona horaria se envían al backend como
+    // evidencia probatoria (se persisten en tabla user_agreements).
+    ageDeclarationAccepted: false,
+    acceptedTextVersionHash: AGE_DECLARATION_HASH,
+    userTimezone:
+      typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone || null : null,
     academicStatus: 'estudiante' as 'estudiante' | 'egresado' | 'titulado',
     offersMentoring: false,
     mentoringServices: [] as string[],
@@ -284,6 +292,10 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
         !form.mentoringPricePerHour
       ) {
         setError(t('err.enterMentoringPrice'));
+        return false;
+      }
+      if (!form.ageDeclarationAccepted) {
+        setError('Debes marcar la declaración jurada de edad para continuar con el registro.');
         return false;
       }
       if (!form.tosAccepted) {
@@ -1748,6 +1760,46 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
                   onChange={(e) => update('bio', e.target.value)}
                   rows={3}
                 />
+              </div>
+
+              {/* Declaración jurada de edad (CLAUDE.md §Componente 2) */}
+              <div
+                className="auth-tos-check"
+                style={{
+                  marginTop: 20,
+                  padding: 16,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: 8,
+                }}
+                data-testid="age-declaration-block"
+              >
+                <label
+                  className="auth-checkbox-label"
+                  style={{ alignItems: 'flex-start', gap: 12 }}
+                >
+                  <input
+                    type="checkbox"
+                    data-testid="age-declaration-checkbox"
+                    checked={form.ageDeclarationAccepted}
+                    onChange={(e) => update('ageDeclarationAccepted', e.target.checked)}
+                    aria-describedby="age-declaration-text"
+                    style={{ marginTop: 4 }}
+                  />
+                  <pre
+                    id="age-declaration-text"
+                    style={{
+                      whiteSpace: 'pre-wrap',
+                      fontFamily: 'inherit',
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                      margin: 0,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {AGE_DECLARATION_TEXT_V1}
+                  </pre>
+                </label>
               </div>
 
               {/* TOS Checkbox */}

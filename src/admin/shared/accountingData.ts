@@ -170,7 +170,7 @@ export const ACCOUNT_CATEGORIES: AccountCategory[] = [
   },
   {
     key: 'api_ia',
-    name: 'APIs de Inteligencia Artificial',
+    name: 'APIs de Asistentes Inteligentes',
     group: 'costo_operacional',
     codigoSII: '5.1.02',
     defaultIVA: false,

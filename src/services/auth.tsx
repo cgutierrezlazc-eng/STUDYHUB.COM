@@ -95,8 +95,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.setItem(TOKEN_KEY, data.token);
             if (data.refresh_token) localStorage.setItem(REFRESH_TOKEN_KEY, data.refresh_token);
             setUser(data.user);
-          } catch (err) {
-            console.error('Google login error:', err);
+          } catch (err: any) {
+            // Backend devuelve 403 con { requires_age_declaration: true, message }
+            // cuando Google OAuth crea una cuenta nueva y falta la declaración de edad.
+            // TODO(bloque-1-iter-2): renderizar un GoogleAgeDeclarationModal que capture
+            // fecha de nacimiento + checkbox de 5 puntos y reintente con el mismo credential.
+            // Por ahora, mensaje de error visible para no dejar al usuario con pantalla en blanco.
+            const msg = err?.message || '';
+            if (msg.includes('requires_age_declaration') || msg.includes('mayor de 18')) {
+              alert(
+                'Para crear una cuenta con Google debes confirmar tu fecha de nacimiento y ' +
+                  'aceptar la declaración de edad. Por ahora, usa el registro con correo y contraseña.'
+              );
+            } else {
+              console.error('Google login error:', err);
+            }
           }
           resolve();
         },
@@ -123,6 +136,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         avatar: formData.avatar || '',
         username: formData.username || null,
         tos_accepted: formData.tosAccepted || false,
+        // Componente 2 CLAUDE.md §Verificación de edad: checkbox declarativo
+        // de 5 puntos + hash del texto aceptado + zona horaria del cliente.
+        age_declaration_accepted: formData.ageDeclarationAccepted || false,
+        accepted_text_version_hash: formData.acceptedTextVersionHash || '',
+        user_timezone: formData.userTimezone || null,
         academic_status: formData.academicStatus || 'estudiante',
         offers_mentoring: formData.offersMentoring || false,
         mentoring_services: formData.mentoringServices || [],

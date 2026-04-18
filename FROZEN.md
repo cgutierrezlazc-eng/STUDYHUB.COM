@@ -29,3 +29,6 @@
 | `src/admin/tools/BibliotecaDocumentos.tsx` | hooks order | 2026-04-16 | Guard movido después de hooks (rules-of-hooks fix) |
 | `src/pages/HRDashboard.tsx` | completo | 2026-04-16 | 9 botones HR + rules-of-hooks fix |
 | `backend/hr_routes.py` | completo | 2026-04-16 | 53 rutas, 3 generadores PDF legales (Anexo, Pacto HE, Descuento Vol.) |
+| `shared/legal_texts.py` | completo | 2026-04-18 | bloque-1-auth-edad: fuente de verdad del texto canónico + hash SHA-256. Editar requiere bump AGE_DECLARATION_VERSION y actualizar espejo .ts (test CI valida sincronía) |
+| `shared/legal_texts.ts` | completo | 2026-04-18 | bloque-1-auth-edad: espejo TypeScript del texto canónico. Hash hardcoded debe coincidir con shared/legal_texts.py |
+| `scripts/verify-legal-texts-sync.sh` | completo | 2026-04-18 | bloque-1-auth-edad: gate CI que valida sincronía hash Python↔TS. Si divergen, bloquea merge |
