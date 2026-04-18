@@ -1767,6 +1767,42 @@ class CollabDocumentMessage(Base):
     user = relationship("User")
 
 
+# ─── Legal agreements ────────────────────────────────────────────
+#
+# Registro probatorio de aceptación de textos legales por usuario.
+# Requerido por CLAUDE.md §Verificación de edad - Componente 3.
+# Cada fila prueba: quién aceptó qué texto, cuándo, desde dónde, con qué agente.
+#
+# Tipos de document_type:
+#   - 'age_declaration'        → checkbox de 5 puntos al registro (v1+)
+#   - 'age_declaration_legacy' → backfill de usuarios anteriores al Bloque 1
+#   - 'tos'                    → Términos y Condiciones (bloque futuro)
+#   - 'privacy'                → Política de Privacidad (bloque futuro)
+#
+# El hash SHA-256 del texto aceptado vive en shared/legal_texts.py (fuente
+# de verdad) y su espejo en shared/legal_texts.ts.
+
+class UserAgreement(Base):
+    __tablename__ = "user_agreements"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    document_type = Column(String(40), nullable=False, index=True)
+    text_version = Column(String(20), nullable=False)
+    text_version_hash = Column(String(64), nullable=False, index=True)
+    accepted_at_utc = Column(DateTime, nullable=False, default=datetime.utcnow)
+    user_timezone = Column(String(64), nullable=True)
+    client_ip = Column(String(64), nullable=True)
+    user_agent = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User")
+
+    __table_args__ = (
+        Index("ix_user_agreements_user_doc", "user_id", "document_type"),
+    )
+
+
 def init_db():
     Base.metadata.create_all(engine)
     _ensure_columns()
