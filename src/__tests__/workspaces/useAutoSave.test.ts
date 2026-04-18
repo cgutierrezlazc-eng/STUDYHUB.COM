@@ -267,4 +267,53 @@ describe('useAutoSave', () => {
     expect(typeof callArg.content_yjs).toBe('string');
     expect(callArg.content_yjs.length).toBeGreaterThan(0);
   });
+
+  it('no dispara PATCH cuando enabled=false aunque haya updates Yjs', async () => {
+    const awareness = makeAwareness(['user-1']);
+    renderHook(() =>
+      useAutoSave({
+        ydoc,
+        docId: 'ws-1',
+        currentUserId: 'user-1',
+        awareness: awareness as unknown as import('y-websocket').WebsocketProvider['awareness'],
+        updateFn: mockUpdateWorkspace,
+        debounceMs: 2000,
+        enabled: false,
+      })
+    );
+
+    act(() => {
+      ydoc.getText('lexical').insert(0, 'contenido');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(mockUpdateWorkspace).not.toHaveBeenCalled();
+  });
+
+  it('no dispara PATCH cuando docId es vacío (guarda contra PATCH /workspaces//)', async () => {
+    const awareness = makeAwareness(['user-1']);
+    renderHook(() =>
+      useAutoSave({
+        ydoc,
+        docId: '',
+        currentUserId: 'user-1',
+        awareness: awareness as unknown as import('y-websocket').WebsocketProvider['awareness'],
+        updateFn: mockUpdateWorkspace,
+        debounceMs: 2000,
+      })
+    );
+
+    act(() => {
+      ydoc.getText('lexical').insert(0, 'contenido');
+    });
+
+    await act(async () => {
+      vi.advanceTimersByTime(3000);
+    });
+
+    expect(mockUpdateWorkspace).not.toHaveBeenCalled();
+  });
 });

@@ -31,6 +31,13 @@ export interface UseAutoSaveOptions {
   awareness: WebsocketProvider['awareness'];
   updateFn: (docId: string, patch: UpdateWorkspaceInput) => Promise<unknown>;
   debounceMs?: number;
+  /**
+   * Si es `false`, el hook NO dispara PATCHes aunque haya updates del Y.Doc.
+   * Útil cuando el docId aún no está resuelto o el provider no está listo,
+   * para evitar llamadas a `PATCH /workspaces//` con id vacío.
+   * Default: `true`.
+   */
+  enabled?: boolean;
 }
 
 export interface UseAutoSaveResult {
@@ -84,6 +91,7 @@ export function useAutoSave({
   awareness,
   updateFn,
   debounceMs = 2000,
+  enabled = true,
 }: UseAutoSaveOptions): UseAutoSaveResult {
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('saved');
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -97,12 +105,16 @@ export function useAutoSave({
   }, []);
 
   useEffect(() => {
+    if (!enabled || !docId) {
+      // Hook deshabilitado o docId vacío: no registrar listener.
+      return;
+    }
+
     function handleUpdate() {
       if (!isMountedRef.current) return;
 
       setSaveStatus('unsaved');
 
-      // Resetear el debounce timer
       if (debounceTimerRef.current !== null) {
         clearTimeout(debounceTimerRef.current);
       }
@@ -110,9 +122,8 @@ export function useAutoSave({
       debounceTimerRef.current = setTimeout(async () => {
         if (!isMountedRef.current) return;
 
-        // Verificar si este cliente es el elegido para guardar
         if (!isChosenClient(currentUserId, awareness)) {
-          return; // otro cliente se encarga
+          return;
         }
 
         setSaveStatus('saving');
@@ -139,7 +150,7 @@ export function useAutoSave({
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [ydoc, docId, currentUserId, awareness, updateFn, debounceMs]);
+  }, [ydoc, docId, currentUserId, awareness, updateFn, debounceMs, enabled]);
 
   return { saveStatus };
 }

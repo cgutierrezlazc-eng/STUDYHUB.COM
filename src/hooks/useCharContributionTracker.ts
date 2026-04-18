@@ -49,7 +49,7 @@ export function useCharContributionTracker({
   }, []);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !docId || !memberId) return;
 
     const ytext = ydoc.getText(YTEXT_KEY);
     prevLengthRef.current = ytext.length;
