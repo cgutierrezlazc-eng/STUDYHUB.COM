@@ -211,12 +211,12 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 
 ## 🆕 Módulos nuevos que Cristian quiere (fuera del Bloque 2 Workspaces)
 
-### Limpieza tier MAX legacy (bloque futuro previo a 2c Athena)
-- **Qué**: eliminar todas las referencias al string `"max"` en backend (config ya tiene solo `free` + `pro`/Conniku Pro)
-- **Ubicaciones**: `backend/server.py` (~6 `require_tier(user, "max")`), `backend/seed_ceo_profile.py:107`, `backend/tutor_contract.py:78`, `backend/migrations/add_workspaces_tables.sql:100`, `docs/plans/bloque-2-workspaces/plan-maestro.md:47,138`
-- **Origen**: confirmado por Cristian 2026-04-18 — el plan MAX ya no existe ni está considerado para futuro
-- **Decisión**: hacerlo como flujo-refactor dedicado antes de abrir Bloque 2c (Athena depende del tier system)
-- **Memoria**: `memory/project_tier_max_cleanup.md`
+### Limpieza tier MAX legacy — contrato tutor pendiente
+- **Estado**: código backend/docs/migrations ✅ limpiados 2026-04-18 commit `1f9b240`
+- **Pendiente**: `backend/tutor_contract.py:78` cláusula "suscripción MAX vigente" con descuento 50%
+- **Problema**: texto legal firmado por tutores. Modificar unilateralmente viola CLAUDE.md §Cumplimiento
+- **Fix requerido**: Cristian decide (a) eliminar cláusula, (b) renombrar a Conniku Pro, (c) rediseñar beneficio
+- **Tutores ya firmados**: pueden requerir addendum
 
 ### Sub-bloque 2b Workspaces — iter-2 post-deploy (baja prioridad)
 - **Origen**: hallazgos de code-reviewer Capa 2 + gap-finder Capa 5 del 2b
