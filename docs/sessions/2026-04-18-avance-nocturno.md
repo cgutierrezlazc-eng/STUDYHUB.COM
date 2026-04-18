@@ -82,3 +82,24 @@
 **Frontend-builder**: sigue corriendo en background (agentId ac7e5e55...)
 
 **Próximo paso**: esperar frontend. Cuando termine, consolido commit atómico 2a backend+frontend + rama + PR.
+
+### 2026-04-18 ~07:30 — 2a PR #5 ABIERTO
+
+**PR #5**: https://github.com/cgutierrezlazc-eng/STUDYHUB.COM/pull/5
+
+**Rama**: `bloque-2a-workspaces-fundacion`
+**Commit**: `19da6ef`
+**Base**: `main` (`b02ff0d`)
+
+**Status**: CI en Vercel + GitHub Actions corriendo automáticamente.
+
+**Capas 2, 3, 5 corriendo en paralelo** (subagentes habilitados vía Bloque 0 permisos):
+- Capa 2 · code-reviewer adversarial → `docs/reports/2026-04-18-capa-2-code-reviewer-2a-workspaces.md`
+- Capa 3 · truth-auditor → `docs/reports/2026-04-18-capa-3-truth-auditor-2a-workspaces.md`
+- Capa 5 · gap-finder → `docs/reports/2026-04-18-capa-5-gap-finder-2a-workspaces.md`
+
+Cuando los 3 reportes terminen + CI verde, 2a queda en:
+- Capa 6 (inspección tuya en Vercel preview) — tú al despertar
+- Capa 7 (merge + BLOCKS.md + FROZEN.md + snapshot) — tras tu OK
+
+**Tori no mergea a main sin tu OK**. Si los 3 reportes llegan PASS, decido si arranco 2b en paralelo o espero tu revisión antes. Registro decisión.

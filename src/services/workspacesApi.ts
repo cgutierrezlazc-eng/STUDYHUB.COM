@@ -108,12 +108,12 @@ export function listVersions(id: string): Promise<{ versions: WorkspaceVersion[]
 
 export function createVersion(
   id: string,
-  content: string,
+  contentYjs: string,
   label?: string
 ): Promise<WorkspaceVersion> {
   return apiFetch(`/workspaces/${id}/versions`, {
     method: 'POST',
-    body: JSON.stringify({ content, label }),
+    body: JSON.stringify({ content_yjs: contentYjs, label }),
   });
 }
 
@@ -129,6 +129,8 @@ export function validateInviteToken(token: string): Promise<InviteTokenInfo> {
   return apiFetch(`/workspaces/invite/${token}`);
 }
 
-export function acceptInvite(token: string): Promise<{ ok: boolean; workspace_id: string }> {
+export function acceptInvite(
+  token: string
+): Promise<{ ok: boolean; workspace_id: string; role: string; already_member: boolean }> {
   return apiFetch(`/workspaces/invite/${token}/accept`, { method: 'POST' });
 }

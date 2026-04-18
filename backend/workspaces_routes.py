@@ -19,6 +19,7 @@ from database import (
     WorkspaceDocument,
     WorkspaceMember,
     WorkspaceVersion,
+    gen_id,
     get_db,
 )
 from fastapi import APIRouter, Depends, HTTPException
@@ -90,9 +91,18 @@ def _check_access(
     return doc, member
 
 
-def _workspace_to_dict(doc: WorkspaceDocument, members: Optional[list] = None) -> dict:
-    """Serializa WorkspaceDocument a dict JSON."""
-    return {
+def _workspace_to_dict(
+    doc: WorkspaceDocument,
+    members: Optional[list] = None,
+    expose_share_token: bool = False,
+) -> dict:
+    """Serializa WorkspaceDocument a dict JSON.
+
+    El share_link_token solo se expone cuando `expose_share_token=True`
+    (solo owners). Viewers/editors no lo ven para evitar que compartan
+    enlaces públicos sin autorización del owner.
+    """
+    result = {
         "id": doc.id,
         "title": doc.title,
         "ownerId": doc.owner_id,
@@ -100,12 +110,14 @@ def _workspace_to_dict(doc: WorkspaceDocument, members: Optional[list] = None) -
         "apaEdition": doc.apa_edition,
         "options": doc.options,
         "isCompleted": doc.is_completed,
-        "shareLinkToken": doc.share_link_token,
         "contentYjs": doc.content_yjs,
         "createdAt": doc.created_at.isoformat() if doc.created_at else "",
         "updatedAt": doc.updated_at.isoformat() if doc.updated_at else "",
         "members": members or [],
     }
+    if expose_share_token:
+        result["shareLinkToken"] = doc.share_link_token
+    return result
 
 
 def _member_to_dict(m: WorkspaceMember) -> dict:
@@ -136,26 +148,45 @@ def _version_to_dict(v: WorkspaceVersion) -> dict:
 
 
 # ─── Pydantic schemas ─────────────────────────────────────────────
+#
+# Config:
+# - populate_by_name=True permite enviar los campos en snake_case (course_name)
+#   o camelCase (courseName). El frontend envía snake_case; backend los mapea.
+# - alias_generator convierte automáticamente snake_case ↔ camelCase.
+
+from pydantic import ConfigDict  # noqa: E402
 
 
-class CreateWorkspaceRequest(BaseModel):
+def _to_camel(snake: str) -> str:
+    parts = snake.split("_")
+    return parts[0] + "".join(w.capitalize() for w in parts[1:])
+
+
+class _WorkspaceBaseRequest(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=_to_camel,
+        populate_by_name=True,
+    )
+
+
+class CreateWorkspaceRequest(_WorkspaceBaseRequest):
     title: str = Field(..., min_length=1, max_length=255)
-    courseName: Optional[str] = Field(None, max_length=255)
+    course_name: Optional[str] = Field(None, max_length=255)
     professor: Optional[str] = Field(None, max_length=255)
     description: Optional[str] = None
-    apaEdition: str = Field("7", max_length=10)
-    templateId: Optional[str] = None
+    apa_edition: str = Field("7", max_length=10)
+    template_id: Optional[str] = None
     options: Optional[str] = None  # JSON string
-    initialRubricRaw: Optional[str] = None
+    initial_rubric_raw: Optional[str] = None
 
 
-class PatchWorkspaceRequest(BaseModel):
+class PatchWorkspaceRequest(_WorkspaceBaseRequest):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
-    courseName: Optional[str] = Field(None, max_length=255)
-    apaEdition: Optional[str] = Field(None, max_length=10)
+    course_name: Optional[str] = Field(None, max_length=255)
+    apa_edition: Optional[str] = Field(None, max_length=10)
     options: Optional[str] = None
-    coverData: Optional[str] = None
-    isCompleted: Optional[bool] = None
+    cover_data: Optional[str] = None
+    is_completed: Optional[bool] = None
 
 
 class AddMemberRequest(BaseModel):
@@ -167,7 +198,7 @@ class PatchMemberRequest(BaseModel):
     role: str
 
 
-class CreateVersionRequest(BaseModel):
+class CreateVersionRequest(_WorkspaceBaseRequest):
     content_yjs: str
     label: Optional[str] = Field(None, max_length=100)
 
@@ -189,10 +220,10 @@ def create_workspace(
     doc = WorkspaceDocument(
         title=title,
         owner_id=user.id,
-        course_name=data.courseName,
-        apa_edition=data.apaEdition or "7",
+        course_name=data.course_name,
+        apa_edition=data.apa_edition or "7",
         options=data.options or "{}",
-        rubric_raw=data.initialRubricRaw,
+        rubric_raw=data.initial_rubric_raw,
         created_at=datetime.utcnow(),
         updated_at=datetime.utcnow(),
     )
@@ -212,21 +243,29 @@ def create_workspace(
     db.refresh(doc)
 
     members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc.id).all()
-    return _workspace_to_dict(doc, [_member_to_dict(m) for m in members])
+    return _workspace_to_dict(
+        doc,
+        [_member_to_dict(m) for m in members],
+        expose_share_token=True,  # el creador es owner, puede ver el token
+    )
 
 
 @router.get("")
 def list_workspaces(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> list:
-    """Lista todos los workspaces donde el usuario es owner o miembro."""
+) -> dict:
+    """Lista todos los workspaces donde el usuario es owner o miembro.
+
+    Response: ``{"workspaces": [...]}`` envuelto para permitir metadata
+    futura (paginación, total, etc.) sin breaking change.
+    """
     owned_ids = [r[0] for r in db.query(WorkspaceDocument.id).filter(WorkspaceDocument.owner_id == user.id).all()]
     member_ids = [r[0] for r in db.query(WorkspaceMember.workspace_id).filter(WorkspaceMember.user_id == user.id).all()]
 
     all_ids = list(set(owned_ids + member_ids))
     if not all_ids:
-        return []
+        return {"workspaces": []}
 
     docs = (
         db.query(WorkspaceDocument)
@@ -238,11 +277,16 @@ def list_workspaces(
     result = []
     for doc in docs:
         members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc.id).all()
-        d = _workspace_to_dict(doc, [_member_to_dict(m) for m in members])
+        is_owner = doc.owner_id == user.id
+        d = _workspace_to_dict(
+            doc,
+            [_member_to_dict(m) for m in members],
+            expose_share_token=is_owner,
+        )
         d.pop("contentYjs", None)  # No enviar contenido Yjs en lista
         result.append(d)
 
-    return result
+    return {"workspaces": result}
 
 
 @router.get("/invite/{token}")
@@ -253,21 +297,77 @@ def get_invite(
 ) -> dict:
     """Valida un token de invitación y devuelve metadata del workspace.
 
-    Endpoint scaffold en 2a. La generación de tokens y aceptación con rol
-    configurable se implementa en 2d.
+    Endpoint scaffold en 2a. La generación de tokens con expiración y
+    roles configurables se implementa en 2d.
+
+    Response alineado con ``InviteTokenInfo`` del frontend.
+    """
+    doc = db.query(WorkspaceDocument).filter(WorkspaceDocument.share_link_token == token).first()
+    if not doc:
+        return {
+            "valid": False,
+            "workspace_id": None,
+            "workspace_title": None,
+            "owner_name": None,
+            "proposed_role": None,
+        }
+
+    owner = db.query(User).filter(User.id == doc.owner_id).first()
+    owner_name = owner.username if owner else "Desconocido"
+    if owner and hasattr(owner, "first_name") and owner.first_name:
+        owner_name = f"{owner.first_name} {owner.last_name or ''}".strip()
+
+    return {
+        "valid": True,
+        "workspace_id": doc.id,
+        "workspace_title": doc.title,
+        "course_name": doc.course_name,
+        "owner_name": owner_name,
+        "proposed_role": "editor",  # Default scaffold 2a; rol configurable en 2d
+        "token": token,
+    }
+
+
+@router.post("/invite/{token}/accept")
+def accept_invite(
+    token: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Acepta una invitación y agrega al usuario como miembro del workspace.
+
+    Scaffold 2a: usa el ``share_link_token`` del workspace y agrega al usuario
+    autenticado con rol "editor" (default). La verificación de expiración,
+    roles específicos por invitación y flujo de una-sola-vez queda para 2d.
     """
     doc = db.query(WorkspaceDocument).filter(WorkspaceDocument.share_link_token == token).first()
     if not doc:
         raise HTTPException(404, "Invitación inválida o expirada")
 
-    owner = db.query(User).filter(User.id == doc.owner_id).first()
-    return {
-        "id": doc.id,
-        "title": doc.title,
-        "courseName": doc.course_name,
-        "owner": _user_brief(owner),
-        "token": token,
-    }
+    # Evitar duplicar miembros
+    existing = (
+        db.query(WorkspaceMember)
+        .filter(
+            WorkspaceMember.workspace_id == doc.id,
+            WorkspaceMember.user_id == user.id,
+        )
+        .first()
+    )
+    if existing:
+        return {"ok": True, "workspace_id": doc.id, "role": existing.role, "already_member": True}
+
+    # Crear como editor por defecto (scaffold)
+    new_member = WorkspaceMember(
+        id=gen_id(),
+        workspace_id=doc.id,
+        user_id=user.id,
+        role="editor",
+        invited_at=datetime.utcnow(),
+        joined_at=datetime.utcnow(),
+    )
+    db.add(new_member)
+    db.commit()
+    return {"ok": True, "workspace_id": doc.id, "role": "editor", "already_member": False}
 
 
 @router.get("/{doc_id}")
@@ -276,10 +376,20 @@ def get_workspace(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    """Obtiene un workspace por ID. Requiere ser owner o miembro."""
+    """Obtiene un workspace por ID. Requiere ser owner o miembro.
+
+    El ``shareLinkToken`` solo se expone si el solicitante es owner,
+    para evitar que editors/viewers compartan el enlace público sin
+    autorización del owner.
+    """
     doc, _ = _check_access(doc_id, user, db)
     members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc.id).all()
-    return _workspace_to_dict(doc, [_member_to_dict(m) for m in members])
+    is_owner = doc.owner_id == user.id
+    return _workspace_to_dict(
+        doc,
+        [_member_to_dict(m) for m in members],
+        expose_share_token=is_owner,
+    )
 
 
 @router.patch("/{doc_id}")
@@ -296,23 +406,28 @@ def patch_workspace(
         stripped = data.title.strip()
         if stripped:
             doc.title = stripped
-    if data.courseName is not None:
-        doc.course_name = data.courseName
-    if data.apaEdition is not None:
-        doc.apa_edition = data.apaEdition
+    if data.course_name is not None:
+        doc.course_name = data.course_name
+    if data.apa_edition is not None:
+        doc.apa_edition = data.apa_edition
     if data.options is not None:
         doc.options = data.options
-    if data.coverData is not None:
-        doc.cover_data = data.coverData
-    if data.isCompleted is not None:
-        doc.is_completed = data.isCompleted
+    if data.cover_data is not None:
+        doc.cover_data = data.cover_data
+    if data.is_completed is not None:
+        doc.is_completed = data.is_completed
 
     doc.updated_at = datetime.utcnow()
     db.commit()
     db.refresh(doc)
 
     members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc.id).all()
-    return _workspace_to_dict(doc, [_member_to_dict(m) for m in members])
+    is_owner = doc.owner_id == user.id
+    return _workspace_to_dict(
+        doc,
+        [_member_to_dict(m) for m in members],
+        expose_share_token=is_owner,
+    )
 
 
 @router.delete("/{doc_id}")
@@ -341,11 +456,15 @@ def list_members(
     doc_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> list:
-    """Lista los miembros del workspace."""
+) -> dict:
+    """Lista los miembros del workspace.
+
+    Response: ``{"members": [...]}`` envuelto para permitir metadata
+    futura (roles count, invitaciones pendientes) sin breaking change.
+    """
     _check_access(doc_id, user, db)
     members = db.query(WorkspaceMember).filter(WorkspaceMember.workspace_id == doc_id).all()
-    return [_member_to_dict(m) for m in members]
+    return {"members": [_member_to_dict(m) for m in members]}
 
 
 @router.post("/{doc_id}/members", status_code=201)
@@ -458,8 +577,12 @@ def list_versions(
     doc_id: str,
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
-) -> list:
-    """Lista las versiones del workspace. Máximo 50 más recientes."""
+) -> dict:
+    """Lista las versiones del workspace. Máximo 50 más recientes.
+
+    Response: ``{"versions": [...]}`` envuelto para permitir metadata
+    futura (total, cursor de paginación) sin breaking change.
+    """
     _check_access(doc_id, user, db)
     versions = (
         db.query(WorkspaceVersion)
@@ -468,7 +591,7 @@ def list_versions(
         .limit(50)
         .all()
     )
-    return [_version_to_dict(v) for v in versions]
+    return {"versions": [_version_to_dict(v) for v in versions]}
 
 
 @router.post("/{doc_id}/versions", status_code=201)

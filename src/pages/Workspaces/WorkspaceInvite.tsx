@@ -97,7 +97,10 @@ export default function WorkspaceInvite({ onNavigate }: Props) {
         <p className="ws-invite-from">Fuiste invitado por {info.owner_name}</p>
         <h1 className="ws-invite-title">{info.workspace_title}</h1>
         <p className="ws-invite-role">
-          Rol: <strong>{roleLabel[info.proposed_role] ?? info.proposed_role}</strong>
+          Rol:{' '}
+          <strong>
+            {info.proposed_role ? (roleLabel[info.proposed_role] ?? info.proposed_role) : 'editor'}
+          </strong>
         </p>
         <div className="ws-invite-actions">
           <button

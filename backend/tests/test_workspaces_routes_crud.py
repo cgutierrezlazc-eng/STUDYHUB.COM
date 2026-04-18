@@ -167,7 +167,7 @@ def test_get_workspaces_lista_propios(client_and_user) -> None:
     # owner lista y ve el suyo
     resp = client.get("/workspaces", headers=h_owner)
     assert resp.status_code == 200
-    ids = [w["id"] for w in resp.json()]
+    ids = [w["id"] for w in resp.json()["workspaces"]]
     assert resp_create.json()["id"] in ids
 
 
@@ -186,7 +186,7 @@ def test_get_workspaces_excluye_ajenos(client_and_user) -> None:
     # other lista y NO debe ver ese workspace
     resp = client.get("/workspaces", headers=h_other)
     assert resp.status_code == 200
-    ids = [w["id"] for w in resp.json()]
+    ids = [w["id"] for w in resp.json()["workspaces"]]
     assert doc_id not in ids
 
 
@@ -298,7 +298,7 @@ def test_get_members_retorna_lista(client_and_user) -> None:
     resp = client.get(f"/workspaces/{doc_id}/members", headers=h_owner)
     assert resp.status_code == 200
     # Owner debe aparecer como miembro con rol 'owner'
-    roles = [m["role"] for m in resp.json()]
+    roles = [m["role"] for m in resp.json()["members"]]
     assert "owner" in roles
 
 
@@ -391,7 +391,9 @@ def test_get_versions_retorna_lista_vacia(client_and_user) -> None:
 
     resp = client.get(f"/workspaces/{doc_id}/versions", headers=h_owner)
     assert resp.status_code == 200
-    assert isinstance(resp.json(), list)
+    data = resp.json()
+    assert "versions" in data
+    assert isinstance(data["versions"], list)
 
 
 def test_post_version_crea_snapshot(client_and_user) -> None:

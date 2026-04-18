@@ -66,9 +66,18 @@ export interface UpdateWorkspaceInput {
 }
 
 export interface InviteTokenInfo {
-  workspace_id: string;
-  workspace_title: string;
-  owner_name: string;
-  proposed_role: MemberRole;
   valid: boolean;
+  workspace_id: string | null;
+  workspace_title: string | null;
+  course_name?: string | null;
+  owner_name: string | null;
+  proposed_role: MemberRole | null;
+  token?: string;
+}
+
+export interface AcceptInviteResult {
+  ok: boolean;
+  workspace_id: string;
+  role: MemberRole;
+  already_member: boolean;
 }
