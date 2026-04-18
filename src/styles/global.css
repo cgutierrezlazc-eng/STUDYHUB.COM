@@ -1,5 +1,8 @@
 /* Fonts: Inter (display + body) + JetBrains Mono (code) */
 
+/* Módulos importados */
+@import './workspaces.css';
+
 /* ─── Sereno (default light — dia) ──────────────────────── */
 :root {
   --bg-primary: #F5F3EF;

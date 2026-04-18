@@ -497,6 +497,24 @@ export const Icons = {
       </svg>
     </Icon>
   ),
+  filePen: (c: string) => (
+    <Icon color={c}>
+      <svg
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="white"
+        strokeWidth={sw}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 22H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l5 5v3" fill="white" fillOpacity={0.18} />
+        <polyline points="14 2 14 8 20 8" />
+        <path d="M18.42 12.61a2.1 2.1 0 1 1 2.97 2.97L16 21H13v-3Z" />
+      </svg>
+    </Icon>
+  ),
 };
 
 /* ─── Paleta de colores — muted/sobria, un color por sección ─── */
@@ -526,6 +544,7 @@ export const IC = {
   library: '#C07840', // ámbar sobrio
   hr: '#7558B0', // violeta suave
   admin: '#64748B', // pizarra
+  workspaces: '#2D62C8', // azul — acento principal Conniku
   ai: '#2A9890', // teal suave
   plus: '#94A3B8', // gris
 };

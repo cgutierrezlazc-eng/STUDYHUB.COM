@@ -62,6 +62,12 @@ const Biblioteca = React.lazy(() => import('./pages/Biblioteca'));
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'));
 const GroupDocs = React.lazy(() => import('./pages/GroupDocs'));
 const GroupDocEditor = React.lazy(() => import('./pages/GroupDocEditor'));
+// ─── Workspaces v2 (Bloque 2a — 2026-04-18) ─────────────────────
+const WorkspacesList = React.lazy(() => import('./pages/Workspaces/WorkspacesList'));
+const WorkspaceEditor = React.lazy(() => import('./pages/Workspaces/WorkspaceEditor'));
+const WorkspaceSettings = React.lazy(() => import('./pages/Workspaces/WorkspaceSettings'));
+const WorkspaceInvite = React.lazy(() => import('./pages/Workspaces/WorkspaceInvite'));
+// ─────────────────────────────────────────────────────────────────
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'));
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
@@ -810,6 +816,24 @@ export default function App() {
                   path="/group-docs/:docId"
                   element={<GroupDocEditor onNavigate={(path) => navigate(path)} />}
                 />
+                {/* ── Workspaces v2 (Bloque 2a — 2026-04-18) ── */}
+                <Route
+                  path="/workspaces"
+                  element={<WorkspacesList onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/workspaces/invite/:token"
+                  element={<WorkspaceInvite onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/workspaces/:id/settings"
+                  element={<WorkspaceSettings onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/workspaces/:id"
+                  element={<WorkspaceEditor onNavigate={(path) => navigate(path)} />}
+                />
+                {/* ─────────────────────────────────────────── */}
                 <Route path="/ceo" element={<Navigate to="/admin-panel" replace />} />
                 <Route
                   path="/ceo/mail"

@@ -128,7 +128,7 @@ const moreMenuItems = [
   { icon: 'calendar', label: 'Calendario', path: '/calendar' },
   { icon: 'search', label: 'Busqueda', path: '/search' },
   { icon: 'user', label: 'Tutores', path: '/tutores' },
-  { icon: 'book', label: 'Trabajos Grupales', path: '/group-docs' },
+  { icon: 'book', label: 'Workspaces', path: '/workspaces' },
 ];
 
 export default function MobileBottomNav({ currentPath, onNavigate }: Props) {

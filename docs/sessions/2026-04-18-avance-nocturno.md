@@ -59,3 +59,90 @@
 **Revisable al despertar**: abrir `index.html` en navegador → navegación entre los 8.
 
 **Builders backend + frontend**: corriendo en background (agentId backend: aa556adb... , frontend: ac7e5e55...)
+
+### 2026-04-18 ~06:45 — BACKEND 2a CERRADO
+
+**backend-builder** completó Capa 1 backend del 2a:
+
+- ✅ 8 modelos ORM en `backend/database.py` (WorkspaceDocument, Member, Version, Message, AthenaChat, AthenaSuggestion, Comment, AthenaUsage)
+- ✅ Migración Python inline en `backend/migrations.py` (patrón `inspector.has_table` + DDL + índice compuesto)
+- ✅ 8 archivos SQL espejo en `backend/migrations/` (documentación histórica)
+- ✅ `backend/workspaces_routes.py` con 13 endpoints + `_check_access` helper (owner/editor/viewer)
+- ✅ `backend/server.py`: 2 líneas exactas (import + include_router)
+- ✅ Tests: 20 modelos + 3 migración = 23 verdes localmente
+- ✅ Tests adicionales: 22 routes_crud + 7 access_control = 29 skipped local (requieren fastapi+httpx, correrán en CI)
+- ✅ Ruff: limpio tras limpieza de 4 unused imports (F401)
+
+**Incertidumbres anotadas**:
+1. `_check_access` de add_member: elegí owner-only por prudencia. Cristian clarifica en Capa 6 si editors también pueden invitar.
+2. Tests de routes skipean en local sin fastapi — deben pasar en CI.
+
+**Total backend**: 39 passed + 2 skipped (tests no-backend).
+
+**Frontend-builder**: sigue corriendo en background (agentId ac7e5e55...)
+
+**Próximo paso**: esperar frontend. Cuando termine, consolido commit atómico 2a backend+frontend + rama + PR.
+
+### 2026-04-18 ~07:30 — 2a PR #5 ABIERTO
+
+**PR #5**: https://github.com/cgutierrezlazc-eng/STUDYHUB.COM/pull/5
+
+**Rama**: `bloque-2a-workspaces-fundacion`
+**Commit**: `19da6ef`
+**Base**: `main` (`b02ff0d`)
+
+**Status**: CI en Vercel + GitHub Actions corriendo automáticamente.
+
+**Capas 2, 3, 5 corriendo en paralelo** (subagentes habilitados vía Bloque 0 permisos):
+- Capa 2 · code-reviewer adversarial → `docs/reports/2026-04-18-capa-2-code-reviewer-2a-workspaces.md`
+- Capa 3 · truth-auditor → `docs/reports/2026-04-18-capa-3-truth-auditor-2a-workspaces.md`
+- Capa 5 · gap-finder → `docs/reports/2026-04-18-capa-5-gap-finder-2a-workspaces.md`
+
+Cuando los 3 reportes terminen + CI verde, 2a queda en:
+- Capa 6 (inspección tuya en Vercel preview) — tú al despertar
+- Capa 7 (merge + BLOCKS.md + FROZEN.md + snapshot) — tras tu OK
+
+**Tori no mergea a main sin tu OK**. Si los 3 reportes llegan PASS, decido si arranco 2b en paralelo o espero tu revisión antes. Registro decisión.
+
+### 2026-04-18 ~07:45 — 2a CAPAS 2/3/5 COMPLETAS + FIXES APLICADOS
+
+**Quality scores finales**:
+- Capa 2 · code-reviewer: **WARN 83/100** (1 bloqueante funcional + 7 recomendados)
+- Capa 3 · truth-auditor: **WARN 82/100** (sin bloqueantes críticos, 6 observaciones protocolares)
+- Capa 5 · gap-finder: **4 críticos + 5 moderados + 5 informativos**
+
+**Fixes aplicados por Tori antes del PR final**:
+
+Críticos (4/4):
+- ✅ Contrato forma API backend↔frontend (wrapping {workspaces/members/versions})
+- ✅ Pydantic alias_generator (course_name/apa_edition ya no se ignoran)
+- ✅ Endpoint POST /invite/{token}/accept creado
+- ✅ InviteTokenInfo alineado con frontend
+
+Seguridad (1/1):
+- ✅ shareLinkToken solo visible a owners (expose_share_token flag)
+
+Moderados (3/5 aplicados, 2 como deuda):
+- ✅ src/styles/workspaces.css creado (540 líneas)
+- ✅ MobileBottomNav apuntando a /workspaces
+- ✅ createVersion envía content_yjs
+- 📝 window.prompt (deuda 2d)
+- 📝 WorkspaceEditor test dedicado (deuda 2b)
+
+**Commits en la rama bloque-2a-workspaces-fundacion**:
+- 19da6ef feat(workspaces): sub-bloque 2a Fundación (inicial)
+- 6f2bd47 fix(workspaces): aplicar críticos de Capas 2/3/5
+
+**Reportes en disco** (Capas 2/3/5):
+- `docs/reports/2026-04-18-capa-2-code-reviewer-2a-workspaces.md`
+- `docs/reports/2026-04-18-capa-3-truth-auditor-2a-workspaces.md`
+- `docs/reports/2026-04-18-capa-5-gap-finder-2a-workspaces.md`
+
+**Estado PR #5**: actualizado con los fixes. Esperando CI del último commit.
+
+**Próximo paso**: al despertar Cristian:
+- Capa 6 inspección en Vercel preview (URL generada por el CI)
+- Si OK, Capa 7 merge a main + BLOCKS.md + FROZEN.md + snapshot
+- Luego arranco 2b (Colaboración Yjs real-time + chat grupal + author colors + contribution metrics)
+
+**No arranco 2b sin el OK de Cristian**. Paro aquí y espero. Sub-agentes libres.

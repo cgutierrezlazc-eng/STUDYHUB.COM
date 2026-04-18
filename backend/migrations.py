@@ -3,6 +3,7 @@ Database migrations for Conniku.
 Adds new columns to existing tables. Safe to run multiple times.
 Uses SQLAlchemy so it works with both PostgreSQL and SQLite.
 """
+
 import logging
 import os
 
@@ -127,9 +128,7 @@ def migrate():
         for col_name, col_type in new_columns:
             if col_name not in existing_columns:
                 try:
-                    conn.execute(text(
-                        f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"
-                    ))
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
                     logger.info(f"Added column users.{col_name}")
                 except Exception as e:
                     # Column might already exist (race condition) - safe to ignore
@@ -138,7 +137,8 @@ def migrate():
     # Create tutoring_requests table if it doesn't exist (new mentoring system)
     if not inspector.has_table("tutoring_requests"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE tutoring_requests (
                     id VARCHAR(16) PRIMARY KEY,
                     student_id VARCHAR(16) NOT NULL,
@@ -149,13 +149,15 @@ def migrate():
                     created_at TIMESTAMP,
                     responded_at TIMESTAMP
                 )
-            """))
+            """)
+            )
             logger.info("Created tutoring_requests table.")
 
     # Create tutoring_listing_requests table if it doesn't exist (job listings system)
     if not inspector.has_table("tutoring_listing_requests"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE tutoring_listing_requests (
                     id VARCHAR(16) PRIMARY KEY,
                     listing_id VARCHAR(16) NOT NULL,
@@ -168,7 +170,8 @@ def migrate():
                     review TEXT,
                     created_at TIMESTAMP
                 )
-            """))
+            """)
+            )
             logger.info("Created tutoring_listing_requests table.")
 
     # Add new columns to wall_posts table (visibility & milestone support)
@@ -185,9 +188,7 @@ def migrate():
             for col_name, col_type in wall_post_columns:
                 if col_name not in existing_wp_columns:
                     try:
-                        conn.execute(text(
-                            f"ALTER TABLE wall_posts ADD COLUMN {col_name} {col_type}"
-                        ))
+                        conn.execute(text(f"ALTER TABLE wall_posts ADD COLUMN {col_name} {col_type}"))
                         logger.info(f"Added column wall_posts.{col_name}")
                     except Exception as e:
                         logger.debug(f"Column wall_posts.{col_name} skipped: {e}")
@@ -195,27 +196,31 @@ def migrate():
     # Create friend_lists table
     if not inspector.has_table("friend_lists"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE friend_lists (
                     id VARCHAR(16) PRIMARY KEY,
                     user_id VARCHAR(16) NOT NULL,
                     name VARCHAR(100) NOT NULL,
                     created_at TIMESTAMP
                 )
-            """))
+            """)
+            )
             logger.info("Created friend_lists table.")
 
     # Create friend_list_members table
     if not inspector.has_table("friend_list_members"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE friend_list_members (
                     id VARCHAR(16) PRIMARY KEY,
                     list_id VARCHAR(16) NOT NULL,
                     friend_id VARCHAR(16) NOT NULL,
                     UNIQUE(list_id, friend_id)
                 )
-            """))
+            """)
+            )
             logger.info("Created friend_list_members table.")
 
     # Add moderation_status and reply_to_* columns to messages table
@@ -253,9 +258,7 @@ def migrate():
         if "is_announcement" not in existing_cp_columns:
             with engine.begin() as conn:
                 try:
-                    conn.execute(text(
-                        "ALTER TABLE community_posts ADD COLUMN is_announcement BOOLEAN DEFAULT FALSE"
-                    ))
+                    conn.execute(text("ALTER TABLE community_posts ADD COLUMN is_announcement BOOLEAN DEFAULT FALSE"))
                     logger.info("Added column community_posts.is_announcement")
                 except Exception as e:
                     logger.debug(f"Column community_posts.is_announcement skipped: {e}")
@@ -263,7 +266,8 @@ def migrate():
     # Create moderation_queue table if it doesn't exist
     if not inspector.has_table("moderation_queue"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE moderation_queue (
                     id VARCHAR(16) PRIMARY KEY,
                     content_type VARCHAR(20) NOT NULL,
@@ -278,16 +282,19 @@ def migrate():
                     created_at TIMESTAMP,
                     reviewed_at TIMESTAMP
                 )
-            """))
+            """)
+            )
             logger.info("Created moderation_queue table.")
 
     # ─── Set CEO as ghost (invisible profile) ────────────────────
     try:
         import json
         from pathlib import Path
+
         config_file = Path(os.environ.get("DATA_DIR", "/data")) / "config.json"
         admin_email = ""
         import contextlib
+
         if config_file.exists():
             with contextlib.suppress(Exception):
                 admin_email = json.loads(config_file.read_text()).get("admin_email", "").lower()
@@ -295,9 +302,7 @@ def migrate():
             admin_email = os.environ.get("ADMIN_EMAIL", "").lower()
         if admin_email:
             with engine.begin() as conn:
-                conn.execute(text(
-                    "UPDATE users SET is_ghost = FALSE WHERE email = :email"
-                ), {"email": admin_email})
+                conn.execute(text("UPDATE users SET is_ghost = FALSE WHERE email = :email"), {"email": admin_email})
                 logger.info(f"CEO visible (is_ghost=FALSE) for {admin_email}")
     except Exception as e:
         logger.warning(f"Could not set CEO ghost flag: {e}")
@@ -305,7 +310,8 @@ def migrate():
     # Create blog_threads table if it doesn't exist
     if not inspector.has_table("blog_threads"):
         with engine.begin() as conn:
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE blog_threads (
                     id VARCHAR(16) PRIMARY KEY,
                     user_id VARCHAR(16) NOT NULL,
@@ -313,7 +319,8 @@ def migrate():
                     likes INTEGER DEFAULT 0,
                     created_at TIMESTAMP
                 )
-            """))
+            """)
+            )
             logger.info("Created blog_threads table.")
 
     # ─── university_connections: add missing columns ──────────────
@@ -327,9 +334,7 @@ def migrate():
             if col_name not in uc_cols:
                 try:
                     with engine.begin() as conn:
-                        conn.execute(text(
-                            f'ALTER TABLE university_connections ADD COLUMN {col_name} {col_type}'
-                        ))
+                        conn.execute(text(f"ALTER TABLE university_connections ADD COLUMN {col_name} {col_type}"))
                     logger.info(f"Added university_connections.{col_name}")
                 except Exception as e:
                     logger.warning(f"Could not add university_connections.{col_name}: {e}")
@@ -344,17 +349,20 @@ def migrate():
         try:
             with engine.begin() as conn:
                 # Contar usuarios sin aceptación registrada
-                result = conn.execute(text("""
+                result = conn.execute(
+                    text("""
                     SELECT COUNT(*) FROM users u
                     WHERE NOT EXISTS (
                         SELECT 1 FROM user_agreements ua
                         WHERE ua.user_id = u.id
                         AND ua.document_type LIKE 'age_declaration%'
                     )
-                """))
+                """)
+                )
                 pending = result.scalar() or 0
                 if pending > 0:
-                    conn.execute(text("""
+                    conn.execute(
+                        text("""
                         INSERT INTO user_agreements (
                             user_id, document_type, text_version,
                             text_version_hash, accepted_at_utc, created_at
@@ -372,10 +380,173 @@ def migrate():
                             WHERE ua.user_id = u.id
                             AND ua.document_type LIKE 'age_declaration%'
                         )
-                    """))
+                    """)
+                    )
                     logger.info(f"Backfilled {pending} legacy age_declaration rows in user_agreements")
         except Exception as e:
             logger.warning(f"Could not backfill user_agreements: {e}")
+
+    # ─── Workspaces v2 (Bloque 2a Fundación) ─────────────────────────────────
+    # Espejo de los modelos ORM definidos en database.py (WorkspaceDocument, etc.)
+    # SQLAlchemy Base.metadata.create_all() crea estas tablas al inicio.
+    # Este bloque actúa como fallback para entornos donde create_all no ejecuta
+    # o para migraciones manuales en PostgreSQL de producción.
+    # Ver docs/plans/bloque-2-workspaces/plan-maestro.md §4.
+
+    # Refrescar inspector para detectar estado actual del schema
+    inspector = inspect(engine)
+
+    if not inspector.has_table("workspace_documents"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_documents (
+                    id VARCHAR(16) PRIMARY KEY,
+                    title VARCHAR(255) NOT NULL,
+                    owner_id VARCHAR(16) NOT NULL,
+                    course_name VARCHAR(255),
+                    rubric_raw TEXT,
+                    rubric_criteria TEXT,
+                    apa_edition VARCHAR(10) DEFAULT '7',
+                    options TEXT DEFAULT '{}',
+                    cover_data TEXT,
+                    cover_template VARCHAR(50),
+                    content_yjs TEXT,
+                    is_completed BOOLEAN DEFAULT FALSE,
+                    share_link_token VARCHAR(32) UNIQUE,
+                    created_at TIMESTAMP,
+                    updated_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_documents table.")
+
+    if not inspector.has_table("workspace_members"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_members (
+                    id VARCHAR(16) PRIMARY KEY,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    user_id VARCHAR(16) NOT NULL,
+                    role VARCHAR(20) DEFAULT 'viewer',
+                    chars_contributed INTEGER DEFAULT 0,
+                    invited_at TIMESTAMP,
+                    joined_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_members table.")
+
+    if not inspector.has_table("workspace_versions"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_versions (
+                    id VARCHAR(16) PRIMARY KEY,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    content_yjs TEXT NOT NULL,
+                    created_by VARCHAR(16) NOT NULL,
+                    created_at TIMESTAMP,
+                    label VARCHAR(100)
+                )
+            """)
+            )
+            logger.info("Created workspace_versions table.")
+
+    if not inspector.has_table("workspace_messages"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_messages (
+                    id VARCHAR(16) PRIMARY KEY,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    user_id VARCHAR(16) NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_messages table.")
+
+    if not inspector.has_table("workspace_athena_chats"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_athena_chats (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    user_id VARCHAR(16) NOT NULL,
+                    role VARCHAR(20) NOT NULL,
+                    content TEXT NOT NULL,
+                    created_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_athena_chats table.")
+
+    if not inspector.has_table("workspace_athena_suggestions"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_athena_suggestions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    user_id VARCHAR(16) NOT NULL,
+                    staging_content TEXT NOT NULL,
+                    suggestion_content TEXT NOT NULL,
+                    status VARCHAR(20) DEFAULT 'pending',
+                    created_at TIMESTAMP,
+                    resolved_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_athena_suggestions table.")
+
+    if not inspector.has_table("workspace_comments"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE workspace_comments (
+                    id VARCHAR(16) PRIMARY KEY,
+                    workspace_id VARCHAR(16) NOT NULL
+                        REFERENCES workspace_documents(id) ON DELETE CASCADE,
+                    user_id VARCHAR(16) NOT NULL,
+                    anchor_json TEXT NOT NULL,
+                    content TEXT NOT NULL,
+                    resolved BOOLEAN DEFAULT FALSE,
+                    parent_id VARCHAR(16) REFERENCES workspace_comments(id),
+                    created_at TIMESTAMP
+                )
+            """)
+            )
+            logger.info("Created workspace_comments table.")
+
+    if not inspector.has_table("athena_usage"):
+        with engine.begin() as conn:
+            conn.execute(
+                text("""
+                CREATE TABLE athena_usage (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id VARCHAR(16) NOT NULL,
+                    workspace_id VARCHAR(16)
+                        REFERENCES workspace_documents(id) ON DELETE SET NULL,
+                    action VARCHAR(20) NOT NULL,
+                    tokens_input INTEGER DEFAULT 0,
+                    tokens_output INTEGER DEFAULT 0,
+                    created_at TIMESTAMP
+                )
+            """)
+            )
+            conn.execute(
+                text("CREATE INDEX IF NOT EXISTS ix_athena_usage_user_month ON athena_usage (user_id, created_at)")
+            )
+            logger.info("Created athena_usage table with index.")
 
     logger.info("Migrations complete.")
 
