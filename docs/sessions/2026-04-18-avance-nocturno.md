@@ -59,3 +59,26 @@
 **Revisable al despertar**: abrir `index.html` en navegador → navegación entre los 8.
 
 **Builders backend + frontend**: corriendo en background (agentId backend: aa556adb... , frontend: ac7e5e55...)
+
+### 2026-04-18 ~06:45 — BACKEND 2a CERRADO
+
+**backend-builder** completó Capa 1 backend del 2a:
+
+- ✅ 8 modelos ORM en `backend/database.py` (WorkspaceDocument, Member, Version, Message, AthenaChat, AthenaSuggestion, Comment, AthenaUsage)
+- ✅ Migración Python inline en `backend/migrations.py` (patrón `inspector.has_table` + DDL + índice compuesto)
+- ✅ 8 archivos SQL espejo en `backend/migrations/` (documentación histórica)
+- ✅ `backend/workspaces_routes.py` con 13 endpoints + `_check_access` helper (owner/editor/viewer)
+- ✅ `backend/server.py`: 2 líneas exactas (import + include_router)
+- ✅ Tests: 20 modelos + 3 migración = 23 verdes localmente
+- ✅ Tests adicionales: 22 routes_crud + 7 access_control = 29 skipped local (requieren fastapi+httpx, correrán en CI)
+- ✅ Ruff: limpio tras limpieza de 4 unused imports (F401)
+
+**Incertidumbres anotadas**:
+1. `_check_access` de add_member: elegí owner-only por prudencia. Cristian clarifica en Capa 6 si editors también pueden invitar.
+2. Tests de routes skipean en local sin fastapi — deben pasar en CI.
+
+**Total backend**: 39 passed + 2 skipped (tests no-backend).
+
+**Frontend-builder**: sigue corriendo en background (agentId ac7e5e55...)
+
+**Próximo paso**: esperar frontend. Cuando termine, consolido commit atómico 2a backend+frontend + rama + PR.

@@ -420,11 +420,20 @@ export default function Sidebar({
         >
           {Icons.search(IC.search)} {t('sidebar.search')}
         </button>
-        <button
+        {/* V1 oculto 2026-04-18 — reemplazado por Workspaces v2.
+            Accesible por URL directa /group-docs hasta decisión final.
+            Ver docs/plans/bloque-2-workspaces/plan-maestro.md §A1. */}
+        {/* <button
           className={`nav-item ${isActive('/group-docs') ? 'active' : ''}`}
           onClick={() => onNavigate('/group-docs')}
         >
           {Icons.fileText(IC.notes)} Trabajos Grupales
+        </button> */}
+        <button
+          className={`nav-item ${isActive('/workspaces') ? 'active' : ''}`}
+          onClick={() => onNavigate('/workspaces')}
+        >
+          {Icons.filePen(IC.workspaces)} Workspaces
         </button>
         <button
           className={`nav-item ${isActive('/events') ? 'active' : ''}`}

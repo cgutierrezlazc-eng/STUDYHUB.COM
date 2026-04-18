@@ -2,6 +2,7 @@
 Database models and session management for Conniku.
 Uses PostgreSQL in production, SQLite for local development.
 """
+
 import os
 import uuid
 from datetime import datetime
@@ -49,6 +50,7 @@ def gen_id():
 
 
 # ─── Users ───────────────────────────────────────────────────────
+
 
 class User(Base):
     __tablename__ = "users"
@@ -172,7 +174,7 @@ class User(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     last_login = Column(DateTime, default=datetime.utcnow)
-    last_seen = Column(DateTime, nullable=True)   # updated on every authenticated request (throttled)
+    last_seen = Column(DateTime, nullable=True)  # updated on every authenticated request (throttled)
 
     # Relationships
     sent_messages = relationship("Message", back_populates="sender", foreign_keys="Message.sender_id")
@@ -182,6 +184,7 @@ class User(Base):
 
 
 # ─── Conversations & Messaging ──────────────────────────────────
+
 
 class Conversation(Base):
     __tablename__ = "conversations"
@@ -213,9 +216,7 @@ class ConversationParticipant(Base):
     conversation = relationship("Conversation", back_populates="participants")
     user = relationship("User", back_populates="participations")
 
-    __table_args__ = (
-        UniqueConstraint("conversation_id", "user_id", name="uq_conv_user"),
-    )
+    __table_args__ = (UniqueConstraint("conversation_id", "user_id", name="uq_conv_user"),)
 
 
 class Message(Base):
@@ -263,12 +264,11 @@ class ConversationFolderItem(Base):
 
     folder = relationship("ConversationFolder", back_populates="items")
 
-    __table_args__ = (
-        UniqueConstraint("folder_id", "conversation_id", name="uq_folder_conv"),
-    )
+    __table_args__ = (UniqueConstraint("folder_id", "conversation_id", name="uq_folder_conv"),)
 
 
 # ─── Content Moderation Log ─────────────────────────────────────
+
 
 class ModerationLog(Base):
     __tablename__ = "moderation_logs"
@@ -284,17 +284,18 @@ class ModerationLog(Base):
 
 # ─── Moderation Queue (CEO review) ─────────────────────────────
 
+
 class ModerationQueueItem(Base):
     __tablename__ = "moderation_queue"
 
     id = Column(String(16), primary_key=True, default=gen_id)
-    content_type = Column(String(20), nullable=False)   # "message" | "image"
+    content_type = Column(String(20), nullable=False)  # "message" | "image"
     original_content = Column(Text, nullable=False)
     sender_id = Column(String(16), ForeignKey("users.id"), nullable=True)
-    context_id = Column(String(16), nullable=True)       # conversation_id
+    context_id = Column(String(16), nullable=True)  # conversation_id
     category = Column(String(50), nullable=True)
     auto_reason = Column(Text, nullable=True)
-    status = Column(String(20), default="pending")       # pending | approved | rejected
+    status = Column(String(20), default="pending")  # pending | approved | rejected
     message_id = Column(String(16), ForeignKey("messages.id"), nullable=True)
     ceo_note = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
@@ -305,6 +306,7 @@ class ModerationQueueItem(Base):
 
 
 # ─── Friendships / Social ──────────────────────────────────────
+
 
 class Friendship(Base):
     __tablename__ = "friendships"
@@ -319,9 +321,7 @@ class Friendship(Base):
     requester = relationship("User", foreign_keys=[requester_id])
     addressee = relationship("User", foreign_keys=[addressee_id])
 
-    __table_args__ = (
-        UniqueConstraint("requester_id", "addressee_id", name="uq_friendship"),
-    )
+    __table_args__ = (UniqueConstraint("requester_id", "addressee_id", name="uq_friendship"),)
 
 
 class FriendList(Base):
@@ -338,9 +338,7 @@ class FriendListMember(Base):
     list_id = Column(String(16), ForeignKey("friend_lists.id", ondelete="CASCADE"), nullable=False, index=True)
     friend_id = Column(String(16), ForeignKey("users.id"), nullable=False)
 
-    __table_args__ = (
-        UniqueConstraint("list_id", "friend_id", name="uq_list_member"),
-    )
+    __table_args__ = (UniqueConstraint("list_id", "friend_id", name="uq_list_member"),)
 
 
 class WallPost(Base):
@@ -355,7 +353,9 @@ class WallPost(Base):
     visible_to = Column(Text, default="[]")  # JSON array of user IDs for "specific" visibility
     visibility_list_id = Column(String(16), nullable=True)  # If visibility="list", which friend list
     is_milestone = Column(Boolean, default=False)  # Auto-generated milestone posts
-    milestone_type = Column(String(50), nullable=True)  # course_completed, level_up, streak, badge, university_change, etc.
+    milestone_type = Column(
+        String(50), nullable=True
+    )  # course_completed, level_up, streak, badge, university_change, etc.
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
@@ -376,9 +376,7 @@ class PostLike(Base):
     post = relationship("WallPost", back_populates="likes")
     user = relationship("User")
 
-    __table_args__ = (
-        UniqueConstraint("post_id", "user_id", name="uq_post_like"),
-    )
+    __table_args__ = (UniqueConstraint("post_id", "user_id", name="uq_post_like"),)
 
 
 class PostReaction(Base):
@@ -407,6 +405,7 @@ class PostComment(Base):
 
 # ─── Blocked Users ────────────────────────────────────────
 
+
 class BlockedUser(Base):
     __tablename__ = "blocked_users"
 
@@ -418,9 +417,7 @@ class BlockedUser(Base):
     blocker = relationship("User", foreign_keys=[blocker_id])
     blocked = relationship("User", foreign_keys=[blocked_id])
 
-    __table_args__ = (
-        UniqueConstraint("blocker_id", "blocked_id", name="uq_blocked_user"),
-    )
+    __table_args__ = (UniqueConstraint("blocker_id", "blocked_id", name="uq_blocked_user"),)
 
 
 class UserReport(Base):
@@ -438,6 +435,7 @@ class UserReport(Base):
 
 
 # ─── Video Documents ───────────────────────────────────────────
+
 
 class VideoDocument(Base):
     __tablename__ = "video_documents"
@@ -457,6 +455,7 @@ class VideoDocument(Base):
 
 # ─── Payment Logs ──────────────────────────────────────────────
 
+
 class PaymentLog(Base):
     __tablename__ = "payment_logs"
 
@@ -474,6 +473,7 @@ class PaymentLog(Base):
 
 # ─── Study Sessions (time tracking) ────────────────────────────
 
+
 class StudySession(Base):
     __tablename__ = "study_sessions"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -485,6 +485,7 @@ class StudySession(Base):
 
 
 # ─── Shared Documents (marketplace) ────────────────────────────
+
 
 class SharedDocument(Base):
     __tablename__ = "shared_documents"
@@ -507,6 +508,7 @@ class SharedDocument(Base):
 
 # ─── Biblioteca Conniku ────────────────────────────────────────
 
+
 class LibraryDocument(Base):
     __tablename__ = "library_documents"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -520,9 +522,9 @@ class LibraryDocument(Base):
     pages = Column(Integer, nullable=True)
     # user_shared | open_library | gutenberg
     source_type = Column(String(20), default="user_shared")
-    file_path = Column(Text, nullable=True)    # docs subidos por usuarios
-    embed_url = Column(Text, nullable=True)    # URL embebida para libros online
-    tags = Column(Text, default="[]")          # JSON array
+    file_path = Column(Text, nullable=True)  # docs subidos por usuarios
+    embed_url = Column(Text, nullable=True)  # URL embebida para libros online
+    tags = Column(Text, default="[]")  # JSON array
     views = Column(Integer, default=0)
     rating_sum = Column(Float, default=0.0)
     rating_count = Column(Integer, default=0)
@@ -547,7 +549,7 @@ class LibraryDocumentRating(Base):
     id = Column(String(16), primary_key=True, default=gen_id)
     document_id = Column(String(16), ForeignKey("library_documents.id"), nullable=False)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
-    rating = Column(Integer, nullable=False)   # 1-5
+    rating = Column(Integer, nullable=False)  # 1-5
     created_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("document_id", "user_id"),)
 
@@ -606,6 +608,7 @@ class DocumentRating(Base):
 
 # ─── Calendar Events / Tasks ───────────────────────────────────
 
+
 class CalendarEvent(Base):
     __tablename__ = "calendar_events"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -618,26 +621,28 @@ class CalendarEvent(Base):
     completed = Column(Boolean, default=False)
     color = Column(String(20), default="#4f8cff")
     # LMS sync fields
-    source = Column(String(20), default="manual")       # manual | lms
-    lms_event_id = Column(String(200), nullable=True)   # Moodle/Canvas event ID (dedup)
-    lms_course_name = Column(String(500), nullable=True) # nombre de la asignatura origen
-    item_url = Column(String(1000), nullable=True)          # URL directa a la actividad en el LMS
-    lms_course_id = Column(String(16), nullable=True)       # ID interno LMSCourse (para navegar)
-    submission_status = Column(String(30), nullable=True)   # submitted | draft | nosubmission | unknown
+    source = Column(String(20), default="manual")  # manual | lms
+    lms_event_id = Column(String(200), nullable=True)  # Moodle/Canvas event ID (dedup)
+    lms_course_name = Column(String(500), nullable=True)  # nombre de la asignatura origen
+    item_url = Column(String(1000), nullable=True)  # URL directa a la actividad en el LMS
+    lms_course_id = Column(String(16), nullable=True)  # ID interno LMSCourse (para navegar)
+    submission_status = Column(String(30), nullable=True)  # submitted | draft | nosubmission | unknown
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
 class UserNotificationPrefs(Base):
     """Preferencias de notificación del calendario por usuario."""
+
     __tablename__ = "user_notification_prefs"
     user_id = Column(String(16), ForeignKey("users.id"), primary_key=True)
-    cal_push = Column(Boolean, default=True)    # push notifications
-    cal_inapp = Column(Boolean, default=True)   # in-app notifications
-    cal_email = Column(Boolean, default=True)   # email notifications
+    cal_push = Column(Boolean, default=True)  # push notifications
+    cal_inapp = Column(Boolean, default=True)  # in-app notifications
+    cal_email = Column(Boolean, default=True)  # email notifications
     updated_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ─── Leagues ───────────────────────────────────────────────────
+
 
 class LeagueMembership(Base):
     __tablename__ = "league_memberships"
@@ -651,6 +656,7 @@ class LeagueMembership(Base):
 
 
 # ─── In-App Notifications ──────────────────────────────────
+
 
 class InAppNotification(Base):
     __tablename__ = "in_app_notifications"
@@ -668,6 +674,7 @@ class InAppNotification(Base):
 
 # ─── Communities ────────────────────────────────────────────
 
+
 class Community(Base):
     __tablename__ = "communities"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -684,6 +691,7 @@ class Community(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow)
 
+
 class CommunityMember(Base):
     __tablename__ = "community_members"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -692,6 +700,7 @@ class CommunityMember(Base):
     role = Column(String(20), default="member")  # admin, moderator, member
     joined_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("community_id", "user_id", name="uq_community_member"),)
+
 
 class CommunityPost(Base):
     __tablename__ = "community_posts"
@@ -706,6 +715,7 @@ class CommunityPost(Base):
     comment_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
 class CommunityPostLike(Base):
     __tablename__ = "community_post_likes"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -714,6 +724,7 @@ class CommunityPostLike(Base):
     reaction_type = Column(String(20), default="like")
     created_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("post_id", "user_id", name="uq_community_post_like"),)
+
 
 class CommunityPostComment(Base):
     __tablename__ = "community_post_comments"
@@ -725,6 +736,7 @@ class CommunityPostComment(Base):
 
 
 # ─── Community Resources / Events ──────────────────────────
+
 
 class CommunityResource(Base):
     __tablename__ = "community_resources"
@@ -764,6 +776,7 @@ class CommunityEventRSVP(Base):
 
 # ─── Polls / Encuestas ─────────────────────────────────────
 
+
 class Poll(Base):
     __tablename__ = "polls"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -776,6 +789,7 @@ class Poll(Base):
     total_votes = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
 class PollOption(Base):
     __tablename__ = "poll_options"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -783,6 +797,7 @@ class PollOption(Base):
     text = Column(String(255), nullable=False)
     position = Column(Integer, default=0)
     vote_count = Column(Integer, default=0)
+
 
 class PollVote(Base):
     __tablename__ = "poll_votes"
@@ -796,12 +811,14 @@ class PollVote(Base):
 
 # ─── Hashtags ──────────────────────────────────────────────
 
+
 class Hashtag(Base):
     __tablename__ = "hashtags"
     id = Column(String(16), primary_key=True, default=gen_id)
     tag = Column(String(100), unique=True, nullable=False, index=True)
     usage_count = Column(Integer, default=0)
     last_used_at = Column(DateTime, default=datetime.utcnow)
+
 
 class PostHashtag(Base):
     __tablename__ = "post_hashtags"
@@ -813,11 +830,14 @@ class PostHashtag(Base):
 
 # ─── Academic Milestones ────────────────────────────────────
 
+
 class AcademicMilestone(Base):
     __tablename__ = "academic_milestones"
     id = Column(String(16), primary_key=True, default=gen_id)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
-    milestone_type = Column(String(30), nullable=False)  # new_subject, new_semester, new_year, preparing_thesis, graduated, licensed
+    milestone_type = Column(
+        String(30), nullable=False
+    )  # new_subject, new_semester, new_year, preparing_thesis, graduated, licensed
     title = Column(String(255), nullable=False)
     description = Column(Text, default="")
     auto_posted = Column(Boolean, default=False)  # Whether it was shared to wall
@@ -826,6 +846,7 @@ class AcademicMilestone(Base):
 
 
 # ─── Job Board / Bolsa de Empleo ────────────────────────────
+
 
 class JobListing(Base):
     __tablename__ = "job_listings"
@@ -885,20 +906,23 @@ class UserCareerStatus(Base):
 
 # ─── Job Matching (system-suggested pairings) ───────────────
 
+
 class JobMatch(Base):
     """System-generated match between a job listing and a candidate."""
+
     __tablename__ = "job_matches"
     id = Column(String(16), primary_key=True, default=gen_id)
     job_id = Column(String(16), ForeignKey("job_listings.id", ondelete="CASCADE"), nullable=False, index=True)
     user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    score = Column(Integer, default=0)          # 0-100 compatibility score
+    score = Column(Integer, default=0)  # 0-100 compatibility score
     status = Column(String(20), default="pending")  # pending, viewed, interested, declined
-    notified = Column(Boolean, default=False)   # notification sent to candidate
+    notified = Column(Boolean, default=False)  # notification sent to candidate
     created_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("job_id", "user_id", name="uq_job_match"),)
 
 
 # ─── Terms & Conditions Acceptance ─────────────────────────
+
 
 class TermsAcceptance(Base):
     __tablename__ = "terms_acceptances"
@@ -911,22 +935,26 @@ class TermsAcceptance(Base):
 
 # ─── Refund Requests ────────────────────────────────────────
 
+
 class RefundRequest(Base):
     __tablename__ = "refund_requests"
     id = Column(String(16), primary_key=True, default=gen_id)
     user_id = Column(String(16), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
-    reason = Column(String(50), nullable=False)  # duplicate_charge|unauthorized|technical_error|service_outage|guarantee_7d|eu_withdrawal|chile_retracto|tutor_noshow|other
+    reason = Column(
+        String(50), nullable=False
+    )  # duplicate_charge|unauthorized|technical_error|service_outage|guarantee_7d|eu_withdrawal|chile_retracto|tutor_noshow|other
     reason_detail = Column(Text, default="")
     amount_usd = Column(Float, nullable=True)
-    payment_ref = Column(String(255), default="")   # PayPal/MP transaction ID
-    provider = Column(String(20), default="")        # paypal | mercadopago
-    status = Column(String(20), default="pending")   # pending | approved | rejected | processed
+    payment_ref = Column(String(255), default="")  # PayPal/MP transaction ID
+    provider = Column(String(20), default="")  # paypal | mercadopago
+    status = Column(String(20), default="pending")  # pending | approved | rejected | processed
     admin_notes = Column(Text, default="")
     created_at = Column(DateTime, default=datetime.utcnow)
     resolved_at = Column(DateTime, nullable=True)
 
 
 # ─── Student CV / Professional Profile ─────────────────────
+
 
 class StudentCV(Base):
     __tablename__ = "student_cvs"
@@ -948,12 +976,15 @@ class StudentCV(Base):
 
 # ─── Courses / Desarrollo Integral ─────────────────────────
 
+
 class Course(Base):
     __tablename__ = "courses"
     id = Column(String(16), primary_key=True, default=gen_id)
     title = Column(String(255), nullable=False)
     description = Column(Text, default="")
-    category = Column(String(50), default="soft_skills")  # soft_skills, leadership, emotional, productivity, ethics, career, communication, thinking
+    category = Column(
+        String(50), default="soft_skills"
+    )  # soft_skills, leadership, emotional, productivity, ethics, career, communication, thinking
     emoji = Column(String(10), default="📚")
     difficulty = Column(String(20), default="beginner")  # beginner, intermediate
     estimated_minutes = Column(Integer, default=30)
@@ -981,6 +1012,7 @@ class CourseQuiz(Base):
 
 
 # ─── Tutoring Requests ──────────────────────────────────────
+
 
 class TutoringRequest(Base):
     __tablename__ = "tutoring_requests"
@@ -1011,6 +1043,7 @@ class UserCourseProgress(Base):
 
 # ─── Exercise History (never-repeating exercises) ─────────
 
+
 class UserExerciseHistory(Base):
     __tablename__ = "user_exercise_history"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1020,12 +1053,11 @@ class UserExerciseHistory(Base):
     answered_at = Column(DateTime, default=datetime.utcnow)
     was_correct = Column(Boolean, default=False)
 
-    __table_args__ = (
-        Index("ix_exercise_user_course", "user_id", "course_id"),
-    )
+    __table_args__ = (Index("ix_exercise_user_course", "user_id", "course_id"),)
 
 
 # ─── Certificates ─────────────────────────────────────────
+
 
 class Certificate(Base):
     __tablename__ = "certificates"
@@ -1043,6 +1075,7 @@ class Certificate(Base):
 
 
 # ─── Social Media Accounts & Cross-Posting ─────────────────
+
 
 class SocialMediaAccount(Base):
     __tablename__ = "social_media_accounts"
@@ -1078,6 +1111,7 @@ class CrossPost(Base):
 
 # ─── Email Log ────────────────────────────────────────────
 
+
 class EmailLog(Base):
     __tablename__ = "email_logs"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1095,6 +1129,7 @@ class EmailLog(Base):
 
 # ─── Konni Broadcast (job announcements to all users) ──────
 
+
 class KonniBroadcast(Base):
     __tablename__ = "konni_broadcasts"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1106,6 +1141,7 @@ class KonniBroadcast(Base):
 
 
 # ─── Recruiter Profiles ────────────────────────────────────
+
 
 class RecruiterProfile(Base):
     __tablename__ = "recruiter_profiles"
@@ -1132,6 +1168,7 @@ class RecruiterProfile(Base):
 
 
 # ─── Tutoring Listings ─────────────────────────────────────
+
 
 class TutoringListing(Base):
     __tablename__ = "tutoring_listings"
@@ -1178,6 +1215,7 @@ class TutoringListingRequest(Base):
 
 # ─── Study Events ──────────────────────────────────────────
 
+
 class StudyEvent(Base):
     __tablename__ = "study_events"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1195,6 +1233,7 @@ class StudyEvent(Base):
     attendee_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+
 class EventRSVP(Base):
     __tablename__ = "event_rsvps"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1207,6 +1246,7 @@ class EventRSVP(Base):
 
 # ─── Skills & Endorsements ─────────────────────────────────
 
+
 class UserSkill(Base):
     __tablename__ = "user_skills"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1215,6 +1255,7 @@ class UserSkill(Base):
     endorsement_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     __table_args__ = (UniqueConstraint("user_id", "skill_name", name="uq_user_skill"),)
+
 
 class SkillEndorsement(Base):
     __tablename__ = "skill_endorsements"
@@ -1227,6 +1268,7 @@ class SkillEndorsement(Base):
 
 # ─── Post Bookmarks ───────────────────────────────────────
 
+
 class PostBookmark(Base):
     __tablename__ = "post_bookmarks"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1238,6 +1280,7 @@ class PostBookmark(Base):
 
 
 # ─── Mentorship ────────────────────────────────────────────
+
 
 class MentorProfile(Base):
     __tablename__ = "mentor_profiles"
@@ -1252,6 +1295,7 @@ class MentorProfile(Base):
     rating_sum = Column(Float, default=0)
     rating_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
+
 
 class MentorshipRelation(Base):
     __tablename__ = "mentorship_relations"
@@ -1269,6 +1313,7 @@ class MentorshipRelation(Base):
 
 # ─── Post Shares ───────────────────────────────────────────
 
+
 class PostShare(Base):
     __tablename__ = "post_shares"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1279,6 +1324,7 @@ class PostShare(Base):
 
 
 # ─── Study Plans ───────────────────────────────────────────
+
 
 class StudyPlan(Base):
     __tablename__ = "study_plans"
@@ -1296,6 +1342,7 @@ class StudyPlan(Base):
 
 
 # ─── Study Rooms ───────────────────────────────────────────
+
 
 class StudyRoom(Base):
     __tablename__ = "study_rooms"
@@ -1326,6 +1373,7 @@ class StudyRoomParticipant(Base):
 
 
 # ─── Quiz History & Scheduled Quizzes ──────────────────────
+
 
 class QuizHistory(Base):
     __tablename__ = "quiz_history"
@@ -1385,6 +1433,7 @@ class MoodCheckIn(Base):
 
 # ─── Class Attendance ──────────────────────────────────────
 
+
 class ClassAttendance(Base):
     __tablename__ = "class_attendance"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1399,18 +1448,20 @@ class ClassAttendance(Base):
 
 # ─── Employee Attendance / Marcaje ────────────────────────
 
+
 class EmployeeAttendance(Base):
     __tablename__ = "employee_attendance"
     id = Column(String(16), primary_key=True, default=gen_id)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     action = Column(String(10), nullable=False)  # 'in' | 'out'
     timestamp = Column(DateTime, nullable=False, default=datetime.utcnow)
-    date = Column(String(10), nullable=False)    # YYYY-MM-DD (Chile TZ)
+    date = Column(String(10), nullable=False)  # YYYY-MM-DD (Chile TZ)
     note = Column(String(200), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
 # ─── User Downloads (cloud storage) ───────────────────────
+
 
 class UserDownload(Base):
     __tablename__ = "user_downloads"
@@ -1425,6 +1476,7 @@ class UserDownload(Base):
 
 
 # ─── User Sessions (Multi-Device Tracking) ───────────────────────
+
 
 class UserSession(Base):
     __tablename__ = "user_sessions"
@@ -1441,6 +1493,7 @@ class UserSession(Base):
 
 # ─── Push Subscriptions (Web Push Notifications) ──────────────────
 
+
 class PushSubscription(Base):
     __tablename__ = "push_subscriptions"
     id = Column(String(16), primary_key=True, default=gen_id)
@@ -1454,6 +1507,7 @@ class PushSubscription(Base):
 
 
 # ─── Video Conferences ────────────────────────────────────────────
+
 
 class VideoConference(Base):
     __tablename__ = "video_conferences"
@@ -1494,21 +1548,24 @@ class ConferenceParticipant(Base):
 
 # ─── Chat Usage (persistent rate limiting) ───────────────────────
 
+
 class ChatUsage(Base):
     __tablename__ = "chat_usage"
     id = Column(Integer, primary_key=True)
     user_id = Column(String, nullable=False, index=True)
     date = Column(String, nullable=False)  # formato YYYY-MM-DD
     count = Column(Integer, default=0)
-    __table_args__ = (UniqueConstraint('user_id', 'date', name='uq_chat_usage_user_date'),)
+    __table_args__ = (UniqueConstraint("user_id", "date", name="uq_chat_usage_user_date"),)
 
 
 # ─── Init ────────────────────────────────────────────────────────
+
 
 def _ensure_columns():
     """Add missing columns to existing tables (lightweight auto-migration)."""
     from sqlalchemy import inspect as _inspect
     from sqlalchemy import text as _t
+
     insp = _inspect(engine)
     migrations = [
         # cv_profiles
@@ -1600,12 +1657,13 @@ def _ensure_columns():
                 continue
             existing = [c["name"] for c in insp.get_columns(table)]
             if col not in existing:
-                conn.execute(_t(f'ALTER TABLE {table} ADD COLUMN {col} {col_type}'))
+                conn.execute(_t(f"ALTER TABLE {table} ADD COLUMN {col} {col_type}"))
                 print(f"Migration: added {table}.{col}")
 
         # Crear tabla user_notification_prefs si no existe
         if "user_notification_prefs" not in insp.get_table_names():
-            conn.execute(_t("""
+            conn.execute(
+                _t("""
                 CREATE TABLE user_notification_prefs (
                     user_id VARCHAR(16) PRIMARY KEY,
                     cal_push BOOLEAN DEFAULT TRUE,
@@ -1613,7 +1671,8 @@ def _ensure_columns():
                     cal_email BOOLEAN DEFAULT TRUE,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
-            """))
+            """)
+            )
             print("Migration: created user_notification_prefs")
 
         # One-time: widen cover_photo to TEXT so base64 data URIs fit (Postgres only)
@@ -1628,20 +1687,21 @@ def _ensure_columns():
 
 # ─── LMS University Integration ──────────────────────────────
 
+
 class UniversityConnection(Base):
     __tablename__ = "university_connections"
     id = Column(String(16), primary_key=True, default=gen_id)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
     platform_type = Column(String(30), default="unknown")
     # moodle | canvas | blackboard | teams | classroom | brightspace | sakai | other
-    platform_name = Column(String(255), default="")      # "U. de Chile — Moodle"
-    api_url = Column(String(500), default="")             # https://moodle.uchile.cl
-    api_token = Column(Text, default="")                  # token/key (base64 stored)
-    extra_field = Column(Text, default="")                # additional field (e.g. username, secret)
-    status = Column(String(20), default="pending")        # pending | connected | error | disconnected
+    platform_name = Column(String(255), default="")  # "U. de Chile — Moodle"
+    api_url = Column(String(500), default="")  # https://moodle.uchile.cl
+    api_token = Column(Text, default="")  # token/key (base64 stored)
+    extra_field = Column(Text, default="")  # additional field (e.g. username, secret)
+    status = Column(String(20), default="pending")  # pending | connected | error | disconnected
     error_msg = Column(Text, default="")
     last_scan = Column(DateTime, nullable=True)
-    last_visited_at = Column(DateTime, nullable=True)     # last time user opened Mi Universidad
+    last_visited_at = Column(DateTime, nullable=True)  # last time user opened Mi Universidad
     created_at = Column(DateTime, default=datetime.utcnow)
 
 
@@ -1650,16 +1710,16 @@ class LMSCourse(Base):
     id = Column(String(16), primary_key=True, default=gen_id)
     connection_id = Column(String(16), ForeignKey("university_connections.id"), nullable=False, index=True)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
-    external_id = Column(String(255), default="")         # ID del curso en la plataforma
+    external_id = Column(String(255), default="")  # ID del curso en la plataforma
     name = Column(String(500), default="")
     short_name = Column(String(100), default="")
     semester = Column(String(50), default="")
     year = Column(Integer, nullable=True)
-    startdate = Column(Integer, server_default="0")       # Unix timestamp from LMS
-    enddate = Column(Integer, server_default="0")         # Unix timestamp (0 = sin fecha de término)
-    is_active = Column(Boolean, server_default="true")    # usuario ha activado esta asignatura
+    startdate = Column(Integer, server_default="0")  # Unix timestamp from LMS
+    enddate = Column(Integer, server_default="0")  # Unix timestamp (0 = sin fecha de término)
+    is_active = Column(Boolean, server_default="true")  # usuario ha activado esta asignatura
     conniku_project_id = Column(String(255), nullable=True)  # linked Conniku project
-    display_name = Column(String(500), nullable=True)         # nombre personalizado (sync usa .name)
+    display_name = Column(String(500), nullable=True)  # nombre personalizado (sync usa .name)
     last_checked = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -1669,22 +1729,23 @@ class LMSSyncItem(Base):
     id = Column(String(16), primary_key=True, default=gen_id)
     course_id = Column(String(16), ForeignKey("lms_courses.id"), nullable=False, index=True)
     user_id = Column(String(16), ForeignKey("users.id"), nullable=False, index=True)
-    external_id = Column(String(255), default="")         # ID del recurso en plataforma
+    external_id = Column(String(255), default="")  # ID del recurso en plataforma
     item_name = Column(String(500), default="")
-    item_type = Column(String(50), default="file")        # file | url | assignment | quiz | page
+    item_type = Column(String(50), default="file")  # file | url | assignment | quiz | page
     item_url = Column(String(1000), default="")
     mime_type = Column(String(100), default="application/pdf")
     file_size = Column(Integer, default=0)
-    topic_name = Column(String(500), server_default="")   # nombre del tema/sección del curso
-    topic_order = Column(Integer, server_default="0")     # orden del tema dentro del curso
+    topic_name = Column(String(500), server_default="")  # nombre del tema/sección del curso
+    topic_order = Column(Integer, server_default="0")  # orden del tema dentro del curso
     module_name = Column(String(500), server_default="")  # nombre del módulo/recurso padre
-    status = Column(String(20), default="pending")        # pending | synced | dismissed
-    file_content_b64 = Column(Text, nullable=True)        # contenido descargado (base64)
+    status = Column(String(20), default="pending")  # pending | synced | dismissed
+    file_content_b64 = Column(Text, nullable=True)  # contenido descargado (base64)
     detected_at = Column(DateTime, default=datetime.utcnow)
     synced_at = Column(DateTime, nullable=True)
 
 
 # ─── Blog Thread (hilo público de opiniones) ──────────────────
+
 
 class BlogThread(Base):
     __tablename__ = "blog_threads"
@@ -1705,6 +1766,7 @@ class BlogLike(Base):
 
 
 # ─── Collaborative Documents (Trabajos Grupales) ──────────────
+
 
 class CollabDocument(Base):
     __tablename__ = "collab_documents"
@@ -1738,9 +1800,7 @@ class CollabDocumentMember(Base):
     document = relationship("CollabDocument", back_populates="members")
     user = relationship("User")
 
-    __table_args__ = (
-        UniqueConstraint("document_id", "user_id", name="uq_collab_doc_user"),
-    )
+    __table_args__ = (UniqueConstraint("document_id", "user_id", name="uq_collab_doc_user"),)
 
 
 class CollabDocumentVersion(Base):
@@ -1782,6 +1842,7 @@ class CollabDocumentMessage(Base):
 # El hash SHA-256 del texto aceptado vive en shared/legal_texts.py (fuente
 # de verdad) y su espejo en shared/legal_texts.ts.
 
+
 class UserAgreement(Base):
     __tablename__ = "user_agreements"
 
@@ -1798,9 +1859,172 @@ class UserAgreement(Base):
 
     user = relationship("User")
 
-    __table_args__ = (
-        Index("ix_user_agreements_user_doc", "user_id", "document_type"),
+    __table_args__ = (Index("ix_user_agreements_user_doc", "user_id", "document_type"),)
+
+
+# ─── Workspaces v2 (Bloque 2a Fundación) ──────────────────────────
+# Creados en bloque 2a. Los modelos AthenaUsage, WorkspaceAthenaChat y
+# WorkspaceAthenaSuggestion son consumidos desde bloque 2c (Athena IA).
+# Ver docs/plans/bloque-2-workspaces/plan-maestro.md §4.
+
+
+class WorkspaceDocument(Base):
+    """Documento principal del workspace: contiene metadatos, config APA y snapshot Yjs."""
+
+    __tablename__ = "workspace_documents"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    title = Column(String(255), nullable=False)
+    owner_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    course_name = Column(String(255), nullable=True)
+    rubric_raw = Column(Text, nullable=True)  # rúbrica como texto/JSON (2d)
+    rubric_criteria = Column(Text, nullable=True)  # JSON con criterios parseados (2d)
+    apa_edition = Column(String(10), default="7")  # 7, 6, ieee, chicago, mla
+    options = Column(Text, default="{}")  # JSON features habilitadas por el owner
+    cover_data = Column(Text, nullable=True)  # JSON datos de tapa (2d)
+    cover_template = Column(String(50), nullable=True)
+    content_yjs = Column(Text, nullable=True)  # snapshot Yjs en base64 (2b)
+    is_completed = Column(Boolean, default=False)
+    share_link_token = Column(String(32), unique=True, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WorkspaceMember(Base):
+    """Miembro de un workspace con su rol (owner, editor, viewer)."""
+
+    __tablename__ = "workspace_members"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
     )
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    role = Column(String(20), default="viewer")  # owner, editor, viewer
+    chars_contributed = Column(Integer, default=0)
+    invited_at = Column(DateTime, default=datetime.utcnow)
+    joined_at = Column(DateTime, nullable=True)
+
+
+class WorkspaceVersion(Base):
+    """Snapshot manual o automático del contenido Yjs del workspace."""
+
+    __tablename__ = "workspace_versions"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    content_yjs = Column(Text, nullable=False)
+    created_by = Column(String(16), ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    label = Column(String(100), nullable=True)
+
+
+class WorkspaceMessage(Base):
+    """Chat del grupo (no Athena) — entre miembros, privado al workspace.
+    Tabla creada en bloque 2a. Endpoints de chat implementados en bloque 2b."""
+
+    __tablename__ = "workspace_messages"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WorkspaceAthenaChat(Base):
+    """Historial de chat con Athena, privado por usuario.
+    Tabla creada en bloque 2a. Consumida desde bloque 2c (Athena IA).
+    Usa Integer PK autoincrement (tabla de historial/log)."""
+
+    __tablename__ = "workspace_athena_chats"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    role = Column(String(20), nullable=False)  # 'user' or 'athena'
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class WorkspaceAthenaSuggestion(Base):
+    """Sugerencias de Athena sobre staging del usuario, con estado apply/modify/reject.
+    Tabla creada en bloque 2a. Consumida desde bloque 2c (Athena IA).
+    Usa Integer PK autoincrement (tabla de staging/log)."""
+
+    __tablename__ = "workspace_athena_suggestions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    staging_content = Column(Text, nullable=False)  # lo que el usuario escribió
+    suggestion_content = Column(Text, nullable=False)  # lo que Athena propuso
+    status = Column(String(20), default="pending")  # pending, applied, modified, rejected
+    created_at = Column(DateTime, default=datetime.utcnow)
+    resolved_at = Column(DateTime, nullable=True)
+
+
+class WorkspaceComment(Base):
+    """Comentario inline sobre texto seleccionado del documento, con soporte de threads."""
+
+    __tablename__ = "workspace_comments"
+
+    id = Column(String(16), primary_key=True, default=gen_id)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    anchor_json = Column(Text, nullable=False)  # posición en doc (nodeKey, offset, selection)
+    content = Column(Text, nullable=False)
+    resolved = Column(Boolean, default=False)
+    parent_id = Column(
+        String(16),
+        ForeignKey("workspace_comments.id"),
+        nullable=True,
+    )  # self-FK para threads de comentarios
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+
+class AthenaUsage(Base):
+    """Métricas de uso de Athena para aplicar límites por plan (Free/PRO/MAX).
+    Tabla creada en bloque 2a. Consumida desde bloque 2c (Athena IA).
+    Ver docs/plans/bloque-2-workspaces/plan-maestro.md §4 Athena-4."""
+
+    __tablename__ = "athena_usage"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String(16), ForeignKey("users.id"), nullable=False)
+    workspace_id = Column(
+        String(16),
+        ForeignKey("workspace_documents.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    action = Column(String(20), nullable=False)  # analyze, chat, apply, suggest
+    tokens_input = Column(Integer, default=0)
+    tokens_output = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+    __table_args__ = (Index("ix_athena_usage_user_month", "user_id", "created_at"),)
 
 
 def init_db():
@@ -1815,8 +2039,10 @@ def init_db():
     try:
         owner = db.query(User).filter(User.email == "ceo@conniku.com").first()
         import bcrypt
+
         if not owner:
             from sqlalchemy import func
+
             max_num = db.query(func.max(User.user_number)).scalar() or 0
             owner = User(
                 id=gen_id(),
@@ -1890,10 +2116,13 @@ def _seed_owner_cv(db, owner):
     import json as _json
 
     from sqlalchemy import text as _text
+
     try:
         # Check if cv_profiles table exists and if owner already has a CV
         try:
-            row = db.execute(_text("SELECT id, headline FROM cv_profiles WHERE user_id = :uid"), {"uid": owner.id}).first()
+            row = db.execute(
+                _text("SELECT id, headline FROM cv_profiles WHERE user_id = :uid"), {"uid": owner.id}
+            ).first()
         except Exception:
             print("Owner CV seed: cv_profiles table not yet created, will seed on next restart.")
             return
@@ -1905,70 +2134,242 @@ def _seed_owner_cv(db, owner):
         headline = "Entertainment Technical Director | Senior Production Manager | Broadcast & Show Systems Engineer"
         summary = "Twenty-plus years leading entertainment technology operations across 8 cruise lines and international live production venues. Built, repaired, and managed show systems at every level — from wiring racks to calling shows for thousands. Track record of solving critical system failures under pressure, designing fleet-wide audio and video infrastructure, and leading technical teams in high-stakes maritime environments."
 
-        experience = _json.dumps([
-            {"company": "Disney Cruise Line — Disney Wish", "title": "Senior Technician, Walt Disney Theatre", "start_date": "2025-10", "end_date": "", "location": "At Sea", "description": "Lead the daily operation, setup, and maintenance of the Walt Disney Theatre. Primary technical liaison with Stage Management. 100% show delivery rate. Restored main LED wall, rebuilt Clear-Com IP system, repaired Orchestra Lift automation. Writing 9-chapter WDT Handover Manual."},
-            {"company": "Seabourn Cruise Line", "title": "Senior Production Manager (Fleet-Level)", "start_date": "2022-03", "end_date": "2025-10", "location": "Fleet", "description": "Ran entertainment operations across the fleet. Led fleet-wide deployment of 30+ Symetrix Radius NX DSP units with Dante networking. Managed TVRO broadcast operations. Programmed QLab with OSC/timecode. Rebuilt GrandMA2 consoles. Installed LED walls (9mx3m) in 6 ships."},
-            {"company": "Cunard Cruise Line", "title": "Production Manager", "start_date": "2022-01", "end_date": "2022-09", "location": "At Sea", "description": "Managed production operations across multiple venues. Built HESS risk assessments. 100% compliance rate."},
-            {"company": "RWS — TED — Cirque du Soleil at Sea", "title": "Show Operations Director", "start_date": "2021-02", "end_date": "2022-12", "location": "At Sea", "description": "Directed technical and artistic operations for Cirque du Soleil at Sea. Called every show using QLab. Quality control and safety protocols for complex rigging and aerial productions."},
-            {"company": "RWS — TED — Cirque du Soleil at Sea", "title": "Technical Director", "start_date": "2019-06", "end_date": "2020-03", "location": "At Sea", "description": "Managed full cross-functional technical operation: audio, lighting, rigging, and stage automation. Contract interrupted by COVID-19 pandemic."},
-            {"company": "Carnival Cruise Line", "title": "Entertainment Technical Manager", "start_date": "2016-06", "end_date": "2019-03", "location": "Fleet", "description": "Managed technical teams across 10+ entertainment venues. FOH/MON audio, lighting, video playback, stage automation. System upgrades and technician training programs."},
-            {"company": "MSC Cruises", "title": "Entertainment Technical Manager — Senior Level 4", "start_date": "2012-02", "end_date": "2016-03", "location": "Fleet", "description": "Led technical teams during new-build commissioning for 5 vessels: MSC Meraviglia, Seaside, Seashore, Bellissima, Grandiosa. Dry dock installations and system updates across Fantasy and Lirica Class fleets."},
-            {"company": "Costa Cruises", "title": "AV Theatre Sound Technician", "start_date": "2010-05", "end_date": "2013-12", "location": "At Sea", "description": "Operated FOH/MON audio systems for theatre productions and live entertainment."},
-            {"company": "Ibero Cruises", "title": "Stage Manager / AV Technician", "start_date": "2005-01", "end_date": "2010-12", "location": "At Sea", "description": "Progressed from AV Technician to Stage Manager over 5 years. Full stage operations oversight and technical team coordination."},
-            {"company": "Pullmantur Cruises", "title": "Assistant Stage Manager / Sound & Light Technician", "start_date": "2000-01", "end_date": "2005-12", "location": "At Sea", "description": "First shipboard assignment. Sound, lighting, and DJ services. Advanced to Assistant Stage Manager."},
-            {"company": "Freelance", "title": "FOH/MON Engineer & Post-Production Specialist", "start_date": "1998-01", "end_date": "", "location": "Worldwide", "description": "FOH/MON Engineer at major festivals: Festival de Vina del Mar, Lollapalooza Chile, Montreux Jazz Festival. 5,000+ hours live mixing on SSL, Euphonix, DiGiCo. Post-production in DaVinci Resolve Studio and Adobe Premiere Pro."},
-        ], ensure_ascii=False)
+        experience = _json.dumps(
+            [
+                {
+                    "company": "Disney Cruise Line — Disney Wish",
+                    "title": "Senior Technician, Walt Disney Theatre",
+                    "start_date": "2025-10",
+                    "end_date": "",
+                    "location": "At Sea",
+                    "description": "Lead the daily operation, setup, and maintenance of the Walt Disney Theatre. Primary technical liaison with Stage Management. 100% show delivery rate. Restored main LED wall, rebuilt Clear-Com IP system, repaired Orchestra Lift automation. Writing 9-chapter WDT Handover Manual.",
+                },
+                {
+                    "company": "Seabourn Cruise Line",
+                    "title": "Senior Production Manager (Fleet-Level)",
+                    "start_date": "2022-03",
+                    "end_date": "2025-10",
+                    "location": "Fleet",
+                    "description": "Ran entertainment operations across the fleet. Led fleet-wide deployment of 30+ Symetrix Radius NX DSP units with Dante networking. Managed TVRO broadcast operations. Programmed QLab with OSC/timecode. Rebuilt GrandMA2 consoles. Installed LED walls (9mx3m) in 6 ships.",
+                },
+                {
+                    "company": "Cunard Cruise Line",
+                    "title": "Production Manager",
+                    "start_date": "2022-01",
+                    "end_date": "2022-09",
+                    "location": "At Sea",
+                    "description": "Managed production operations across multiple venues. Built HESS risk assessments. 100% compliance rate.",
+                },
+                {
+                    "company": "RWS — TED — Cirque du Soleil at Sea",
+                    "title": "Show Operations Director",
+                    "start_date": "2021-02",
+                    "end_date": "2022-12",
+                    "location": "At Sea",
+                    "description": "Directed technical and artistic operations for Cirque du Soleil at Sea. Called every show using QLab. Quality control and safety protocols for complex rigging and aerial productions.",
+                },
+                {
+                    "company": "RWS — TED — Cirque du Soleil at Sea",
+                    "title": "Technical Director",
+                    "start_date": "2019-06",
+                    "end_date": "2020-03",
+                    "location": "At Sea",
+                    "description": "Managed full cross-functional technical operation: audio, lighting, rigging, and stage automation. Contract interrupted by COVID-19 pandemic.",
+                },
+                {
+                    "company": "Carnival Cruise Line",
+                    "title": "Entertainment Technical Manager",
+                    "start_date": "2016-06",
+                    "end_date": "2019-03",
+                    "location": "Fleet",
+                    "description": "Managed technical teams across 10+ entertainment venues. FOH/MON audio, lighting, video playback, stage automation. System upgrades and technician training programs.",
+                },
+                {
+                    "company": "MSC Cruises",
+                    "title": "Entertainment Technical Manager — Senior Level 4",
+                    "start_date": "2012-02",
+                    "end_date": "2016-03",
+                    "location": "Fleet",
+                    "description": "Led technical teams during new-build commissioning for 5 vessels: MSC Meraviglia, Seaside, Seashore, Bellissima, Grandiosa. Dry dock installations and system updates across Fantasy and Lirica Class fleets.",
+                },
+                {
+                    "company": "Costa Cruises",
+                    "title": "AV Theatre Sound Technician",
+                    "start_date": "2010-05",
+                    "end_date": "2013-12",
+                    "location": "At Sea",
+                    "description": "Operated FOH/MON audio systems for theatre productions and live entertainment.",
+                },
+                {
+                    "company": "Ibero Cruises",
+                    "title": "Stage Manager / AV Technician",
+                    "start_date": "2005-01",
+                    "end_date": "2010-12",
+                    "location": "At Sea",
+                    "description": "Progressed from AV Technician to Stage Manager over 5 years. Full stage operations oversight and technical team coordination.",
+                },
+                {
+                    "company": "Pullmantur Cruises",
+                    "title": "Assistant Stage Manager / Sound & Light Technician",
+                    "start_date": "2000-01",
+                    "end_date": "2005-12",
+                    "location": "At Sea",
+                    "description": "First shipboard assignment. Sound, lighting, and DJ services. Advanced to Assistant Stage Manager.",
+                },
+                {
+                    "company": "Freelance",
+                    "title": "FOH/MON Engineer & Post-Production Specialist",
+                    "start_date": "1998-01",
+                    "end_date": "",
+                    "location": "Worldwide",
+                    "description": "FOH/MON Engineer at major festivals: Festival de Vina del Mar, Lollapalooza Chile, Montreux Jazz Festival. 5,000+ hours live mixing on SSL, Euphonix, DiGiCo. Post-production in DaVinci Resolve Studio and Adobe Premiere Pro.",
+                },
+            ],
+            ensure_ascii=False,
+        )
 
-        education = _json.dumps([
-            {"institution": "Zurich University of the Arts, Switzerland", "degree": "PhD in Telecommunications Engineering", "field": "Thesis approved, pending defense", "start_year": "", "end_year": ""},
-            {"institution": "Arturo Prat University, Chile", "degree": "MBA in Management & Human Resources", "field": "", "start_year": "", "end_year": ""},
-            {"institution": "INACAP, Chile", "degree": "Civil Engineering in Sound & Acoustics", "field": "", "start_year": "", "end_year": ""},
-            {"institution": "IACC, Chile", "degree": "Industrial Electronic Engineering", "field": "", "start_year": "", "end_year": ""},
-            {"institution": "DUOC University, Chile", "degree": "Theatre Sound Technician & Live Show", "field": "", "start_year": "", "end_year": ""},
-            {"institution": "Universidad del Alba, Chile", "degree": "Commercial Engineering / Economics", "field": "In Progress", "start_year": "", "end_year": ""},
-        ], ensure_ascii=False)
+        education = _json.dumps(
+            [
+                {
+                    "institution": "Zurich University of the Arts, Switzerland",
+                    "degree": "PhD in Telecommunications Engineering",
+                    "field": "Thesis approved, pending defense",
+                    "start_year": "",
+                    "end_year": "",
+                },
+                {
+                    "institution": "Arturo Prat University, Chile",
+                    "degree": "MBA in Management & Human Resources",
+                    "field": "",
+                    "start_year": "",
+                    "end_year": "",
+                },
+                {
+                    "institution": "INACAP, Chile",
+                    "degree": "Civil Engineering in Sound & Acoustics",
+                    "field": "",
+                    "start_year": "",
+                    "end_year": "",
+                },
+                {
+                    "institution": "IACC, Chile",
+                    "degree": "Industrial Electronic Engineering",
+                    "field": "",
+                    "start_year": "",
+                    "end_year": "",
+                },
+                {
+                    "institution": "DUOC University, Chile",
+                    "degree": "Theatre Sound Technician & Live Show",
+                    "field": "",
+                    "start_year": "",
+                    "end_year": "",
+                },
+                {
+                    "institution": "Universidad del Alba, Chile",
+                    "degree": "Commercial Engineering / Economics",
+                    "field": "In Progress",
+                    "start_year": "",
+                    "end_year": "",
+                },
+            ],
+            ensure_ascii=False,
+        )
 
-        certifications = _json.dumps([
-            {"name": "Fusion Effects, Fairlight Audio, DaVinci Resolve Color", "issuer": "Blackmagic Design", "date": ""},
-            {"name": "Netlinx Programmer Level 1 / Video & Control Designer Level 1", "issuer": "AMX Harman", "date": ""},
-            {"name": "Polar Live Satellite Tracking", "issuer": "NetSat (On-Site)", "date": ""},
-            {"name": "Dante Certification Levels 1-3", "issuer": "Audinate", "date": ""},
-            {"name": "Q-SYS Levels 1 & 2", "issuer": "QSC", "date": ""},
-            {"name": "Biamp Tesira Forte", "issuer": "Biamp", "date": ""},
-            {"name": "Waves SoundGrid 301", "issuer": "Waves", "date": ""},
-            {"name": "DiGiCo SD/S Series", "issuer": "DiGiCo", "date": ""},
-            {"name": "Yamaha RIVAGE PM", "issuer": "Yamaha", "date": ""},
-            {"name": "STCW, Conflict Resolution, Team Leadership", "issuer": "Maritime & Safety", "date": ""},
-        ], ensure_ascii=False)
+        certifications = _json.dumps(
+            [
+                {
+                    "name": "Fusion Effects, Fairlight Audio, DaVinci Resolve Color",
+                    "issuer": "Blackmagic Design",
+                    "date": "",
+                },
+                {
+                    "name": "Netlinx Programmer Level 1 / Video & Control Designer Level 1",
+                    "issuer": "AMX Harman",
+                    "date": "",
+                },
+                {"name": "Polar Live Satellite Tracking", "issuer": "NetSat (On-Site)", "date": ""},
+                {"name": "Dante Certification Levels 1-3", "issuer": "Audinate", "date": ""},
+                {"name": "Q-SYS Levels 1 & 2", "issuer": "QSC", "date": ""},
+                {"name": "Biamp Tesira Forte", "issuer": "Biamp", "date": ""},
+                {"name": "Waves SoundGrid 301", "issuer": "Waves", "date": ""},
+                {"name": "DiGiCo SD/S Series", "issuer": "DiGiCo", "date": ""},
+                {"name": "Yamaha RIVAGE PM", "issuer": "Yamaha", "date": ""},
+                {"name": "STCW, Conflict Resolution, Team Leadership", "issuer": "Maritime & Safety", "date": ""},
+            ],
+            ensure_ascii=False,
+        )
 
-        skills = _json.dumps([
-            {"category": "Audio Engineering", "items": [{"name": "FOH/MON Live Mixing", "proficiency": 95}, {"name": "DiGiCo SD/S Series", "proficiency": 90}, {"name": "Dante Networking", "proficiency": 90}, {"name": "Symetrix DSP", "proficiency": 85}, {"name": "Q-SYS", "proficiency": 80}]},
-            {"category": "Video & LED", "items": [{"name": "NovaStar LED Systems", "proficiency": 90}, {"name": "DaVinci Resolve Studio", "proficiency": 85}, {"name": "VFX Compositing (Fusion)", "proficiency": 80}]},
-            {"category": "Show Control", "items": [{"name": "QLab (OSC/Timecode)", "proficiency": 90}, {"name": "GrandMA2 Lighting", "proficiency": 85}, {"name": "Stage Automation", "proficiency": 85}, {"name": "Clear-Com IP Comms", "proficiency": 80}]},
-            {"category": "Management", "items": [{"name": "Fleet Operations", "proficiency": 90}, {"name": "Team Leadership", "proficiency": 90}, {"name": "Safety & Compliance", "proficiency": 85}, {"name": "Technical Documentation", "proficiency": 85}]},
-        ], ensure_ascii=False)
+        skills = _json.dumps(
+            [
+                {
+                    "category": "Audio Engineering",
+                    "items": [
+                        {"name": "FOH/MON Live Mixing", "proficiency": 95},
+                        {"name": "DiGiCo SD/S Series", "proficiency": 90},
+                        {"name": "Dante Networking", "proficiency": 90},
+                        {"name": "Symetrix DSP", "proficiency": 85},
+                        {"name": "Q-SYS", "proficiency": 80},
+                    ],
+                },
+                {
+                    "category": "Video & LED",
+                    "items": [
+                        {"name": "NovaStar LED Systems", "proficiency": 90},
+                        {"name": "DaVinci Resolve Studio", "proficiency": 85},
+                        {"name": "VFX Compositing (Fusion)", "proficiency": 80},
+                    ],
+                },
+                {
+                    "category": "Show Control",
+                    "items": [
+                        {"name": "QLab (OSC/Timecode)", "proficiency": 90},
+                        {"name": "GrandMA2 Lighting", "proficiency": 85},
+                        {"name": "Stage Automation", "proficiency": 85},
+                        {"name": "Clear-Com IP Comms", "proficiency": 80},
+                    ],
+                },
+                {
+                    "category": "Management",
+                    "items": [
+                        {"name": "Fleet Operations", "proficiency": 90},
+                        {"name": "Team Leadership", "proficiency": 90},
+                        {"name": "Safety & Compliance", "proficiency": 85},
+                        {"name": "Technical Documentation", "proficiency": 85},
+                    ],
+                },
+            ],
+            ensure_ascii=False,
+        )
 
-        languages = _json.dumps([
-            {"name": "Espanol", "level": "Nativo"},
-            {"name": "English", "level": "Avanzado"},
-            {"name": "Italiano", "level": "Intermedio"},
-            {"name": "Portugues", "level": "Basico"},
-        ], ensure_ascii=False)
+        languages = _json.dumps(
+            [
+                {"name": "Espanol", "level": "Nativo"},
+                {"name": "English", "level": "Avanzado"},
+                {"name": "Italiano", "level": "Intermedio"},
+                {"name": "Portugues", "level": "Basico"},
+            ],
+            ensure_ascii=False,
+        )
 
-        differentiators = _json.dumps([
-            "8 cruise lines across 25 years: Disney, Seabourn, Cunard, Carnival, MSC, Costa, Ibero, and Pullmantur",
-            "New-build commissioning: 5+ MSC vessels from shipyard to operational status",
-            "Fleet-wide systems architecture: 30+ DSP units with Dante networking across entire fleet",
-            "5,000+ hours live mixing at festival level: Vina del Mar, Lollapalooza, Montreux Jazz",
-            "100% show delivery rate at Disney Wish",
-            "Technical documentation as leadership: 9-chapter WDT Handover Manual",
-        ], ensure_ascii=False)
+        differentiators = _json.dumps(
+            [
+                "8 cruise lines across 25 years: Disney, Seabourn, Cunard, Carnival, MSC, Costa, Ibero, and Pullmantur",
+                "New-build commissioning: 5+ MSC vessels from shipyard to operational status",
+                "Fleet-wide systems architecture: 30+ DSP units with Dante networking across entire fleet",
+                "5,000+ hours live mixing at festival level: Vina del Mar, Lollapalooza, Montreux Jazz",
+                "100% show delivery rate at Disney Wish",
+                "Technical documentation as leadership: 9-chapter WDT Handover Manual",
+            ],
+            ensure_ascii=False,
+        )
 
         now_str = datetime.utcnow().isoformat()
 
         if row:
             # Update existing empty CV
-            db.execute(_text("""
+            db.execute(
+                _text("""
                 UPDATE cv_profiles SET
                     headline = :headline, summary = :summary, location = :location,
                     available_worldwide = true, open_to_work = true, is_public = true, visibility = 'public',
@@ -1976,16 +2377,26 @@ def _seed_owner_cv(db, owner):
                     skills = :skills, languages = :languages, differentiators = :differentiators,
                     updated_at = :now
                 WHERE user_id = :uid
-            """), {
-                "headline": headline, "summary": summary, "location": "Antofagasta, Chile",
-                "experience": experience, "education": education, "certifications": certifications,
-                "skills": skills, "languages": languages, "differentiators": differentiators,
-                "now": now_str, "uid": owner.id,
-            })
+            """),
+                {
+                    "headline": headline,
+                    "summary": summary,
+                    "location": "Antofagasta, Chile",
+                    "experience": experience,
+                    "education": education,
+                    "certifications": certifications,
+                    "skills": skills,
+                    "languages": languages,
+                    "differentiators": differentiators,
+                    "now": now_str,
+                    "uid": owner.id,
+                },
+            )
         else:
             # Insert new CV
             cv_id = gen_id()
-            db.execute(_text("""
+            db.execute(
+                _text("""
                 INSERT INTO cv_profiles (
                     id, user_id, is_public, visibility, headline, summary, location,
                     available_worldwide, open_to_work, experience, education, certifications,
@@ -1995,13 +2406,22 @@ def _seed_owner_cv(db, owner):
                     true, true, :experience, :education, :certifications,
                     :skills, :languages, :differentiators, '', :now, :now
                 )
-            """), {
-                "id": cv_id, "uid": owner.id,
-                "headline": headline, "summary": summary, "location": "Antofagasta, Chile",
-                "experience": experience, "education": education, "certifications": certifications,
-                "skills": skills, "languages": languages, "differentiators": differentiators,
-                "now": now_str,
-            })
+            """),
+                {
+                    "id": cv_id,
+                    "uid": owner.id,
+                    "headline": headline,
+                    "summary": summary,
+                    "location": "Antofagasta, Chile",
+                    "experience": experience,
+                    "education": education,
+                    "certifications": certifications,
+                    "skills": skills,
+                    "languages": languages,
+                    "differentiators": differentiators,
+                    "now": now_str,
+                },
+            )
 
         db.commit()
         print("Owner CV seeded successfully!")
