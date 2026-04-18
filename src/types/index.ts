@@ -108,6 +108,7 @@ export interface User {
   mentoringPricePerHour?: number;
   mentoringCurrency?: string;
   professionalTitle?: string;
+  rut?: string;
   studyStartDate?: string;
   studyDays?: number;
   createdAt: string;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import { validateRut } from '../utils/rut';
 import tierData from '../../shared/tier-limits.json';
 import {
   Gem,
@@ -124,6 +125,25 @@ export default function Subscription({ onNavigate }: Props) {
   }, []);
 
   const handleSubscribe = async () => {
+    // RUT obligatorio para checkout PRO
+    if (!user?.rut) {
+      const rutInput = prompt(
+        'Para continuar con tu suscripción, ingresa tu RUT (ej: 12.345.678-9):'
+      );
+      if (!rutInput) return;
+      if (!validateRut(rutInput)) {
+        alert('RUT inválido. Verifica e intenta de nuevo.');
+        return;
+      }
+      const cleanRut = rutInput.replace(/\./g, '').replace(/-/g, '').toUpperCase();
+      try {
+        await api.updateMe({ rut: cleanRut });
+      } catch {
+        alert('Error al guardar RUT');
+        return;
+      }
+    }
+
     setLoading(true);
     const planKey = `pro_${selectedPlan}`;
     try {

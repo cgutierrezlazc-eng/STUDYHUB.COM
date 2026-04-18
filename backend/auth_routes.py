@@ -320,6 +320,7 @@ class UpdateProfileRequest(BaseModel):
     career: str | None = None
     semester: int | None = None
     phone: str | None = None
+    rut: str | None = None
     birth_date: str | None = None
     bio: str | None = None
     avatar: str | None = None
@@ -993,6 +994,24 @@ def get_me(user: User = Depends(get_current_user)):
     return user_to_dict(user)
 
 
+def _validate_rut(rut: str) -> bool:
+    """Basic Chilean RUT validation (format and check digit)."""
+    clean = rut.replace(".", "").replace("-", "").upper()
+    if len(clean) < 2:
+        return False
+    body, dv = clean[:-1], clean[-1]
+    if not body.isdigit():
+        return False
+    total = 0
+    factor = 2
+    for ch in reversed(body):
+        total += int(ch) * factor
+        factor = factor + 1 if factor < 7 else 2
+    remainder = 11 - (total % 11)
+    expected = "0" if remainder == 11 else "K" if remainder == 10 else str(remainder)
+    return dv == expected
+
+
 @router.put("/me")
 def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     import json as _json
@@ -1003,6 +1022,10 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
     old_university = getattr(user, "university", "") or ""
     old_academic_status = getattr(user, "academic_status", "") or ""
     old_offers_mentoring = getattr(user, "offers_mentoring", False) or False
+
+    # Validate RUT before processing updates
+    if hasattr(req, "rut") and req.rut is not None and not _validate_rut(req.rut):
+        raise HTTPException(400, "RUT inválido")
 
     updates = req.dict(exclude_none=True)
     json_list_fields = {"secondary_languages", "mentoring_services", "mentoring_subjects"}
@@ -1017,6 +1040,9 @@ def update_me(req: UpdateProfileRequest, user: User = Depends(get_current_user),
         # Validate academic_status
         if key == "academic_status" and value not in ("estudiante", "egresado", "titulado"):
             continue
+        # Normalize RUT: store without dots/dash
+        if key == "rut" and isinstance(value, str):
+            value = value.replace(".", "").replace("-", "").upper()
         # Convert camelCase to snake_case for db fields
         db_key = key
         if hasattr(user, db_key):

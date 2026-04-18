@@ -101,6 +101,9 @@ async def create_mp_subscription(data: dict, user: User = Depends(get_current_us
     if not MP_ACCESS_TOKEN:
         raise HTTPException(503, "Mercado Pago no configurado")
 
+    if not user.rut:
+        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
+
     plan_key = data.get("plan", "pro_monthly")
     plan = PLANS.get(plan_key)
     if not plan:
@@ -172,6 +175,9 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
     if not plan:
         raise HTTPException(400, f"Plan no valido: {plan_key}")
 
+    if not user.rut:
+        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
+
     preference_data = {
         "items": [{
             "title": plan["title"],
@@ -184,6 +190,7 @@ async def create_mp_checkout(data: dict, user: User = Depends(get_current_user),
             "email": user.email,
             "name": user.first_name,
             "surname": user.last_name or "",
+            "identification": {"type": "RUT", "number": user.rut},
         },
         "back_urls": {
             "success": f"{FRONTEND_URL}/subscription?mp_status=approved&plan={plan_key}",

@@ -72,6 +72,7 @@ class User(Base):
     career = Column(String(255), default="")
     semester = Column(Integer, default=1)
     phone = Column(String(50), default="")
+    rut = Column(String(12), nullable=True, default=None)  # Chilean tax ID (no dots/dash)
     country = Column(String(5), default="CL")  # ISO country code
     country_currency = Column(String(5), default="CLP")  # User's local currency
     birth_date = Column(String(20), default="")
@@ -1596,6 +1597,7 @@ def _ensure_columns():
         ("users", "cover_position_y", "INTEGER DEFAULT 50"),
         ("users", "bio_auto", "BOOLEAN DEFAULT FALSE"),
         ("users", "provider", "VARCHAR(20) DEFAULT 'email'"),
+        ("users", "rut", "VARCHAR(12) DEFAULT NULL"),
         # users — CV fields
         ("users", "cv_headline", "VARCHAR(255) DEFAULT ''"),
         ("users", "cv_summary", "TEXT DEFAULT ''"),

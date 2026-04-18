@@ -146,6 +146,9 @@ async def create_order(request: Request, db: Session = Depends(get_db), user=Dep
     if not plan:
         raise HTTPException(status_code=400, detail=f"Plan '{plan_id}' no encontrado")
 
+    if not user.rut:
+        raise HTTPException(400, "Debes completar tu RUT en tu perfil antes de suscribirte")
+
     token = await _get_access_token()
 
     order_data = {
