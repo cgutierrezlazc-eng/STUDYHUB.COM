@@ -658,10 +658,18 @@ async def submit_refund_request(request: Request, db: Session = Depends(get_db),
 # ─── Webhook ──────────────────────────────────────────────────
 
 async def _verify_paypal_signature(request: Request, body: dict) -> bool:
-    """Verifica firma del webhook con la API de PayPal."""
+    """Verifica firma del webhook con la API de PayPal.
+
+    Si PAYPAL_WEBHOOK_ID no esta configurado:
+    - En modo sandbox: log warning y permitir (para desarrollo).
+    - En modo live: rechazar (defense-in-depth contra borrado accidental del env var).
+    """
     if not PAYPAL_WEBHOOK_ID:
-        print("[PayPal] WARNING: PAYPAL_WEBHOOK_ID no configurado — firma no verificada")
-        return True  # Skip si no hay webhook ID configurado (dev)
+        if PAYPAL_MODE == "sandbox":
+            print("[PayPal] WARNING: PAYPAL_WEBHOOK_ID no configurado (sandbox) — firma no verificada")
+            return True
+        print("[PayPal] REJECTED: PAYPAL_WEBHOOK_ID no configurado en modo live")
+        return False
 
     headers = request.headers
     verification_body = {

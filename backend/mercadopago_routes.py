@@ -370,30 +370,77 @@ async def create_mp_class_checkout(data: dict, user: User = Depends(get_current_
 
 @router.post("/webhook")
 async def mp_webhook(request: Request, db: Session = Depends(get_db)):
-    """Handle Mercado Pago webhook notifications (IPN)."""
-    # Validate webhook signature if secret is configured
-    if MP_WEBHOOK_SECRET:
-        x_signature = request.headers.get("x-signature", "")
-        x_request_id = request.headers.get("x-request-id", "")
-        params = dict(request.query_params)
-        data_id_param = params.get("data.id", "")
+    """Handle Mercado Pago webhook notifications (IPN).
 
-        # Build manifest for HMAC validation
-        # Format: id:[data.id];request-id:[x-request-id];ts:[ts]
-        ts = ""
-        if x_signature:
-            parts = {p.split("=")[0].strip(): p.split("=")[1].strip() for p in x_signature.split(",") if "=" in p}
-            ts = parts.get("ts", "")
-            received_hash = parts.get("v1", "")
+    Signature validation is mandatory. The endpoint rejects requests when:
+    - MP_WEBHOOK_SECRET is not configured in the environment
+    - x-signature header is missing
+    - x-signature header is malformed (missing ts or v1 part)
+    - Signature timestamp is outside a +/- 5 minute window (replay protection)
+    - HMAC-SHA256 of the manifest does not match the received hash
+    """
+    # ── Signature validation (mandatory) ──────────────────────
+    if not MP_WEBHOOK_SECRET:
+        print("[MP Webhook] REJECTED: MP_WEBHOOK_SECRET not configured")
+        return JSONResponse(
+            status_code=503,
+            content={"status": "rejected", "reason": "webhook_secret_not_configured"},
+        )
 
-            manifest = f"id:{data_id_param};request-id:{x_request_id};ts:{ts};"
-            computed = hmac.new(
-                MP_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256
-            ).hexdigest()
+    x_signature = request.headers.get("x-signature", "")
+    x_request_id = request.headers.get("x-request-id", "")
+    params = dict(request.query_params)
+    data_id_param = params.get("data.id", "")
 
-            if received_hash and computed != received_hash:
-                print(f"[MP Webhook] ⚠️ Signature mismatch - received={received_hash[:16]}... computed={computed[:16]}...")
-                return {"status": "rejected", "reason": "signature_mismatch"}
+    if not x_signature:
+        print("[MP Webhook] REJECTED: missing x-signature header")
+        return JSONResponse(
+            status_code=401,
+            content={"status": "rejected", "reason": "missing_signature_header"},
+        )
+
+    parts = {p.split("=")[0].strip(): p.split("=")[1].strip() for p in x_signature.split(",") if "=" in p}
+    ts = parts.get("ts", "")
+    received_hash = parts.get("v1", "")
+
+    if not ts or not received_hash:
+        print("[MP Webhook] REJECTED: x-signature missing ts or v1 part")
+        return JSONResponse(
+            status_code=401,
+            content={"status": "rejected", "reason": "malformed_signature"},
+        )
+
+    # Replay-attack protection: reject signatures outside a +/- 5 minute window.
+    # MP timestamps are in milliseconds since epoch.
+    try:
+        ts_int = int(ts)
+        ts_seconds = ts_int / 1000 if ts_int > 10**12 else float(ts_int)
+        age = datetime.utcnow().timestamp() - ts_seconds
+        if abs(age) > 300:
+            print(f"[MP Webhook] REJECTED: signature timestamp out of window (age={age:.0f}s)")
+            return JSONResponse(
+                status_code=401,
+                content={"status": "rejected", "reason": "timestamp_out_of_window"},
+            )
+    except (ValueError, TypeError):
+        print(f"[MP Webhook] REJECTED: invalid timestamp '{ts}'")
+        return JSONResponse(
+            status_code=401,
+            content={"status": "rejected", "reason": "invalid_timestamp"},
+        )
+
+    manifest = f"id:{data_id_param};request-id:{x_request_id};ts:{ts};"
+    computed = hmac.new(
+        MP_WEBHOOK_SECRET.encode(), manifest.encode(), hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(computed, received_hash):
+        print(f"[MP Webhook] REJECTED: signature mismatch - received={received_hash[:16]}... computed={computed[:16]}...")
+        return JSONResponse(
+            status_code=401,
+            content={"status": "rejected", "reason": "signature_mismatch"},
+        )
+    # ── End signature validation ──────────────────────────────
 
     try:
         body = await request.json()
