@@ -83,13 +83,19 @@ function getToken(): string {
 }
 
 function getWsBase(): string {
+  // Dev local: si el host es localhost/127.0.0.1, usar WS al backend de dev.
   if (
     typeof window !== 'undefined' &&
     (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ) {
     return 'ws://localhost:8899';
   }
-  return 'wss://studyhub-api-bpco.onrender.com';
+  // Producción: derivar de VITE_API_URL (patrón del resto del codebase — api.ts).
+  // https:// → wss://, http:// → ws://. Fallback al dominio conocido si no está.
+  const apiUrl =
+    (import.meta as unknown as { env?: { VITE_API_URL?: string } }).env?.VITE_API_URL ||
+    'https://studyhub-api-bpco.onrender.com';
+  return apiUrl.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:');
 }
 
 function buildWsUrl(docId: string, token: string): string {

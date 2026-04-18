@@ -21,23 +21,13 @@ import { createWorkspaceProvider, type WorkspaceProviderHandle } from '../../ser
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useCharContributionTracker } from '../../hooks/useCharContributionTracker';
 import { getAuthorColor } from '../../components/workspaces/authorColors';
+import { useAuth } from '../../services/auth';
 
 interface Props {
   onNavigate: (path: string) => void;
 }
 
 const TOKEN_KEY = 'conniku_token';
-const USER_NAME_KEY = 'conniku_user_name';
-const USER_ID_KEY = 'conniku_user_id';
-const USER_AVATAR_KEY = 'conniku_user_avatar';
-
-function getCurrentUser() {
-  const userId = localStorage.getItem(USER_ID_KEY) ?? 'guest';
-  const name = localStorage.getItem(USER_NAME_KEY) ?? userId;
-  const avatar = localStorage.getItem(USER_AVATAR_KEY) ?? undefined;
-  const color = getAuthorColor(userId);
-  return { userId, name, avatar, color };
-}
 
 function getCurrentMemberId(members: WorkspaceMember[], userId: string): string | null {
   return members.find((m) => m.user_id === userId)?.id ?? null;
@@ -54,6 +44,7 @@ const NOOP_AWARENESS = {
 
 export default function WorkspaceEditor({ onNavigate }: Props) {
   const { id } = useParams<{ id: string }>();
+  const { user: authUser } = useAuth();
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [members, setMembers] = useState<WorkspaceMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,22 +55,42 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
 
   // ── Provider Yjs ──────────────────────────────────────────────────
   const [providerHandle, setProviderHandle] = useState<WorkspaceProviderHandle | null>(null);
-  const currentUser = useMemo(() => getCurrentUser(), []);
+
+  // currentUser se deriva del AuthContext (fuente de verdad del usuario logueado).
+  // Antes se leía de localStorage con claves que nunca se escribían → userId siempre
+  // 'guest' en producción (CRÍTICO-2 del gap-finder Capa 5).
+  const currentUser = useMemo(() => {
+    if (!authUser) {
+      return { userId: '', name: '', avatar: undefined, color: '#6B7280' };
+    }
+    const fullName =
+      `${authUser.firstName ?? ''} ${authUser.lastName ?? ''}`.trim() || authUser.username;
+    return {
+      userId: authUser.id,
+      name: fullName,
+      avatar: authUser.avatar,
+      color: getAuthorColor(authUser.id),
+    };
+  }, [authUser]);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id || !authUser) return;
     // Verificar que hay token antes de crear provider
     const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return;
 
-    const handle = createWorkspaceProvider(`conniku-ws-${id}`, currentUser);
+    // IMPORTANTE: el docId se pasa SIN prefijo (CRÍTICO-1 del gap-finder Capa 5).
+    // El backend busca `WorkspaceDocument.id == doc_id` y los IDs son gen_id() sin
+    // prefijo. El namespace "conniku-ws-{id}" se usa SOLO en LexicalEditor para
+    // aislar el mapa interno de Lexical entre docs.
+    const handle = createWorkspaceProvider(id, currentUser);
     setProviderHandle(handle);
 
     return () => {
       handle.destroy();
       setProviderHandle(null);
     };
-  }, [id, currentUser]);
+  }, [id, currentUser, authUser]);
 
   // ── Y.Doc de fallback (sin provider activo) ───────────────────────
   // Se usa cuando el provider aún no está listo, para no pasar null a los hooks.

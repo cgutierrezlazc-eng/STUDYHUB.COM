@@ -97,6 +97,26 @@ vi.mock('y-indexeddb', () => ({
   })),
 }));
 
+// Mock useAuth para que WorkspaceEditor tenga un usuario sin necesitar AuthProvider
+vi.mock('../../services/auth', () => ({
+  useAuth: () => ({
+    user: {
+      id: 'u-test',
+      firstName: 'Test',
+      lastName: 'User',
+      username: 'testuser',
+      avatar: undefined,
+    },
+    isLoading: false,
+    login: vi.fn(),
+    loginWithGoogle: vi.fn(),
+    register: vi.fn(),
+    logout: vi.fn(),
+    updateProfile: vi.fn(),
+    refreshUser: vi.fn(),
+  }),
+}));
+
 import WorkspacesList from '../../pages/Workspaces/WorkspacesList';
 import WorkspaceEditor from '../../pages/Workspaces/WorkspaceEditor';
 import WorkspaceSettings from '../../pages/Workspaces/WorkspaceSettings';
