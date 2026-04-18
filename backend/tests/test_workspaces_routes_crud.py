@@ -70,7 +70,8 @@ def client_and_user(test_app):
     """Retorna (client, owner_headers, owner_user) con usuario autenticado."""
     from datetime import datetime, timedelta
 
-    import jwt
+    # Usar jose.jwt (consistente con backend/middleware.py — python-jose ya está en requirements.txt).
+    from jose import jwt
 
     app, db = test_app
 
