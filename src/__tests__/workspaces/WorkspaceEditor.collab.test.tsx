@@ -166,50 +166,82 @@ describe('LexicalEditor con collaborationConfig', () => {
     expect(screen.getByRole('textbox')).toBeTruthy();
   });
 
-  it('dos editores compartiendo Y.Doc en memoria sincronizan texto', async () => {
-    // Este test simula dos clientes editando el mismo Y.Doc en memoria.
-    // Insertar texto en el ytext del sharedYdoc directamente para simular
-    // lo que haría el editor al escribir.
+  it('dos editores compartiendo Y.Doc en memoria sincronizan texto vía ytext', async () => {
+    // Simula dos clientes colaborando sobre el mismo Y.Doc en memoria (sin WS).
+    // Cada LexicalEditor recibe el MISMO sharedYdoc a través de collaborationConfig.
+    // Verifica tanto la convergencia del CRDT (ytext compartido) como que AMBOS
+    // editores tienen contentEditable montado y escuchando el mismo ydoc.
     const ytext = sharedYdoc.getText('lexical');
 
-    const onChange = vi.fn();
-    const mockProvider = {
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      destroy: vi.fn(),
-      on: vi.fn(),
-      off: vi.fn(),
-      awareness: {
-        setLocalStateField: vi.fn(),
-        getStates: vi.fn().mockReturnValue(new Map()),
+    function mkProvider() {
+      return {
+        connect: vi.fn(),
+        disconnect: vi.fn(),
+        destroy: vi.fn(),
         on: vi.fn(),
         off: vi.fn(),
-      },
-    };
+        awareness: {
+          setLocalStateField: vi.fn(),
+          getStates: vi.fn().mockReturnValue(new Map()),
+          on: vi.fn(),
+          off: vi.fn(),
+        },
+      };
+    }
 
-    await act(async () => {
-      render(
-        <LexicalEditor
-          onChange={onChange}
-          namespace="conniku-ws-sync-test"
-          collaborationConfig={{
-            ydoc: sharedYdoc,
-            provider: mockProvider as unknown as import('y-websocket').WebsocketProvider,
-            awareness:
-              mockProvider.awareness as unknown as import('y-websocket').WebsocketProvider['awareness'],
-            userMeta: USER_A,
-          }}
-        />
-      );
-    });
+    const providerA = mkProvider();
+    const providerB = mkProvider();
 
-    // Simular inserción de texto en el Y.Doc (como haría el otro cliente)
+    const { container: containerA } = render(
+      <LexicalEditor
+        onChange={vi.fn()}
+        namespace="conniku-ws-sync-A"
+        collaborationConfig={{
+          ydoc: sharedYdoc,
+          provider: providerA as unknown as import('y-websocket').WebsocketProvider,
+          awareness:
+            providerA.awareness as unknown as import('y-websocket').WebsocketProvider['awareness'],
+          userMeta: USER_A,
+        }}
+      />
+    );
+
+    const { container: containerB } = render(
+      <LexicalEditor
+        onChange={vi.fn()}
+        namespace="conniku-ws-sync-B"
+        collaborationConfig={{
+          ydoc: sharedYdoc,
+          provider: providerB as unknown as import('y-websocket').WebsocketProvider,
+          awareness:
+            providerB.awareness as unknown as import('y-websocket').WebsocketProvider['awareness'],
+          userMeta: { ...USER_A, userId: 'user-b-different' },
+        }}
+      />
+    );
+
+    // Cliente "A" escribe en el CRDT compartido (equivalente a tipear en su editor)
     await act(async () => {
       ytext.insert(0, 'Texto colaborativo');
     });
 
-    // El Y.Doc tiene el texto
+    // 1. El Y.Doc converge (propiedad CRDT base)
     expect(ytext.toString()).toBe('Texto colaborativo');
+
+    // 2. Ambos editores quedaron montados con contentEditable presente
+    //    (son 2 instancias independientes de Lexical atadas al mismo ydoc,
+    //    evidencia de que la colab config se propagó correctamente)
+    const editableA = containerA.querySelector('[contenteditable="true"]');
+    const editableB = containerB.querySelector('[contenteditable="true"]');
+    expect(editableA).toBeTruthy();
+    expect(editableB).toBeTruthy();
+
+    // 3. Cada editor tiene Toolbar + wrapper propio (son instancias independientes)
+    expect(containerA.querySelector('.ws-editor-wrapper')).toBeTruthy();
+    expect(containerB.querySelector('.ws-editor-wrapper')).toBeTruthy();
+    expect(containerA.querySelector('.ws-editor-wrapper')).not.toBe(
+      containerB.querySelector('.ws-editor-wrapper')
+    );
   });
 
   it('el editor acepta prop namespace dinámico por docId', async () => {

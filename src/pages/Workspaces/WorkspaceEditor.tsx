@@ -60,6 +60,7 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
+  const [titleError, setTitleError] = useState<string | null>(null);
 
   // ── Provider Yjs ──────────────────────────────────────────────────
   const [providerHandle, setProviderHandle] = useState<WorkspaceProviderHandle | null>(null);
@@ -101,6 +102,11 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const activeYdoc = providerHandle?.ydoc ?? fallbackYdocRef.current;
   const activeAwareness = providerHandle?.awareness ?? NOOP_AWARENESS;
 
+  // Si no hay id (ruta inválida), deshabilitar hooks pasando docId vacío pero
+  // enabled=false a los que lo soporten. Para useAutoSave: solo habilitar
+  // cuando hay id real + provider activo.
+  const hooksEnabled = !!id && !!providerHandle;
+
   const { saveStatus } = useAutoSave({
     ydoc: activeYdoc,
     docId: id ?? '',
@@ -108,6 +114,7 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
     awareness: activeAwareness,
     updateFn: (docId, patch) => updateWorkspace(docId, patch),
     debounceMs: 2000,
+    enabled: hooksEnabled,
   });
 
   // ── Contribution tracker ──────────────────────────────────────────
@@ -116,7 +123,7 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
     ydoc: activeYdoc,
     docId: id ?? '',
     memberId: memberId ?? '',
-    enabled: !!providerHandle && !!memberId,
+    enabled: hooksEnabled && !!memberId,
     flushMs: 30_000,
   });
 
@@ -130,27 +137,52 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const handleTitleSave = () => {
     if (!id || !titleDraft.trim() || titleDraft === workspace?.title) {
       setEditingTitle(false);
+      setTitleError(null);
       return;
     }
+    setTitleError(null);
     updateWorkspace(id, { title: titleDraft.trim() })
       .then((updated) => {
         setWorkspace(updated);
+        setEditingTitle(false);
       })
-      .catch(() => {})
-      .finally(() => setEditingTitle(false));
+      .catch((err: Error) => {
+        setTitleError(err.message || 'No se pudo guardar el título');
+        // Mantener el modo de edición abierto para que el usuario pueda reintentar
+      });
   };
 
   // ── Estado de conexión para el chat ──────────────────────────────
   const isConnected = providerHandle ? providerHandle.status$.get() === 'connected' : false;
 
-  // ── Awareness: usuarios online ────────────────────────────────────
-  const [onlineUserIds] = useState<Set<string>>(new Set());
+  // ── Awareness: usuarios online (suscripción a cambios) ───────────
+  const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!providerHandle) return;
-    // En una implementación futura, suscribirse a los cambios de awareness
-    // para actualizar onlineUserIds en tiempo real.
-    // Por ahora, el set vacío indica "sin datos de presencia aún".
+    if (!providerHandle) {
+      setOnlineUserIds(new Set());
+      return;
+    }
+
+    const awareness = providerHandle.awareness;
+
+    function refreshOnline() {
+      const states = awareness.getStates();
+      const ids = new Set<string>();
+      states.forEach((state) => {
+        const user = (state as { user?: { userId?: string } }).user;
+        if (user?.userId) ids.add(user.userId);
+      });
+      setOnlineUserIds(ids);
+    }
+
+    // Estado inicial + suscripción a cambios de awareness
+    refreshOnline();
+    awareness.on('update', refreshOnline);
+
+    return () => {
+      awareness.off('update', refreshOnline);
+    };
   }, [providerHandle]);
 
   if (loading) {
@@ -200,22 +232,32 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
 
         <div className="ws-editor-title-area">
           {editingTitle ? (
-            <input
-              className="ws-editor-title-input"
-              value={titleDraft}
-              onChange={(e) => setTitleDraft(e.target.value)}
-              onBlur={handleTitleSave}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSave();
-                if (e.key === 'Escape') {
-                  setTitleDraft(workspace.title);
-                  setEditingTitle(false);
-                }
-              }}
-              maxLength={255}
-              aria-label="Título del documento"
-              autoFocus
-            />
+            <>
+              <input
+                className="ws-editor-title-input"
+                value={titleDraft}
+                onChange={(e) => setTitleDraft(e.target.value)}
+                onBlur={handleTitleSave}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleTitleSave();
+                  if (e.key === 'Escape') {
+                    setTitleDraft(workspace.title);
+                    setEditingTitle(false);
+                    setTitleError(null);
+                  }
+                }}
+                maxLength={255}
+                aria-label="Título del documento"
+                aria-invalid={titleError !== null}
+                aria-describedby={titleError ? 'ws-title-error' : undefined}
+                autoFocus
+              />
+              {titleError && (
+                <span id="ws-title-error" className="ws-editor-title-error" role="alert">
+                  {titleError}
+                </span>
+              )}
+            </>
           ) : (
             <button
               className="ws-editor-title-btn"
