@@ -63,6 +63,45 @@ export interface UpdateWorkspaceInput {
   course_name?: string;
   apa_edition?: ApaEdition;
   is_completed?: boolean;
+  /** Snapshot Yjs serializado en base64. Agregado en bloque 2b. */
+  content_yjs?: string;
+}
+
+// ─── Tipos de colaboración en tiempo real (bloque 2b) ─────────────────────────
+
+/** Mensaje del chat grupal del workspace. */
+export interface WorkspaceMessage {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  content: string;
+  createdAt: string;
+  /** Estado del mensaje en el cliente (optimistic update). */
+  status?: 'sending' | 'sent' | 'failed';
+  /** Datos del usuario, incluidos al listar mensajes. */
+  user?: {
+    id: string;
+    name?: string | null;
+    avatar?: string | null;
+  };
+}
+
+/** Actualización de contribución de caracteres de un miembro. */
+export interface ContributionUpdate {
+  memberId: string;
+  charsContributed: number;
+}
+
+/** Estado de presencia de un usuario en el workspace (awareness Yjs). */
+export interface PresenceUser {
+  userId: string;
+  name: string;
+  avatar?: string | null;
+  color: string;
+  cursor?: {
+    anchor: unknown;
+    focus: unknown;
+  };
 }
 
 export interface InviteTokenInfo {

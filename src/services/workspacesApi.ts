@@ -15,6 +15,7 @@ import type {
   UpdateWorkspaceInput,
   InviteTokenInfo,
   MemberRole,
+  WorkspaceMessage,
 } from '../../shared/workspaces-types';
 
 const TOKEN_KEY = 'conniku_token';
@@ -133,4 +134,64 @@ export function acceptInvite(
   token: string
 ): Promise<{ ok: boolean; workspace_id: string; role: string; already_member: boolean }> {
   return apiFetch(`/workspaces/invite/${token}/accept`, { method: 'POST' });
+}
+
+// ─── Chat grupal (bloque 2b) ──────────────────────────────────────────────────
+
+export interface ListChatMessagesOptions {
+  limit?: number;
+  before?: string;
+}
+
+export interface ListChatMessagesResult {
+  messages: WorkspaceMessage[];
+}
+
+/** Obtiene el historial de mensajes del chat grupal paginado (desc). */
+export function listChatMessages(
+  docId: string,
+  options: ListChatMessagesOptions = {}
+): Promise<ListChatMessagesResult> {
+  const params = new URLSearchParams();
+  if (options.limit !== undefined) params.set('limit', String(options.limit));
+  if (options.before) params.set('before', options.before);
+  const qs = params.toString();
+  return apiFetch(`/workspaces/${docId}/chat/messages${qs ? `?${qs}` : ''}`);
+}
+
+/** Envía un nuevo mensaje al chat grupal (fallback HTTP, sin WS). */
+export function sendChatMessage(docId: string, content: string): Promise<WorkspaceMessage> {
+  return apiFetch(`/workspaces/${docId}/chat/messages`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+}
+
+/** Elimina un mensaje del chat (solo owner del mensaje o owner del workspace). */
+export function deleteChatMessage(docId: string, msgId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/chat/messages/${msgId}`, {
+    method: 'DELETE',
+  });
+}
+
+// ─── Contribución de caracteres (bloque 2b) ───────────────────────────────────
+
+export interface ContributionUpdateResult {
+  id: string;
+  chars_contributed: number;
+}
+
+/**
+ * Envía el delta de caracteres contribuidos por el miembro al servidor.
+ * Solo el usuario dueño del memberId puede actualizar su propio contador.
+ */
+export function updateContributionMetric(
+  docId: string,
+  memberId: string,
+  deltaChars: number
+): Promise<ContributionUpdateResult> {
+  return apiFetch(`/workspaces/${docId}/members/${memberId}/contribution`, {
+    method: 'PATCH',
+    body: JSON.stringify({ delta_chars: deltaChars }),
+  });
 }
