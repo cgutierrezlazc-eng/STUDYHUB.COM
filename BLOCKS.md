@@ -35,9 +35,7 @@ Donde:
 
 | Bloque | Fecha cierre | Iteraciones | Archivos principales | Notas |
 |--------|--------------|-------------|----------------------|-------|
-
-_(Ningún bloque cerrado todavía. El primer bloque se registrará cuando se
-ejecute `/cerrar-bloque` por primera vez.)_
+| `bloque-1-auth-edad` | 2026-04-18 | 1 | `shared/legal_texts.{py,ts}`, `scripts/verify-legal-texts-sync.sh`, `backend/database.py` (UserAgreement), `backend/migrations/add_user_agreements_table.sql`, `backend/auth_routes.py` (helpers + integración register + google), `backend/server.py:1078` (fix política 18+), `src/pages/Register.tsx` (checkbox 5 puntos), `src/services/auth.tsx` (payload legal + handler OAuth 403), `vite.config.ts`/`vitest.config.ts`/`tsconfig.json` (alias shared), `.github/workflows/verify-build.yml` (steps vitest + legal-sync), `CLAUDE.md` §19.1 fix, `.gitignore`, `src/admin/shared/accountingData.ts:173` | Primer bloque del protocolo 7 capas. Componente legal (CLAUDE.md §Verificación de edad). 24/24 tests verdes (16 backend + 8 frontend). CI gate de sincronía hash Python↔TS. Cerrado en 1 iteración (OK de Cristian sin correcciones). PR #4 mergeado a main con 7 commits. Deuda documentada: `GoogleAgeDeclarationModal` frontend reemplazará el alert temporal en bloque futuro bloque-1-iter-2. |
 
 ## Historial de intentos de cierre fallidos
 
@@ -54,11 +52,12 @@ _(Ningún intento fallido todavía.)_
 
 Actualizadas cada vez que se cierra un bloque:
 
-- **Total de bloques cerrados:** 0
-- **Promedio de iteraciones por bloque:** N/A
-- **Tiempo promedio de cierre (desde inicio hasta OK):** N/A
-- **Bloques con componente legal:** 0
-- **Últimos 3 bloques cerrados:** ninguno todavía
+- **Total de bloques cerrados:** 1
+- **Promedio de iteraciones por bloque:** 1
+- **Tiempo promedio de cierre (desde inicio hasta OK):** <24h (bloque-1 inaugural, 2026-04-17 a 2026-04-18)
+- **Bloques con componente legal:** 1
+- **Últimos 3 bloques cerrados:**
+  - `bloque-1-auth-edad` (2026-04-18)
 
 ## Cómo consultar este archivo
 
