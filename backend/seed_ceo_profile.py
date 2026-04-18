@@ -104,7 +104,7 @@ def seed_ceo_with_db(db, owner):
 
     # ─── Subscription & Admin ──────────────────────────────
     owner.subscription_status = "owner"
-    owner.subscription_tier = "max"
+    owner.subscription_tier = "pro"  # MAX tier eliminado 2026-04, solo free + pro
     owner.is_admin = True
     owner.role = "owner"
     owner.email_verified = True

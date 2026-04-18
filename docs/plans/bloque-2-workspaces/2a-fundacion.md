@@ -684,7 +684,7 @@ Explícitamente **NO** se implementa en 2a (queda para 2b/2c/2d):
 - Prompt Athena, endpoint de análisis/chat/sugerencia
 - Staging buffer privado con flujo apply/modify/reject
 - Modal upgrade al agotar cupo
-- Rate limiting por plan (Free/PRO/MAX)
+- Rate limiting por plan (Free/Conniku Pro)
 - Tabla `athena_usage` se **crea en 2a** pero no se escribe hasta 2c
 - Prompt "sin mencionar IA" (regla CLAUDE.md) se auditará en 2c
 

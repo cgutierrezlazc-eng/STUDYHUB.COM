@@ -1540,7 +1540,7 @@ def upload_to_study(project_id: str, user: User = Depends(get_current_user)):
 async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Record or upload class audio → transcribe → generate notes + flashcards."""
     from middleware import require_tier
-    require_tier(user, "max")  # Only MAX can record + transcribe classes
+    require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
@@ -1631,7 +1631,7 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
 
 @app.get("/projects/{project_id}/documents/{doc_name}/download")
 def download_document(project_id: str, doc_name: str, user: User = Depends(get_current_user)):
-    """Download a document — Pro and MAX only. Free can only view."""
+    """Download a document — Pro only. Free can only view."""
     from middleware import get_tier_limits
     limits = get_tier_limits(user)
     if not limits.get("can_download_docs"):
@@ -1689,7 +1689,7 @@ def log_attendance(project_id: str, data: dict, user: User = Depends(get_current
     """Log class attendance for a subject."""
     from database import ClassAttendance
     from middleware import require_tier
-    require_tier(user, "max")
+    require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     att = ClassAttendance(
         id=gen_id(), user_id=user.id, project_id=project_id,
@@ -1730,9 +1730,9 @@ def get_attendance(project_id: str, user: User = Depends(get_current_user), db: 
 
 @app.post("/projects/{project_id}/exam-night-mode")
 def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(get_current_user)):
-    """MAX only — Generate emergency study plan for the night before an exam."""
+    """Pro only — Generate emergency study plan for the night before an exam."""
     from middleware import require_tier
-    require_tier(user, "max")
+    require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     hours_available = data.get("hours", 6)
     lang = user.language or "es"
@@ -1933,7 +1933,7 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
     if tier == "pro":
         word_count = len(req.content.split())
         if word_count > 1500:
-            raise HTTPException(403, f"Tu plan Pro permite exportar hasta 1,500 palabras ({word_count} detectadas). Actualiza a MAX para exportar sin límite.")
+            raise HTTPException(403, f"Tu plan Pro permite exportar hasta 1,500 palabras ({word_count} detectadas).")
     try:
         from docx_generator import markdown_to_docx
         file_path = markdown_to_docx(req.content, req.title)

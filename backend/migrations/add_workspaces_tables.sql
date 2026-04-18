@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS workspace_comments (
     created_at TIMESTAMP
 );
 
--- Métricas de uso de Athena para rate limiting por plan (Free/PRO/MAX)
+-- Métricas de uso de Athena para rate limiting por plan (Free/Conniku Pro)
 -- Consumido desde bloque 2c. Ver plan-maestro.md §4 Athena-4.
 CREATE TABLE IF NOT EXISTS athena_usage (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

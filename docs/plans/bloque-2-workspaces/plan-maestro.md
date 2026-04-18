@@ -23,7 +23,7 @@ Workspaces es el módulo **estrella** de Conniku para redacción colaborativa de
   1. Documento público real-time (Yjs, keystrokes visibles a todos)
   2. Borrador privado con Athena (staging, aplicar/modificar/rechazar, enviar al doc)
   3. Chat del grupo (informal, entre miembros)
-- **Niveles de suscripción**: Free = demo (cupo limitado Athena), PRO = alto, MAX = ilimitado
+- **Niveles de suscripción**: Free = demo (cupo limitado Athena), Conniku Pro = ilimitado
 - **Diseño híbrido**: respeta los 6 temas de Conniku con tipografía y espaciado propios (referencia: Google Docs + Notion + Linear + Figma + Craft + Coda + ClickUp)
 
 ## 2. Decisiones consolidadas
@@ -44,7 +44,7 @@ Workspaces es el módulo **estrella** de Conniku para redacción colaborativa de
 | Athena-1 | Prompt | Literal del doc de Konni, iterativo según feedback de usuarios |
 | Athena-2 | Edición | Sugiere con botón "Aplicar" (métricas contables en `athena_usage`) |
 | Athena-3 | Historial | Privado por usuario + flujo staging / aplicar-modificar-rechazar / enviar-al-doc |
-| Athena-4 | Rate limits | Por plan: Free = demo limitada, PRO = alto, MAX = ilimitado. Tabla `athena_usage`. Rate limit técnico 20/min en todos. Modal upgrade al agotar. |
+| Athena-4 | Rate limits | Por plan: Free = demo limitada, Conniku Pro = ilimitado. Tabla `athena_usage`. Rate limit técnico 20/min en todos. Modal upgrade al agotar. |
 | Athena-5 | Biblioteca | **Sin integración**. Athena usa solo Claude Haiku. Chat Biblioteca = módulo separado futuro. |
 | E1 | Ejecución | Sub-bloques 2a → 2b → 2c → 2d encadenados |
 | E2 | Agentes | Subagentes habilitados (Bloque 0 permisos aplicado) + Frontend Design skill |
@@ -135,7 +135,7 @@ Workspaces es el módulo **estrella** de Conniku para redacción colaborativa de
 ### Suscripciones / planes
 61. TierGate integrado (reutilizando sistema existente en `shared/tier-limits.json`)
 62. Tabla `athena_usage` para registrar cada acción IA (apply/suggest/analyze/chat)
-63. Cupos mensuales por plan (Free/PRO/MAX) evaluados con cron diario
+63. Cupos mensuales por plan (Free/Conniku Pro) evaluados con cron diario
 64. Modal "agotaste tu cupo → upgrade" al superar límite
 65. Rate limit técnico 20 req/min en todos los tiers
 
