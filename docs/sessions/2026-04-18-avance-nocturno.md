@@ -103,3 +103,46 @@ Cuando los 3 reportes terminen + CI verde, 2a queda en:
 - Capa 7 (merge + BLOCKS.md + FROZEN.md + snapshot) — tras tu OK
 
 **Tori no mergea a main sin tu OK**. Si los 3 reportes llegan PASS, decido si arranco 2b en paralelo o espero tu revisión antes. Registro decisión.
+
+### 2026-04-18 ~07:45 — 2a CAPAS 2/3/5 COMPLETAS + FIXES APLICADOS
+
+**Quality scores finales**:
+- Capa 2 · code-reviewer: **WARN 83/100** (1 bloqueante funcional + 7 recomendados)
+- Capa 3 · truth-auditor: **WARN 82/100** (sin bloqueantes críticos, 6 observaciones protocolares)
+- Capa 5 · gap-finder: **4 críticos + 5 moderados + 5 informativos**
+
+**Fixes aplicados por Tori antes del PR final**:
+
+Críticos (4/4):
+- ✅ Contrato forma API backend↔frontend (wrapping {workspaces/members/versions})
+- ✅ Pydantic alias_generator (course_name/apa_edition ya no se ignoran)
+- ✅ Endpoint POST /invite/{token}/accept creado
+- ✅ InviteTokenInfo alineado con frontend
+
+Seguridad (1/1):
+- ✅ shareLinkToken solo visible a owners (expose_share_token flag)
+
+Moderados (3/5 aplicados, 2 como deuda):
+- ✅ src/styles/workspaces.css creado (540 líneas)
+- ✅ MobileBottomNav apuntando a /workspaces
+- ✅ createVersion envía content_yjs
+- 📝 window.prompt (deuda 2d)
+- 📝 WorkspaceEditor test dedicado (deuda 2b)
+
+**Commits en la rama bloque-2a-workspaces-fundacion**:
+- 19da6ef feat(workspaces): sub-bloque 2a Fundación (inicial)
+- 6f2bd47 fix(workspaces): aplicar críticos de Capas 2/3/5
+
+**Reportes en disco** (Capas 2/3/5):
+- `docs/reports/2026-04-18-capa-2-code-reviewer-2a-workspaces.md`
+- `docs/reports/2026-04-18-capa-3-truth-auditor-2a-workspaces.md`
+- `docs/reports/2026-04-18-capa-5-gap-finder-2a-workspaces.md`
+
+**Estado PR #5**: actualizado con los fixes. Esperando CI del último commit.
+
+**Próximo paso**: al despertar Cristian:
+- Capa 6 inspección en Vercel preview (URL generada por el CI)
+- Si OK, Capa 7 merge a main + BLOCKS.md + FROZEN.md + snapshot
+- Luego arranco 2b (Colaboración Yjs real-time + chat grupal + author colors + contribution metrics)
+
+**No arranco 2b sin el OK de Cristian**. Paro aquí y espero. Sub-agentes libres.

@@ -35,6 +35,7 @@ Donde:
 
 | Bloque | Fecha cierre | Iteraciones | Archivos principales | Notas |
 |--------|--------------|-------------|----------------------|-------|
+| `bloque-2a-workspaces-fundacion` (sub-bloque) | 2026-04-18 | 1 | `backend/workspaces_routes.py`, `backend/database.py` (8 modelos Workspace*), `backend/migrations.py`, `shared/workspaces-types.ts`, `src/pages/Workspaces/{WorkspacesList,WorkspaceEditor,WorkspaceSettings,WorkspaceInvite}.tsx`, `src/components/workspaces/{Editor,Layout,Share,authorColors}`, `src/services/workspacesApi.ts`, `src/styles/workspaces.css`, `src/App.tsx` + `src/components/Sidebar.tsx` + `MobileBottomNav.tsx`, `docs/plans/bloque-2-workspaces/*`, 9 mockups HTML | Primer sub-bloque del Bloque 2 Workspaces (4 sub-bloques: 2a→2d). Módulo nuevo desde cero, aislado del V1. Motor Lexical + Yjs (Yjs llega en 2b). PR #5. 75+ tests verdes. WARN 83/100 code-reviewer, WARN 82/100 truth-auditor, 7/14 gaps resueltos. Ningún archivo frozen por ahora (evolución esperada 2b-2d). |
 | `bloque-1-auth-edad` | 2026-04-18 | 1 | `shared/legal_texts.{py,ts}`, `scripts/verify-legal-texts-sync.sh`, `backend/database.py` (UserAgreement), `backend/migrations/add_user_agreements_table.sql`, `backend/auth_routes.py` (helpers + integración register + google), `backend/server.py:1078` (fix política 18+), `src/pages/Register.tsx` (checkbox 5 puntos), `src/services/auth.tsx` (payload legal + handler OAuth 403), `vite.config.ts`/`vitest.config.ts`/`tsconfig.json` (alias shared), `.github/workflows/verify-build.yml` (steps vitest + legal-sync), `CLAUDE.md` §19.1 fix, `.gitignore`, `src/admin/shared/accountingData.ts:173` | Primer bloque del protocolo 7 capas. Componente legal (CLAUDE.md §Verificación de edad). 24/24 tests verdes (16 backend + 8 frontend). CI gate de sincronía hash Python↔TS. Cerrado en 1 iteración (OK de Cristian sin correcciones). PR #4 mergeado a main con 7 commits. Deuda documentada: `GoogleAgeDeclarationModal` frontend reemplazará el alert temporal en bloque futuro bloque-1-iter-2. |
 
 ## Historial de intentos de cierre fallidos
@@ -52,11 +53,12 @@ _(Ningún intento fallido todavía.)_
 
 Actualizadas cada vez que se cierra un bloque:
 
-- **Total de bloques cerrados:** 1
+- **Total de bloques cerrados:** 1 + 1 sub-bloque (bloque-2a del bloque-2 en progreso)
 - **Promedio de iteraciones por bloque:** 1
-- **Tiempo promedio de cierre (desde inicio hasta OK):** <24h (bloque-1 inaugural, 2026-04-17 a 2026-04-18)
-- **Bloques con componente legal:** 1
+- **Tiempo promedio de cierre (desde inicio hasta OK):** <24h (bloque-1 inaugural 2026-04-17→2026-04-18; bloque-2a en una jornada nocturna)
+- **Bloques con componente legal:** 1 (bloque-1)
 - **Últimos 3 bloques cerrados:**
+  - `bloque-2a-workspaces-fundacion` (2026-04-18) — sub-bloque del bloque-2
   - `bloque-1-auth-edad` (2026-04-18)
 
 ## Cómo consultar este archivo
