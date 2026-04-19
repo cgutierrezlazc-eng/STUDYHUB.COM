@@ -235,6 +235,15 @@ class ContributionDeltaRequest(BaseModel):
     delta_chars: int = Field(..., ge=0)
 
 
+class _CitationItem(BaseModel):
+    id: str
+    raw: str
+
+
+class ValidateCitationsRequest(BaseModel):
+    citations: list[_CitationItem]
+
+
 # ─── CRUD de workspaces ───────────────────────────────────────────
 
 
@@ -837,3 +846,41 @@ def patch_member_contribution(
         "id": member.id,
         "charsContributed": member.chars_contributed,
     }
+
+
+# ─── Citas APA (sub-bloque 2d.1) ──────────────────────────────────
+
+
+@router.post("/{doc_id}/citations/validate")
+def validate_citations(
+    doc_id: str,
+    data: ValidateCitationsRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Valida un batch de citas APA 7 en texto libre.
+
+    Retorna para cada item `{id, valid, errors, suggested}`.
+    Las citas con errores NO rechazan la request — el endpoint devuelve 200
+    con detalle por item.
+    """
+    from apa_validator import validate_citation
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    if not data.citations:
+        raise HTTPException(400, "El campo 'citations' no puede estar vacío")
+
+    results = []
+    for item in data.citations:
+        validation = validate_citation(item.raw)
+        results.append(
+            {
+                "id": item.id,
+                "valid": validation["valid"],
+                "errors": validation["errors"],
+                "suggested": validation["suggested"],
+            }
+        )
+
+    return {"results": results}
