@@ -508,3 +508,71 @@ export function resolveComment(
     body: JSON.stringify({ resolved }),
   });
 }
+
+// ─── Export PDF / DOCX (2d.7) ─────────────────────────────────────
+
+export interface ExportOptions {
+  html?: string;
+  blocks?: Array<{ type: string; text?: string; level?: number; items?: string[] }>;
+  include_cover?: boolean;
+  include_rubric?: boolean;
+}
+
+/**
+ * Descarga el documento como PDF. Usa fetch directo (no apiFetch) para
+ * recibir el blob binario.
+ * Endpoint: POST /workspaces/{docId}/export/pdf
+ */
+export async function exportWorkspacePdf(docId: string, opts: ExportOptions): Promise<Blob> {
+  const base = getApiBase();
+  const token = getToken();
+  const res = await fetch(`${base}/workspaces/${docId}/export/pdf`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { detail?: string }).detail ?? `Error exportando PDF: ${res.status}`);
+  }
+  return res.blob();
+}
+
+/**
+ * Descarga el documento como DOCX.
+ * Endpoint: POST /workspaces/{docId}/export/docx
+ */
+export async function exportWorkspaceDocx(docId: string, opts: ExportOptions): Promise<Blob> {
+  const base = getApiBase();
+  const token = getToken();
+  const res = await fetch(`${base}/workspaces/${docId}/export/docx`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(opts),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { detail?: string }).detail ?? `Error exportando DOCX: ${res.status}`);
+  }
+  return res.blob();
+}
+
+/**
+ * Helper que dispara la descarga del blob como archivo en el navegador.
+ */
+export function downloadBlob(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
