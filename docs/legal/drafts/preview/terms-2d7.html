@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Términos y Condiciones v3.1 — borrador 2d.7 Export</title>
+<style>
+body { font-family: Georgia, serif; max-width: 780px; margin: 40px auto; padding: 0 20px; line-height: 1.6; color: #1a1a1a; }
+h1 { border-bottom: 2px solid #2D62C8; padding-bottom: 8px; font-size: 28px; }
+h2 { color: #2D62C8; margin-top: 32px; font-size: 22px; border-bottom: 1px solid #ddd; padding-bottom: 4px; }
+h3 { color: #333; margin-top: 24px; font-size: 17px; }
+h4 { color: #555; font-size: 14px; }
+code { background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #c7254e; }
+hr { border: none; border-top: 1px solid #ccc; margin: 24px 0; }
+strong { color: #000; }
+li { margin: 4px 0; }
+p { margin: 10px 0; }
+table { border-collapse: collapse; margin: 12px 0; }
+th, td { border: 1px solid #ccc; padding: 6px 12px; }
+th { background: #f0f4ff; }
+blockquote { border-left: 4px solid #2D62C8; background: #f8faff; padding: 10px 16px; margin: 16px 0; font-style: italic; }
+.header { background: #fff8e1; padding: 16px 20px; border-left: 4px solid #fbbf24; margin-bottom: 32px; border-radius: 4px; }
+</style></head><body>
+<div class="header">
+<strong>🟡 BORRADOR LEGAL — Revisar antes de publicar.</strong><br>
+Generado por legal-docs-keeper 2026-04-19. Requiere validación de abogado antes de su aplicación al producto en producción.
+</div>
+<hr/>
+documento: Términos y Condiciones de Uso — borrador de nueva cláusula
+version_actual: sin numeración explícita (pages vs components divergentes,
+                cubierto por ALERTA-LEG-2); "Última actualización: 8 de
+                abril de 2026" en src/pages/TermsOfService.tsx.
+version_propuesta_acumulada: v3.1 si se aplica tras v3.0 del borrador 2c;
+                             v3.0 si no existe v3.0 previa publicada.
+fecha_borrador: 2026-04-19
+autor_borrador: legal-docs-keeper (agente)
+disparador: Sub-sub-bloque 2d.7 "Export PDF/DOCX" agrega funcionalidad
+            de generación de archivos descargables con implicaciones de
+            propiedad intelectual, responsabilidad del contenido, límite
+            del control de Conniku sobre el archivo una vez descargado,
+            y promesas de producto ("tapa/portada", "rúbrica de
+            evaluación") que el backend todavía no implementa.
+estado: BORRADOR — NO publicar sin revisión de Cristian + validación de
+        abogado.
+prioridad: MODERADA — el desfase más serio es la promesa de "portada"
+           y "rúbrica" en el frontend sin implementación backend, que
+           toca Art. 12 Ley 19.496 (información veraz). Se puede
+           publicar en paralelo a v3.0 del 2c o en iteración
+           siguiente.
+<hr/></p><p><h1>Borrador de cláusula T&C — "Exportación de documentos" (sub-sub-bloque 2d.7)</h1></p><p><h2>Declaración obligatoria</h2></p><p>Este análisis no constituye asesoría legal profesional y requiere
+validación de abogado antes de su aplicación al producto en producción.</p><p><h2>Contexto del cambio</h2></p><p>El sub-sub-bloque 2d.7 introduce en Workspaces la capacidad de
+<strong>exportar documentos a PDF y DOCX</strong> mediante dos endpoints:</p><p><li><code>POST /workspaces/{id}/export/pdf</code></li>
+<li><code>POST /workspaces/{id}/export/docx</code></li></p><p>La UI (<code>src/components/workspaces/Export/ExportModal.tsx</code>) ofrece al
+usuario dos checkboxes: "Tapa/portada del documento" e "Incluir
+rúbrica de evaluación como anexo". El backend recibe ambos flags pero
+<strong>no los implementa</strong> actualmente (los parámetros se leen pero no se
+renderiza ni portada ni rúbrica). Esta divergencia entre lo prometido
+al usuario y lo entregado por el servidor es el hallazgo más serio
+desde consumidor (Art. 12 letra b, Ley 19.496: información veraz y
+oportuna).</p><p>Adicionalmente, el export implica cuestiones que los T&C vigentes no
+cubren:</p><p>1. <strong>Propiedad intelectual del contenido exportado</strong>: si el documento
+   contiene fragmentos, imágenes o citas de terceros, ¿quién es
+   responsable cuando el archivo circula fuera de Conniku? (Ley 17.336
+   Chile).
+2. <strong>Control del archivo descargado</strong>: una vez que el PDF/DOCX está en
+   el dispositivo del usuario, Conniku no puede revocarlo, actualizarlo
+   ni eliminarlo. Esto debe declararse explícitamente.
+3. <strong>Límites técnicos y errores del export</strong>: WeasyPrint puede fallar
+   si las librerías nativas no están instaladas (retorna 501); el
+   export puede perder formato complejo (HTML ↔ DOCX no es biyectivo);
+   las imágenes fuera de la whitelist se eliminan silenciosamente. El
+   usuario tiene derecho a una descarga de responsabilidad clara.
+4. <strong>Uso del archivo exportado para suplantación / fraude</strong>: el archivo
+   no tiene marca de agua ni firma digital. Un tercero podría modificar
+   el PDF y alegar que es original de Conniku. Es responsabilidad del
+   usuario validar la autenticidad.</p><p><h2>Versión propuesta</h2></p><p><li>Si se aplica en paralelo a v3.0 del borrador 2c: <strong>v3.1</strong>, fecha</li>
+  "19 de abril de 2026" o posterior, sin nueva re-aceptación (MINOR
+  respecto de v3.0; sólo agrega una cláusula nueva que no restringe
+  derechos).
+<li>Si se aplica antes del v3.0 del 2c (poco probable dado que el 2c</li>
+  ya tiene borrador preparado): <strong>v3.0</strong>, con re-aceptación requerida
+  sólo si el 2c se publica después (para evitar múltiples
+  re-aceptaciones en días consecutivos).</p><p>El cambio se clasifica <strong>MINOR</strong> porque agrega información y limita
+expectativas del usuario sin reducir sus derechos. No requiere
+re-aceptación salvo que abogado indique lo contrario.</p><p><h2>Cambio propuesto — Nueva Sección 8 "Exportación de documentos"</h2></p><p>Insertar una nueva sección después de la actual Sección 7
+"Suscripciones y pagos" (o en la ubicación equivalente que la versión
+vigente tenga, la numeración final se ajusta al renumerado secuencial
+del documento).</p><p><strong>Texto propuesto (en español chileno, registro formal cotidiano)</strong>:</p><p><code>`</code>
+8. Exportación de Documentos</p><p>8.1. Disponibilidad de la función</p><p>Conniku pone a disposición del usuario una funcionalidad para exportar
+los documentos creados en Workspaces a formatos estándar (PDF y DOCX).
+La disponibilidad concreta de cada formato puede depender de la
+configuración del servidor en cada momento; si un formato no está
+disponible transitoriamente, Conniku lo informará al usuario al
+momento de intentar la descarga.</p><p>8.2. Contenido del archivo exportado</p><p>El archivo exportado contendrá el contenido textual del documento tal
+como exista al momento de la exportación, procesado por los sistemas
+de Conniku para adaptarlo al formato elegido. Conniku se reserva el
+derecho de:</p><p>a) Sanitizar el contenido del documento durante la exportación,
+   eliminando elementos técnicos potencialmente peligrosos (scripts,
+   iframes, manejadores de eventos) por razones de seguridad.</p><p>b) Eliminar del archivo exportado aquellas imágenes cuya fuente de
+   origen no sea un dominio autorizado por Conniku. Esto se realiza
+   para proteger al usuario y a terceros frente a riesgos de seguridad.
+   El usuario será informado cuando esto ocurra, o podrá verificarlo
+   comparando el archivo exportado con el documento original en la
+   plataforma.</p><p>c) No incluir en el archivo los elementos accesorios (como portada o
+   rúbrica de evaluación) que el usuario haya seleccionado, cuando la
+   funcionalidad de generación de dichos elementos aún no esté
+   plenamente habilitada. Las opciones disponibles en la interfaz
+   reflejan las capacidades del servicio en cada momento y podrán
+   variar.</p><p>8.3. Propiedad intelectual del contenido exportado</p><p>El usuario es el único responsable del contenido que incluye en sus
+documentos de Workspaces, incluyendo citas, extractos, imágenes, y
+cualquier material de terceros. Al exportar un documento, el usuario
+garantiza que:</p><p>a) Es titular de los derechos sobre el contenido que exporta, o
+   cuenta con licencia, autorización o una excepción legal válida
+   (como cita académica permitida por el Art. 71 B y siguientes de
+   la Ley N° 17.336 sobre Propiedad Intelectual de Chile) para
+   incluirlo en el documento y en el archivo resultante.</p><p>b) Exime a Conniku de toda responsabilidad derivada del uso,
+   distribución o difusión que el usuario o cualquier tercero haga
+   del archivo exportado.</p><p>c) En caso de reclamo de terceros por infracción de derechos de autor
+   u otros derechos relativos al contenido exportado, el usuario será
+   el único responsable de atender dicho reclamo.</p><p>8.4. Control del archivo descargado</p><p>Una vez que el archivo exportado se descarga al dispositivo del
+usuario, queda fuera del control de Conniku. En particular:</p><p>a) Conniku no puede revocar, modificar, actualizar ni eliminar el
+   archivo una vez descargado.</p><p>b) El usuario es el único responsable del almacenamiento seguro, la
+   distribución, las copias, el respaldo y la eliminación del archivo.</p><p>c) Si el documento original en Workspaces se modifica o se elimina
+   con posterioridad, el archivo previamente descargado no se
+   actualizará automáticamente.</p><p>d) Conniku no se responsabiliza por la pérdida, corrupción o
+   divulgación no autorizada del archivo una vez entregado al
+   usuario.</p><p>8.5. Formato y fidelidad del archivo exportado</p><p>El usuario reconoce que la exportación a PDF o DOCX puede producir
+diferencias respecto de la visualización del documento dentro de la
+plataforma, incluyendo cambios menores en la tipografía, la
+distribución de párrafos, el tratamiento de tablas o listas, y la
+inclusión o ausencia de imágenes. Estas diferencias son inherentes a
+la conversión entre formatos distintos y no constituyen defectos del
+servicio.</p><p>8.6. Autenticidad del archivo exportado</p><p>Los archivos exportados no incorporan firma electrónica avanzada en
+los términos de la Ley N° 19.799 sobre Documentos Electrónicos, Firma
+Electrónica y Servicios de Certificación. Por lo tanto, los archivos
+exportados desde Conniku no tienen valor probatorio de documento
+electrónico firmado. Si el usuario requiere un documento con valor
+probatorio pleno, debe recurrir a un prestador de servicios de
+certificación acreditado por la autoridad competente.</p><p>8.7. Uso legítimo del archivo exportado</p><p>El archivo exportado se suministra para uso académico y personal del
+usuario, en coherencia con la finalidad de la plataforma. El usuario
+se obliga a no utilizar el archivo exportado para suplantar la
+identidad de Conniku, de terceros, ni para fines fraudulentos.
+<code>`</code></p><p><h2>Observaciones sobre la cláusula</h2></p><p><h3>Sobre §8.3 — cita al Art. 71 B Ley 17.336</h3></p><p>La Ley N° 17.336 sobre Propiedad Intelectual de Chile establece
+excepciones al derecho de autor. Antes de publicar, verificar en
+https://www.bcn.cl/leychile/navegar?idNorma=28933 que el Art. 71 B
+(cita) sigue vigente con el alcance que se le da en el texto. Si la
+redacción final requiere citar un artículo distinto (p. ej., 71 C,
+71 E), se ajusta. **Si no se puede verificar la numeración vigente
+antes de publicar, eliminar la cita específica y dejar "la legislación
+vigente sobre propiedad intelectual"**.</p><p><h3>Sobre §8.2 letra c — portada y rúbrica que todavía no se implementan</h3></p><p>Esta es la cláusula más sensible. Protege a Conniku frente a Art. 12
+letra b de Ley 19.496 si un usuario reclama que marcó el checkbox
+"Incluir portada" y el archivo descargado no trae portada. Pero su
+redacción es <strong>defensiva</strong>, no correctiva. La corrección real es del
+producto:</p><p><li>Opción A (preferida): el frontend **desactiva visualmente los</li>
+  checkboxes "portada" y "rúbrica"** con un mensaje del tipo
+  "Disponible próximamente" hasta que el backend los implemente. Este
+  cambio es del builder, no del legal-docs-keeper.
+<li>Opción B (legal defensiva): mantener los checkboxes activos y</li>
+  cubrirse con esta cláusula. Válido pero subóptimo; el usuario
+  merece saber que marca algo que no se cumple.</p><p><strong>Recomendación del legal-docs-keeper</strong>: implementar Opción A en el
+builder y dejar §8.2 letra c sólo como respaldo genérico para futuros
+casos en que una opción de export no esté plenamente operativa.</p><p><h3>Sobre §8.6 — firma electrónica</h3></p><p>Ley 19.799 distingue entre firma electrónica simple y firma
+electrónica avanzada. Los archivos PDF/DOCX exportados por Conniku
+<strong>no son</strong> firma electrónica en sentido técnico. Esta cláusula evita
+malentendidos en caso de que un usuario intente usar el PDF como
+respaldo legal. <strong>Verificar con abogado</strong> si la formulación es
+apropiada o si es mejor remitir sin cita (por ejemplo, "los archivos
+exportados no constituyen documentos con firma electrónica").</p><p><h2>Lo que este borrador <strong>no</strong> propone (y por qué)</h2></p><p><h3>No cubre la deuda preexistente C1 (xhtml2pdf SSRF en V1)</h3></p><p>El sistema V1 (<code>backend/collab_routes.py</code>) sigue con el código
+vulnerable de xhtml2pdf marcado como deuda C1 en
+<code>docs/pendientes.md</code>. El sub-sub-bloque 2d.7 introduce un V2 seguro
+(<code>backend/workspaces_export.py</code>) pero no elimina V1. Mientras V1
+siga expuesto en producción, la vulnerabilidad existe en un camino
+alternativo del sistema.</p><p>Esta es una alerta crítica <strong>de producto y de seguridad</strong>, no una
+modificación de T&C. Ver <code>alerts.md</code> ALERTA-2D7-1.</p><p><h3>No agrega cláusula de "marca de agua" ni "huella digital"</h3></p><p>Algunos servicios educativos agregan marca de agua visible al
+archivo exportado con el nombre del usuario, para trazar fugas de
+material restringido. Conniku no lo implementa hoy. Si a futuro se
+decide agregarlo, requerirá:</p><p><li>Declaración en Política de Privacidad (tratamiento adicional del</li>
+  nombre del usuario en cada archivo exportado).
+<li>Cláusula adicional de T&C declarando el propósito y alcance.</li></p><p>No corresponde incorporarlo ahora.</p><p><h3>No cubre la "deuda" de que la UI promete una portada que no existe</h3></p><p>Esa corrección corresponde al builder, no al legal-docs-keeper. Ver
+ALERTA-2D7-2 en <code>alerts.md</code>.</p><p><h2>Metadatos del borrador</h2></p><p><li><strong>Versión semántica</strong>: MINOR (v3.0 → v3.1 si ya existe v3.0; v2 → v3</li>
+  si se publica junto al v3.0 del 2c).
+<li><strong>Notificación al usuario</strong>: informativa. No requiere aceptación</li>
+  explícita.
+<li><strong>Fecha de vigencia propuesta</strong>: la fecha del deploy efectivo del</li>
+  sub-sub-bloque 2d.7 a producción.
+<li><strong>Archivos afectados (producción)</strong>: <code>src/pages/TermsOfService.tsx</code>.</li>
+  La divergencia con <code>src/components/TermsOfService.tsx</code> (modal
+  interno) queda cubierta por ALERTA-LEG-2 preexistente; idealmente
+  ambos se consolidan antes de publicar.</p><p><h2>Declaración obligatoria (repetida al cierre)</h2></p><p>Este análisis no constituye asesoría legal profesional y requiere
+validación de abogado antes de su aplicación al producto en producción.
+
+</body></html>

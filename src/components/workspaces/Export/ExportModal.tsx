@@ -124,22 +124,18 @@ export default function ExportModal({ docId, docTitle, htmlContent, onClose }: E
         </fieldset>
 
         <fieldset className="ws-export-fieldset">
-          <legend className="ws-export-legend">Incluir</legend>
-          <label className="ws-export-check">
-            <input
-              type="checkbox"
-              checked={includeCover}
-              onChange={(e) => setIncludeCover(e.target.checked)}
-            />
-            <span>Tapa/portada del documento</span>
+          <legend className="ws-export-legend">Incluir — próximamente</legend>
+          {/* Fix ALERTA-2D7-2 legal-docs-keeper (Ley 19.496 Art. 12b): estos
+              checkboxes existían pero el backend los ignora. Desactivados con
+              label 'próximamente' hasta que 2d.2 (Tapa+TOC) implemente el
+              flag include_cover y 2d.6 iter-2 implemente include_rubric. */}
+          <label className="ws-export-check ws-export-check--disabled">
+            <input type="checkbox" checked={false} disabled aria-disabled="true" />
+            <span>Tapa/portada del documento (próximamente)</span>
           </label>
-          <label className="ws-export-check">
-            <input
-              type="checkbox"
-              checked={includeRubric}
-              onChange={(e) => setIncludeRubric(e.target.checked)}
-            />
-            <span>Rúbrica de evaluación como anexo</span>
+          <label className="ws-export-check ws-export-check--disabled">
+            <input type="checkbox" checked={false} disabled aria-disabled="true" />
+            <span>Rúbrica de evaluación como anexo (próximamente)</span>
           </label>
         </fieldset>
 

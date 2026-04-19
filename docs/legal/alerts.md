@@ -1,6 +1,6 @@
 # Alertas activas del legal-docs-keeper
 
-Última actualización: **2026-04-18** (legal-docs-keeper, capa sub-bloque 2c)
+Última actualización: **2026-04-19** (legal-docs-keeper, capa sub-sub-bloque 2d.7)
 
 ## Declaración obligatoria
 
@@ -16,7 +16,166 @@ de abogado antes de su aplicación al producto en producción.
 
 ---
 
-## Alertas CRÍTICAS abiertas
+## Alertas CRÍTICAS abiertas (2d.7)
+
+### ALERTA-2D7-1 — Deuda C1 preexistente: xhtml2pdf SSRF en V1 (`backend/collab_routes.py`)
+
+- **Origen**: backend-builder sub-sub-bloque 2d.7 (2026-04-18) + reporte
+  `docs/reports/2026-04-18-capa-1-backend-builder-2d7-export.md` §3.
+- **Impacto regulatorio**: mientras el código V1 (`collab_routes.py:455-503`
+  con xhtml2pdf) siga desplegado en producción, el vector SSRF documentado
+  (`<img src="http://169.254.169.254">` → AWS metadata leak) está activo en
+  un camino alternativo del sistema, aun cuando el V2 (`workspaces_export.py`)
+  sea seguro por diseño.
+- **Régimen aplicable**: GDPR Art. 32 (seguridad del tratamiento —
+  "medidas técnicas apropiadas"), Ley 19.628 Art. 11 (responsabilidad del
+  responsable del tratamiento en la seguridad de los datos). Una brecha
+  de credenciales cloud producida por este SSRF habilita fuga masiva de
+  datos personales de la plataforma.
+- **Mitigación parcial**: el flujo happy path ya usa V2. La vulnerabilidad
+  se activaría sólo si un atacante puede invocar explícitamente el endpoint
+  V1. Requiere verificar con gap-finder / code-reviewer si el endpoint V1
+  sigue expuesto en el router de `server.py` o si ya está fuera de la API
+  pública.
+- **Acción recomendada**:
+  (a) retirar el router de V1 de `server.py` antes del próximo deploy
+      (decisión de producto).
+  (b) dejar V1 en `collab_routes.py` con `@router.post` comentado o
+      condicionado a flag, hasta una iteración de limpieza posterior.
+  (c) actualizar `docs/pendientes.md` C1: "mitigado en el camino feliz,
+      pendiente retirar endpoint V1".
+- **Bloqueo**: sí, para el deploy del 2d.7 a producción. No tiene sentido
+  publicar V2 seguro coexistiendo con V1 vulnerable.
+
+## Alertas MODERADAS abiertas (2d.7)
+
+### ALERTA-2D7-2 — Frontend promete "portada" y "rúbrica" que el backend no implementa (Art. 12 letra b Ley 19.496)
+
+- **Origen**: análisis del legal-docs-keeper 2026-04-19 sobre
+  `src/components/workspaces/Export/ExportModal.tsx:131-144` y
+  `backend/workspaces_export.py:524-533`.
+- **Evidencia**: el modal muestra dos checkboxes ("Tapa/portada del
+  documento", "Incluir rúbrica de evaluación como anexo") marcables por
+  el usuario. El backend recibe los flags `include_cover` e
+  `include_rubric` pero **no los renderiza** (los parámetros se declaran
+  en Pydantic pero no se usan en `export_pdf` ni `export_docx`).
+- **Impacto**: Ley 19.496 Art. 12 letra b (información veraz y oportuna
+  sobre las condiciones del servicio); Art. 16 letra g (cláusulas que
+  generen expectativa injustificada). Un usuario que marcó "incluir
+  portada" y recibe un archivo sin portada tiene argumento de
+  incumplimiento. En la fase actual el volumen es bajo, pero el riesgo
+  escala con el uso.
+- **Opciones de resolución**:
+  (a) **Preferida**: desactivar los checkboxes en el frontend con
+      mensaje "Disponible próximamente" hasta que el backend los
+      implemente. Tarea del frontend-builder.
+  (b) Implementar efectivamente portada y rúbrica en el backend antes
+      del deploy del 2d.7. Tarea del backend-builder (alcance que no
+      estaba en el plan original).
+  (c) **Defensiva**: cubrirse con cláusula T&C §8.2 letra c del
+      borrador de este mismo ciclo (ver
+      `docs/legal/drafts/2026-04-19-terms-2d7-export.md`). Válida pero
+      subóptima.
+- **Bloqueo**: parcial. El deploy puede proceder si se aplica (a) o si
+  (c) queda publicado antes del deploy.
+
+### ALERTA-2D7-3 — Whitelist de imágenes no incluye Supabase Storage: pérdida de datos silenciosa
+
+- **Origen**: backend-builder sub-sub-bloque 2d.7 (reporte §4) y análisis
+  del legal-docs-keeper 2026-04-19.
+- **Evidencia**: `backend/workspaces_export.py:78-87` — la whitelist
+  `_ALLOWED_REMOTE_IMG_DOMAINS` sólo contiene `conniku.com`, `www.conniku.com`,
+  `cdn.conniku.com`, `api.conniku.com`. Imágenes subidas al editor cuyo
+  hostname sea `*.supabase.co` son eliminadas por `inline_remote_images`
+  sin aviso al usuario.
+- **Impacto**: consumidor (Art. 12 letra b Ley 19.496: información veraz);
+  potencialmente propiedad intelectual si el usuario tenía una imagen
+  propia en el documento que desaparece sin registro. No hay fuga de
+  datos, es **pérdida silenciosa**.
+- **Acción recomendada**:
+  (a) Agregar el hostname real del bucket Supabase del proyecto a la
+      whitelist. Requiere conocer el hostname
+      (`xxxxxxxxxxxx.supabase.co`) y tratarlo como constante.
+  (b) Cuando una imagen sea eliminada por estar fuera de la whitelist,
+      registrar un warning **visible al usuario** (no sólo en logs del
+      servidor) antes de entregar el archivo.
+  (c) Actualizar Privacy §6 para declarar Supabase como encargado de
+      tratamiento del que Conniku lee imágenes al exportar (cuando (a)
+      se implemente). Ver también ALERTA-LEG-4 preexistente que ya
+      listaba Supabase como no declarado.
+- **Bloqueo**: recomendable antes del deploy, no bloqueante per se.
+
+### ALERTA-2D7-4 — Nueva sub-sección 5.3 Privacy Policy requiere publicación
+
+- **Origen**: legal-docs-keeper 2026-04-19, borrador
+  `docs/legal/drafts/2026-04-19-privacy-policy-2d7-export.md`.
+- **Impacto**: Ley 19.628 Art. 4° (información al titular sobre todos
+  los tratamientos); GDPR Art. 13-14. Al introducir el tratamiento
+  "envío de contenido del documento al backend para generar archivo
+  descargable, con eliminación silenciosa de imágenes externas y
+  limpieza de metadatos", corresponde declararlo.
+- **Acción**: publicar v2.3 (o v2.2 si se publica antes del 2c) según
+  borrador referenciado.
+- **Bloqueo**: acompaña al deploy del 2d.7, no lo bloquea por sí sola
+  si las ALERTA-2D7-1 y ALERTA-2D7-2 ya están resueltas.
+
+### ALERTA-2D7-5 — Cláusula T&C "Exportación de documentos" pendiente
+
+- **Origen**: legal-docs-keeper 2026-04-19, borrador
+  `docs/legal/drafts/2026-04-19-terms-2d7-export.md`.
+- **Impacto**: Ley 17.336 (propiedad intelectual: responsabilidad del
+  usuario sobre contenido de terceros exportado); Ley 19.496 Art. 12
+  (información sobre condiciones); Ley 19.799 (aclarar que el archivo
+  exportado no es firma electrónica avanzada).
+- **Acción**: publicar nueva §8 "Exportación de documentos" según
+  borrador. MINOR, sin re-aceptación requerida.
+- **Bloqueo**: acompaña al deploy del 2d.7. Idealmente se publica junto
+  con la nueva sub-sección de Privacy.
+
+## Alertas INFORMATIVAS abiertas (2d.7)
+
+### ALERTA-2D7-6 — Futuro: render de portada con nombres de co-autores requiere consentimiento
+
+- **Origen**: legal-docs-keeper 2026-04-19, análisis preventivo.
+- **Impacto**: si en una iteración futura el backend renderiza
+  efectivamente la portada con los nombres de los miembros del
+  workspace que tengan `chars_contributed > 0`, esto constituye un
+  tratamiento del nombre de cada co-autor que termina en un archivo
+  fuera del control de Conniku. Legalmente:
+  (a) La base legal preferida es la **ejecución del contrato de
+      colaboración** (cada miembro sabe que co-edita un documento que
+      puede exportarse).
+  (b) Alternativamente, consentimiento explícito de cada co-autor
+      sobre "mi nombre puede aparecer en la portada de cualquier
+      export".
+  (c) La práctica estándar en plataformas colaborativas (Google Docs,
+      Notion) es (a): se asume que co-editar implica que tu nombre
+      puede aparecer en el documento exportado.
+- **Acción**: cuando la funcionalidad de portada se implemente,
+  revisar este punto. Si se opta por (a), declararlo en Privacy y T&C
+  como "al aceptar colaborar en un documento, usted consiente que su
+  nombre aparezca en los archivos derivados que otros miembros
+  exporten". Si se opta por (b), agregar flujo de consentimiento
+  explícito en la UI.
+- **Bloqueo**: ninguno hoy. Aplicable sólo cuando se implemente la
+  funcionalidad.
+
+### ALERTA-2D7-7 — Contenido académico exportado con citas de terceros: responsabilidad del usuario
+
+- **Origen**: legal-docs-keeper 2026-04-19.
+- **Impacto**: Ley 17.336 Chile, Convenio de Berna. El usuario puede
+  incluir fragmentos de libros, imágenes con derechos de autor, o
+  contenido no propio dentro de un documento que luego exporta y
+  distribuye.
+- **Mitigación**: cubierta por §8.3 del borrador T&C (responsabilidad
+  del usuario + exención de Conniku + cita a Art. 71 B Ley 17.336
+  sobre cita académica permitida).
+- **Acción**: verificar con abogado que la cita a Art. 71 B es correcta
+  y vigente. Si no, quitar la cita específica y dejar texto genérico
+  "conforme a la legislación vigente sobre propiedad intelectual".
+- **Bloqueo**: ninguno.
+
+## Alertas CRÍTICAS abiertas (heredadas del 2c — sin resolver)
 
 ### ALERTA-2C-1 — Política de Privacidad v2.1 no declara procesamiento Athena
 
@@ -103,8 +262,9 @@ de abogado antes de su aplicación al producto en producción.
 
 ## Alertas CRÍTICAS preexistentes (heredadas de reporte 2026-04-17)
 
-Las siguientes ya estaban abiertas antes del 2c y siguen sin resolverse.
-Se replican aquí como recordatorio, no porque el 2c las haya introducido:
+Las siguientes ya estaban abiertas antes del 2c/2d.7 y siguen sin
+resolverse. Se replican aquí como recordatorio, no porque los bloques
+posteriores las hayan introducido:
 
 ### ALERTA-LEG-1 — Tabla `user_agreements` inexistente
 
@@ -126,6 +286,9 @@ Se replican aquí como recordatorio, no porque el 2c las haya introducido:
 ### ALERTA-LEG-4 — Supabase, Firebase Cloud Messaging, Capacitor, Google OAuth no declarados en Privacy §6
 
 - Faltan encargados de tratamiento. Incumple GDPR Art. 13.
+- **Interacción con 2d.7**: ALERTA-2D7-3 refuerza esta alerta (Supabase
+  como origen de imágenes leídas al exportar, cuando se agregue a la
+  whitelist).
 
 ### ALERTA-LEG-5 — Plazo de retracto: "10 días hábiles" (código) vs "10 días corridos" (CLAUDE.md)
 

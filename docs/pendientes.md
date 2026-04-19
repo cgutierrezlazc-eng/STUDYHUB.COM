@@ -226,6 +226,15 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 - **Fix requerido**: Cristian decide (a) eliminar cláusula, (b) renombrar a Conniku Pro, (c) rediseñar beneficio
 - **Tutores ya firmados**: pueden requerir addendum
 
+### Publicar Privacy v2.3 + T&C v3.1 en producción (bloque legal dedicado)
+- **Estado**: borradores APROBADOS por Cristian 2026-04-19 (revisión visual de `docs/legal/drafts/preview/*.html`)
+- **Archivos fuente**:
+  - `docs/legal/drafts/2026-04-19-privacy-policy-2d7-export.md` (Privacy v2.3 agrega §5.3 "Procesamiento al exportar documentos")
+  - `docs/legal/drafts/2026-04-19-terms-2d7-export.md` (T&C v3.1 agrega §8 "Exportación de Documentos" con 7 sub-secciones)
+- **Pendiente publicación**: copiar contenido aprobado a `src/pages/PrivacyPolicy.tsx` + `src/pages/TermsOfService.tsx` + mecanismo re-aceptación vía tabla `user_agreements` (bump `AGE_DECLARATION_VERSION` o similar para versiones legales — alerta-LEG-1 preexistente)
+- **Bloque sugerido**: Bloque dedicado "Legal v3 publicación" que unifique también pendientes C9 + v3.0 del 2c Athena sin publicar
+- **Why separado del Bloque 2 v1**: cambio legal MAJOR requiere re-aceptación del usuario actual + trigger de notificación, scope distinto al deploy técnico de features.
+
 ### Bloque 2.5 Workspaces Features Premium (post-v1 publicable)
 - **Decisión**: Cristian eligió cortar el Bloque 2 en versión publicable 2026-04-19
 - **Contenido v1 publicable**: 2a + 2b + 2c + 2d.1 APA + 2d.3 KaTeX + 2d.6 Rúbrica + 2d.7 Export + 2d.8 Comentarios
