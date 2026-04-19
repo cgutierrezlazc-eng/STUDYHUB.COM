@@ -166,3 +166,20 @@ export interface AthenaSuggestResponse {
   result: string;
   suggestion_id: string;
 }
+
+// ─── Tipos APA 7 / Citas (sub-bloque 2d.1) ───────────────────────────────────
+
+/**
+ * Resultado de validación de una cita individual.
+ * Contrato compartido con backend (POST /workspaces/{id}/citations/validate).
+ */
+export interface CitationValidationResult {
+  /** ID pasado por el cliente al enviar la cita. */
+  id: string;
+  /** true si la cita cumple el formato APA 7. */
+  valid: boolean;
+  /** Mensajes de error descriptivos (vacío si valid=true). */
+  errors: string[];
+  /** Versión corregida sugerida (vacío si no hay sugerencia). */
+  suggested: string;
+}

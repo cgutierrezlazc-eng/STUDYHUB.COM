@@ -23,6 +23,7 @@ import type {
   AthenaAnalyzeResponse,
   AthenaChatResponse,
   AthenaSuggestResponse,
+  CitationValidationResult,
 } from '../../shared/workspaces-types';
 
 const TOKEN_KEY = 'conniku_token';
@@ -353,4 +354,27 @@ export function getAthenaUsage(docId: string): Promise<AthenaUsageInfo> {
 /** Ping para verificar que Athena está disponible antes de mostrar el panel. */
 export function pingAthena(docId: string): Promise<{ ok: boolean; claude_available: boolean }> {
   return apiFetch(`/workspaces/${docId}/athena/ping`);
+}
+
+// ─── APA 7 / Citas (sub-bloque 2d.1) ─────────────────────────────────────────
+
+export interface CitationInput {
+  id: string;
+  raw: string;
+}
+
+/**
+ * Valida un batch de citas APA 7 contra el backend.
+ * Endpoint: POST /workspaces/{docId}/citations/validate
+ * Las citas inválidas NO rechazan la request — el servidor devuelve 200
+ * con detalle por ítem.
+ */
+export function validateCitations(
+  docId: string,
+  citations: CitationInput[]
+): Promise<{ results: CitationValidationResult[] }> {
+  return apiFetch(`/workspaces/${docId}/citations/validate`, {
+    method: 'POST',
+    body: JSON.stringify({ citations }),
+  });
 }
