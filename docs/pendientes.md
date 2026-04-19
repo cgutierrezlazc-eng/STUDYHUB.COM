@@ -16,12 +16,20 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 
 ## 🔴 CRÍTICO — riesgo legal o de seguridad en producción
 
-### C1. SSRF/RCE en collab_routes (Trabajos Grupales)
+### C1. SSRF/RCE en collab_routes (Trabajos Grupales V1)
 - **Ubicación**: `backend/collab_routes.py:455-503`
 - **Problema**: `xhtml2pdf` permite `<img src="http://169.254.169.254">` → metadata AWS leak / posible RCE
 - **Origen**: auditoría Konni Main 2026-04-16 (top 34 CRITICAL item #24)
-- **Fix**: sanitizar URLs en HTML antes de render, whitelist de dominios, o deshabilitar fetch remoto en xhtml2pdf
-- **Bloque sugerido**: Bloque 2 Trabajos Grupales seguridad
+- **Fix original sugerido**: sanitizar URLs en HTML antes de render, whitelist de dominios, o deshabilitar fetch remoto en xhtml2pdf
+- **MITIGACIÓN PARCIAL 2026-04-19** (commit 4955a96): export V2 implementado en `backend/workspaces_export.py` (sub-bloque 2d.7). El flujo V2 (`POST /workspaces/{id}/export/pdf`) nace seguro con:
+  - Whitelist de dominios imagen (`*.conniku.com`, `cdn.conniku.com`, `api.conniku.com`)
+  - Blacklist de IPs RFC1918 + link-local (169.254.x.x)
+  - HTTPS obligatorio + `follow_redirects=False`
+  - Timeout 5s + max 5MB por imagen
+  - bleach sanitize HTML (remove scripts + event handlers)
+  - 15 tests de seguridad verdes cubriendo todos los vectores SSRF conocidos
+- **C1 persiste solo en V1** (`backend/collab_routes.py:455-503`). Pendiente: eliminar V1 o bloquear sus endpoints de export cuando V2 reemplace V1 completamente. `xhtml2pdf` sigue en `requirements.txt` mientras V1 exista.
+- **Bloque sugerido**: Bloque refactor/saneamiento V1 (tras migrar usuarios de V1 a V2 Workspaces)
 
 ### C2. Privilege escalation en update_me
 - **Ubicación**: `backend/auth_routes.py:869-915`
@@ -217,6 +225,27 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 - **Problema**: texto legal firmado por tutores. Modificar unilateralmente viola CLAUDE.md §Cumplimiento
 - **Fix requerido**: Cristian decide (a) eliminar cláusula, (b) renombrar a Conniku Pro, (c) rediseñar beneficio
 - **Tutores ya firmados**: pueden requerir addendum
+
+### Publicar Privacy v2.3 + T&C v3.1 en producción (bloque legal dedicado)
+- **Estado**: borradores APROBADOS por Cristian 2026-04-19 (revisión visual de `docs/legal/drafts/preview/*.html`)
+- **Archivos fuente**:
+  - `docs/legal/drafts/2026-04-19-privacy-policy-2d7-export.md` (Privacy v2.3 agrega §5.3 "Procesamiento al exportar documentos")
+  - `docs/legal/drafts/2026-04-19-terms-2d7-export.md` (T&C v3.1 agrega §8 "Exportación de Documentos" con 7 sub-secciones)
+- **Pendiente publicación**: copiar contenido aprobado a `src/pages/PrivacyPolicy.tsx` + `src/pages/TermsOfService.tsx` + mecanismo re-aceptación vía tabla `user_agreements` (bump `AGE_DECLARATION_VERSION` o similar para versiones legales — alerta-LEG-1 preexistente)
+- **Bloque sugerido**: Bloque dedicado "Legal v3 publicación" que unifique también pendientes C9 + v3.0 del 2c Athena sin publicar
+- **Why separado del Bloque 2 v1**: cambio legal MAJOR requiere re-aceptación del usuario actual + trigger de notificación, scope distinto al deploy técnico de features.
+
+### Bloque 2.5 Workspaces Features Premium (post-v1 publicable)
+- **Decisión**: Cristian eligió cortar el Bloque 2 en versión publicable 2026-04-19
+- **Contenido v1 publicable**: 2a + 2b + 2c + 2d.1 APA + 2d.3 KaTeX + 2d.6 Rúbrica + 2d.7 Export + 2d.8 Comentarios
+- **Diferido a Bloque 2.5** (post-launch, tras ver uso real):
+  - **2d.2** TOC automático + Tapa editable + Plantillas (~1.5 días)
+  - **2d.4** MathLive input visual de matemáticas (~1 día)
+  - **2d.5** SymPy backend + gráficos (~1.5 días)
+  - **2d.9** Link público con token compartible (~1 día, componente legal — requiere abogado)
+  - **2d.10** UX envoltura: modo enfoque, modo presentación, atajos teclado completos, STT/TTS, arrastrar archivos, voice notes, imprimir, duplicar, star, búsqueda global (~3 días)
+- **Bloque sugerido**: Bloque 2.5 Workspaces Premium, tras evaluación de uso real de v1
+- **Plan**: `docs/plans/bloque-2-workspaces/2d-features-avanzadas.md` §2d.2-5-9-10
 
 ### Sub-bloque 2b Workspaces — iter-2 post-deploy (baja prioridad)
 - **Origen**: hallazgos de code-reviewer Capa 2 + gap-finder Capa 5 del 2b

@@ -455,7 +455,20 @@ async def send_chat_message(
 @router.get("/{doc_id}/export/pdf")
 def export_pdf(doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     doc, _ = _check_access(doc_id, user, db)
-    html_content = doc.content or "<p>Documento vacio</p>"
+    raw_html = doc.content or "<p>Documento vacio</p>"
+
+    # Fix C1 SSRF (2026-04-19 Cristian aprobó opción b — parchear V1 directo):
+    # aplicar la misma defensa en profundidad que workspaces_export.py (V2):
+    # 1. bleach.clean() remueve scripts + event handlers + iframe
+    # 2. inline_remote_images pre-descarga imágenes de dominios whitelisted
+    #    (conniku.com/cdn/api), rechaza todo el resto (incluido 169.254.169.254
+    #    AWS metadata, file://, gopher://, IPs RFC1918). Imágenes fuera de
+    #    whitelist se eliminan silenciosamente del HTML antes del render.
+    # xhtml2pdf.pisa.CreatePDF recibe HTML ya sanitizado + sin remote fetches.
+    from workspaces_export import inline_remote_images, sanitize_html
+
+    sanitized = sanitize_html(raw_html)
+    html_content = inline_remote_images(sanitized)
 
     import io
     from xhtml2pdf import pisa

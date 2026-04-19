@@ -22,6 +22,7 @@ import { useAutoSave } from '../../hooks/useAutoSave';
 import { useCharContributionTracker } from '../../hooks/useCharContributionTracker';
 import { getAuthorColor } from '../../components/workspaces/authorColors';
 import { useAuth } from '../../services/auth';
+import ExportModal from '../../components/workspaces/Export/ExportModal';
 import type { EditorBridgeHandle } from '../../components/workspaces/Athena/AthenaPanel';
 
 interface Props {
@@ -53,6 +54,7 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [titleError, setTitleError] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
 
   // ── Bridge Athena (bloque 2c) ─────────────────────────────────────
   // El ref se pasa tanto a LexicalEditor (monta el plugin) como a ThreeZoneLayout
@@ -299,12 +301,29 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
           <button
             type="button"
             className="ws-editor-nav-btn"
+            onClick={() => setExportOpen(true)}
+            aria-label="Exportar documento"
+          >
+            Exportar
+          </button>
+          <button
+            type="button"
+            className="ws-editor-nav-btn"
             onClick={() => onNavigate(`/workspaces/${id}/settings`)}
           >
             Configuración
           </button>
         </nav>
       </header>
+
+      {exportOpen && id && (
+        <ExportModal
+          docId={id}
+          docTitle={workspace.title}
+          htmlContent={document.querySelector('.ws-editor-content')?.innerHTML ?? ''}
+          onClose={() => setExportOpen(false)}
+        />
+      )}
 
       {/* Layout 3 zonas */}
       <ThreeZoneLayout

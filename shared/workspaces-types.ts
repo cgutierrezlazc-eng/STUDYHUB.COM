@@ -166,3 +166,52 @@ export interface AthenaSuggestResponse {
   result: string;
   suggestion_id: string;
 }
+
+// ─── Tipos Rúbrica (sub-bloque 2d.6) ─────────────────────────────────────────
+
+/** Ítem individual extraído de una rúbrica. */
+export interface RubricItem {
+  id: string;
+  title: string;
+  points: number;
+  description: string;
+}
+
+/** Respuesta del GET /workspaces/{id}/rubric. */
+export interface RubricData {
+  raw: string;
+  items: RubricItem[];
+  warnings?: string[];
+}
+
+// ─── Tipos Comentarios inline + Menciones (sub-bloque 2d.8) ──────────────────
+
+/** Comentario inline de un workspace. Anclado por anchor_id (string libre). */
+export interface WorkspaceComment {
+  id: string;
+  workspace_id: string;
+  user_id: string;
+  anchor_id: string;
+  content: string;
+  resolved: boolean;
+  parent_id: string | null;
+  created_at: string;
+  mentions?: string[];
+}
+
+// ─── Tipos APA 7 / Citas (sub-bloque 2d.1) ───────────────────────────────────
+
+/**
+ * Resultado de validación de una cita individual.
+ * Contrato compartido con backend (POST /workspaces/{id}/citations/validate).
+ */
+export interface CitationValidationResult {
+  /** ID pasado por el cliente al enviar la cita. */
+  id: string;
+  /** true si la cita cumple el formato APA 7. */
+  valid: boolean;
+  /** Mensajes de error descriptivos (vacío si valid=true). */
+  errors: string[];
+  /** Versión corregida sugerida (vacío si no hay sugerencia). */
+  suggested: string;
+}

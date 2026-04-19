@@ -20,12 +20,14 @@ import { ListNode, ListItemNode } from '@lexical/list';
 import { LinkNode, AutoLinkNode } from '@lexical/link';
 import type { InitialConfigType } from '@lexical/react/LexicalComposer';
 import editorTheme from './editorTheme';
+import { MathNode } from './MathNode';
 
 export function getEditorConfig(namespace = 'conniku-workspace'): InitialConfigType {
   return {
     namespace,
     theme: editorTheme,
-    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode],
+    // MathNode agregado en bloque 2d.3. Retrocompatible: documentos sin MathNode abren sin error.
+    nodes: [HeadingNode, QuoteNode, ListNode, ListItemNode, LinkNode, AutoLinkNode, MathNode],
     onError: (error: Error) => {
       // En desarrollo logueamos para debug; en producción no se expone al usuario
       if (import.meta.env.DEV) {

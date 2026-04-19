@@ -23,6 +23,7 @@ import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode, $createQuoteNode, HeadingTagType } from '@lexical/rich-text';
 import { INSERT_UNORDERED_LIST_COMMAND, INSERT_ORDERED_LIST_COMMAND } from '@lexical/list';
 import { TOGGLE_LINK_COMMAND } from '@lexical/link';
+import MathToolbarButton from './MathToolbarButton';
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -183,6 +184,11 @@ export default function Toolbar() {
       <ToolbarButton onClick={insertLink} title="Insertar enlace">
         🔗
       </ToolbarButton>
+
+      <span className="ws-toolbar-sep" aria-hidden="true" />
+
+      {/* Ecuaciones matemáticas — bloque 2d.3 */}
+      <MathToolbarButton />
     </div>
   );
 }

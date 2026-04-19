@@ -14,6 +14,9 @@
 
 import React from 'react';
 import type { RefObject } from 'react';
+// KaTeX CSS — bloque 2d.3. Importado aquí para que cargue solo cuando el editor
+// se monta (lazy vía React.lazy en App.tsx). No afecta el bundle inicial.
+import 'katex/dist/katex.min.css';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -26,6 +29,7 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary';
 import type { EditorState } from 'lexical';
 import { getEditorConfig } from './editorConfig';
 import Toolbar from './Toolbar';
+import MathPlugin from './MathPlugin';
 import { CollaborationPlugin } from '@lexical/react/LexicalCollaborationPlugin';
 import type { Provider } from '@lexical/yjs';
 import type { WebsocketProvider } from 'y-websocket';
@@ -150,6 +154,11 @@ export default function LexicalEditor({
           {athenaBridgeRef != null && (
             <AthenaApplyBridge ref={athenaBridgeRef as RefObject<EditorBridgeHandle>} />
           )}
+
+          {/* Plugin de matemáticas — bloque 2d.3 KaTeX.
+              No interfiere con modos 2a/2b/2c: el plugin solo registra
+              un comando y no renderiza nada visible por sí mismo. */}
+          <MathPlugin />
         </div>
       </div>
     </LexicalComposer>

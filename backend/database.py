@@ -112,7 +112,7 @@ class User(Base):
 
     # Executive Showcase (MAX plan only)
     # JSON array of showcase items: [{id, type, title, description, url, date, tag}]
-    # type: article | book | talk | media | achievement | project | insight
+    # tipos válidos: article | book | talk | media | achievement | project | insight
     executive_showcase = Column(Text, default="[]")
 
     email_verified = Column(Boolean, nullable=False, default=False)
@@ -1650,6 +1650,8 @@ def _ensure_columns():
         ("calendar_events", "item_url", "VARCHAR(1000)"),
         ("calendar_events", "lms_course_id", "VARCHAR(16)"),
         ("calendar_events", "submission_status", "VARCHAR(30)"),
+        # workspace_comments — 2d.8 iter-2: mentions persistentes (fix CRÍTICO-1 gap-finder)
+        ("workspace_comments", "mentions_json", "TEXT DEFAULT NULL"),
     ]
     with engine.begin() as conn:
         for table, col, col_type in migrations:
@@ -2002,6 +2004,9 @@ class WorkspaceComment(Base):
         ForeignKey("workspace_comments.id"),
         nullable=True,
     )  # self-FK para threads de comentarios
+    # JSON array con user_ids mencionados en content. Persistir para
+    # soportar filtro "Mencionados a mí" (2d.8 iter-2 fix CRÍTICO-1 gap-finder).
+    mentions_json = Column(Text, nullable=True, default=None)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 

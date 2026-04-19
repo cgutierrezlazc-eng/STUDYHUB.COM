@@ -27,7 +27,7 @@ from database import (
     gen_id,
     get_db,
 )
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from middleware import get_current_user
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -233,6 +233,33 @@ class CreateMessageRequest(BaseModel):
 
 class ContributionDeltaRequest(BaseModel):
     delta_chars: int = Field(..., ge=0)
+
+
+class _CitationItem(BaseModel):
+    id: str
+    raw: str
+
+
+class ValidateCitationsRequest(BaseModel):
+    citations: list[_CitationItem]
+
+
+class RubricTextRequest(BaseModel):
+    text: str
+
+
+class CreateCommentRequest(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+    anchor_id: str = Field(..., min_length=1)
+    parent_id: Optional[str] = None
+
+
+class PatchCommentRequest(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+
+
+class ResolveCommentRequest(BaseModel):
+    resolved: bool
 
 
 # ─── CRUD de workspaces ───────────────────────────────────────────
@@ -837,3 +864,390 @@ def patch_member_contribution(
         "id": member.id,
         "charsContributed": member.chars_contributed,
     }
+
+
+# ─── Citas APA (sub-bloque 2d.1) ──────────────────────────────────
+
+
+@router.post("/{doc_id}/citations/validate")
+def validate_citations(
+    doc_id: str,
+    data: ValidateCitationsRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Valida un batch de citas APA 7 en texto libre.
+
+    Retorna para cada item `{id, valid, errors, suggested}`.
+    Las citas con errores NO rechazan la request — el endpoint devuelve 200
+    con detalle por item.
+    """
+    from apa_validator import validate_citation
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    if not data.citations:
+        raise HTTPException(400, "El campo 'citations' no puede estar vacío")
+
+    results = []
+    for item in data.citations:
+        validation = validate_citation(item.raw)
+        results.append(
+            {
+                "id": item.id,
+                "valid": validation["valid"],
+                "errors": validation["errors"],
+                "suggested": validation["suggested"],
+            }
+        )
+
+    return {"results": results}
+
+
+# ─── Rúbrica (sub-bloque 2d.6) ────────────────────────────────────
+
+
+@router.post("/{doc_id}/rubric/text")
+def upload_rubric_text(
+    doc_id: str,
+    data: RubricTextRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Parsea texto plano de rúbrica y lo persiste en el doc."""
+    import json as _json
+
+    from rubric_parser import parse_rubric
+
+    doc, _ = _check_access(doc_id, user, db, required_role="editor")
+
+    text = (data.text or "").strip()
+    if not text:
+        raise HTTPException(400, "El campo 'text' no puede estar vacío")
+
+    items, warnings = parse_rubric(text)
+    doc.rubric_raw = _json.dumps({"raw": text, "items": items}, ensure_ascii=False)
+    db.commit()
+
+    return {"items": items, "warnings": warnings}
+
+
+def _extract_text_from_upload(file: UploadFile) -> str:
+    """Extrae texto plano de un archivo subido (PDF, DOCX, o TXT)."""
+    import io
+
+    filename = (file.filename or "").lower()
+    content_bytes = file.file.read()
+
+    if filename.endswith(".pdf"):
+        import pdfplumber
+
+        parts = []
+        with pdfplumber.open(io.BytesIO(content_bytes)) as pdf:
+            for page in pdf.pages:
+                txt = page.extract_text() or ""
+                parts.append(txt)
+        return "\n".join(parts)
+
+    if filename.endswith((".docx", ".doc")):
+        import docx
+
+        doc = docx.Document(io.BytesIO(content_bytes))
+        return "\n".join(p.text for p in doc.paragraphs)
+
+    # TXT u otro: decodificar como utf-8 con fallback
+    try:
+        return content_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        return content_bytes.decode("latin-1", errors="replace")
+
+
+@router.post("/{doc_id}/rubric/upload")
+async def upload_rubric_file(
+    doc_id: str,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Sube archivo PDF/DOCX/TXT, extrae texto y parsea como rúbrica."""
+    import json as _json
+
+    from rubric_parser import parse_rubric
+
+    doc, _ = _check_access(doc_id, user, db, required_role="editor")
+
+    if not file.filename:
+        raise HTTPException(400, "No se recibió archivo")
+
+    try:
+        text = _extract_text_from_upload(file)
+    except Exception as exc:
+        logger.warning("[rubric] Error extrayendo texto de %s: %s", file.filename, exc)
+        raise HTTPException(400, f"No se pudo leer el archivo: {exc}") from exc
+
+    if not text or not text.strip():
+        raise HTTPException(400, "El archivo no contiene texto legible")
+
+    items, warnings = parse_rubric(text)
+    doc.rubric_raw = _json.dumps({"raw": text, "items": items}, ensure_ascii=False)
+    db.commit()
+
+    return {"items": items, "warnings": warnings, "filename": file.filename}
+
+
+@router.get("/{doc_id}/rubric")
+def get_rubric(
+    doc_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Retorna la rúbrica parseada del doc."""
+    import json as _json
+
+    doc, _ = _check_access(doc_id, user, db, required_role="viewer")
+
+    if not doc.rubric_raw:
+        return {"raw": "", "items": []}
+
+    try:
+        payload = _json.loads(doc.rubric_raw)
+        return {
+            "raw": payload.get("raw", ""),
+            "items": payload.get("items", []),
+        }
+    except (ValueError, TypeError):
+        # Si está en formato legacy (texto plano sin JSON), devolver raw con items vacíos
+        return {"raw": doc.rubric_raw, "items": []}
+
+
+# ─── Comentarios inline (sub-bloque 2d.8) ─────────────────────────
+
+
+def _comment_to_dict(c) -> dict:  # noqa: ANN001
+    """Serializa WorkspaceComment a dict JSON con mentions persistidas."""
+    import json as _json_mod
+
+    mentions: list[str] = []
+    if c.mentions_json:
+        try:
+            parsed = _json_mod.loads(c.mentions_json)
+            if isinstance(parsed, list):
+                mentions = [str(x) for x in parsed]
+        except (ValueError, TypeError):
+            mentions = []
+
+    return {
+        "id": c.id,
+        "workspace_id": c.workspace_id,
+        "user_id": c.user_id,
+        "anchor_id": c.anchor_json,
+        "content": c.content,
+        "resolved": bool(c.resolved),
+        "parent_id": c.parent_id,
+        "mentions": mentions,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+    }
+
+
+def _extract_mentions(content: str, doc_id: str, db: Session) -> list[str]:
+    """Extrae menciones @username del content y valida que sean miembros del workspace.
+
+    Retorna lista de user_ids mencionados. Lanza HTTPException 400 si alguna
+    mención no corresponde a un miembro.
+    """
+    import re as _re
+
+    from database import WorkspaceMember as _WorkspaceMember  # type: ignore
+
+    mention_pattern = _re.compile(r"@([a-zA-Z0-9_\-\.]+)")
+    usernames = mention_pattern.findall(content)
+
+    if not usernames:
+        return []
+
+    member_users = (
+        db.query(User)
+        .join(_WorkspaceMember, _WorkspaceMember.user_id == User.id)
+        .filter(_WorkspaceMember.workspace_id == doc_id)
+        .all()
+    )
+    username_to_id = {u.username: u.id for u in member_users}
+
+    user_ids = []
+    for uname in usernames:
+        if uname not in username_to_id:
+            raise HTTPException(400, f"Usuario @{uname} no es miembro de este workspace")
+        user_ids.append(username_to_id[uname])
+
+    return user_ids
+
+
+@router.get("/{doc_id}/comments")
+def list_comments(
+    doc_id: str,
+    anchor_id: Optional[str] = None,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Lista comentarios del doc. Filtro opcional por anchor_id."""
+    from database import WorkspaceComment as _WorkspaceComment  # type: ignore
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    query = db.query(_WorkspaceComment).filter(_WorkspaceComment.workspace_id == doc_id)
+    if anchor_id:
+        query = query.filter(_WorkspaceComment.anchor_json == anchor_id)
+
+    comments = query.order_by(_WorkspaceComment.created_at.asc()).all()
+    return {"comments": [_comment_to_dict(c) for c in comments]}
+
+
+@router.post("/{doc_id}/comments", status_code=201)
+def create_comment(
+    doc_id: str,
+    data: CreateCommentRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Crea un comentario (nuevo thread o reply con parent_id)."""
+    from database import WorkspaceComment as _WorkspaceComment  # type: ignore
+    from database import gen_id as _gen_id  # type: ignore
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    # Validar parent_id si existe
+    if data.parent_id:
+        parent = (
+            db.query(_WorkspaceComment)
+            .filter(
+                _WorkspaceComment.id == data.parent_id,
+                _WorkspaceComment.workspace_id == doc_id,
+            )
+            .first()
+        )
+        if not parent:
+            raise HTTPException(400, "parent_id no corresponde a un comentario de este workspace")
+
+    # Extraer y validar menciones (lanza 400 si usuario no-miembro mencionado)
+    import json as _json_mod
+
+    mentions = _extract_mentions(data.content, doc_id, db)
+
+    comment = _WorkspaceComment(
+        id=_gen_id(),
+        workspace_id=doc_id,
+        user_id=user.id,
+        anchor_json=data.anchor_id,
+        content=data.content,
+        parent_id=data.parent_id,
+        mentions_json=_json_mod.dumps(mentions) if mentions else None,
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    return _comment_to_dict(comment)
+
+
+@router.patch("/{doc_id}/comments/{comment_id}")
+def patch_comment(
+    doc_id: str,
+    comment_id: str,
+    data: PatchCommentRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Edita contenido de un comentario. Solo autor puede editar."""
+    from database import WorkspaceComment as _WorkspaceComment  # type: ignore
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    comment = (
+        db.query(_WorkspaceComment)
+        .filter(
+            _WorkspaceComment.id == comment_id,
+            _WorkspaceComment.workspace_id == doc_id,
+        )
+        .first()
+    )
+    if not comment:
+        raise HTTPException(404, "Comentario no encontrado")
+
+    if comment.user_id != user.id:
+        raise HTTPException(403, "Solo el autor puede editar su comentario")
+
+    # Re-validar menciones del nuevo content y persistir
+    import json as _json_mod
+
+    mentions = _extract_mentions(data.content, doc_id, db)
+
+    comment.content = data.content
+    comment.mentions_json = _json_mod.dumps(mentions) if mentions else None
+    db.commit()
+    db.refresh(comment)
+    return _comment_to_dict(comment)
+
+
+@router.delete("/{doc_id}/comments/{comment_id}")
+def delete_comment(
+    doc_id: str,
+    comment_id: str,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Borra comentario. Permitido para autor o owner del workspace."""
+    from database import WorkspaceComment as _WorkspaceComment  # type: ignore
+    from database import WorkspaceDocument as _WD  # type: ignore
+
+    _check_access(doc_id, user, db, required_role="viewer")
+
+    comment = (
+        db.query(_WorkspaceComment)
+        .filter(
+            _WorkspaceComment.id == comment_id,
+            _WorkspaceComment.workspace_id == doc_id,
+        )
+        .first()
+    )
+    if not comment:
+        raise HTTPException(404, "Comentario no encontrado")
+
+    doc = db.query(_WD).filter(_WD.id == doc_id).first()
+    is_owner = doc and doc.owner_id == user.id
+
+    if comment.user_id != user.id and not is_owner:
+        raise HTTPException(403, "Solo el autor o el owner pueden borrar este comentario")
+
+    db.delete(comment)
+    db.commit()
+    return {"ok": True}
+
+
+@router.post("/{doc_id}/comments/{comment_id}/resolve")
+def resolve_comment(
+    doc_id: str,
+    comment_id: str,
+    data: ResolveCommentRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Marca thread como resuelto/no-resuelto. Solo owner o editor."""
+    from database import WorkspaceComment as _WorkspaceComment  # type: ignore
+
+    _check_access(doc_id, user, db, required_role="editor")
+
+    comment = (
+        db.query(_WorkspaceComment)
+        .filter(
+            _WorkspaceComment.id == comment_id,
+            _WorkspaceComment.workspace_id == doc_id,
+        )
+        .first()
+    )
+    if not comment:
+        raise HTTPException(404, "Comentario no encontrado")
+
+    comment.resolved = data.resolved
+    db.commit()
+    db.refresh(comment)
+    return _comment_to_dict(comment)
