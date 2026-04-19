@@ -112,7 +112,7 @@ class User(Base):
 
     # Executive Showcase (MAX plan only)
     # JSON array of showcase items: [{id, type, title, description, url, date, tag}]
-    # type: article | book | talk | media | achievement | project | insight
+    # tipos válidos: article | book | talk | media | achievement | project | insight
     executive_showcase = Column(Text, default="[]")
 
     email_verified = Column(Boolean, nullable=False, default=False)
