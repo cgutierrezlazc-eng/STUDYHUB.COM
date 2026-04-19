@@ -16,12 +16,20 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 
 ## 🔴 CRÍTICO — riesgo legal o de seguridad en producción
 
-### C1. SSRF/RCE en collab_routes (Trabajos Grupales)
+### C1. SSRF/RCE en collab_routes (Trabajos Grupales V1)
 - **Ubicación**: `backend/collab_routes.py:455-503`
 - **Problema**: `xhtml2pdf` permite `<img src="http://169.254.169.254">` → metadata AWS leak / posible RCE
 - **Origen**: auditoría Konni Main 2026-04-16 (top 34 CRITICAL item #24)
-- **Fix**: sanitizar URLs en HTML antes de render, whitelist de dominios, o deshabilitar fetch remoto en xhtml2pdf
-- **Bloque sugerido**: Bloque 2 Trabajos Grupales seguridad
+- **Fix original sugerido**: sanitizar URLs en HTML antes de render, whitelist de dominios, o deshabilitar fetch remoto en xhtml2pdf
+- **MITIGACIÓN PARCIAL 2026-04-19** (commit 4955a96): export V2 implementado en `backend/workspaces_export.py` (sub-bloque 2d.7). El flujo V2 (`POST /workspaces/{id}/export/pdf`) nace seguro con:
+  - Whitelist de dominios imagen (`*.conniku.com`, `cdn.conniku.com`, `api.conniku.com`)
+  - Blacklist de IPs RFC1918 + link-local (169.254.x.x)
+  - HTTPS obligatorio + `follow_redirects=False`
+  - Timeout 5s + max 5MB por imagen
+  - bleach sanitize HTML (remove scripts + event handlers)
+  - 15 tests de seguridad verdes cubriendo todos los vectores SSRF conocidos
+- **C1 persiste solo en V1** (`backend/collab_routes.py:455-503`). Pendiente: eliminar V1 o bloquear sus endpoints de export cuando V2 reemplace V1 completamente. `xhtml2pdf` sigue en `requirements.txt` mientras V1 exista.
+- **Bloque sugerido**: Bloque refactor/saneamiento V1 (tras migrar usuarios de V1 a V2 Workspaces)
 
 ### C2. Privilege escalation en update_me
 - **Ubicación**: `backend/auth_routes.py:869-915`

@@ -1023,8 +1023,18 @@ def get_rubric(
 # ─── Comentarios inline (sub-bloque 2d.8) ─────────────────────────
 
 
-def _comment_to_dict(c: WorkspaceComment) -> dict:  # type: ignore  # noqa: F821
-    from database import User as _User  # type: ignore
+def _comment_to_dict(c) -> dict:  # noqa: ANN001
+    """Serializa WorkspaceComment a dict JSON con mentions persistidas."""
+    import json as _json_mod
+
+    mentions: list[str] = []
+    if c.mentions_json:
+        try:
+            parsed = _json_mod.loads(c.mentions_json)
+            if isinstance(parsed, list):
+                mentions = [str(x) for x in parsed]
+        except (ValueError, TypeError):
+            mentions = []
 
     return {
         "id": c.id,
@@ -1034,6 +1044,7 @@ def _comment_to_dict(c: WorkspaceComment) -> dict:  # type: ignore  # noqa: F821
         "content": c.content,
         "resolved": bool(c.resolved),
         "parent_id": c.parent_id,
+        "mentions": mentions,
         "created_at": c.created_at.isoformat() if c.created_at else None,
     }
 
@@ -1118,6 +1129,8 @@ def create_comment(
             raise HTTPException(400, "parent_id no corresponde a un comentario de este workspace")
 
     # Extraer y validar menciones (lanza 400 si usuario no-miembro mencionado)
+    import json as _json_mod
+
     mentions = _extract_mentions(data.content, doc_id, db)
 
     comment = _WorkspaceComment(
@@ -1127,14 +1140,13 @@ def create_comment(
         anchor_json=data.anchor_id,
         content=data.content,
         parent_id=data.parent_id,
+        mentions_json=_json_mod.dumps(mentions) if mentions else None,
     )
     db.add(comment)
     db.commit()
     db.refresh(comment)
 
-    result = _comment_to_dict(comment)
-    result["mentions"] = mentions
-    return result
+    return _comment_to_dict(comment)
 
 
 @router.patch("/{doc_id}/comments/{comment_id}")
@@ -1164,10 +1176,13 @@ def patch_comment(
     if comment.user_id != user.id:
         raise HTTPException(403, "Solo el autor puede editar su comentario")
 
-    # Re-validar menciones del nuevo content
-    _extract_mentions(data.content, doc_id, db)
+    # Re-validar menciones del nuevo content y persistir
+    import json as _json_mod
+
+    mentions = _extract_mentions(data.content, doc_id, db)
 
     comment.content = data.content
+    comment.mentions_json = _json_mod.dumps(mentions) if mentions else None
     db.commit()
     db.refresh(comment)
     return _comment_to_dict(comment)

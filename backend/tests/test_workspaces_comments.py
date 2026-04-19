@@ -340,3 +340,56 @@ def test_resolve_no_miembro_403(comments_client):
         headers=h_out,
     )
     assert r.status_code == 403
+
+
+# ─── Fix CRÍTICO-1 gap-finder: mentions persistidas ───────────────
+
+
+def test_mentions_persisten_y_vuelven_en_get(comments_client):
+    """Fix CRÍTICO-1: mentions se persisten en BD y aparecen en GET posterior.
+
+    Antes del fix: POST devolvía mentions en la respuesta, pero GET no. El
+    filtro 'Mencionados a mí' del frontend siempre devolvía vacío.
+    """
+    client, h_o, h_m, _, doc_id, _, member, _ = comments_client
+
+    post = client.post(
+        f"/workspaces/{doc_id}/comments",
+        json={"content": f"@{member.username} revisa", "anchor_id": "ment-1"},
+        headers=h_o,
+    )
+    assert post.status_code == 201
+    assert member.id in post.json()["mentions"]
+
+    # GET posterior debe incluir mentions (persistidas en BD)
+    listed = client.get(f"/workspaces/{doc_id}/comments?anchor_id=ment-1", headers=h_o)
+    assert listed.status_code == 200
+    comments = listed.json()["comments"]
+    assert len(comments) >= 1
+    assert member.id in comments[0]["mentions"]
+
+
+def test_patch_actualiza_mentions(comments_client):
+    """Al editar un comentario, las mentions del nuevo content se persisten."""
+    client, h_o, _, _, doc_id, _, member, _ = comments_client
+
+    post = client.post(
+        f"/workspaces/{doc_id}/comments",
+        json={"content": "Sin menciones inicial", "anchor_id": "ment-edit"},
+        headers=h_o,
+    )
+    cid = post.json()["id"]
+    assert post.json()["mentions"] == []
+
+    # Editar para agregar mención
+    patched = client.patch(
+        f"/workspaces/{doc_id}/comments/{cid}",
+        json={"content": f"Ahora con @{member.username}"},
+        headers=h_o,
+    )
+    assert patched.status_code == 200
+
+    # GET debe reflejar la nueva mención
+    listed = client.get(f"/workspaces/{doc_id}/comments?anchor_id=ment-edit", headers=h_o)
+    match = next(c for c in listed.json()["comments"] if c["id"] == cid)
+    assert member.id in match["mentions"]
