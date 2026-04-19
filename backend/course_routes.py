@@ -1,16 +1,26 @@
 """Courses platform for integral professional development."""
+
 import json
 import random
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
-from database import (get_db, User, Course, CourseLesson, CourseQuiz,
-                      UserCourseProgress, UserExerciseHistory, StudentCV, gen_id)
+from database import (
+    get_db,
+    User,
+    Course,
+    CourseLesson,
+    CourseQuiz,
+    UserCourseProgress,
+    UserExerciseHistory,
+    StudentCV,
+    gen_id,
+)
 from middleware import get_current_user
 
 router = APIRouter(prefix="/courses", tags=["courses"])
@@ -19,48 +29,285 @@ router = APIRouter(prefix="/courses", tags=["courses"])
 
 COURSE_CATALOG = [
     # Communication
-    {"title": "Comunicación Efectiva", "description": "Aprende a expresar ideas con claridad, escuchar activamente y adaptar tu mensaje a cualquier audiencia.", "category": "communication", "emoji": "🗣️", "difficulty": "beginner", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Storytelling y Presentaciones", "description": "Domina el arte de contar historias que inspiren y presentaciones que cautiven.", "category": "communication", "emoji": "🎤", "difficulty": "intermediate", "estimated_minutes": 35, "lesson_count": 5},
-    {"title": "Redacción Profesional", "description": "Escribe correos, informes y propuestas que comuniquen con precisión y profesionalismo.", "category": "communication", "emoji": "✍️", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Comunicación Intercultural", "description": "Navega diferencias culturales y comunícate efectivamente en entornos diversos y globales.", "category": "communication", "emoji": "🌍", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-
+    {
+        "title": "Comunicación Efectiva",
+        "description": "Aprende a expresar ideas con claridad, escuchar activamente y adaptar tu mensaje a cualquier audiencia.",
+        "category": "communication",
+        "emoji": "🗣️",
+        "difficulty": "beginner",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Storytelling y Presentaciones",
+        "description": "Domina el arte de contar historias que inspiren y presentaciones que cautiven.",
+        "category": "communication",
+        "emoji": "🎤",
+        "difficulty": "intermediate",
+        "estimated_minutes": 35,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Redacción Profesional",
+        "description": "Escribe correos, informes y propuestas que comuniquen con precisión y profesionalismo.",
+        "category": "communication",
+        "emoji": "✍️",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Comunicación Intercultural",
+        "description": "Navega diferencias culturales y comunícate efectivamente en entornos diversos y globales.",
+        "category": "communication",
+        "emoji": "🌍",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
     # Leadership
-    {"title": "Fundamentos de Liderazgo", "description": "Descubre tu estilo de liderazgo y aprende a inspirar equipos hacia objetivos comunes.", "category": "leadership", "emoji": "👑", "difficulty": "beginner", "estimated_minutes": 35, "lesson_count": 6},
-    {"title": "Liderazgo Empático", "description": "Lidera desde la comprensión. Conecta con tu equipo a nivel humano para resultados extraordinarios.", "category": "leadership", "emoji": "💛", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Gestión de Equipos", "description": "Herramientas prácticas para coordinar, motivar y sacar lo mejor de cada miembro de tu equipo.", "category": "leadership", "emoji": "🤝", "difficulty": "intermediate", "estimated_minutes": 35, "lesson_count": 6},
-    {"title": "Mentoría: Guiar y Ser Guiado", "description": "Aprende a ser un buen mentor y a aprovechar al máximo tener uno.", "category": "leadership", "emoji": "🧭", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-
+    {
+        "title": "Fundamentos de Liderazgo",
+        "description": "Descubre tu estilo de liderazgo y aprende a inspirar equipos hacia objetivos comunes.",
+        "category": "leadership",
+        "emoji": "👑",
+        "difficulty": "beginner",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+    },
+    {
+        "title": "Liderazgo Empático",
+        "description": "Lidera desde la comprensión. Conecta con tu equipo a nivel humano para resultados extraordinarios.",
+        "category": "leadership",
+        "emoji": "💛",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Gestión de Equipos",
+        "description": "Herramientas prácticas para coordinar, motivar y sacar lo mejor de cada miembro de tu equipo.",
+        "category": "leadership",
+        "emoji": "🤝",
+        "difficulty": "intermediate",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+    },
+    {
+        "title": "Mentoría: Guiar y Ser Guiado",
+        "description": "Aprende a ser un buen mentor y a aprovechar al máximo tener uno.",
+        "category": "leadership",
+        "emoji": "🧭",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
     # Emotional Intelligence
-    {"title": "Inteligencia Emocional", "description": "Conoce, entiende y gestiona tus emociones. La base de todas las habilidades interpersonales.", "category": "emotional", "emoji": "🧠", "difficulty": "beginner", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Manejo del Estrés y Resiliencia", "description": "Estrategias probadas para manejar la presión académica y profesional sin quebrarte.", "category": "emotional", "emoji": "🛡️", "difficulty": "beginner", "estimated_minutes": 30, "lesson_count": 5, "is_featured": True},
-    {"title": "Autoestima y Confianza", "description": "Construye una base sólida de autoestima que te sostenga en los momentos difíciles.", "category": "emotional", "emoji": "💪", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Manejo de la Frustración", "description": "Transforma la frustración en combustible. Técnicas para no rendirte cuando las cosas se ponen difíciles.", "category": "emotional", "emoji": "🔥", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Empatía Aplicada", "description": "Desarrolla la capacidad de entender genuinamente a los demás y actuar desde esa comprensión.", "category": "emotional", "emoji": "❤️", "difficulty": "intermediate", "estimated_minutes": 25, "lesson_count": 5},
-
+    {
+        "title": "Inteligencia Emocional",
+        "description": "Conoce, entiende y gestiona tus emociones. La base de todas las habilidades interpersonales.",
+        "category": "emotional",
+        "emoji": "🧠",
+        "difficulty": "beginner",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Manejo del Estrés y Resiliencia",
+        "description": "Estrategias probadas para manejar la presión académica y profesional sin quebrarte.",
+        "category": "emotional",
+        "emoji": "🛡️",
+        "difficulty": "beginner",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+        "is_featured": True,
+    },
+    {
+        "title": "Autoestima y Confianza",
+        "description": "Construye una base sólida de autoestima que te sostenga en los momentos difíciles.",
+        "category": "emotional",
+        "emoji": "💪",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Manejo de la Frustración",
+        "description": "Transforma la frustración en combustible. Técnicas para no rendirte cuando las cosas se ponen difíciles.",
+        "category": "emotional",
+        "emoji": "🔥",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Empatía Aplicada",
+        "description": "Desarrolla la capacidad de entender genuinamente a los demás y actuar desde esa comprensión.",
+        "category": "emotional",
+        "emoji": "❤️",
+        "difficulty": "intermediate",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
     # Thinking
-    {"title": "Pensamiento Crítico", "description": "Analiza información, detecta sesgos y toma decisiones fundamentadas, no impulsivas.", "category": "thinking", "emoji": "🔍", "difficulty": "intermediate", "estimated_minutes": 35, "lesson_count": 6},
-    {"title": "Toma de Decisiones", "description": "Frameworks y técnicas para decidir con claridad incluso bajo presión e incertidumbre.", "category": "thinking", "emoji": "⚖️", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Creatividad e Innovación", "description": "Desbloquea tu creatividad. Técnicas de pensamiento lateral y resolución creativa de problemas.", "category": "thinking", "emoji": "💡", "difficulty": "beginner", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Resolución de Problemas", "description": "Metodologías para descomponer problemas complejos y encontrar soluciones efectivas.", "category": "thinking", "emoji": "🧩", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-
+    {
+        "title": "Pensamiento Crítico",
+        "description": "Analiza información, detecta sesgos y toma decisiones fundamentadas, no impulsivas.",
+        "category": "thinking",
+        "emoji": "🔍",
+        "difficulty": "intermediate",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+    },
+    {
+        "title": "Toma de Decisiones",
+        "description": "Frameworks y técnicas para decidir con claridad incluso bajo presión e incertidumbre.",
+        "category": "thinking",
+        "emoji": "⚖️",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Creatividad e Innovación",
+        "description": "Desbloquea tu creatividad. Técnicas de pensamiento lateral y resolución creativa de problemas.",
+        "category": "thinking",
+        "emoji": "💡",
+        "difficulty": "beginner",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Resolución de Problemas",
+        "description": "Metodologías para descomponer problemas complejos y encontrar soluciones efectivas.",
+        "category": "thinking",
+        "emoji": "🧩",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
     # Productivity
-    {"title": "Gestión del Tiempo", "description": "Organiza tu día, prioriza lo importante y deja de sentir que el tiempo no te alcanza.", "category": "productivity", "emoji": "⏰", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5, "is_featured": True},
-    {"title": "Productividad Personal", "description": "Sistemas probados (GTD, Pomodoro, Eisenhower) para hacer más con menos esfuerzo.", "category": "productivity", "emoji": "🚀", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Establecimiento de Metas", "description": "Define metas claras con OKRs personales y crea planes de acción que realmente cumplas.", "category": "productivity", "emoji": "🎯", "difficulty": "beginner", "estimated_minutes": 20, "lesson_count": 4},
-
+    {
+        "title": "Gestión del Tiempo",
+        "description": "Organiza tu día, prioriza lo importante y deja de sentir que el tiempo no te alcanza.",
+        "category": "productivity",
+        "emoji": "⏰",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+        "is_featured": True,
+    },
+    {
+        "title": "Productividad Personal",
+        "description": "Sistemas probados (GTD, Pomodoro, Eisenhower) para hacer más con menos esfuerzo.",
+        "category": "productivity",
+        "emoji": "🚀",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Establecimiento de Metas",
+        "description": "Define metas claras con OKRs personales y crea planes de acción que realmente cumplas.",
+        "category": "productivity",
+        "emoji": "🎯",
+        "difficulty": "beginner",
+        "estimated_minutes": 20,
+        "lesson_count": 4,
+    },
     # Ethics & Social
-    {"title": "Ética Profesional", "description": "Dilemas éticos reales del mundo profesional. Desarrolla tu brújula moral para decisiones difíciles.", "category": "ethics", "emoji": "⚖️", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Responsabilidad Social", "description": "Tu rol como profesional en la sociedad. Sostenibilidad, impacto social y ciudadanía activa.", "category": "ethics", "emoji": "🌱", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-
+    {
+        "title": "Ética Profesional",
+        "description": "Dilemas éticos reales del mundo profesional. Desarrolla tu brújula moral para decisiones difíciles.",
+        "category": "ethics",
+        "emoji": "⚖️",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Responsabilidad Social",
+        "description": "Tu rol como profesional en la sociedad. Sostenibilidad, impacto social y ciudadanía activa.",
+        "category": "ethics",
+        "emoji": "🌱",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
     # Career & Interpersonal
-    {"title": "Marca Personal", "description": "Construye una presencia profesional auténtica que refleje quién eres y a dónde vas.", "category": "career", "emoji": "⭐", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Networking Profesional", "description": "Construye relaciones profesionales genuinas. No se trata de coleccionar contactos, sino de crear valor mutuo.", "category": "career", "emoji": "🔗", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Negociación y Manejo de Conflictos", "description": "Técnicas de negociación ganar-ganar y resolución constructiva de conflictos.", "category": "career", "emoji": "🤝", "difficulty": "intermediate", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Administración Financiera Personal", "description": "Presupuesto, ahorro, inversión y deudas. Lo que la universidad no te enseña sobre dinero.", "category": "career", "emoji": "💰", "difficulty": "beginner", "estimated_minutes": 35, "lesson_count": 6, "is_featured": True},
-    {"title": "Adaptabilidad al Cambio", "description": "En un mundo que cambia cada vez más rápido, la adaptabilidad es tu superpoder.", "category": "career", "emoji": "🦎", "difficulty": "beginner", "estimated_minutes": 25, "lesson_count": 5},
-    {"title": "Aprender a Aprender", "description": "Metacognición, técnicas de estudio avanzadas y cómo adquirir cualquier habilidad más rápido.", "category": "career", "emoji": "📖", "difficulty": "beginner", "estimated_minutes": 30, "lesson_count": 5},
-    {"title": "Elocuencia y Oratoria", "description": "Habla con poder y claridad. Desde reuniones pequeñas hasta auditorios llenos.", "category": "communication", "emoji": "🎙️", "difficulty": "intermediate", "estimated_minutes": 35, "lesson_count": 6},
-    {"title": "El Mundo Actual: Perspectiva Histórica", "description": "Entiende el presente comparándolo con el pasado. Patrones, lecciones y contexto para ciudadanos informados.", "category": "ethics", "emoji": "🌐", "difficulty": "intermediate", "estimated_minutes": 35, "lesson_count": 6},
+    {
+        "title": "Marca Personal",
+        "description": "Construye una presencia profesional auténtica que refleje quién eres y a dónde vas.",
+        "category": "career",
+        "emoji": "⭐",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Networking Profesional",
+        "description": "Construye relaciones profesionales genuinas. No se trata de coleccionar contactos, sino de crear valor mutuo.",
+        "category": "career",
+        "emoji": "🔗",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Negociación y Manejo de Conflictos",
+        "description": "Técnicas de negociación ganar-ganar y resolución constructiva de conflictos.",
+        "category": "career",
+        "emoji": "🤝",
+        "difficulty": "intermediate",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Administración Financiera Personal",
+        "description": "Presupuesto, ahorro, inversión y deudas. Lo que la universidad no te enseña sobre dinero.",
+        "category": "career",
+        "emoji": "💰",
+        "difficulty": "beginner",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+        "is_featured": True,
+    },
+    {
+        "title": "Adaptabilidad al Cambio",
+        "description": "En un mundo que cambia cada vez más rápido, la adaptabilidad es tu superpoder.",
+        "category": "career",
+        "emoji": "🦎",
+        "difficulty": "beginner",
+        "estimated_minutes": 25,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Aprender a Aprender",
+        "description": "Metacognición, técnicas de estudio avanzadas y cómo adquirir cualquier habilidad más rápido.",
+        "category": "career",
+        "emoji": "📖",
+        "difficulty": "beginner",
+        "estimated_minutes": 30,
+        "lesson_count": 5,
+    },
+    {
+        "title": "Elocuencia y Oratoria",
+        "description": "Habla con poder y claridad. Desde reuniones pequeñas hasta auditorios llenos.",
+        "category": "communication",
+        "emoji": "🎙️",
+        "difficulty": "intermediate",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+    },
+    {
+        "title": "El Mundo Actual: Perspectiva Histórica",
+        "description": "Entiende el presente comparándolo con el pasado. Patrones, lecciones y contexto para ciudadanos informados.",
+        "category": "ethics",
+        "emoji": "🌐",
+        "difficulty": "intermediate",
+        "estimated_minutes": 35,
+        "lesson_count": 6,
+    },
 ]
 
 CATEGORIES = {
@@ -81,8 +328,11 @@ def _seed_courses(db: Session):
         return
     for i, c in enumerate(COURSE_CATALOG):
         course = Course(
-            id=gen_id(), title=c["title"], description=c["description"],
-            category=c["category"], emoji=c.get("emoji", "📚"),
+            id=gen_id(),
+            title=c["title"],
+            description=c["description"],
+            category=c["category"],
+            emoji=c.get("emoji", "📚"),
             difficulty=c.get("difficulty", "beginner"),
             estimated_minutes=c.get("estimated_minutes", 30),
             lesson_count=c.get("lesson_count", 5),
@@ -95,9 +345,11 @@ def _seed_courses(db: Session):
 
 # ─── Endpoints ──────────────────────────────────────────────
 
+
 @router.get("")
-def list_courses(category: str = "", page: int = 1,
-                 user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def list_courses(
+    category: str = "", page: int = 1, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     _seed_courses(db)
     _seed_static_content(db)
     q = db.query(Course)
@@ -106,25 +358,35 @@ def list_courses(category: str = "", page: int = 1,
     courses = q.order_by(Course.order_index).all()
 
     # Get user progress
-    progress = {p.course_id: p for p in db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user.id
-    ).all()}
+    progress = {
+        p.course_id: p for p in db.query(UserCourseProgress).filter(UserCourseProgress.user_id == user.id).all()
+    }
 
     return {
         "categories": CATEGORIES,
-        "courses": [{
-            "id": c.id, "title": c.title, "description": c.description,
-            "category": c.category, "emoji": c.emoji,
-            "difficulty": c.difficulty, "estimatedMinutes": c.estimated_minutes,
-            "lessonCount": c.lesson_count, "isFeatured": c.is_featured,
-            "progress": {
-                "started": c.id in progress,
-                "completed": progress[c.id].completed if c.id in progress else False,
-                "completedLessons": len(json.loads(progress[c.id].completed_lessons or "[]")) if c.id in progress else 0,
-                "quizPassed": progress[c.id].quiz_passed if c.id in progress else False,
-                "certificateId": progress[c.id].certificate_id if c.id in progress else None,
-            },
-        } for c in courses],
+        "courses": [
+            {
+                "id": c.id,
+                "title": c.title,
+                "description": c.description,
+                "category": c.category,
+                "emoji": c.emoji,
+                "difficulty": c.difficulty,
+                "estimatedMinutes": c.estimated_minutes,
+                "lessonCount": c.lesson_count,
+                "isFeatured": c.is_featured,
+                "progress": {
+                    "started": c.id in progress,
+                    "completed": progress[c.id].completed if c.id in progress else False,
+                    "completedLessons": len(json.loads(progress[c.id].completed_lessons or "[]"))
+                    if c.id in progress
+                    else 0,
+                    "quizPassed": progress[c.id].quiz_passed if c.id in progress else False,
+                    "certificateId": progress[c.id].certificate_id if c.id in progress else None,
+                },
+            }
+            for c in courses
+        ],
     }
 
 
@@ -134,31 +396,45 @@ def get_course(course_id: str, user: User = Depends(get_current_user), db: Sessi
     if not course:
         raise HTTPException(404, "Curso no encontrado")
 
-    lessons = db.query(CourseLesson).filter(
-        CourseLesson.course_id == course_id
-    ).order_by(CourseLesson.order_index).all()
+    lessons = (
+        db.query(CourseLesson).filter(CourseLesson.course_id == course_id).order_by(CourseLesson.order_index).all()
+    )
 
     quiz = db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).first()
 
-    progress = db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id
-    ).first()
+    progress = (
+        db.query(UserCourseProgress)
+        .filter(UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id)
+        .first()
+    )
 
     completed_ids = json.loads(progress.completed_lessons or "[]") if progress else []
 
     return {
-        "id": course.id, "title": course.title, "description": course.description,
-        "category": course.category, "emoji": course.emoji,
-        "difficulty": course.difficulty, "estimatedMinutes": course.estimated_minutes,
-        "lessons": [{
-            "id": l.id, "title": l.title, "content": l.content,
-            "orderIndex": l.order_index, "estimatedMinutes": l.estimated_minutes,
-            "completed": l.id in completed_ids,
-        } for l in lessons],
+        "id": course.id,
+        "title": course.title,
+        "description": course.description,
+        "category": course.category,
+        "emoji": course.emoji,
+        "difficulty": course.difficulty,
+        "estimatedMinutes": course.estimated_minutes,
+        "lessons": [
+            {
+                "id": l.id,
+                "title": l.title,
+                "content": l.content,
+                "orderIndex": l.order_index,
+                "estimatedMinutes": l.estimated_minutes,
+                "completed": l.id in completed_ids,
+            }
+            for l in lessons
+        ],
         "quiz": {
             "id": quiz.id,
             "questions": json.loads(quiz.questions or "[]"),
-        } if quiz else None,
+        }
+        if quiz
+        else None,
         "progress": {
             "started": progress is not None,
             "completed": progress.completed if progress else False,
@@ -173,16 +449,19 @@ def get_course(course_id: str, user: User = Depends(get_current_user), db: Sessi
 
 # ─── Admin: Manual Course Management (no AI needed) ───────
 
+
 class ManualLessonInput(BaseModel):
     title: str
     content: str  # HTML content
     estimatedMinutes: int = 5
+
 
 class ManualQuizQuestion(BaseModel):
     question: str
     options: list[str]
     correctAnswer: int
     explanation: str = ""
+
 
 class ManualCourseInput(BaseModel):
     title: str
@@ -195,6 +474,7 @@ class ManualCourseInput(BaseModel):
     lessons: list[ManualLessonInput]
     quiz: list[ManualQuizQuestion] = []
 
+
 @router.post("/admin/create")
 def admin_create_course(data: ManualCourseInput, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Create a course with manual content (no AI). Admin only."""
@@ -202,29 +482,48 @@ def admin_create_course(data: ManualCourseInput, user: User = Depends(get_curren
         raise HTTPException(403, "Solo administradores pueden crear cursos")
 
     course = Course(
-        id=gen_id(), title=data.title, description=data.description,
-        category=data.category, emoji=data.emoji, difficulty=data.difficulty,
-        estimated_minutes=data.estimatedMinutes, lesson_count=len(data.lessons),
-        is_featured=data.isFeatured, order_index=99,
+        id=gen_id(),
+        title=data.title,
+        description=data.description,
+        category=data.category,
+        emoji=data.emoji,
+        difficulty=data.difficulty,
+        estimated_minutes=data.estimatedMinutes,
+        lesson_count=len(data.lessons),
+        is_featured=data.isFeatured,
+        order_index=99,
     )
     db.add(course)
     db.flush()
 
     for i, lesson in enumerate(data.lessons):
-        db.add(CourseLesson(
-            id=gen_id(), course_id=course.id,
-            title=lesson.title, content=lesson.content,
-            order_index=i, estimated_minutes=lesson.estimatedMinutes,
-        ))
+        db.add(
+            CourseLesson(
+                id=gen_id(),
+                course_id=course.id,
+                title=lesson.title,
+                content=lesson.content,
+                order_index=i,
+                estimated_minutes=lesson.estimatedMinutes,
+            )
+        )
 
     if data.quiz:
-        db.add(CourseQuiz(
-            id=gen_id(), course_id=course.id,
-            questions=json.dumps([q.dict() for q in data.quiz]),
-        ))
+        db.add(
+            CourseQuiz(
+                id=gen_id(),
+                course_id=course.id,
+                questions=json.dumps([q.dict() for q in data.quiz]),
+            )
+        )
 
     db.commit()
-    return {"status": "created", "courseId": course.id, "lessonCount": len(data.lessons), "quizQuestions": len(data.quiz)}
+    return {
+        "status": "created",
+        "courseId": course.id,
+        "lessonCount": len(data.lessons),
+        "quizQuestions": len(data.quiz),
+    }
 
 
 class UpdateCourseInput(BaseModel):
@@ -238,8 +537,11 @@ class UpdateCourseInput(BaseModel):
     lessons: Optional[list[ManualLessonInput]] = None
     quiz: Optional[list[ManualQuizQuestion]] = None
 
+
 @router.put("/admin/{course_id}")
-def admin_update_course(course_id: str, data: UpdateCourseInput, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def admin_update_course(
+    course_id: str, data: UpdateCourseInput, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Update a course with manual content. Admin only."""
     if not user.is_admin:
         raise HTTPException(403, "Solo administradores pueden editar cursos")
@@ -248,32 +550,47 @@ def admin_update_course(course_id: str, data: UpdateCourseInput, user: User = De
     if not course:
         raise HTTPException(404, "Curso no encontrado")
 
-    if data.title: course.title = data.title
-    if data.description: course.description = data.description
-    if data.category: course.category = data.category
-    if data.emoji: course.emoji = data.emoji
-    if data.difficulty: course.difficulty = data.difficulty
-    if data.estimatedMinutes: course.estimated_minutes = data.estimatedMinutes
-    if data.isFeatured is not None: course.is_featured = data.isFeatured
+    if data.title:
+        course.title = data.title
+    if data.description:
+        course.description = data.description
+    if data.category:
+        course.category = data.category
+    if data.emoji:
+        course.emoji = data.emoji
+    if data.difficulty:
+        course.difficulty = data.difficulty
+    if data.estimatedMinutes:
+        course.estimated_minutes = data.estimatedMinutes
+    if data.isFeatured is not None:
+        course.is_featured = data.isFeatured
 
     if data.lessons is not None:
         # Replace all lessons
         db.query(CourseLesson).filter(CourseLesson.course_id == course_id).delete()
         for i, lesson in enumerate(data.lessons):
-            db.add(CourseLesson(
-                id=gen_id(), course_id=course_id,
-                title=lesson.title, content=lesson.content,
-                order_index=i, estimated_minutes=lesson.estimatedMinutes,
-            ))
+            db.add(
+                CourseLesson(
+                    id=gen_id(),
+                    course_id=course_id,
+                    title=lesson.title,
+                    content=lesson.content,
+                    order_index=i,
+                    estimated_minutes=lesson.estimatedMinutes,
+                )
+            )
         course.lesson_count = len(data.lessons)
 
     if data.quiz is not None:
         db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).delete()
         if data.quiz:
-            db.add(CourseQuiz(
-                id=gen_id(), course_id=course_id,
-                questions=json.dumps([q.dict() for q in data.quiz]),
-            ))
+            db.add(
+                CourseQuiz(
+                    id=gen_id(),
+                    course_id=course_id,
+                    questions=json.dumps([q.dict() for q in data.quiz]),
+                )
+            )
 
     db.commit()
     return {"status": "updated", "courseId": course_id}
@@ -308,7 +625,9 @@ from static_courses_4 import COURSES_BATCH_4
 STATIC_COURSE_CONTENT = {
     "Gestión del Tiempo": {
         "lessons": [
-            {"title": "El mito de la gestión del tiempo", "content": """<h3>No gestionas el tiempo — gestionas tu atención</h3>
+            {
+                "title": "El mito de la gestión del tiempo",
+                "content": """<h3>No gestionas el tiempo — gestionas tu atención</h3>
 <p>Todos tenemos exactamente 24 horas al día. No puedes "crear" más tiempo. Lo que sí puedes hacer es decidir <strong>cómo usas tu atención</strong> durante esas horas.</p>
 <p>La mayoría de las personas piensan que su problema es falta de tiempo, pero en realidad es falta de <em>priorización</em>. ¿Cuántas horas al día pasas revisando redes sociales, respondiendo mensajes no urgentes, o procrastinando?</p>
 <h4>El ejercicio de las 168 horas</h4>
@@ -324,8 +643,12 @@ STATIC_COURSE_CONTENT = {
 <p>¡Tienes <strong>58 horas libres</strong> cada semana! El problema no es la cantidad — es cómo las inviertes.</p>
 <blockquote>"No es que tengamos poco tiempo, sino que perdemos mucho." — Séneca</blockquote>
 <h4>Principio fundamental</h4>
-<p>La gestión del tiempo real comienza con una pregunta honesta: <strong>¿Mis acciones de hoy me acercan a donde quiero estar mañana?</strong></p>""", "estimatedMinutes": 5},
-            {"title": "La Matriz de Eisenhower", "content": """<h3>Urgente vs. Importante: La diferencia que lo cambia todo</h3>
+<p>La gestión del tiempo real comienza con una pregunta honesta: <strong>¿Mis acciones de hoy me acercan a donde quiero estar mañana?</strong></p>""",
+                "estimatedMinutes": 5,
+            },
+            {
+                "title": "La Matriz de Eisenhower",
+                "content": """<h3>Urgente vs. Importante: La diferencia que lo cambia todo</h3>
 <p>Dwight Eisenhower, presidente de EE.UU. y general de 5 estrellas, decía: <em>"Lo que es importante rara vez es urgente, y lo que es urgente rara vez es importante."</em></p>
 <p>La Matriz de Eisenhower divide tus tareas en 4 cuadrantes:</p>
 <h4>Cuadrante 1: Urgente + Importante (HACER AHORA)</h4>
@@ -342,8 +665,12 @@ STATIC_COURSE_CONTENT = {
 <ul><li>Scrollear redes sin propósito, series por aburrimiento</li>
 <li>Ejemplo: 2 horas en TikTok cuando tienes un proyecto pendiente</li></ul>
 <h4>Ejercicio práctico</h4>
-<p>Esta noche, escribe tus 10 tareas pendientes. Clasifícalas en los 4 cuadrantes. ¿Cuántas están en el cuadrante correcto?</p>""", "estimatedMinutes": 6},
-            {"title": "La técnica Pomodoro y time-blocking", "content": """<h3>Trabaja CON tu cerebro, no contra él</h3>
+<p>Esta noche, escribe tus 10 tareas pendientes. Clasifícalas en los 4 cuadrantes. ¿Cuántas están en el cuadrante correcto?</p>""",
+                "estimatedMinutes": 6,
+            },
+            {
+                "title": "La técnica Pomodoro y time-blocking",
+                "content": """<h3>Trabaja CON tu cerebro, no contra él</h3>
 <p>Tu cerebro no está diseñado para concentrarse durante horas sin parar. La ciencia muestra que la atención sostenida tiene un límite natural de <strong>25-50 minutos</strong>.</p>
 <h4>La Técnica Pomodoro</h4>
 <ol>
@@ -362,8 +689,12 @@ STATIC_COURSE_CONTENT = {
 <li>14:00 - 15:00 → Responder emails y mensajes</li>
 </ul>
 <p><strong>Regla de oro:</strong> Si no está en tu calendario, no existe. Lo que no programas, no sucede.</p>
-<blockquote>Tip: Usa la app de Salas de Estudio de Conniku para hacer Pomodoros con compañeros. La accountability social multiplica tu productividad.</blockquote>""", "estimatedMinutes": 6},
-            {"title": "Cómo vencer la procrastinación", "content": """<h3>La procrastinación no es pereza — es una respuesta emocional</h3>
+<blockquote>Tip: Usa la app de Salas de Estudio de Conniku para hacer Pomodoros con compañeros. La accountability social multiplica tu productividad.</blockquote>""",
+                "estimatedMinutes": 6,
+            },
+            {
+                "title": "Cómo vencer la procrastinación",
+                "content": """<h3>La procrastinación no es pereza — es una respuesta emocional</h3>
 <p>Investigaciones recientes muestran que procrastinar <strong>no es un problema de gestión del tiempo</strong>. Es un problema de <strong>gestión emocional</strong>. Postergamos tareas que nos causan ansiedad, aburrimiento o miedo al fracaso.</p>
 <h4>La regla de los 2 minutos</h4>
 <p>Si una tarea toma menos de 2 minutos, <strong>hazla ahora</strong>. No la agregues a una lista, no la postergues. Simplemente hazla. Responder ese email, lavar ese plato, enviar ese mensaje — 2 minutos.</p>
@@ -387,8 +718,12 @@ STATIC_COURSE_CONTENT = {
 <li>Hazla específica: ¿Cuál es el siguiente paso concreto?</li>
 <li>Aplica la regla de 5 minutos</li>
 <li>Recompénsate después</li>
-</ol>""", "estimatedMinutes": 6},
-            {"title": "Tu sistema personal de productividad", "content": """<h3>Construye un sistema que funcione para TI</h3>
+</ol>""",
+                "estimatedMinutes": 6,
+            },
+            {
+                "title": "Tu sistema personal de productividad",
+                "content": """<h3>Construye un sistema que funcione para TI</h3>
 <p>No existe un sistema de productividad perfecto universal. Lo que funciona para un CEO no necesariamente funciona para un estudiante universitario. Pero hay principios que puedes adaptar.</p>
 <h4>El sistema mínimo viable</h4>
 <p>Tu sistema de productividad necesita solo 3 componentes:</p>
@@ -411,24 +746,146 @@ STATIC_COURSE_CONTENT = {
 </ul>
 <h4>Herramientas recomendadas</h4>
 <p>Usa lo que ya tienes. Un sistema simple que uses es infinitamente mejor que un sistema perfecto que abandones en 3 días.</p>
-<blockquote>Recuerda: La productividad no se trata de hacer más cosas. Se trata de hacer las cosas <strong>correctas</strong>.</blockquote>""", "estimatedMinutes": 5},
+<blockquote>Recuerda: La productividad no se trata de hacer más cosas. Se trata de hacer las cosas <strong>correctas</strong>.</blockquote>""",
+                "estimatedMinutes": 5,
+            },
         ],
         "quiz": [
-            {"question": "¿Cuál es el cuadrante más importante de la Matriz de Eisenhower?", "options": ["Urgente + Importante", "No Urgente + Importante", "Urgente + No Importante", "No Urgente + No Importante"], "correctAnswer": 1, "explanation": "El cuadrante 2 (No Urgente + Importante) es el más importante porque previene crisis futuras."},
-            {"question": "¿Cuánto dura un 'pomodoro' estándar?", "options": ["15 minutos", "25 minutos", "45 minutos", "60 minutos"], "correctAnswer": 1, "explanation": "Un pomodoro dura 25 minutos de trabajo enfocado, seguido de 5 minutos de descanso."},
-            {"question": "Según la lección, ¿qué es realmente la procrastinación?", "options": ["Un problema de pereza", "Un problema de gestión del tiempo", "Un problema de gestión emocional", "Un problema de inteligencia"], "correctAnswer": 2, "explanation": "La procrastinación es una respuesta emocional, no un problema de pereza o tiempo."},
-            {"question": "¿Qué dice la regla de los 2 minutos?", "options": ["Estudia 2 minutos al día", "Si una tarea toma menos de 2 minutos, hazla ahora", "Descansa 2 minutos entre tareas", "Planifica solo 2 minutos por la mañana"], "correctAnswer": 1, "explanation": "La regla dice que las tareas de menos de 2 minutos se deben hacer inmediatamente."},
-            {"question": "¿Cuántas prioridades diarias recomienda el sistema mínimo viable?", "options": ["1", "3", "5", "10"], "correctAnswer": 1, "explanation": "Se recomienda elegir solo 3 prioridades diarias para mantener el enfoque."},
-            {"question": "¿Cuántas horas libres tienes aproximadamente por semana según el ejercicio de las 168 horas?", "options": ["20 horas", "35 horas", "58 horas", "80 horas"], "correctAnswer": 2, "explanation": "Restando sueño, clases, comidas y transporte, quedan aproximadamente 58 horas libres semanales."},
-            {"question": "¿Qué tipo de tareas pertenecen al Cuadrante 4 de Eisenhower?", "options": ["Crisis y emergencias", "Proyectos a largo plazo", "Interrupciones no esenciales", "Actividades sin urgencia ni importancia"], "correctAnswer": 3, "explanation": "El Cuadrante 4 incluye actividades ni urgentes ni importantes, como scrollear redes sin propósito."},
-            {"question": "¿Cada cuántos pomodoros se recomienda tomar un descanso largo?", "options": ["Cada 2", "Cada 3", "Cada 4", "Cada 6"], "correctAnswer": 2, "explanation": "Cada 4 pomodoros se toma un descanso largo de 15-30 minutos."},
-            {"question": "¿Qué es el 'time-blocking'?", "options": ["Bloquear distracciones en el celular", "Reservar bloques de tiempo en el calendario para tareas específicas", "Trabajar sin parar durante un bloque de 4 horas", "Eliminar todas las reuniones del calendario"], "correctAnswer": 1, "explanation": "Time-blocking consiste en reservar bloques específicos en tu calendario para tareas específicas."},
-            {"question": "¿Qué porcentaje de las veces continúas trabajando después de aplicar la regla de los 5 minutos?", "options": ["50%", "60%", "80%", "95%"], "correctAnswer": 2, "explanation": "El 80% de las veces, una vez que empiezas, sigues trabajando. El inicio es lo más difícil."},
-            {"question": "¿Cuál es el MIT (Most Important Task)?", "options": ["La tarea más fácil del día", "La tarea que más tiempo toma", "La tarea que si la completas, hace que el día valga la pena", "La primera tarea de tu lista"], "correctAnswer": 2, "explanation": "El MIT es la tarea más importante que, si la completas, hace que el día haya valido la pena."},
-            {"question": "¿Cuándo se recomienda hacer la revisión semanal?", "options": ["Lunes por la mañana", "Miércoles al mediodía", "Viernes por la tarde", "Domingo (15 minutos)"], "correctAnswer": 3, "explanation": "Se recomienda dedicar 15 minutos cada domingo a revisar qué funcionó, qué no, y planificar la semana."},
-            {"question": "Según la lección, ¿cuál es la regla de oro del time-blocking?", "options": ["Nunca cambies tu calendario", "Si no está en tu calendario, no existe", "Bloquea solo las mañanas", "Solo agenda reuniones importantes"], "correctAnswer": 1, "explanation": "La regla de oro es: si no está en tu calendario, no existe. Lo que no programas, no sucede."},
-            {"question": "¿Cuál es el primer paso del sistema anti-procrastinación?", "options": ["Poner un timer", "Hacer la tarea inmediatamente", "Identificar la emoción que sientes", "Buscar motivación externa"], "correctAnswer": 2, "explanation": "El primer paso es identificar la emoción que sientes al pensar en la tarea."},
-            {"question": "¿Cuántos componentes tiene el sistema mínimo viable de productividad?", "options": ["2", "3", "4", "5"], "correctAnswer": 1, "explanation": "El sistema mínimo viable tiene 3 componentes: bandeja de entrada, calendario y lista de prioridades diaria."},
+            {
+                "question": "¿Cuál es el cuadrante más importante de la Matriz de Eisenhower?",
+                "options": [
+                    "Urgente + Importante",
+                    "No Urgente + Importante",
+                    "Urgente + No Importante",
+                    "No Urgente + No Importante",
+                ],
+                "correctAnswer": 1,
+                "explanation": "El cuadrante 2 (No Urgente + Importante) es el más importante porque previene crisis futuras.",
+            },
+            {
+                "question": "¿Cuánto dura un 'pomodoro' estándar?",
+                "options": ["15 minutos", "25 minutos", "45 minutos", "60 minutos"],
+                "correctAnswer": 1,
+                "explanation": "Un pomodoro dura 25 minutos de trabajo enfocado, seguido de 5 minutos de descanso.",
+            },
+            {
+                "question": "Según la lección, ¿qué es realmente la procrastinación?",
+                "options": [
+                    "Un problema de pereza",
+                    "Un problema de gestión del tiempo",
+                    "Un problema de gestión emocional",
+                    "Un problema de inteligencia",
+                ],
+                "correctAnswer": 2,
+                "explanation": "La procrastinación es una respuesta emocional, no un problema de pereza o tiempo.",
+            },
+            {
+                "question": "¿Qué dice la regla de los 2 minutos?",
+                "options": [
+                    "Estudia 2 minutos al día",
+                    "Si una tarea toma menos de 2 minutos, hazla ahora",
+                    "Descansa 2 minutos entre tareas",
+                    "Planifica solo 2 minutos por la mañana",
+                ],
+                "correctAnswer": 1,
+                "explanation": "La regla dice que las tareas de menos de 2 minutos se deben hacer inmediatamente.",
+            },
+            {
+                "question": "¿Cuántas prioridades diarias recomienda el sistema mínimo viable?",
+                "options": ["1", "3", "5", "10"],
+                "correctAnswer": 1,
+                "explanation": "Se recomienda elegir solo 3 prioridades diarias para mantener el enfoque.",
+            },
+            {
+                "question": "¿Cuántas horas libres tienes aproximadamente por semana según el ejercicio de las 168 horas?",
+                "options": ["20 horas", "35 horas", "58 horas", "80 horas"],
+                "correctAnswer": 2,
+                "explanation": "Restando sueño, clases, comidas y transporte, quedan aproximadamente 58 horas libres semanales.",
+            },
+            {
+                "question": "¿Qué tipo de tareas pertenecen al Cuadrante 4 de Eisenhower?",
+                "options": [
+                    "Crisis y emergencias",
+                    "Proyectos a largo plazo",
+                    "Interrupciones no esenciales",
+                    "Actividades sin urgencia ni importancia",
+                ],
+                "correctAnswer": 3,
+                "explanation": "El Cuadrante 4 incluye actividades ni urgentes ni importantes, como scrollear redes sin propósito.",
+            },
+            {
+                "question": "¿Cada cuántos pomodoros se recomienda tomar un descanso largo?",
+                "options": ["Cada 2", "Cada 3", "Cada 4", "Cada 6"],
+                "correctAnswer": 2,
+                "explanation": "Cada 4 pomodoros se toma un descanso largo de 15-30 minutos.",
+            },
+            {
+                "question": "¿Qué es el 'time-blocking'?",
+                "options": [
+                    "Bloquear distracciones en el celular",
+                    "Reservar bloques de tiempo en el calendario para tareas específicas",
+                    "Trabajar sin parar durante un bloque de 4 horas",
+                    "Eliminar todas las reuniones del calendario",
+                ],
+                "correctAnswer": 1,
+                "explanation": "Time-blocking consiste en reservar bloques específicos en tu calendario para tareas específicas.",
+            },
+            {
+                "question": "¿Qué porcentaje de las veces continúas trabajando después de aplicar la regla de los 5 minutos?",
+                "options": ["50%", "60%", "80%", "95%"],
+                "correctAnswer": 2,
+                "explanation": "El 80% de las veces, una vez que empiezas, sigues trabajando. El inicio es lo más difícil.",
+            },
+            {
+                "question": "¿Cuál es el MIT (Most Important Task)?",
+                "options": [
+                    "La tarea más fácil del día",
+                    "La tarea que más tiempo toma",
+                    "La tarea que si la completas, hace que el día valga la pena",
+                    "La primera tarea de tu lista",
+                ],
+                "correctAnswer": 2,
+                "explanation": "El MIT es la tarea más importante que, si la completas, hace que el día haya valido la pena.",
+            },
+            {
+                "question": "¿Cuándo se recomienda hacer la revisión semanal?",
+                "options": [
+                    "Lunes por la mañana",
+                    "Miércoles al mediodía",
+                    "Viernes por la tarde",
+                    "Domingo (15 minutos)",
+                ],
+                "correctAnswer": 3,
+                "explanation": "Se recomienda dedicar 15 minutos cada domingo a revisar qué funcionó, qué no, y planificar la semana.",
+            },
+            {
+                "question": "Según la lección, ¿cuál es la regla de oro del time-blocking?",
+                "options": [
+                    "Nunca cambies tu calendario",
+                    "Si no está en tu calendario, no existe",
+                    "Bloquea solo las mañanas",
+                    "Solo agenda reuniones importantes",
+                ],
+                "correctAnswer": 1,
+                "explanation": "La regla de oro es: si no está en tu calendario, no existe. Lo que no programas, no sucede.",
+            },
+            {
+                "question": "¿Cuál es el primer paso del sistema anti-procrastinación?",
+                "options": [
+                    "Poner un timer",
+                    "Hacer la tarea inmediatamente",
+                    "Identificar la emoción que sientes",
+                    "Buscar motivación externa",
+                ],
+                "correctAnswer": 2,
+                "explanation": "El primer paso es identificar la emoción que sientes al pensar en la tarea.",
+            },
+            {
+                "question": "¿Cuántos componentes tiene el sistema mínimo viable de productividad?",
+                "options": ["2", "3", "4", "5"],
+                "correctAnswer": 1,
+                "explanation": "El sistema mínimo viable tiene 3 componentes: bandeja de entrada, calendario y lista de prioridades diaria.",
+            },
         ],
     },
 }
@@ -451,17 +908,25 @@ def _seed_static_content(db: Session):
             continue
 
         for i, lesson in enumerate(content["lessons"]):
-            db.add(CourseLesson(
-                id=gen_id(), course_id=course.id,
-                title=lesson["title"], content=lesson["content"],
-                order_index=i, estimated_minutes=lesson.get("estimatedMinutes", 5),
-            ))
+            db.add(
+                CourseLesson(
+                    id=gen_id(),
+                    course_id=course.id,
+                    title=lesson["title"],
+                    content=lesson["content"],
+                    order_index=i,
+                    estimated_minutes=lesson.get("estimatedMinutes", 5),
+                )
+            )
 
         if content.get("quiz"):
-            db.add(CourseQuiz(
-                id=gen_id(), course_id=course.id,
-                questions=json.dumps(content["quiz"]),
-            ))
+            db.add(
+                CourseQuiz(
+                    id=gen_id(),
+                    course_id=course.id,
+                    questions=json.dumps(content["quiz"]),
+                )
+            )
 
     db.commit()
 
@@ -481,22 +946,31 @@ def generate_course_content(course_id: str, user: User = Depends(get_current_use
     if course.title in STATIC_COURSE_CONTENT:
         content = STATIC_COURSE_CONTENT[course.title]
         for i, lesson in enumerate(content["lessons"]):
-            db.add(CourseLesson(
-                id=gen_id(), course_id=course_id,
-                title=lesson["title"], content=lesson["content"],
-                order_index=i, estimated_minutes=lesson.get("estimatedMinutes", 5),
-            ))
+            db.add(
+                CourseLesson(
+                    id=gen_id(),
+                    course_id=course_id,
+                    title=lesson["title"],
+                    content=lesson["content"],
+                    order_index=i,
+                    estimated_minutes=lesson.get("estimatedMinutes", 5),
+                )
+            )
         if content.get("quiz"):
-            db.add(CourseQuiz(
-                id=gen_id(), course_id=course_id,
-                questions=json.dumps(content["quiz"]),
-            ))
+            db.add(
+                CourseQuiz(
+                    id=gen_id(),
+                    course_id=course_id,
+                    questions=json.dumps(content["quiz"]),
+                )
+            )
         db.commit()
         return {"status": "generated", "source": "static", "lessonCount": len(content["lessons"])}
 
     # Try AI generation
     try:
         from ai_engine import AIEngine
+
         ai = AIEngine()
     except Exception:
         raise HTTPException(503, "El contenido de este curso aún no está disponible. Estamos trabajando en agregarlo.")
@@ -509,7 +983,7 @@ Responde SOLO con JSON válido. El contenido debe ser:
 - Con ejemplos reales y situaciones cotidianas
 - Motivador pero honesto, sin clichés vacíos
 - Escrito en tono cercano, como un mentor experimentado
-- En {'español' if lang == 'es' else 'inglés' if lang == 'en' else lang}"""
+- En {"español" if lang == "es" else "inglés" if lang == "en" else lang}"""
 
     prompt = f"""Genera {course.lesson_count} lecciones para el curso "{course.title}".
 Descripción: {course.description}
@@ -538,8 +1012,8 @@ Genera exactamente {course.lesson_count} lecciones y {min(course.lesson_count, 5
     try:
         result_text = ai._call_gemini(system, prompt)
         # Parse JSON
-        start = result_text.find('{')
-        end = result_text.rfind('}') + 1
+        start = result_text.find("{")
+        end = result_text.rfind("}") + 1
         if start >= 0 and end > start:
             result = json.loads(result_text[start:end])
         else:
@@ -548,7 +1022,8 @@ Genera exactamente {course.lesson_count} lecciones y {min(course.lesson_count, 5
         # Create lessons
         for i, lesson_data in enumerate(result.get("lessons", [])):
             lesson = CourseLesson(
-                id=gen_id(), course_id=course_id,
+                id=gen_id(),
+                course_id=course_id,
                 title=lesson_data["title"],
                 content=lesson_data.get("content", ""),
                 order_index=i,
@@ -560,24 +1035,34 @@ Genera exactamente {course.lesson_count} lecciones y {min(course.lesson_count, 5
         quiz_questions = result.get("quiz", [])
         if quiz_questions:
             quiz = CourseQuiz(
-                id=gen_id(), course_id=course_id,
+                id=gen_id(),
+                course_id=course_id,
                 questions=json.dumps(quiz_questions),
             )
             db.add(quiz)
 
         db.commit()
-        return {"status": "generated", "lessonCount": len(result.get("lessons", [])), "quizQuestions": len(quiz_questions)}
+        return {
+            "status": "generated",
+            "lessonCount": len(result.get("lessons", [])),
+            "quizQuestions": len(quiz_questions),
+        }
     except Exception as e:
         print(f"AI generation error for course {course_id}: {e}")
-        raise HTTPException(503, "El contenido de este curso aún no está disponible. Estamos trabajando en agregarlo pronto.")
+        raise HTTPException(
+            503, "El contenido de este curso aún no está disponible. Estamos trabajando en agregarlo pronto."
+        )
 
 
 @router.post("/{course_id}/lessons/{lesson_id}/complete")
-def complete_lesson(course_id: str, lesson_id: str,
-                    user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    progress = db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id
-    ).first()
+def complete_lesson(
+    course_id: str, lesson_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    progress = (
+        db.query(UserCourseProgress)
+        .filter(UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id)
+        .first()
+    )
     if not progress:
         progress = UserCourseProgress(id=gen_id(), user_id=user.id, course_id=course_id)
         db.add(progress)
@@ -588,14 +1073,14 @@ def complete_lesson(course_id: str, lesson_id: str,
         progress.completed_lessons = json.dumps(completed)
 
     from gamification import award_xp
+
     award_xp(user, 5, db)
     db.commit()
     return {"completedLessons": completed}
 
 
 @router.get("/{course_id}/quiz/questions")
-def get_quiz_questions(course_id: str,
-                       user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_quiz_questions(course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Return a freshly shuffled subset of quiz questions for this attempt.
     Strips correctAnswer so it is never exposed to the client.
@@ -623,8 +1108,7 @@ def get_quiz_questions(course_id: str,
 
 
 @router.post("/{course_id}/quiz/submit")
-def submit_quiz(course_id: str, data: dict,
-                user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def submit_quiz(course_id: str, data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     # Accepts {qid: selectedOption} — qid is the pool index from /quiz/questions
     answers = data.get("answers", {})
 
@@ -647,9 +1131,11 @@ def submit_quiz(course_id: str, data: dict,
     score = round((correct / max(total, 1)) * 100) if total > 0 else 0
     passed = score >= 80
 
-    progress = db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id
-    ).first()
+    progress = (
+        db.query(UserCourseProgress)
+        .filter(UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id)
+        .first()
+    )
     if not progress:
         progress = UserCourseProgress(id=gen_id(), user_id=user.id, course_id=course_id)
         db.add(progress)
@@ -666,18 +1152,24 @@ def submit_quiz(course_id: str, data: dict,
         progress.certificate_id = gen_id()
 
         from gamification import award_xp
+
         award_xp(user, 30, db)
 
         # Auto-generate certificate with PDF, email, and CV entry
         try:
             from certificate_routes import generate_certificate_for_user
+
             course_obj = db.query(Course).filter(Course.id == course_id).first()
             if course_obj:
                 estimated_hours = max(1, (course_obj.estimated_minutes or 30) // 60) or 1
                 generate_certificate_for_user(
-                    user, course_id, course_obj.title,
+                    user,
+                    course_id,
+                    course_obj.title,
                     course_obj.category or "default",
-                    estimated_hours, float(score), db
+                    estimated_hours,
+                    float(score),
+                    db,
                 )
         except Exception as e:
             print(f"[Cert] Auto-generation on quiz pass error: {e}")
@@ -685,48 +1177,67 @@ def submit_quiz(course_id: str, data: dict,
         # Auto-milestone post on wall
         try:
             from social_routes import create_milestone_post
-            course_obj = course_obj if 'course_obj' in dir() else db.query(Course).filter(Course.id == course_id).first()
+
+            course_obj = (
+                course_obj if "course_obj" in dir() else db.query(Course).filter(Course.id == course_id).first()
+            )
             course_title = course_obj.title if course_obj else "un curso"
             create_milestone_post(
-                db, str(user.id), "course_completed",
-                f"¡Completé el curso \"{course_title}\" con {score:.0f}% de nota! 🎓",
-                visibility="public"
+                db,
+                str(user.id),
+                "course_completed",
+                f'¡Completé el curso "{course_title}" con {score:.0f}% de nota! 🎓',
+                visibility="public",
             )
         except Exception as e:
             print(f"[Milestone] Course post error: {e}")
 
         # Course-completion rewards use a 12-month rolling window
-        from rewards_routes import (grant_reward, REWARD_RULES,
-                                    get_course_reward_window, COURSE_REWARD_CYCLE_DAYS)
+        from rewards_routes import grant_reward, REWARD_RULES, get_course_reward_window, COURSE_REWARD_CYCLE_DAYS
 
         courses_in_window, days_left, _ = get_course_reward_window(user.id, db)
 
         # 3 courses in window → 1 month PRO
         if courses_in_window >= 3:
             if grant_reward(user, "courses_3", "pro", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
-                rule = next((r for r in REWARD_RULES if r["id"] == "courses_3"), {})
-                rewards_granted.append({
-                    "id": "courses_3", "title": rule.get("title", ""),
-                    "description": rule.get("description", ""), "tier": "pro", "days": 30,
-                })
+                rule: dict[str, Any] = next((r for r in REWARD_RULES if r["id"] == "courses_3"), {})
+                rewards_granted.append(
+                    {
+                        "id": "courses_3",
+                        "title": rule.get("title", ""),
+                        "description": rule.get("description", ""),
+                        "tier": "pro",
+                        "days": 30,
+                    }
+                )
 
         # 6 courses in window → 1 month MAX
         if courses_in_window >= 6:
             if grant_reward(user, "courses_6", "max", 30, db, cooldown_days=COURSE_REWARD_CYCLE_DAYS):
-                rule = next((r for r in REWARD_RULES if r["id"] == "courses_6"), {})
-                rewards_granted.append({
-                    "id": "courses_6", "title": rule.get("title", ""),
-                    "description": rule.get("description", ""), "tier": "max", "days": 30,
-                })
+                rule2: dict[str, Any] = next((r for r in REWARD_RULES if r["id"] == "courses_6"), {})
+                rewards_granted.append(
+                    {
+                        "id": "courses_6",
+                        "title": rule2.get("title", ""),
+                        "description": rule2.get("description", ""),
+                        "tier": "max",
+                        "days": 30,
+                    }
+                )
 
         # Perfect quiz reward
         if score == 100:
             if grant_reward(user, "perfect_quiz", "pro", 30, db):
-                rule = next((r for r in REWARD_RULES if r["id"] == "perfect_quiz"), {})
-                rewards_granted.append({
-                    "id": "perfect_quiz", "title": rule.get("title", ""),
-                    "description": rule.get("description", ""), "tier": "pro", "days": 30,
-                })
+                rule3: dict[str, Any] = next((r for r in REWARD_RULES if r["id"] == "perfect_quiz"), {})
+                rewards_granted.append(
+                    {
+                        "id": "perfect_quiz",
+                        "title": rule3.get("title", ""),
+                        "description": rule3.get("description", ""),
+                        "tier": "pro",
+                        "days": 30,
+                    }
+                )
 
         # Build progress message for the user
         # Tell them how many more courses they need and how much time is left
@@ -764,7 +1275,10 @@ def submit_quiz(course_id: str, data: dict,
 
     course = db.query(Course).filter(Course.id == course_id).first()
     return {
-        "score": score, "passed": passed, "correct": correct, "total": len(pool),
+        "score": score,
+        "passed": passed,
+        "correct": correct,
+        "total": len(pool),
         "certificateId": progress.certificate_id if passed else None,
         "courseTitle": course.title if course else "",
         "rewardsGranted": rewards_granted,
@@ -774,9 +1288,11 @@ def submit_quiz(course_id: str, data: dict,
 
 # ─── Dynamic Exercises (never repeat) ─────────────────────
 
+
 def _hash_question(text: str) -> str:
     """SHA256 hash of question text for deduplication."""
     import hashlib
+
     return hashlib.sha256(text.strip().lower().encode()).hexdigest()
 
 
@@ -785,17 +1301,23 @@ class ExerciseRequest(BaseModel):
 
 
 @router.post("/{course_id}/exercises")
-def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
-                  user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def get_exercises(
+    course_id: str,
+    data: ExerciseRequest = ExerciseRequest(),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """Get exercises that NEVER repeat for this user. Generates new ones if all have been seen."""
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(404, "Curso no encontrado")
 
     # Check user has completed at least 1 lesson
-    progress = db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id
-    ).first()
+    progress = (
+        db.query(UserCourseProgress)
+        .filter(UserCourseProgress.user_id == user.id, UserCourseProgress.course_id == course_id)
+        .first()
+    )
     completed_lessons = json.loads(progress.completed_lessons or "[]") if progress else []
     if len(completed_lessons) == 0:
         raise HTTPException(400, "Debes completar al menos una leccion antes de practicar ejercicios.")
@@ -805,10 +1327,15 @@ def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
     all_questions = json.loads(quiz.questions or "[]") if quiz else []
 
     # Get hashes of questions this user has already answered
-    seen_hashes = {row.question_hash for row in db.query(UserExerciseHistory.question_hash).filter(
-        UserExerciseHistory.user_id == user.id,
-        UserExerciseHistory.course_id == course_id,
-    ).all()}
+    seen_hashes = {
+        row.question_hash
+        for row in db.query(UserExerciseHistory.question_hash)
+        .filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+        )
+        .all()
+    }
 
     # Filter unseen questions
     unseen = [q for q in all_questions if _hash_question(q["question"]) not in seen_hashes]
@@ -818,17 +1345,26 @@ def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
     if len(unseen) >= count:
         # Enough unseen static questions - return random selection
         import random
+
         selected = random.sample(unseen, count)
         # Compute exercise stats
-        total_answered = db.query(UserExerciseHistory).filter(
-            UserExerciseHistory.user_id == user.id,
-            UserExerciseHistory.course_id == course_id,
-        ).count()
-        total_correct = db.query(UserExerciseHistory).filter(
-            UserExerciseHistory.user_id == user.id,
-            UserExerciseHistory.course_id == course_id,
-            UserExerciseHistory.was_correct == True,
-        ).count()
+        total_answered = (
+            db.query(UserExerciseHistory)
+            .filter(
+                UserExerciseHistory.user_id == user.id,
+                UserExerciseHistory.course_id == course_id,
+            )
+            .count()
+        )
+        total_correct = (
+            db.query(UserExerciseHistory)
+            .filter(
+                UserExerciseHistory.user_id == user.id,
+                UserExerciseHistory.course_id == course_id,
+                UserExerciseHistory.was_correct == True,
+            )
+            .count()
+        )
         return {
             "questions": selected,
             "source": "static",
@@ -841,37 +1377,45 @@ def get_exercises(course_id: str, data: ExerciseRequest = ExerciseRequest(),
 
     # Not enough unseen questions - generate new ones
     # Gather lesson content for context
-    lessons = db.query(CourseLesson).filter(
-        CourseLesson.course_id == course_id
-    ).order_by(CourseLesson.order_index).all()
+    lessons = (
+        db.query(CourseLesson).filter(CourseLesson.course_id == course_id).order_by(CourseLesson.order_index).all()
+    )
 
-    lesson_summaries = "\n".join([
-        f"Leccion {i+1}: {l.title}\n{l.content[:600]}" for i, l in enumerate(lessons)
-    ])
+    lesson_summaries = "\n".join([f"Leccion {i + 1}: {l.title}\n{l.content[:600]}" for i, l in enumerate(lessons)])
 
     # Build list of already-seen question texts to avoid
-    seen_questions_text = "\n".join([
-        f"- {q['question']}" for q in all_questions if _hash_question(q["question"]) in seen_hashes
-    ][:50])  # Limit to avoid token overflow
+    seen_questions_text = "\n".join(
+        [f"- {q['question']}" for q in all_questions if _hash_question(q["question"]) in seen_hashes][:50]
+    )  # Limit to avoid token overflow
 
     need = count - len(unseen)
 
     try:
         from ai_engine import AIEngine
+
         ai = AIEngine()
     except Exception:
         # If AI not available, return whatever unseen we have
         import random
+
         selected = unseen if unseen else random.sample(all_questions, min(count, len(all_questions)))
-        total_answered = db.query(UserExerciseHistory).filter(
-            UserExerciseHistory.user_id == user.id,
-            UserExerciseHistory.course_id == course_id,
-        ).count()
-        total_correct = db.query(UserExerciseHistory).filter(
-            UserExerciseHistory.user_id == user.id,
-            UserExerciseHistory.course_id == course_id,
-            UserExerciseHistory.was_correct == True,
-        ).count()
+        total_answered = (
+            db.query(UserExerciseHistory)
+            .filter(
+                UserExerciseHistory.user_id == user.id,
+                UserExerciseHistory.course_id == course_id,
+            )
+            .count()
+        )
+        total_correct = (
+            db.query(UserExerciseHistory)
+            .filter(
+                UserExerciseHistory.user_id == user.id,
+                UserExerciseHistory.course_id == course_id,
+                UserExerciseHistory.was_correct == True,
+            )
+            .count()
+        )
         return {
             "questions": selected,
             "source": "fallback",
@@ -888,7 +1432,7 @@ Responde SOLO con JSON valido. Las preguntas deben ser:
 - Basadas en el contenido de las lecciones
 - Diferentes a las preguntas ya existentes
 - Practicas y que evaluen comprension, no solo memoria
-- En {'espanol' if lang == 'es' else 'ingles' if lang == 'en' else lang}"""
+- En {"espanol" if lang == "es" else "ingles" if lang == "en" else lang}"""
 
     prompt = f"""Genera exactamente {need} preguntas de practica NUEVAS para el curso "{course.title}".
 Descripcion: {course.description}
@@ -913,8 +1457,8 @@ Formato JSON (responde SOLO con el JSON):
 
     try:
         result_text = ai._call_gemini(system, prompt)
-        start = result_text.find('{')
-        end = result_text.rfind('}') + 1
+        start = result_text.find("{")
+        end = result_text.rfind("}") + 1
         if start >= 0 and end > start:
             result = json.loads(result_text[start:end])
         else:
@@ -929,7 +1473,8 @@ Formato JSON (responde SOLO con el JSON):
             db.commit()
         elif new_questions and not quiz:
             quiz = CourseQuiz(
-                id=gen_id(), course_id=course_id,
+                id=gen_id(),
+                course_id=course_id,
                 questions=json.dumps(new_questions),
             )
             db.add(quiz)
@@ -937,6 +1482,7 @@ Formato JSON (responde SOLO con el JSON):
 
         # Combine unseen static + newly generated
         import random
+
         selected = unseen + new_questions
         if len(selected) > count:
             selected = random.sample(selected, count)
@@ -944,17 +1490,26 @@ Formato JSON (responde SOLO con el JSON):
     except Exception as e:
         print(f"Exercise generation error for course {course_id}: {e}")
         import random
+
         selected = unseen if unseen else random.sample(all_questions, min(count, len(all_questions)))
 
-    total_answered = db.query(UserExerciseHistory).filter(
-        UserExerciseHistory.user_id == user.id,
-        UserExerciseHistory.course_id == course_id,
-    ).count()
-    total_correct = db.query(UserExerciseHistory).filter(
-        UserExerciseHistory.user_id == user.id,
-        UserExerciseHistory.course_id == course_id,
-        UserExerciseHistory.was_correct == True,
-    ).count()
+    total_answered = (
+        db.query(UserExerciseHistory)
+        .filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+        )
+        .count()
+    )
+    total_correct = (
+        db.query(UserExerciseHistory)
+        .filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+            UserExerciseHistory.was_correct == True,
+        )
+        .count()
+    )
 
     return {
         "questions": selected,
@@ -973,12 +1528,25 @@ class ExerciseSubmitRequest(BaseModel):
 
 
 @router.post("/{course_id}/exercises/submit")
-def submit_exercises(course_id: str, data: ExerciseSubmitRequest,
-                     user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Submit exercise answers. Records each question in history so it never repeats."""
+def submit_exercises(
+    course_id: str, data: ExerciseSubmitRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
+    """Submit exercise answers. Records each question in history so it never repeats.
+
+    Seguridad (fix C3): el campo `correctAnswer` enviado por el cliente es
+    ignorado. El servidor re-valida contra CourseQuiz.questions persistido
+    en BD, indexando por hash SHA256 de la pregunta (helper _hash_question).
+    Ref: docs/plans/hardening-quizzes-c3/plan.md — Opción B.
+    """
     course = db.query(Course).filter(Course.id == course_id).first()
     if not course:
         raise HTTPException(404, "Curso no encontrado")
+
+    # Fix C3 (Opción B): construir índice {hash → pregunta} desde BD.
+    # El `correctAnswer` enviado por el cliente NO se usa para validar.
+    quiz = db.query(CourseQuiz).filter(CourseQuiz.course_id == course_id).first()
+    pool = json.loads(quiz.questions or "[]") if quiz else []
+    by_hash: dict = {_hash_question(q["question"]): q for q in pool}
 
     questions = data.questions
     answers = data.answers
@@ -987,51 +1555,86 @@ def submit_exercises(course_id: str, data: ExerciseSubmitRequest,
 
     for i, q in enumerate(questions):
         user_answer = answers.get(str(i))
-        is_correct = user_answer == q.get("correctAnswer")
-        if is_correct:
-            correct += 1
 
-        # Record in exercise history
+        # Buscar la pregunta real en BD por hash de su texto
         q_hash = _hash_question(q["question"])
-        existing = db.query(UserExerciseHistory).filter(
-            UserExerciseHistory.user_id == user.id,
-            UserExerciseHistory.course_id == course_id,
-            UserExerciseHistory.question_hash == q_hash,
-        ).first()
-        if not existing:
-            db.add(UserExerciseHistory(
-                id=gen_id(),
-                user_id=user.id,
-                course_id=course_id,
-                question_hash=q_hash,
-                was_correct=is_correct,
-            ))
+        real_q = by_hash.get(q_hash)
 
-        results.append({
+        if real_q is None:
+            # Pregunta no existe en BD: podría ser inventada o de un pool rotado.
+            # Marca inválida: no cuenta como correcta, no se registra en historial.
+            is_correct = False
+            real_answer: str | None = None
+            invalid = True
+        else:
+            real_answer = real_q.get("correctAnswer")
+            is_correct = user_answer == real_answer
+            invalid = False
+            if is_correct:
+                correct += 1
+
+        # Registrar en historial solo si la pregunta es legítima (existe en BD)
+        if not invalid:
+            existing = (
+                db.query(UserExerciseHistory)
+                .filter(
+                    UserExerciseHistory.user_id == user.id,
+                    UserExerciseHistory.course_id == course_id,
+                    UserExerciseHistory.question_hash == q_hash,
+                )
+                .first()
+            )
+            if not existing:
+                db.add(
+                    UserExerciseHistory(
+                        id=gen_id(),
+                        user_id=user.id,
+                        course_id=course_id,
+                        question_hash=q_hash,
+                        was_correct=is_correct,
+                    )
+                )
+
+        result: dict = {
             "question": q["question"],
             "userAnswer": user_answer,
-            "correctAnswer": q.get("correctAnswer"),
+            # Se devuelve la respuesta correcta REAL (de BD), no la del cliente.
+            # I1: si real_answer es None (pregunta inválida) se devuelve None,
+            # que el frontend debe manejar como "" para no romper la UI.
+            "correctAnswer": real_answer,
             "isCorrect": is_correct,
-            "explanation": q.get("explanation", ""),
-        })
+            "explanation": real_q.get("explanation", "") if real_q else "",
+        }
+        if invalid:
+            result["invalid"] = True
+        results.append(result)
 
     # Award 10 XP for completing an exercise set
     from gamification import award_xp
+
     award_xp(user, 10, db)
     db.commit()
 
     score = round((correct / max(len(questions), 1)) * 100)
 
     # Updated stats
-    total_answered = db.query(UserExerciseHistory).filter(
-        UserExerciseHistory.user_id == user.id,
-        UserExerciseHistory.course_id == course_id,
-    ).count()
-    total_correct_all = db.query(UserExerciseHistory).filter(
-        UserExerciseHistory.user_id == user.id,
-        UserExerciseHistory.course_id == course_id,
-        UserExerciseHistory.was_correct == True,
-    ).count()
+    total_answered = (
+        db.query(UserExerciseHistory)
+        .filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+        )
+        .count()
+    )
+    total_correct_all = (
+        db.query(UserExerciseHistory)
+        .filter(
+            UserExerciseHistory.user_id == user.id,
+            UserExerciseHistory.course_id == course_id,
+            UserExerciseHistory.was_correct == True,
+        )
+        .count()
+    )
 
     return {
         "score": score,
@@ -1049,15 +1652,16 @@ def submit_exercises(course_id: str, data: ExerciseSubmitRequest,
 
 @router.get("/certificates/my")
 def my_certificates(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    completed = db.query(UserCourseProgress, Course).join(
-        Course, Course.id == UserCourseProgress.course_id
-    ).filter(
-        UserCourseProgress.user_id == user.id,
-        UserCourseProgress.completed == True
-    ).all()
+    completed = (
+        db.query(UserCourseProgress, Course)
+        .join(Course, Course.id == UserCourseProgress.course_id)
+        .filter(UserCourseProgress.user_id == user.id, UserCourseProgress.completed == True)
+        .all()
+    )
 
     # Enrich with Certificate table data (verification code, PDF)
     from database import Certificate
+
     cert_map = {}
     cert_ids = [p.certificate_id for p, c in completed if p.certificate_id]
     if cert_ids:
@@ -1070,25 +1674,33 @@ def my_certificates(user: User = Depends(get_current_user), db: Session = Depend
     for p, c in completed:
         # Try to find matching Certificate record
         cert_record = cert_map.get(p.certificate_id) or cert_map.get(c.id)
-        result.append({
-            "certificateId": p.certificate_id,
-            "courseId": c.id,
-            "courseTitle": c.title, "courseEmoji": c.emoji,
-            "courseCategory": c.category,
-            "courseDifficulty": c.difficulty,
-            "estimatedMinutes": c.estimated_minutes,
-            "lessonCount": c.lesson_count,
-            "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
-            "startedAt": p.started_at.isoformat() if p.started_at else "",
-            "userName": f"{user.first_name} {user.last_name}",
-            # Verified certificate data
-            "certCode": cert_record.certificate_code if cert_record else None,
-            "certId": cert_record.id if cert_record else None,
-            "hasPdf": bool(cert_record and cert_record.pdf_path) if cert_record else False,
-            "verifyUrl": f"https://conniku.com/cert/{cert_record.certificate_code}" if cert_record else None,
-            "hours": cert_record.hours_completed if cert_record else c.estimated_minutes // 60 if c.estimated_minutes else 0,
-            "grade": cert_record.final_grade if cert_record else p.quiz_score,
-        })
+        result.append(
+            {
+                "certificateId": p.certificate_id,
+                "courseId": c.id,
+                "courseTitle": c.title,
+                "courseEmoji": c.emoji,
+                "courseCategory": c.category,
+                "courseDifficulty": c.difficulty,
+                "estimatedMinutes": c.estimated_minutes,
+                "lessonCount": c.lesson_count,
+                "score": p.quiz_score,
+                "completedAt": p.completed_at.isoformat() if p.completed_at else "",
+                "startedAt": p.started_at.isoformat() if p.started_at else "",
+                "userName": f"{user.first_name} {user.last_name}",
+                # Verified certificate data
+                "certCode": cert_record.certificate_code if cert_record else None,
+                "certId": cert_record.id if cert_record else None,
+                "hasPdf": bool(cert_record and cert_record.pdf_path) if cert_record else False,
+                "verifyUrl": f"https://conniku.com/cert/{cert_record.certificate_code}" if cert_record else None,
+                "hours": cert_record.hours_completed
+                if cert_record
+                else c.estimated_minutes // 60
+                if c.estimated_minutes
+                else 0,
+                "grade": cert_record.final_grade if cert_record else p.quiz_score,
+            }
+        )
     return result
 
 
@@ -1098,33 +1710,40 @@ def user_certificates(user_id: str, db: Session = Depends(get_db)):
     if not u:
         raise HTTPException(404, "Usuario no encontrado")
 
-    completed = db.query(UserCourseProgress, Course).join(
-        Course, Course.id == UserCourseProgress.course_id
-    ).filter(
-        UserCourseProgress.user_id == user_id,
-        UserCourseProgress.completed == True
-    ).all()
+    completed = (
+        db.query(UserCourseProgress, Course)
+        .join(Course, Course.id == UserCourseProgress.course_id)
+        .filter(UserCourseProgress.user_id == user_id, UserCourseProgress.completed == True)
+        .all()
+    )
 
-    return [{
-        "certificateId": p.certificate_id,
-        "courseId": c.id,
-        "courseTitle": c.title, "courseEmoji": c.emoji,
-        "courseCategory": c.category,
-        "courseDifficulty": c.difficulty,
-        "estimatedMinutes": c.estimated_minutes,
-        "lessonCount": c.lesson_count,
-        "score": p.quiz_score, "completedAt": p.completed_at.isoformat() if p.completed_at else "",
-        "startedAt": p.started_at.isoformat() if p.started_at else "",
-        "userName": f"{u.first_name} {u.last_name}",
-    } for p, c in completed]
+    return [
+        {
+            "certificateId": p.certificate_id,
+            "courseId": c.id,
+            "courseTitle": c.title,
+            "courseEmoji": c.emoji,
+            "courseCategory": c.category,
+            "courseDifficulty": c.difficulty,
+            "estimatedMinutes": c.estimated_minutes,
+            "lessonCount": c.lesson_count,
+            "score": p.quiz_score,
+            "completedAt": p.completed_at.isoformat() if p.completed_at else "",
+            "startedAt": p.started_at.isoformat() if p.started_at else "",
+            "userName": f"{u.first_name} {u.last_name}",
+        }
+        for p, c in completed
+    ]
 
 
 # ─── CEO: Course Certification Management ──────────────────
+
 
 class AdminCertifyRequest(BaseModel):
     user_id: str
     course_ids: list[str]
     score_override: int = 100  # default 100%
+
 
 @router.get("/admin/progress-overview")
 def admin_progress_overview(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -1136,11 +1755,13 @@ def admin_progress_overview(user: User = Depends(get_current_user), db: Session 
     courses = db.query(Course).order_by(Course.title).all()
 
     # Get all progress records with user info
-    progress_records = db.query(UserCourseProgress, User, Course).join(
-        User, User.id == UserCourseProgress.user_id
-    ).join(
-        Course, Course.id == UserCourseProgress.course_id
-    ).order_by(desc(UserCourseProgress.started_at)).all()
+    progress_records = (
+        db.query(UserCourseProgress, User, Course)
+        .join(User, User.id == UserCourseProgress.user_id)
+        .join(Course, Course.id == UserCourseProgress.course_id)
+        .order_by(desc(UserCourseProgress.started_at))
+        .all()
+    )
 
     # Build user progress map
     users_map: dict = {}
@@ -1196,7 +1817,9 @@ def admin_progress_overview(user: User = Depends(get_current_user), db: Session 
 
 
 @router.post("/admin/certify")
-def admin_certify_users(req: AdminCertifyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def admin_certify_users(
+    req: AdminCertifyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """CEO can manually certify a user for specific courses."""
     if not user.is_admin:
         raise HTTPException(403, "Solo administradores")
@@ -1212,10 +1835,11 @@ def admin_certify_users(req: AdminCertifyRequest, user: User = Depends(get_curre
             continue
 
         # Get or create progress
-        progress = db.query(UserCourseProgress).filter(
-            UserCourseProgress.user_id == req.user_id,
-            UserCourseProgress.course_id == course_id
-        ).first()
+        progress = (
+            db.query(UserCourseProgress)
+            .filter(UserCourseProgress.user_id == req.user_id, UserCourseProgress.course_id == course_id)
+            .first()
+        )
 
         if not progress:
             progress = UserCourseProgress(
@@ -1239,14 +1863,17 @@ def admin_certify_users(req: AdminCertifyRequest, user: User = Depends(get_curre
 
         # Award XP
         from gamification import award_xp
+
         award_xp(target_user, 30, db)
 
-        certified.append({
-            "courseId": course_id,
-            "courseTitle": course.title,
-            "certificateId": progress.certificate_id,
-            "score": req.score_override,
-        })
+        certified.append(
+            {
+                "courseId": course_id,
+                "courseTitle": course.title,
+                "certificateId": progress.certificate_id,
+                "score": req.score_override,
+            }
+        )
 
     db.commit()
 
@@ -1260,15 +1887,18 @@ def admin_certify_users(req: AdminCertifyRequest, user: User = Depends(get_curre
 
 
 @router.post("/admin/revoke-certificate")
-def admin_revoke_certificate(user_id: str, course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def admin_revoke_certificate(
+    user_id: str, course_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """CEO can revoke a certificate."""
     if not user.is_admin:
         raise HTTPException(403, "Solo administradores")
 
-    progress = db.query(UserCourseProgress).filter(
-        UserCourseProgress.user_id == user_id,
-        UserCourseProgress.course_id == course_id
-    ).first()
+    progress = (
+        db.query(UserCourseProgress)
+        .filter(UserCourseProgress.user_id == user_id, UserCourseProgress.course_id == course_id)
+        .first()
+    )
 
     if not progress:
         raise HTTPException(404, "Progreso no encontrado")
@@ -1285,16 +1915,29 @@ def admin_revoke_certificate(user_id: str, course_id: str, user: User = Depends(
 
 # ─── Student CV ─────────────────────────────────────────────
 
+
 @router.get("/cv")
 def get_my_cv(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     cv = db.query(StudentCV).filter(StudentCV.user_id == user.id).first()
     if not cv:
-        return {"headline": "", "aboutMe": "", "skills": [], "tools": [], "languagesSpoken": [],
-                "experience": [], "projectsPortfolio": [], "volunteering": [],
-                "interests": [], "testimonials": [], "visibility": "public"}
+        return {
+            "headline": "",
+            "aboutMe": "",
+            "skills": [],
+            "tools": [],
+            "languagesSpoken": [],
+            "experience": [],
+            "projectsPortfolio": [],
+            "volunteering": [],
+            "interests": [],
+            "testimonials": [],
+            "visibility": "public",
+        }
     return {
-        "headline": cv.headline or "", "aboutMe": cv.about_me or "",
-        "skills": json.loads(cv.skills or "[]"), "tools": json.loads(cv.tools or "[]"),
+        "headline": cv.headline or "",
+        "aboutMe": cv.about_me or "",
+        "skills": json.loads(cv.skills or "[]"),
+        "tools": json.loads(cv.tools or "[]"),
         "languagesSpoken": json.loads(cv.languages_spoken or "[]"),
         "experience": json.loads(cv.experience or "[]"),
         "projectsPortfolio": json.loads(cv.projects_portfolio or "[]"),
@@ -1312,17 +1955,28 @@ def update_cv(data: dict, user: User = Depends(get_current_user), db: Session = 
         cv = StudentCV(id=gen_id(), user_id=user.id)
         db.add(cv)
 
-    if "headline" in data: cv.headline = data["headline"]
-    if "aboutMe" in data: cv.about_me = data["aboutMe"]
-    if "skills" in data: cv.skills = json.dumps(data["skills"])
-    if "tools" in data: cv.tools = json.dumps(data["tools"])
-    if "languagesSpoken" in data: cv.languages_spoken = json.dumps(data["languagesSpoken"])
-    if "experience" in data: cv.experience = json.dumps(data["experience"])
-    if "projectsPortfolio" in data: cv.projects_portfolio = json.dumps(data["projectsPortfolio"])
-    if "volunteering" in data: cv.volunteering = json.dumps(data["volunteering"])
-    if "interests" in data: cv.interests = json.dumps(data["interests"])
-    if "testimonials" in data: cv.testimonials = json.dumps(data["testimonials"])
-    if "visibility" in data: cv.visibility = data["visibility"]
+    if "headline" in data:
+        cv.headline = data["headline"]
+    if "aboutMe" in data:
+        cv.about_me = data["aboutMe"]
+    if "skills" in data:
+        cv.skills = json.dumps(data["skills"])
+    if "tools" in data:
+        cv.tools = json.dumps(data["tools"])
+    if "languagesSpoken" in data:
+        cv.languages_spoken = json.dumps(data["languagesSpoken"])
+    if "experience" in data:
+        cv.experience = json.dumps(data["experience"])
+    if "projectsPortfolio" in data:
+        cv.projects_portfolio = json.dumps(data["projectsPortfolio"])
+    if "volunteering" in data:
+        cv.volunteering = json.dumps(data["volunteering"])
+    if "interests" in data:
+        cv.interests = json.dumps(data["interests"])
+    if "testimonials" in data:
+        cv.testimonials = json.dumps(data["testimonials"])
+    if "visibility" in data:
+        cv.visibility = data["visibility"]
     cv.updated_at = datetime.utcnow()
     db.commit()
     return {"status": "updated"}
@@ -1339,24 +1993,30 @@ def get_user_cv(user_id: str, user: User = Depends(get_current_user), db: Sessio
         return None
     if cv.visibility == "friends":
         from database import Friendship
-        is_friend = db.query(Friendship).filter(
-            ((Friendship.requester_id == user.id) & (Friendship.addressee_id == user_id)) |
-            ((Friendship.requester_id == user_id) & (Friendship.addressee_id == user.id)),
-            Friendship.status == "accepted"
-        ).first()
+
+        is_friend = (
+            db.query(Friendship)
+            .filter(
+                ((Friendship.requester_id == user.id) & (Friendship.addressee_id == user_id))
+                | ((Friendship.requester_id == user_id) & (Friendship.addressee_id == user.id)),
+                Friendship.status == "accepted",
+            )
+            .first()
+        )
         if not is_friend and user_id != user.id:
             return {"restricted": True, "visibility": "friends"}
     if cv.visibility == "recruiters_only":
         from database import RecruiterProfile
-        is_recruiter = db.query(RecruiterProfile).filter(
-            RecruiterProfile.user_id == user.id
-        ).first()
+
+        is_recruiter = db.query(RecruiterProfile).filter(RecruiterProfile.user_id == user.id).first()
         if not is_recruiter and user_id != user.id:
             return {"restricted": True, "visibility": "recruiters_only"}
 
     return {
-        "headline": cv.headline or "", "aboutMe": cv.about_me or "",
-        "skills": json.loads(cv.skills or "[]"), "tools": json.loads(cv.tools or "[]"),
+        "headline": cv.headline or "",
+        "aboutMe": cv.about_me or "",
+        "skills": json.loads(cv.skills or "[]"),
+        "tools": json.loads(cv.tools or "[]"),
         "languagesSpoken": json.loads(cv.languages_spoken or "[]"),
         "experience": json.loads(cv.experience or "[]"),
         "projectsPortfolio": json.loads(cv.projects_portfolio or "[]"),
@@ -1400,20 +2060,22 @@ def list_public_cvs(
             if not match:
                 continue
 
-        results.append({
-            "userId": u.id,
-            "firstName": u.first_name,
-            "lastName": u.last_name,
-            "username": u.username,
-            "avatar": u.avatar,
-            "university": u.university or "",
-            "career": u.career or "",
-            "headline": cv.headline or "",
-            "aboutMe": cv.about_me or "",
-            "skills": json.loads(cv.skills or "[]"),
-            "tools": json.loads(cv.tools or "[]"),
-            "experience": json.loads(cv.experience or "[]"),
-            "updatedAt": cv.updated_at.isoformat() if cv.updated_at else "",
-        })
+        results.append(
+            {
+                "userId": u.id,
+                "firstName": u.first_name,
+                "lastName": u.last_name,
+                "username": u.username,
+                "avatar": u.avatar,
+                "university": u.university or "",
+                "career": u.career or "",
+                "headline": cv.headline or "",
+                "aboutMe": cv.about_me or "",
+                "skills": json.loads(cv.skills or "[]"),
+                "tools": json.loads(cv.tools or "[]"),
+                "experience": json.loads(cv.experience or "[]"),
+                "updatedAt": cv.updated_at.isoformat() if cv.updated_at else "",
+            }
+        )
 
     return {"cvs": results, "total": len(results)}
