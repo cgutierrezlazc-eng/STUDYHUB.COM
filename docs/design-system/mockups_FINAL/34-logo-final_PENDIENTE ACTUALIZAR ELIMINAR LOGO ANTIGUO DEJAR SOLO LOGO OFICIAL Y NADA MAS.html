@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Conniku — Logo final (v2.0)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --paper:#F5F4EF; --paper-2:#EBE9E1; --ink:#0D0F10; --ink-2:#1E2023;
+    --lime:#D9FF3A; --lime-ink:#181F08; --pink:#FF4D3A; --cream:#FFE9B8;
+    --violet:#6B4EFF; --cyan:#00C2FF; --orange:#FF4A1C;
+    --text:#0D0F10; --text-2:#4B4F52; --text-3:#696C6F; --line:#DAD8D0;
+    --sh:0 1px 2px rgba(13,15,16,.06), 0 8px 24px rgba(13,15,16,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--text);
+    font-family:'Funnel Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-feature-settings:"ss01","ss02","cv11";
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .banner{
+    background:var(--ink);color:var(--lime);
+    text-align:center;padding:12px 20px;
+    font-family:'Geist Mono',monospace;font-size:12px;
+    letter-spacing:.08em;text-transform:uppercase;
+  }
+  .banner strong{color:var(--orange);margin-right:6px}
+
+  .wrap{max-width:1280px;margin:0 auto;padding:56px 40px 120px}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+  .crumbs{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase}
+
+  h1.hero{
+    font-size:clamp(60px,9vw,128px);font-weight:900;letter-spacing:-5px;
+    line-height:.92;margin:0 0 20px;max-width:1000px;
+  }
+  h1.hero em{font-style:normal;background:var(--lime);color:var(--lime-ink);padding:0 14px;border-radius:14px;display:inline-block;transform:rotate(-1deg)}
+
+  .sub{font-size:20px;line-height:1.5;color:var(--text-2);max-width:760px;margin:0 0 16px;font-weight:500}
+
+  section{margin-top:84px}
+  .section-title{display:flex;align-items:baseline;gap:16px;margin:0 0 28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .section-title .num{font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-3);letter-spacing:.08em}
+  .section-title h2{margin:0;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .section-title .kicker{margin-left:auto;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase}
+
+  /* ═══════ WORDMARK OFICIAL (Variante C) ═══════ */
+  /* Reglas inviolables:
+     - "connik" en #0D0F10 (ink)
+     - Dentro del tile lima (#D9FF3A): la "u" en #0D0F10 + punto en #FF4A1C
+     - La "u" SIEMPRE es #0D0F10, nunca otro color
+  */
+  .wm{
+    font-family:'Funnel Display',sans-serif;
+    font-weight:900;
+    color:var(--ink);
+    letter-spacing:-.055em;
+    line-height:1;
+    display:inline-flex;
+    align-items:baseline;
+    white-space:nowrap;
+  }
+  .wm .u-pack{
+    display:inline-flex;
+    align-items:baseline;
+    background:var(--lime);
+    padding:.07em .14em .07em .09em;
+    border-radius:.2em;
+    color:var(--ink); /* u = ink, inviolable */
+  }
+  .wm .u-pack .dot{color:var(--orange)}
+  .wm.on-ink{color:var(--paper)}
+  .wm.on-ink .u-pack{color:var(--ink)} /* la u SIGUE en ink sobre ink */
+  .wm.on-pink{color:#fff}
+  .wm.on-pink .u-pack{color:var(--ink)}
+  .wm.on-cream{color:var(--ink)}
+  .wm.on-cream .u-pack{color:var(--ink)}
+  .wm.on-violet{color:#fff}
+  .wm.on-violet .u-pack{color:var(--ink)}
+  .wm.on-cyan{color:var(--ink)}
+  .wm.on-cyan .u-pack{color:var(--ink)}
+
+  .wm.size-xxl{font-size:140px}
+  .wm.size-xl{font-size:96px}
+  .wm.size-lg{font-size:64px}
+  .wm.size-md{font-size:44px}
+  .wm.size-sm{font-size:28px}
+  .wm.size-xs{font-size:20px}
+
+  /* ═══════ HERO CARD ═══════ */
+  .hero-card{
+    background:#fff;border:1px solid var(--line);
+    border-radius:32px;padding:72px 56px;
+    display:flex;align-items:center;justify-content:center;
+    min-height:380px;position:relative;overflow:hidden;
+    box-shadow:var(--sh);
+  }
+  .hero-card::before{content:"";position:absolute;top:-80px;left:-80px;width:260px;height:260px;border-radius:50%;background:var(--cream);opacity:.35}
+  .hero-card::after{content:"";position:absolute;bottom:-60px;right:-40px;width:180px;height:180px;border-radius:50%;background:var(--cyan);opacity:.2}
+  .hero-card > *{position:relative;z-index:1}
+
+  /* Backgrounds para pruebas */
+  .stage{background:#fff;border:1px solid var(--line);border-radius:22px;padding:48px;display:flex;align-items:center;justify-content:center;min-height:220px;position:relative}
+  .stage.paper{background:var(--paper)}
+  .stage.ink{background:var(--ink)}
+  .stage.pink{background:var(--pink)}
+  .stage.cream{background:var(--cream)}
+  .stage.violet{background:var(--violet)}
+  .stage.cyan{background:var(--cyan)}
+  .stage.lime{background:var(--lime)} /* borde caso: sobre lima el tile lima desaparece */
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  .bg-label{position:absolute;top:14px;left:18px;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-3);background:rgba(255,255,255,.75);padding:3px 8px;border-radius:4px;border:1px solid var(--line)}
+  .stage.ink .bg-label,.stage.pink .bg-label,.stage.violet .bg-label{background:rgba(13,15,16,.5);color:rgba(245,244,239,.7);border-color:rgba(245,244,239,.15)}
+
+  /* ═══════ APP ICON GRID ═══════ */
+  .appicon-row{display:grid;grid-template-columns:repeat(6,1fr);gap:18px;align-items:center}
+  .ai-card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+  .ai-stage{aspect-ratio:1;display:grid;place-items:center;padding:14px}
+  .ai-stage.ios{background:linear-gradient(135deg,#1d4c9e,#7b2cff)}
+  .ai-stage.android{background:linear-gradient(135deg,#4CAF50,#1976D2)}
+  .ai-stage.macos{background:linear-gradient(135deg,#E8E6DF,#C7C4BA)}
+  .ai-stage.watch{background:#000}
+  .ai-stage.win{background:#0078D4}
+  .ai-stage.paper{background:var(--paper-2)}
+  .ai-meta{padding:10px 14px;border-top:1px solid var(--line);text-align:center}
+  .ai-meta .n{font-size:12px;font-weight:700;display:block}
+  .ai-meta .s{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);margin-top:2px;display:block}
+
+  /* ═══════ ESCALA ═══════ */
+  .scale-row{
+    background:#fff;border:1px solid var(--line);border-radius:22px;
+    padding:40px;display:flex;align-items:baseline;justify-content:space-around;
+    gap:30px;flex-wrap:wrap;
+  }
+  .scale-row .slot{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .scale-row .slot .t{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+
+  /* ═══════ SPECS ═══════ */
+  .specs{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  .spec-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+  .spec-card h4{margin:0 0 14px;font-size:13px;font-family:'Geist Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .spec-card dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 20px}
+  .spec-card dt{font-size:13px;color:var(--text-2)}
+  .spec-card dd{margin:0;font-family:'Geist Mono',monospace;font-size:13px;font-weight:700}
+  .spec-card.colors dd .chip{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;margin-right:6px;border:1px solid rgba(0,0,0,.1)}
+
+  /* ═══════ UI CONTEXTO ═══════ */
+  .ui-card{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px}
+  .ui-stage{padding:18px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+  .ui-stage.dark{background:var(--ink);border-color:rgba(255,255,255,.08)}
+  .ui-meta{padding:10px 20px;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+  .fake-nav{display:flex;gap:24px;font-size:13px;color:var(--text-2);font-weight:500}
+  .fake-nav.dark{color:rgba(245,244,239,.6)}
+  .fake-cta{background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-size:12px;font-weight:700}
+  .fake-cta.lime{background:var(--lime);color:var(--lime-ink)}
+
+  /* Footer */
+  .decision{
+    margin-top:72px;background:var(--ink);color:var(--paper);
+    border-radius:20px;padding:32px;display:flex;gap:24px;align-items:center;
+    position:relative;overflow:hidden;
+  }
+  .decision::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:var(--lime);opacity:.08}
+  .decision .badge{width:52px;height:52px;border-radius:50%;background:var(--lime);color:var(--lime-ink);display:grid;place-items:center;font-weight:900;font-size:16px;flex-shrink:0;font-family:'Geist Mono',monospace;letter-spacing:-1px}
+  .decision h3{margin:0 0 6px;font-size:22px;font-weight:900;letter-spacing:-1px;color:var(--lime)}
+  .decision p{margin:0;font-size:14px;line-height:1.6;color:rgba(245,244,239,.85)}
+  .decision p strong{color:var(--paper)}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <strong>FINAL</strong> Logo oficial · Wordmark Variante C + App icon D · v2.0.0 · congelado
+</div>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="crumbs">conniku / design-system / logo final v2.0</div>
+    <div class="crumbs">2026-04-18 · decisión de Cristian</div>
+  </header>
+
+  <h1 class="hero">Este es <em>el logo</em>. Final.</h1>
+  <p class="sub">El tile lima ya no vive separado al inicio de la palabra. Ahora es parte del wordmark: encapsula la <strong>u</strong> y el <strong>punto</strong> final. Una sola pieza, una sola lectura, un solo símbolo.</p>
+  <p class="sub" style="color:var(--text-3);font-size:15px;margin-top:0">La "u" siempre va en tinta (#0D0F10). Sin excepción. Sobre cualquier fondo, el tile lima permanece, la u permanece tinta, el punto permanece naranja.</p>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- HERO: el wordmark final en tamaño grande -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="hero-card">
+      <div class="wm size-xxl">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 01 · Wordmark sobre todos los fondos de la paleta -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">01</span>
+      <h2>Wordmark · sobre cada fondo de la paleta</h2>
+      <span class="kicker">6 fondos · u siempre en ink</span>
+    </div>
+    <div class="grid-2">
+
+      <div class="stage paper">
+        <span class="bg-label">paper · #F5F4EF</span>
+        <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage ink">
+        <span class="bg-label">ink · #0D0F10</span>
+        <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage cream">
+        <span class="bg-label">cream · #FFE9B8</span>
+        <div class="wm size-xl on-cream">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage pink">
+        <span class="bg-label">pink · #FF4D3A</span>
+        <div class="wm size-xl on-pink">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage violet">
+        <span class="bg-label">violet · #6B4EFF</span>
+        <div class="wm size-xl on-violet">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage cyan">
+        <span class="bg-label">cyan · #00C2FF</span>
+        <div class="wm size-xl on-cyan">conn<span style="position:relative">i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 02 · Escala del wordmark -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">02</span>
+      <h2>Escala · del favicon al splash</h2>
+      <span class="kicker">20px → 140px</span>
+    </div>
+    <div class="scale-row">
+      <div class="slot">
+        <div class="wm size-xs">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">20px · inline text</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-sm">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">28px · sidebar</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">44px · nav</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-lg">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">64px · header</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">96px · hero</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-xxl">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="t">140px · splash</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 03 · APP ICON OFICIAL (Variante D) -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">03</span>
+      <h2>App icon · reducción oficial</h2>
+      <span class="kicker">tile lima + u grande + punto</span>
+    </div>
+    <p class="sub">Cuando el wordmark completo no cabe (favicon, App Store, tile de SO, Apple Watch), la reducción oficial es este tile: cuadrado lima redondeado, "u" grande centrada en tinta y punto naranja a su derecha. Sin el "connik" delante. El símbolo que Conniku proyecta al mundo.</p>
+
+    <!-- App icon grande hero -->
+    <div class="hero-card" style="min-height:320px">
+      <svg viewBox="0 0 100 100" width="240" height="240" style="border-radius:24px">
+        <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+        <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,-apple-system,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+      </svg>
+    </div>
+
+    <!-- Aplicación del app icon por plataforma -->
+    <div class="appicon-row" style="margin-top:28px">
+      <div class="ai-card">
+        <div class="ai-stage paper">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Base</span><span class="s">paper</span></div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-stage ios">
+          <svg viewBox="0 0 100 100" width="80" height="80" style="border-radius:22%">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">iOS</span><span class="s">1024 · 180</span></div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-stage android">
+          <svg viewBox="0 0 100 100" width="80" height="80" style="border-radius:50%">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Android</span><span class="s">adaptive</span></div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-stage macos">
+          <svg viewBox="0 0 100 100" width="80" height="80" style="border-radius:22%;filter:drop-shadow(0 8px 12px rgba(0,0,0,.2))">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">macOS</span><span class="s">squircle</span></div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-stage watch">
+          <svg viewBox="0 0 100 100" width="80" height="80" style="border-radius:50%">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Watch</span><span class="s">98 · circular</span></div>
+      </div>
+      <div class="ai-card">
+        <div class="ai-stage win">
+          <svg viewBox="0 0 100 100" width="80" height="80">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Windows</span><span class="s">tile</span></div>
+      </div>
+    </div>
+
+    <!-- Escala del app icon -->
+    <div class="scale-row" style="margin-top:18px">
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="16" height="16" style="border-radius:4px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">16 · favicon</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="24" height="24" style="border-radius:5px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">24 · toolbar</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="32" height="32" style="border-radius:7px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">32 · favicon</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="48" height="48" style="border-radius:10px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">48 · ext</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="72" height="72" style="border-radius:16px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">72 · app list</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="128" height="128" style="border-radius:28px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">128 · chrome store</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 04 · Aplicación en UI real -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">04</span>
+      <h2>Aplicación en producto</h2>
+      <span class="kicker">header · sidebar · footer · splash</span>
+    </div>
+
+    <!-- Header web (light) -->
+    <div class="ui-card">
+      <div class="ui-stage">
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="fake-nav">
+          <span>Producto</span><span>Planes</span><span>Tutores</span><span>Ayuda</span>
+        </div>
+        <div class="fake-cta">Entrar</div>
+      </div>
+      <div class="ui-meta">HEADER WEB · FONDO PAPER · WORDMARK 44PX</div>
+    </div>
+
+    <!-- Header web dark -->
+    <div class="ui-card">
+      <div class="ui-stage dark">
+        <div class="wm size-md on-ink">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div class="fake-nav dark">
+          <span>Producto</span><span>Planes</span><span>Tutores</span><span>Ayuda</span>
+        </div>
+        <div class="fake-cta lime">Entrar</div>
+      </div>
+      <div class="ui-meta">HEADER WEB DARK MODE · FONDO INK · WORDMARK 44PX</div>
+    </div>
+
+    <!-- Splash -->
+    <div class="ui-card">
+      <div class="ui-stage" style="padding:64px;flex-direction:column;gap:18px;background:var(--paper);border-bottom:1px solid var(--line)">
+        <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="wm size-lg">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div style="color:var(--text-3);font-size:13px;font-family:'Geist Mono',monospace;letter-spacing:.08em;margin-top:6px">Tu U entera. Una sola app.</div>
+      </div>
+      <div class="ui-meta">SPLASH SCREEN · APP ICON 120 + WORDMARK 64PX + TAGLINE</div>
+    </div>
+
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 05 · Specs técnicas -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">05</span>
+      <h2>Especificaciones técnicas</h2>
+      <span class="kicker">reglas inviolables</span>
+    </div>
+    <div class="specs">
+
+      <div class="spec-card colors">
+        <h4>Colores oficiales (sagrados)</h4>
+        <dl>
+          <dt>Tile lima (fondo u+punto)</dt>
+          <dd><span class="chip" style="background:#D9FF3A"></span>#D9FF3A</dd>
+          <dt>Letra "u" (siempre)</dt>
+          <dd><span class="chip" style="background:#0D0F10"></span>#0D0F10</dd>
+          <dt>Punto naranja (chispa)</dt>
+          <dd><span class="chip" style="background:#FF4A1C"></span>#FF4A1C</dd>
+          <dt>Resto del wordmark</dt>
+          <dd><span class="chip" style="background:#0D0F10"></span>#0D0F10 (o #F5F4EF en dark)</dd>
+        </dl>
+      </div>
+
+      <div class="spec-card">
+        <h4>Tipografía</h4>
+        <dl>
+          <dt>Familia</dt><dd>Funnel Display</dd>
+          <dt>Peso</dt><dd>900 (Black)</dd>
+          <dt>Tracking</dt><dd>-5.5%</dd>
+          <dt>Wordmark</dt><dd>conniku.</dd>
+          <dt>"u" en pack</dt><dd>mayúscula visual, lowercase real</dd>
+        </dl>
+      </div>
+
+      <div class="spec-card">
+        <h4>Tile pack (u + punto)</h4>
+        <dl>
+          <dt>Background</dt><dd>#D9FF3A</dd>
+          <dt>Padding top/bot</dt><dd>.07em</dd>
+          <dt>Padding left</dt><dd>.09em</dd>
+          <dt>Padding right</dt><dd>.14em</dd>
+          <dt>Border radius</dt><dd>.20em</dd>
+          <dt>Contiene</dt><dd>u + punto juntos</dd>
+        </dl>
+      </div>
+
+      <div class="spec-card">
+        <h4>App icon (reducción)</h4>
+        <dl>
+          <dt>Canvas</dt><dd>cuadrado</dd>
+          <dt>Border radius</dt><dd>22% del lado</dd>
+          <dt>Fill completo</dt><dd>#D9FF3A</dd>
+          <dt>Letra "u"</dt><dd>#0D0F10 · 84% del canvas · centrada</dd>
+          <dt>Punto</dt><dd>#FF4A1C · 6% del canvas · derecha baseline</dd>
+          <dt>Uso</dt><dd>favicon, App Store, Play Store, tile SO, watch</dd>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- 06 · Antes vs ahora -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">06</span>
+      <h2>Antes vs ahora</h2>
+      <span class="kicker">evolución del sistema</span>
+    </div>
+    <div class="grid-2">
+      <div class="stage" style="flex-direction:column;gap:12px;min-height:200px">
+        <span class="bg-label">v1.0.0 · deprecado</span>
+        <div style="display:flex;align-items:center;gap:14px">
+          <svg viewBox="0 0 100 100" width="72" height="72">
+            <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+            <mask id="oldM"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask>
+            <rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#oldM)"/>
+            <circle cx="58" cy="50" r="5" fill="#FF4A1C"/>
+          </svg>
+          <div style="font-size:50px;font-weight:900;letter-spacing:-2.5px;color:#0D0F10">conniku.</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-3);text-align:center;max-width:260px;line-height:1.4">Tile y wordmark vivían separados. Dos piezas a coordinar.</div>
+      </div>
+
+      <div class="stage" style="flex-direction:column;gap:12px;min-height:200px;background:var(--paper)">
+        <span class="bg-label" style="background:var(--lime);color:var(--lime-ink);border-color:var(--lime)">v2.0.0 · OFICIAL</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <div style="font-size:13px;color:var(--text-3);text-align:center;max-width:320px;line-height:1.4">Tile integrado: encapsula u + punto. Una sola pieza, una sola lectura.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <!-- Decisión de cierre -->
+  <!-- ═════════════════════════════════════════════════════════════ -->
+  <div class="decision">
+    <div class="badge">v2.0</div>
+    <div>
+      <h3>Logo oficial congelado</h3>
+      <p><strong>Wordmark:</strong> Variante C — tile envuelve u + punto. La "u" es siempre <strong>#0D0F10</strong>, sin excepción, sobre cualquier fondo. · <strong>App icon:</strong> Variante D — cuadro lima + u grande tinta centrada + punto naranja. · Si queda ok visualmente, el siguiente paso es actualizar <strong>LOGO.md</strong>, regenerar los 20 assets por plataforma con esta geometría, y reemplazar el logo en los 32 mockups existentes.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

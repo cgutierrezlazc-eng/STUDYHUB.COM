@@ -1,0 +1,37 @@
+<svg viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bgGrad" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#F5F4EF"/>
+      <stop offset="100%" stop-color="#EBE9E1"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- Splatter dots decorativos -->
+  <circle cx="180" cy="120" r="12" fill="#FF4D3A"/>
+  <circle cx="240" cy="90" r="6" fill="#6B4EFF"/>
+  <circle cx="1020" cy="140" r="14" fill="#00C2FF"/>
+  <circle cx="1080" cy="520" r="10" fill="#FFE9B8"/>
+  <circle cx="200" cy="540" r="8" fill="#D9FF3A"/>
+  <circle cx="150" cy="490" r="16" fill="#0D0F10"/>
+
+  <!-- App icon grande (tile v2.0) -->
+  <g transform="translate(100, 220)">
+    <rect width="180" height="180" rx="40" fill="#D9FF3A"/>
+    <text x="90" y="140" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="152" fill="#0D0F10" letter-spacing="-7">u</text>
+    <circle cx="153" cy="137" r="11" fill="#FF4A1C"/>
+  </g>
+
+  <!-- Tagline -->
+  <text x="340" y="300" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="96" fill="#0D0F10" letter-spacing="-4">Tu U entera.</text>
+  <text x="340" y="400" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="96" fill="#0D0F10" letter-spacing="-4">Una sola app.</text>
+
+  <!-- Highlight lime en "sola" -->
+  <rect x="567" y="345" width="180" height="68" rx="12" fill="#D9FF3A" transform="rotate(-1.2 657 379)"/>
+  <text x="577" y="400" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="96" fill="#181F08" letter-spacing="-4" transform="rotate(-1.2 657 379)">sola</text>
+
+  <!-- Footer wordmark integrado -->
+  <g font-family="Funnel Display, -apple-system, sans-serif" font-weight="700" font-size="28" letter-spacing="-.5">
+    <text x="340" y="520" fill="#696C6F">conniku.com</text>
+  </g>
+</svg>

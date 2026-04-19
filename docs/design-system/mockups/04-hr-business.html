@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku HR — Dashboard (business sobrio)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      /* Mismos ink colors del sistema base */
+      --ink: #0D0F10;
+      --ink-2: #2B2E30;
+      --ink-3: #696C6F;
+      --ink-4: #A0A3A7;
+
+      /* Business: fondo blanco limpio con calidez mínima */
+      --bg: #FFFFFF;
+      --bg-2: #FAFAF8;
+      --bg-3: #F4F4F2;
+      --border: #E5E4E0;
+      --border-soft: #EEEDE9;
+
+      /* Acento HR: violeta */
+      --accent: #6B4EFF;
+      --accent-soft: #F0EDFF;
+      --accent-hover: #5A3FE8;
+
+      /* Status colors */
+      --success: #10B981;
+      --success-soft: #ECFDF5;
+      --warning: #F59E0B;
+      --warning-soft: #FFFBEB;
+      --danger: #EF4444;
+      --danger-soft: #FEF2F2;
+
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --font-body: 'Funnel Display', -apple-system, system-ui, sans-serif;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--bg-2); color: var(--ink); font-family: var(--font-body); font-size: 14px; line-height: 1.4; }
+    body { min-height: 100vh; }
+    ::selection { background: var(--accent); color: #fff; }
+
+    /* Topbar business */
+    .topbar {
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 0 32px; height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .brand-logo { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .brand-text { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-display); }
+    .brand-conniku { font-weight: 600; font-size: 17px; letter-spacing: -.02em; color: var(--ink); }
+    .brand-product { font-weight: 800; font-size: 17px; letter-spacing: -.02em; color: var(--accent); }
+
+    .topbar-nav { display: flex; gap: 4px; flex: 1; justify-content: center; }
+    .tnav-link {
+      padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 14px;
+      color: var(--ink-2); cursor: pointer; transition: all 150ms var(--ease);
+    }
+    .tnav-link:hover { background: var(--bg-3); color: var(--ink); }
+    .tnav-link.active { background: var(--accent-soft); color: var(--accent); }
+
+    .topbar-right { display: flex; align-items: center; gap: 14px; }
+    .period-selector {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 8px; border: 1px solid var(--border);
+      font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); cursor: pointer;
+    }
+    .period-selector:hover { border-color: var(--accent); }
+    .period-selector .chev { color: var(--ink-3); font-size: 10px; }
+
+    .user-chip {
+      display: flex; align-items: center; gap: 10px; padding: 4px 4px 4px 12px;
+      border: 1px solid var(--border); border-radius: 999px; cursor: pointer;
+    }
+    .user-chip:hover { border-color: var(--ink); }
+    .user-chip .name { font-weight: 600; font-size: 13px; }
+    .user-chip .avatar { width: 30px; height: 30px; background: var(--accent); color: #fff; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+
+    /* Layout with sidebar */
+    .layout { display: grid; grid-template-columns: 240px 1fr; min-height: calc(100vh - 64px); }
+    .sidebar { background: var(--bg); border-right: 1px solid var(--border); padding: 24px 0; }
+    .nav-section { padding: 0 16px 20px; }
+    .nav-section-title { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); padding: 0 8px 6px; }
+    .nav-item {
+      padding: 8px 12px; border-radius: 8px; font-weight: 500; font-size: 14px;
+      color: var(--ink-2); cursor: pointer; transition: all 150ms var(--ease);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-item:hover { background: var(--bg-3); color: var(--ink); }
+    .nav-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+    .nav-item .badge { background: var(--bg-3); color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; padding: 2px 6px; border-radius: 999px; letter-spacing: 0; }
+    .nav-item.active .badge { background: var(--accent); color: #fff; }
+
+    /* Main content */
+    .content { padding: 32px 40px; max-width: 1200px; }
+    .page-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 28px; }
+    .page-title { font-family: var(--font-display); font-weight: 700; font-size: 32px; letter-spacing: -.025em; margin-bottom: 6px; }
+    .page-subtitle { color: var(--ink-3); font-size: 14px; }
+    .page-actions { display: flex; gap: 10px; }
+    .btn {
+      font-family: var(--font-display); border-radius: 8px; padding: 9px 16px;
+      font-weight: 600; font-size: 14px; cursor: pointer; border: 0;
+      transition: all 150ms var(--ease); display: flex; align-items: center; gap: 8px;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: var(--bg); color: var(--ink); border: 1px solid var(--border); }
+    .btn-secondary:hover { border-color: var(--ink); }
+
+    /* KPI grid */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+    .kpi {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 20px 22px; transition: border-color 150ms var(--ease);
+    }
+    .kpi:hover { border-color: var(--ink-4); }
+    .kpi-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+    .kpi-value { font-family: var(--font-display); font-weight: 700; font-size: 34px; letter-spacing: -.02em; line-height: 1.1; font-feature-settings: 'tnum'; }
+    .kpi-delta { display: inline-flex; align-items: center; gap: 4px; margin-top: 8px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: .02em; padding: 3px 8px; border-radius: 999px; }
+    .delta-up { background: var(--success-soft); color: var(--success); }
+    .delta-down { background: var(--danger-soft); color: var(--danger); }
+    .delta-flat { background: var(--bg-3); color: var(--ink-3); }
+    .kpi-note { color: var(--ink-3); font-size: 12px; margin-top: 6px; }
+
+    /* Two-column layout */
+    .two-col { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; }
+
+    /* Liquidaciones table card */
+    .card {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 22px; border-bottom: 1px solid var(--border-soft);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .card-title { font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: -.01em; }
+    .card-subtitle { color: var(--ink-3); font-size: 12px; margin-top: 2px; }
+    .card-meta { display: flex; align-items: center; gap: 10px; }
+    .status-pill { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+    .status-open { background: var(--warning-soft); color: var(--warning); }
+    .status-closed { background: var(--success-soft); color: var(--success); }
+    .link-ghost { color: var(--accent); font-weight: 600; font-size: 13px; cursor: pointer; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; font-feature-settings: 'tnum'; }
+    th {
+      background: var(--bg-2);
+      padding: 11px 22px; text-align: left;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 14px 22px; border-bottom: 1px solid var(--border-soft);
+      font-size: 14px;
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: var(--bg-2); }
+    td.employee { font-weight: 600; }
+    td.employee .subtitle { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); font-weight: 400; letter-spacing: .02em; margin-top: 2px; }
+    td.money { font-family: var(--font-mono); font-weight: 600; text-align: right; }
+    td.money.net { font-family: var(--font-display); font-weight: 700; font-size: 15px; }
+    td.retencion { text-align: right; }
+    td.retencion .retencion-val { font-family: var(--font-mono); font-weight: 600; font-size: 13px; }
+    td.retencion .retencion-cite { font-family: var(--font-mono); font-size: 9.5px; color: var(--ink-3); letter-spacing: .05em; margin-top: 2px; display: block; }
+    td .status-mini { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; font-weight: 600; }
+    td .status-mini::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+    td .status-mini.ok::before { background: var(--success); }
+    td .status-mini.pend::before { background: var(--warning); }
+
+    /* Right side: activity + next actions */
+    .right-col { display: flex; flex-direction: column; gap: 20px; }
+
+    .activity-list { padding: 6px 0; }
+    .activity-row {
+      padding: 11px 22px; display: flex; gap: 12px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .activity-row:last-child { border-bottom: 0; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+    .dot-create { background: var(--accent); }
+    .dot-edit { background: var(--warning); }
+    .dot-approve { background: var(--success); }
+    .dot-sync { background: var(--ink-4); }
+    .activity-body { flex: 1; }
+    .activity-body .user { font-weight: 600; }
+    .activity-body .text { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+    .activity-body .time { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; color: var(--ink-3); text-transform: uppercase; margin-top: 2px; }
+
+    /* Next actions */
+    .action-item {
+      padding: 14px 22px; border-bottom: 1px solid var(--border-soft);
+      display: flex; gap: 14px; align-items: start; cursor: pointer;
+      transition: background 150ms var(--ease);
+    }
+    .action-item:hover { background: var(--bg-2); }
+    .action-item:last-child { border-bottom: 0; }
+    .action-icon {
+      width: 36px; height: 36px; border-radius: 8px; display: grid; place-items: center;
+      font-weight: 700; font-family: var(--font-display); flex-shrink: 0; font-size: 14px;
+    }
+    .action-icon.urgent { background: var(--danger-soft); color: var(--danger); }
+    .action-icon.soon { background: var(--warning-soft); color: var(--warning); }
+    .action-icon.normal { background: var(--accent-soft); color: var(--accent); }
+    .action-content { flex: 1; }
+    .action-title { font-weight: 600; font-size: 14px; line-height: 1.3; }
+    .action-due { font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; margin-top: 4px; }
+    .action-due.urgent { color: var(--danger); }
+    .action-due.soon { color: var(--warning); }
+    .action-due.normal { color: var(--ink-3); }
+
+    /* Compliance strip */
+    .compliance-strip {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+      padding: 18px 22px; margin-top: 20px;
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
+    }
+    .comp-item { border-left: 2px solid var(--border); padding-left: 16px; }
+    .comp-item.ok { border-color: var(--success); }
+    .comp-item.warn { border-color: var(--warning); }
+    .comp-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+    .comp-status { font-weight: 700; font-size: 14px; font-family: var(--font-display); }
+    .comp-cite { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); margin-top: 3px; letter-spacing: .02em; }
+
+    @media (max-width: 1080px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .compliance-strip { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-logo"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckA_04_hr_business" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckA_04_hr_business)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="brand-text">
+        <span class="brand-conniku">Conniku</span>
+        <span class="brand-product">HR</span>
+      </div>
+    </div>
+    <div class="topbar-nav">
+      <div class="tnav-link active">Personas</div>
+      <div class="tnav-link">Contratos</div>
+      <div class="tnav-link">Asistencia</div>
+      <div class="tnav-link">Vacaciones</div>
+      <div class="tnav-link">Desempeño</div>
+      <div class="tnav-link">Reclutamiento</div>
+    </div>
+    <div class="topbar-right">
+      <div class="period-selector">
+        <span>Abril 2026</span>
+        <span class="chev">▾</span>
+      </div>
+      <div class="user-chip">
+        <span class="name">Cristian G.</span>
+        <div class="avatar">CG</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+
+    <aside class="sidebar">
+      <div class="nav-section">
+        <div class="nav-section-title">Principal</div>
+        <div class="nav-item active">Dashboard <span class="badge">3</span></div>
+        <div class="nav-item">Directorio</div>
+        <div class="nav-item">Organigrama</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Gestión</div>
+        <div class="nav-item">Onboarding <span class="badge">2</span></div>
+        <div class="nav-item">Documentos</div>
+        <div class="nav-item">Capacitación</div>
+        <div class="nav-item">Finiquitos</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Cumplimiento</div>
+        <div class="nav-item">Inspección Trabajo</div>
+        <div class="nav-item">Control accesos</div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Productos Conniku</div>
+        <div class="nav-item" style="color: var(--ink-3);">→ Conniku Payroll</div>
+        <div class="nav-item" style="color: var(--ink-3);">→ Conniku Finanzas</div>
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Personas</h1>
+          <div class="page-subtitle">Conniku SpA · período abril 2026 · 12 empleados activos</div>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary">Exportar</button>
+          <button class="btn btn-primary">+ Nuevo empleado</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Empleados activos</div>
+          <div class="kpi-value">12</div>
+          <span class="kpi-delta delta-up">↑ 2 vs mes anterior</span>
+          <div class="kpi-note">+2 altas · 0 bajas</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Costo laboral total</div>
+          <div class="kpi-value">$8.420k</div>
+          <span class="kpi-delta delta-up">↑ 14%</span>
+          <div class="kpi-note">bruto + cotizaciones</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Ausentismo</div>
+          <div class="kpi-value">2.4%</div>
+          <span class="kpi-delta delta-down">↓ 0.8pt</span>
+          <div class="kpi-note">bajo el objetivo 3.5%</div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Vacaciones disponibles</div>
+          <div class="kpi-value">87</div>
+          <span class="kpi-delta delta-flat">→ sin cambio</span>
+          <div class="kpi-note">días totales equipo</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Liquidación abril 2026</div>
+              <div class="card-subtitle">12 empleados · período abierto · se cierra 30 abril</div>
+            </div>
+            <div class="card-meta">
+              <span class="status-pill status-open">En proceso</span>
+              <span class="link-ghost">Ver todas →</span>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Empleado</th>
+                <th style="text-align: right;">Bruto</th>
+                <th style="text-align: right;">AFP</th>
+                <th style="text-align: right;">Salud</th>
+                <th style="text-align: right;">Impuesto</th>
+                <th style="text-align: right;">Líquido</th>
+                <th style="width: 100px;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="employee">
+                  Cristian Gutiérrez
+                  <div class="subtitle">CEO · RUT 78.395.702-7</div>
+                </td>
+                <td class="money">$2.800.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$280.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$196.000</div>
+                  <span class="retencion-cite">Fonasa 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$124.680</div>
+                  <span class="retencion-cite">LIR Art. 42</span>
+                </td>
+                <td class="money net">$2.199.320</td>
+                <td><span class="status-mini ok">Revisado</span></td>
+              </tr>
+              <tr>
+                <td class="employee">
+                  Javiera Soto M.
+                  <div class="subtitle">Desarrolladora · contrato indef.</div>
+                </td>
+                <td class="money">$1.650.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$165.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$115.500</div>
+                  <span class="retencion-cite">Cruz Blanca 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$26.830</div>
+                  <span class="retencion-cite">LIR Art. 42</span>
+                </td>
+                <td class="money net">$1.342.670</td>
+                <td><span class="status-mini ok">Revisado</span></td>
+              </tr>
+              <tr>
+                <td class="employee">
+                  Diego Rojas P.
+                  <div class="subtitle">Diseñador · contrato plazo fijo</div>
+                </td>
+                <td class="money">$1.200.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$120.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$84.000</div>
+                  <span class="retencion-cite">Banmédica 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$0</div>
+                  <span class="retencion-cite">bajo tramo</span>
+                </td>
+                <td class="money net">$996.000</td>
+                <td><span class="status-mini pend">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td class="employee">
+                  Paula Muñoz L.
+                  <div class="subtitle">Contadora · media jornada</div>
+                </td>
+                <td class="money">$720.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$72.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$50.400</div>
+                  <span class="retencion-cite">Fonasa 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$0</div>
+                  <span class="retencion-cite">bajo tramo</span>
+                </td>
+                <td class="money net">$597.600</td>
+                <td><span class="status-mini ok">Revisado</span></td>
+              </tr>
+              <tr>
+                <td class="employee">
+                  Lucas Pérez N.
+                  <div class="subtitle">Vendedor · contrato indef.</div>
+                </td>
+                <td class="money">$980.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$98.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$68.600</div>
+                  <span class="retencion-cite">Colmena 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$0</div>
+                  <span class="retencion-cite">bajo tramo</span>
+                </td>
+                <td class="money net">$813.400</td>
+                <td><span class="status-mini pend">Pendiente</span></td>
+              </tr>
+              <tr>
+                <td class="employee">
+                  Martina Araya D.
+                  <div class="subtitle">QA engineer · contrato indef.</div>
+                </td>
+                <td class="money">$1.400.000</td>
+                <td class="retencion">
+                  <div class="retencion-val">$140.000</div>
+                  <span class="retencion-cite">Art. 17 DL 3500</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$98.000</div>
+                  <span class="retencion-cite">Fonasa 7%</span>
+                </td>
+                <td class="retencion">
+                  <div class="retencion-val">$8.940</div>
+                  <span class="retencion-cite">LIR Art. 42</span>
+                </td>
+                <td class="money net">$1.153.060</td>
+                <td><span class="status-mini ok">Revisado</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="right-col">
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Próximas acciones</div>
+                <div class="card-subtitle">3 pendientes este mes</div>
+              </div>
+            </div>
+            <div>
+              <div class="action-item">
+                <div class="action-icon urgent">1</div>
+                <div class="action-content">
+                  <div class="action-title">Cerrar liquidaciones abril</div>
+                  <div class="action-due urgent">Vence en 2 días · 30 abril</div>
+                </div>
+              </div>
+              <div class="action-item">
+                <div class="action-icon soon">2</div>
+                <div class="action-content">
+                  <div class="action-title">Enviar Libro de Remuneraciones al SII</div>
+                  <div class="action-due soon">Vence en 9 días · 7 mayo</div>
+                </div>
+              </div>
+              <div class="action-item">
+                <div class="action-icon normal">3</div>
+                <div class="action-content">
+                  <div class="action-title">Pagar cotizaciones en Previred</div>
+                  <div class="action-due normal">10 mayo · cotizaciones previsionales</div>
+                </div>
+              </div>
+              <div class="action-item">
+                <div class="action-icon normal">4</div>
+                <div class="action-content">
+                  <div class="action-title">Renovar contrato Diego Rojas</div>
+                  <div class="action-due normal">15 mayo · finaliza plazo fijo</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Actividad reciente</div>
+                <div class="card-subtitle">últimas 24 horas</div>
+              </div>
+            </div>
+            <div class="activity-list">
+              <div class="activity-row">
+                <div class="activity-dot dot-approve"></div>
+                <div class="activity-body">
+                  <div class="text"><span class="user">Cristian G.</span> revisó liquidación de Javiera Soto</div>
+                  <div class="time">hace 12 min</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-dot dot-edit"></div>
+                <div class="activity-body">
+                  <div class="text"><span class="user">Paula M.</span> editó anexo de contrato de Diego Rojas</div>
+                  <div class="time">hace 2 horas</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-dot dot-create"></div>
+                <div class="activity-body">
+                  <div class="text"><span class="user">Sistema</span> generó liquidación para Martina Araya</div>
+                  <div class="time">hoy 09:15</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-dot dot-sync"></div>
+                <div class="activity-body">
+                  <div class="text"><span class="user">Previred sync</span> actualización tasas AFP confirmada</div>
+                  <div class="time">ayer 23:00</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="compliance-strip">
+        <div class="comp-item ok">
+          <div class="comp-label">Código del Trabajo</div>
+          <div class="comp-status">Cumpliendo</div>
+          <div class="comp-cite">DFL 1 · última rev. 18 abr 2026</div>
+        </div>
+        <div class="comp-item ok">
+          <div class="comp-label">Obligaciones previsionales</div>
+          <div class="comp-status">Al día</div>
+          <div class="comp-cite">Art. 17 DL 3500 · Previred sync OK</div>
+        </div>
+        <div class="comp-item warn">
+          <div class="comp-label">Libro Remuneraciones Electrónico</div>
+          <div class="comp-status">Pendiente abril</div>
+          <div class="comp-cite">Resol. SII 53 · envío hasta 7 may</div>
+        </div>
+      </div>
+
+    </main>
+
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Conniku — Variación borde naranja (curiosidad)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --paper:#F5F4EF; --paper-2:#EBE9E1; --ink:#0D0F10;
+    --lime:#D9FF3A; --lime-ink:#181F08; --pink:#FF4D3A; --cream:#FFE9B8;
+    --violet:#6B4EFF; --cyan:#00C2FF; --orange:#FF4A1C;
+    --text:#0D0F10; --text-2:#4B4F52; --text-3:#696C6F; --line:#DAD8D0;
+    --sh:0 1px 2px rgba(13,15,16,.06), 0 8px 24px rgba(13,15,16,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--text);
+    font-family:'Funnel Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-feature-settings:"ss01","ss02","cv11";
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .banner{
+    background:#fff3c2;color:#6b4900;text-align:center;
+    padding:10px 20px;font-family:'Geist Mono',monospace;font-size:12px;
+    letter-spacing:.06em;border-bottom:1px solid #f5e08a;
+  }
+  .banner strong{color:#3b2800}
+
+  .wrap{max-width:1280px;margin:0 auto;padding:56px 40px 120px}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:48px}
+  .crumbs{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase}
+
+  h1.hero{
+    font-size:clamp(56px,8vw,112px);font-weight:900;letter-spacing:-4.5px;
+    line-height:.92;margin:0 0 22px;max-width:1000px;
+  }
+  h1.hero em{font-style:normal;background:var(--lime);color:var(--lime-ink);padding:0 14px;border-radius:14px;display:inline-block;transform:rotate(-1deg);position:relative}
+  h1.hero em.bordered{box-shadow:inset 0 0 0 1px var(--orange)}
+
+  .sub{font-size:20px;line-height:1.5;color:var(--text-2);max-width:780px;margin:0 0 16px;font-weight:500}
+
+  section{margin-top:72px}
+  .section-title{display:flex;align-items:baseline;gap:16px;margin:0 0 28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .section-title .num{font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-3);letter-spacing:.08em}
+  .section-title h2{margin:0;font-size:32px;font-weight:900;letter-spacing:-1.8px;line-height:1}
+  .section-title .kicker{margin-left:auto;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase}
+
+  /* Wordmark base */
+  .wm{
+    font-family:'Funnel Display',sans-serif;
+    font-weight:900;
+    color:var(--ink);
+    letter-spacing:-.055em;
+    line-height:1;
+    display:inline-flex;
+    align-items:baseline;
+    white-space:nowrap;
+  }
+  .wm .u-pack{
+    display:inline-flex;
+    align-items:baseline;
+    background:var(--lime);
+    padding:.07em .14em .07em .09em;
+    border-radius:.2em;
+    color:var(--ink);
+  }
+  .wm .u-pack .dot{color:var(--orange)}
+  .wm.on-ink{color:var(--paper)}
+  .wm.on-ink .u-pack{color:var(--ink)}
+
+  /* Variaciones con borde naranja — usando box-shadow inset para sub-pixel */
+  .wm .u-pack.b-05{box-shadow:inset 0 0 0 .5px var(--orange)}
+  .wm .u-pack.b-1{box-shadow:inset 0 0 0 1px var(--orange)}
+  .wm .u-pack.b-15{box-shadow:inset 0 0 0 1.5px var(--orange)}
+  .wm .u-pack.b-2{box-shadow:inset 0 0 0 2px var(--orange)}
+
+  .wm.size-xxl{font-size:140px}
+  .wm.size-xl{font-size:96px}
+  .wm.size-lg{font-size:64px}
+  .wm.size-md{font-size:44px}
+  .wm.size-sm{font-size:28px}
+  .wm.size-xs{font-size:20px}
+  .wm.size-tiny{font-size:14px}
+
+  /* Card stage */
+  .stage{
+    background:#fff;border:1px solid var(--line);border-radius:22px;
+    padding:48px;display:flex;align-items:center;justify-content:center;
+    min-height:180px;position:relative;
+  }
+  .stage.paper{background:var(--paper)}
+  .stage.ink{background:var(--ink)}
+  .stage.pink{background:var(--pink)}
+  .stage.cream{background:var(--cream)}
+  .stage.violet{background:var(--violet)}
+  .stage.cyan{background:var(--cyan)}
+
+  .bg-label{
+    position:absolute;top:14px;left:18px;
+    font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--text-3);background:rgba(255,255,255,.85);padding:4px 9px;border-radius:4px;border:1px solid var(--line);
+  }
+  .stage.ink .bg-label,.stage.pink .bg-label,.stage.violet .bg-label{background:rgba(13,15,16,.5);color:rgba(245,244,239,.8);border-color:rgba(245,244,239,.15)}
+  .bg-label strong{color:var(--orange)}
+
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+
+  /* App icon stages */
+  .ai-card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+  .ai-stage{aspect-ratio:1;display:grid;place-items:center;padding:18px}
+  .ai-stage.paper{background:var(--paper)}
+  .ai-stage.ink{background:var(--ink)}
+  .ai-stage.ios{background:linear-gradient(135deg,#1d4c9e,#7b2cff)}
+  .ai-meta{padding:12px 14px;border-top:1px solid var(--line);text-align:center}
+  .ai-meta .n{font-size:13px;font-weight:700}
+  .ai-meta .s{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);margin-top:2px;display:block}
+
+  /* Zoom view */
+  .zoom-wrap{
+    background:#fff;border:1px solid var(--line);border-radius:22px;padding:40px;
+    display:flex;align-items:center;justify-content:center;min-height:320px;
+  }
+
+  /* Decision note */
+  .note{
+    margin-top:64px;background:var(--ink);color:var(--paper);
+    border-radius:20px;padding:28px;display:flex;gap:20px;align-items:flex-start;
+  }
+  .note .d{width:12px;height:12px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;box-shadow:0 0 0 4px rgba(255,74,28,.2)}
+  .note h3{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--lime)}
+  .note p{margin:0;font-size:14px;line-height:1.55;color:rgba(245,244,239,.85)}
+
+  /* Escala comparativa (para ver si el borde se pierde al achicarse) */
+  .scale-compare{
+    background:#fff;border:1px solid var(--line);border-radius:22px;padding:40px;
+    display:flex;align-items:baseline;justify-content:space-around;gap:30px;flex-wrap:wrap;
+  }
+  .scale-compare .slot{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scale-compare .slot .t{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+</style>
+</head>
+<body>
+
+<div class="banner">
+  <strong>· EXPLORACIÓN ·</strong> Variación: borde naranja fino en el tile lima · Logo final V2.0 guardado · Esto es solo para ver si suma
+</div>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="crumbs">conniku / design-system / variación borde naranja</div>
+    <div class="crumbs">exploración · no reemplaza v2.0</div>
+  </header>
+
+  <h1 class="hero">¿Y si el cuadro <em class="bordered">verde</em> tuviera un <span style="color:var(--orange)">borde</span> casi invisible?</h1>
+  <p class="sub">Idea: una línea muy fina naranja (#FF4A1C, mismo color del punto final) en el contorno del tile lima. Suficientemente sutil para que no grite, suficientemente presente para amarrar tile y punto como una sola familia cromática. Abajo, cuatro grosores para comparar.</p>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 01 · Comparación directa: sin borde vs 4 grosores -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">01</span>
+      <h2>Comparación · sin borde vs 4 grosores</h2>
+      <span class="kicker">mismo tamaño · solo cambia el stroke</span>
+    </div>
+
+    <div class="grid-2">
+
+      <div class="stage paper">
+        <span class="bg-label">SIN BORDE · v2.0 actual</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage paper">
+        <span class="bg-label">BORDE <strong>0.5px</strong></span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-05">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage paper">
+        <span class="bg-label">BORDE <strong>1px</strong></span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage paper">
+        <span class="bg-label">BORDE <strong>1.5px</strong></span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-15">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage paper">
+        <span class="bg-label">BORDE <strong>2px</strong></span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-2">u<span class="dot">.</span></span></div>
+      </div>
+
+      <div class="stage paper" style="flex-direction:column;gap:16px">
+        <span class="bg-label">OVERLAY: 0.5 · 1 · 1.5 · 2</span>
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack b-05">u<span class="dot">.</span></span></div>
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack b-15">u<span class="dot">.</span></span></div>
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack b-2">u<span class="dot">.</span></span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 02 · Zoom grande para ver el detalle -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">02</span>
+      <h2>Zoom · el borde en tamaño grande</h2>
+      <span class="kicker">aquí se ve el matiz real</span>
+    </div>
+
+    <div class="zoom-wrap">
+      <div class="wm size-xxl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+    </div>
+    <p class="sub" style="margin-top:16px;font-size:14px;color:var(--text-3)">Arriba: versión con borde <strong>1px</strong> a 140px. El borde crea una frontera cálida entre el lima y el fondo, y resuena con el color del punto final.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 03 · Sobre todos los fondos de la paleta (grosor 1px) -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">03</span>
+      <h2>Grosor 1px · sobre toda la paleta</h2>
+      <span class="kicker">validación de contraste del borde</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="stage paper">
+        <span class="bg-label">paper</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+      <div class="stage ink">
+        <span class="bg-label">ink</span>
+        <div class="wm size-xl on-ink">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+      <div class="stage cream">
+        <span class="bg-label">cream</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+      <div class="stage pink">
+        <span class="bg-label">pink</span>
+        <div class="wm size-xl" style="color:#fff">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+      <div class="stage violet">
+        <span class="bg-label">violet</span>
+        <div class="wm size-xl" style="color:#fff">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+      <div class="stage cyan">
+        <span class="bg-label">cyan</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 04 · Escala: ¿a qué tamaño el borde deja de verse? -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">04</span>
+      <h2>Escala · ¿aguanta el borde en tamaños pequeños?</h2>
+      <span class="kicker">de 14px a 140px · grosor 1px</span>
+    </div>
+
+    <div class="scale-compare">
+      <div class="slot">
+        <div class="wm size-tiny">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">14px</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-xs">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">20px</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-sm">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">28px</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-md">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">44px</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-lg">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">64px</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <div class="t">96px</div>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:14px;font-size:13px;color:var(--text-3)">Observación: a 14–20px el borde prácticamente desaparece (es solo 1 píxel en pantalla). A partir de 28px empieza a leerse. A 96px+ es un detalle visible pero delicado.</p>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 05 · App icon con borde naranja -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">05</span>
+      <h2>App icon · con borde naranja</h2>
+      <span class="kicker">4 grosores · SVG stroke</span>
+    </div>
+
+    <div class="grid-4">
+
+      <div class="ai-card">
+        <div class="ai-stage paper">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Sin borde · v2.0</span><span class="s">referencia</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage paper">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x=".25" y=".25" width="99.5" height="99.5" rx="21.8" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="0.5"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Borde 0.5</span><span class="s">casi invisible</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage paper">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Borde 1</span><span class="s">sutil</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage paper">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x="1" y="1" width="98" height="98" rx="21" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="2"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Borde 2</span><span class="s">visible</span></div>
+      </div>
+
+    </div>
+
+    <div class="grid-4" style="margin-top:16px">
+
+      <div class="ai-card">
+        <div class="ai-stage ink">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Sin borde · ink</span><span class="s">referencia</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage ink">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x=".25" y=".25" width="99.5" height="99.5" rx="21.8" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="0.5"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">0.5 · ink</span><span class="s">casi invisible</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage ink">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">1 · ink</span><span class="s">sutil</span></div>
+      </div>
+
+      <div class="ai-card">
+        <div class="ai-stage ink">
+          <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+            <rect x="1" y="1" width="98" height="98" rx="21" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="2"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">2 · ink</span><span class="s">visible</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 06 · App icon tamaños reales -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">06</span>
+      <h2>App icon · borde 1 en tamaños reales</h2>
+      <span class="kicker">favicon → App Store</span>
+    </div>
+
+    <div class="scale-compare">
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="16" height="16" style="border-radius:4px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">16 · favicon</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="32" height="32" style="border-radius:7px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">32</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="48" height="48" style="border-radius:10px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">48</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="72" height="72" style="border-radius:16px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">72</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="128" height="128" style="border-radius:28px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">128</div>
+      </div>
+      <div class="slot">
+        <svg viewBox="0 0 100 100" width="220" height="220" style="border-radius:48px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+        <div class="t">220 · App Store</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════ -->
+  <!-- 07 · Side by side final -->
+  <!-- ═══════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">07</span>
+      <h2>Side by side · decisión final</h2>
+      <span class="kicker">cuál eliges</span>
+    </div>
+
+    <div class="grid-2">
+      <div class="stage paper" style="flex-direction:column;gap:20px;min-height:280px">
+        <span class="bg-label">v2.0 actual · SIN borde</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack">u<span class="dot">.</span></span></div>
+        <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+          <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+      </div>
+
+      <div class="stage paper" style="flex-direction:column;gap:20px;min-height:280px">
+        <span class="bg-label">v2.1 propuesta · CON borde 1</span>
+        <div class="wm size-xl">conn<span>i</span>k<span class="u-pack b-1">u<span class="dot">.</span></span></div>
+        <svg viewBox="0 0 100 100" width="120" height="120" style="border-radius:22px">
+          <rect x=".5" y=".5" width="99" height="99" rx="21.5" fill="#D9FF3A" stroke="#FF4A1C" stroke-width="1"/>
+          <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">
+    <div class="d"></div>
+    <div>
+      <h3>Mi observación (sin pretensión)</h3>
+      <p>El borde de <strong>1px</strong> amarra cromáticamente el tile con el punto naranja, y le da al logo una sensación más "dibujado a mano" / editorial sin sacrificar legibilidad. A 140px se lee elegante. A 16px se pierde en renderizado — pero el tile sigue leyéndose lima sólido, lo cual es aceptable para favicon.<br/><br/><strong>Mi recomendación (si preguntas):</strong> conservar v2.0 sin borde en assets oficiales (favicon, app icons pequeños donde el borde no se ve), y considerar el borde 1 como variante "hero" para piezas grandes (splash, og-image, covers). Es decir: misma familia, dos pesos. Pero la decisión es tuya.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

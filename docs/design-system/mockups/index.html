@@ -1,0 +1,761 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Conniku — Índice de mockups y sistema de diseño</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --paper:#F5F4EF; --paper-2:#EBE9E1; --ink:#0D0F10; --ink-2:#1E2023;
+    --lime:#D9FF3A; --lime-ink:#181F08; --pink:#FF4D3A; --cream:#FFE9B8;
+    --violet:#6B4EFF; --cyan:#00C2FF; --orange:#FF4A1C;
+    --text:#0D0F10; --text-2:#4B4F52; --text-3:#696C6F; --line:#DAD8D0;
+    --sh:0 1px 2px rgba(13,15,16,.06), 0 8px 24px rgba(13,15,16,.06);
+    --sh-lg:0 2px 4px rgba(13,15,16,.06), 0 20px 50px rgba(13,15,16,.08);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--text);
+    font-family:'Funnel Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-feature-settings:"ss01","ss02","cv11";
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+
+  /* ── HERO ── */
+  .hero{
+    position:relative;overflow:hidden;
+    padding:80px 40px 60px;
+    background:var(--paper);
+    border-bottom:1px solid var(--line);
+  }
+  .hero::before{content:"";position:absolute;top:60px;right:-60px;width:200px;height:200px;border-radius:50%;background:var(--cream);opacity:.4}
+  .hero::after{content:"";position:absolute;bottom:30px;left:-40px;width:160px;height:160px;border-radius:50%;background:var(--cyan);opacity:.15}
+  .hero-inner{max-width:1280px;margin:0 auto;position:relative;z-index:1}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:56px}
+  .logomark{display:flex;align-items:center;gap:14px}
+  .logomark .wm{font-size:24px;font-weight:900;letter-spacing:-1.1px}
+  .crumbs{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.1em;text-transform:uppercase}
+
+  h1.big{font-size:clamp(60px,9vw,128px);font-weight:900;letter-spacing:-5px;line-height:.92;margin:0 0 28px;max-width:1000px}
+  h1.big em{font-style:normal;background:var(--lime);color:var(--lime-ink);padding:0 14px;border-radius:14px;display:inline-block;transform:rotate(-1deg)}
+  h1.big .outline{color:transparent;-webkit-text-stroke:2.5px var(--ink);display:inline-block}
+
+  .sub{font-size:20px;line-height:1.5;color:var(--text-2);max-width:780px;margin:0 0 36px;font-weight:500}
+
+  .stats{display:flex;gap:16px;flex-wrap:wrap}
+  .stat{background:#fff;border:1px solid var(--line);padding:18px 22px;border-radius:16px;display:flex;flex-direction:column;gap:4px;min-width:140px}
+  .stat .n{font-size:32px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+  .stat .l{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+
+  /* ── SECCIONES ── */
+  .wrap{max-width:1280px;margin:0 auto;padding:72px 40px}
+  section{margin-bottom:72px}
+  section:last-child{margin-bottom:0}
+  .section-head{display:flex;align-items:baseline;gap:16px;margin:0 0 28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .section-head .num{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3);letter-spacing:.08em}
+  .section-head h2{margin:0;font-size:32px;font-weight:900;letter-spacing:-1.5px;line-height:1}
+  .section-head .kicker{margin-left:auto;font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase}
+
+  /* ── DESTACADOS ── */
+  .featured{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .feat-card{
+    display:flex;flex-direction:column;
+    background:#fff;border:1px solid var(--line);border-radius:22px;
+    overflow:hidden;box-shadow:var(--sh);
+    transition:transform .15s,box-shadow .15s;
+    cursor:pointer;
+  }
+  .feat-card:hover{transform:translateY(-3px);box-shadow:var(--sh-lg)}
+  .feat-card .thumb{padding:40px;aspect-ratio:16/9;display:grid;place-items:center;position:relative;overflow:hidden}
+  .feat-card .thumb.bg-lime{background:var(--lime)}
+  .feat-card .thumb.bg-ink{background:var(--ink)}
+  .feat-card .thumb.bg-cream{background:var(--cream)}
+  .feat-card .thumb.bg-pink{background:var(--pink)}
+  .feat-card .body{padding:22px 26px;display:flex;flex-direction:column;gap:8px}
+  .feat-card .body .tag{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em;text-transform:uppercase}
+  .feat-card .body h3{margin:0;font-size:22px;font-weight:900;letter-spacing:-1px}
+  .feat-card .body p{margin:0;font-size:14px;line-height:1.5;color:var(--text-2)}
+  .feat-card .body .go{margin-top:8px;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--ink)}
+  .feat-card .body .go::after{content:"→";transition:transform .15s}
+  .feat-card:hover .body .go::after{transform:translateX(3px)}
+
+  /* ── GRID DE MOCKUPS ── */
+  .cat-intro{font-size:15px;color:var(--text-2);margin-bottom:18px;max-width:720px;line-height:1.5}
+  .mockup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .mock{
+    background:#fff;border:1px solid var(--line);border-radius:16px;
+    padding:20px;display:flex;flex-direction:column;gap:10px;
+    transition:border-color .15s,transform .15s;
+    cursor:pointer;position:relative;overflow:hidden;
+  }
+  .mock:hover{border-color:var(--ink);transform:translateY(-2px)}
+  .mock .mock-head{display:flex;align-items:center;justify-content:space-between}
+  .mock .mock-n{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);background:var(--paper);padding:3px 8px;border-radius:6px;letter-spacing:.06em}
+  .mock .mock-icon{width:24px;height:24px;border-radius:6px;background:var(--lime);display:grid;place-items:center;font-weight:900;font-size:12px;color:var(--lime-ink)}
+  .mock h4{margin:4px 0 0;font-size:15px;font-weight:800;line-height:1.3}
+  .mock p{margin:0;font-size:12px;color:var(--text-3);line-height:1.4}
+  .mock .mock-tag{font-family:'Geist Mono',monospace;font-size:9px;color:var(--text-3);letter-spacing:.08em;margin-top:auto;padding-top:8px;border-top:1px solid var(--line)}
+
+  .mock.legal .mock-icon{background:var(--violet);color:#fff}
+  .mock.mobile .mock-icon{background:var(--cyan);color:var(--ink)}
+  .mock.brand .mock-icon{background:var(--orange);color:#fff}
+  .mock.landing .mock-icon{background:var(--pink);color:#fff}
+  .mock.store .mock-icon{background:var(--cream);color:var(--ink)}
+
+  /* ── DOCUMENTACIÓN ── */
+  .docs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .doc-card{
+    background:var(--ink);color:var(--paper);
+    border-radius:16px;padding:22px;
+    display:flex;flex-direction:column;gap:6px;
+    cursor:pointer;transition:transform .15s;
+  }
+  .doc-card:hover{transform:translateY(-2px)}
+  .doc-card .path{font-family:'Geist Mono',monospace;font-size:11px;color:var(--lime);letter-spacing:.04em;word-break:break-all}
+  .doc-card h4{margin:6px 0 4px;font-size:17px;font-weight:800}
+  .doc-card p{margin:0;font-size:13px;line-height:1.5;color:rgba(245,244,239,.75)}
+
+  /* ── ASSETS ── */
+  .assets-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .asset-card{
+    background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;
+    display:flex;flex-direction:column;cursor:pointer;
+  }
+  .asset-card:hover{border-color:var(--ink)}
+  .asset-card .stage{aspect-ratio:1;display:grid;place-items:center;background:var(--paper-2);padding:16px}
+  .asset-card .stage.ink{background:var(--ink)}
+  .asset-card .stage.ios{background:linear-gradient(135deg,#1d4c9e,#7b2cff)}
+  .asset-card .stage.android{background:linear-gradient(135deg,#4CAF50,#1976D2)}
+  .asset-card .stage.macos{background:linear-gradient(135deg,#E8E6DF,#C7C4BA)}
+  .asset-card .stage.watch{background:#000}
+  .asset-card .stage.win{background:#0078D4}
+  .asset-card .meta{padding:10px 14px;border-top:1px solid var(--line)}
+  .asset-card .meta .n{font-size:12px;font-weight:700}
+  .asset-card .meta .s{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);margin-top:2px}
+
+  /* ── FOOTER ── */
+  .foot{
+    background:var(--ink);color:var(--paper);
+    padding:48px 40px;margin-top:80px;
+  }
+  .foot-inner{max-width:1280px;margin:0 auto}
+  .foot-grid{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:40px;margin-bottom:32px}
+  .foot h5{margin:0 0 14px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--lime)}
+  .foot p{margin:0;font-size:14px;line-height:1.55;color:rgba(245,244,239,.75)}
+  .foot ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .foot li a{color:rgba(245,244,239,.75);font-size:13px}
+  .foot li a:hover{color:var(--lime)}
+  .foot-note{padding-top:24px;border-top:1px solid rgba(245,244,239,.1);font-size:12px;color:rgba(245,244,239,.5);font-family:'Geist Mono',monospace;letter-spacing:.04em}
+
+  @media(max-width:900px){
+    .featured,.docs-grid{grid-template-columns:1fr}
+    .mockup-grid{grid-template-columns:repeat(2,1fr)}
+    .assets-grid{grid-template-columns:repeat(2,1fr)}
+    .foot-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- Sprite SVG del logo oficial -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ck-tile" viewBox="0 0 100 100">
+      <mask id="ck-cut" maskUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="#fff"/>
+        <circle cx="58" cy="50" r="24" fill="#000"/>
+      </mask>
+      <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ck-cut)"/>
+      <circle cx="58" cy="50" r="5" fill="#FF4A1C"/>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="topbar">
+      <div class="logomark">
+        <svg width="42" height="42"><use href="#ck-tile"/></svg>
+        <div class="wm">conniku.</div>
+      </div>
+      <div class="crumbs">design-system / mockups / index</div>
+    </div>
+    <h1 class="big">33 mockups. <em>1 sistema</em>.<br/><span class="outline">Tu U entera.</span></h1>
+    <p class="sub">Esta es la carpeta de mockups del rediseño editorial de Conniku. 33 piezas HTML exploran desde el landing público hasta el classroom en vivo, el workspace con Athena, el onboarding completo, el sistema de marca, y una tienda virtual ilustrativa. Todo comparte la misma paleta, tipografía, cast de estudiantes y logo oficial v1.0.0.</p>
+    <div class="stats">
+      <div class="stat"><span class="n">33</span><span class="l">Mockups HTML</span></div>
+      <div class="stat"><span class="n">20</span><span class="l">Assets de marca</span></div>
+      <div class="stat"><span class="n">9</span><span class="l">Plataformas</span></div>
+      <div class="stat"><span class="n">2</span><span class="l">Reglas maestras</span></div>
+      <div class="stat"><span class="n">7</span><span class="l">Estudiantes del cast</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">00</span>
+      <h2>Para empezar · piezas clave</h2>
+      <span class="kicker">si solo ves 4 cosas · ve estas</span>
+    </div>
+    <div class="featured">
+
+      <a class="feat-card" href="31-sistema-marca.html">
+        <div class="thumb bg-lime">
+          <svg width="160" height="160"><use href="#ck-tile"/></svg>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 31 · Sistema de marca</span>
+          <h3>Sistema visual completo del logo</h3>
+          <p>Paleta, geometría anotada, variantes, clear space, tamaños mínimos, aplicación por plataforma, do's/don'ts y matriz de archivos oficiales.</p>
+          <span class="go">Abrir sistema de marca</span>
+        </div>
+      </a>
+
+      <a class="feat-card" href="33-logo-variantes-app.html">
+        <div class="thumb bg-cream">
+          <div style="display:flex;align-items:baseline;font-family:Funnel Display,sans-serif;font-weight:900;font-size:56px;letter-spacing:-3px;color:#0D0F10">conn<span style="position:relative">i</span>k<span style="background:#D9FF3A;padding:.06em .11em;border-radius:.2em;color:#0D0F10">u</span><span style="color:#FF4A1C">.</span></div>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 33 · Exploración logo app</span>
+          <h3>8 variantes del wordmark integrado</h3>
+          <p>Explora cómo el cuadro lima deja de estar al inicio y pasa a vivir detrás de la "u" final. Más 4 variantes del app icon reducido.</p>
+          <span class="go">Ver las 8 variantes</span>
+        </div>
+      </a>
+
+      <a class="feat-card" href="25-landing-unificada.html">
+        <div class="thumb bg-pink">
+          <div style="font-family:Funnel Display,sans-serif;font-weight:900;font-size:64px;letter-spacing:-3px;color:#fff;line-height:.95;text-align:center">Tu U entera.<br/><span style="background:#D9FF3A;color:#181F08;padding:0 10px;border-radius:10px;display:inline-block;transform:rotate(-1deg)">Una sola app.</span></div>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 25 · Landing principal</span>
+          <h3>Landing público unificado</h3>
+          <p>Hero, Free vs Pro sin precios inventados, constellation global de usuarios, features destacadas. El pitch del producto en una sola página.</p>
+          <span class="go">Abrir landing</span>
+        </div>
+      </a>
+
+      <a class="feat-card" href="29-flujo-onboarding.html">
+        <div class="thumb bg-ink">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:36px;height:36px;border-radius:50%;background:#FF4D3A;display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px;font-family:Funnel Display,sans-serif">1</div>
+            <div style="width:18px;height:2px;background:rgba(245,244,239,.3)"></div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#D9FF3A;display:grid;place-items:center;color:#181F08;font-weight:900;font-size:14px;font-family:Funnel Display,sans-serif">2</div>
+            <div style="width:18px;height:2px;background:rgba(245,244,239,.3)"></div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#6B4EFF;display:grid;place-items:center;color:#fff;font-weight:900;font-size:14px;font-family:Funnel Display,sans-serif">3</div>
+            <div style="width:18px;height:2px;background:rgba(245,244,239,.3)"></div>
+            <div style="width:36px;height:36px;border-radius:50%;background:#00C2FF;display:grid;place-items:center;color:#0D0F10;font-weight:900;font-size:14px;font-family:Funnel Display,sans-serif">9</div>
+          </div>
+        </div>
+        <div class="body">
+          <span class="tag">Mockup 29 · Flujo onboarding</span>
+          <h3>Storyboard de 9 pasos</h3>
+          <p>Desde landing hasta primera clase. El usuario ve todo el camino que recorre al entrar por primera vez a Conniku.</p>
+          <span class="go">Ver storyboard completo</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">01</span>
+      <h2>Identidad y marca</h2>
+      <span class="kicker">2 mockups</span>
+    </div>
+    <p class="cat-intro">El sistema visual del logo oficial y la exploración de variantes integradas para app icon.</p>
+    <div class="mockup-grid">
+      <a class="mock brand" href="31-sistema-marca.html">
+        <div class="mock-head">
+          <span class="mock-n">31</span>
+          <div class="mock-icon">31</div>
+        </div>
+        <h4>Sistema de marca visual</h4>
+        <p>Paleta, geometría, variantes, tamaños mínimos, plataformas, do's/don'ts.</p>
+        <span class="mock-tag">BRANDING · MASTER</span>
+      </a>
+      <a class="mock brand" href="33-logo-variantes-app.html">
+        <div class="mock-head">
+          <span class="mock-n">33</span>
+          <div class="mock-icon">33</div>
+        </div>
+        <h4>Variantes logo app (exploración)</h4>
+        <p>Tile lima detrás de la "u" final, 8 variantes del wordmark + 4 app icons.</p>
+        <span class="mock-tag">EXPLORATION · NUEVO</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">02</span>
+      <h2>Landing · acceso · onboarding</h2>
+      <span class="kicker">6 mockups · journey público</span>
+    </div>
+    <p class="cat-intro">Del primer clic hasta estar dentro del dashboard. Incluye landing pública, auth con evidencia de lectura legal, verificación de U y el flujo completo de 9 pasos.</p>
+    <div class="mockup-grid">
+      <a class="mock landing" href="10-landing-publica.html">
+        <div class="mock-head"><span class="mock-n">10</span><div class="mock-icon">10</div></div>
+        <h4>Landing público (versión 1)</h4>
+        <p>Primera iteración del landing editorial con splatter y chip lime.</p>
+        <span class="mock-tag">LANDING · V1</span>
+      </a>
+      <a class="mock landing" href="25-landing-unificada.html">
+        <div class="mock-head"><span class="mock-n">25</span><div class="mock-icon">25</div></div>
+        <h4>Landing unificada</h4>
+        <p>Versión final sin competencia. Free vs Pro, constelación global.</p>
+        <span class="mock-tag">LANDING · FINAL</span>
+      </a>
+      <a class="mock legal" href="05-auth-editorial.html">
+        <div class="mock-head"><span class="mock-n">05</span><div class="mock-icon">05</div></div>
+        <h4>Auth editorial</h4>
+        <p>Login/registro con declaración jurada de edad y aceptación legal con evidencia.</p>
+        <span class="mock-tag">AUTH · LEGAL</span>
+      </a>
+      <a class="mock" href="20-onboarding.html">
+        <div class="mock-head"><span class="mock-n">20</span><div class="mock-icon">20</div></div>
+        <h4>Onboarding inicial</h4>
+        <p>Wizard de configuración de universidad, carrera, año.</p>
+        <span class="mock-tag">ONBOARDING</span>
+      </a>
+      <a class="mock legal" href="26-verificacion.html">
+        <div class="mock-head"><span class="mock-n">26</span><div class="mock-icon">26</div></div>
+        <h4>Verificación U</h4>
+        <p>Confirmación de matrícula universitaria, handshake verificación.</p>
+        <span class="mock-tag">VERIFICATION</span>
+      </a>
+      <a class="mock" href="27-bienvenida.html">
+        <div class="mock-head"><span class="mock-n">27</span><div class="mock-icon">27</div></div>
+        <h4>Pantalla bienvenida</h4>
+        <p>Primera impresión después del registro, estado "todo listo".</p>
+        <span class="mock-tag">WELCOME</span>
+      </a>
+      <a class="mock" href="29-flujo-onboarding.html">
+        <div class="mock-head"><span class="mock-n">29</span><div class="mock-icon">29</div></div>
+        <h4>Storyboard 9 pasos</h4>
+        <p>Vista unificada: landing → auth → verificación → dashboard → primera clase.</p>
+        <span class="mock-tag">STORYBOARD</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">03</span>
+      <h2>Dashboard · navegación · Mi U</h2>
+      <span class="kicker">3 mockups · producto principal</span>
+    </div>
+    <p class="cat-intro">El hogar del estudiante dentro de Conniku. Dashboard con feed del día, Mi U con toda la info académica, y asignatura en detalle.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="01-dashboard-estudiante.html">
+        <div class="mock-head"><span class="mock-n">01</span><div class="mock-icon">01</div></div>
+        <h4>Dashboard estudiante</h4>
+        <p>Feed del día, próximas clases, workspaces activos, eventos, comunidades.</p>
+        <span class="mock-tag">DASHBOARD</span>
+      </a>
+      <a class="mock" href="17-mi-universidad.html">
+        <div class="mock-head"><span class="mock-n">17</span><div class="mock-icon">17</div></div>
+        <h4>Mi Universidad</h4>
+        <p>Info de tu U, tu carrera, malla, cupos, calendario académico.</p>
+        <span class="mock-tag">UNI VIEW</span>
+      </a>
+      <a class="mock" href="28-asignatura-detalle.html">
+        <div class="mock-head"><span class="mock-n">28</span><div class="mock-icon">28</div></div>
+        <h4>Asignatura en detalle</h4>
+        <p>Vista de una materia: clases, documentos, notas, compañeros, Athena tutor.</p>
+        <span class="mock-tag">SUBJECT</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">04</span>
+      <h2>Workspace · Athena · escritura</h2>
+      <span class="kicker">4 mockups · el corazón del producto</span>
+    </div>
+    <p class="cat-intro">El editor editorial de Conniku con Athena como asistente académica humana. Incluye workspace completo, popups de Athena, y estados de colaboración.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="03-workspaces-editorial.html">
+        <div class="mock-head"><span class="mock-n">03</span><div class="mock-icon">03</div></div>
+        <h4>Workspaces lista</h4>
+        <p>Vista general de todos los workspaces del estudiante, organizados.</p>
+        <span class="mock-tag">WORKSPACES</span>
+      </a>
+      <a class="mock" href="08-workspace-editor.html">
+        <div class="mock-head"><span class="mock-n">08</span><div class="mock-icon">08</div></div>
+        <h4>Workspace editor (v1)</h4>
+        <p>Primera iteración del editor con Athena en sidebar.</p>
+        <span class="mock-tag">EDITOR · V1</span>
+      </a>
+      <a class="mock" href="11-workspace-completo.html">
+        <div class="mock-head"><span class="mock-n">11</span><div class="mock-icon">11</div></div>
+        <h4>Workspace completo</h4>
+        <p>Editor con transcript, colaboradores, documentos, Athena integrada.</p>
+        <span class="mock-tag">WORKSPACE · FULL</span>
+      </a>
+      <a class="mock" href="24-workspace-athena-popups.html">
+        <div class="mock-head"><span class="mock-n">24</span><div class="mock-icon">24</div></div>
+        <h4>Workspace + Athena popups</h4>
+        <p>Vista con interacciones puntuales de Athena en el documento.</p>
+        <span class="mock-tag">ATHENA POPUPS</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">05</span>
+      <h2>Biblioteca · cursos · classroom</h2>
+      <span class="kicker">4 mockups · aprendizaje</span>
+    </div>
+    <p class="cat-intro">Contenido académico dentro de Conniku: biblioteca de libros, cursos diplomados, directorio de tutores, y classroom en vivo con transcripción.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="02-biblioteca-editorial.html">
+        <div class="mock-head"><span class="mock-n">02</span><div class="mock-icon">02</div></div>
+        <h4>Biblioteca editorial</h4>
+        <p>Colección de libros académicos, filtros por carrera, +70k items.</p>
+        <span class="mock-tag">LIBRARY</span>
+      </a>
+      <a class="mock" href="12-cursos-diploma.html">
+        <div class="mock-head"><span class="mock-n">12</span><div class="mock-icon">12</div></div>
+        <h4>Cursos y diplomas</h4>
+        <p>Cursos internos con certificación, progreso, tutores verificados.</p>
+        <span class="mock-tag">COURSES</span>
+      </a>
+      <a class="mock" href="13-tutores-directorio.html">
+        <div class="mock-head"><span class="mock-n">13</span><div class="mock-icon">13</div></div>
+        <h4>Directorio de tutores</h4>
+        <p>Tutores verificados, reviews, disponibilidad, precios.</p>
+        <span class="mock-tag">TUTORES</span>
+      </a>
+      <a class="mock" href="14-classroom-envivo.html">
+        <div class="mock-head"><span class="mock-n">14</span><div class="mock-icon">14</div></div>
+        <h4>Classroom en vivo</h4>
+        <p>Clase en tiempo real, transcript, plan, acciones post-clase.</p>
+        <span class="mock-tag">LIVE CLASS</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">06</span>
+      <h2>Estudio · quizzes · calendario</h2>
+      <span class="kicker">3 mockups · flujo diario</span>
+    </div>
+    <p class="cat-intro">Herramientas que el estudiante usa día a día: salas de estudio, quizzes con flashcards, y calendario integrado.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="21-study-rooms.html">
+        <div class="mock-head"><span class="mock-n">21</span><div class="mock-icon">21</div></div>
+        <h4>Study rooms</h4>
+        <p>Salas virtuales con tus compañeros, Pomodoro, chat integrado.</p>
+        <span class="mock-tag">ROOMS</span>
+      </a>
+      <a class="mock" href="22-quizzes-flashcards.html">
+        <div class="mock-head"><span class="mock-n">22</span><div class="mock-icon">22</div></div>
+        <h4>Quizzes y flashcards</h4>
+        <p>Práctica con flashcards, quizzes rápidos, spaced repetition.</p>
+        <span class="mock-tag">QUIZZES</span>
+      </a>
+      <a class="mock" href="23-calendar.html">
+        <div class="mock-head"><span class="mock-n">23</span><div class="mock-icon">23</div></div>
+        <h4>Calendario académico</h4>
+        <p>Clases, entregas, quizzes, tutorías, todo en una vista.</p>
+        <span class="mock-tag">CALENDAR</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">07</span>
+      <h2>Vida profesional · CV · ofertas</h2>
+      <span class="kicker">2 mockups · puente al trabajo</span>
+    </div>
+    <p class="cat-intro">El lado profesional de Conniku: ofertas laborales con match porcentual y editor de CV con plantillas editoriales.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="15-oferta-laboral.html">
+        <div class="mock-head"><span class="mock-n">15</span><div class="mock-icon">15</div></div>
+        <h4>Oferta laboral</h4>
+        <p>Detalle de una oferta con match %, postulación, empresa.</p>
+        <span class="mock-tag">JOB POST</span>
+      </a>
+      <a class="mock" href="16-cv-editor.html">
+        <div class="mock-head"><span class="mock-n">16</span><div class="mock-icon">16</div></div>
+        <h4>CV editor</h4>
+        <p>Editor de CV con preview en vivo, plantillas editoriales.</p>
+        <span class="mock-tag">CV</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">08</span>
+      <h2>Social · comunidad · gamification</h2>
+      <span class="kicker">4 mockups · capa relacional</span>
+    </div>
+    <p class="cat-intro">Perfil social, chat entre compañeros, comunidades por carrera y el sistema de logros con puntos que desbloquean Pro gratis.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="06-perfil-social-editorial.html">
+        <div class="mock-head"><span class="mock-n">06</span><div class="mock-icon">06</div></div>
+        <h4>Perfil social</h4>
+        <p>Perfil público del estudiante, logros, workspaces compartidos.</p>
+        <span class="mock-tag">PROFILE</span>
+      </a>
+      <a class="mock" href="07-chat-editorial.html">
+        <div class="mock-head"><span class="mock-n">07</span><div class="mock-icon">07</div></div>
+        <h4>Chat editorial</h4>
+        <p>Mensajería entre compañeros y con tutores, con threads.</p>
+        <span class="mock-tag">CHAT</span>
+      </a>
+      <a class="mock" href="19-comunidad-view.html">
+        <div class="mock-head"><span class="mock-n">19</span><div class="mock-icon">19</div></div>
+        <h4>Comunidad view</h4>
+        <p>Vista de una comunidad (carrera, generación), feed y eventos.</p>
+        <span class="mock-tag">COMMUNITY</span>
+      </a>
+      <a class="mock" href="18-gamification.html">
+        <div class="mock-head"><span class="mock-n">18</span><div class="mock-icon">18</div></div>
+        <h4>Gamification + puntos</h4>
+        <p>Logros, puntos, canje por Pro gratis tras 6 cursos, rankings.</p>
+        <span class="mock-tag">POINTS · PRO</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">09</span>
+      <h2>Configuración · CEO · móvil</h2>
+      <span class="kicker">3 mockups · settings + admin + mobile</span>
+    </div>
+    <p class="cat-intro">Configuración personal del usuario, vista business del módulo CEO/HR, y adaptación iOS/Android.</p>
+    <div class="mockup-grid">
+      <a class="mock" href="09-configuracion-editorial.html">
+        <div class="mock-head"><span class="mock-n">09</span><div class="mock-icon">09</div></div>
+        <h4>Configuración editorial</h4>
+        <p>Settings del usuario: cuenta, notificaciones, privacidad, legal.</p>
+        <span class="mock-tag">SETTINGS</span>
+      </a>
+      <a class="mock" href="04-hr-business.html">
+        <div class="mock-head"><span class="mock-n">04</span><div class="mock-icon">04</div></div>
+        <h4>HR business (sobrio)</h4>
+        <p>Módulo CEO/HR para empresas con variante business matura.</p>
+        <span class="mock-tag">BUSINESS</span>
+      </a>
+      <a class="mock mobile" href="30-movil-ios-android.html">
+        <div class="mock-head"><span class="mock-n">30</span><div class="mock-icon">30</div></div>
+        <h4>Móvil iOS + Android</h4>
+        <p>Vista adaptada a móvil con Capacitor, gestos nativos.</p>
+        <span class="mock-tag">MOBILE</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">10</span>
+      <h2>Tienda (ilustrativo)</h2>
+      <span class="kicker">1 mockup · feature futura</span>
+    </div>
+    <p class="cat-intro">Mockup ilustrativo de la tienda virtual Conniku. No es un producto real aún; sirve como visualización para planificación futura.</p>
+    <div class="mockup-grid">
+      <a class="mock store" href="32-tienda-virtual.html">
+        <div class="mock-head"><span class="mock-n">32</span><div class="mock-icon">32</div></div>
+        <h4>Tienda virtual Conniku</h4>
+        <p>Merch editorial, plantillas, libros, kits. Banner ilustrativo.</p>
+        <span class="mock-tag">SHOP · ILUSTRATIVO</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">11</span>
+      <h2>Documentación del sistema</h2>
+      <span class="kicker">reglas + specs + cast</span>
+    </div>
+    <div class="docs-grid">
+      <a class="doc-card" href="assets/branding/LOGO.md">
+        <span class="path">assets/branding/LOGO.md</span>
+        <h4>Sistema de marca · v1.0.0</h4>
+        <p>Composición, paleta oficial, geometría, clear space, tamaños mínimos, plataformas, do's/don'ts, versionado. Fuente única de verdad del logo.</p>
+      </a>
+      <a class="doc-card" href="../pending-rules-for-master-doc.md">
+        <span class="path">design-system/pending-rules-for-master-doc.md</span>
+        <h4>Reglas pendientes del documento maestro</h4>
+        <p>Regla 01: evidencia de lectura legal. Regla 02: workspace modo foco + bordes Athena + tema reducido.</p>
+      </a>
+      <a class="doc-card" href="assets/README.md">
+        <span class="path">assets/README.md</span>
+        <h4>Estructura de assets publicitarios</h4>
+        <p>Specs de imágenes por tipo: students, covers, books, tutores, universidades, products, advertising. Convenciones y regla inviolable del logo.</p>
+      </a>
+      <a class="doc-card" href="assets/cast.md">
+        <span class="path">assets/cast.md</span>
+        <h4>Cast del universo Conniku</h4>
+        <p>Los 7 estudiantes protagonistas + 4 tutores verificados que aparecen en todos los mockups. Marca integrada.</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-head">
+      <span class="num">12</span>
+      <h2>Assets oficiales del logo</h2>
+      <span class="kicker">master + 9 plataformas</span>
+    </div>
+    <p class="cat-intro">Archivos SVG oficiales del logo listos para producción. Cada plataforma tiene sus derivados matemáticamente correctos del tile master.</p>
+
+    <h4 style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;margin:24px 0 12px">Masters · assets/branding/svg/</h4>
+    <div class="assets-grid">
+      <a class="asset-card" href="assets/branding/svg/logo-tile.svg">
+        <div class="stage"><svg width="100" height="100"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">logo-tile.svg</div><div class="s">100×100 · master</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/svg/logo-tile-white.svg">
+        <div class="stage ink"><svg width="100" height="100"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">logo-tile-white.svg</div><div class="s">100×100 · sobre ink</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/svg/logo-full.svg">
+        <div class="stage" style="flex-direction:row;display:flex;gap:10px;align-items:center;justify-content:center">
+          <svg width="56" height="56"><use href="#ck-tile"/></svg>
+          <div style="font-size:24px;font-weight:900;letter-spacing:-1.2px;color:#0D0F10">conniku.</div>
+        </div>
+        <div class="meta"><div class="n">logo-full.svg</div><div class="s">tile + wordmark</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/svg/logo-full-white.svg">
+        <div class="stage ink" style="flex-direction:row;display:flex;gap:10px;align-items:center;justify-content:center">
+          <svg width="56" height="56"><use href="#ck-tile"/></svg>
+          <div style="font-size:24px;font-weight:900;letter-spacing:-1.2px;color:#F5F4EF">conniku.</div>
+        </div>
+        <div class="meta"><div class="n">logo-full-white.svg</div><div class="s">full · dark bg</div></div>
+      </a>
+    </div>
+
+    <h4 style="font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase;margin:32px 0 12px">Plataformas · assets/branding/platforms/</h4>
+    <div class="assets-grid">
+      <a class="asset-card" href="assets/branding/platforms/web/favicon.svg">
+        <div class="stage"><svg width="64" height="64"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Web · Favicon</div><div class="s">32×32 · 48×48</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/web/og-image.svg">
+        <div class="stage" style="background:linear-gradient(135deg,#F5F4EF,#EBE9E1);padding:8px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <svg width="40" height="40"><use href="#ck-tile"/></svg>
+            <div style="font-size:12px;font-weight:900;letter-spacing:-.5px">Tu U entera.</div>
+          </div>
+        </div>
+        <div class="meta"><div class="n">Web · OG Image</div><div class="s">1200×630</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/ios/app-icon-1024.svg">
+        <div class="stage ios"><svg width="80" height="80" style="border-radius:18px"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">iOS · App icon</div><div class="s">1024·180·152·120</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/ipad/app-icon-167.svg">
+        <div class="stage ios"><svg width="72" height="72" style="border-radius:15px"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">iPad</div><div class="s">167 · 152</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/android/adaptive-icon.svg">
+        <div class="stage android"><svg width="80" height="80" style="border-radius:50%"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Android adaptive</div><div class="s">432×432</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/android/playstore-512.svg">
+        <div class="stage android"><svg width="80" height="80" style="border-radius:24px"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Play Store</div><div class="s">512×512</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/macos/app-icon-1024.svg">
+        <div class="stage macos"><svg width="80" height="80" style="border-radius:18px;filter:drop-shadow(0 6px 12px rgba(0,0,0,.15))"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">macOS icon</div><div class="s">1024 squircle</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/watch/app-icon-98.svg">
+        <div class="stage watch"><svg width="70" height="70" style="border-radius:50%"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Apple Watch</div><div class="s">98×98 circular</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/windows/mstile-310.svg">
+        <div class="stage win"><svg width="72" height="72"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Windows tile</div><div class="s">150 · 310</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/extension/chrome-icon-128.svg">
+        <div class="stage" style="background:linear-gradient(135deg,#fff,#f1f1f1)"><svg width="64" height="64"><use href="#ck-tile"/></svg></div>
+        <div class="meta"><div class="n">Extensión Chrome</div><div class="s">16 · 48 · 128</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/splash/splash-portrait-1284x2778.svg">
+        <div class="stage" style="flex-direction:column;gap:4px;display:flex;align-items:center">
+          <svg width="56" height="56"><use href="#ck-tile"/></svg>
+          <div style="font-size:11px;font-weight:900;letter-spacing:-.5px;color:#0D0F10">conniku.</div>
+        </div>
+        <div class="meta"><div class="n">Splash iPhone</div><div class="s">1284×2778</div></div>
+      </a>
+      <a class="asset-card" href="assets/branding/platforms/splash/splash-portrait-1080x1920.svg">
+        <div class="stage" style="flex-direction:column;gap:4px;display:flex;align-items:center">
+          <svg width="56" height="56"><use href="#ck-tile"/></svg>
+          <div style="font-size:11px;font-weight:900;letter-spacing:-.5px;color:#0D0F10">conniku.</div>
+        </div>
+        <div class="meta"><div class="n">Splash Android</div><div class="s">1080×1920</div></div>
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-grid">
+      <div>
+        <h5>Conniku · Sistema de diseño</h5>
+        <p>Carpeta de mockups del rediseño editorial para el equipo de desarrollo. Todos los mockups comparten paleta, tipografía (Funnel Display + Geist Mono), logo oficial v1.0.0 y el cast de 7 estudiantes.</p>
+      </div>
+      <div>
+        <h5>Navegación rápida</h5>
+        <ul>
+          <li><a href="31-sistema-marca.html">Sistema de marca</a></li>
+          <li><a href="33-logo-variantes-app.html">Variantes logo app</a></li>
+          <li><a href="25-landing-unificada.html">Landing unificada</a></li>
+          <li><a href="29-flujo-onboarding.html">Flujo onboarding 9 pasos</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Documentación</h5>
+        <ul>
+          <li><a href="assets/branding/LOGO.md">LOGO.md · guidelines</a></li>
+          <li><a href="../pending-rules-for-master-doc.md">Reglas pendientes</a></li>
+          <li><a href="assets/README.md">Specs de assets</a></li>
+          <li><a href="assets/cast.md">Cast del universo</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-note">
+      conniku-redesign / editorial-v2 · 33 mockups · 20 assets de marca · v1.0.0 · 2026-04-18
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+<svg viewBox="0 0 1284 2778" xmlns="http://www.w3.org/2000/svg" aria-label="Conniku splash">
+  <defs>
+    <radialGradient id="splashBG" cx="50%" cy="45%" r="75%">
+      <stop offset="0%" stop-color="#F5F4EF"/>
+      <stop offset="100%" stop-color="#EBE9E1"/>
+    </radialGradient>
+  </defs>
+  <rect width="1284" height="2778" fill="url(#splashBG)"/>
+
+  <!-- Splatter -->
+  <circle cx="154.07999999999998" cy="388.92" r="15.408" fill="#FF4D3A"/>
+  <circle cx="1129.92" cy="500.03999999999996" r="11.556" fill="#6B4EFF"/>
+  <circle cx="192.6" cy="2361.2999999999997" r="14.123999999999999" fill="#00C2FF"/>
+  <circle cx="1091.3999999999999" cy="2277.96" r="20.544" fill="#FFE9B8"/>
+  <circle cx="128.4" cy="2444.64" r="10.272" fill="#D9FF3A"/>
+
+  <!-- App icon v2.0 -->
+  <rect x="442.98" y="1070.568" width="398.04" height="398.04" rx="87.56880000000001" fill="#D9FF3A"/>
+  <text x="642.0" y="1381.0392" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="334.35360000000003" fill="#0D0F10" letter-spacing="-15.92">u</text>
+  <circle cx="781.3140000000001" cy="1373.0783999999999" r="23.8824" fill="#FF4A1C"/>
+
+  <!-- Wordmark integrado debajo (como texto compuesto) -->
+  <g font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="151.2552" letter-spacing="-6" text-anchor="middle">
+    <text x="642.0" y="1588.02" fill="#0D0F10">conniku.</text>
+  </g>
+</svg>

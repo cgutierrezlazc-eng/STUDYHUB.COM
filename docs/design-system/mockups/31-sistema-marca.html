@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Conniku — Sistema de marca visual</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --paper:#F5F4EF; --paper-2:#EBE9E1; --ink:#0D0F10; --ink-2:#1E2023;
+    --lime:#D9FF3A; --lime-ink:#181F08; --pink:#FF4D3A; --cream:#FFE9B8;
+    --violet:#6B4EFF; --cyan:#00C2FF; --orange:#FF4A1C;
+    --text:#0D0F10; --text-2:#4B4F52; --text-3:#696C6F; --line:#DAD8D0;
+    --sh:0 1px 2px rgba(13,15,16,.06), 0 8px 24px rgba(13,15,16,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--text);
+    font-family:'Funnel Display',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-feature-settings:"ss01","ss02","cv11";
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1240px;margin:0 auto;padding:64px 40px 120px}
+  header.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:56px}
+  .logomark{display:flex;align-items:center;gap:14px}
+  .logomark .wm{font-size:28px;font-weight:900;letter-spacing:-1.2px}
+  .crumbs{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3);letter-spacing:.08em;text-transform:uppercase}
+
+  h1.hero{font-size:clamp(56px,8vw,112px);font-weight:900;letter-spacing:-4px;line-height:.92;margin:0 0 24px;max-width:920px}
+  h1.hero em{font-style:normal;background:var(--lime);color:var(--lime-ink);padding:0 14px;border-radius:14px;display:inline-block;transform:rotate(-1deg)}
+  .sub{font-size:22px;line-height:1.5;color:var(--text-2);max-width:760px;margin:0 0 48px;font-weight:500}
+
+  section{margin-top:96px}
+  .section-title{display:flex;align-items:baseline;gap:16px;margin:0 0 28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .section-title .num{font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-3);letter-spacing:.08em}
+  .section-title h2{margin:0;font-size:40px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .section-title .kicker{margin-left:auto;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:32px;box-shadow:var(--sh)}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+
+  /* Hero tile grande */
+  .hero-tile{background:#fff;border:1px solid var(--line);border-radius:32px;padding:56px;display:grid;grid-template-columns:420px 1fr;gap:56px;align-items:center;box-shadow:var(--sh);position:relative;overflow:hidden}
+  .hero-tile::before{content:"";position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:var(--cream);opacity:.5}
+  .hero-tile::after{content:"";position:absolute;bottom:-60px;left:-40px;width:180px;height:180px;border-radius:50%;background:var(--cyan);opacity:.2}
+  .hero-tile > *{position:relative;z-index:1}
+  .hero-tile .big-tile{background:var(--ink);border-radius:56px;padding:56px;display:grid;place-items:center}
+  .hero-tile .meta h3{margin:0 0 12px;font-size:40px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .hero-tile .meta p{margin:0 0 18px;font-size:16px;line-height:1.6;color:var(--text-2)}
+  .hero-tile .meta .tag{display:inline-block;background:var(--ink);color:var(--lime);padding:6px 12px;border-radius:999px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.08em}
+
+  /* Swatches paleta */
+  .palette{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .swatch{border-radius:20px;padding:20px;min-height:160px;display:flex;flex-direction:column;justify-content:space-between;border:1px solid var(--line)}
+  .swatch .role{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}
+  .swatch .hex{font-size:22px;font-weight:900;letter-spacing:-1px}
+  .swatch .token{font-family:'Geist Mono',monospace;font-size:12px;opacity:.7}
+
+  /* Geometria */
+  .geo-wrap{background:#fff;border:1px solid var(--line);border-radius:24px;padding:40px}
+  .geo-stage{background:repeating-linear-gradient(0deg,rgba(13,15,16,.04) 0 1px,transparent 1px 40px),repeating-linear-gradient(90deg,rgba(13,15,16,.04) 0 1px,transparent 1px 40px);border-radius:16px;padding:40px;display:grid;place-items:center;min-height:380px}
+  .geo-annotations{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .geo-annotations .g-item{background:var(--paper-2);border-radius:14px;padding:14px 16px}
+  .geo-annotations .g-item .lbl{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .geo-annotations .g-item .val{font-size:15px;font-weight:700}
+
+  /* Variantes */
+  .variants{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .variant{border:1px solid var(--line);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+  .variant .v-stage{padding:28px;display:grid;place-items:center;min-height:160px}
+  .variant .v-stage.on-paper{background:var(--paper)}
+  .variant .v-stage.on-ink{background:var(--ink)}
+  .variant .v-stage.on-pink{background:var(--pink)}
+  .variant .v-stage.on-cyan{background:var(--cyan)}
+  .variant .v-stage.on-cream{background:var(--cream)}
+  .variant .v-stage.on-violet{background:var(--violet)}
+  .variant .v-meta{background:#fff;border-top:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+  .variant .v-name{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-2)}
+  .variant .v-tag{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3);letter-spacing:.08em}
+
+  /* Plataformas */
+  .platforms{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .platform{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden}
+  .platform .p-stage{aspect-ratio:1;background:var(--paper-2);display:grid;place-items:center}
+  .platform.ios .p-stage{background:linear-gradient(135deg,#1d4c9e,#7b2cff)}
+  .platform.android .p-stage{background:linear-gradient(135deg,#4CAF50,#1976D2)}
+  .platform.macos .p-stage{background:linear-gradient(135deg,#E8E6DF,#C7C4BA)}
+  .platform.watch .p-stage{background:#000}
+  .platform.windows .p-stage{background:#0078D4}
+  .platform.chrome .p-stage{background:linear-gradient(135deg,#fff,#f1f1f1)}
+  .platform.splash .p-stage{background:var(--paper)}
+  .platform.web .p-stage{background:linear-gradient(135deg,#F5F4EF,#EBE9E1)}
+  .platform .p-meta{padding:14px 16px;border-top:1px solid var(--line)}
+  .platform .p-name{font-weight:700;font-size:14px}
+  .platform .p-size{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);margin-top:2px}
+
+  /* Espacio libre */
+  .clearspace{background:#fff;border:1px solid var(--line);border-radius:24px;padding:40px}
+  .cs-stage{position:relative;display:grid;place-items:center;padding:80px;background:var(--paper-2);border-radius:16px}
+  .cs-stage .cs-guides{position:absolute;inset:40px;border:2px dashed var(--pink);border-radius:16px;pointer-events:none}
+  .cs-stage .cs-x{position:absolute;font-family:'Geist Mono',monospace;font-size:11px;color:var(--pink);letter-spacing:.08em;background:#fff;padding:2px 6px;border-radius:4px;border:1px solid var(--pink)}
+  .cs-stage .cs-x.top{top:20px;left:50%;transform:translateX(-50%)}
+  .cs-stage .cs-x.left{left:12px;top:50%;transform:translateY(-50%) rotate(-90deg)}
+  .cs-stage .cs-x.right{right:12px;top:50%;transform:translateY(-50%) rotate(90deg)}
+  .cs-stage .cs-x.bottom{bottom:20px;left:50%;transform:translateX(-50%)}
+
+  /* Tamaños mínimos */
+  .sizes{display:flex;align-items:flex-end;gap:32px;padding:28px;background:#fff;border:1px solid var(--line);border-radius:24px}
+  .size{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .size .size-label{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+  .size .size-v{font-size:14px;font-weight:700}
+
+  /* Do's & Don'ts */
+  .rules{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .rule-col{background:#fff;border:1px solid var(--line);border-radius:24px;padding:28px}
+  .rule-col.do{border-color:rgba(50,180,80,.3)}
+  .rule-col.dont{border-color:rgba(200,60,50,.3)}
+  .rule-col h3{margin:0 0 20px;font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+  .rule-col h3 .badge{font-family:'Geist Mono',monospace;font-size:11px;padding:4px 10px;border-radius:6px;letter-spacing:.08em}
+  .rule-col.do h3 .badge{background:rgba(50,180,80,.15);color:#1b6a2c}
+  .rule-col.dont h3 .badge{background:rgba(200,60,50,.12);color:#a42a1f}
+  .rule-list{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .rule-item{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--paper);display:flex;flex-direction:column;gap:8px;min-height:140px}
+  .rule-item .mini-stage{aspect-ratio:1;background:var(--paper-2);border-radius:10px;display:grid;place-items:center;position:relative;overflow:hidden}
+  .rule-item .caption{font-size:12px;color:var(--text-2);line-height:1.4}
+  .rule-col.dont .mini-stage::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 10px,rgba(200,60,50,.08) 10px 11px)}
+
+  /* Matriz archivos */
+  .files-table{background:#fff;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .files-table table{width:100%;border-collapse:collapse}
+  .files-table th,.files-table td{text-align:left;padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px}
+  .files-table th{background:var(--paper-2);font-weight:700;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2)}
+  .files-table td.path{font-family:'Geist Mono',monospace;font-size:12px;color:var(--ink)}
+  .files-table td.size{font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3)}
+  .files-table tr:last-child td{border-bottom:none}
+
+  .footer-note{margin-top:80px;padding:28px;background:var(--ink);color:var(--paper);border-radius:20px;display:flex;align-items:center;gap:20px}
+  .footer-note .dot{width:12px;height:12px;border-radius:50%;background:var(--orange);flex-shrink:0}
+  .footer-note p{margin:0;font-size:14px;line-height:1.6;color:rgba(245,244,239,.85)}
+  .footer-note strong{color:var(--lime)}
+</style>
+</head>
+<body>
+
+<!-- Sprite SVG del logo oficial, reutilizable en toda la página -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="ck-tile" viewBox="0 0 100 100">
+      <mask id="ck-cut" maskUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="#fff"/>
+        <circle cx="58" cy="50" r="24" fill="#000"/>
+      </mask>
+      <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ck-cut)"/>
+      <circle cx="58" cy="50" r="5" fill="#FF4A1C"/>
+    </symbol>
+    <symbol id="ck-tile-mono-ink" viewBox="0 0 100 100">
+      <mask id="ck-cut-mi" maskUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="#fff"/>
+        <circle cx="58" cy="50" r="24" fill="#000"/>
+      </mask>
+      <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#F5F4EF" mask="url(#ck-cut-mi)"/>
+      <circle cx="58" cy="50" r="5" fill="#0D0F10"/>
+    </symbol>
+    <symbol id="ck-tile-mono-light" viewBox="0 0 100 100">
+      <mask id="ck-cut-ml" maskUnits="userSpaceOnUse">
+        <rect width="100" height="100" fill="#fff"/>
+        <circle cx="58" cy="50" r="24" fill="#000"/>
+      </mask>
+      <rect width="100" height="100" rx="22" fill="#F5F4EF"/>
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#0D0F10" mask="url(#ck-cut-ml)"/>
+      <circle cx="58" cy="50" r="5" fill="#F5F4EF"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="logomark">
+      <svg width="44" height="44"><use href="#ck-tile"/></svg>
+      <div class="wm">conniku.</div>
+    </div>
+    <div class="crumbs">Mockup 31 · Sistema de marca visual · v1.0.0</div>
+  </header>
+
+  <h1 class="hero">Un logo. <em>Una historia.</em> Un sistema que no se negocia.</h1>
+  <p class="sub">El logo de Conniku vive en web, móvil, tiendas de apps, splash screens, emails, cursos, material impreso y en cualquier lugar donde la marca aparezca. Este documento visual define cómo se construye, qué variantes existen, y dónde se usan. Cualquier desviación requiere aprobación explícita.</p>
+
+  <!-- ─────── 01 Tile hero ─────── -->
+  <section>
+    <div class="hero-tile">
+      <div class="big-tile">
+        <svg width="300" height="300"><use href="#ck-tile"/></svg>
+      </div>
+      <div class="meta">
+        <span class="tag">v1.0.0 · oficial</span>
+        <h3>El tile, el corazón de la marca</h3>
+        <p>Cuadrado redondeado tinta, panel lima desplazado al centro, recorte circular hacia la derecha y una chispa naranja al centro del recorte. Todo el sistema visual de Conniku nace de esta geometría. Cualquier superficie digital o impresa reutiliza este mismo tile; nunca se redibuja.</p>
+        <p style="margin-top:24px;font-family:'Geist Mono',monospace;font-size:12px;color:var(--text-3);letter-spacing:.05em">
+          viewBox 0 0 100 100 · tile 22r · panel 12,12 76×76 14r · cut 58,50 r24 · spark 58,50 r5
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 02 Paleta ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">02</span>
+      <h2>Paleta oficial del logo</h2>
+      <span class="kicker">sagrada · no se amplía</span>
+    </div>
+    <div class="palette">
+      <div class="swatch" style="background:#0D0F10;color:#F5F4EF">
+        <div class="role">Tinta / Ink</div>
+        <div>
+          <div class="hex">#0D0F10</div>
+          <div class="token">--ink</div>
+        </div>
+      </div>
+      <div class="swatch" style="background:#D9FF3A;color:#181F08">
+        <div class="role">Lima / Core</div>
+        <div>
+          <div class="hex">#D9FF3A</div>
+          <div class="token">--lime</div>
+        </div>
+      </div>
+      <div class="swatch" style="background:#FF4A1C;color:#fff">
+        <div class="role">Naranja chispa</div>
+        <div>
+          <div class="hex">#FF4A1C</div>
+          <div class="token">--spark</div>
+        </div>
+      </div>
+      <div class="swatch" style="background:#181F08;color:#D9FF3A">
+        <div class="role">Tinta sobre lima</div>
+        <div>
+          <div class="hex">#181F08</div>
+          <div class="token">--ink-lime</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 03 Geometría ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">03</span>
+      <h2>Geometría y proporciones</h2>
+      <span class="kicker">grilla 100×100 · escalable</span>
+    </div>
+    <div class="geo-wrap">
+      <div class="geo-stage">
+        <svg viewBox="0 0 100 100" width="320" height="320">
+          <!-- Capa grilla anotada -->
+          <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+          <!-- Panel con ejes -->
+          <rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A"
+                mask="url(#ck-cut)"/>
+          <!-- Cross axes en el centro del recorte -->
+          <line x1="58" y1="14" x2="58" y2="86" stroke="#FF4D3A" stroke-width=".3" stroke-dasharray="1 1" opacity=".7"/>
+          <line x1="14" y1="50" x2="86" y2="50" stroke="#FF4D3A" stroke-width=".3" stroke-dasharray="1 1" opacity=".7"/>
+          <!-- Radio anotado -->
+          <line x1="58" y1="50" x2="82" y2="50" stroke="#00C2FF" stroke-width=".5"/>
+          <text x="68" y="48" font-family="Geist Mono,monospace" font-size="3" fill="#00C2FF">r=24</text>
+          <!-- Spark -->
+          <circle cx="58" cy="50" r="5" fill="#FF4A1C"/>
+          <text x="58" y="62" font-family="Geist Mono,monospace" font-size="2.5" fill="#fff" text-anchor="middle">spark r=5</text>
+        </svg>
+      </div>
+      <div class="geo-annotations">
+        <div class="g-item"><div class="lbl">Tile radius</div><div class="val">22 / 100 · (22%)</div></div>
+        <div class="g-item"><div class="lbl">Inner panel</div><div class="val">76 × 76 @ (12, 12)</div></div>
+        <div class="g-item"><div class="lbl">Panel radius</div><div class="val">14 · (14%)</div></div>
+        <div class="g-item"><div class="lbl">Cut center</div><div class="val">(58, 50)</div></div>
+        <div class="g-item"><div class="lbl">Cut radius</div><div class="val">24 · 24% del tile</div></div>
+        <div class="g-item"><div class="lbl">Spark radius</div><div class="val">5 · 5% del tile</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 04 Variantes oficiales ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">04</span>
+      <h2>Variantes oficiales</h2>
+      <span class="kicker">assets/branding/svg/</span>
+    </div>
+    <div class="variants">
+      <div class="variant">
+        <div class="v-stage on-paper"><svg width="120" height="120"><use href="#ck-tile"/></svg></div>
+        <div class="v-meta"><span class="v-name">logo-tile.svg</span><span class="v-tag">color / paper</span></div>
+      </div>
+      <div class="variant">
+        <div class="v-stage on-ink"><svg width="120" height="120"><use href="#ck-tile"/></svg></div>
+        <div class="v-meta"><span class="v-name">logo-tile-white.svg</span><span class="v-tag">color / ink</span></div>
+      </div>
+      <div class="variant">
+        <div class="v-stage on-paper"><svg width="120" height="120"><use href="#ck-tile-mono-ink"/></svg></div>
+        <div class="v-meta"><span class="v-name">logo-tile-mono-dark.svg</span><span class="v-tag">mono dark</span></div>
+      </div>
+      <div class="variant">
+        <div class="v-stage on-ink"><svg width="120" height="120"><use href="#ck-tile-mono-light"/></svg></div>
+        <div class="v-meta"><span class="v-name">logo-tile-mono-light.svg</span><span class="v-tag">mono light</span></div>
+      </div>
+      <div class="variant">
+        <div class="v-stage on-paper" style="gap:14px;flex-direction:row;display:flex;align-items:center;justify-content:center">
+          <svg width="88" height="88"><use href="#ck-tile"/></svg>
+          <div style="font-size:42px;font-weight:900;letter-spacing:-2.2px;color:#0D0F10">conniku.</div>
+        </div>
+        <div class="v-meta"><span class="v-name">logo-full.svg</span><span class="v-tag">tile + wordmark</span></div>
+      </div>
+      <div class="variant">
+        <div class="v-stage on-ink" style="gap:14px;flex-direction:row;display:flex;align-items:center;justify-content:center">
+          <svg width="88" height="88"><use href="#ck-tile"/></svg>
+          <div style="font-size:42px;font-weight:900;letter-spacing:-2.2px;color:#F5F4EF">conniku.</div>
+        </div>
+        <div class="v-meta"><span class="v-name">logo-full-white.svg</span><span class="v-tag">full / dark bg</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 05 Espacio libre ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">05</span>
+      <h2>Espacio libre · clear space</h2>
+      <span class="kicker">x = 24% del tile</span>
+    </div>
+    <div class="clearspace">
+      <div class="cs-stage">
+        <div class="cs-guides"></div>
+        <span class="cs-x top">x</span>
+        <span class="cs-x left">x</span>
+        <span class="cs-x right">x</span>
+        <span class="cs-x bottom">x</span>
+        <svg width="180" height="180"><use href="#ck-tile"/></svg>
+      </div>
+      <p style="margin:24px 0 0;color:var(--text-2);font-size:15px;line-height:1.6">El área punteada rosa es inviolable. Nada puede invadirla: ni texto, ni otros logos, ni imágenes decorativas, ni bordes. En la versión full, este mismo margen aplica al bounding box del conjunto tile + wordmark.</p>
+    </div>
+  </section>
+
+  <!-- ─────── 06 Tamaños mínimos ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">06</span>
+      <h2>Tamaños mínimos</h2>
+      <span class="kicker">por debajo · prohibido</span>
+    </div>
+    <div class="sizes">
+      <div class="size">
+        <svg width="16" height="16"><use href="#ck-tile"/></svg>
+        <span class="size-label">favicon</span>
+        <span class="size-v">16 px</span>
+      </div>
+      <div class="size">
+        <svg width="24" height="24"><use href="#ck-tile"/></svg>
+        <span class="size-label">toolbar</span>
+        <span class="size-v">24 px</span>
+      </div>
+      <div class="size">
+        <svg width="32" height="32"><use href="#ck-tile"/></svg>
+        <span class="size-label">sidebar colapsado</span>
+        <span class="size-v">32 px</span>
+      </div>
+      <div class="size">
+        <svg width="48" height="48"><use href="#ck-tile"/></svg>
+        <span class="size-label">extension</span>
+        <span class="size-v">48 px</span>
+      </div>
+      <div class="size">
+        <svg width="72" height="72"><use href="#ck-tile"/></svg>
+        <span class="size-label">app icon uso</span>
+        <span class="size-v">72 px</span>
+      </div>
+      <div class="size">
+        <svg width="120" height="120"><use href="#ck-tile"/></svg>
+        <span class="size-label">splash / sidebar full</span>
+        <span class="size-v">120 px</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 07 Plataformas ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">07</span>
+      <h2>Aplicación por plataforma</h2>
+      <span class="kicker">web · móvil · desktop · wear</span>
+    </div>
+    <div class="platforms">
+      <div class="platform web">
+        <div class="p-stage"><svg width="80" height="80"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">Favicon web</div><div class="p-size">32×32 · 48×48</div></div>
+      </div>
+      <div class="platform ios">
+        <div class="p-stage"><svg width="100" height="100" style="border-radius:22px"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">iOS app icon</div><div class="p-size">1024 · 180 · 152 · 120</div></div>
+      </div>
+      <div class="platform android">
+        <div class="p-stage"><svg width="100" height="100" style="border-radius:50%"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">Android adaptive</div><div class="p-size">432×432 safe 264</div></div>
+      </div>
+      <div class="platform macos">
+        <div class="p-stage"><svg width="100" height="100" style="border-radius:22px;filter:drop-shadow(0 10px 20px rgba(0,0,0,.15))"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">macOS icon</div><div class="p-size">1024 squircle</div></div>
+      </div>
+      <div class="platform watch">
+        <div class="p-stage"><svg width="100" height="100" style="border-radius:50%"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">Apple Watch</div><div class="p-size">98×98 circular</div></div>
+      </div>
+      <div class="platform windows">
+        <div class="p-stage"><svg width="90" height="90"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">Windows tile</div><div class="p-size">150 · 310</div></div>
+      </div>
+      <div class="platform chrome">
+        <div class="p-stage"><svg width="72" height="72"><use href="#ck-tile"/></svg></div>
+        <div class="p-meta"><div class="p-name">Extensión Chrome</div><div class="p-size">16 · 48 · 128</div></div>
+      </div>
+      <div class="platform splash">
+        <div class="p-stage" style="flex-direction:column;gap:8px;display:flex;align-items:center;justify-content:center">
+          <svg width="72" height="72"><use href="#ck-tile"/></svg>
+          <div style="font-size:16px;font-weight:900;letter-spacing:-.8px;color:#0D0F10">conniku.</div>
+        </div>
+        <div class="p-meta"><div class="p-name">Splash screens</div><div class="p-size">1284×2778 · 1080×1920</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 08 Do's / Don'ts ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">08</span>
+      <h2>Correcto / Incorrecto</h2>
+      <span class="kicker">el sistema no se negocia</span>
+    </div>
+    <div class="rules">
+      <div class="rule-col do">
+        <h3>Correcto <span class="badge">sí</span></h3>
+        <div class="rule-list">
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper)"><svg width="64" height="64"><use href="#ck-tile"/></svg></div>
+            <div class="caption">Sobre warm paper, con espacio libre respetado</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--ink)"><svg width="64" height="64"><use href="#ck-tile"/></svg></div>
+            <div class="caption">Sobre tinta, usar variante color o invertida</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--cream)"><svg width="64" height="64"><use href="#ck-tile"/></svg></div>
+            <div class="caption">Sobre paleta extendida, tile a color sin modificar</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper-2)"><svg width="64" height="64"><use href="#ck-tile-mono-ink"/></svg></div>
+            <div class="caption">Monocromo dark cuando el color no aplica</div>
+          </div>
+        </div>
+      </div>
+      <div class="rule-col dont">
+        <h3>Incorrecto <span class="badge">no</span></h3>
+        <div class="rule-list">
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper)"><svg width="64" height="64" style="transform:rotate(-18deg)"><use href="#ck-tile"/></svg></div>
+            <div class="caption">No rotar el logo fuera de 0°</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper)"><svg width="64" height="64" style="transform:scaleX(1.6)"><use href="#ck-tile"/></svg></div>
+            <div class="caption">No deformar el aspect ratio</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper)"><svg width="64" height="64" style="filter:hue-rotate(200deg) saturate(1.5)"><use href="#ck-tile"/></svg></div>
+            <div class="caption">No aplicar filtros ni recolorear</div>
+          </div>
+          <div class="rule-item">
+            <div class="mini-stage" style="background:var(--paper)"><svg width="64" height="64" style="filter:drop-shadow(0 10px 14px rgba(255,75,30,.8))"><use href="#ck-tile"/></svg></div>
+            <div class="caption">No aplicar glows, sombras extrañas ni efectos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────── 09 Archivos oficiales ─────── -->
+  <section>
+    <div class="section-title">
+      <span class="num">09</span>
+      <h2>Archivos oficiales</h2>
+      <span class="kicker">assets/branding/</span>
+    </div>
+    <div class="files-table">
+      <table>
+        <thead>
+          <tr><th>Ruta</th><th>Uso</th><th>Tamaño</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="path">svg/logo-tile.svg</td><td>Tile master a color</td><td class="size">100×100</td></tr>
+          <tr><td class="path">svg/logo-full.svg</td><td>Tile + wordmark</td><td class="size">variable</td></tr>
+          <tr><td class="path">platforms/web/favicon.svg</td><td>Favicon navegador</td><td class="size">32×32</td></tr>
+          <tr><td class="path">platforms/web/og-image.svg</td><td>Open Graph / Twitter Card</td><td class="size">1200×630</td></tr>
+          <tr><td class="path">platforms/ios/app-icon-1024.svg</td><td>App Store master</td><td class="size">1024×1024</td></tr>
+          <tr><td class="path">platforms/ios/app-icon-180.svg</td><td>iPhone @3x</td><td class="size">180×180</td></tr>
+          <tr><td class="path">platforms/ios/app-icon-152.svg</td><td>iPad</td><td class="size">152×152</td></tr>
+          <tr><td class="path">platforms/ios/app-icon-120.svg</td><td>iPhone @2x</td><td class="size">120×120</td></tr>
+          <tr><td class="path">platforms/ipad/app-icon-167.svg</td><td>iPad Pro</td><td class="size">167×167</td></tr>
+          <tr><td class="path">platforms/android/adaptive-icon.svg</td><td>Android adaptive</td><td class="size">432×432</td></tr>
+          <tr><td class="path">platforms/android/playstore-512.svg</td><td>Google Play listing</td><td class="size">512×512</td></tr>
+          <tr><td class="path">platforms/macos/app-icon-1024.svg</td><td>macOS squircle</td><td class="size">1024×1024</td></tr>
+          <tr><td class="path">platforms/watch/app-icon-98.svg</td><td>Apple Watch circular</td><td class="size">98×98</td></tr>
+          <tr><td class="path">platforms/windows/mstile-150.svg</td><td>Windows tile</td><td class="size">150×150</td></tr>
+          <tr><td class="path">platforms/windows/mstile-310.svg</td><td>Windows tile large</td><td class="size">310×310</td></tr>
+          <tr><td class="path">platforms/extension/chrome-icon-16.svg</td><td>Toolbar extensión</td><td class="size">16×16</td></tr>
+          <tr><td class="path">platforms/extension/chrome-icon-48.svg</td><td>Management page</td><td class="size">48×48</td></tr>
+          <tr><td class="path">platforms/extension/chrome-icon-128.svg</td><td>Chrome Web Store</td><td class="size">128×128</td></tr>
+          <tr><td class="path">platforms/splash/splash-portrait-1284x2778.svg</td><td>iPhone splash</td><td class="size">1284×2778</td></tr>
+          <tr><td class="path">platforms/splash/splash-portrait-1080x1920.svg</td><td>Android splash</td><td class="size">1080×1920</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    <div class="dot"></div>
+    <p><strong>Regla inviolable.</strong> Ningún asset de producto puede usar una versión del logo distinta a las listadas aquí. Cualquier variación requiere aprobación explícita de Cristian y debe añadirse al sistema antes de implementarse. Detalles completos en <strong>assets/branding/LOGO.md</strong>.</p>
+  </div>
+
+</div>
+
+</body>
+</html>

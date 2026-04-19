@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Onboarding · Primer paso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); height: 100vh; overflow: hidden; }
+    body { display: flex; flex-direction: column; }
+
+    /* Progress bar top */
+    .progress-top {
+      background: var(--ink); color: #fff;
+      padding: 14px 28px; display: flex; align-items: center; gap: 20px;
+      flex-shrink: 0;
+    }
+    .pt-brand { display: flex; align-items: center; gap: 10px; }
+    .pt-logo { width: 30px; height: 30px; display: block; flex-shrink: 0; }
+    .pt-name { font-weight: 700; font-size: 18px; letter-spacing: -.02em; }
+    .pt-step { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .1em; text-transform: uppercase; margin-left: 16px; font-weight: 700; }
+    .pt-bar { flex: 1; max-width: 640px; margin: 0 auto; height: 6px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; position: relative; }
+    .pt-fill { width: 50%; height: 100%; background: linear-gradient(90deg, var(--lime), var(--pink)); border-radius: 999px; }
+    .pt-steps { display: flex; gap: 12px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; color: rgba(255,255,255,.4); text-transform: uppercase; font-weight: 700; }
+    .pt-steps .step { padding: 5px 0; }
+    .pt-steps .step.done { color: var(--lime); }
+    .pt-steps .step.current { color: #fff; font-weight: 800; }
+    .pt-skip { margin-left: auto; background: transparent; border: 1px solid rgba(255,255,255,.2); color: #fff; padding: 6px 12px; border-radius: 999px; font-family: var(--font-display); font-weight: 600; font-size: 12px; cursor: pointer; }
+
+    /* Main content */
+    .wizard {
+      flex: 1; overflow-y: auto; padding: 40px 32px 60px;
+      display: flex; justify-content: center;
+    }
+    .wizard::-webkit-scrollbar { width: 6px; }
+
+    .wiz-container {
+      max-width: 880px; width: 100%;
+      display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start;
+    }
+
+    /* Left: main question */
+    .wiz-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+    .wiz-label::before { content: ""; width: 24px; height: 2px; background: var(--ink); }
+
+    .wiz-h1 { font-weight: 900; font-size: clamp(48px, 6vw, 76px); line-height: .95; letter-spacing: -.04em; margin-bottom: 18px; }
+    .wiz-h1 .hl-lime { background: var(--lime); color: var(--lime-ink); padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(-1deg); }
+    .wiz-h1 .hl-pink { background: var(--pink); color: #fff; padding: 0 12px; border-radius: 14px; display: inline-block; transform: rotate(.8deg); }
+
+    .wiz-desc { font-size: 17px; color: var(--ink-2); line-height: 1.45; margin-bottom: 32px; font-weight: 500; max-width: 440px; }
+    .wiz-desc strong { background: var(--cream); padding: 0 4px; border-radius: 3px; font-weight: 700; }
+
+    /* University grid */
+    .uni-search { margin-bottom: 18px; }
+    .uni-search input {
+      width: 100%; background: var(--card); border: 2px solid var(--ink);
+      border-radius: 14px; padding: 14px 18px; font-family: var(--font-display);
+      font-size: 15px; color: var(--ink); outline: none; font-weight: 500;
+    }
+    .uni-search input:focus { box-shadow: 4px 4px 0 var(--lime); }
+    .uni-search input::placeholder { color: var(--ink-3); }
+
+    .uni-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-height: 440px; overflow-y: auto; padding-right: 4px; }
+    .uni-grid::-webkit-scrollbar { width: 4px; }
+    .uni-grid::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
+    .uni-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 16px;
+      padding: 16px; display: flex; align-items: center; gap: 14px; cursor: pointer;
+      transition: all 150ms var(--ease); position: relative;
+    }
+    .uni-card:hover { transform: translateY(-2px); box-shadow: 4px 4px 0 var(--ink); }
+    .uni-card.selected { background: var(--lime); border-color: var(--ink); }
+    .uni-card.selected::after { content: "✓"; position: absolute; top: 10px; right: 12px; font-size: 14px; font-weight: 900; color: var(--lime-ink); }
+    .uni-logo {
+      width: 46px; height: 46px; border-radius: 10px;
+      color: #fff; display: grid; place-items: center;
+      font-weight: 900; font-size: 17px; flex-shrink: 0;
+      font-family: var(--font-display); letter-spacing: -.02em;
+    }
+    .ul-uchile { background: linear-gradient(135deg, #8B1538, #B12D40); }
+    .ul-uc { background: linear-gradient(135deg, #1E3C72, #2A5298); }
+    .ul-udp { background: linear-gradient(135deg, #004E89, #0066B3); }
+    .ul-usach { background: linear-gradient(135deg, #142F58, #2A4D7F); color: #FFD700; }
+    .ul-uah { background: linear-gradient(135deg, #801530, #A81F48); }
+    .ul-unab { background: linear-gradient(135deg, #D32F2F, #F44336); }
+    .ul-duoc { background: linear-gradient(135deg, #003DA5, #0066CC); }
+    .ul-generic { background: linear-gradient(135deg, #6B4EFF, #2F55F0); }
+
+    .uni-info { flex: 1; min-width: 0; }
+    .uni-name { font-weight: 700; font-size: 14px; letter-spacing: -.01em; line-height: 1.15; }
+    .uni-members { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; margin-top: 3px; }
+    .uni-card.selected .uni-members { color: var(--lime-ink); opacity: .6; }
+    .uni-verified { font-family: var(--font-mono); font-size: 9px; background: var(--ink); color: var(--lime); padding: 2px 6px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; margin-top: 4px; display: inline-block; }
+    .uni-card.selected .uni-verified { background: var(--ink); color: var(--lime); }
+
+    /* Right side: preview card */
+    .preview-card {
+      background: var(--ink); color: #fff; border-radius: 24px; padding: 28px;
+      transform: rotate(1.2deg); box-shadow: 8px 8px 0 var(--lime);
+      position: sticky; top: 20px;
+    }
+    .preview-card .pv-label { font-family: var(--font-mono); font-size: 11px; color: var(--lime); letter-spacing: .12em; text-transform: uppercase; font-weight: 700; display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .preview-card .pv-label::before { content: "★"; }
+    .preview-card h3 { font-weight: 900; font-size: 22px; letter-spacing: -.02em; line-height: 1.1; }
+    .preview-card h3 .hl { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; }
+    .preview-card p { font-size: 13px; color: rgba(255,255,255,.7); margin-top: 10px; line-height: 1.4; }
+
+    .benefits-list { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+    .benefit-row { display: flex; align-items: start; gap: 10px; font-size: 13px; font-weight: 500; }
+    .benefit-row .check { width: 22px; height: 22px; border-radius: 50%; background: var(--lime); color: var(--ink); display: grid; place-items: center; font-weight: 900; font-size: 12px; flex-shrink: 0; }
+    .benefit-row .b-text strong { color: var(--lime); }
+
+    /* Bottom action bar */
+    .actions {
+      background: var(--card); border-top: 1px solid var(--line);
+      padding: 16px 32px; display: flex; justify-content: space-between; align-items: center;
+      flex-shrink: 0;
+    }
+    .back-btn { background: transparent; border: 1.5px solid var(--ink); color: var(--ink); padding: 11px 22px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 14px; cursor: pointer; }
+    .continue-btn { background: var(--ink); color: #fff; padding: 12px 16px 12px 22px; border-radius: 999px; border: 0; font-family: var(--font-display); font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: transform 150ms var(--ease); }
+    .continue-btn:hover { transform: translateY(-2px); }
+    .continue-btn .ring { width: 30px; height: 30px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 15px; }
+    .continue-btn:disabled { background: var(--paper-2); color: var(--ink-3); cursor: not-allowed; }
+    .continue-btn:disabled .ring { background: var(--ink-4); color: #fff; }
+
+    .actions-helper { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; font-weight: 600; }
+    .actions-helper strong { color: var(--ink); font-weight: 800; }
+
+    @media (max-width: 1080px) {
+      .wiz-container { grid-template-columns: 1fr; }
+      .preview-card { position: static; }
+      .uni-grid { grid-template-columns: 1fr; }
+      .pt-steps { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-top">
+    <div class="pt-brand">
+      <div class="pt-logo"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckA_20_onboarding" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckA_20_onboarding)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="pt-name">conniku</div>
+      <div class="pt-step">Paso 3 de 6</div>
+    </div>
+    <div class="pt-steps">
+      <span class="step done">✓ Cuenta</span>
+      <span class="step done">✓ Edad</span>
+      <span class="step current">U + Carrera</span>
+      <span class="step">Intereses</span>
+      <span class="step">Amigos</span>
+      <span class="step">Listo</span>
+    </div>
+    <div class="pt-bar"><div class="pt-fill"></div></div>
+    <button class="pt-skip">Saltar</button>
+  </div>
+
+  <div class="wizard">
+    <div class="wiz-container">
+
+      <div class="wiz-main">
+        <div class="wiz-label">Vamos a sincronizar</div>
+        <h1 class="wiz-h1">
+          ¿Cuál es<br>
+          <span class="hl-lime">tu U</span><br>
+          en Chile?
+        </h1>
+        <p class="wiz-desc">
+          Elige tu universidad para <strong>sincronizar tu calendario, asignaturas y material</strong> automáticamente. Si no está en la lista, elige "otra" y la agregamos al rato.
+        </p>
+
+        <div class="uni-search">
+          <input type="text" placeholder="Buscar tu universidad..." />
+        </div>
+
+        <div class="uni-grid">
+
+          <div class="uni-card selected">
+            <div class="uni-logo ul-uchile">U</div>
+            <div class="uni-info">
+              <div class="uni-name">Universidad de Chile</div>
+              <div class="uni-members">2.104 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-uc">UC</div>
+            <div class="uni-info">
+              <div class="uni-name">Pontificia Universidad Católica</div>
+              <div class="uni-members">1.842 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-udp">UDP</div>
+            <div class="uni-info">
+              <div class="uni-name">Universidad Diego Portales</div>
+              <div class="uni-members">1.234 estudiantes</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-usach">USACH</div>
+            <div class="uni-info">
+              <div class="uni-name">Universidad de Santiago</div>
+              <div class="uni-members">980 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-uah">UAH</div>
+            <div class="uni-info">
+              <div class="uni-name">Universidad Alberto Hurtado</div>
+              <div class="uni-members">612 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-unab">UNAB</div>
+            <div class="uni-info">
+              <div class="uni-name">Universidad Andrés Bello</div>
+              <div class="uni-members">548 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-duoc">DUOC</div>
+            <div class="uni-info">
+              <div class="uni-name">DuocUC</div>
+              <div class="uni-members">412 estudiantes · Chile</div>
+              <span class="uni-verified">★ Sync oficial</span>
+            </div>
+          </div>
+
+          <div class="uni-card">
+            <div class="uni-logo ul-generic">+</div>
+            <div class="uni-info">
+              <div class="uni-name">Otra universidad (Chile o LATAM)</div>
+              <div class="uni-members">Te ayudamos a sumarla</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <aside class="preview-card">
+        <div class="pv-label">Lo que pasará al sincronizar</div>
+        <h3>Con <span class="hl">U de Chile</span> vas a tener:</h3>
+        <p>Sincronización en menos de 2 minutos. Todo tu semestre cargado automáticamente.</p>
+
+        <div class="benefits-list">
+          <div class="benefit-row">
+            <div class="check">✓</div>
+            <div class="b-text"><strong>Calendario académico</strong> con tus ramos cargados</div>
+          </div>
+          <div class="benefit-row">
+            <div class="check">✓</div>
+            <div class="b-text"><strong>Material oficial</strong> de cada ramo siempre al día</div>
+          </div>
+          <div class="benefit-row">
+            <div class="check">✓</div>
+            <div class="b-text"><strong>Notas + asistencia</strong> sincronizadas con Mercurio</div>
+          </div>
+          <div class="benefit-row">
+            <div class="check">✓</div>
+            <div class="b-text"><strong>Comunidad oficial</strong> de 2.104 compañeros</div>
+          </div>
+          <div class="benefit-row">
+            <div class="check">✓</div>
+            <div class="b-text"><strong>Bolsa de empleo</strong> filtrada para tu carrera</div>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="back-btn">← Atrás</button>
+    <div class="actions-helper">
+      <strong>Universidad de Chile</strong> seleccionada · siguiente: carrera
+    </div>
+    <button class="continue-btn">
+      Continuar
+      <div class="ring">→</div>
+    </button>
+  </div>
+
+</body>
+</html>
