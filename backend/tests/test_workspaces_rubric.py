@@ -215,3 +215,49 @@ def test_rubric_upload_docx_real(rubric_client):
     assert r.status_code == 200
     body = r.json()
     assert len(body["items"]) == 2
+
+
+def test_rubric_upload_excede_tamano_maximo_413(rubric_client):
+    """Archivo > MAX_RUBRIC_UPLOAD_BYTES debe retornar 413."""
+    client, h_o, _, doc_id = rubric_client
+    oversized = b"A" * (11 * 1024 * 1024)  # 11 MB > 10 MB
+    r = client.post(
+        f"/workspaces/{doc_id}/rubric/upload",
+        files={"file": ("gigante.txt", io.BytesIO(oversized), "text/plain")},
+        headers=h_o,
+    )
+    assert r.status_code == 413, (
+        f"Esperaba 413 Payload Too Large, got {r.status_code}: {r.text[:200]}"
+    )
+
+
+def test_rubric_upload_mime_no_permitido_415(rubric_client):
+    """MIME fuera de allowlist (ej: image/png) debe retornar 415."""
+    client, h_o, _, doc_id = rubric_client
+    r = client.post(
+        f"/workspaces/{doc_id}/rubric/upload",
+        files={"file": ("pwn.png", io.BytesIO(b"\x89PNG\r\n\x1a\n" + b"\x00" * 100), "image/png")},
+        headers=h_o,
+    )
+    assert r.status_code == 415, (
+        f"Esperaba 415 Unsupported Media Type, got {r.status_code}: {r.text[:200]}"
+    )
+
+
+def test_rubric_upload_extension_no_permitida_415(rubric_client):
+    """Extensión fuera de allowlist (ej: .exe) debe retornar 415 incluso si MIME es generic."""
+    client, h_o, _, doc_id = rubric_client
+    r = client.post(
+        f"/workspaces/{doc_id}/rubric/upload",
+        files={
+            "file": (
+                "malware.exe",
+                io.BytesIO(b"MZ\x90\x00" + b"\x00" * 100),
+                "application/octet-stream",
+            )
+        },
+        headers=h_o,
+    )
+    assert r.status_code == 415, (
+        f"Esperaba 415 Unsupported Media Type, got {r.status_code}: {r.text[:200]}"
+    )

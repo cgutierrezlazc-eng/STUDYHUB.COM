@@ -31,12 +31,39 @@ import type {
 } from '../../shared/workspaces-types';
 
 const TOKEN_KEY = 'conniku_token';
+const DEFAULT_TIMEOUT_MS = 15_000;
 
 function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export class AuthExpiredError extends Error {
+  constructor(message = 'Sesión expirada. Vuelve a iniciar sesión.') {
+    super(message);
+    this.name = 'AuthExpiredError';
+  }
+}
+
+export class RequestTimeoutError extends Error {
+  constructor(message = 'La solicitud tardó demasiado. Reintenta más tarde.') {
+    super(message);
+    this.name = 'RequestTimeoutError';
+  }
+}
+
+function handleAuthExpired(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* localStorage inaccesible, fallback silencioso */
+  }
+}
+
+async function apiFetch<T>(
+  endpoint: string,
+  options: RequestInit = {},
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
+): Promise<T> {
   const base = getApiBase();
   const token = getToken();
   const headers: Record<string, string> = {
@@ -45,7 +72,34 @@ async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise
     ...(options.headers as Record<string, string> | undefined),
   };
 
-  const res = await fetch(`${base}${endpoint}`, { ...options, headers });
+  const controller = new AbortController();
+  const existingSignal = options.signal;
+  if (existingSignal) {
+    if (existingSignal.aborted) {
+      controller.abort();
+    } else {
+      existingSignal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
+  }
+  const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  let res: Response;
+  try {
+    res = await fetch(`${base}${endpoint}`, { ...options, headers, signal: controller.signal });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      if (existingSignal?.aborted) throw err;
+      throw new RequestTimeoutError();
+    }
+    throw err;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
+
+  if (res.status === 401) {
+    handleAuthExpired();
+    throw new AuthExpiredError();
+  }
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
