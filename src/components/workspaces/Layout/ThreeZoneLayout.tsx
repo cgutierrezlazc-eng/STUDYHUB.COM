@@ -22,6 +22,8 @@ import MemberContributionBar from '../Presence/MemberContributionBar';
 import GroupChat from '../Chat/GroupChat';
 import AthenaPanel from '../Athena/AthenaPanel';
 import type { EditorBridgeHandle } from '../Athena/AthenaPanel';
+import CommentsPanel from '../Comments/CommentsPanel';
+import RubricPanel from '../Rubric/RubricPanel';
 
 interface SidebarPanelProps {
   title: string;
@@ -75,6 +77,8 @@ interface ThreeZoneLayoutProps {
   editorBridge?: RefObject<EditorBridgeHandle | null> | null;
   /** Función de navegación para el modal de upgrade de Athena */
   onNavigate?: (path: string) => void;
+  /** Si true, muestra el panel de comentarios en la zona derecha (2d.8) */
+  commentsEnabled?: boolean;
 }
 
 export default function ThreeZoneLayout({
@@ -88,7 +92,9 @@ export default function ThreeZoneLayout({
   athenaEnabled = false,
   editorBridge,
   onNavigate,
+  commentsEnabled = false,
 }: ThreeZoneLayoutProps) {
+  const [commentsOpen, setCommentsOpen] = useState(false);
   return (
     <div className="ws-three-zone">
       {/* ── Zona izquierda: sidebar del doc ── */}
@@ -105,9 +111,13 @@ export default function ThreeZoneLayout({
         </SidebarPanel>
 
         <SidebarPanel title="Rúbrica">
-          <p className="ws-placeholder-text ws-placeholder-text--muted">
-            Carga tu rúbrica al crear el documento (disponible próximamente).
-          </p>
+          {docId ? (
+            <RubricPanel docId={docId} />
+          ) : (
+            <p className="ws-placeholder-text ws-placeholder-text--muted">
+              Carga tu rúbrica al crear el documento.
+            </p>
+          )}
         </SidebarPanel>
       </aside>
 
@@ -116,7 +126,7 @@ export default function ThreeZoneLayout({
         {children}
       </main>
 
-      {/* ── Zona derecha: borrador privado + chat grupal ── */}
+      {/* ── Zona derecha: borrador privado + comentarios + chat grupal ── */}
       <div className="ws-zone-right" aria-label="Paneles laterales derechos">
         {/* Panel superior: AthenaPanel (2c) o placeholder si no está habilitado */}
         <div
@@ -137,6 +147,40 @@ export default function ThreeZoneLayout({
             </div>
           )}
         </div>
+
+        {/* Panel de comentarios — activo en 2d.8 cuando commentsEnabled=true */}
+        {commentsEnabled && docId && currentUser && (
+          <div
+            className={`ws-zone-right-panel ws-zone-right-panel--comments${commentsOpen ? ' ws-zone-right-panel--comments-open' : ''}`}
+            aria-label="Panel de comentarios"
+          >
+            <div className="ws-comments-panel-header">
+              <span className="ws-comments-panel-title">Comentarios</span>
+              <button
+                type="button"
+                className="ws-comments-toggle-btn"
+                onClick={() => setCommentsOpen((o) => !o)}
+                aria-expanded={commentsOpen}
+                aria-label={
+                  commentsOpen ? 'Cerrar panel de comentarios' : 'Abrir panel de comentarios'
+                }
+              >
+                {commentsOpen ? '▲' : '▼'}
+              </button>
+            </div>
+            {commentsOpen && (
+              <CommentsPanel
+                docId={docId}
+                currentUser={{
+                  userId: currentUser.userId,
+                  name: currentUser.name,
+                  role: 'editor',
+                }}
+                members={members}
+              />
+            )}
+          </div>
+        )}
 
         {/* Panel inferior: chat grupal — activo en 2b */}
         <div
