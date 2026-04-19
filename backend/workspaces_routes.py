@@ -27,7 +27,7 @@ from database import (
     gen_id,
     get_db,
 )
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from middleware import get_current_user
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
@@ -919,7 +919,7 @@ def upload_rubric_text(
 
     from rubric_parser import parse_rubric
 
-    doc = _check_access(doc_id, user, db, required_role="editor")
+    doc, _ = _check_access(doc_id, user, db, required_role="editor")
 
     text = (data.text or "").strip()
     if not text:
@@ -932,6 +932,69 @@ def upload_rubric_text(
     return {"items": items, "warnings": warnings}
 
 
+def _extract_text_from_upload(file: UploadFile) -> str:
+    """Extrae texto plano de un archivo subido (PDF, DOCX, o TXT)."""
+    import io
+
+    filename = (file.filename or "").lower()
+    content_bytes = file.file.read()
+
+    if filename.endswith(".pdf"):
+        import pdfplumber
+
+        parts = []
+        with pdfplumber.open(io.BytesIO(content_bytes)) as pdf:
+            for page in pdf.pages:
+                txt = page.extract_text() or ""
+                parts.append(txt)
+        return "\n".join(parts)
+
+    if filename.endswith((".docx", ".doc")):
+        import docx
+
+        doc = docx.Document(io.BytesIO(content_bytes))
+        return "\n".join(p.text for p in doc.paragraphs)
+
+    # TXT u otro: decodificar como utf-8 con fallback
+    try:
+        return content_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        return content_bytes.decode("latin-1", errors="replace")
+
+
+@router.post("/{doc_id}/rubric/upload")
+async def upload_rubric_file(
+    doc_id: str,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Sube archivo PDF/DOCX/TXT, extrae texto y parsea como rúbrica."""
+    import json as _json
+
+    from rubric_parser import parse_rubric
+
+    doc, _ = _check_access(doc_id, user, db, required_role="editor")
+
+    if not file.filename:
+        raise HTTPException(400, "No se recibió archivo")
+
+    try:
+        text = _extract_text_from_upload(file)
+    except Exception as exc:
+        logger.warning("[rubric] Error extrayendo texto de %s: %s", file.filename, exc)
+        raise HTTPException(400, f"No se pudo leer el archivo: {exc}") from exc
+
+    if not text or not text.strip():
+        raise HTTPException(400, "El archivo no contiene texto legible")
+
+    items, warnings = parse_rubric(text)
+    doc.rubric_raw = _json.dumps({"raw": text, "items": items}, ensure_ascii=False)
+    db.commit()
+
+    return {"items": items, "warnings": warnings, "filename": file.filename}
+
+
 @router.get("/{doc_id}/rubric")
 def get_rubric(
     doc_id: str,
@@ -941,7 +1004,7 @@ def get_rubric(
     """Retorna la rúbrica parseada del doc."""
     import json as _json
 
-    doc = _check_access(doc_id, user, db, required_role="viewer")
+    doc, _ = _check_access(doc_id, user, db, required_role="viewer")
 
     if not doc.rubric_raw:
         return {"raw": "", "items": []}
