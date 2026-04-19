@@ -36,6 +36,20 @@ logger = logging.getLogger("conniku.workspaces")
 
 router = APIRouter(prefix="/workspaces", tags=["workspaces"])
 
+# ─── Hardening rubric upload (A-2, 2026-04-19) ────────────────────
+MAX_RUBRIC_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+
+ALLOWED_RUBRIC_MIME_TYPES = frozenset(
+    {
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/msword",
+        "text/plain",
+    }
+)
+
+ALLOWED_RUBRIC_EXTENSIONS = frozenset({".pdf", ".docx", ".doc", ".txt"})
+
 
 # ─── Helpers internos ─────────────────────────────────────────────
 
@@ -933,11 +947,30 @@ def upload_rubric_text(
 
 
 def _extract_text_from_upload(file: UploadFile) -> str:
-    """Extrae texto plano de un archivo subido (PDF, DOCX, o TXT)."""
+    """Extrae texto plano de un archivo subido (PDF, DOCX, o TXT).
+
+    Enforza `MAX_RUBRIC_UPLOAD_BYTES` leyendo en streaming; levanta
+    HTTPException 413 si excede. No valida MIME ni extensión aquí
+    (responsabilidad del endpoint; ver `upload_rubric_file`).
+    """
     import io
 
     filename = (file.filename or "").lower()
-    content_bytes = file.file.read()
+
+    chunks: list[bytes] = []
+    total = 0
+    while True:
+        chunk = file.file.read(1024 * 1024)  # 1 MB por vez
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > MAX_RUBRIC_UPLOAD_BYTES:
+            raise HTTPException(
+                413,
+                f"Archivo excede el tamaño máximo permitido ({MAX_RUBRIC_UPLOAD_BYTES // (1024 * 1024)} MB)",
+            )
+        chunks.append(chunk)
+    content_bytes = b"".join(chunks)
 
     if filename.endswith(".pdf"):
         import pdfplumber
@@ -979,8 +1012,27 @@ async def upload_rubric_file(
     if not file.filename:
         raise HTTPException(400, "No se recibió archivo")
 
+    # Validación MIME (allowlist) + extensión (defensa en profundidad)
+    filename_lower = file.filename.lower()
+    has_allowed_ext = any(filename_lower.endswith(ext) for ext in ALLOWED_RUBRIC_EXTENSIONS)
+    mime_allowed = (file.content_type or "").split(";")[0].strip() in ALLOWED_RUBRIC_MIME_TYPES
+
+    if not has_allowed_ext or not mime_allowed:
+        logger.warning(
+            "[rubric] Upload rechazado por MIME/extensión: file=%s mime=%s",
+            file.filename,
+            file.content_type,
+        )
+        raise HTTPException(
+            415,
+            "Tipo de archivo no permitido. Formatos aceptados: PDF, DOCX, DOC, TXT",
+        )
+
     try:
         text = _extract_text_from_upload(file)
+    except HTTPException:
+        # Propagar HTTPException de _extract_text_from_upload (413 por tamaño)
+        raise
     except Exception as exc:
         logger.warning("[rubric] Error extrayendo texto de %s: %s", file.filename, exc)
         raise HTTPException(400, f"No se pudo leer el archivo: {exc}") from exc

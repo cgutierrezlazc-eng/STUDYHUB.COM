@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Conniku — Variantes logo app (exploración)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@300;400;500;600;700;800;900&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --paper:#F5F4EF; --paper-2:#EBE9E1; --ink:#0D0F10; --ink-2:#1E2023;
+    --lime:#D9FF3A; --lime-ink:#181F08; --pink:#FF4D3A; --cream:#FFE9B8;
+    --violet:#6B4EFF; --cyan:#00C2FF; --orange:#FF4A1C;
+    --text:#0D0F10; --text-2:#4B4F52; --text-3:#696C6F; --line:#DAD8D0;
+    --sh:0 1px 2px rgba(13,15,16,.06), 0 8px 24px rgba(13,15,16,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);color:var(--text);
+    font-family:'Funnel Display',-apple-system,BlinkMacSystemFont,sans-serif;
+    font-feature-settings:"ss01","ss02","cv11";
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:56px 40px 120px}
+
+  .expl-banner{
+    background:#fff3c2;color:#6b4900;padding:10px 20px;text-align:center;
+    font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.06em;
+    border-bottom:1px solid #f5e08a;
+  }
+  .expl-banner strong{color:#3b2800}
+
+  header.topbar{margin-bottom:48px}
+  h1.hero{font-size:clamp(48px,7vw,96px);font-weight:900;letter-spacing:-4px;line-height:.94;margin:0 0 22px;max-width:940px}
+  h1.hero em{font-style:normal;background:var(--lime);color:var(--lime-ink);padding:0 12px;border-radius:12px;display:inline-block;transform:rotate(-1deg)}
+  .sub{font-size:19px;line-height:1.55;color:var(--text-2);max-width:780px;margin:0 0 20px;font-weight:500}
+
+  .section-title{display:flex;align-items:baseline;gap:16px;margin:72px 0 28px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+  .section-title .num{font-family:'Geist Mono',monospace;font-size:13px;color:var(--text-3);letter-spacing:.08em}
+  .section-title h2{margin:0;font-size:36px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .section-title .kicker{margin-left:auto;font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.12em;text-transform:uppercase}
+
+  /* Cards de variantes */
+  .variants-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .var-card{background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh)}
+  .var-card .stage{padding:44px 32px;display:flex;align-items:center;justify-content:center;min-height:220px;background:var(--paper);position:relative}
+  .var-card .stage.on-ink{background:var(--ink)}
+  .var-card .stage.on-cream{background:var(--cream)}
+  .var-card .stage.on-pink{background:var(--pink)}
+  .var-card .meta{padding:18px 22px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:16px}
+  .var-card .meta h4{margin:0;font-size:15px;font-weight:800}
+  .var-card .meta .desc{font-size:12px;color:var(--text-3);margin-top:2px;line-height:1.4}
+  .var-card .meta .tag{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:.08em;background:var(--paper-2);padding:4px 8px;border-radius:4px;flex-shrink:0;color:var(--text-2)}
+
+  /* Wordmark base — fuente y tamaño común */
+  .wm{
+    font-family:'Funnel Display',sans-serif;
+    font-weight:900;
+    color:var(--ink);
+    letter-spacing:-.055em;
+    line-height:1;
+    display:inline-flex;
+    align-items:baseline;
+    position:relative;
+  }
+  .wm.size-xl{font-size:88px}
+  .wm.size-lg{font-size:64px}
+  .wm.size-md{font-size:42px}
+  .wm.size-sm{font-size:26px}
+  .wm.on-ink{color:var(--paper)}
+
+  /* Las variantes usan una "u" envuelta en <span class="u-chip"> con distintos estilos */
+  /* Base: u-chip es contenedor que pinta el fondo lima detrás de la letra "u" */
+  .u-chip{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  /* El punto orange va después del wordmark como elemento separado o dentro de u-chip */
+  .dot{color:var(--orange)}
+
+  /* ============ VARIANTE A — Tile cuadrado ajustado a la u, punto fuera ============ */
+  .va .u-chip{
+    background:var(--lime);
+    padding:.05em .08em .05em .08em;
+    border-radius:.16em;
+  }
+  /* ============ VARIANTE B — Tile rounded (más estilo tile original) ============ */
+  .vb .u-chip{
+    background:var(--lime);
+    padding:.08em .12em;
+    border-radius:.28em;
+  }
+  /* ============ VARIANTE C — Tile incluye el punto adentro ============ */
+  .vc{}
+  .vc .u-wrap{
+    display:inline-flex;
+    align-items:baseline;
+    background:var(--lime);
+    padding:.06em .14em .06em .08em;
+    border-radius:.2em;
+  }
+  .vc .u-wrap .dot{color:var(--orange)}
+  /* ============ VARIANTE D — Tile cuadrado perfecto (sin rounded) ============ */
+  .vd .u-chip{
+    background:var(--lime);
+    padding:.05em .1em;
+    border-radius:0;
+  }
+  /* ============ VARIANTE E — Tile rotado -1.5° (estilo chip editorial) ============ */
+  .ve .u-chip{
+    background:var(--lime);
+    padding:.06em .11em;
+    border-radius:.2em;
+    transform:rotate(-1.5deg);
+    transform-origin:center;
+  }
+  /* ============ VARIANTE F — Tile con recorte circular (preserva identidad master) ============ */
+  .vf .u-chip{
+    background:var(--lime);
+    padding:.06em .11em;
+    border-radius:.22em;
+    position:relative;
+  }
+  .vf .u-chip::after{
+    content:"";position:absolute;right:-.22em;top:50%;transform:translateY(-40%);
+    width:.42em;height:.42em;border-radius:50%;background:var(--ink);
+  }
+  .vf .u-chip::before{
+    content:"";position:absolute;right:-.13em;top:50%;transform:translateY(-40%);
+    width:.16em;height:.16em;border-radius:50%;background:var(--orange);z-index:2;
+  }
+  /* La variante F necesita padding-right extra para acomodar el recorte */
+  .vf .u-chip{padding-right:.32em}
+  /* ============ VARIANTE G — Tile alto (cubre ascender y descender) ============ */
+  .vg .u-chip{
+    background:var(--lime);
+    padding:.18em .12em;
+    border-radius:.22em;
+    margin-right:.05em;
+  }
+  /* ============ VARIANTE H — Tile con punto dentro Y recorte circular (maximum identity) ============ */
+  .vh .u-wrap{
+    display:inline-flex;
+    align-items:baseline;
+    background:var(--lime);
+    padding:.07em .14em .07em .09em;
+    border-radius:.22em;
+    position:relative;
+  }
+  .vh .u-wrap .dot{color:var(--orange)}
+
+  /* App icon grid */
+  .appicon-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .ai-card{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+  .ai-stage{aspect-ratio:1;display:grid;place-items:center;padding:20px}
+  .ai-stage.bg-ink{background:var(--ink)}
+  .ai-stage.bg-paper{background:var(--paper-2)}
+  .ai-stage.bg-cream{background:var(--cream)}
+  .ai-stage.bg-pink{background:var(--pink)}
+  .ai-meta{padding:12px 14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  .ai-meta .n{font-size:12px;font-weight:700}
+  .ai-meta .t{font-family:'Geist Mono',monospace;font-size:10px;color:var(--text-3)}
+
+  /* Escala */
+  .scale-row{background:#fff;border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;align-items:baseline;justify-content:space-around;gap:30px;flex-wrap:wrap}
+  .scale-row .slot{display:flex;flex-direction:column;align-items:center;gap:10px}
+  .scale-row .slot .t{font-family:'Geist Mono',monospace;font-size:11px;color:var(--text-3);letter-spacing:.06em}
+
+  /* Footer note */
+  .decision-note{margin-top:72px;background:var(--ink);color:var(--paper);border-radius:20px;padding:28px;display:flex;gap:20px;align-items:flex-start}
+  .decision-note .dot-led{width:12px;height:12px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;box-shadow:0 0 0 4px rgba(255,74,28,.2)}
+  .decision-note h3{margin:0 0 8px;font-size:18px;font-weight:800;color:var(--lime)}
+  .decision-note p{margin:0;font-size:14px;line-height:1.55;color:rgba(245,244,239,.85)}
+</style>
+</head>
+<body>
+
+<div class="expl-banner">
+  <strong>· EXPLORACIÓN ·</strong> Variantes de logo integrado (cuadro lima detrás de la "u" final) · Ninguna reemplaza el logo oficial aún · Elegí una (o combinación) antes de actualizar el sistema
+</div>
+
+<div class="wrap">
+
+  <h1 class="hero">El cuadro deja de estar al inicio.<br/><em>Se mete detrás de la u.</em></h1>
+  <p class="sub">Ocho interpretaciones de la idea: el tile lima pasa de ser un símbolo independiente al inicio del wordmark a ser un <strong>highlight integrado</strong> detrás de la última letra (la "u" final). La "u" queda en tinta sobre lima, el punto naranja sigue siendo la chispa. Cada variante cambia el grado de integración, la geometría del cuadro, y si el punto va dentro o fuera del tile.</p>
+  <p class="sub" style="color:var(--text-3);font-size:15px">Tipografía: Funnel Display 900 · Tracking -5.5% · Colores oficiales · Fondos de prueba: warm paper, ink, cream, pink para validar legibilidad.</p>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">01</span>
+      <h2>Ocho variantes del wordmark</h2>
+      <span class="kicker">mismo tamaño · distinta integración</span>
+    </div>
+
+    <div class="variants-grid">
+
+      <!-- A -->
+      <div class="var-card va">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante A — Tile ajustado a la u</h4>
+            <div class="desc">Cuadro lima exactamente del tamaño de la letra u, radius sutil. Punto naranja afuera, a la derecha del cuadro.</div>
+          </div>
+          <span class="tag">tight · rounded</span>
+        </div>
+      </div>
+
+      <!-- B -->
+      <div class="var-card vb">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante B — Tile rounded (radius mayor)</h4>
+            <div class="desc">Cuadro lima con esquinas más redondeadas, estilo pill corto. Mantiene la identidad del tile master (que es rounded). Punto afuera.</div>
+          </div>
+          <span class="tag">soft · pill</span>
+        </div>
+      </div>
+
+      <!-- C -->
+      <div class="var-card vc">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-wrap">u<span class="dot">.</span></span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante C — Tile envuelve u + punto</h4>
+            <div class="desc">El cuadro lima contiene la u y el punto naranja juntos. Unidad visual: "u." es la marca completa encapsulada.</div>
+          </div>
+          <span class="tag">u+dot pack</span>
+        </div>
+      </div>
+
+      <!-- D -->
+      <div class="var-card vd">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante D — Cuadro perfecto (sin rounded)</h4>
+            <div class="desc">Geometría más dura, industrial. Esquinas rectas. Contrasta con la calidez editorial de Funnel Display.</div>
+          </div>
+          <span class="tag">sharp · square</span>
+        </div>
+      </div>
+
+      <!-- E -->
+      <div class="var-card ve">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante E — Tile rotado -1.5°</h4>
+            <div class="desc">Mismo cuadro que B pero con una rotación sutil. Coherente con el lenguaje editorial (chips y stickers rotan así en todo el sistema).</div>
+          </div>
+          <span class="tag">editorial · tilt</span>
+        </div>
+      </div>
+
+      <!-- F -->
+      <div class="var-card vf">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante F — Tile con recorte circular (el punto ES el recorte)</h4>
+            <div class="desc">El tile conserva el recorte circular característico del logo master. El punto naranja vive <em>dentro</em> del recorte. Máxima continuidad con el símbolo original.</div>
+          </div>
+          <span class="tag">ADN original</span>
+        </div>
+      </div>
+
+      <!-- G -->
+      <div class="var-card vg">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante G — Tile alto (cover full height)</h4>
+            <div class="desc">Cuadro más alto que la letra, cubre ascender y descender. El tile se siente más presente, cuadrado más aparente. Punto afuera.</div>
+          </div>
+          <span class="tag">tall · block</span>
+        </div>
+      </div>
+
+      <!-- H -->
+      <div class="var-card vh">
+        <div class="stage">
+          <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-wrap">u<span class="dot">.</span></span></div>
+        </div>
+        <div class="meta">
+          <div>
+            <h4>Variante H — Cuadro ajustado u+punto, radius medio</h4>
+            <div class="desc">Como C pero con radius intermedio y padding balanceado. La u y el punto quedan contenidos juntos como una unidad pero sin sentirse apretados.</div>
+          </div>
+          <span class="tag">packed · balanced</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">02</span>
+      <h2>Mismas variantes sobre fondo tinta</h2>
+      <span class="kicker">validación de contraste dark mode</span>
+    </div>
+
+    <div class="variants-grid">
+
+      <div class="var-card va">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta"><div><h4>A · Tight rounded</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+      <div class="var-card vb">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta"><div><h4>B · Soft pill</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+      <div class="var-card vc">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-wrap">u<span class="dot">.</span></span></div>
+        </div>
+        <div class="meta"><div><h4>C · u+dot pack</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+      <div class="var-card ve">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta"><div><h4>E · Editorial tilt</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+      <div class="var-card vf">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-chip">u</span></div>
+        </div>
+        <div class="meta"><div><h4>F · Recorte original</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+      <div class="var-card vh">
+        <div class="stage on-ink">
+          <div class="wm size-xl on-ink">conn<span style="position:relative">i</span>k<span class="u-wrap">u<span class="dot">.</span></span></div>
+        </div>
+        <div class="meta"><div><h4>H · Packed balanced</h4></div><span class="tag">on ink</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">03</span>
+      <h2>Prueba de escala — Variante B (la más limpia)</h2>
+      <span class="kicker">desde 26px hasta 88px</span>
+    </div>
+
+    <div class="scale-row vb">
+      <div class="slot">
+        <div class="wm size-sm">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div class="t">26px · sidebar</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-md">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div class="t">42px · header</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-lg">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div class="t">64px · hero</div>
+      </div>
+      <div class="slot">
+        <div class="wm size-xl">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div class="t">88px · splash</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">04</span>
+      <h2>App icon — reducción del wordmark</h2>
+      <span class="kicker">solo tile + u + punto</span>
+    </div>
+    <p class="sub" style="margin-bottom:24px">Para el icono de app (favicon, tile de sistema operativo, tienda), el wordmark no cabe. La reducción natural es el tile lima con la "u." adentro. Cuatro interpretaciones:</p>
+
+    <div class="appicon-grid">
+
+      <!-- App icon variante 1: tile cuadrado lima con u. adentro -->
+      <div class="ai-card">
+        <div class="ai-stage bg-paper">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="40" y="74" font-family="Funnel Display,sans-serif" font-weight="900" font-size="70" fill="#0D0F10" letter-spacing="-3">u</text>
+            <circle cx="80" cy="70" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">App icon A — u+punto</span><span class="t">recto</span></div>
+      </div>
+
+      <!-- App icon variante 2: tile cuadrado lima con u centrada + punto -->
+      <div class="ai-card">
+        <div class="ai-stage bg-paper">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="74" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="70" fill="#0D0F10" letter-spacing="-3">u</text>
+            <circle cx="80" cy="70" r="5" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">App icon B — u centrada</span><span class="t">balanced</span></div>
+      </div>
+
+      <!-- App icon variante 3: tile con recorte original + u dentro de la zona lima -->
+      <div class="ai-card">
+        <div class="ai-stage bg-paper">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <defs>
+              <mask id="aiC">
+                <rect width="100" height="100" fill="#fff"/>
+                <circle cx="74" cy="50" r="20" fill="#000"/>
+              </mask>
+            </defs>
+            <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+            <rect x="10" y="10" width="80" height="80" rx="14" fill="#D9FF3A" mask="url(#aiC)"/>
+            <text x="15" y="75" font-family="Funnel Display,sans-serif" font-weight="900" font-size="64" fill="#0D0F10" letter-spacing="-3">u</text>
+            <circle cx="74" cy="50" r="5" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">App icon C — ADN original</span><span class="t">tile + u</span></div>
+      </div>
+
+      <!-- App icon variante 4: solo u grande + punto, fondo lima sin tile exterior -->
+      <div class="ai-card">
+        <div class="ai-stage bg-paper">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">App icon D — u grande</span><span class="t">statement</span></div>
+      </div>
+
+    </div>
+
+    <div class="appicon-grid" style="margin-top:16px">
+
+      <!-- Sobre ink -->
+      <div class="ai-card">
+        <div class="ai-stage bg-ink">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Icon D sobre ink</span><span class="t">dark mode</span></div>
+      </div>
+
+      <!-- Sobre cream -->
+      <div class="ai-card">
+        <div class="ai-stage bg-cream">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Icon D sobre cream</span><span class="t">warm bg</span></div>
+      </div>
+
+      <!-- Sobre pink -->
+      <div class="ai-card">
+        <div class="ai-stage bg-pink">
+          <svg viewBox="0 0 100 100" width="110" height="110">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Icon D sobre pink</span><span class="t">accent bg</span></div>
+      </div>
+
+      <!-- Escala pequeña -->
+      <div class="ai-card">
+        <div class="ai-stage bg-paper" style="flex-direction:row;display:flex;gap:12px;justify-content:center;align-items:center">
+          <svg viewBox="0 0 100 100" width="64" height="64">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+          <svg viewBox="0 0 100 100" width="40" height="40">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+          <svg viewBox="0 0 100 100" width="24" height="24">
+            <rect width="100" height="100" rx="22" fill="#D9FF3A"/>
+            <text x="50" y="71" text-anchor="middle" font-family="Funnel Display,sans-serif" font-weight="900" font-size="84" fill="#0D0F10" letter-spacing="-4">u</text><circle cx="77" cy="68" r="6" fill="#FF4A1C"/>
+          </svg>
+        </div>
+        <div class="ai-meta"><span class="n">Icon D escala</span><span class="t">64/40/24</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">05</span>
+      <h2>Comparación side-by-side · viejo vs nuevo</h2>
+      <span class="kicker">contexto de uso real</span>
+    </div>
+
+    <div class="variants-grid">
+      <div class="var-card">
+        <div class="stage">
+          <div style="display:flex;align-items:center;gap:14px">
+            <svg viewBox="0 0 100 100" width="60" height="60" style="display:block">
+              <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+              <mask id="oldx"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask>
+              <rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#oldx)"/>
+              <circle cx="58" cy="50" r="5" fill="#FF4A1C"/>
+            </svg>
+            <div class="wm size-lg">conniku<span class="dot">.</span></div>
+          </div>
+        </div>
+        <div class="meta"><div><h4>Versión actual — tile + wordmark separados</h4><div class="desc">Logo oficial v1.0.0. El símbolo vive independiente al inicio.</div></div><span class="tag">actual</span></div>
+      </div>
+
+      <div class="var-card vb">
+        <div class="stage">
+          <div class="wm size-lg">conn<span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        </div>
+        <div class="meta"><div><h4>Propuesta nueva — tile integrado en la u</h4><div class="desc">El símbolo vive dentro del wordmark. El lima destaca la letra final.</div></div><span class="tag">propuesta</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <section>
+    <div class="section-title">
+      <span class="num">06</span>
+      <h2>Aplicación en contextos reales</h2>
+      <span class="kicker">header · footer · splash</span>
+    </div>
+
+    <!-- Header tipo nav -->
+    <div class="var-card" style="overflow:visible">
+      <div class="stage" style="padding:20px 32px;min-height:auto;background:#fff">
+        <div style="width:100%;display:flex;align-items:center;justify-content:space-between">
+          <div class="wm size-md vb"><span>conn</span><span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+          <div style="display:flex;gap:24px;color:var(--text-2);font-size:14px;font-weight:500">
+            <span>Producto</span><span>Planes</span><span>Ayuda</span>
+          </div>
+          <button style="background:var(--ink);color:var(--paper);border:none;padding:10px 18px;border-radius:10px;font-weight:700;font-size:13px;font-family:inherit">Entrar</button>
+        </div>
+      </div>
+      <div class="meta"><div><h4>Header web · Variante B @ 42px</h4></div><span class="tag">nav</span></div>
+    </div>
+
+    <!-- Footer tipo -->
+    <div class="var-card" style="overflow:visible;margin-top:16px">
+      <div class="stage on-ink" style="padding:32px;min-height:auto;flex-direction:column;align-items:flex-start;gap:14px">
+        <div class="wm size-md on-ink vb"><span>conn</span><span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div style="color:rgba(245,244,239,.6);font-size:13px;font-family:'Geist Mono',monospace">© 2026 Conniku SpA · conniku.com</div>
+      </div>
+      <div class="meta"><div><h4>Footer dark · Variante B @ 42px</h4></div><span class="tag">dark footer</span></div>
+    </div>
+
+    <!-- Splash -->
+    <div class="var-card" style="overflow:visible;margin-top:16px">
+      <div class="stage" style="padding:60px;min-height:280px;flex-direction:column;gap:24px">
+        <div class="wm size-xl vb"><span>conn</span><span style="position:relative">i</span>k<span class="u-chip">u</span><span class="dot">.</span></div>
+        <div style="color:var(--text-3);font-size:14px;font-family:'Geist Mono',monospace;letter-spacing:.08em">Tu U entera. Una sola app.</div>
+      </div>
+      <div class="meta"><div><h4>Splash screen · Variante B @ 88px</h4></div><span class="tag">splash</span></div>
+    </div>
+  </section>
+
+  <div class="decision-note">
+    <div class="dot-led"></div>
+    <div>
+      <h3>Qué necesito saber para cerrar</h3>
+      <p>1. ¿Qué variante del wordmark te gusta más? (A–H) · 2. ¿El punto va DENTRO del cuadro (C, H) o FUERA (A, B, D, E, G, F)? · 3. ¿Quieres conservar el recorte circular del tile original (F) o prefieres tile sólido sin recorte (resto)? · 4. ¿Cuál app icon refleja mejor la marca reducida? (A, B, C, D)</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

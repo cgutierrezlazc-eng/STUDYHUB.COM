@@ -20,8 +20,10 @@ from biblioteca_routes import router as biblioteca_router
 from calendar_routes import router as calendar_router
 from certificate_routes import router as certificate_router
 from chile_tax_routes import router as finance_router
-from collab_routes import router as collab_router
-from collab_ws import router as collab_ws_router
+# GroupDocs V1 deprecado 2026-04-19 — reemplazado por Workspaces v2.
+# Tablas BD preservadas para eventual migración de datos.
+# from collab_routes import router as collab_router
+# from collab_ws import router as collab_ws_router
 from community_routes import router as community_router
 from conference_routes import router as conference_router
 from course_routes import router as course_router
@@ -287,8 +289,9 @@ app.include_router(marketplace_router)
 app.include_router(community_router)
 app.include_router(notification_router)
 app.include_router(biblioteca_router)
-app.include_router(collab_router)
-app.include_router(collab_ws_router)
+# GroupDocs V1 deprecado 2026-04-19 — rutas deshabilitadas
+# app.include_router(collab_router)
+# app.include_router(collab_ws_router)
 app.include_router(job_router)
 app.include_router(course_router)
 app.include_router(event_router)

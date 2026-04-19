@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Conniku — Asignatura · Cálculo Diferencial II</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Funnel+Display:wght@400;500;600;700;800;900&family=Geist+Mono:wght@400;500;600;700&display=swap" />
+  <style>
+    :root {
+      --ink: #0D0F10; --ink-2: #2B2E30; --ink-3: #696C6F; --ink-4: #A0A3A7;
+      --paper: #F5F4EF; --paper-2: #EBE9E1; --line: #D2CFC3; --card: #FFFFFF;
+      --lime: #D9FF3A; --lime-ink: #181F08;
+      --pink: #FF4D3A; --cream: #FFE9B8;
+      --violet: #6B4EFF; --cyan: #00C2FF; --orange: #FF4A1C;
+      --font-display: 'Funnel Display', -apple-system, sans-serif;
+      --font-mono: 'Geist Mono', ui-monospace, monospace;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--paper); color: var(--ink); font-family: var(--font-display); min-height: 100vh; overflow-x: hidden; }
+    ::selection { background: var(--lime); color: var(--lime-ink); }
+
+    /* avatar helpers */
+    .av { display: grid; place-items: center; font-weight: 800; font-family: var(--font-display); position: relative; overflow: hidden; }
+    .av-cristian { background: linear-gradient(135deg, #0D0F10, #6B4EFF); color: #D9FF3A; }
+    .av-felipe { background: linear-gradient(135deg, #D9FF3A, #FFE9B8); color: #181F08; }
+    .av-victoria { background: linear-gradient(135deg, #FF4D3A, #FF4A1C); color: #fff; }
+    .av-daniela { background: linear-gradient(135deg, #6B4EFF, #2F55F0); color: #fff; }
+    .av-luis { background: linear-gradient(135deg, #00C2FF, #2F55F0); color: #0D0F10; }
+    .av-pia { background: linear-gradient(135deg, #FFE9B8, #D9FF3A); color: #181F08; }
+    .av-barbara { background: linear-gradient(135deg, #FF4D3A, #6B4EFF); color: #fff; }
+    .av-prof { background: linear-gradient(135deg, #6B4EFF, #FF4D3A); color: #fff; }
+
+    /* Top progress */
+    .top-progress { background: var(--ink); color: #fff; padding: 8px 28px; display: flex; align-items: center; justify-content: space-between; font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .top-progress .left { display: flex; align-items: center; gap: 12px; }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); animation: pulse 1.6s var(--ease) infinite; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217,255,58,.7); } 70% { box-shadow: 0 0 0 10px rgba(217,255,58,0); } 100% { box-shadow: 0 0 0 0 rgba(217,255,58,0); } }
+
+    /* Nav */
+    .nav-wrap { padding: 18px 28px 0; display: flex; justify-content: center; }
+    .nav { max-width: 1280px; width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px 10px 18px; display: flex; align-items: center; gap: 28px; }
+    .logo-tile { width: 28px; height: 28px; display: block; flex-shrink: 0; }
+    .logo-text { font-weight: 700; font-size: 20px; letter-spacing: -.02em; }
+    .nav-links { display: flex; gap: 22px; flex: 1; }
+    .nav-link { font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+    .nav-link.active { color: var(--ink); border-bottom: 2px solid var(--lime); padding-bottom: 4px; }
+
+    .main { max-width: 1280px; margin: 0 auto; padding: 30px 28px 120px; }
+
+    /* Breadcrumb */
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .06em; color: var(--ink-3); text-transform: uppercase; margin-bottom: 22px; font-weight: 600; }
+    .breadcrumb .link { cursor: pointer; }
+    .breadcrumb .link:hover { color: var(--ink); }
+    .breadcrumb .sep { color: var(--ink-4); }
+    .breadcrumb .curr { color: var(--ink); font-weight: 800; }
+
+    /* Hero header asignatura */
+    .asig-head {
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--lime) 100%);
+      border: 2px solid var(--ink); border-radius: 28px;
+      padding: 40px; margin-bottom: 28px; position: relative; overflow: hidden;
+    }
+    .asig-head::before { content: ""; position: absolute; top: 20px; left: 30px; width: 12px; height: 12px; border-radius: 50%; background: var(--ink); box-shadow: 150px 40px 0 var(--pink), 320px 20px 0 var(--violet), 480px 80px 0 var(--ink), 680px 30px 0 var(--cream); }
+
+    .asig-tag-row { display: flex; gap: 8px; margin-bottom: 20px; position: relative; z-index: 2; }
+    .asig-tag { background: var(--ink); color: #fff; padding: 5px 12px; border-radius: 999px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; }
+    .asig-tag.code { background: var(--card); color: var(--ink); }
+    .asig-tag.credits { background: var(--cream); color: var(--ink); }
+
+    .asig-title { font-family: var(--font-display); font-weight: 900; font-size: clamp(44px, 5.5vw, 72px); letter-spacing: -.035em; line-height: .98; color: var(--ink); position: relative; z-index: 2; margin-bottom: 20px; }
+    .asig-title .hl-ink { background: var(--ink); color: var(--lime); padding: 0 10px; border-radius: 10px; display: inline-block; transform: rotate(-.8deg); }
+
+    .asig-meta-strip {
+      background: rgba(13,15,16,.14); backdrop-filter: blur(6px);
+      border: 1.5px solid rgba(13,15,16,.25); border-radius: 20px;
+      padding: 16px 22px; display: flex; align-items: center; gap: 28px; flex-wrap: wrap;
+      position: relative; z-index: 2;
+    }
+    .am-item { display: flex; flex-direction: column; gap: 3px; }
+    .am-l { font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; }
+    .am-v { font-weight: 800; font-size: 14px; color: var(--ink); letter-spacing: -.01em; }
+    .am-prof-wrap { display: flex; align-items: center; gap: 10px; padding-left: 24px; border-left: 1px solid rgba(13,15,16,.25); margin-left: auto; }
+    .am-prof-av { width: 36px; height: 36px; border-radius: 50%; font-size: 12px; }
+
+    /* Tabs */
+    .tabs-row { display: flex; gap: 4px; border-bottom: 2px solid var(--ink); margin-bottom: 32px; overflow-x: auto; }
+    .tab { padding: 12px 20px; font-family: var(--font-display); font-weight: 700; font-size: 14px; color: var(--ink-3); cursor: pointer; position: relative; white-space: nowrap; letter-spacing: -.01em; display: flex; align-items: center; gap: 7px; }
+    .tab .count { background: var(--paper-2); color: var(--ink-2); font-family: var(--font-mono); font-size: 10px; padding: 2px 7px; border-radius: 999px; letter-spacing: 0; font-weight: 700; }
+    .tab.active { color: var(--ink); }
+    .tab.active::after { content: ""; position: absolute; bottom: -2px; left: 0; right: 0; height: 4px; background: var(--lime); }
+    .tab.active .count { background: var(--ink); color: var(--lime); }
+
+    /* Layout two-col */
+    .content { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
+
+    /* Section label */
+    .sec-label { display: flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; font-weight: 700; }
+    .sec-label::before { content: ""; width: 24px; height: 2px; background: var(--ink); }
+
+    /* Documentos grid */
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 28px; }
+    .doc-card {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 18px;
+      padding: 20px; cursor: pointer; transition: all 200ms var(--ease);
+      display: flex; flex-direction: column; gap: 12px;
+      position: relative;
+    }
+    .doc-card:hover { transform: translateY(-3px); box-shadow: 6px 6px 0 var(--ink); }
+    .doc-card.transcript { background: var(--cream); transform: rotate(-.4deg); }
+    .doc-card.transcript:hover { transform: translateY(-3px) rotate(0); }
+
+    .doc-head { display: flex; align-items: center; gap: 12px; }
+    .doc-ico {
+      width: 42px; height: 42px; border-radius: 11px;
+      display: grid; place-items: center; font-weight: 900; font-size: 14px;
+      flex-shrink: 0;
+    }
+    .doc-ico.pdf { background: var(--pink); color: #fff; }
+    .doc-ico.ws { background: var(--violet); color: #fff; }
+    .doc-ico.tr { background: var(--ink); color: var(--lime); }
+    .doc-ico.docx { background: var(--cyan); color: var(--ink); }
+    .doc-ico.video { background: var(--orange); color: #fff; }
+
+    .doc-tag { font-family: var(--font-mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; }
+    .doc-title { font-weight: 800; font-size: 16px; letter-spacing: -.015em; line-height: 1.2; }
+    .doc-sub { font-size: 12.5px; color: var(--ink-2); line-height: 1.4; font-weight: 500; }
+
+    .doc-meta { display: flex; gap: 14px; align-items: center; font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .04em; padding-top: 10px; border-top: 1px solid var(--line-soft); margin-top: auto; text-transform: uppercase; font-weight: 600; }
+    .doc-meta strong { color: var(--ink); font-weight: 800; }
+
+    .doc-badge-new { position: absolute; top: 12px; right: 12px; background: var(--pink); color: #fff; font-family: var(--font-mono); font-size: 9px; padding: 3px 7px; border-radius: 999px; letter-spacing: .08em; font-weight: 800; text-transform: uppercase; }
+    .doc-badge-tr { position: absolute; top: 12px; right: 12px; background: var(--ink); color: var(--lime); font-family: var(--font-mono); font-size: 9px; padding: 3px 8px; border-radius: 999px; letter-spacing: .08em; font-weight: 800; text-transform: uppercase; }
+
+    /* Calendario de clases */
+    .classes-list { display: flex; flex-direction: column; gap: 10px; }
+    .class-row {
+      background: var(--card); border: 2px solid var(--ink); border-radius: 16px;
+      padding: 16px 20px; display: grid; grid-template-columns: 90px 1fr auto auto; gap: 18px; align-items: center;
+      transition: transform 180ms var(--ease); cursor: pointer;
+    }
+    .class-row:hover { transform: translateX(-3px); box-shadow: 3px 3px 0 var(--ink); }
+    .class-row.next { background: var(--lime); color: var(--lime-ink); }
+
+    .cl-date-box {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: 8px 10px; border-radius: 10px;
+    }
+    .class-row.next .cl-date-box { background: var(--ink); color: var(--lime); }
+    .class-row:not(.next) .cl-date-box { background: var(--paper-2); color: var(--ink); }
+    .cl-month { font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; font-weight: 800; opacity: .75; }
+    .cl-day { font-family: var(--font-display); font-weight: 900; font-size: 20px; line-height: 1; letter-spacing: -.02em; }
+
+    .cl-info .cl-title { font-weight: 800; font-size: 15px; letter-spacing: -.01em; }
+    .cl-info .cl-sub { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; text-transform: uppercase; margin-top: 3px; font-weight: 600; opacity: .7; }
+
+    .cl-time { font-family: var(--font-mono); font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+
+    .cl-action { font-family: var(--font-mono); font-size: 10px; padding: 5px 11px; border-radius: 999px; letter-spacing: .08em; text-transform: uppercase; font-weight: 800; }
+    .cl-action.live { background: var(--pink); color: #fff; animation: pulse 1.6s var(--ease) infinite; }
+    .cl-action.rec { background: var(--paper-2); color: var(--ink-2); }
+    .class-row.next .cl-action.next-tag { background: var(--ink); color: var(--lime); }
+
+    /* Sidebar derecho */
+    .side { display: flex; flex-direction: column; gap: 20px; }
+    .side-card { background: var(--card); border: 2px solid var(--ink); border-radius: 20px; padding: 22px; }
+    .side-card.hl { background: var(--pink); color: #fff; transform: rotate(.5deg); }
+
+    .sc-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+    .sc-title { font-weight: 800; font-size: 16px; letter-spacing: -.01em; }
+    .side-card.hl .sc-title .hl { background: var(--lime); color: var(--lime-ink); padding: 0 6px; border-radius: 6px; display: inline-block; transform: rotate(-1deg); }
+    .sc-count { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); letter-spacing: .06em; font-weight: 700; }
+
+    /* Progreso */
+    .progress-card { background: var(--ink); color: #fff; border-radius: 20px; padding: 22px; }
+    .pg-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--lime); font-weight: 700; margin-bottom: 14px; }
+    .pg-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .pg-topic { font-size: 13px; color: rgba(255,255,255,.82); font-weight: 500; }
+    .pg-val { font-family: var(--font-mono); font-weight: 800; font-size: 12px; letter-spacing: .04em; }
+    .pg-bar { height: 5px; background: rgba(255,255,255,.12); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+    .pg-bar-fill { height: 100%; background: linear-gradient(90deg, var(--lime), var(--pink)); border-radius: 999px; }
+
+    .pg-note { margin-top: 14px; padding: 12px; background: rgba(217,255,58,.08); border: 1px solid rgba(217,255,58,.2); border-radius: 10px; font-size: 12px; color: rgba(255,255,255,.85); line-height: 1.45; font-weight: 500; }
+    .pg-note strong { color: var(--lime); font-weight: 700; }
+
+    /* Evaluaciones */
+    .eval-row { padding: 10px 0; border-bottom: 1px solid var(--line-soft); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .eval-row:last-child { border-bottom: 0; }
+    .eval-info .ev-title { font-weight: 700; font-size: 13px; letter-spacing: -.01em; }
+    .eval-info .ev-date { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); letter-spacing: .06em; margin-top: 3px; font-weight: 600; text-transform: uppercase; }
+    .eval-grade { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -.02em; padding: 3px 10px; border-radius: 8px; font-feature-settings: 'tnum'; }
+    .eval-grade.good { background: var(--lime); color: var(--lime-ink); }
+    .eval-grade.mid { background: var(--cream); color: var(--ink); }
+    .eval-grade.pend { background: var(--paper-2); color: var(--ink-3); font-size: 13px; padding: 6px 10px; font-family: var(--font-mono); font-weight: 700; }
+
+    /* Compañeros matriculados */
+    .classmates-row { display: flex; margin-bottom: 12px; }
+    .cm-av { width: 38px; height: 38px; border-radius: 50%; border: 2px solid var(--card); margin-left: -10px; font-size: 13px; }
+    .cm-av:first-child { margin-left: 0; }
+    .cm-more { background: var(--paper-2); color: var(--ink-2); font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+    .classmates-cta { margin-top: 10px; background: var(--ink); color: #fff; border: 0; padding: 9px 12px 9px 16px; border-radius: 999px; font-family: var(--font-display); font-weight: 700; font-size: 12.5px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; width: 100%; }
+    .classmates-cta .cmr { width: 22px; height: 22px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+
+    /* Actions row */
+    .actions-row { display: flex; gap: 10px; margin-bottom: 24px; }
+    .a-btn { background: var(--card); border: 2px solid var(--ink); border-radius: 999px; padding: 10px 16px; font-family: var(--font-display); font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: transform 150ms var(--ease); }
+    .a-btn:hover { transform: translateY(-1px); }
+    .a-btn.primary { background: var(--ink); color: #fff; padding: 10px 12px 10px 18px; }
+    .a-btn.primary .ring { width: 22px; height: 22px; background: var(--lime); color: var(--ink); border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 11px; }
+    .a-btn.ghost { background: transparent; }
+
+    @media (max-width: 1080px) {
+      .content { grid-template-columns: 1fr; }
+      .docs-grid { grid-template-columns: 1fr; }
+      .class-row { grid-template-columns: 1fr; }
+      .asig-meta-strip { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .am-prof-wrap { margin-left: 0; padding-left: 0; border-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="top-progress">
+    <div class="left">
+      <div class="pulse"></div>
+      <span>Mi Universidad · Asignaturas</span>
+    </div>
+    <span>Semestre 2026-1 · día 41 de 120</span>
+  </div>
+
+  <div class="nav-wrap">
+    <div class="nav">
+      <div class="logo-tile"><svg viewBox="0 0 100 100" aria-label="Conniku" style="width:100%;height:100%;display:block"><rect width="100" height="100" rx="22" fill="#0D0F10"/><mask id="ckL_28_asignatura_detalle" maskUnits="userSpaceOnUse"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="50" r="24" fill="#000"/></mask><rect x="12" y="12" width="76" height="76" rx="14" fill="#D9FF3A" mask="url(#ckL_28_asignatura_detalle)"/><circle cx="58" cy="50" r="5" fill="#FF4A1C"/></svg></div>
+      <div class="logo-text">conniku.</div>
+      <div class="nav-links">
+        <div class="nav-link active">Mi U</div>
+        <div class="nav-link">Estudio</div>
+        <div class="nav-link">Biblioteca</div>
+        <div class="nav-link">Tutores</div>
+        <div class="nav-link">Empleo</div>
+        <div class="nav-link">Comunidad</div>
+      </div>
+    </div>
+  </div>
+
+  <main class="main">
+
+    <div class="breadcrumb">
+      <span class="link">Mi U</span>
+      <span class="sep">/</span>
+      <span class="link">Asignaturas</span>
+      <span class="sep">/</span>
+      <span class="curr">Cálculo Diferencial II</span>
+    </div>
+
+    <section class="asig-head">
+      <div class="asig-tag-row">
+        <span class="asig-tag code">MA2002-1</span>
+        <span class="asig-tag">Semestre 2026-1</span>
+        <span class="asig-tag credits">6 créditos</span>
+        <span class="asig-tag">Obligatorio · plan común</span>
+      </div>
+
+      <h1 class="asig-title">
+        Cálculo<br>
+        <span class="hl-ink">Diferencial II</span>.
+      </h1>
+
+      <div class="asig-meta-strip">
+        <div class="am-item">
+          <div class="am-l">Promedio</div>
+          <div class="am-v">6.8 / 7.0</div>
+        </div>
+        <div class="am-item">
+          <div class="am-l">Asistencia</div>
+          <div class="am-v">96%</div>
+        </div>
+        <div class="am-item">
+          <div class="am-l">Sala</div>
+          <div class="am-v">C-304</div>
+        </div>
+        <div class="am-item">
+          <div class="am-l">Horario</div>
+          <div class="am-v">Lun · Mié · Vie · 10:30</div>
+        </div>
+        <div class="am-prof-wrap">
+          <div class="av av-prof am-prof-av">MS</div>
+          <div>
+            <div class="am-v">Margarita Soto</div>
+            <div class="am-l">Profesora titular</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="tabs-row">
+      <div class="tab active">Documentos <span class="count">14</span></div>
+      <div class="tab">Clases <span class="count">24</span></div>
+      <div class="tab">Evaluaciones <span class="count">5</span></div>
+      <div class="tab">Foro <span class="count">38</span></div>
+      <div class="tab">Compañeros <span class="count">42</span></div>
+      <div class="tab">Material oficial</div>
+    </div>
+
+    <div class="actions-row">
+      <button class="a-btn primary">Subir documento <div class="ring">+</div></button>
+      <button class="a-btn">Filtrar ▾</button>
+      <button class="a-btn ghost">Ordenar por fecha</button>
+    </div>
+
+    <div class="content">
+
+      <div class="main-col">
+
+        <!-- TRANSCRIPTS DE TUTORÍAS -->
+        <div class="sec-label">Transcripts guardados automáticamente · tutorías</div>
+        <div class="docs-grid">
+
+          <div class="doc-card transcript">
+            <div class="doc-badge-tr">★ transcript</div>
+            <div class="doc-head">
+              <div class="doc-ico tr">T</div>
+              <div>
+                <div class="doc-tag">Tutoría · Margarita Soto</div>
+                <div class="doc-title">Clase regla de la cadena</div>
+              </div>
+            </div>
+            <div class="doc-sub">Transcripción completa · incluye derivadas básicas, teorema, 3 ejemplos resueltos y tus 2 preguntas respondidas.</div>
+            <div class="doc-meta">
+              <span><strong>Hoy</strong> · 17:00</span>
+              <span>·</span>
+              <span>60 min</span>
+              <span>·</span>
+              <span>12 pp</span>
+            </div>
+          </div>
+
+          <div class="doc-card transcript">
+            <div class="doc-badge-tr">★ transcript</div>
+            <div class="doc-head">
+              <div class="doc-ico tr">T</div>
+              <div>
+                <div class="doc-tag">Tutoría · Margarita Soto</div>
+                <div class="doc-title">Integrales básicas · clase 1</div>
+              </div>
+            </div>
+            <div class="doc-sub">Primera clase sobre integración. Antiderivadas, reglas de integración, ejercicios modelo y pautas para el certamen.</div>
+            <div class="doc-meta">
+              <span><strong>11 abr</strong></span>
+              <span>·</span>
+              <span>60 min</span>
+              <span>·</span>
+              <span>18 pp</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MIS APUNTES Y TRABAJOS -->
+        <div class="sec-label">Tus apuntes y trabajos</div>
+        <div class="docs-grid">
+
+          <div class="doc-card">
+            <div class="doc-badge-new">nuevo</div>
+            <div class="doc-head">
+              <div class="doc-ico ws">W</div>
+              <div>
+                <div class="doc-tag">Workspace · personal</div>
+                <div class="doc-title">Apuntes capítulo 7</div>
+              </div>
+            </div>
+            <div class="doc-sub">Tu cuaderno digital con las notas de clase. Sincronizado en vivo mientras escribes.</div>
+            <div class="doc-meta">
+              <span><strong>Hace 2 h</strong></span>
+              <span>·</span>
+              <span>8 pp</span>
+              <span>·</span>
+              <span>editando</span>
+            </div>
+          </div>
+
+          <div class="doc-card">
+            <div class="doc-head">
+              <div class="doc-ico docx">D</div>
+              <div>
+                <div class="doc-tag">Documento · Word</div>
+                <div class="doc-title">Resumen para certamen 2</div>
+              </div>
+            </div>
+            <div class="doc-sub">Compilado personal con todo lo del semestre hasta ahora. Ecuaciones, reglas, ejemplos clave.</div>
+            <div class="doc-meta">
+              <span><strong>Ayer</strong></span>
+              <span>·</span>
+              <span>14 pp</span>
+              <span>·</span>
+              <span>3.2k palabras</span>
+            </div>
+          </div>
+
+          <div class="doc-card">
+            <div class="doc-head">
+              <div class="doc-ico pdf">▸</div>
+              <div>
+                <div class="doc-tag">Ejercicios · PDF</div>
+                <div class="doc-title">Guía Cálculo II resuelta</div>
+              </div>
+            </div>
+            <div class="doc-sub">La guía que compartió Victoria N. en la comunidad. 24 páginas con ejercicios resueltos paso a paso.</div>
+            <div class="doc-meta">
+              <span><strong>4 abr</strong></span>
+              <span>·</span>
+              <span>24 pp</span>
+              <span>·</span>
+              <span>1.8 MB</span>
+            </div>
+          </div>
+
+          <div class="doc-card">
+            <div class="doc-head">
+              <div class="doc-ico pdf">▸</div>
+              <div>
+                <div class="doc-tag">Certamen 1 · rendido</div>
+                <div class="doc-title">Enunciado + mi respuesta</div>
+              </div>
+            </div>
+            <div class="doc-sub">Copia escaneada del certamen 1 que rendiste el 22 de marzo. Nota 6.8.</div>
+            <div class="doc-meta">
+              <span><strong>22 mar</strong></span>
+              <span>·</span>
+              <span>Nota 6.8</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- MATERIAL OFICIAL DE LA PROFESORA -->
+        <div class="sec-label">Material oficial · subido por la profesora</div>
+        <div class="docs-grid">
+
+          <div class="doc-card">
+            <div class="doc-head">
+              <div class="doc-ico pdf">▸</div>
+              <div>
+                <div class="doc-tag">Oficial · Margarita Soto</div>
+                <div class="doc-title">Apuntes cap 7 · regla de la cadena</div>
+              </div>
+            </div>
+            <div class="doc-sub">PDF oficial del capítulo entregado por la profesora como material de estudio obligatorio para el certamen.</div>
+            <div class="doc-meta">
+              <span><strong>2 abr</strong></span>
+              <span>·</span>
+              <span>28 pp</span>
+              <span>·</span>
+              <span>2.8 MB</span>
+            </div>
+          </div>
+
+          <div class="doc-card">
+            <div class="doc-head">
+              <div class="doc-ico video">▶</div>
+              <div>
+                <div class="doc-tag">Clase grabada</div>
+                <div class="doc-title">Cátedra 15/04 completa</div>
+              </div>
+            </div>
+            <div class="doc-sub">Grabación oficial de la clase en cátedra. Revisable si te perdiste la clase o para repasar.</div>
+            <div class="doc-meta">
+              <span><strong>15 abr</strong></span>
+              <span>·</span>
+              <span>90 min</span>
+              <span>·</span>
+              <span>HD</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside class="side">
+
+        <!-- Próxima clase -->
+        <div class="side-card hl">
+          <div class="sec-label" style="color: rgba(255,255,255,.85); margin-bottom: 10px;">Próxima clase</div>
+          <div style="font-weight: 900; font-size: 28px; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 8px;">
+            Mañana <span class="hl">10:30</span>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.85); letter-spacing: .06em; text-transform: uppercase; font-weight: 600;">Sala C-304 · Cátedra</div>
+          <div style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,.15); border-radius: 12px;">
+            <div style="font-family: var(--font-mono); font-size: 10px; color: var(--lime); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px;">tema</div>
+            <div style="font-weight: 700; font-size: 14px; color: #fff;">Aplicaciones de la regla de la cadena en física</div>
+          </div>
+        </div>
+
+        <!-- Progreso -->
+        <div class="progress-card">
+          <div class="pg-label">★ tu progreso</div>
+          <div class="pg-row"><span class="pg-topic">Clases asistidas</span><span class="pg-val">23/24</span></div>
+          <div class="pg-bar"><div class="pg-bar-fill" style="width: 96%;"></div></div>
+          <div class="pg-row"><span class="pg-topic">Entregas completadas</span><span class="pg-val">8/8</span></div>
+          <div class="pg-bar"><div class="pg-bar-fill" style="width: 100%;"></div></div>
+          <div class="pg-row"><span class="pg-topic">Material cubierto</span><span class="pg-val">68%</span></div>
+          <div class="pg-bar"><div class="pg-bar-fill" style="width: 68%;"></div></div>
+          <div class="pg-note">
+            Vas en el <strong>top 12%</strong> de tu curso. Si mantienes este ritmo, sacarás entre 6.6 y 6.9 de promedio final.
+          </div>
+        </div>
+
+        <!-- Evaluaciones -->
+        <div class="side-card">
+          <div class="sc-head">
+            <div class="sc-title">Evaluaciones</div>
+            <div class="sc-count">5 en total</div>
+          </div>
+          <div class="eval-row">
+            <div class="eval-info">
+              <div class="ev-title">Certamen 1</div>
+              <div class="ev-date">22 mar · rendido</div>
+            </div>
+            <div class="eval-grade good">6.8</div>
+          </div>
+          <div class="eval-row">
+            <div class="eval-info">
+              <div class="ev-title">Control 1</div>
+              <div class="ev-date">5 abr · rendido</div>
+            </div>
+            <div class="eval-grade mid">5.9</div>
+          </div>
+          <div class="eval-row">
+            <div class="eval-info">
+              <div class="ev-title">Tareas semanales</div>
+              <div class="ev-date">promedio</div>
+            </div>
+            <div class="eval-grade good">7.0</div>
+          </div>
+          <div class="eval-row">
+            <div class="eval-info">
+              <div class="ev-title">Certamen 2</div>
+              <div class="ev-date">27 abr · en 9 días</div>
+            </div>
+            <div class="eval-grade pend">—</div>
+          </div>
+          <div class="eval-row">
+            <div class="eval-info">
+              <div class="ev-title">Examen final</div>
+              <div class="ev-date">10 jul</div>
+            </div>
+            <div class="eval-grade pend">—</div>
+          </div>
+        </div>
+
+        <!-- Compañeros -->
+        <div class="side-card">
+          <div class="sc-head">
+            <div class="sc-title">Compañeros</div>
+            <div class="sc-count">42 conectados</div>
+          </div>
+          <div class="classmates-row">
+            <div class="av av-felipe cm-av">FG</div>
+            <div class="av av-victoria cm-av">VN</div>
+            <div class="av av-luis cm-av">LP</div>
+            <div class="av av-pia cm-av">PR</div>
+            <div class="av av-barbara cm-av">BS</div>
+            <div class="av av-daniela cm-av">DH</div>
+            <div class="cm-av cm-more">+36</div>
+          </div>
+          <button class="classmates-cta">
+            Ver todos
+            <div class="cmr">→</div>
+          </button>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+</body>
+</html>

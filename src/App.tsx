@@ -60,8 +60,9 @@ const TutorDirectory = React.lazy(() => import('./pages/TutorDirectory'));
 const CVProfile = React.lazy(() => import('./pages/CVProfile'));
 const Biblioteca = React.lazy(() => import('./pages/Biblioteca'));
 const AIWorkflows = React.lazy(() => import('./pages/AIWorkflows'));
-const GroupDocs = React.lazy(() => import('./pages/GroupDocs'));
-const GroupDocEditor = React.lazy(() => import('./pages/GroupDocEditor'));
+// GroupDocs (V1 collab) deprecado 2026-04-19 — reemplazado por Workspaces v2
+// const GroupDocs = React.lazy(() => import('./pages/GroupDocs'));
+// const GroupDocEditor = React.lazy(() => import('./pages/GroupDocEditor'));
 // ─── Workspaces v2 (Bloque 2a — 2026-04-18) ─────────────────────
 const WorkspacesList = React.lazy(() => import('./pages/Workspaces/WorkspacesList'));
 const WorkspaceEditor = React.lazy(() => import('./pages/Workspaces/WorkspaceEditor'));
@@ -808,14 +809,7 @@ export default function App() {
                   path="/biblioteca"
                   element={<Biblioteca onNavigate={(path) => navigate(path)} />}
                 />
-                <Route
-                  path="/group-docs"
-                  element={<GroupDocs onNavigate={(path) => navigate(path)} />}
-                />
-                <Route
-                  path="/group-docs/:docId"
-                  element={<GroupDocEditor onNavigate={(path) => navigate(path)} />}
-                />
+                {/* GroupDocs V1 deprecado 2026-04-19 — reemplazado por Workspaces v2 */}
                 {/* ── Workspaces v2 (Bloque 2a — 2026-04-18) ── */}
                 <Route
                   path="/workspaces"

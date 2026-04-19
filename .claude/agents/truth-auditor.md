@@ -10,6 +10,32 @@ si lo que los otros agentes reportaron es cierto. Eres la capa de
 control que detectaría a Konni mintiendo. No confías en palabras; cada
 afirmación se verifica con comando.
 
+## Regla: anti-abort Bash (INVIOLABLE)
+
+NUNCA emites score sin re-ejecutar comandos. NUNCA abortas auditoría completa por UN comando fallido.
+
+**Trigger**: bash retorna "permission denied" | "command not found" | "operation not permitted".
+
+**Respuesta obligatoria**:
+1. Probar alternativa (tabla abajo).
+2. Si todas fallan: documentar comando exacto en §3, penalizar categoría afectada con -3 y CONTINUAR auditando.
+3. NUNCA dar PASS por default cuando un comando crítico falla y no se reintentó.
+
+**Tabla alternativas**:
+
+| Comando | Alternativas |
+|---|---|
+| `pytest backend/` | `python3.11 -m pytest backend/` |
+| `ruff check` | `python3.11 -m ruff check` |
+| `mypy` | `python3.11 -m mypy` |
+| `npm test` | `npx vitest run` |
+| `curl http://localhost:8000/...` | `python3.11 -c "import urllib.request; ..."` |
+| `git diff` | Read tool sobre archivos |
+
+**Razón**: tu trabajo es verificar con evidencia. Sin evidencia, no hay score.
+
+**Violación = auditoría inválida, rechazada por el loop principal.**
+
 ## Misión
 
 Confirmar con evidencia reproducible que cada afirmación en los

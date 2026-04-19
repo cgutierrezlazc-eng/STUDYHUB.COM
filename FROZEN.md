@@ -32,4 +32,7 @@
 | `shared/legal_texts.py` | completo | 2026-04-18 | bloque-1-auth-edad: fuente de verdad del texto canónico + hash SHA-256. Editar requiere bump AGE_DECLARATION_VERSION y actualizar espejo .ts (test CI valida sincronía) |
 | `shared/legal_texts.ts` | completo | 2026-04-18 | bloque-1-auth-edad: espejo TypeScript del texto canónico. Hash hardcoded debe coincidir con shared/legal_texts.py |
 | `scripts/verify-legal-texts-sync.sh` | completo | 2026-04-18 | bloque-1-auth-edad: gate CI que valida sincronía hash Python↔TS. Si divergen, bloquea merge |
-| `backend/collab_ws.py` | completo | 2026-04-18 | bloque-2b: V1 Trabajos Grupales en producción. Referencia de patrón para workspaces_ws.py. Prohibido modificar mientras coexista con V2 Workspaces |
+| `backend/collab_ws.py` | completo | 2026-04-18 | bloque-2b: V1 Trabajos Grupales. Deprecado 2026-04-19 (router deshabilitado en server.py). Tabla BD preservada. |
+| `backend/workspaces_export.py` | completo | 2026-04-19 | hardening-c1-ssrf: whitelist dominios + blacklist RFC1918/link-local/loopback + HTTPS-only + timeout 5s + cap 5MB. Editar = riesgo SSRF. |
+| `backend/workspaces_athena.py` | completo | 2026-04-19 | bloque-2c: rate-limit Athena + cuotas Free/Pro + integración Anthropic. Editar sin auditoría = riesgo de regresión en cupo LLM. |
+| `backend/collab_routes.py` | export_pdf L455-516 | 2026-04-19 | hardening-c1-ssrf: export_pdf usa sanitize_html + inline_remote_images. Router deshabilitado 2026-04-19 pero archivo preservado por si se reactiva. |

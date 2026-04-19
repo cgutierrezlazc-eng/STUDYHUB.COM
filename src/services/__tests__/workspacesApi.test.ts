@@ -188,3 +188,49 @@ describe('workspacesApi — addMember', () => {
     expect(body.role).toBe('editor');
   });
 });
+
+describe('workspacesApi — apiFetch hardening (A-10)', () => {
+  it('lanza AuthExpiredError y limpia token en respuesta 401', async () => {
+    localStorage.setItem('conniku_token', 'token-viejo');
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      json: () => Promise.resolve({ detail: 'expired' }),
+    });
+
+    const { listWorkspaces, AuthExpiredError } = await import('../workspacesApi');
+    await expect(listWorkspaces()).rejects.toBeInstanceOf(AuthExpiredError);
+    expect(localStorage.getItem('conniku_token')).toBeNull();
+  });
+
+  it('lanza RequestTimeoutError cuando fetch aborta por timeout', async () => {
+    // Restaurar token porque el test anterior lo eliminó
+    localStorage.setItem('conniku_token', 'test-token-abc');
+
+    // Simular AbortError del timeout interno
+    const abortErr = new Error('The operation was aborted');
+    abortErr.name = 'AbortError';
+    mockFetch.mockRejectedValueOnce(abortErr);
+
+    const { listWorkspaces, RequestTimeoutError } = await import('../workspacesApi');
+    await expect(listWorkspaces()).rejects.toBeInstanceOf(RequestTimeoutError);
+  });
+
+  it('pasa signal de fetch respetando AbortController interno', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({ workspaces: [] }),
+      status: 200,
+    });
+
+    const { listWorkspaces } = await import('../workspacesApi');
+    await listWorkspaces();
+
+    const [, options] = mockFetch.mock.calls[0];
+    expect((options as RequestInit).signal).toBeDefined();
+    // signal debe ser un AbortSignal (tiene .aborted boolean y .addEventListener)
+    const signal = (options as RequestInit).signal;
+    expect(typeof signal?.aborted).toBe('boolean');
+    expect(typeof signal?.addEventListener).toBe('function');
+  });
+});
