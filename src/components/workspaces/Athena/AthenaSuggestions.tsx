@@ -34,13 +34,20 @@ export default function AthenaSuggestions({
   const [error, setError] = useState<string | null>(null);
 
   async function handleCreate() {
+    const selection = editorBridge?.current?.getSelection() ?? null;
+
+    // Fix BLOQUEANTE-2 Capa 2: validar selección en frontend antes de llamar al
+    // backend. El endpoint rechaza staging_text vacío con 400. Sin este guard,
+    // el feature era inutilizable en su estado por defecto (sin selección).
+    if (!selection || !selection.trim()) {
+      setError('Selecciona texto en el editor antes de crear una sugerencia.');
+      return;
+    }
+
     setCreating(true);
     setError(null);
     try {
-      const selection = editorBridge?.current?.getSelection() ?? null;
-      // Si no hay selección, se usa el texto de selección o vacío (backend toma contexto del doc)
-      await athenaSuggest(docId, selection ?? '', selection ?? undefined);
-      // La sugerencia nueva llegará en el próximo listAthenaSuggestions — el padre la actualiza
+      await athenaSuggest(docId, selection, selection);
     } catch (err) {
       const isQuota =
         err instanceof AthenaQuotaError ||

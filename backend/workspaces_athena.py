@@ -392,7 +392,10 @@ def post_athena(
         )
 
     # Persistir según la acción (D4)
-    result: dict[str, Any] = {"response": response_text, "action": action}
+    # Campo `result` (no `response`) para alinearse con tipos TS frontend
+    # (AthenaAnalyzeResponse/AthenaChatResponse/AthenaSuggestResponse).
+    # Fix BLOQUEANTE-1 Capa 2 code-reviewer.
+    result: dict[str, Any] = {"result": response_text, "action": action}
 
     if action == "chat":
         # Insertar 2 filas: user + athena

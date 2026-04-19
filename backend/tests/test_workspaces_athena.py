@@ -270,8 +270,8 @@ class TestFase2PostAthena:
         )
         assert resp.status_code == 200, resp.text
         body = resp.json()
-        assert "response" in body
-        assert "CORRECCIONES" in body["response"]
+        assert "result" in body
+        assert "CORRECCIONES" in body["result"]
 
     def test_post_athena_chat_ok(self, client_and_users, monkeypatch):
         """action=chat retorna 200 con campo 'response'."""
@@ -288,8 +288,8 @@ class TestFase2PostAthena:
         )
         assert resp.status_code == 200, resp.text
         body = resp.json()
-        assert "response" in body
-        assert len(body["response"]) > 0
+        assert "result" in body
+        assert len(body["result"]) > 0
 
     def test_post_athena_suggest_ok(self, client_and_users, monkeypatch):
         """action=suggest retorna 200 con campo 'response' y 'suggestion_id'."""
@@ -306,7 +306,7 @@ class TestFase2PostAthena:
         )
         assert resp.status_code == 200, resp.text
         body = resp.json()
-        assert "response" in body
+        assert "result" in body
         assert "suggestion_id" in body
 
     def test_post_athena_usuario_no_miembro_403(self, client_and_users, monkeypatch):
