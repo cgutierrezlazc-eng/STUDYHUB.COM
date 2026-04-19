@@ -23,26 +23,23 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - **FROZEN**: `backend/collab_routes.py`, `backend/workspaces_export.py`, `backend/workspaces_athena.py` agregados a FROZEN.md 2026-04-19.
 - **Estado**: sin superficie de ataque SSRF expuesta en producción tras deprecado V1.
 
-### C2. Privilege escalation en update_me
-- **Ubicación**: `backend/auth_routes.py:869-915`
-- **Problema**: endpoint `PUT /auth/me` permite setear `is_admin`, `role`, `is_banned` desde JSON. **Cualquier usuario puede hacerse admin.**
-- **Origen**: auditoría Konni Main 2026-04-16 (top 34 CRITICAL item #1)
-- **Fix**: whitelist de campos editables en `update_me`, rechazar keys sensibles
-- **Bloque sugerido**: Bloque de hardening auth
+### C2. Privilege escalation en update_me — ✅ CERRADO 2026-04-19 (FALSO POSITIVO)
+- **Ubicación reportada**: `backend/auth_routes.py:996-1030` (endpoint real `update_me`)
+- **Análisis (CLAUDE.md §22 verificación de premisas)**: El schema `UpdateProfileRequest` (Pydantic) NO incluye `is_admin`, `role`, ni `is_banned` como campos. Pydantic v2 por default descarta campos extras del payload (`extra="ignore"`). Por tanto `req.dict(exclude_none=True)` solo contiene los campos del schema, y el `setattr(user, db_key, value)` jamás recibe los campos sensibles.
+- **Verificación empírica**: `python3.11 -c "from pydantic import BaseModel; class T(BaseModel): name: str | None = None; r = T(**{'name': 'x', 'is_admin': True}); print(r.dict())"` → `{'name': 'x'}` (is_admin descartado).
+- **Estado**: no es vulnerabilidad. La auditoría Konni 2026-04-16 fue incorrecta en este punto.
 
-### C3. Trampa garantizada en quizzes
-- **Ubicación**: `backend/course_routes.py:977-1016`
-- **Problema**: cliente envía `correctAnswer` en el payload de submit, el servidor confía → 100% de aciertos manipulables
-- **Origen**: auditoría Konni Main 2026-04-16 (top 34 CRITICAL item #7)
-- **Fix**: servidor calcula corrección desde la BD, ignora lo que envíe el cliente
-- **Bloque sugerido**: Bloque de hardening quizzes
+### C3. Trampa garantizada en quizzes — ✅ CERRADO 2026-04-19
+- **Ubicación**: `backend/course_routes.py:977-1016` endpoint `POST /{course_id}/exercises/submit`
+- **Resolución**: PR #11 (`security(course): fix C3 trampa garantizada en quizzes`). Fix Opción B del plan: servidor ignora `correctAnswer` del cliente y re-valida contra `CourseQuiz.questions` persistido en BD indexando por hash. Cero cambio de contrato API.
+- **Tests**: 4 tests TDD en `backend/tests/test_course_exercises_security.py` — atacante con `correctAnswer` manipulado obtiene score=0; flujo legítimo intacto.
+- **Pendiente derivado**: el endpoint `/quiz/submit` (línea 628 de course_routes.py) puede tener vulnerabilidad análoga. Auditar en bloque futuro.
 
-### C4. NameError rompe submission quiz
-- **Ubicación**: `backend/course_routes.py:767`
-- **Problema**: variable `questions` undefined → cada submit de quiz explota
-- **Origen**: auditoría Konni Main 2026-04-16 (top 34 CRITICAL item #6)
-- **Fix**: trivial (definir la variable o renombrar al nombre correcto)
-- **Bloque sugerido**: junto con C3 en hardening quizzes
+### C4. NameError rompe submission quiz — ⛔ SIN EVIDENCIA 2026-04-19
+- **Ubicación reportada**: `backend/course_routes.py:767`
+- **Análisis (CLAUDE.md §22)**: La línea 767 actual es `return {"score": score, "passed": passed, "correct": correct, ...}`. NO hay variable `questions` undefined ahí. El parseo AST del archivo completo pasa OK sin errores de sintaxis ni nombres no definidos.
+- **Hipótesis**: o bien el bug ya fue fixeado retroactivamente sin documentar, o bien el reporte original de Konni 2026-04-16 tenía el número de línea desactualizado. Sin reproducción concreta, marcado como SIN EVIDENCIA.
+- **Estado**: cerrado por falta de reproducibilidad. Si vuelve a aparecer, abrir issue nuevo con stack trace.
 
 ### C5. PCI-DSS violation en Checkout
 - **Ubicación**: `src/pages/Checkout.tsx:13-30`
