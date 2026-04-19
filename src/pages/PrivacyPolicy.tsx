@@ -112,7 +112,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
       </button>
 
       <h1 style={styles.h1}>Política de Privacidad</h1>
-      <p style={styles.date}>Última actualización: 11 de abril de 2026 · Versión 2.1</p>
+      <p style={styles.date}>Última actualización: 19 de abril de 2026 · Versión 2.3</p>
 
       <p style={styles.p}>
         En Conniku SpA (en adelante, "Conniku", "nosotros" o "la empresa"), nos comprometemos a
@@ -209,6 +209,20 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
           <strong>Contenido del usuario:</strong> documentos, apuntes y materiales subidos a la
           plataforma.
         </li>
+        <li>
+          <strong>Interacciones con asistentes inteligentes:</strong> mensajes que usted envía al
+          chat privado de Athena dentro de sus documentos, selecciones de texto que solicita
+          reescribir o analizar, y el historial de dichas interacciones asociado a cada documento.
+          Estas interacciones son privadas por usuario: no son visibles para colaboradores del mismo
+          documento.
+        </li>
+        <li>
+          <strong>Documentos exportados:</strong> cuando usted solicita exportar un documento de
+          Workspaces a PDF o DOCX, el contenido del documento es procesado por nuestros servidores
+          para generar un archivo descargable. Ese archivo se entrega a su dispositivo y, una vez
+          descargado, queda fuera del control de Conniku: usted es el único responsable de su
+          almacenamiento, distribución, copias, respaldo y eliminación posterior.
+        </li>
       </ul>
 
       <h3 style={styles.h3}>2.2. Datos recopilados automáticamente</h3>
@@ -238,6 +252,14 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         <li>
           <strong>Prestación del servicio:</strong> crear y gestionar su cuenta, procesar sus
           materiales de estudio y generar contenido personalizado con tecnologia inteligente.
+        </li>
+        <li>
+          <strong>Asistencia inteligente sobre documentos (Athena):</strong>
+          procesar el contenido de los documentos y sus mensajes de chat privado cuando usted invoca
+          deliberadamente al asistente Athena, con el fin de devolverle análisis, resúmenes,
+          respuestas a preguntas y sugerencias de reescritura sobre fragmentos específicos que usted
+          seleccione. El tratamiento se ejecuta únicamente cuando usted acciona la función; no opera
+          automáticamente sobre documentos inactivos.
         </li>
         <li>
           <strong>Personalización:</strong> adaptar la experiencia de usuario según sus preferencias
@@ -292,7 +314,9 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         </li>
         <li>
           <strong>Ejecución de contrato [Art. 6(1)(b)]:</strong> para la prestación del servicio
-          solicitado por el usuario.
+          solicitado por el usuario, incluido el procesamiento de los contenidos que usted envía
+          explícitamente al asistente Athena (documento, chat privado, selecciones de texto para
+          sugerencia) cuando dicha función forma parte del plan contratado.
         </li>
         <li>
           <strong>Obligación legal [Art. 6(1)(c)]:</strong> cuando el tratamiento es requerido por
@@ -364,6 +388,42 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         <li>Protección contra XSS, CSRF e inyección SQL.</li>
       </ul>
 
+      <h3 style={styles.h3}>5.3. Procesamiento al exportar documentos</h3>
+      <p style={styles.p}>
+        Cuando usted solicita exportar un documento de Workspaces a formato PDF o DOCX:
+      </p>
+      <ul style={styles.ul}>
+        <li>
+          El contenido del documento se envía a nuestros servidores para ser procesado por
+          bibliotecas de generación de archivos (WeasyPrint para PDF, python-docx para DOCX).
+        </li>
+        <li>
+          El contenido es sanitizado por el servidor antes del render: se eliminan scripts,
+          manejadores de eventos, iframes, y cualquier elemento ajeno al contenido textual y visual
+          autorizado.
+        </li>
+        <li>
+          Las imágenes referenciadas desde dominios externos a Conniku se eliminan del documento
+          exportado por razones de seguridad. Las imágenes alojadas en los dominios de Conniku se
+          incorporan al archivo como datos binarios (base64), quedando contenidas dentro del propio
+          archivo.
+        </li>
+        <li>
+          Los metadatos del archivo DOCX (autor, autor de la última modificación, título) se
+          establecen como vacíos para no filtrar la identidad del usuario que exporta. Los archivos
+          PDF generados tampoco incluyen metadatos de identidad del usuario.
+        </li>
+        <li>
+          Conniku no conserva una copia del archivo exportado después de entregárselo. El archivo se
+          genera en memoria, se envía a su navegador y se descarta.
+        </li>
+        <li>
+          Una vez descargado el archivo en su dispositivo, queda fuera de nuestro control. Si lo
+          comparte, lo envía por correo o lo sube a otro servicio, esa difusión y sus consecuencias
+          son de su exclusiva responsabilidad.
+        </li>
+      </ul>
+
       {/* 6. Terceros */}
       <h2 style={styles.h2}>6. Compartición de Datos con Terceros</h2>
       <p style={styles.p}>
@@ -384,11 +444,18 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
               <strong>Anthropic</strong>
             </td>
             <td style={styles.td}>
-              Procesamiento automatizado de lenguaje natural (generación de resúmenes, asistente de
-              estudio)
+              Procesamiento automatizado de lenguaje natural para las funciones de asistencia
+              inteligente sobre documentos del usuario: generación de resúmenes, análisis de
+              documentos, chat privado por documento, sugerencias de reescritura sobre fragmentos
+              seleccionados, y otras funciones equivalentes que se incorporen al asistente Athena.
             </td>
             <td style={styles.td}>
-              Contenido académico proporcionado por el usuario para su procesamiento
+              Título y materia del documento, contenido completo del documento cuando usted lo envía
+              a analizar, últimos mensajes del chat privado de Athena asociado al documento
+              (enviados como contexto en cada consulta, con un máximo de los 10 mensajes más
+              recientes), y el texto específico que usted seleccione para pedir una sugerencia de
+              reescritura. No se envían contraseñas, tokens de sesión, datos de pago ni metadatos de
+              cuenta.
             </td>
           </tr>
           <tr>
@@ -424,6 +491,11 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
           marketing.
         </strong>{' '}
         Nunca transferimos datos a brokers de datos ni a redes publicitarias.
+      </p>
+      <p style={styles.p}>
+        Adicionalmente, cuando usted exporta un documento a PDF o DOCX, el archivo generado es
+        entregado directamente a su dispositivo y no compartido con ningún tercero por parte de
+        Conniku.
       </p>
 
       {/* 7. Derechos ARCO */}
@@ -526,6 +598,21 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
           <strong>Post-eliminación:</strong> tras la eliminación de su cuenta, conservaremos datos
           anonimizados o agregados por un período de 2 años para fines estadísticos. Los datos
           identificables serán eliminados dentro de los 30 días siguientes a la solicitud.
+        </li>
+        <li>
+          <strong>Historial de chat con Athena:</strong> los mensajes del chat privado de Athena
+          asociados a un documento se conservan mientras el documento exista en su cuenta. Al
+          eliminar un documento, el historial de chat asociado se elimina en cascada de manera
+          automática. Usted también puede borrar manualmente todo el historial de chat de un
+          documento desde el propio panel de Athena, sin eliminar el documento. Las sugerencias de
+          reescritura resueltas (aplicadas, modificadas o rechazadas) se conservan como registro
+          histórico del documento bajo el mismo criterio.
+        </li>
+        <li>
+          <strong>Métricas de uso de Athena:</strong> la tabla interna de cuotas (cantidad de
+          consultas diarias al asistente) se conserva por tiempo indefinido en forma de contador
+          agregado por usuario, sin el contenido procesado. Esta información se utiliza
+          exclusivamente para aplicar los límites por plan descritos en los Términos y Condiciones.
         </li>
         <li>
           <strong>Obligaciones legales:</strong> ciertos datos podrán conservarse por períodos
@@ -786,8 +873,9 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
       {/* 14. Transferencias internacionales */}
       <h2 style={styles.h2}>14. Transferencias Internacionales de Datos</h2>
       <p style={styles.p}>
-        Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render,
-        Vercel). Para garantizar la protección de sus datos en estas transferencias:
+        Conniku transfiere datos personales a servidores ubicados en Estados Unidos (Render, Vercel,
+        y Anthropic cuando usted invoca funciones de asistencia inteligente). Para garantizar la
+        protección de sus datos en estas transferencias:
       </p>
       <ul style={styles.ul}>
         <li>
@@ -818,7 +906,7 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
           Esta Política de Privacidad ha sido redactada en conformidad con la Ley N° 19.628 sobre
           Protección de la Vida Privada (Chile), el Reglamento General de Protección de Datos (GDPR,
           UE 2016/679), la Lei Geral de Proteção de Dados Pessoais (LGPD, Brasil) y la California
-          Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.1 — Abril 2026.
+          Consumer Privacy Act (CCPA / CPRA, EE.UU.). Versión 2.3 — Abril 2026.
         </p>
       </div>
     </div>
