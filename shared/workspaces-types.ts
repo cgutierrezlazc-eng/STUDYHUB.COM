@@ -120,3 +120,49 @@ export interface AcceptInviteResult {
   role: MemberRole;
   already_member: boolean;
 }
+
+// ─── Tipos Athena IA (bloque 2c) ──────────────────────────────────────────────
+
+/** Mensaje del historial privado de chat con Athena (por usuario + documento). */
+export interface AthenaChatMessage {
+  id: string;
+  role: 'user' | 'athena';
+  content: string;
+  createdAt: string;
+}
+
+/** Sugerencia generada por Athena en staging privado del usuario. */
+export interface AthenaSuggestion {
+  id: string;
+  stagingContent: string;
+  suggestionContent: string;
+  status: 'pending' | 'applied' | 'modified' | 'rejected';
+  createdAt: string;
+  resolvedAt?: string | null;
+}
+
+/** Información de cuota de uso de Athena para el usuario actual. */
+export interface AthenaUsageInfo {
+  plan: 'free' | 'pro';
+  used: number;
+  limit: number;
+  remaining: number;
+  windowKey: string;
+  resetsAt: string;
+}
+
+/** Respuesta del endpoint POST /athena con action="analyze". */
+export interface AthenaAnalyzeResponse {
+  result: string;
+}
+
+/** Respuesta del endpoint POST /athena con action="chat". */
+export interface AthenaChatResponse {
+  result: string;
+}
+
+/** Respuesta del endpoint POST /athena con action="suggest". */
+export interface AthenaSuggestResponse {
+  result: string;
+  suggestion_id: string;
+}

@@ -6,19 +6,22 @@
  *   En 2b: el panel "Colaboradores" muestra MemberContributionBar con indicadores online.
  * - Zona central (flex 1): documento, recibe children.
  * - Zona derecha (360px): dos paneles apilados.
- *   Panel superior: "Borrador privado" (sigue placeholder, se implementa en 2c).
+ *   Panel superior: AthenaPanel (activo en 2c cuando athenaEnabled=true).
  *   Panel inferior: GroupChat (activo en 2b cuando chatEnabled=true).
  *
  * En viewport <1024px las zonas derecha e izquierda se colapsan.
  * Decisión D3 del plan 2a.
  *
- * Bloque 2a Fundación / 2b Colaboración.
+ * Bloque 2a Fundación / 2b Colaboración / 2c Athena IA.
  */
 
 import React, { useState } from 'react';
+import type { RefObject } from 'react';
 import type { WorkspaceMember } from '../../../../shared/workspaces-types';
 import MemberContributionBar from '../Presence/MemberContributionBar';
 import GroupChat from '../Chat/GroupChat';
+import AthenaPanel from '../Athena/AthenaPanel';
+import type { EditorBridgeHandle } from '../Athena/AthenaPanel';
 
 interface SidebarPanelProps {
   title: string;
@@ -55,15 +58,23 @@ interface ThreeZoneLayoutProps {
   chatEnabled?: boolean;
   /** Si true, el WS está conectado (para deshabilitar el input del chat) */
   isConnected?: boolean;
-  /** ID del workspace/documento (para el chat) */
+  /** ID del workspace/documento (para el chat y Athena) */
   docId?: string;
-  /** Usuario actual (para el chat) */
+  /** Usuario actual (para el chat y Athena) */
   currentUser?: {
     userId: string;
     name: string;
+    avatar?: string | null;
+    color?: string;
   };
   /** Set de user_ids actualmente online (awareness) */
   onlineUserIds?: Set<string>;
+  /** Si true, monta el panel Athena en la zona derecha superior (bloque 2c) */
+  athenaEnabled?: boolean;
+  /** Ref al bridge Athena (pasado al AthenaPanel para applyText/getSelection) */
+  editorBridge?: RefObject<EditorBridgeHandle | null> | null;
+  /** Función de navegación para el modal de upgrade de Athena */
+  onNavigate?: (path: string) => void;
 }
 
 export default function ThreeZoneLayout({
@@ -74,6 +85,9 @@ export default function ThreeZoneLayout({
   docId = '',
   currentUser,
   onlineUserIds = new Set(),
+  athenaEnabled = false,
+  editorBridge,
+  onNavigate,
 }: ThreeZoneLayoutProps) {
   return (
     <div className="ws-three-zone">
@@ -104,16 +118,24 @@ export default function ThreeZoneLayout({
 
       {/* ── Zona derecha: borrador privado + chat grupal ── */}
       <div className="ws-zone-right" aria-label="Paneles laterales derechos">
-        {/* Panel superior: borrador privado — sigue siendo placeholder (2c) */}
+        {/* Panel superior: AthenaPanel (2c) o placeholder si no está habilitado */}
         <div
           className="ws-zone-right-panel ws-zone-right-panel--top"
-          aria-label="Borrador privado"
-          aria-disabled="true"
+          aria-label={athenaEnabled ? 'Panel Athena' : 'Borrador privado'}
         >
-          <div className="ws-placeholder-panel">
-            <p className="ws-placeholder-panel-title">Borrador privado</p>
-            <p className="ws-placeholder-panel-sub">Disponible próximamente.</p>
-          </div>
+          {athenaEnabled && docId && currentUser ? (
+            <AthenaPanel
+              docId={docId}
+              currentUser={currentUser}
+              editorBridge={editorBridge ?? null}
+              onNavigate={onNavigate}
+            />
+          ) : (
+            <div className="ws-placeholder-panel" aria-disabled="true">
+              <p className="ws-placeholder-panel-title">Borrador privado</p>
+              <p className="ws-placeholder-panel-sub">Disponible próximamente.</p>
+            </div>
+          )}
         </div>
 
         {/* Panel inferior: chat grupal — activo en 2b */}

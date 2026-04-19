@@ -3,6 +3,7 @@
  * Cubre endpoints: /workspaces/*, /workspaces/:id/members, /workspaces/:id/versions.
  *
  * Bloque 2a — Fundación. Sin Yjs, sin Athena, sin export.
+ * Bloque 2c — Athena IA: funciones athena* añadidas al final del archivo.
  * Usa el mismo patrón de `request` que src/services/api.ts.
  */
 
@@ -16,6 +17,12 @@ import type {
   InviteTokenInfo,
   MemberRole,
   WorkspaceMessage,
+  AthenaChatMessage,
+  AthenaSuggestion,
+  AthenaUsageInfo,
+  AthenaAnalyzeResponse,
+  AthenaChatResponse,
+  AthenaSuggestResponse,
 } from '../../shared/workspaces-types';
 
 const TOKEN_KEY = 'conniku_token';
@@ -194,4 +201,156 @@ export function updateContributionMetric(
     method: 'PATCH',
     body: JSON.stringify({ delta_chars: deltaChars }),
   });
+}
+
+// ─── Athena IA (bloque 2c) ────────────────────────────────────────────────────
+
+/** Error enriquecido que indica cuota de Athena agotada. */
+export class AthenaQuotaError extends Error {
+  readonly code = 'athena-quota' as const;
+  constructor(message: string) {
+    super(message);
+    this.name = 'AthenaQuotaError';
+  }
+}
+
+/**
+ * Wrapper sobre apiFetch que transforma 429 con detail de athena_workspace
+ * en un AthenaQuotaError enriquecido para que la UI muestre el modal de upgrade.
+ */
+async function athenFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  const base = getApiBase();
+  const token = getToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
+  const res = await fetch(`${base}${endpoint}`, { ...options, headers });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    const detail = (data as { detail?: string }).detail ?? `API Error: ${res.status}`;
+
+    if (res.status === 429) {
+      const err = new AthenaQuotaError(detail);
+      throw err;
+    }
+
+    throw new Error(detail);
+  }
+
+  return res.json() as Promise<T>;
+}
+
+/** Solicita análisis del documento actual a Athena. Consume 1 cuota. */
+export function athenaAnalyze(docId: string): Promise<AthenaAnalyzeResponse> {
+  return athenFetch(`/workspaces/${docId}/athena`, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'analyze', data: {} }),
+  });
+}
+
+/** Envía un mensaje al chat privado con Athena. Consume 1 cuota. */
+export function athenaChat(
+  docId: string,
+  message: string,
+  history: AthenaChatMessage[]
+): Promise<AthenaChatResponse> {
+  return athenFetch(`/workspaces/${docId}/athena`, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'chat', data: { message, history } }),
+  });
+}
+
+/** Solicita una sugerencia de Athena para el texto seleccionado. Consume 1 cuota. */
+export function athenaSuggest(
+  docId: string,
+  stagingText: string,
+  selection?: string
+): Promise<AthenaSuggestResponse> {
+  return athenFetch(`/workspaces/${docId}/athena`, {
+    method: 'POST',
+    body: JSON.stringify({ action: 'suggest', data: { staging_text: stagingText, selection } }),
+  });
+}
+
+export interface ListAthenaChatsOptions {
+  limit?: number;
+  before?: string;
+}
+
+export interface ListAthenaChatsResult {
+  chats: AthenaChatMessage[];
+}
+
+/** Obtiene el historial privado de chat con Athena (paginado desc). */
+export function listAthenaChats(
+  docId: string,
+  options: ListAthenaChatsOptions = {}
+): Promise<ListAthenaChatsResult> {
+  const params = new URLSearchParams();
+  if (options.limit !== undefined) params.set('limit', String(options.limit));
+  if (options.before) params.set('before', options.before);
+  const qs = params.toString();
+  return apiFetch(`/workspaces/${docId}/athena/chats${qs ? `?${qs}` : ''}`);
+}
+
+export interface ListAthenaSuggestionsOptions {
+  status?: AthenaSuggestion['status'];
+}
+
+export interface ListAthenaSuggestionsResult {
+  suggestions: AthenaSuggestion[];
+}
+
+/** Obtiene las sugerencias en staging privado del usuario. */
+export function listAthenaSuggestions(
+  docId: string,
+  options: ListAthenaSuggestionsOptions = {}
+): Promise<ListAthenaSuggestionsResult> {
+  const params = new URLSearchParams();
+  if (options.status) params.set('status', options.status);
+  const qs = params.toString();
+  return apiFetch(`/workspaces/${docId}/athena/suggestions${qs ? `?${qs}` : ''}`);
+}
+
+export interface PatchAthenaSuggestionPayload {
+  status: AthenaSuggestion['status'];
+  new_content?: string;
+}
+
+/** Actualiza el estado de una sugerencia (applied / modified / rejected). */
+export function patchAthenaSuggestion(
+  docId: string,
+  sugId: string,
+  payload: PatchAthenaSuggestionPayload
+): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/athena/suggestions/${sugId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  });
+}
+
+/** Elimina una sugerencia pendiente del staging privado. */
+export function deleteAthenaSuggestion(docId: string, sugId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/athena/suggestions/${sugId}`, {
+    method: 'DELETE',
+  });
+}
+
+/** Elimina todo el historial de chat con Athena del usuario en este documento. */
+export function deleteAthenaChats(docId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/athena/chats`, { method: 'DELETE' });
+}
+
+/** Obtiene la cuota de uso de Athena del usuario para el día actual. */
+export function getAthenaUsage(docId: string): Promise<AthenaUsageInfo> {
+  return apiFetch(`/workspaces/${docId}/athena/usage`);
+}
+
+/** Ping para verificar que Athena está disponible antes de mostrar el panel. */
+export function pingAthena(docId: string): Promise<{ ok: boolean; claude_available: boolean }> {
+  return apiFetch(`/workspaces/${docId}/athena/ping`);
 }

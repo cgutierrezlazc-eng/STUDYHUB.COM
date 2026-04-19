@@ -22,6 +22,7 @@ import { useAutoSave } from '../../hooks/useAutoSave';
 import { useCharContributionTracker } from '../../hooks/useCharContributionTracker';
 import { getAuthorColor } from '../../components/workspaces/authorColors';
 import { useAuth } from '../../services/auth';
+import type { EditorBridgeHandle } from '../../components/workspaces/Athena/AthenaPanel';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -52,6 +53,11 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState('');
   const [titleError, setTitleError] = useState<string | null>(null);
+
+  // ── Bridge Athena (bloque 2c) ─────────────────────────────────────
+  // El ref se pasa tanto a LexicalEditor (monta el plugin) como a ThreeZoneLayout
+  // (que lo pasa a AthenaPanel para applyText/getSelection).
+  const editorBridgeRef = useRef<EditorBridgeHandle>(null);
 
   // ── Provider Yjs ──────────────────────────────────────────────────
   const [providerHandle, setProviderHandle] = useState<WorkspaceProviderHandle | null>(null);
@@ -308,11 +314,15 @@ export default function WorkspaceEditor({ onNavigate }: Props) {
         docId={id ?? ''}
         currentUser={currentUser}
         onlineUserIds={onlineUserIds}
+        athenaEnabled={true}
+        editorBridge={editorBridgeRef}
+        onNavigate={onNavigate}
       >
         <LexicalEditor
           onChange={handleEditorChange}
           namespace={`conniku-ws-${id}`}
           collaborationConfig={collaborationConfig}
+          athenaBridgeRef={editorBridgeRef}
         />
       </ThreeZoneLayout>
     </div>

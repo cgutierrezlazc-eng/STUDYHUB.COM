@@ -68,22 +68,48 @@ def _load_config() -> dict:
             _CONFIG = {
                 "plans": {
                     "free": {
-                        "ai": {feature: {"limit": 0, "window": "daily"} for feature in [
-                            "chat_messages", "guide", "quiz", "flashcards", "summary",
-                            "concept_map", "study_plan", "exam_predictor", "math_scan",
-                            "video_youtube", "cv_coach", "search_ai", "konni_coach",
-                            "support_chat",
-                        ]},
+                        "ai": {
+                            feature: {"limit": 0, "window": "daily"}
+                            for feature in [
+                                "chat_messages",
+                                "guide",
+                                "quiz",
+                                "flashcards",
+                                "summary",
+                                "concept_map",
+                                "study_plan",
+                                "exam_predictor",
+                                "math_scan",
+                                "video_youtube",
+                                "cv_coach",
+                                "search_ai",
+                                "konni_coach",
+                                "support_chat",
+                            ]
+                        },
                         "features": {},
                         "limits": {"max_subjects": 1, "storage_bytes": 0},
                     },
                     "pro": {
-                        "ai": {feature: {"limit": 0, "window": "daily"} for feature in [
-                            "chat_messages", "guide", "quiz", "flashcards", "summary",
-                            "concept_map", "study_plan", "exam_predictor", "math_scan",
-                            "video_youtube", "cv_coach", "search_ai", "konni_coach",
-                            "support_chat",
-                        ]},
+                        "ai": {
+                            feature: {"limit": 0, "window": "daily"}
+                            for feature in [
+                                "chat_messages",
+                                "guide",
+                                "quiz",
+                                "flashcards",
+                                "summary",
+                                "concept_map",
+                                "study_plan",
+                                "exam_predictor",
+                                "math_scan",
+                                "video_youtube",
+                                "cv_coach",
+                                "search_ai",
+                                "konni_coach",
+                                "support_chat",
+                            ]
+                        },
                         "features": {},
                         "limits": {"max_subjects": 1, "storage_bytes": 0},
                     },
@@ -225,6 +251,7 @@ _UPGRADE_MESSAGES = {
     "biblioteca_clone": "Clonar a asignatura disponible con Conniku PRO",
     "konni_coach": "Konni Coach ilimitado con Conniku PRO",
     "support_chat": "Has alcanzado el limite de mensajes de soporte hoy",
+    "athena_workspace": "Has alcanzado tu cupo diario de Athena. Mejora a Conniku Pro para interacciones ilimitadas.",
 }
 
 
@@ -282,7 +309,11 @@ def tier_gate(feature: str):
         # Verificar y incrementar contador
         window_key = get_window_key(window)
         allowed, remaining = check_and_increment(
-            db, str(user.id), feature, limit, window_key,
+            db,
+            str(user.id),
+            feature,
+            limit,
+            window_key,
         )
 
         if not allowed:

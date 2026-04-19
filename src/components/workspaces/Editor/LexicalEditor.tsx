@@ -13,6 +13,7 @@
  */
 
 import React from 'react';
+import type { RefObject } from 'react';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -30,6 +31,8 @@ import type { Provider } from '@lexical/yjs';
 import type { WebsocketProvider } from 'y-websocket';
 import type * as Y from 'yjs';
 import CursorPresence from './CursorPresence';
+import AthenaApplyBridge from '../Athena/AthenaApplyBridge';
+import type { EditorBridgeHandle } from '../Athena/AthenaPanel';
 
 // ─── Tipos de props ───────────────────────────────────────────────────────────
 
@@ -68,6 +71,12 @@ interface LexicalEditorProps {
    * Si es undefined, el editor funciona como en 2a.
    */
   collaborationConfig?: CollaborationConfig;
+  /**
+   * Ref al plugin AthenaApplyBridge (bloque 2c).
+   * Si está presente, monta el plugin invisible dentro del LexicalComposer.
+   * Si es undefined o null, el editor funciona exactamente igual que en 2b.
+   */
+  athenaBridgeRef?: RefObject<EditorBridgeHandle | null> | null;
 }
 
 export default function LexicalEditor({
@@ -77,6 +86,7 @@ export default function LexicalEditor({
   namespace = 'conniku-workspace',
   readOnly = false,
   collaborationConfig,
+  athenaBridgeRef,
 }: LexicalEditorProps) {
   const initialConfig = {
     ...getEditorConfig(namespace),
@@ -135,6 +145,11 @@ export default function LexicalEditor({
           <LinkPlugin />
           <AutoFocusPlugin />
           <OnChangePlugin onChange={onChange} />
+
+          {/* Plugin Athena (bloque 2c): montado solo si athenaBridgeRef viene en props */}
+          {athenaBridgeRef != null && (
+            <AthenaApplyBridge ref={athenaBridgeRef as RefObject<EditorBridgeHandle>} />
+          )}
         </div>
       </div>
     </LexicalComposer>

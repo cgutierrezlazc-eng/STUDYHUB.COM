@@ -76,6 +76,7 @@ from tier_gate import tier_gate
 from tutor_routes import router as tutor_router
 from video_routes import router as video_router
 from wellness_routes import router as wellness_router
+from workspaces_athena import router as workspaces_athena_router
 from workspaces_routes import router as workspaces_router
 from workspaces_ws import router as workspaces_ws_router
 from ws_routes import router as ws_router
@@ -85,7 +86,7 @@ app = FastAPI(title="Conniku Backend", version="2.0.0")
 # CORS: restrict to known origins in production
 _cors_origins = os.environ.get(
     "CORS_ORIGINS",
-    "http://localhost:5173,http://localhost:8899,https://conniku.com,https://www.conniku.com,https://studyhub-com.vercel.app"
+    "http://localhost:5173,http://localhost:8899,https://conniku.com,https://www.conniku.com,https://studyhub-com.vercel.app",
 ).split(",")
 
 app.add_middleware(
@@ -114,6 +115,7 @@ _ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 _claude_client = anthropic_lib.Anthropic(api_key=_ANTHROPIC_KEY) if _ANTHROPIC_KEY else None
 CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
+
 def _call_claude_chat(system: str, messages: list) -> str:
     """Call Claude API for Konni chat. Returns plain text response."""
     if not _claude_client:
@@ -133,9 +135,13 @@ def _call_claude_chat(system: str, messages: list) -> str:
 
 # Supported image MIME types for Claude Vision API
 _VISION_MIME = {
-    '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-    '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp',
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
 }
+
 
 def _get_project_images(project_id: str, meta: dict) -> list:
     """Return list of (path, mime_type) for image docs in the project (max 5)."""
@@ -153,6 +159,7 @@ def _get_project_images(project_id: str, meta: dict) -> list:
                 images.append((str(p), mime))
     return images[:5]  # Limit to avoid token overflow
 
+
 def _call_claude_chat_with_images(system: str, user_prompt: str, image_files: list) -> str:
     """Call Claude Vision API with text context + images embedded in the message."""
     if not _claude_client:
@@ -160,12 +167,14 @@ def _call_claude_chat_with_images(system: str, user_prompt: str, image_files: li
     content = []
     for img_path, mime in image_files:
         try:
-            with open(img_path, 'rb') as f:
+            with open(img_path, "rb") as f:
                 b64 = base64.b64encode(f.read()).decode()
-            content.append({
-                "type": "image",
-                "source": {"type": "base64", "media_type": mime, "data": b64},
-            })
+            content.append(
+                {
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": mime, "data": b64},
+                }
+            )
         except Exception as img_err:
             logger.warning(f"No se pudo cargar imagen {img_path}: {img_err}")
             continue
@@ -253,7 +262,9 @@ try:
         )
 
         _scheduler.start()
-        logging.getLogger(__name__).info("APScheduler started — HR indicators 08:00 CL + email docs every 30 min + renewal reminders 09:00 CL")
+        logging.getLogger(__name__).info(
+            "APScheduler started — HR indicators 08:00 CL + email docs every 30 min + renewal reminders 09:00 CL"
+        )
 
     @app.on_event("shutdown")
     async def stop_scheduler():
@@ -308,16 +319,19 @@ app.include_router(ai_workflow_router)
 app.include_router(moderation_queue_router)
 app.include_router(workspaces_router)
 app.include_router(workspaces_ws_router)
+app.include_router(workspaces_athena_router)
 # app.include_router(payment_router)  # Stripe removed
 
 
 # ─── Contact Form (público, sin auth) ──────────────────────────────────────
+
 
 class ContactFormRequest(BaseModel):
     name: str
     email: str
     subject: str
     message: str
+
 
 @app.post("/contact/send")
 def contact_send(req: ContactFormRequest):
@@ -326,6 +340,7 @@ def contact_send(req: ContactFormRequest):
         import html as html_mod
 
         from notifications import _email_template, _send_email_async
+
         safe_name = html_mod.escape(req.name)
         safe_email = html_mod.escape(req.email)
         safe_subject = html_mod.escape(req.subject)
@@ -376,6 +391,7 @@ from database import BlogThread
 class BlogPostCreate(BaseModel):
     content: str
 
+
 @app.get("/blog/posts")
 def get_blog_posts(limit: int = 50, db: Session = Depends(get_db)):
     """Get public blog thread posts (no auth required)."""
@@ -383,19 +399,24 @@ def get_blog_posts(limit: int = 50, db: Session = Depends(get_db)):
     result = []
     for p in posts:
         u = db.query(User).filter(User.id == p.user_id).first()
-        result.append({
-            "id": p.id,
-            "content": p.content,
-            "created_at": p.created_at.isoformat() if p.created_at else None,
-            "likes": p.likes or 0,
-            "author": {
-                "id": u.id,
-                "name": f"{u.first_name} {u.last_name}",
-                "avatar": u.avatar or "",
-                "username": u.username,
-            } if u else {"id": "", "name": "Anónimo", "avatar": "", "username": ""},
-        })
+        result.append(
+            {
+                "id": p.id,
+                "content": p.content,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "likes": p.likes or 0,
+                "author": {
+                    "id": u.id,
+                    "name": f"{u.first_name} {u.last_name}",
+                    "avatar": u.avatar or "",
+                    "username": u.username,
+                }
+                if u
+                else {"id": "", "name": "Anónimo", "avatar": "", "username": ""},
+            }
+        )
     return result
+
 
 @app.post("/blog/posts")
 def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -404,7 +425,7 @@ def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user)
         raise HTTPException(400, "El contenido no puede estar vacío")
     if len(req.content) > 2000:
         raise HTTPException(400, "El contenido no puede exceder 2000 caracteres")
-    if getattr(user, 'is_banned', False):
+    if getattr(user, "is_banned", False):
         raise HTTPException(403, "Tu cuenta está suspendida")
     import html as _html
 
@@ -428,6 +449,7 @@ def create_blog_post(req: BlogPostCreate, user: User = Depends(get_current_user)
             "username": user.username,
         },
     }
+
 
 @app.post("/blog/posts/{post_id}/like")
 def like_blog_post(post_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -456,6 +478,7 @@ def seed_ceo_profile(user: User = Depends(get_current_user), db: Session = Depen
     if user.role != "owner":
         raise HTTPException(403, "Solo el owner puede ejecutar este seed")
     from seed_ceo_profile import seed_ceo_with_db
+
     result = seed_ceo_with_db(db, user)
     return result
 
@@ -488,7 +511,9 @@ async def serve_community_cover(filename: str):
         raise HTTPException(404, "Imagen no encontrada")
     return FileResponse(str(file_path))
 
+
 # ─── Chat rate limiting (persistent, DB-backed) ─────────────────
+
 
 def check_chat_limit(user: User, db: Session = None):
     """Persistent rate limiting via DB. FAIL-CLOSED: si hay error, bloquear."""
@@ -509,10 +534,14 @@ def check_chat_limit(user: User, db: Session = None):
     window_key = get_window_key(ai_config.get("window", "daily"))
 
     try:
-        usage = db.query(ChatUsage).filter(
-            ChatUsage.user_id == str(user.id),
-            ChatUsage.date == window_key,
-        ).first()
+        usage = (
+            db.query(ChatUsage)
+            .filter(
+                ChatUsage.user_id == str(user.id),
+                ChatUsage.date == window_key,
+            )
+            .first()
+        )
 
         if usage is None:
             usage = ChatUsage(user_id=str(user.id), date=window_key, count=0)
@@ -536,15 +565,18 @@ def check_chat_limit(user: User, db: Session = None):
 
 # --- Models ---
 
+
 class CreateProjectRequest(BaseModel):
     name: str
     description: str = ""
     color: str = "#4f8cff"
 
+
 class UpdateProjectRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     color: str | None = None
+
 
 class ChatRequest(BaseModel):
     message: str
@@ -553,46 +585,72 @@ class ChatRequest(BaseModel):
     language_skill: str = "intermediate"
     socratic: bool = False
 
+
 class PathUploadRequest(BaseModel):
     path: str
+
 
 class MathRequest(BaseModel):
     expression: str
     step_by_step: bool = True
     language: str = "es"
 
+
 class ScanSolveRequest(BaseModel):
     image_base64: str  # Base64 encoded image
     language: str = "es"
 
+
 class MathNaturalRequest(BaseModel):
-    query: str                 # Free-form natural language math question
+    query: str  # Free-form natural language math question
     step_by_step: bool = True
     language: str = "es"
 
+
 class MathVerifyRequest(BaseModel):
-    problem: str               # The original problem
-    student_answer: str        # Student's answer to check
+    problem: str  # The original problem
+    student_answer: str  # Student's answer to check
     language: str = "es"
 
+
 class MathGraphRequest(BaseModel):
-    expression: str            # Function expression to graph
+    expression: str  # Function expression to graph
     variable: str = "x"
     x_min: float = -10.0
     x_max: float = 10.0
+
 
 class QuizRequest(BaseModel):
     num_questions: int = 10
     difficulty: str = "medium"  # easy, medium, hard
     weak_topics: list[str] = []
 
+
 class TranslateRequest(BaseModel):
     text: str
     target_language: str = "es"
     source_language: str = ""  # auto-detect if empty
 
-ALLOWED_DOC_EXTENSIONS = {'.pdf', '.doc', '.docx', '.txt', '.ppt', '.pptx', '.xls', '.xlsx', '.csv', '.rtf',
-                          '.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.tiff'}
+
+ALLOWED_DOC_EXTENSIONS = {
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".txt",
+    ".ppt",
+    ".pptx",
+    ".xls",
+    ".xlsx",
+    ".csv",
+    ".rtf",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".bmp",
+    ".tiff",
+}
 
 # Max file size per upload (50MB)
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024
@@ -607,18 +665,22 @@ def validate_file_content(content: bytes, declared_ext: str) -> bool:
         kind = filetype.guess(content)
         if kind is None:
             # No se pudo detectar tipo — aceptar solo texto plano
-            return declared_ext in ('.txt', '.csv', '.rtf')
+            return declared_ext in (".txt", ".csv", ".rtf")
         detected_ext = f".{kind.extension}"
         detected_mime = kind.mime
 
         # Para imágenes: extensión detectada debe ser imagen
-        image_exts = {'.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.tiff'}
+        image_exts = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
         if declared_ext in image_exts:
-            return detected_ext in image_exts or detected_mime.startswith('image/')
+            return detected_ext in image_exts or detected_mime.startswith("image/")
 
         # Para documentos: ser flexible pero bloquear ejecutables
-        dangerous_mimes = {'application/x-executable', 'application/x-msdos-program',
-                          'application/x-sh', 'application/javascript'}
+        dangerous_mimes = {
+            "application/x-executable",
+            "application/x-msdos-program",
+            "application/x-sh",
+            "application/javascript",
+        }
         return detected_mime not in dangerous_mimes
     except ImportError:
         # filetype no instalado — pasar sin validación (degradación graceful)
@@ -627,15 +689,18 @@ def validate_file_content(content: bytes, declared_ext: str) -> bool:
 
 # --- Project storage helpers ---
 
+
 def get_project_dir(project_id: str) -> Path:
     d = PROJECTS_DIR / project_id
     d.mkdir(exist_ok=True)
     return d
 
+
 def get_project_docs_dir(project_id: str) -> Path:
     d = get_project_dir(project_id) / "documents"
     d.mkdir(exist_ok=True)
     return d
+
 
 def get_project_meta(project_id: str) -> dict:
     meta_file = get_project_dir(project_id) / "meta.json"
@@ -643,12 +708,14 @@ def get_project_meta(project_id: str) -> dict:
         return json.loads(meta_file.read_text())
     return {}
 
+
 def save_project_meta(project_id: str, meta: dict):
     meta_file = get_project_dir(project_id) / "meta.json"
     meta_file.write_text(json.dumps(meta, indent=2))
 
 
 # --- Routes ---
+
 
 @app.get("/health")
 def health():
@@ -710,7 +777,9 @@ def update_project(project_id: str, req: UpdateProjectRequest, user: User = Depe
 
 
 @app.post("/projects/{project_id}/documents")
-async def upload_document(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def upload_document(
+    project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -718,13 +787,15 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     # Validate file type
     ext = Path(file.filename).suffix.lower() if file.filename else ""
     if ext not in ALLOWED_DOC_EXTENSIONS:
-        raise HTTPException(400, f"Tipo de archivo no permitido. Formatos aceptados: {', '.join(ALLOWED_DOC_EXTENSIONS)}")
+        raise HTTPException(
+            400, f"Tipo de archivo no permitido. Formatos aceptados: {', '.join(ALLOWED_DOC_EXTENSIONS)}"
+        )
 
     # Read file content (con limite de tamaño)
     content = await file.read()
     file_size = len(content)
     if file_size > MAX_UPLOAD_SIZE:
-        raise HTTPException(413, f"Archivo muy grande (máximo {MAX_UPLOAD_SIZE // (1024*1024)} MB)")
+        raise HTTPException(413, f"Archivo muy grande (máximo {MAX_UPLOAD_SIZE // (1024 * 1024)} MB)")
 
     # Validar contenido real del archivo (magic bytes)
     if not validate_file_content(content, ext):
@@ -737,13 +808,12 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
         used_mb = round(current_used / 1048576, 1)
         limit_mb = round(storage_limit / 1048576, 1)
         raise HTTPException(
-            413,
-            f"Almacenamiento lleno ({used_mb}/{limit_mb} MB). "
-            "Actualiza a PRO para obtener 5 GB de almacenamiento."
+            413, f"Almacenamiento lleno ({used_mb}/{limit_mb} MB). Actualiza a PRO para obtener 5 GB de almacenamiento."
         )
 
     docs_dir = get_project_docs_dir(project_id)
     from pathlib import Path as _Path
+
     safe_name = _Path(file.filename).name  # extrae solo el basename, elimina path traversal
     file_path = docs_dir / safe_name
 
@@ -758,24 +828,35 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
     doc_id = uuid.uuid4().hex[:12]
     ai_engine.add_document(project_id, doc_id, file.filename, text)
 
-    _ext = Path(file.filename).suffix.lower().lstrip('.') if file.filename else ''
+    _ext = Path(file.filename).suffix.lower().lstrip(".") if file.filename else ""
     _type_map = {
-        'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx',
-        'xls': 'xlsx', 'xlsx': 'xlsx', 'ppt': 'pptx', 'pptx': 'pptx',
-        'txt': 'txt', 'csv': 'csv',
-        'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'gif': 'image',
+        "pdf": "pdf",
+        "doc": "docx",
+        "docx": "docx",
+        "xls": "xlsx",
+        "xlsx": "xlsx",
+        "ppt": "pptx",
+        "pptx": "pptx",
+        "txt": "txt",
+        "csv": "csv",
+        "png": "image",
+        "jpg": "image",
+        "jpeg": "image",
+        "gif": "image",
     }
-    doc_type = _type_map.get(_ext, 'other')
+    doc_type = _type_map.get(_ext, "other")
 
-    meta.setdefault("documents", []).append({
-        "id": doc_id,
-        "name": file.filename,
-        "path": str(file_path),
-        "size": file_size,
-        "type": doc_type,
-        "uploadedAt": datetime.utcnow().isoformat() + "Z",
-        "processed": True,
-    })
+    meta.setdefault("documents", []).append(
+        {
+            "id": doc_id,
+            "name": file.filename,
+            "path": str(file_path),
+            "size": file_size,
+            "type": doc_type,
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "processed": True,
+        }
+    )
     save_project_meta(project_id, meta)
 
     return {"id": doc_id, "name": file.filename, "processed": True, "text_length": len(text)}
@@ -783,13 +864,14 @@ async def upload_document(project_id: str, file: UploadFile = File(...), user: U
 
 class ImportDocumentRequest(BaseModel):
     filename: str
-    content_b64: str        # base64-encoded file content
-    file_type: str = ""     # pdf | docx | pptx | xlsx | txt | other (auto-detected from ext if empty)
+    content_b64: str  # base64-encoded file content
+    file_type: str = ""  # pdf | docx | pptx | xlsx | txt | other (auto-detected from ext if empty)
+
 
 @app.post("/projects/{project_id}/documents/import")
-async def import_document_b64(project_id: str, req: ImportDocumentRequest,
-                               user: User = Depends(get_current_user),
-                               db: Session = Depends(get_db)):
+async def import_document_b64(
+    project_id: str, req: ImportDocumentRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Import a document from base64 content (used by LMS sync and other integrations)."""
     meta = get_project_meta(project_id)
     if not meta or meta.get("user_id") != user.id:
@@ -818,21 +900,32 @@ async def import_document_b64(project_id: str, req: ImportDocumentRequest,
     doc_id = uuid.uuid4().hex[:12]
     ai_engine.add_document(project_id, doc_id, req.filename, text)
 
-    ext = Path(req.filename).suffix.lower().lstrip('.')
-    type_map = {'pdf': 'pdf', 'doc': 'docx', 'docx': 'docx', 'xls': 'xlsx', 'xlsx': 'xlsx',
-                'ppt': 'pptx', 'pptx': 'pptx', 'txt': 'txt', 'csv': 'csv'}
-    doc_type = req.file_type or type_map.get(ext, 'other')
+    ext = Path(req.filename).suffix.lower().lstrip(".")
+    type_map = {
+        "pdf": "pdf",
+        "doc": "docx",
+        "docx": "docx",
+        "xls": "xlsx",
+        "xlsx": "xlsx",
+        "ppt": "pptx",
+        "pptx": "pptx",
+        "txt": "txt",
+        "csv": "csv",
+    }
+    doc_type = req.file_type or type_map.get(ext, "other")
 
-    meta.setdefault("documents", []).append({
-        "id": doc_id,
-        "name": req.filename,
-        "path": str(file_path),
-        "size": file_size,
-        "type": doc_type,
-        "uploadedAt": datetime.utcnow().isoformat() + "Z",
-        "processed": bool(text),
-        "source": "lms",
-    })
+    meta.setdefault("documents", []).append(
+        {
+            "id": doc_id,
+            "name": req.filename,
+            "path": str(file_path),
+            "size": file_size,
+            "type": doc_type,
+            "uploadedAt": datetime.utcnow().isoformat() + "Z",
+            "processed": bool(text),
+            "source": "lms",
+        }
+    )
     save_project_meta(project_id, meta)
     return {"id": doc_id, "name": req.filename, "processed": bool(text)}
 
@@ -861,12 +954,14 @@ def upload_from_path(project_id: str, req: PathUploadRequest, user: User = Depen
     doc_id = uuid.uuid4().hex[:12]
     ai_engine.add_document(project_id, doc_id, source.name, text)
 
-    meta.setdefault("documents", []).append({
-        "id": doc_id,
-        "name": source.name,
-        "path": str(dest),
-        "processed": True,
-    })
+    meta.setdefault("documents", []).append(
+        {
+            "id": doc_id,
+            "name": source.name,
+            "path": str(dest),
+            "processed": True,
+        }
+    )
     save_project_meta(project_id, meta)
 
     return {"id": doc_id, "name": source.name, "processed": True}
@@ -882,8 +977,7 @@ def chat(project_id: str, req: ChatRequest, user: User = Depends(get_current_use
     check_chat_limit(user, db)
 
     system, user_prompt = ai_engine.build_chat_prompt(
-        project_id, req.message, req.language, req.gender, req.language_skill,
-        socratic=req.socratic
+        project_id, req.message, req.language, req.gender, req.language_skill, socratic=req.socratic
     )
 
     # If the project has image documents, include them directly in the Vision call
@@ -902,26 +996,38 @@ class SupportChatRequest(BaseModel):
     history: list = []
     page_context: str = ""
 
+
 def _build_user_context(user: User, db: Session) -> str:
     """Build personalized context string from user data for Konni."""
     from database import CalendarEvent, Friendship, WallPost
+
     parts = []
 
     # Profile
     parts.append(f"PERFIL: {user.first_name} {user.last_name} (@{user.username})")
-    parts.append(f"Universidad: {user.university or 'No especificada'} | Carrera: {user.career or 'No especificada'} | Semestre: {user.semester}")
-    parts.append(f"Plan: {user.subscription_tier or 'free'} | Nivel: {user.level} | XP: {user.xp} | Racha: {user.streak_days} dias")
+    parts.append(
+        f"Universidad: {user.university or 'No especificada'} | Carrera: {user.career or 'No especificada'} | Semestre: {user.semester}"
+    )
+    parts.append(
+        f"Plan: {user.subscription_tier or 'free'} | Nivel: {user.level} | XP: {user.xp} | Racha: {user.streak_days} dias"
+    )
     if user.bio:
         parts.append(f"Bio: {user.bio[:200]}")
 
     # Upcoming calendar events (next 14 days)
     try:
-        upcoming = db.query(CalendarEvent).filter(
-            CalendarEvent.user_id == user.id,
-            CalendarEvent.due_date >= datetime.utcnow(),
-            CalendarEvent.due_date <= datetime.utcnow() + timedelta(days=14),
-            CalendarEvent.completed.is_(False)
-        ).order_by(CalendarEvent.due_date).limit(10).all()
+        upcoming = (
+            db.query(CalendarEvent)
+            .filter(
+                CalendarEvent.user_id == user.id,
+                CalendarEvent.due_date >= datetime.utcnow(),
+                CalendarEvent.due_date <= datetime.utcnow() + timedelta(days=14),
+                CalendarEvent.completed.is_(False),
+            )
+            .order_by(CalendarEvent.due_date)
+            .limit(10)
+            .all()
+        )
         if upcoming:
             parts.append("\nPROXIMOS EVENTOS (14 dias):")
             for ev in upcoming:
@@ -947,10 +1053,15 @@ def _build_user_context(user: User, db: Session) -> str:
 
     # Friends (names only)
     try:
-        friends_q = db.query(Friendship).filter(
-            ((Friendship.requester_id == user.id) | (Friendship.addressee_id == user.id)),
-            Friendship.status == "accepted"
-        ).limit(15).all()
+        friends_q = (
+            db.query(Friendship)
+            .filter(
+                ((Friendship.requester_id == user.id) | (Friendship.addressee_id == user.id)),
+                Friendship.status == "accepted",
+            )
+            .limit(15)
+            .all()
+        )
         if friends_q:
             friend_ids = []
             for f in friends_q:
@@ -962,11 +1073,17 @@ def _build_user_context(user: User, db: Session) -> str:
                 parts.append(f"\nAMIGOS ({len(friends)}): {', '.join(names)}")
 
                 # Recent public posts from friends
-                recent_posts = db.query(WallPost).filter(
-                    WallPost.author_id.in_(friend_ids),
-                    WallPost.visibility == "public",
-                    WallPost.created_at >= datetime.utcnow() - timedelta(days=3)
-                ).order_by(desc(WallPost.created_at)).limit(5).all()
+                recent_posts = (
+                    db.query(WallPost)
+                    .filter(
+                        WallPost.author_id.in_(friend_ids),
+                        WallPost.visibility == "public",
+                        WallPost.created_at >= datetime.utcnow() - timedelta(days=3),
+                    )
+                    .order_by(desc(WallPost.created_at))
+                    .limit(5)
+                    .all()
+                )
                 if recent_posts:
                     parts.append("\nPOSTS RECIENTES DE AMIGOS (publicos, 3 dias):")
                     for p in recent_posts:
@@ -1258,6 +1375,7 @@ class StudyBuddyRequest(BaseModel):
     context: str = ""  # page context: subject name, topic, etc.
     history: list = []
 
+
 # ─── T&C knowledge block (shared between Konni and StudyBuddy) ──────────────
 KONNI_TYC = """=== TERMINOS Y CONDICIONES DE CONNIKU (resumen) ===
 Puedes responder preguntas sobre los terminos de Conniku con esta informacion:
@@ -1304,6 +1422,7 @@ SUSPENSION Y TERMINACION: Conniku puede suspender cuentas que incumplan los term
 DISPUTAS: Ley chilena. Tribunales ordinarios de Santiago de Chile.
 
 Para consultas sobre terminos: contacto@conniku.com"""
+
 
 @app.post("/ai/study-buddy")
 def study_buddy_chat(req: StudyBuddyRequest, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -1365,6 +1484,7 @@ Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
     try:
         result = ai_engine._call_gemini_json(system, text)
         import json as json_mod
+
         # Try to parse the response
         if isinstance(result, str):
             result = result.strip()
@@ -1373,7 +1493,8 @@ Ejemplo: ["Calculo", "Integrales", "Matematicas"]"""
             else:
                 # Try to extract JSON array from response
                 import re
-                match = re.search(r'\[.*?\]', result, re.DOTALL)
+
+                match = re.search(r"\[.*?\]", result, re.DOTALL)
                 tags = json_mod.loads(match.group()) if match else []
         else:
             tags = []
@@ -1394,25 +1515,31 @@ def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(
     # Gather user data for summary
     try:
         # Recent study sessions
-        sessions = db.query(StudySession).filter(
-            StudySession.user_id == user.id,
-            func.date(StudySession.created_at) >= week_ago
-        ).all()
+        sessions = (
+            db.query(StudySession)
+            .filter(StudySession.user_id == user.id, func.date(StudySession.created_at) >= week_ago)
+            .all()
+        )
         total_study_secs = sum(s.duration_seconds or 0 for s in sessions)
         today_secs = sum(s.duration_seconds or 0 for s in sessions if s.created_at and s.created_at.date() == today)
 
         # Upcoming events
-        events = db.query(CalendarEvent).filter(
-            CalendarEvent.user_id == user.id,
-            CalendarEvent.due_date >= str(today)
-        ).order_by(CalendarEvent.due_date).limit(3).all()
+        events = (
+            db.query(CalendarEvent)
+            .filter(CalendarEvent.user_id == user.id, CalendarEvent.due_date >= str(today))
+            .order_by(CalendarEvent.due_date)
+            .limit(3)
+            .all()
+        )
         event_list = [{"title": e.title, "date": str(e.due_date)} for e in events]
 
         # Recent posts count
-        post_count = db.query(func.count(WallPost.id)).filter(
-            WallPost.author_id == user.id,
-            func.date(WallPost.created_at) >= week_ago
-        ).scalar() or 0
+        post_count = (
+            db.query(func.count(WallPost.id))
+            .filter(WallPost.author_id == user.id, func.date(WallPost.created_at) >= week_ago)
+            .scalar()
+            or 0
+        )
     except Exception:
         total_study_secs = 0
         today_secs = 0
@@ -1423,8 +1550,8 @@ def daily_summary(user: User = Depends(get_current_user), db: Session = Depends(
 - Tiempo de estudio esta semana: {total_study_secs // 3600}h {(total_study_secs % 3600) // 60}m
 - Tiempo de estudio hoy: {today_secs // 3600}h {(today_secs % 3600) // 60}m
 - Posts publicados esta semana: {post_count}
-- Proximos eventos: {event_list if event_list else 'ninguno programado'}
-- Dia: {today.strftime('%A %d de %B')}"""
+- Proximos eventos: {event_list if event_list else "ninguno programado"}
+- Dia: {today.strftime("%A %d de %B")}"""
 
     system = """Genera un resumen diario personalizado y motivador para un estudiante universitario.
 Responde en espanol, maximo 3-4 oraciones.
@@ -1436,19 +1563,29 @@ Responde SOLO con JSON: {"summary": "...", "tip": "...", "mood": "positive|neutr
         result = ai_engine._call_gemini_json(system, context)
         import json as json_mod
         import re
+
         if isinstance(result, str):
-            match = re.search(r'\{.*\}', result, re.DOTALL)
+            match = re.search(r"\{.*\}", result, re.DOTALL)
             if match:
                 data = json_mod.loads(match.group())
                 return data
-        return {"summary": f"Hola {user.first_name}! Revisa tu calendario y organiza tu dia.", "tip": "Estudia en bloques de 25 minutos con descansos.", "mood": "neutral"}
+        return {
+            "summary": f"Hola {user.first_name}! Revisa tu calendario y organiza tu dia.",
+            "tip": "Estudia en bloques de 25 minutos con descansos.",
+            "mood": "neutral",
+        }
     except Exception:
-        return {"summary": f"Hola {user.first_name}! Que tengas un gran dia de estudio.", "tip": "Repasa tus apuntes antes de dormir para mejor retencion.", "mood": "neutral"}
+        return {
+            "summary": f"Hola {user.first_name}! Que tengas un gran dia de estudio.",
+            "tip": "Repasa tus apuntes antes de dormir para mejor retencion.",
+            "mood": "neutral",
+        }
 
 
 class CVCoachRequest(BaseModel):
     cv_text: str
     target_role: str = ""
+
 
 @app.post("/ai/cv-coach")
 def cv_coach(req: CVCoachRequest, user: User = tier_gate("cv_coach")):
@@ -1477,13 +1614,28 @@ Se especifico, practico y motivador. No inventes informacion que no esta en el C
         result = ai_engine._call_gemini_json(system, f"CV del estudiante:\n{req.cv_text}")
         import json as json_mod
         import re
+
         if isinstance(result, str):
-            match = re.search(r'\{.*\}', result, re.DOTALL)
+            match = re.search(r"\{.*\}", result, re.DOTALL)
             if match:
                 return json_mod.loads(match.group())
-        return {"score": 50, "strengths": [], "improvements": ["No pude analizar el CV"], "rewrite_suggestion": "", "missing_sections": [], "tip": "Intenta de nuevo con mas detalle"}
+        return {
+            "score": 50,
+            "strengths": [],
+            "improvements": ["No pude analizar el CV"],
+            "rewrite_suggestion": "",
+            "missing_sections": [],
+            "tip": "Intenta de nuevo con mas detalle",
+        }
     except Exception:
-        return {"score": 50, "strengths": [], "improvements": ["Error al analizar"], "rewrite_suggestion": "", "missing_sections": [], "tip": "Intenta de nuevo"}
+        return {
+            "score": 50,
+            "strengths": [],
+            "improvements": ["Error al analizar"],
+            "rewrite_suggestion": "",
+            "missing_sections": [],
+            "tip": "Intenta de nuevo",
+        }
 
 
 @app.post("/projects/{project_id}/guide")
@@ -1500,7 +1652,9 @@ def generate_quiz(project_id: str, req: QuizRequest = QuizRequest(), user: User 
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
-    quiz = ai_engine.generate_quiz(project_id, req.num_questions, user.language or "es", req.difficulty, req.weak_topics or None)
+    quiz = ai_engine.generate_quiz(
+        project_id, req.num_questions, user.language or "es", req.difficulty, req.weak_topics or None
+    )
     return quiz
 
 
@@ -1517,6 +1671,7 @@ def generate_flashcards(project_id: str, user: User = tier_gate("flashcards")):
 def upload_to_study(project_id: str, user: User = Depends(get_current_user)):
     """Generate guide + quiz + flashcards in one call."""
     from middleware import require_tier
+
     require_tier(user, "pro")
 
     meta = get_project_meta(project_id)
@@ -1537,9 +1692,12 @@ def upload_to_study(project_id: str, user: User = Depends(get_current_user)):
 
 
 @app.post("/projects/{project_id}/audio-to-notes")
-async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+async def audio_to_notes(
+    project_id: str, file: UploadFile = File(...), user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Record or upload class audio → transcribe → generate notes + flashcards."""
     from middleware import require_tier
+
     require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     meta = get_project_meta(project_id)
@@ -1549,7 +1707,8 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
     # Save audio file
     docs_dir = get_project_docs_dir(project_id)
     from pathlib import Path as _Path
-    safe_audio_name = _Path(file.filename or 'recording.webm').name  # extrae solo el basename, elimina path traversal
+
+    safe_audio_name = _Path(file.filename or "recording.webm").name  # extrae solo el basename, elimina path traversal
     filename = f"audio_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_audio_name}"
     file_path = docs_dir / filename
     content = await file.read()
@@ -1560,11 +1719,12 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
     # Here we generate notes from the transcription
 
     import base64
+
     base64.b64encode(content).decode()
 
     lang = user.language or "es"
 
-    lang_name = 'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
+    lang_name = "español" if lang == "es" else "inglés" if lang == "en" else lang
     system = AUDIO_TO_NOTES_PROMPT.format(lang=lang_name)
 
     try:
@@ -1574,11 +1734,13 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
         # Get the transcribed text
         all_text = ai_engine._get_all_text(project_id)
 
-        user_prompt = f"Contenido de la clase grabada:\n{all_text[:15000]}\n\nGenera notas estructuradas, resumen y flashcards."
+        user_prompt = (
+            f"Contenido de la clase grabada:\n{all_text[:15000]}\n\nGenera notas estructuradas, resumen y flashcards."
+        )
         result_text = ai_engine._call_gemini(system, user_prompt)
 
-        start_idx = result_text.find('{')
-        end_idx = result_text.rfind('}') + 1
+        start_idx = result_text.find("{")
+        end_idx = result_text.rfind("}") + 1
         if start_idx >= 0 and end_idx > start_idx:
             result = json.loads(result_text[start_idx:end_idx])
         else:
@@ -1624,8 +1786,12 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
         }
     except Exception as e:
         return {
-            "notes": "", "summary": f"Error procesando audio: {str(e)}",
-            "flashcards": [], "topics": [], "audioFile": filename, "success": False,
+            "notes": "",
+            "summary": f"Error procesando audio: {str(e)}",
+            "flashcards": [],
+            "topics": [],
+            "audioFile": filename,
+            "success": False,
         }
 
 
@@ -1633,6 +1799,7 @@ async def audio_to_notes(project_id: str, file: UploadFile = File(...), user: Us
 def download_document(project_id: str, doc_name: str, user: User = Depends(get_current_user)):
     """Download a document — Pro only. Free can only view."""
     from middleware import get_tier_limits
+
     limits = get_tier_limits(user)
     if not limits.get("can_download_docs"):
         raise HTTPException(403, "Descarga de documentos requiere Plan Pro ($5/mes) o superior.")
@@ -1649,7 +1816,9 @@ def download_document(project_id: str, doc_name: str, user: User = Depends(get_c
 
 
 @app.delete("/projects/{project_id}/documents/{doc_id}")
-def delete_document(project_id: str, doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def delete_document(
+    project_id: str, doc_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)
+):
     """Delete a document: removes file from disk, vectors from ChromaDB, and updates storage counter."""
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
@@ -1689,10 +1858,13 @@ def log_attendance(project_id: str, data: dict, user: User = Depends(get_current
     """Log class attendance for a subject."""
     from database import ClassAttendance
     from middleware import require_tier
+
     require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     att = ClassAttendance(
-        id=gen_id(), user_id=user.id, project_id=project_id,
+        id=gen_id(),
+        user_id=user.id,
+        project_id=project_id,
         class_title=data.get("title", "Clase"),
         duration_minutes=data.get("duration_minutes", 0),
         recorded=data.get("recorded", False),
@@ -1707,9 +1879,13 @@ def log_attendance(project_id: str, data: dict, user: User = Depends(get_current
 def get_attendance(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get attendance history for a subject."""
     from database import ClassAttendance
-    records = db.query(ClassAttendance).filter(
-        ClassAttendance.user_id == user.id, ClassAttendance.project_id == project_id
-    ).order_by(desc(ClassAttendance.attended_at)).all()
+
+    records = (
+        db.query(ClassAttendance)
+        .filter(ClassAttendance.user_id == user.id, ClassAttendance.project_id == project_id)
+        .order_by(desc(ClassAttendance.attended_at))
+        .all()
+    )
 
     total = len(records)
     recorded = sum(1 for r in records if r.recorded)
@@ -1720,11 +1896,17 @@ def get_attendance(project_id: str, user: User = Depends(get_current_user), db: 
         "recordedClasses": recorded,
         "transcribedClasses": transcribed,
         "attendanceRate": f"{round(total / max(total, 1) * 100)}%",
-        "records": [{
-            "id": r.id, "title": r.class_title or "Clase",
-            "date": r.attended_at.isoformat() if r.attended_at else "",
-            "duration": r.duration_minutes, "recorded": r.recorded, "transcribed": r.transcribed,
-        } for r in records],
+        "records": [
+            {
+                "id": r.id,
+                "title": r.class_title or "Clase",
+                "date": r.attended_at.isoformat() if r.attended_at else "",
+                "duration": r.duration_minutes,
+                "recorded": r.recorded,
+                "transcribed": r.transcribed,
+            }
+            for r in records
+        ],
     }
 
 
@@ -1732,6 +1914,7 @@ def get_attendance(project_id: str, user: User = Depends(get_current_user), db: 
 def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(get_current_user)):
     """Pro only — Generate emergency study plan for the night before an exam."""
     from middleware import require_tier
+
     require_tier(user, "pro")  # Feature de tier pagado (MAX eliminado 2026-04)
 
     hours_available = data.get("hours", 6)
@@ -1741,7 +1924,7 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
     if not all_text:
         raise HTTPException(400, "Sube documentos primero")
 
-    lang_name = 'español' if lang == 'es' else 'English'
+    lang_name = "español" if lang == "es" else "English"
     system = EXAM_NIGHT_PROMPT.format(hours_available=hours_available, lang=lang_name)
 
     prompt = f"Material del curso:\n{all_text[:15000]}\n\nGenera plan de emergencia para {hours_available} horas."
@@ -1749,11 +1932,17 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
     try:
         result_text = ai_engine._call_gemini(system, prompt)
         import json as json_mod
-        start = result_text.find('{')
-        end = result_text.rfind('}') + 1
+
+        start = result_text.find("{")
+        end = result_text.rfind("}") + 1
         result = json_mod.loads(result_text[start:end])
     except Exception:
-        result = {"plan": [], "criticalTopics": [], "quickTips": ["Revisa tus notas", "Haz ejercicios clave", "Duerme al menos 4 horas"], "motivationalMessage": "¡Tú puedes! Confía en lo que ya sabes."}
+        result = {
+            "plan": [],
+            "criticalTopics": [],
+            "quickTips": ["Revisa tus notas", "Haz ejercicios clave", "Duerme al menos 4 horas"],
+            "motivationalMessage": "¡Tú puedes! Confía en lo que ya sabes.",
+        }
 
     return result
 
@@ -1761,6 +1950,7 @@ def generate_exam_night_plan(project_id: str, data: dict, user: User = Depends(g
 @app.post("/math/solve")
 def solve_math(req: MathRequest, user: User = Depends(get_current_user)):
     from math_engine import MathEngine
+
     engine = MathEngine()
     result = engine.solve(req.expression, req.step_by_step, req.language)
     return result
@@ -1775,12 +1965,13 @@ def math_natural(req: MathNaturalRequest, user: User = Depends(get_current_user)
     if not _claude_client:
         # Fallback: pass query directly to MathEngine router
         from math_engine import MathEngine
+
         return MathEngine().solve(req.query, req.step_by_step, req.language)
 
     lang_name = "español" if req.language == "es" else "inglés"
     # Ask Claude to extract the mathematical expression / operation
     extraction_prompt = (
-        f"El usuario pregunta (en {lang_name}): \"{req.query}\"\n\n"
+        f'El usuario pregunta (en {lang_name}): "{req.query}"\n\n'
         "Extrae la expresión matemática en texto plano apto para un motor CAS (SymPy). "
         "Responde SOLO con la expresión/operación lista para procesar, sin explicaciones. "
         "Ejemplos de formato aceptable: 'derivar x**3 + 2*x', 'integral de sin(x)', "
@@ -1798,6 +1989,7 @@ def math_natural(req: MathNaturalRequest, user: User = Depends(get_current_user)
         extracted = req.query  # fallback: use raw query
 
     from math_engine import MathEngine
+
     result = MathEngine().solve(extracted, req.step_by_step, req.language)
     result["original_query"] = req.query
     result["extracted_expression"] = extracted
@@ -1808,6 +2000,7 @@ def math_natural(req: MathNaturalRequest, user: User = Depends(get_current_user)
 def math_verify(req: MathVerifyRequest, user: User = Depends(get_current_user)):
     """Verify whether a student's answer to a math problem is correct."""
     from math_engine import MathEngine
+
     return MathEngine().verify_answer(req.problem, req.student_answer, req.language)
 
 
@@ -1816,6 +2009,7 @@ def math_graph(req: MathGraphRequest, user: User = Depends(get_current_user)):
     """Generate a 2D graph of a function as a base64 PNG."""
     try:
         from math_engine import _graph_function
+
         img_b64 = _graph_function(req.expression, req.variable, req.x_min, req.x_max)
         if img_b64:
             return {"success": True, "image_base64": img_b64, "expression": req.expression}
@@ -1839,7 +2033,6 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
     else:
         image_data = req.image_base64
 
-
     if not _claude_client:
         return {"solution": "El motor de IA no está disponible en este momento.", "success": False}
 
@@ -1848,34 +2041,37 @@ def scan_and_solve(req: ScanSolveRequest, user: User = Depends(get_current_user)
         extraction_resp = _claude_client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=300,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": mime_type,
-                            "data": image_data,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": mime_type,
+                                "data": image_data,
+                            },
                         },
-                    },
-                    {
-                        "type": "text",
-                        "text": (
-                            "Transcribe SOLAMENTE la expresión o problema matemático que aparece en esta imagen, "
-                            "en formato de texto plano apto para un motor CAS (SymPy). "
-                            "Responde ÚNICAMENTE la expresión, sin explicaciones. "
-                            "Ejemplo: 'derivar x**3 + 2*x', 'integral de sin(x) dx de 0 a pi', "
-                            "'resolver x**2 - 4 = 0'."
-                        ),
-                    },
-                ],
-            }],
+                        {
+                            "type": "text",
+                            "text": (
+                                "Transcribe SOLAMENTE la expresión o problema matemático que aparece en esta imagen, "
+                                "en formato de texto plano apto para un motor CAS (SymPy). "
+                                "Responde ÚNICAMENTE la expresión, sin explicaciones. "
+                                "Ejemplo: 'derivar x**3 + 2*x', 'integral de sin(x) dx de 0 a pi', "
+                                "'resolver x**2 - 4 = 0'."
+                            ),
+                        },
+                    ],
+                }
+            ],
         )
         extracted = extraction_resp.content[0].text.strip()
 
         # Step 2: Solve with MathEngine
         from math_engine import MathEngine
+
         engine = MathEngine()
         result = engine.solve(extracted, step_by_step=True, language=req.language)
 
@@ -1908,10 +2104,12 @@ class ExportDocxRequest(BaseModel):
     content: str
     title: str = "Conniku Document"
 
+
 class ExportPdfRequest(BaseModel):
     content: str
     title: str = "Conniku Document"
     messages: list = []  # For chat export
+
 
 class SummaryRequest(BaseModel):
     detail_level: str = "comprehensive"  # brief, standard, comprehensive
@@ -1925,9 +2123,13 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
         raise HTTPException(403, "No tienes acceso a este proyecto")
     # DOCX export: Pro (1500 words) + Max (unlimited), Free blocked
     from middleware import get_tier, get_tier_limits
+
     tier = get_tier(user)
     if tier == "free":
-        raise HTTPException(403, "Exportar a Word requiere Plan Pro ($5/mes) o superior. Los usuarios Free pueden visualizar pero no descargar.")
+        raise HTTPException(
+            403,
+            "Exportar a Word requiere Plan Pro ($5/mes) o superior. Los usuarios Free pueden visualizar pero no descargar.",
+        )
 
     # Pro: limit to 1500 words
     if tier == "pro":
@@ -1936,6 +2138,7 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
             raise HTTPException(403, f"Tu plan Pro permite exportar hasta 1,500 palabras ({word_count} detectadas).")
     try:
         from docx_generator import markdown_to_docx
+
         file_path = markdown_to_docx(req.content, req.title)
         return FileResponse(
             file_path,
@@ -1948,8 +2151,12 @@ def export_chat_docx(project_id: str, req: ExportDocxRequest, user: User = Depen
 
 # ─── Summary generation & export ─────────────────────────────
 @app.post("/projects/{project_id}/summary")
-def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
-                     user: User = tier_gate("summary"), db: Session = Depends(get_db)):
+def generate_summary(
+    project_id: str,
+    req: SummaryRequest = SummaryRequest(),
+    user: User = tier_gate("summary"),
+    db: Session = Depends(get_db),
+):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -1960,6 +2167,7 @@ def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
     # If export requested, generate the file directly
     if req.export_format == "docx":
         from docx_generator import summary_to_docx
+
         file_path = summary_to_docx(summary, summary.get("title", "Resumen de Estudio"))
         return FileResponse(
             file_path,
@@ -1968,24 +2176,25 @@ def generate_summary(project_id: str, req: SummaryRequest = SummaryRequest(),
         )
     elif req.export_format == "pdf":
         from docx_generator import summary_to_pdf
+
         file_path = summary_to_pdf(summary, summary.get("title", "Resumen de Estudio"))
-        return FileResponse(file_path, media_type="application/pdf",
-                            filename=f"{summary.get('title', 'Resumen')}.pdf")
+        return FileResponse(file_path, media_type="application/pdf", filename=f"{summary.get('title', 'Resumen')}.pdf")
 
     return summary
 
 
 @app.post("/projects/{project_id}/summary/export-docx")
-def export_summary_docx(project_id: str, data: dict,
-                        user: User = Depends(get_current_user)):
+def export_summary_docx(project_id: str, data: dict, user: User = Depends(get_current_user)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
     from middleware import get_tier
+
     tier = get_tier(user)
     if tier == "free":
         raise HTTPException(403, "Exportar requiere Plan Pro o superior.")
     from docx_generator import summary_to_docx
+
     title = data.get("title", "Resumen de Estudio")
     file_path = summary_to_docx(data, title)
     return FileResponse(
@@ -1996,37 +2205,37 @@ def export_summary_docx(project_id: str, data: dict,
 
 
 @app.post("/projects/{project_id}/summary/export-pdf")
-def export_summary_pdf(project_id: str, data: dict,
-                       user: User = Depends(get_current_user)):
+def export_summary_pdf(project_id: str, data: dict, user: User = Depends(get_current_user)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
     from middleware import get_tier
+
     tier = get_tier(user)
     if tier == "free":
         raise HTTPException(403, "Exportar requiere Plan Pro o superior.")
     from docx_generator import summary_to_pdf
+
     title = data.get("title", "Resumen de Estudio")
     file_path = summary_to_pdf(data, title)
-    return FileResponse(file_path, media_type="application/pdf",
-                        filename=f"{title}.pdf")
+    return FileResponse(file_path, media_type="application/pdf", filename=f"{title}.pdf")
 
 
 # ─── Chat PDF export ─────────────────────────────────────────
 @app.post("/projects/{project_id}/chat/export-pdf")
-def export_chat_pdf(project_id: str, req: ExportPdfRequest,
-                    user: User = Depends(get_current_user)):
+def export_chat_pdf(project_id: str, req: ExportPdfRequest, user: User = Depends(get_current_user)):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
     from middleware import get_tier
+
     tier = get_tier(user)
     if tier == "free":
         raise HTTPException(403, "Exportar a PDF requiere Plan Pro o superior.")
     from docx_generator import chat_to_pdf
+
     file_path = chat_to_pdf(req.messages, req.title)
-    return FileResponse(file_path, media_type="application/pdf",
-                        filename=f"{req.title}.pdf")
+    return FileResponse(file_path, media_type="application/pdf", filename=f"{req.title}.pdf")
 
 
 # ─── Concept map ─────────────────────────────────────────────
@@ -2044,9 +2253,11 @@ def generate_concept_map(project_id: str, user: User = tier_gate("concept_map"),
 class VisualExplainRequest(BaseModel):
     topic: str
 
+
 @app.post("/projects/{project_id}/explain-visual")
-def explain_with_visuals(project_id: str, req: VisualExplainRequest,
-                         user: User = tier_gate("explain_visual"), db: Session = Depends(get_db)):
+def explain_with_visuals(
+    project_id: str, req: VisualExplainRequest, user: User = tier_gate("explain_visual"), db: Session = Depends(get_db)
+):
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso a este proyecto")
@@ -2059,6 +2270,7 @@ def explain_with_visuals(project_id: str, req: VisualExplainRequest,
 def generate_study_plan(project_id: str, user: User = tier_gate("study_plan"), db: Session = Depends(get_db)):
     """Analyze quiz/flashcard performance and generate personalized study plan."""
     from database import StudyPlan, gen_id
+
     meta = get_project_meta(project_id)
     if meta.get("user_id") != user.id:
         raise HTTPException(403, "No tienes acceso")
@@ -2067,15 +2279,15 @@ def generate_study_plan(project_id: str, user: User = tier_gate("study_plan"), d
     from database import StudySession
     from sqlalchemy import func
 
-    sessions = db.query(StudySession).filter(
-        StudySession.user_id == user.id, StudySession.project_id == project_id
-    ).all()
+    sessions = (
+        db.query(StudySession).filter(StudySession.user_id == user.id, StudySession.project_id == project_id).all()
+    )
 
     total_time = sum(s.duration_seconds or 0 for s in sessions)
 
     # Generate plan with AI
     lang = user.language or "es"
-    lang_name = 'español' if lang == 'es' else 'inglés' if lang == 'en' else lang
+    lang_name = "español" if lang == "es" else "inglés" if lang == "en" else lang
     system = STUDY_PLAN_PROMPT.format(lang=lang_name)
 
     all_text = ai_engine._get_all_text(project_id)
@@ -2083,22 +2295,26 @@ def generate_study_plan(project_id: str, user: User = tier_gate("study_plan"), d
 
     try:
         result_text = ai_engine._call_gemini(system, user_prompt)
-        start = result_text.find('{')
-        end = result_text.rfind('}') + 1
+        start = result_text.find("{")
+        end = result_text.rfind("}") + 1
         result = json.loads(result_text[start:end]) if start >= 0 and end > start else json.loads(result_text)
     except Exception:
-        result = {"weakTopics": [], "strongTopics": [], "overallScore": 50,
-                  "recommendations": "No se pudo analizar. Sube más documentos.", "dailyPlan": []}
+        result = {
+            "weakTopics": [],
+            "strongTopics": [],
+            "overallScore": 50,
+            "recommendations": "No se pudo analizar. Sube más documentos.",
+            "dailyPlan": [],
+        }
 
     # Save plan
-    plan = db.query(StudyPlan).filter(
-        StudyPlan.user_id == user.id, StudyPlan.project_id == project_id
-    ).first()
+    plan = db.query(StudyPlan).filter(StudyPlan.user_id == user.id, StudyPlan.project_id == project_id).first()
     if not plan:
         plan = StudyPlan(id=gen_id(), user_id=user.id, project_id=project_id)
         db.add(plan)
 
     import json as json_mod
+
     plan.weak_topics = json_mod.dumps(result.get("weakTopics", []))
     plan.strong_topics = json_mod.dumps(result.get("strongTopics", []))
     plan.recommendations = result.get("recommendations", "")
@@ -2113,12 +2329,12 @@ def generate_study_plan(project_id: str, user: User = tier_gate("study_plan"), d
 @app.get("/projects/{project_id}/study-plan")
 def get_study_plan(project_id: str, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     from database import StudyPlan
-    plan = db.query(StudyPlan).filter(
-        StudyPlan.user_id == user.id, StudyPlan.project_id == project_id
-    ).first()
+
+    plan = db.query(StudyPlan).filter(StudyPlan.user_id == user.id, StudyPlan.project_id == project_id).first()
     if not plan:
         return None
     import json as json_mod
+
     return {
         "weakTopics": json_mod.loads(plan.weak_topics or "[]"),
         "strongTopics": json_mod.loads(plan.strong_topics or "[]"),
@@ -2135,16 +2351,46 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
     source_hint = f" from {req.source_language}" if req.source_language else ""
 
     LANG_NAMES = {
-        "es": "Spanish", "en": "English", "pt": "Portuguese", "fr": "French",
-        "de": "German", "it": "Italian", "zh": "Chinese", "ja": "Japanese",
-        "ko": "Korean", "ar": "Arabic", "ru": "Russian", "hi": "Hindi",
-        "tr": "Turkish", "nl": "Dutch", "pl": "Polish", "sv": "Swedish",
-        "da": "Danish", "no": "Norwegian", "fi": "Finnish", "el": "Greek",
-        "he": "Hebrew", "th": "Thai", "vi": "Vietnamese", "id": "Indonesian",
-        "ms": "Malay", "tl": "Filipino", "uk": "Ukrainian", "cs": "Czech",
-        "ro": "Romanian", "hu": "Hungarian", "ca": "Catalan", "hr": "Croatian",
-        "bg": "Bulgarian", "sk": "Slovak", "sl": "Slovenian", "lt": "Lithuanian",
-        "lv": "Latvian", "et": "Estonian", "sw": "Swahili", "bn": "Bengali",
+        "es": "Spanish",
+        "en": "English",
+        "pt": "Portuguese",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "zh": "Chinese",
+        "ja": "Japanese",
+        "ko": "Korean",
+        "ar": "Arabic",
+        "ru": "Russian",
+        "hi": "Hindi",
+        "tr": "Turkish",
+        "nl": "Dutch",
+        "pl": "Polish",
+        "sv": "Swedish",
+        "da": "Danish",
+        "no": "Norwegian",
+        "fi": "Finnish",
+        "el": "Greek",
+        "he": "Hebrew",
+        "th": "Thai",
+        "vi": "Vietnamese",
+        "id": "Indonesian",
+        "ms": "Malay",
+        "tl": "Filipino",
+        "uk": "Ukrainian",
+        "cs": "Czech",
+        "ro": "Romanian",
+        "hu": "Hungarian",
+        "ca": "Catalan",
+        "hr": "Croatian",
+        "bg": "Bulgarian",
+        "sk": "Slovak",
+        "sl": "Slovenian",
+        "lt": "Lithuanian",
+        "lv": "Latvian",
+        "et": "Estonian",
+        "sw": "Swahili",
+        "bn": "Bengali",
     }
     target_name = LANG_NAMES.get(req.target_language, req.target_language)
 
@@ -2158,16 +2404,19 @@ def translate_text(req: TranslateRequest, user: User = Depends(get_current_user)
 #  EMPLOYEE ATTENDANCE / MARCAJE
 # ─────────────────────────────────────────────────────────────
 
+
 @app.post("/hr/attendance/clock")
 def clock_attendance(data: dict, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Record clock-in or clock-out for the authenticated employee."""
     from database import EmployeeAttendance
+
     action = data.get("action")  # 'in' | 'out'
     if action not in ("in", "out"):
         raise HTTPException(400, "action must be 'in' or 'out'")
 
     # Chile TZ offset (UTC-3 / UTC-4 in DST — use UTC-3 as standard)
     from datetime import timedelta, timezone
+
     chile_tz = timezone(timedelta(hours=-3))
     now_chile = datetime.now(chile_tz)
     date_str = now_chile.strftime("%Y-%m-%d")
@@ -2194,6 +2443,7 @@ def clock_attendance(data: dict, user: User = Depends(get_current_user), db: Ses
 def get_my_attendance(limit: int = 60, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Return the last N attendance records for the authenticated user."""
     from database import EmployeeAttendance
+
     records = (
         db.query(EmployeeAttendance)
         .filter(EmployeeAttendance.user_id == user.id)
@@ -2201,41 +2451,46 @@ def get_my_attendance(limit: int = 60, user: User = Depends(get_current_user), d
         .limit(limit)
         .all()
     )
-    return {"records": [
-        {
-            "id": r.id,
-            "action": r.action,
-            "timestamp": r.timestamp.isoformat(),
-            "date": r.date,
-            "note": r.note,
-        }
-        for r in records
-    ]}
+    return {
+        "records": [
+            {
+                "id": r.id,
+                "action": r.action,
+                "timestamp": r.timestamp.isoformat(),
+                "date": r.date,
+                "note": r.note,
+            }
+            for r in records
+        ]
+    }
 
 
 @app.get("/hr/attendance/all")
 def get_all_attendance(date: str = None, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Admin only — return attendance records for all employees."""
     from database import EmployeeAttendance
+
     if not getattr(user, "is_admin", False) and user.role != "owner":
         raise HTTPException(403, "Admin only")
     q = db.query(EmployeeAttendance, User).join(User, EmployeeAttendance.user_id == User.id)
     if date:
         q = q.filter(EmployeeAttendance.date == date)
     rows = q.order_by(EmployeeAttendance.timestamp.desc()).limit(500).all()
-    return {"records": [
-        {
-            "id": r.id,
-            "action": r.action,
-            "timestamp": r.timestamp.isoformat(),
-            "date": r.date,
-            "note": r.note,
-            "userId": u.id,
-            "userName": f"{u.first_name or ''} {u.last_name or ''}".strip() or u.email,
-            "userEmail": u.email,
-        }
-        for r, u in rows
-    ]}
+    return {
+        "records": [
+            {
+                "id": r.id,
+                "action": r.action,
+                "timestamp": r.timestamp.isoformat(),
+                "date": r.date,
+                "note": r.note,
+                "userId": u.id,
+                "userName": f"{u.first_name or ''} {u.last_name or ''}".strip() or u.email,
+                "userEmail": u.email,
+            }
+            for r, u in rows
+        ]
+    }
 
 
 if __name__ == "__main__":
