@@ -218,6 +218,18 @@ Commits candidatos para cherry-pick selectivo en bloques futuros (ordenados por 
 - **Fix requerido**: Cristian decide (a) eliminar cláusula, (b) renombrar a Conniku Pro, (c) rediseñar beneficio
 - **Tutores ya firmados**: pueden requerir addendum
 
+### Bloque 2.5 Workspaces Features Premium (post-v1 publicable)
+- **Decisión**: Cristian eligió cortar el Bloque 2 en versión publicable 2026-04-19
+- **Contenido v1 publicable**: 2a + 2b + 2c + 2d.1 APA + 2d.3 KaTeX + 2d.6 Rúbrica + 2d.7 Export + 2d.8 Comentarios
+- **Diferido a Bloque 2.5** (post-launch, tras ver uso real):
+  - **2d.2** TOC automático + Tapa editable + Plantillas (~1.5 días)
+  - **2d.4** MathLive input visual de matemáticas (~1 día)
+  - **2d.5** SymPy backend + gráficos (~1.5 días)
+  - **2d.9** Link público con token compartible (~1 día, componente legal — requiere abogado)
+  - **2d.10** UX envoltura: modo enfoque, modo presentación, atajos teclado completos, STT/TTS, arrastrar archivos, voice notes, imprimir, duplicar, star, búsqueda global (~3 días)
+- **Bloque sugerido**: Bloque 2.5 Workspaces Premium, tras evaluación de uso real de v1
+- **Plan**: `docs/plans/bloque-2-workspaces/2d-features-avanzadas.md` §2d.2-5-9-10
+
 ### Sub-bloque 2b Workspaces — iter-2 post-deploy (baja prioridad)
 - **Origen**: hallazgos de code-reviewer Capa 2 + gap-finder Capa 5 del 2b
 - Los 3 CRÍTICOS (docId prefix, userId guest, freeze collab_ws) + 1 ALTO (VITE_API_URL) + los MODERADO/INFORMATIVO del code-reviewer fueron corregidos antes del deploy preview
