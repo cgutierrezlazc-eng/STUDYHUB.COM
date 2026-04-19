@@ -129,12 +129,17 @@ fi
 
 # ─── Gate 6: ruff backend ────────────────────────────────────────
 
-print_step 6 6 "Ruff backend (python3.11 -m ruff check backend/)"
+print_step 6 6 "Ruff backend (ruff check backend/ con fallback)"
 
-if python3.11 -m ruff check backend/ 2>&1; then
+# Anti-abort: probar alternativas en orden
+if command -v ruff >/dev/null 2>&1 && ruff check backend/ 2>&1; then
   pass "ruff exit 0"
+elif python3.11 -m ruff check backend/ 2>&1; then
+  pass "ruff (via python3.11 -m) exit 0"
+elif python3 -m ruff check backend/ 2>&1; then
+  pass "ruff (via python3 -m) exit 0"
 else
-  fail "ruff detectó problemas. Arregla antes de push."
+  fail "ruff no disponible o detectó problemas. Verifica instalación o arregla errores."
   exit 6
 fi
 
