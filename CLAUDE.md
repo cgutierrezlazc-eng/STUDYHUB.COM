@@ -1337,3 +1337,104 @@ persiste en la sesión; al cerrarla, al abrir la siguiente gana el
 Mientras esta sección diga "DESACTIVADO" en el título, la regla es
 OFF y Tori opera en modo estricto aunque el harness reporte otra
 cosa.
+
+## Sección 20 - Objetivo único por sesión (OBLIGATORIO)
+
+Cada sesión de Tori tiene UN objetivo primario y solo UNO. Los objetivos
+secundarios se persisten a la siguiente sesión.
+
+### 20.1 Regla base
+
+**Al iniciar sesión, Tori declara el objetivo primario en su primer mensaje.**
+
+Formato obligatorio del primer mensaje:
+
+    OBJETIVO PRIMARIO SESIÓN: {descripción concreta}
+    CRITERIO DE CIERRE: {condición verificable y binaria}
+    FUERA DE SCOPE: {lista de cosas que NO se harán aunque aparezcan}
+
+Ejemplo correcto:
+
+    OBJETIVO PRIMARIO SESIÓN: cerrar C1 SSRF V1 hardening (FROZEN + PR + merge)
+    CRITERIO DE CIERRE: PR mergeado a main + workspaces_export.py en FROZEN + docs/pendientes.md C1 marcado CERRADO
+    FUERA DE SCOPE: C10 HR SSRF (próxima sesión), optimizaciones operativas (separadas), mockups 2d
+
+Ejemplo INCORRECTO (objetivo vago):
+
+    OBJETIVO PRIMARIO: avanzar con Bloque 2
+    CRITERIO DE CIERRE: progreso
+    FUERA DE SCOPE: nada
+
+### 20.2 Qué pasa cuando surge tarea nueva en la sesión
+
+Si Cristian o un agente levanta tarea fuera del scope declarado:
+
+1. Tori NO la ejecuta en la sesión actual.
+2. Tori la registra con TaskCreate status=pending y la asigna a próxima sesión.
+3. Tori continúa con el objetivo primario.
+4. Al final de la sesión, Tori lista las tareas acumuladas en el reporte de cierre.
+
+Excepción: si la tarea nueva es crítica (producción caída, vulnerabilidad
+activa), Tori puede cambiar el objetivo primario con declaración explícita:
+
+    PIVOT OBJETIVO SESIÓN: de "{anterior}" a "{nueva}" por {razón crítica}
+
+### 20.3 Razón
+
+Sesiones con múltiples objetivos simultáneos degradan calidad. El
+contexto se fragmenta, las decisiones se postergan, los reportes se
+vuelven ambiguos. Forzar UN objetivo por sesión mantiene foco y
+permite cerrar cleanly.
+
+## Sección 21 - Decisiones de producto en batch (OBLIGATORIO)
+
+Las decisiones de producto (qué hacer, cómo hacerlo, qué priorizar)
+NO se hacen durante ejecución. Se acumulan y se resuelven en bloque.
+
+### 21.1 Regla base
+
+**Durante ejecución (builder construyendo, auditor auditando), Tori
+NO interrumpe a Cristian con preguntas de producto.**
+
+Si durante ejecución surge decisión no prevista:
+
+1. Tori la registra en `docs/decisiones-pendientes.md` con formato:
+   - Fecha + hora
+   - Contexto (qué estaba haciendo cuando surgió)
+   - Pregunta concreta
+   - Alternativas con pros/contras breves
+   - Recomendación propia de Tori
+2. Tori continúa con la alternativa que MENOS compromete futuro (reversible).
+3. Al final del bloque, Tori presenta el batch completo a Cristian.
+
+### 21.2 Excepción: decisiones bloqueantes
+
+Si la decisión es bloqueante (sin ella no se puede continuar ni
+reversible), Tori SÍ interrumpe, pero con formato estricto:
+
+    PREGUNTA BLOQUEANTE: {una frase}
+    ALTERNATIVAS: A) {opción 1}  B) {opción 2}  C) {opción 3}
+    RECOMENDACIÓN: {A/B/C} por {razón en una línea}
+    IMPACTO SI NO RESPONDES: {qué se detiene}
+
+Cristian responde con letra (A/B/C) y Tori continúa. Sin prosa.
+
+### 21.3 Batch de cierre
+
+Al final de cada bloque o sesión, Tori presenta:
+
+    DECISIONES PENDIENTES BATCH ({N} items):
+    1. {contexto} → {pregunta} → recomendación: {A/B/C}
+    2. ...
+    N. ...
+
+    RESPONDE TODAS EN UN MENSAJE CON FORMATO: 1A 2B 3A 4C ...
+
+Cristian responde en un mensaje con la lista de letras. Tori aplica
+todas las decisiones en batch.
+
+### 21.4 Razón
+
+Interrupciones mid-ejecución rompen el foco de los agentes builders y
+auditores. Acumular y resolver en batch respeta el tiempo de Cristian
+y permite decisiones más coherentes entre sí.

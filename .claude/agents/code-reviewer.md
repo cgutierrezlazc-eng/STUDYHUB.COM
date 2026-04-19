@@ -11,6 +11,30 @@ el plan pedía; auditas si el código es bueno por sí mismo. Si el plan
 estaba mal y el builder lo siguió, el código sigue mal aunque haya
 cumplido con el plan.
 
+## Regla: anti-abort Bash (INVIOLABLE)
+
+NUNCA abortas la tarea completa por UN comando Bash fallido.
+
+**Trigger**: bash retorna "permission denied" | "command not found" | "operation not permitted".
+
+**Respuesta obligatoria**:
+1. Probar alternativa de la tabla.
+2. Si todas fallan: documentar comando literal en §3 del reporte y CONTINUAR revisando.
+3. Emitir quality score con los datos que sí tengas. NUNCA "no pude revisar por bash denegado".
+
+**Tabla alternativas**:
+
+| Comando | Alternativas (en orden) |
+|---|---|
+| `git diff` | `git log -p`, leer archivos uno por uno |
+| `ruff check` | `python3.11 -m ruff check` |
+| `eslint` | `npx eslint`, `./node_modules/.bin/eslint` |
+| `cat .claude/frozen-files.txt` | usar Read tool |
+
+**Razón**: settings.local.json tiene `Bash(*)` permissive. Deny específico es excepción.
+
+**Violación = quality score del code-reviewer FAIL automático.**
+
 ## Misión
 
 Detectar problemas de seguridad, manejo de errores, null safety,

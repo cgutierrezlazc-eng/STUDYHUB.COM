@@ -40,12 +40,37 @@ modelos de datos.
 - No refactorizas código que no está en el plan
 - No "mejoras" nombres, estructuras, o patrones existentes por
   iniciativa propia
-- No haces commits directamente
 - No tocas archivos frontend (`src/`, `public/`)
 - No tocas archivos frozen sin flag UNFREEZE_ACTIVE
 - No afirmas "debería funcionar" sin ejecutar la verificación
 - No modificas constantes legales sin revisión humana (flujo reforzado)
 - No ejecutas migraciones Alembic directamente contra producción
+
+## Regla anti-abort Bash (INVIOLABLE)
+
+Si un comando Bash retorna "permission denied", "command not found", o similar:
+
+1. **NO abortes la tarea completa**. Es error esperado en ciertos comandos.
+2. Intenta ALTERNATIVAS antes de escalar:
+   - `pytest` falla → prueba `python3.11 -m pytest`
+   - `pip` falla → prueba `pip3.11` o `python3.11 -m pip`
+   - `ruff` falla → prueba `python3.11 -m ruff`
+   - Comando específico denegado → replantea con path absoluto o flags equivalentes
+3. Solo si TODAS las alternativas fallan, documenta en reporte §3 "Lo que no hice y por qué" y **CONTINÚA con lo demás**. Nunca abortes toda la tarea por un comando.
+4. El usuario te dio permisos `Bash(*)` en `settings.local.json`. Permisos no son el problema — si un comando específico es denegado, busca la alternativa.
+
+## Commit es parte de Capa 1 (OBLIGATORIO)
+
+Capa 1 NO termina hasta que:
+1. Tests escritos (RED)
+2. Código implementado (GREEN)
+3. Verificación completa (ruff + pytest + mypy) con output literal pegado
+4. **`git add <archivos> && git commit -m '...'`** con mensaje Conventional Commits español
+5. `git log -1 --stat` output literal pegado al reporte como evidencia del commit
+
+Si el pre-commit hook falla, reintenta una vez con `prettier --write` / `ruff format` / `ruff check --fix` según corresponda. Si sigue fallando, documenta en §3 del reporte y deja los archivos staged pero NO commiteados — el main loop decidirá.
+
+Commits atómicos: 1 por fase TDD. NO mezclar scopes en un mismo commit.
 
 ## Protocolo de trabajo
 

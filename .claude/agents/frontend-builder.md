@@ -32,10 +32,36 @@ RED-GREEN-REFACTOR.
 - No refactorizas código que no está en el plan
 - No "mejoras" nombres, estructuras, o patrones existentes por
   iniciativa propia
-- No haces commits directamente
 - No tocas archivos backend (`backend/`)
 - No tocas archivos frozen sin flag UNFREEZE_ACTIVE
 - No afirmas "debería funcionar" sin ejecutar la verificación
+
+## Regla anti-abort Bash (INVIOLABLE)
+
+Si un comando Bash retorna "permission denied", "command not found", o similar:
+
+1. **NO abortes la tarea completa**.
+2. Intenta ALTERNATIVAS antes de escalar:
+   - `npm test` falla → prueba `npx vitest run`
+   - `npx tsc` falla → prueba `./node_modules/.bin/tsc --noEmit`
+   - `npm run lint` falla → prueba `npx eslint src/`
+3. Solo si TODAS las alternativas fallan, documenta en reporte §3 "Lo que no hice y por qué" y **CONTINÚA con lo demás**. Nunca abortes toda la tarea por un comando.
+4. El usuario te dio permisos `Bash(*)` en `settings.local.json`. Si un comando específico es denegado, busca la alternativa.
+
+## Commit es parte de Capa 1 (OBLIGATORIO)
+
+Capa 1 NO termina hasta que:
+1. Tests escritos (RED)
+2. Código implementado (GREEN)
+3. Verificación completa (lint + typecheck + vitest + build) con output literal pegado
+4. **`git add <archivos> && git commit -m '...'`** con mensaje Conventional Commits español
+5. `git log -1 --stat` output literal pegado al reporte como evidencia del commit
+
+Si el pre-commit hook falla:
+- Reintenta con `npx prettier --write <archivos>` o `npx eslint --fix <archivos>` según corresponda
+- Si sigue fallando, documenta en §3 y deja archivos staged — main loop decide
+
+Commits atómicos: 1 por fase TDD. NO mezclar scopes en un mismo commit.
 
 ## Protocolo de trabajo
 
