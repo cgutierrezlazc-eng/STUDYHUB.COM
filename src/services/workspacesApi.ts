@@ -4,6 +4,8 @@
  *
  * Bloque 2a — Fundación. Sin Yjs, sin Athena, sin export.
  * Bloque 2c — Athena IA: funciones athena* añadidas al final del archivo.
+ * Bloque 2d.6 — Rúbrica: uploadRubricText, uploadRubricFile, getRubric.
+ * Bloque 2d.8 — Comentarios: listComments, createComment, patchComment, deleteComment, resolveComment.
  * Usa el mismo patrón de `request` que src/services/api.ts.
  */
 
@@ -24,6 +26,8 @@ import type {
   AthenaChatResponse,
   AthenaSuggestResponse,
   CitationValidationResult,
+  RubricData,
+  WorkspaceComment,
 } from '../../shared/workspaces-types';
 
 const TOKEN_KEY = 'conniku_token';
@@ -376,5 +380,131 @@ export function validateCitations(
   return apiFetch(`/workspaces/${docId}/citations/validate`, {
     method: 'POST',
     body: JSON.stringify({ citations }),
+  });
+}
+
+// ─── Rúbrica (sub-bloque 2d.6) ───────────────────────────────────────────────
+
+/**
+ * Envía texto pegado de una rúbrica al backend para parseo.
+ * Endpoint: POST /workspaces/{docId}/rubric/text
+ * Retorna ítems extraídos y posibles advertencias.
+ */
+export function uploadRubricText(docId: string, text: string): Promise<RubricData> {
+  return apiFetch(`/workspaces/${docId}/rubric/text`, {
+    method: 'POST',
+    body: JSON.stringify({ text }),
+  });
+}
+
+/**
+ * Sube un archivo (PDF/DOCX/TXT) de rúbrica al backend para extracción y parseo.
+ * Endpoint: POST /workspaces/{docId}/rubric/upload
+ * Usa FormData — no envía Content-Type para que el browser ponga el boundary.
+ */
+export async function uploadRubricFile(docId: string, file: File): Promise<RubricData> {
+  const base = getApiBase();
+  const token = getToken();
+  const headers: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await fetch(`${base}/workspaces/${docId}/rubric/upload`, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error((data as { detail?: string }).detail ?? `API Error: ${res.status}`);
+  }
+
+  return res.json() as Promise<RubricData>;
+}
+
+/**
+ * Obtiene la rúbrica guardada del documento.
+ * Endpoint: GET /workspaces/{docId}/rubric
+ * Retorna raw text + ítems parseados.
+ */
+export function getRubric(docId: string): Promise<RubricData> {
+  return apiFetch(`/workspaces/${docId}/rubric`);
+}
+
+// ─── Comentarios inline + Menciones (sub-bloque 2d.8) ────────────────────────
+
+export interface CreateCommentInput {
+  content: string;
+  anchor_id: string;
+  parent_id?: string | null;
+}
+
+export interface PatchCommentInput {
+  content: string;
+}
+
+/**
+ * Lista los comentarios del documento, opcionalmente filtrado por anchor_id.
+ * Endpoint: GET /workspaces/{docId}/comments?anchor_id=X
+ */
+export function listComments(
+  docId: string,
+  anchorId?: string
+): Promise<{ comments: WorkspaceComment[] }> {
+  const qs = anchorId ? `?anchor_id=${encodeURIComponent(anchorId)}` : '';
+  return apiFetch(`/workspaces/${docId}/comments${qs}`);
+}
+
+/**
+ * Crea un nuevo comentario en el documento.
+ * Endpoint: POST /workspaces/{docId}/comments
+ * Retorna el comentario creado con mentions validadas por el backend.
+ */
+export function createComment(docId: string, data: CreateCommentInput): Promise<WorkspaceComment> {
+  return apiFetch(`/workspaces/${docId}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Edita el contenido de un comentario (solo el autor puede editar).
+ * Endpoint: PATCH /workspaces/{docId}/comments/{commentId}
+ */
+export function patchComment(
+  docId: string,
+  commentId: string,
+  data: PatchCommentInput
+): Promise<WorkspaceComment> {
+  return apiFetch(`/workspaces/${docId}/comments/${commentId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Elimina un comentario (autor u owner del workspace).
+ * Endpoint: DELETE /workspaces/{docId}/comments/{commentId}
+ */
+export function deleteComment(docId: string, commentId: string): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/comments/${commentId}`, { method: 'DELETE' });
+}
+
+/**
+ * Cambia el estado resolved del comentario (editor u owner).
+ * Endpoint: POST /workspaces/{docId}/comments/{commentId}/resolve
+ */
+export function resolveComment(
+  docId: string,
+  commentId: string,
+  resolved: boolean
+): Promise<{ ok: boolean }> {
+  return apiFetch(`/workspaces/${docId}/comments/${commentId}/resolve`, {
+    method: 'POST',
+    body: JSON.stringify({ resolved }),
   });
 }
