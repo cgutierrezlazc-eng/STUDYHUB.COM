@@ -1438,3 +1438,194 @@ todas las decisiones en batch.
 Interrupciones mid-ejecución rompen el foco de los agentes builders y
 auditores. Acumular y resolver en batch respeta el tiempo de Cristian
 y permite decisiones más coherentes entre sí.
+
+## Sección 22 — Verificación de premisas antes de recomendar (OBLIGATORIO)
+
+Tori NUNCA recomienda una acción de alto blast-radius sin haber
+verificado con evidencia la premisa que la justifica.
+
+### 22.1 Qué cuenta como "alto blast-radius"
+
+Cualquier acción con UNA o más de estas propiedades:
+
+- **Elimina o deshabilita código en producción**: comentar routers,
+  remover rutas de `App.tsx`, borrar endpoints, revertir features
+  activas.
+- **Cambia comportamiento visible al usuario**: flags de feature,
+  renombrar URLs, alterar flujos de cobro.
+- **Afecta estado persistente**: migrar datos, borrar registros,
+  modificar schema sin Alembic.
+- **Toca configuración de deploy**: `vercel.json`, variables de
+  entorno productivas, `.github/workflows/*`, `render.yaml`.
+- **Publica documentos legales**: Privacy, T&C, Cookies, DPA.
+- **Fuerza re-aceptación del usuario**: modal bloqueante, bump de
+  versión MAJOR de documentos legales.
+
+### 22.2 Protocolo obligatorio
+
+Antes de escribir la recomendación en prosa, Tori DEBE:
+
+1. Identificar la premisa clave. Formato: "asumo que X".
+2. Ejecutar comandos que verifiquen X. Mínimo 2 fuentes independientes.
+3. Incluir la evidencia CRUDA en la misma respuesta donde da la
+   recomendación. No en un turno posterior.
+4. Si la evidencia contradice la premisa: detener y pivotar antes de
+   recomendar.
+
+### 22.3 Ejemplo correcto
+
+    RECOMENDACIÓN: deshabilitar router V1 collab.
+
+    Premisa: "V2 workspaces cubre toda la funcionalidad de V1 collab".
+
+    Verificación:
+
+      $ grep -rn "api\.collab\|collabApi" src/pages/
+      src/pages/GroupDocEditor.tsx:66  api.collabGet
+      src/pages/GroupDocs.tsx:78       api.collabList
+      [... 16 matches más ...]
+
+      $ grep -rn "workspacesApi" src/pages/
+      src/pages/Workspaces/WorkspacesList.tsx
+      [... solo pages/Workspaces/* ...]
+
+    La premisa es FALSA: V1 y V2 son features distintas coexistiendo.
+    PIVOT: requiere decisión del usuario sobre deprecar GroupDocs
+    completo o migrar datos V1 → V2.
+
+### 22.4 Ejemplo incorrecto
+
+    RECOMENDACIÓN: deshabilitar router V1 collab. V2 ya cubre V1.
+
+    (Sin verificación. Si V2 no cubriera V1, rompería producción.)
+
+### 22.5 Violación = FAIL
+
+Si Tori recomienda acción de alto blast-radius sin evidencia en la
+misma respuesta:
+
+- Código revertido
+- Bloque marcado como "falla de protocolo" en BLOCKS.md
+- Incidente registrado en `incidents/protocol/`
+
+### 22.6 Razón
+
+Esta regla nace del 2026-04-19 cuando Tori recomendó "V2 cubre V1,
+deshabilitar V1" basándose en una asunción sin verificar. Detuvo a
+tiempo al verificar antes de ejecutar, pero la recomendación en texto
+ya estaba hecha. El sistema no puede depender de que Tori se detenga
+por inspiración — la regla mecánica lo obliga.
+
+## Sección 23 — Pre-flight CI local antes de push (OBLIGATORIO)
+
+Tori NUNCA hace `git push` a una rama con PR sin haber ejecutado
+localmente la misma suite de verificación que el gate de CI.
+
+### 23.1 Comandos obligatorios pre-push
+
+Desde la raíz del repo, ejecutar EN ORDEN:
+
+    npx tsc --noEmit
+    npx eslint src/
+    npx vitest run
+    npx vite build
+    python3.11 -m pytest backend/ --tb=no -q
+    python3.11 -m ruff check backend/
+
+Todos deben retornar exit code 0. Si alguno falla:
+
+1. Detener el push.
+2. Arreglar la causa antes de reintentar.
+3. NUNCA usar `--no-verify`, `--force`, ni comentar tests fallidos
+   para desbloquear push.
+
+### 23.2 Cobertura de gaps conocidos
+
+Si truth-auditor, code-reviewer, o gap-finder han marcado un test o
+archivo como bloqueante en un reporte previo, Tori DEBE verificar que
+el bloqueante esté resuelto antes del push. Buscar en
+`docs/reports/YYYY-MM-DD-*.md` los reportes de la rama actual.
+
+### 23.3 Tests marcados como skipif en local pero correrán en CI
+
+Algunos tests usan `@pytest.mark.skipif` por deps locales faltantes
+(ej: `xhtml2pdf`, `weasyprint`, PostgreSQL). Esos tests SÍ correrán en
+CI con deps completas. Si un reporte previo indica que correrán en
+CI, Tori DEBE:
+
+- Intentar instalar la dep faltante localmente
+- Si no es posible: declarar en el mensaje de commit "Tests skipif
+  X correrán solo en CI; reviewer previo marcó como bloqueante Y"
+- Estar dispuesto a arreglar rápido si CI rojo al push
+
+### 23.4 Excepciones permitidas
+
+NO correr pre-flight cuando:
+
+- El push es de una rama nueva sin PR (draft/experimento)
+- Los cambios son solo markdown en `docs/` (no afectan CI)
+- El push es solo para compartir WIP con el usuario (con aviso
+  explícito: "push de WIP, no mergeable")
+
+Todas las demás situaciones requieren pre-flight completo.
+
+### 23.5 Violación = FAIL
+
+Push a PR con CI rojo evitable por pre-flight:
+
+- Revertir push
+- Fix + re-push
+- Quality score del bloque penalizado -5 por "CI rojo prevenible"
+
+### 23.6 Razón
+
+Esta regla nace del 2026-04-19 cuando 2 tests de spy C1 entraron a CI
+y lo pintaron rojo, aunque truth-auditor los había marcado como
+bloqueante previamente. Perdimos 10+ min de ciclo. CI es gate
+terminal, no diagnóstico. Diagnóstico debe ser local.
+
+## Sección 24 — Pre-commit prettier proactivo frontend (OPERATIVA)
+
+Antes de `git add` sobre archivos frontend modificados, Tori DEBE
+ejecutar `npx prettier --write` sobre esos archivos.
+
+### 24.1 Archivos que activan la regla
+
+- `src/**/*.{ts,tsx,js,jsx,css,json}`
+- `shared/**/*.ts`
+- Cualquier archivo `.tsx` o `.ts` tocado durante la sesión
+
+### 24.2 Comando obligatorio
+
+    npx prettier --write <archivos-tocados>
+    git add <archivos-tocados>
+
+En ese orden, sin saltos.
+
+### 24.3 Justificación
+
+El pre-commit hook de husky ejecuta `prettier --check` sobre archivos
+staged. Si falla, el commit se aborta y Tori debe re-ejecutar el flujo
+completo (prettier write + git add + git commit). Pre-aplicar prettier
+evita el abort y ahorra ~30s por commit.
+
+### 24.4 Excepciones
+
+- Archivos backend (Python): los maneja `ruff format`, no prettier.
+  No aplica esta regla.
+- Archivos markdown o yaml: prettier los maneja diferente. Verificar
+  configuración del repo en `.prettierrc` o `package.json`.
+- Cambios generados por scripts (build output, migraciones): no
+  aplicar prettier, seguir el formato del generador.
+
+### 24.5 No es regla de calidad, es regla de eficiencia
+
+No hay violación formal. Si Tori olvida prettier y el commit falla,
+se recupera. La regla existe para reducir fricción operativa, no para
+bloquear trabajo.
+
+### 24.6 Razón
+
+Esta regla nace del 2026-04-19 cuando 2 commits del bloque
+hardening-c1-ssrf-v1 fallaron el pre-commit por Prettier y requirieron
+retry manual. El costo acumulado es alto en sesiones largas.
