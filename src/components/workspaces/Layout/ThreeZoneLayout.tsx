@@ -24,6 +24,8 @@ import AthenaPanel from '../Athena/AthenaPanel';
 import type { EditorBridgeHandle } from '../Athena/AthenaPanel';
 import CommentsPanel from '../Comments/CommentsPanel';
 import RubricPanel from '../Rubric/RubricPanel';
+import CitationsPanel from '../Citations/CitationsPanel';
+import ReferenceFormatter from '../Citations/ReferenceFormatter';
 
 interface SidebarPanelProps {
   title: string;
@@ -95,8 +97,46 @@ export default function ThreeZoneLayout({
   commentsEnabled = false,
 }: ThreeZoneLayoutProps) {
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [refFormatterOpen, setRefFormatterOpen] = useState(false);
   return (
     <div className="ws-three-zone">
+      {/* ── Topbar de acciones del documento ── */}
+      <div className="ws-topbar-actions" aria-label="Acciones del documento">
+        <button
+          type="button"
+          className="ws-topbar-new-ref-btn"
+          onClick={() => setRefFormatterOpen((o) => !o)}
+          aria-expanded={refFormatterOpen}
+          aria-label="Nueva referencia APA"
+          data-testid="topbar-new-reference-btn"
+        >
+          Nueva referencia
+        </button>
+      </div>
+
+      {/* ── Modal ReferenceFormatter ── */}
+      {refFormatterOpen && (
+        <div
+          className="ws-ref-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Generador de referencias APA 7"
+          data-testid="ref-formatter-modal"
+        >
+          <div className="ws-ref-modal-content">
+            <button
+              type="button"
+              className="ws-ref-modal-close"
+              onClick={() => setRefFormatterOpen(false)}
+              aria-label="Cerrar generador de referencias"
+            >
+              ✕
+            </button>
+            <ReferenceFormatter />
+          </div>
+        </div>
+      )}
+
       {/* ── Zona izquierda: sidebar del doc ── */}
       <aside className="ws-zone-left" aria-label="Panel lateral del documento">
         <SidebarPanel title="Índice">
@@ -116,6 +156,17 @@ export default function ThreeZoneLayout({
           ) : (
             <p className="ws-placeholder-text ws-placeholder-text--muted">
               Carga tu rúbrica al crear el documento.
+            </p>
+          )}
+        </SidebarPanel>
+
+        {/* Panel Referencias APA — sub-bloque 2d.1 */}
+        <SidebarPanel title="Referencias APA">
+          {docId ? (
+            <CitationsPanel docId={docId} />
+          ) : (
+            <p className="ws-placeholder-text ws-placeholder-text--muted">
+              Abre un documento para gestionar las referencias.
             </p>
           )}
         </SidebarPanel>
