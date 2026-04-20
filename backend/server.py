@@ -95,6 +95,11 @@ _cors_origins = os.environ.get(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in _cors_origins],
+    # Acepta cualquier preview Vercel (*.vercel.app) además de los origins
+    # explícitos de la lista. Necesario porque cada PR genera una URL preview
+    # dinámica (studyhub-com-git-<branch>-<team>.vercel.app) que no se puede
+    # enumerar de antemano.
+    allow_origin_regex=r"https://[a-z0-9-]+\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
