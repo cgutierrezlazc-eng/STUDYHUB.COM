@@ -3,6 +3,7 @@ import { useI18n } from '../services/i18n';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { SharedDoc } from '../types';
+import mkStyles from './Marketplace.module.css';
 import { BookOpen, GraduationCap, Download } from '../components/Icons';
 
 interface Props {
@@ -125,6 +126,22 @@ export default function Marketplace({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={mkStyles.topProgress}>
+        <div className={mkStyles.tpLeft}>
+          <span className={mkStyles.pulse} aria-hidden="true" />
+          <span>Marketplace</span>
+        </div>
+        <span>{t('marketplace.subtitle')}</span>
+      </div>
+      <div className={mkStyles.heroWrap}>
+        <h1 className={mkStyles.heroH1}>
+          <span className={mkStyles.hlPink}>Comparte</span> tus apuntes.
+        </h1>
+        <p className={mkStyles.heroLead}>
+          Resúmenes, guías, pruebas anteriores, material de estudio. La comunidad de Conniku
+          comparte lo que funcionó en sus asignaturas.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
