@@ -22,10 +22,13 @@ import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
 
 import Landing from './pages/Landing';
-import { LANDING_V3_ENABLED } from './config/v3';
+import { LANDING_V3_ENABLED, AUTH_V3_ENABLED } from './config/v3';
 
 // ─── v3 piloto (bloque-piloto-rediseno-v3) ───────────────────────
 const LandingV3 = lazy(() => import('./pages/v3/LandingV3'));
+const LoginV3 = lazy(() => import('./pages/v3/LoginV3'));
+const RegisterV3 = lazy(() => import('./pages/v3/RegisterV3'));
+const DashboardV3 = lazy(() => import('./pages/v3/DashboardV3'));
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
 
@@ -578,19 +581,32 @@ export default function App() {
             />
           ))}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
-        {authView === 'login' && (
-          <Login
-            onSwitchToRegister={() => setAuthView('register')}
-            onForgotPassword={() => setAuthView('forgot')}
-            onBack={() => setAuthView('landing')}
-          />
-        )}
-        {authView === 'register' && (
-          <Register
-            onSwitchToLogin={() => setAuthView('login')}
-            onBack={() => setAuthView('landing')}
-          />
-        )}
+        {authView === 'login' &&
+          (AUTH_V3_ENABLED ? (
+            <LoginV3
+              onSwitchToRegister={() => setAuthView('register')}
+              onForgotPassword={() => setAuthView('forgot')}
+              onBack={() => setAuthView('landing')}
+            />
+          ) : (
+            <Login
+              onSwitchToRegister={() => setAuthView('register')}
+              onForgotPassword={() => setAuthView('forgot')}
+              onBack={() => setAuthView('landing')}
+            />
+          ))}
+        {authView === 'register' &&
+          (AUTH_V3_ENABLED ? (
+            <RegisterV3
+              onSwitchToLogin={() => setAuthView('login')}
+              onBack={() => setAuthView('landing')}
+            />
+          ) : (
+            <Register
+              onSwitchToLogin={() => setAuthView('login')}
+              onBack={() => setAuthView('landing')}
+            />
+          ))}
       </Suspense>
     );
   }
@@ -692,6 +708,11 @@ export default function App() {
                       onNewProject={() => setShowNewProject(true)}
                     />
                   }
+                />
+                {/* ─── v3 piloto: dashboard paralelo (bloque-piloto-rediseno-v3) ─── */}
+                <Route
+                  path="/dashboard-v3"
+                  element={<DashboardV3 onNavigate={(path) => navigate(path)} />}
                 />
                 <Route
                   path="/project/:id"
