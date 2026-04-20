@@ -34,7 +34,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 );
 
 // ─── Service Worker Registration ────────────────────────────────
-if ('serviceWorker' in navigator) {
+// En desarrollo (Vite dev server) DESREGISTRAMOS cualquier SW existente y
+// saltamos el registro — el SW cacheaba bundles antiguos y causaba "no se
+// pudo conectar" al intentar login desde localhost. Solo se registra en
+// producción donde sí aporta offline-first.
+const isDev = import.meta.env.DEV;
+
+if ('serviceWorker' in navigator && !isDev) {
   window.addEventListener('load', async () => {
     try {
       // Unregister old push-only SW if it exists
@@ -84,4 +90,23 @@ if ('serviceWorker' in navigator) {
       console.error('[SW] Registration failed:', err);
     }
   });
+}
+
+// En dev, desregistra cualquier SW previo que quedó cacheado de sesiones
+// anteriores con cache viejo. Ataca el bug "No se pudo conectar al servidor"
+// que era causado por un SW vivo interceptando requests con bundle obsoleto.
+if ('serviceWorker' in navigator && isDev) {
+  navigator.serviceWorker.getRegistrations().then((regs) => {
+    for (const reg of regs) {
+      reg.unregister().then(() => {
+        console.log('[DEV] Service worker desregistrado:', reg.scope);
+      });
+    }
+  });
+  // Y limpiamos todas las caches del origin
+  if ('caches' in window) {
+    window.caches.keys().then((keys) => {
+      for (const k of keys) window.caches.delete(k);
+    });
+  }
 }
