@@ -23,6 +23,7 @@ import {
   Lock,
 } from '../components/Icons';
 import TierGate from '../components/TierGate';
+import srStyles from './StudyRooms.module.css';
 
 /* ── Types ── */
 interface ChatMessage {
@@ -933,47 +934,55 @@ export default function StudyRooms({ onNavigate }: Props) {
 
   /* ── Room list ── */
   return (
-    <>
-      <div className="page-header page-enter">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2>{BookOpen()} Salas de Estudio</h2>
-            <p>Estudia en grupo con temporizador Pomodoro y videollamada</p>
+    <div className={srStyles.srRoot}>
+      <div className={srStyles.topProgress}>
+        <div className={srStyles.tpLeft}>
+          <span className={srStyles.pulse} aria-hidden="true" />
+          <span>Salas de estudio</span>
+        </div>
+        <span>
+          {rooms.length} sala{rooms.length !== 1 ? 's' : ''} activa{rooms.length !== 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <main className={srStyles.main}>
+        <section className={srStyles.hero}>
+          <div className={srStyles.heroCopy}>
+            <h1 className={srStyles.heroH1}>
+              Estudia <span className={srStyles.hlCyan}>en grupo</span>.
+            </h1>
+            <p className={srStyles.heroLead}>
+              Salas con Pomodoro sincronizado y videollamada. Únete a una o crea la tuya con tu
+              comunidad de carrera.
+            </p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className={srStyles.ctas}>
             <button
-              className="btn btn-secondary"
+              className={srStyles.btn}
               onClick={() => {
                 setSessions(loadSessions());
                 setShowHistory(true);
               }}
+              type="button"
             >
-              {Clock({ size: 14 })} Mis Sesiones
+              {Clock({ size: 14 })} Mis sesiones
             </button>
             <TierGate feature="can_create_study_room" onNavigate={onNavigate}>
-              <button className="btn btn-primary" onClick={() => setShowCreate(true)}>
-                + Crear Sala
+              <button
+                className={`${srStyles.btn} ${srStyles.primary}`}
+                onClick={() => setShowCreate(true)}
+                type="button"
+              >
+                + Crear sala
               </button>
             </TierGate>
           </div>
-        </div>
-      </div>
-      <div className="page-body">
-        {/* Running session indicator */}
+        </section>
+
         {loadTimerState() && (
-          <div
-            className="u-card"
-            style={{
-              padding: '12px 16px',
-              marginBottom: 16,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              borderLeft: '3px solid var(--accent)',
-            }}
-          >
-            <div style={{ color: 'var(--accent)' }}>{Timer({ size: 18 })}</div>
-            <div style={{ flex: 1, fontSize: 13 }}>
+          <div className={srStyles.runningBanner}>
+            <div className={srStyles.runningIcon}>{Timer({ size: 20 })}</div>
+            <div className={srStyles.runningText}>
               <strong>Sesión en curso</strong> — Tienes un temporizador activo
             </div>
           </div>
@@ -986,19 +995,13 @@ export default function StudyRooms({ onNavigate }: Props) {
             ))}
           </div>
         ) : rooms.length === 0 ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div>{BookOpen({ size: 48 })}</div>
+          <div className={srStyles.empty}>
+            <div className="icon">{BookOpen({ size: 48 })}</div>
             <h3>No hay salas activas</h3>
             <p>Crea una sala para estudiar con la comunidad</p>
           </div>
         ) : (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-              gap: 12,
-            }}
-          >
+          <div className={srStyles.roomsGrid}>
             {rooms.map((room) => (
               <div key={room.id} className="u-card hover-lift" style={{ padding: 20 }}>
                 <div
@@ -1163,7 +1166,7 @@ export default function StudyRooms({ onNavigate }: Props) {
             </div>
           </div>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
