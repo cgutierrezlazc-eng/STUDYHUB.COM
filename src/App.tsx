@@ -75,6 +75,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminPanelRoutes = React.lazy(() => import('./admin/AdminPanelRoutes'));
 const TermsOfService = React.lazy(() => import('./pages/TermsOfService'));
 const PrivacyPolicy = React.lazy(() => import('./pages/PrivacyPolicy'));
+const CookiesPolicy = React.lazy(() => import('./pages/CookiesPolicy'));
 const DeleteAccount = React.lazy(() => import('./pages/DeleteAccount'));
 const AboutPage = React.lazy(() =>
   import('./pages/InfoPages').then((m) => ({ default: m.AboutPage }))
@@ -444,6 +445,13 @@ export default function App() {
       return (
         <Suspense fallback={<PageLoader />}>
           <PrivacyPolicy onNavigate={(path) => navigate(path)} />
+        </Suspense>
+      );
+    }
+    if (location.pathname === '/cookies') {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <CookiesPolicy onNavigate={(path) => navigate(path)} />
         </Suspense>
       );
     }
@@ -862,6 +870,10 @@ export default function App() {
                 <Route
                   path="/privacy"
                   element={<PrivacyPolicy onNavigate={(path) => navigate(path)} />}
+                />
+                <Route
+                  path="/cookies"
+                  element={<CookiesPolicy onNavigate={(path) => navigate(path)} />}
                 />
                 <Route
                   path="/delete-account"

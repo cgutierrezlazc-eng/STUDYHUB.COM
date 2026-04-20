@@ -640,20 +640,27 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
 
         {/* 8. Cookies */}
         <h2 style={styles.h2}>8. Cookies y Tecnologías Similares</h2>
-        <p style={styles.p}>Conniku utiliza las siguientes tecnologías de almacenamiento local:</p>
-        <ul style={styles.ul}>
-          <li>
-            <strong>localStorage:</strong> para almacenar el token de autenticación (JWT),
-            preferencias de tema visual y estado de sesión del usuario.
-          </li>
-          <li>
-            <strong>Service Worker:</strong> para habilitar funcionalidades offline y notificaciones
-            push como parte de nuestra aplicación web progresiva (PWA).
-          </li>
-        </ul>
         <p style={styles.p}>
-          No utilizamos cookies de seguimiento de terceros ni tecnologías de rastreo publicitario.
-          No realizamos fingerprinting de dispositivos con fines comerciales.
+          Conniku utiliza cookies y tecnologías equivalentes (localStorage, sessionStorage,
+          IndexedDB y caché del Service Worker de la PWA) exclusivamente para prestar el servicio
+          contratado: mantener la sesión del Usuario, recordar sus preferencias y permitir el
+          funcionamiento offline. Conniku no utiliza cookies de terceros con fines publicitarios ni
+          realiza fingerprinting de dispositivos con fines comerciales.
+        </p>
+        <p style={styles.p}>
+          El detalle íntegro de cada clave de almacenamiento, su categoría, su finalidad, su
+          duración y la forma en que el Usuario puede gestionarlas se encuentra en la{' '}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/cookies');
+            }}
+            style={{ color: '#2D62C8' }}
+          >
+            Política de Cookies
+          </a>
+          , documento complementario y vinculante a la presente Política de Privacidad.
         </p>
 
         {/* 9. Retención */}
