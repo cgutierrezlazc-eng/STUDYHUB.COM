@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
+import spStyles from './SupportPage.module.css';
 import {
   Send,
   CheckCircle,
@@ -421,6 +422,22 @@ export default function SupportPage({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={spStyles.topProgress}>
+        <div className={spStyles.tpLeft}>
+          <span className={spStyles.pulse} aria-hidden="true" />
+          <span>Soporte</span>
+        </div>
+        <span>Respuestas rápidas, contacto directo</span>
+      </div>
+      <div className={spStyles.heroWrap}>
+        <h1 className={spStyles.heroH1}>
+          Centro de <span className={spStyles.hlCream}>soporte</span>.
+        </h1>
+        <p className={spStyles.heroLead}>
+          Encuentra respuestas en la base de conocimiento, reporta un problema, o contáctanos
+          directamente por email.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <h2>{Info()} Centro de Soporte</h2>
         <p>Encuentra respuestas, soluciona problemas y contáctanos</p>
