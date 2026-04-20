@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
+import aiStyles from './AIWorkflows.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -19,22 +20,21 @@ export default function AIWorkflows({ onNavigate }: Props) {
   const [tab, setTab] = useState<Tab>('marketing');
 
   return (
-    <div style={{ padding: '24px 20px', maxWidth: 900, margin: '0 auto' }}>
-      {/* Header */}
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 16,
-          marginBottom: 24,
-          background: 'linear-gradient(135deg, #1a2332, #2D62C8)',
-          color: '#fff',
-        }}
-      >
-        <h2 style={{ margin: '0 0 8px', fontSize: 22, fontWeight: 800 }}>
-          Workflows — Automatización Inteligente
-        </h2>
-        <p style={{ margin: 0, fontSize: 13, opacity: 0.85 }}>
-          Marketing, comunidad, QA y diseño asistidos por el equipo de Conniku.
+    <div style={{ padding: '0 20px 24px', maxWidth: 900, margin: '0 auto' }}>
+      <div className={aiStyles.topProgress}>
+        <div className={aiStyles.tpLeft}>
+          <span className={aiStyles.pulse} aria-hidden="true" />
+          <span>Workflows internos</span>
+        </div>
+        <span>Marketing · Comunidad · QA · Diseño</span>
+      </div>
+      <div className={aiStyles.heroWrap}>
+        <h1 className={aiStyles.heroH1}>
+          <span className={aiStyles.hlViolet}>Workflows</span>.
+        </h1>
+        <p className={aiStyles.heroLead}>
+          Automatización inteligente para marketing, comunidad, QA y diseño. Plantillas listas para
+          operaciones recurrentes de Conniku.
         </p>
       </div>
 
