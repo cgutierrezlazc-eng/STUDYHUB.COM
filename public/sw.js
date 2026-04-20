@@ -1,12 +1,12 @@
-// Conniku Service Worker v8.0
+// Conniku Service Worker v9.0
 // Full offline support + push notifications + background sync
-// v8: Force full cache purge — footer eliminado, onboarding fix, portada móvil
+// v9: Bump forzado por bloque piloto v3 + hotfix landing blanco — invalidar todo cache previo
 
-const SW_VERSION = 'v8';
-const CACHE_NAME = 'conniku-v8';
-const STATIC_CACHE = 'conniku-static-v8';
-const API_CACHE = 'conniku-api-v8';
-const IMAGE_CACHE = 'conniku-images-v8';
+const SW_VERSION = 'v9';
+const CACHE_NAME = 'conniku-v9';
+const STATIC_CACHE = 'conniku-static-v9';
+const API_CACHE = 'conniku-api-v9';
+const IMAGE_CACHE = 'conniku-images-v9';
 
 // App shell files to precache (with cache-busting)
 const APP_SHELL = [
