@@ -12,6 +12,7 @@ import {
   Target,
   BookOpen,
 } from '../components/Icons';
+import cuStyles from './Courses.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -2028,68 +2029,51 @@ export default function Courses({ onNavigate }: Props) {
 
   // ─── CATALOG VIEW ─────────────────────────────────────────────
   return (
-    <>
-      <div className="page-header page-enter">
-        {/* Reward banner */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #2D62C8 0%, #2D5FAA 100%)',
-            borderRadius: 12,
-            padding: '14px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-            marginBottom: 16,
-            color: '#fff',
-          }}
-        >
-          <div
-            style={{
-              width: 42,
-              height: 42,
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              fontSize: 20,
-            }}
-          >
-            {Star({ size: 20 })}
-          </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 2 }}>
-              Gana beneficios completando cursos
-            </div>
-            <div style={{ fontSize: 11, opacity: 0.85, lineHeight: 1.4 }}>
-              Completa 3 cursos y obtiene 1 mes de Pro gratis. Completa 6 cursos y obtiene 1 mes de
-              Max gratis. Los cursos completados se acumulan de forma permanente en tu perfil.
-            </div>
-          </div>
+    <div className={cuStyles.cursRoot}>
+      <div className={cuStyles.topProgress}>
+        <div className={cuStyles.tpLeft}>
+          <span className={cuStyles.pulse} aria-hidden="true" />
+          <span>Cursos Conniku</span>
         </div>
+        <span>Completa 6 cursos · 1 mes Conniku Pro gratis</span>
+      </div>
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 8,
-          }}
-        >
-          <div>
-            <h2>Cursos y Formación</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>
-              30 cursos para tu crecimiento personal, profesional y tecnológico
+      <main className={cuStyles.main}>
+        <section className={cuStyles.hero}>
+          <div className={cuStyles.heroCopy}>
+            <h1 className={cuStyles.heroH1}>
+              Cursos con <span className={cuStyles.hlViolet}>diploma</span>.
+            </h1>
+            <p className={cuStyles.heroLead}>
+              Formación certificable con hash verificable que puedes mostrar en tu CV.{' '}
+              <strong>Completa 6 cursos</strong> y obtén 1 mes de Conniku Pro gratis.
             </p>
           </div>
+          <div className={cuStyles.rewardCard}>
+            <div className={cuStyles.rewardLabel}>Recompensa</div>
+            <div className={cuStyles.rewardTitle}>Gana Conniku Pro gratis completando cursos</div>
+            <div className={cuStyles.rewardText}>
+              <strong>3 cursos</strong> → 15 días Pro. <strong>6 cursos</strong> → 30 días Pro. Los
+              cursos completados se acumulan en tu perfil de forma permanente.
+            </div>
+          </div>
+        </section>
+
+        <div className={cuStyles.tabs} role="tablist">
           <button
-            className={`tab ${tab === 'my-certs' ? 'active' : ''}`}
+            className={`${cuStyles.tabBtn} ${tab !== 'my-certs' ? cuStyles.active : ''}`}
+            onClick={() => setTab('catalog')}
+            type="button"
+          >
+            {BookOpen({ size: 14 })} Catálogo
+          </button>
+          <button
+            className={`${cuStyles.tabBtn} ${tab === 'my-certs' ? cuStyles.active : ''}`}
             onClick={() => {
-              setTab(tab === 'my-certs' ? 'catalog' : 'my-certs');
-              if (tab !== 'my-certs') loadCertificates();
+              setTab('my-certs');
+              loadCertificates();
             }}
+            type="button"
           >
             {Medal({ size: 14 })} Mis Certificados
           </button>
@@ -2152,492 +2136,498 @@ export default function Courses({ onNavigate }: Props) {
             </div>
           </>
         )}
-      </div>
 
-      <div className="page-body">
-        {tab === 'my-certs' ? (
-          certificates.length === 0 ? (
+        <div className="page-body">
+          {tab === 'my-certs' ? (
+            certificates.length === 0 ? (
+              <div className="empty-state" style={{ padding: 40 }}>
+                <div className="empty-state-icon">{Medal({ size: 48 })}</div>
+                <h3>Aún no tienes certificados</h3>
+                <p>
+                  Completa cursos para obtener certificados que se agregan a tu perfil profesional
+                </p>
+                <button
+                  className="btn btn-primary"
+                  style={{ marginTop: 12 }}
+                  onClick={() => setTab('catalog')}
+                >
+                  Ver Cursos
+                </button>
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                  gap: 16,
+                }}
+              >
+                {certificates.map((cert: any) => (
+                  <div
+                    key={cert.certificateId || cert.courseId}
+                    className="u-card hover-lift"
+                    style={{ padding: 24, textAlign: 'center' }}
+                  >
+                    <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
+                      <CourseIcon category={cert.courseCategory} size={36} />
+                    </div>
+                    <h4 style={{ margin: '0 0 6px', fontSize: 15 }}>{cert.courseTitle}</h4>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
+                      Puntuación: {cert.score ?? cert.grade ?? 0}% ·{' '}
+                      {cert.completedAt
+                        ? new Date(cert.completedAt).toLocaleDateString('es-CL')
+                        : ''}
+                    </div>
+                    {cert.certCode && (
+                      <div
+                        style={{
+                          padding: '6px 12px',
+                          background: 'rgba(5,150,105,0.06)',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          color: '#059669',
+                          marginBottom: 10,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {Medal({ size: 12 })} Certificado: {cert.certCode}
+                      </div>
+                    )}
+                    {!cert.certCode && cert.certificateId && (
+                      <div
+                        style={{
+                          padding: '6px 12px',
+                          background: 'rgba(5,150,105,0.06)',
+                          borderRadius: 8,
+                          fontSize: 12,
+                          color: '#059669',
+                          marginBottom: 10,
+                        }}
+                      >
+                        {Medal({ size: 12 })} ID: {cert.certificateId.slice(0, 8)}
+                      </div>
+                    )}
+                    <div
+                      style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}
+                    >
+                      {(cert.certId || cert.certificateId) && (
+                        <button
+                          className="btn btn-primary"
+                          style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
+                          onClick={async () => {
+                            try {
+                              const id = cert.certId || cert.certificateId;
+                              const token = localStorage.getItem('conniku_token');
+                              const base =
+                                (import.meta as any).env?.VITE_API_URL ||
+                                'https://studyhub-api-bpco.onrender.com';
+                              const res = await fetch(`${base}/certificates/download/${id}`, {
+                                headers: { Authorization: `Bearer ${token}` },
+                              });
+                              if (!res.ok) throw new Error('PDF no disponible');
+                              const blob = await res.blob();
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `Certificado_${cert.courseTitle}.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              a.remove();
+                              URL.revokeObjectURL(url);
+                            } catch (e: any) {
+                              alert(e.message || 'Error al descargar certificado');
+                            }
+                          }}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ marginRight: 4 }}
+                          >
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
+                          </svg>
+                          Descargar PDF
+                        </button>
+                      )}
+                      {cert.verifyUrl && (
+                        <button
+                          className="btn btn-secondary"
+                          style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
+                          onClick={() => window.open(cert.verifyUrl, '_blank')}
+                        >
+                          <svg
+                            width="12"
+                            height="12"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            style={{ marginRight: 4 }}
+                          >
+                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                            <polyline points="15 3 21 3 21 9" />
+                            <line x1="10" y1="14" x2="21" y2="3" />
+                          </svg>
+                          Verificar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="skeleton skeleton-card" />
+              ))}
+            </div>
+          ) : error ? (
             <div className="empty-state" style={{ padding: 40 }}>
-              <div className="empty-state-icon">{Medal({ size: 48 })}</div>
-              <h3>Aún no tienes certificados</h3>
-              <p>
-                Completa cursos para obtener certificados que se agregan a tu perfil profesional
-              </p>
+              <div className="empty-state-icon">{AlertTriangle({ size: 48 })}</div>
+              <h3>Error al cargar cursos</h3>
+              <p style={{ color: 'var(--text-muted)' }}>{error}</p>
               <button
                 className="btn btn-primary"
                 style={{ marginTop: 12 }}
-                onClick={() => setTab('catalog')}
-              >
-                Ver Cursos
-              </button>
-            </div>
-          ) : (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: 16,
-              }}
-            >
-              {certificates.map((cert: any) => (
-                <div
-                  key={cert.certificateId || cert.courseId}
-                  className="u-card hover-lift"
-                  style={{ padding: 24, textAlign: 'center' }}
-                >
-                  <div style={{ marginBottom: 10, display: 'flex', justifyContent: 'center' }}>
-                    <CourseIcon category={cert.courseCategory} size={36} />
-                  </div>
-                  <h4 style={{ margin: '0 0 6px', fontSize: 15 }}>{cert.courseTitle}</h4>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>
-                    Puntuación: {cert.score ?? cert.grade ?? 0}% ·{' '}
-                    {cert.completedAt ? new Date(cert.completedAt).toLocaleDateString('es-CL') : ''}
-                  </div>
-                  {cert.certCode && (
-                    <div
-                      style={{
-                        padding: '6px 12px',
-                        background: 'rgba(5,150,105,0.06)',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: '#059669',
-                        marginBottom: 10,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {Medal({ size: 12 })} Certificado: {cert.certCode}
-                    </div>
-                  )}
-                  {!cert.certCode && cert.certificateId && (
-                    <div
-                      style={{
-                        padding: '6px 12px',
-                        background: 'rgba(5,150,105,0.06)',
-                        borderRadius: 8,
-                        fontSize: 12,
-                        color: '#059669',
-                        marginBottom: 10,
-                      }}
-                    >
-                      {Medal({ size: 12 })} ID: {cert.certificateId.slice(0, 8)}
-                    </div>
-                  )}
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginTop: 8 }}>
-                    {(cert.certId || cert.certificateId) && (
-                      <button
-                        className="btn btn-primary"
-                        style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
-                        onClick={async () => {
-                          try {
-                            const id = cert.certId || cert.certificateId;
-                            const token = localStorage.getItem('conniku_token');
-                            const base =
-                              (import.meta as any).env?.VITE_API_URL ||
-                              'https://studyhub-api-bpco.onrender.com';
-                            const res = await fetch(`${base}/certificates/download/${id}`, {
-                              headers: { Authorization: `Bearer ${token}` },
-                            });
-                            if (!res.ok) throw new Error('PDF no disponible');
-                            const blob = await res.blob();
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `Certificado_${cert.courseTitle}.pdf`;
-                            document.body.appendChild(a);
-                            a.click();
-                            a.remove();
-                            URL.revokeObjectURL(url);
-                          } catch (e: any) {
-                            alert(e.message || 'Error al descargar certificado');
-                          }
-                        }}
-                      >
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          style={{ marginRight: 4 }}
-                        >
-                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                          <polyline points="7 10 12 15 17 10" />
-                          <line x1="12" y1="15" x2="12" y2="3" />
-                        </svg>
-                        Descargar PDF
-                      </button>
-                    )}
-                    {cert.verifyUrl && (
-                      <button
-                        className="btn btn-secondary"
-                        style={{ fontSize: 12, padding: '6px 14px', borderRadius: 8 }}
-                        onClick={() => window.open(cert.verifyUrl, '_blank')}
-                      >
-                        <svg
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          style={{ marginRight: 4 }}
-                        >
-                          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                          <polyline points="15 3 21 3 21 9" />
-                          <line x1="10" y1="14" x2="21" y2="3" />
-                        </svg>
-                        Verificar
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )
-        ) : loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton skeleton-card" />
-            ))}
-          </div>
-        ) : error ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div className="empty-state-icon">{AlertTriangle({ size: 48 })}</div>
-            <h3>Error al cargar cursos</h3>
-            <p style={{ color: 'var(--text-muted)' }}>{error}</p>
-            <button
-              className="btn btn-primary"
-              style={{ marginTop: 12 }}
-              onClick={() => {
-                setLoading(true);
-                loadCourses();
-              }}
-            >
-              Reintentar
-            </button>
-          </div>
-        ) : courses.length === 0 ? (
-          <div className="empty-state" style={{ padding: 40 }}>
-            <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
-            <h3>No hay cursos disponibles</h3>
-            <p style={{ color: 'var(--text-muted)' }}>
-              {selectedCategory
-                ? 'No se encontraron cursos en esta categoría.'
-                : 'Los cursos estarán disponibles próximamente.'}
-            </p>
-            {selectedCategory && (
-              <button
-                className="btn btn-secondary"
-                style={{ marginTop: 12 }}
                 onClick={() => {
-                  setSelectedCategory('');
-                  setTimeout(loadCourses, 50);
+                  setLoading(true);
+                  loadCourses();
                 }}
               >
-                Ver todos los cursos
+                Reintentar
               </button>
-            )}
-          </div>
-        ) : (
-          (() => {
-            // Filter by search query
-            const q = searchQuery.trim().toLowerCase();
-            const filtered = q
-              ? courses.filter(
-                  (c) =>
-                    c.title.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
-                )
-              : courses;
-
-            // Course card component (inline)
-            const CourseRow = ({ course }: { course: any }) => {
-              const cc = CATEGORY_COLORS[course.category] || '#2D62C8';
-              const progressPct =
-                course.progress?.started && course.lessonCount > 0
-                  ? Math.round((course.progress.completedLessons / course.lessonCount) * 100)
-                  : 0;
-              return (
-                <div
-                  className="u-card"
-                  style={{
-                    padding: '12px 16px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 14,
-                    transition: 'background 0.12s',
-                    borderRadius: 10,
-                  }}
-                  onClick={() => openCourse(course.id)}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLDivElement).style.background = '';
+            </div>
+          ) : courses.length === 0 ? (
+            <div className="empty-state" style={{ padding: 40 }}>
+              <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
+              <h3>No hay cursos disponibles</h3>
+              <p style={{ color: 'var(--text-muted)' }}>
+                {selectedCategory
+                  ? 'No se encontraron cursos en esta categoría.'
+                  : 'Los cursos estarán disponibles próximamente.'}
+              </p>
+              {selectedCategory && (
+                <button
+                  className="btn btn-secondary"
+                  style={{ marginTop: 12 }}
+                  onClick={() => {
+                    setSelectedCategory('');
+                    setTimeout(loadCourses, 50);
                   }}
                 >
-                  {/* Icon */}
-                  <CourseIcon category={course.category} size={22} />
+                  Ver todos los cursos
+                </button>
+              )}
+            </div>
+          ) : (
+            (() => {
+              // Filter by search query
+              const q = searchQuery.trim().toLowerCase();
+              const filtered = q
+                ? courses.filter(
+                    (c) =>
+                      c.title.toLowerCase().includes(q) || c.description?.toLowerCase().includes(q)
+                  )
+                : courses;
 
-                  {/* Main info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
-                    >
-                      <span
-                        style={{
-                          fontSize: 14,
-                          fontWeight: 600,
-                          color: 'var(--text-primary)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          maxWidth: '100%',
-                        }}
+              // Course card component (inline)
+              const CourseRow = ({ course }: { course: any }) => {
+                const cc = CATEGORY_COLORS[course.category] || '#2D62C8';
+                const progressPct =
+                  course.progress?.started && course.lessonCount > 0
+                    ? Math.round((course.progress.completedLessons / course.lessonCount) * 100)
+                    : 0;
+                return (
+                  <div
+                    className="u-card"
+                    style={{
+                      padding: '12px 16px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 14,
+                      transition: 'background 0.12s',
+                      borderRadius: 10,
+                    }}
+                    onClick={() => openCourse(course.id)}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.background = 'var(--bg-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.background = '';
+                    }}
+                  >
+                    {/* Icon */}
+                    <CourseIcon category={course.category} size={22} />
+
+                    {/* Main info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}
                       >
-                        {course.title}
-                      </span>
-                      {course.isFeatured && (
                         <span
                           style={{
-                            fontSize: 9,
-                            background: `${cc}15`,
-                            color: cc,
-                            padding: '1px 6px',
-                            borderRadius: 8,
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            letterSpacing: 0.5,
-                            flexShrink: 0,
-                          }}
-                        >
-                          ★ Destacado
-                        </span>
-                      )}
-                      {course.progress?.completed && (
-                        <span
-                          style={{
-                            fontSize: 9,
-                            background: 'rgba(5,150,105,0.1)',
-                            color: '#059669',
-                            padding: '1px 6px',
-                            borderRadius: 8,
-                            fontWeight: 700,
-                            flexShrink: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 3,
-                          }}
-                        >
-                          {Medal({ size: 9 })} Completado
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginTop: 2,
-                        flexWrap: 'wrap',
-                      }}
-                    >
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                        {course.lessonCount} lecciones · ~{course.estimatedMinutes} min
-                      </span>
-                      {course.difficulty === 'intermediate' && (
-                        <span
-                          style={{
-                            fontSize: 10,
-                            background: `${cc}12`,
-                            color: cc,
-                            padding: '0 6px',
-                            borderRadius: 6,
+                            fontSize: 14,
                             fontWeight: 600,
-                          }}
-                        >
-                          Intermedio
-                        </span>
-                      )}
-                    </div>
-                    {/* Inline progress bar */}
-                    {course.progress?.started && !course.progress?.completed && (
-                      <div style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <div
-                          style={{
-                            flex: 1,
-                            height: 3,
-                            borderRadius: 2,
-                            background: 'var(--border)',
+                            color: 'var(--text-primary)',
+                            whiteSpace: 'nowrap',
                             overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            maxWidth: '100%',
                           }}
                         >
-                          <div
-                            style={{
-                              width: `${progressPct}%`,
-                              height: '100%',
-                              borderRadius: 2,
-                              background: cc,
-                            }}
-                          />
-                        </div>
-                        <span style={{ fontSize: 10, color: cc, fontWeight: 700, flexShrink: 0 }}>
-                          {progressPct}%
+                          {course.title}
                         </span>
+                        {course.isFeatured && (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              background: `${cc}15`,
+                              color: cc,
+                              padding: '1px 6px',
+                              borderRadius: 8,
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: 0.5,
+                              flexShrink: 0,
+                            }}
+                          >
+                            ★ Destacado
+                          </span>
+                        )}
+                        {course.progress?.completed && (
+                          <span
+                            style={{
+                              fontSize: 9,
+                              background: 'rgba(5,150,105,0.1)',
+                              color: '#059669',
+                              padding: '1px 6px',
+                              borderRadius: 8,
+                              fontWeight: 700,
+                              flexShrink: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 3,
+                            }}
+                          >
+                            {Medal({ size: 9 })} Completado
+                          </span>
+                        )}
                       </div>
-                    )}
-                  </div>
-
-                  {/* Chevron */}
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="var(--text-muted)"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ flexShrink: 0 }}
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              );
-            };
-
-            if (filtered.length === 0) {
-              return (
-                <div className="empty-state" style={{ padding: 40 }}>
-                  <div className="empty-state-icon">{BookOpen({ size: 40 })}</div>
-                  <h3>Sin resultados para "{searchQuery}"</h3>
-                  <button
-                    className="btn btn-secondary"
-                    style={{ marginTop: 12 }}
-                    onClick={() => setSearchQuery('')}
-                  >
-                    Limpiar búsqueda
-                  </button>
-                </div>
-              );
-            }
-
-            // When a specific category is selected → flat list
-            if (selectedCategory) {
-              return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {filtered.map((c) => (
-                    <CourseRow key={c.id} course={c} />
-                  ))}
-                </div>
-              );
-            }
-
-            // "Todos" → group by category, each with its own list
-            const grouped: Record<string, any[]> = {};
-            for (const c of filtered) {
-              const cat = c.category || 'other';
-              if (!grouped[cat]) grouped[cat] = [];
-              grouped[cat].push(c);
-            }
-
-            // Featured strip first
-            const featured = filtered.filter((c) => c.isFeatured);
-            return (
-              <>
-                {featured.length > 0 && !q && (
-                  <div style={{ marginBottom: 24 }}>
-                    <h3
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 700,
-                        marginBottom: 8,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        color: 'var(--text-primary)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em',
-                      }}
-                    >
-                      {Star({ size: 14 })} Cursos Destacados
-                    </h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {featured.map((c) => (
-                        <CourseRow key={c.id} course={c} />
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {Object.entries(grouped).map(([cat, list]) => {
-                  const label = categories[cat] || cat;
-                  const cc = CATEGORY_COLORS[cat] || '#64748B';
-                  return (
-                    <div key={cat} style={{ marginBottom: 24 }}>
                       <div
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'space-between',
-                          marginBottom: 8,
+                          gap: 8,
+                          marginTop: 2,
+                          flexWrap: 'wrap',
                         }}
                       >
-                        <h3
-                          style={{
-                            fontSize: 13,
-                            fontWeight: 700,
-                            margin: 0,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            color: 'var(--text-primary)',
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
-                          }}
-                        >
-                          <CategoryIcon category={cat} size={14} color={cc} />
-                          {label}
+                        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          {course.lessonCount} lecciones · ~{course.estimatedMinutes} min
+                        </span>
+                        {course.difficulty === 'intermediate' && (
                           <span
                             style={{
-                              fontSize: 11,
-                              fontWeight: 400,
-                              color: 'var(--text-muted)',
-                              textTransform: 'none',
-                              letterSpacing: 0,
+                              fontSize: 10,
+                              background: `${cc}12`,
+                              color: cc,
+                              padding: '0 6px',
+                              borderRadius: 6,
+                              fontWeight: 600,
                             }}
                           >
-                            {list.length} cursos
+                            Intermedio
                           </span>
-                        </h3>
-                        <button
-                          className="btn btn-secondary btn-xs"
-                          onClick={() => {
-                            setSelectedCategory(cat);
-                            setTimeout(loadCourses, 50);
-                          }}
-                        >
-                          Ver todos →
-                        </button>
+                        )}
                       </div>
+                      {/* Inline progress bar */}
+                      {course.progress?.started && !course.progress?.completed && (
+                        <div
+                          style={{ marginTop: 5, display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <div
+                            style={{
+                              flex: 1,
+                              height: 3,
+                              borderRadius: 2,
+                              background: 'var(--border)',
+                              overflow: 'hidden',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: `${progressPct}%`,
+                                height: '100%',
+                                borderRadius: 2,
+                                background: cc,
+                              }}
+                            />
+                          </div>
+                          <span style={{ fontSize: 10, color: cc, fontWeight: 700, flexShrink: 0 }}>
+                            {progressPct}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Chevron */}
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--text-muted)"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ flexShrink: 0 }}
+                    >
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
+                );
+              };
+
+              if (filtered.length === 0) {
+                return (
+                  <div className="empty-state" style={{ padding: 40 }}>
+                    <div className="empty-state-icon">{BookOpen({ size: 40 })}</div>
+                    <h3>Sin resultados para "{searchQuery}"</h3>
+                    <button
+                      className="btn btn-secondary"
+                      style={{ marginTop: 12 }}
+                      onClick={() => setSearchQuery('')}
+                    >
+                      Limpiar búsqueda
+                    </button>
+                  </div>
+                );
+              }
+
+              // When a specific category is selected → flat list
+              if (selectedCategory) {
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {filtered.map((c) => (
+                      <CourseRow key={c.id} course={c} />
+                    ))}
+                  </div>
+                );
+              }
+
+              // "Todos" → group by category, each with its own list
+              const grouped: Record<string, any[]> = {};
+              for (const c of filtered) {
+                const cat = c.category || 'other';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(c);
+              }
+
+              // Featured strip first
+              const featured = filtered.filter((c) => c.isFeatured);
+              return (
+                <>
+                  {featured.length > 0 && !q && (
+                    <div style={{ marginBottom: 24 }}>
+                      <h3
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          marginBottom: 8,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          color: 'var(--text-primary)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {Star({ size: 14 })} Cursos Destacados
+                      </h3>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                        {list.map((c) => (
+                        {featured.map((c) => (
                           <CourseRow key={c.id} course={c} />
                         ))}
                       </div>
                     </div>
-                  );
-                })}
-              </>
-            );
-          })()
-        )}
-      </div>
-    </>
+                  )}
+
+                  {Object.entries(grouped).map(([cat, list]) => {
+                    const label = categories[cat] || cat;
+                    const cc = CATEGORY_COLORS[cat] || '#64748B';
+                    return (
+                      <div key={cat} style={{ marginBottom: 24 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 8,
+                          }}
+                        >
+                          <h3
+                            style={{
+                              fontSize: 13,
+                              fontWeight: 700,
+                              margin: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 8,
+                              color: 'var(--text-primary)',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                            }}
+                          >
+                            <CategoryIcon category={cat} size={14} color={cc} />
+                            {label}
+                            <span
+                              style={{
+                                fontSize: 11,
+                                fontWeight: 400,
+                                color: 'var(--text-muted)',
+                                textTransform: 'none',
+                                letterSpacing: 0,
+                              }}
+                            >
+                              {list.length} cursos
+                            </span>
+                          </h3>
+                          <button
+                            className="btn btn-secondary btn-xs"
+                            onClick={() => {
+                              setSelectedCategory(cat);
+                              setTimeout(loadCourses, 50);
+                            }}
+                          >
+                            Ver todos →
+                          </button>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                          {list.map((c) => (
+                            <CourseRow key={c.id} course={c} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </>
+              );
+            })()
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

@@ -1,0 +1,261 @@
+/* Courses.module.css - Rediseño editorial v3 (shell) */
+
+.cursRoot {
+  --cu-ink: #0d0f10;
+  --cu-ink-2: #2b2e30;
+  --cu-ink-3: #696c6f;
+  --cu-paper: #f5f4ef;
+  --cu-paper-2: #ebe9e1;
+  --cu-card: #ffffff;
+  --cu-lime: #d9ff3a;
+  --cu-lime-ink: #181f08;
+  --cu-pink: #ff4d3a;
+  --cu-cream: #ffe9b8;
+  --cu-violet: #6b4eff;
+  --cu-cyan: #00c2ff;
+  --cu-orange: #ff4a1c;
+  --cu-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  background: var(--cu-paper);
+  color: var(--cu-ink);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  min-height: 100%;
+  margin: 0 -20px;
+  overflow-x: hidden;
+}
+
+.cursRoot ::selection {
+  background: var(--cu-lime);
+  color: var(--cu-lime-ink);
+}
+
+.topProgress {
+  background: var(--cu-ink);
+  color: #fff;
+  padding: 8px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tpLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--cu-lime);
+  animation: cuPulse 1.6s var(--cu-ease) infinite;
+}
+
+@keyframes cuPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(217, 255, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0);
+  }
+}
+
+.main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 40px 28px 120px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 32px;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, var(--cu-violet) 0%, transparent 70%);
+  opacity: 0.22;
+  filter: blur(90px);
+  z-index: 0;
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.heroH1 {
+  font-weight: 800;
+  font-size: clamp(48px, 7.5vw, 98px);
+  line-height: 0.9;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+
+.hlViolet {
+  background: var(--cu-violet);
+  color: #fff;
+  padding: 0 14px;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(-0.8deg);
+}
+
+.heroLead {
+  margin-top: 18px;
+  font-size: 17px;
+  color: var(--cu-ink-2);
+  max-width: 480px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+.heroLead strong {
+  background: var(--cu-lime);
+  color: var(--cu-lime-ink);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* Reward card */
+.rewardCard {
+  background: var(--cu-ink);
+  color: #fff;
+  border-radius: 28px;
+  padding: 28px;
+  transform: rotate(1deg);
+  box-shadow: 8px 8px 0 var(--cu-lime);
+  position: relative;
+  z-index: 1;
+}
+
+.rewardLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--cu-lime);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.rewardTitle {
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.rewardText {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.45;
+}
+
+.rewardText strong {
+  color: var(--cu-lime);
+  font-weight: 700;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  background: var(--cu-card);
+  border: 2px solid var(--cu-ink);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--cu-ink);
+  cursor: pointer;
+  transition: all 180ms var(--cu-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tabBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 var(--cu-ink);
+}
+
+.tabBtn.active {
+  background: var(--cu-ink);
+  color: var(--cu-lime);
+}
+
+/* Search bar editorial */
+.searchBar {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.searchInput {
+  width: 100%;
+  background: var(--cu-card);
+  border: 2px solid var(--cu-ink);
+  border-radius: 999px;
+  padding: 12px 20px 12px 48px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-size: 15px;
+  color: var(--cu-ink);
+  outline: none;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--cu-ink-3);
+  pointer-events: none;
+}
+
+/* Content wrapper */
+.content {
+  background: var(--cu-paper);
+}
+
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .heroH1 {
+    font-size: clamp(40px, 9vw, 72px);
+  }
+}
