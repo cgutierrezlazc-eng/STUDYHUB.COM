@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import srcStyles from './Search.module.css';
 import {
   FolderOpen,
   Search as SearchIcon,
@@ -114,6 +115,22 @@ export default function Search({ onNavigate, initialQuery }: Props) {
 
   return (
     <>
+      <div className={srcStyles.topProgress}>
+        <div className={srcStyles.tpLeft}>
+          <span className={srcStyles.pulse} aria-hidden="true" />
+          <span>Búsqueda global</span>
+        </div>
+        <span>{t('search.subtitle')}</span>
+      </div>
+      <div className={srcStyles.heroWrap}>
+        <h1 className={srcStyles.heroH1}>
+          <span className={srcStyles.hlLime}>Busca</span> todo.
+        </h1>
+        <p className={srcStyles.heroLead}>
+          Asignaturas, documentos, usuarios, eventos, apuntes compartidos — todo en una sola
+          búsqueda.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
