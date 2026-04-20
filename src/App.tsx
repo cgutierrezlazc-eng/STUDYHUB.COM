@@ -563,7 +563,7 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <SEOHead {...authSEO} />
-        {authView === 'landing' && <UnderConstruction />}
+        {authView === 'landing' && <UnderConstruction onStaffLogin={() => setAuthView('login')} />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && (
           <Login
