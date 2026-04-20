@@ -382,7 +382,7 @@ export default function TermsOfService({ onClose }: Props) {
           </h4>
           <p>
             9.4.1. Los Usuarios residentes en Chile que hayan contratado una suscripción a distancia
-            (internet) tienen derecho a retractarse dentro de los 10 días hábiles siguientes al
+            (internet) tienen derecho a retractarse dentro de los 10 días corridos siguientes al
             pago, conforme al artículo 3 bis letra b) de la Ley N° 19.496 sobre Protección de los
             Derechos de los Consumidores. El reembolso se procesará en el método de pago original.
           </p>
