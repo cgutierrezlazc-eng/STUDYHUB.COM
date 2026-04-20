@@ -5,10 +5,17 @@ import React, { useEffect, useState } from 'react';
  * Landing pública temporal mientras se completa el rollout editorial v3.
  * Se muestra en conniku.com hasta que la nueva landing esté 100% lista.
  *
- * Mantiene acceso oculto a /login y /registro para cuentas internas (CEO,
- * admin, testing) escribiendo esas rutas directo en el navegador.
+ * Incluye acceso discreto para perfil CEO (botón "Acceso interno" al pie)
+ * que permite revisar el producto en curso mientras el público ve esta
+ * pantalla. Tambien se mantiene acceso escribiendo /login o /registro
+ * directo en la URL.
  */
-export default function UnderConstruction() {
+interface UnderConstructionProps {
+  /** Callback para activar la vista de login (uso interno CEO/admin). */
+  onStaffLogin?: () => void;
+}
+
+export default function UnderConstruction({ onStaffLogin }: UnderConstructionProps = {}) {
   const [dots, setDots] = useState('');
 
   useEffect(() => {
@@ -273,7 +280,7 @@ export default function UnderConstruction() {
           </a>
         </div>
 
-        {/* Footer con wordmark pequeño */}
+        {/* Footer con wordmark pequeño + acceso interno discreto */}
         <div
           style={{
             position: 'absolute',
@@ -287,9 +294,47 @@ export default function UnderConstruction() {
             textTransform: 'uppercase',
             color: '#696c6f',
             fontWeight: 600,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          Conniku SpA · Hecho en Chile · +18
+          <span>Conniku SpA · Hecho en Chile · +18</span>
+          {onStaffLogin && (
+            <button
+              type="button"
+              onClick={onStaffLogin}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(13,15,16,0.15)',
+                borderRadius: 999,
+                padding: '4px 14px',
+                fontFamily: "'Geist Mono', ui-monospace, monospace",
+                fontSize: 9,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase',
+                color: '#696c6f',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 160ms ease',
+                opacity: 0.6,
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.opacity = '1';
+                e.currentTarget.style.borderColor = 'rgba(13,15,16,0.4)';
+                e.currentTarget.style.color = '#0d0f10';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = '0.6';
+                e.currentTarget.style.borderColor = 'rgba(13,15,16,0.15)';
+                e.currentTarget.style.color = '#696c6f';
+              }}
+              aria-label="Acceso interno para equipo Conniku"
+            >
+              Acceso interno
+            </button>
+          )}
         </div>
       </div>
     </div>

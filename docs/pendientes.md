@@ -175,6 +175,12 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - **Problema**: texto del checkbox declarativo hardcoded en español chileno
 - **Acción**: cuando se expanda a otros países, agregar traducciones validadas por abogado local
 
+### M8. Biblioteca no se puede testear con vitest
+- **Origen**: saneamiento-post-rollout-v3 fase 5 (2026-04-20)
+- **Problema**: `src/pages/Biblioteca.tsx` carga `src/components/PDFReader.tsx` que hace `new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url)` top-level. Vitest+jsdom no resuelve esa URL y el import falla.
+- **Fix sugerido**: lazy-import `PDFReader` con `React.lazy()` o mover el `workerSrc` dentro de un `useEffect` para que no se ejecute al importar el módulo.
+- **Impacto**: Biblioteca queda fuera del smoke test de pages-migradas-v3. No afecta producción (browsers sí resuelven la URL).
+
 ---
 
 ## 🔵 BAJO — mejora incremental
