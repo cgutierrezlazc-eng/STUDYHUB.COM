@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from '../services/auth';
 import { useI18n } from '../services/i18n';
 import { api } from '../services/api';
+import cvwStyles from './CommunityView.module.css';
 import {
   Users,
   Star,
@@ -361,6 +362,13 @@ export default function CommunityView({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={cvwStyles.topProgress}>
+        <div className={cvwStyles.tpLeft}>
+          <span className={cvwStyles.pulse} aria-hidden="true" />
+          <span>Comunidad</span>
+        </div>
+        <span>{community?.name || 'Cargando…'}</span>
+      </div>
       {/* Cover banner */}
       <div
         style={{
