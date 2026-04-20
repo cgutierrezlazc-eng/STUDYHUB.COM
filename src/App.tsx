@@ -21,11 +21,15 @@ import AppAvailableBanner from './components/AppAvailableBanner';
 import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
 
-import Landing from './pages/Landing';
+// Landing legacy — respaldo en disco, NO se renderiza. No borrar.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import LandingLegacy from './pages/Landing';
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
 
 // ─── Lazy-loaded pages (code-split) ──────────────────────────────
+// Módulo 02 Landing nuevo — tab-based SPA dark theme
+const LandingNew = lazy(() => import('./pages/Landing/Landing'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const ProjectView = lazy(() => import('./pages/ProjectView'));
 const Suggestions = lazy(() => import('./pages/Suggestions'));
