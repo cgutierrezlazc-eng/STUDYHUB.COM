@@ -100,7 +100,7 @@ export default function HeroSection({ onRegister, onGoToProducto }: HeroSectionP
               y="71"
               textAnchor="middle"
               fontFamily="Funnel Display, -apple-system, sans-serif"
-              fontWeight="900"
+              fontWeight="800"
               fontSize="84"
               fill="#0D0F10"
               letterSpacing="-4"

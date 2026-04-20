@@ -50,7 +50,7 @@ const businessModules = [
           y="31"
           textAnchor="middle"
           fontFamily="Funnel Display,sans-serif"
-          fontWeight="900"
+          fontWeight="800"
           fontSize="13"
           fill="#FFE9B8"
         >
@@ -167,7 +167,7 @@ const businessModules = [
             y="26"
             textAnchor="middle"
             fontFamily="Funnel Display,sans-serif"
-            fontWeight="900"
+            fontWeight="800"
             fontSize="7"
             fill="#D9FF3A"
           >
@@ -261,7 +261,7 @@ const businessModules = [
           y="33"
           textAnchor="middle"
           fontFamily="Funnel Display,sans-serif"
-          fontWeight="900"
+          fontWeight="800"
           fontSize="7"
           fill="#D9FF3A"
         >
