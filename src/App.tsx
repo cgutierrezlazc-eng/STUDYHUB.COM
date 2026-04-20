@@ -433,33 +433,48 @@ export default function App() {
       );
     }
 
-    // Legal pages accessible without authentication
+    // Legal pages accessible without authentication.
+    // Wrapper con scroll propio porque body tiene overflow:hidden globalmente.
+    const legalScrollWrapper: React.CSSProperties = {
+      height: '100vh',
+      width: '100%',
+      overflowY: 'auto',
+      background: 'var(--bg-primary)',
+    };
     if (location.pathname === '/terms') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <TermsOfService onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <TermsOfService onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/privacy') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <PrivacyPolicy onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <PrivacyPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/cookies') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <CookiesPolicy onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <CookiesPolicy onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname === '/delete-account') {
       return (
-        <Suspense fallback={<PageLoader />}>
-          <DeleteAccount onNavigate={(path) => navigate(path)} />
-        </Suspense>
+        <div style={legalScrollWrapper}>
+          <Suspense fallback={<PageLoader />}>
+            <DeleteAccount onNavigate={(path) => navigate(path)} />
+          </Suspense>
+        </div>
       );
     }
     if (location.pathname.startsWith('/cert/')) {
