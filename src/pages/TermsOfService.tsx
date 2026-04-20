@@ -165,6 +165,27 @@ export default function TermsOfService({ onNavigate }: Props) {
           Conniku se reserva el derecho de modificar los precios de los planes, notificando a los
           usuarios con al menos 30 días de anticipación.
         </p>
+        <h3 style={styles.h3}>4.1. Derecho de retracto (Chile)</h3>
+        <p style={styles.p}>
+          Los usuarios residentes en Chile que contraten una suscripción a distancia por este sitio
+          tienen derecho a retractarse sin expresión de causa dentro de los{' '}
+          <strong>10 días corridos</strong> siguientes al pago, conforme al artículo 3 bis letra b)
+          de la Ley N° 19.496 sobre Protección de los Derechos de los Consumidores. Para ejercer
+          este derecho, el usuario puede utilizar la opción &quot;Solicitar reembolso&quot; dentro
+          de su panel de Suscripción o escribir a{' '}
+          <a href="mailto:contacto@conniku.com" style={{ color: 'var(--accent)' }}>
+            contacto@conniku.com
+          </a>
+          . El reembolso se procesará al mismo medio de pago original dentro de un plazo máximo de
+          30 días corridos. Este derecho no será aplicable cuando el servicio se haya prestado en su
+          integridad antes del vencimiento del plazo de retracto con consentimiento expreso del
+          consumidor.
+        </p>
+        <p style={styles.p}>
+          Para usuarios residentes en la Unión Europea, Reino Unido y territorios con normativas
+          equivalentes, el derecho de desistimiento aplicable se rige por la Directiva 2011/83/UE y
+          sus leyes nacionales de transposición (14 días).
+        </p>
 
         {/* 5. Propiedad intelectual */}
         <h2 style={styles.h2}>5. Propiedad Intelectual</h2>

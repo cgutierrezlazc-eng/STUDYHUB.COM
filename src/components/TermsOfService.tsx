@@ -879,13 +879,23 @@ export default function TermsOfService({ onClose }: Props) {
 
           <h3>Artículo 22. Cookies y Tecnologías de Rastreo</h3>
           <p>
-            22.1. Conniku utiliza cookies esenciales y tecnologías similares para: (a) mantener la
-            sesión del Usuario; (b) recordar preferencias de idioma y tema; (c) analizar el uso de
-            la Plataforma con fines de mejora del servicio; (d) prevenir fraude y abuso.
+            22.1. El uso de cookies y tecnologías de rastreo en Conniku se rige por la{' '}
+            <a href="/cookies" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+              Política de Cookies
+            </a>
+            , que es un documento separado y vinculante. Dicho documento describe en detalle qué
+            cookies se instalan en el dispositivo del Usuario, con qué finalidad, qué terceros
+            intervienen, y cómo el Usuario puede gestionar o revocar su consentimiento en cualquier
+            momento.
           </p>
           <p>
-            22.2. Conniku no utiliza cookies de terceros con fines publicitarios ni comparte datos
-            de navegación con redes publicitarias.
+            22.2. El Usuario reconoce haber leído la Política de Cookies al aceptar los presentes
+            Términos y Condiciones. La política vigente es la publicada en{' '}
+            <a href="/cookies" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+              conniku.com/cookies
+            </a>{' '}
+            a la fecha de aceptación, y sus futuras actualizaciones serán notificadas conforme al
+            mecanismo de re-aceptación descrito en la Política de Privacidad.
           </p>
 
           {/* ===== TÍTULO VIII: CONDUCTA ===== */}
