@@ -3,97 +3,117 @@
 ## Estado al cierre
 
 Rama: `module-02-landing` pusheada al remoto.
-Preview Vercel se actualiza automáticamente al abrir PR:
-`https://github.com/cgutierrezlazc-eng/STUDYHUB.COM/pull/new/module-02-landing`
+
+URL PR: `https://github.com/cgutierrezlazc-eng/STUDYHUB.COM/pull/new/module-02-landing`
 
 ## Páginas rediseñadas y subidas a la web
 
-| # | Página | Commit | Mockup fuente |
-|---|---|---|---|
-| 1 | **Landing** completa | `40cb03b`, `ea5f912`, `b071862` | FINAL HTML/01-landing |
-| 2 | **Biblioteca** (shell + covers) | `fc588fc` | Referencia/02-biblioteca-editorial |
-| 3 | **Quizzes** (hero + stats + decks) | `d2fb212` | Referencia/22-quizzes-flashcards |
-| 4 | **Calendar** (completo + modal) | `bae9e94` | Referencia/23-calendar |
-| 5 | **Gamification** (hero + level card) | `c500f42` | Referencia/18-gamification |
-| 6 | **StudyRooms** (shell + hero) | `edd0486` | Referencia/21-study-rooms |
-| 7 | **Courses** (shell + reward card) | `27c130e` | Referencia/12-cursos-diploma |
+| # | Página | Commit | Alcance | Mockup |
+|---|---|---|---|---|
+| 1 | **Landing** completa | `40cb03b`, `ea5f912`, `b071862` | Enlaces + fonts + peso 800 | FINAL HTML/01-landing |
+| 2 | **Biblioteca** | `fc588fc` | Shell + covers coloreados + BookCard/Row editorial | Referencia/02-biblioteca |
+| 3 | **Quizzes** | `d2fb212` | Hero + stats card rotada + tabs pill + stats tab | Referencia/22-quizzes |
+| 4 | **Calendar** | `bae9e94` | Shell completo + modal editorial + grid días | Referencia/23-calendar |
+| 5 | **Gamification** | `c500f42` | Hero + level card rotada con datos reales | Referencia/18-gamification |
+| 6 | **StudyRooms** | `edd0486` | Shell + hero + empty state editorial | Referencia/21-study-rooms |
+| 7 | **Courses** | `27c130e` | Shell + reward card + tabs | Referencia/12-cursos |
+| 8 | **CVProfile** | `934f709` | **Rediseño completo 3 col** (sidebar + cv-paper + aside) | Referencia/16-cv-editor |
+| 9 | **TutorDirectory** | `d648b2a` | Shell + info card pago intermediado | Referencia/13-tutores |
+| 10 | **Events** | `beb9eda` | Shell + hero pink + tabs pill | (adaptado, sin mockup dedicado) |
+| 11 | **Suggestions** | `5cc5daf` | Shell + hero cyan | (adaptado) |
 
-Infra fixes:
-- `aa79e57` — favicon.svg oficial + doc spec
-- `93495bc` — deshabilitar SW en dev (arregla "no se pudo conectar")
+Infra:
+| Commit | Descripción |
+|---|---|
+| `aa79e57` | favicon.svg oficial + doc LOGO-SPEC |
+| `93495bc` | Deshabilitar SW en dev (arregla "no se pudo conectar") |
+| `bb310f1`, `db11d16`, (actual) | Snapshots de progreso |
 
-## Patrón aplicado en cada página
+## Patrón aplicado
 
-Mismo patrón editorial v3 en todas:
-- CSS module propio (`PageName.module.css`)
-- Root wrapper con tokens paper/ink/lime/pink/cream/violet/cyan/orange
-- Top progress bar ink con pulso lime
-- Main container con padding editorial
-- Hero con h1 gigante + chip coloreado rotado
-- Card rotada con shadow duro hacia lime (`box-shadow: 8px 8px 0`)
-- Tabs pill Funnel Display 800
-- Cards con border 2px ink + rotaciones nth-child
-- Mobile breakpoint 1080px + 640px
+- **CSS module propio** por página (`PageName.module.css`)
+- **Root wrapper** editorial: `background: paper`, font `Funnel Display`, `margin: 0 -20px`
+- **Top progress bar** ink con pulso lime y subtítulo dinámico
+- **Hero editorial** con h1 gigante + chip coloreado rotado
+- **Card rotada** con shadow duro hacia lime (`box-shadow: 8px 8px 0`)
+- **Tabs pill** Funnel Display 800
+- **Mobile breakpoints** 1080px y 640px
 
-Toda la lógica (estados, handlers, useEffects, API calls) preservada intacta.
+Toda la lógica preservada (estados, handlers, useEffects, API calls).
 
-## Decisiones aplicadas vs mockup
+## Decisiones consistentes vs mockup
 
-- Wordmark oficial del Sidebar/TopBar global, no el del mockup (cada mockup trae su propio nav con logo mask-inversa)
-- No datos inventados (stats, contadores fijos, testimonios falsos)
-- No features no implementadas (chat con libros, flashcard arena interactiva)
-- Respetar memoria `project_tier_max_cleanup.md`: eliminar refs legacy "Max" en Courses
+- Wordmark oficial desde Sidebar/TopBar global, no el del mockup (mask invertida)
+- Sin datos inventados (stats, contadores, testimonios)
+- Sin features no implementadas (chat con libros, flashcard arena interactiva)
+- Refs legacy "Max" eliminadas en Courses (memoria tier cleanup)
 
-## Pendientes del rollout
+## Pendientes (no migrados en esta sesión)
 
-| Página | Líneas | Razón no migrada | Sugerencia |
-|---|---|---|---|
-| **Workspaces** | — | Tú lo trabajarás mañana | reservado para ti |
-| **ClassRoom** | 1278 | Mockup con nota tuya "no me gusta, actualizar" | esperar mockup nuevo |
-| **CVProfile** | 2742 | Formularios anidados complejos | sesión dedicada contigo |
-| **Courses iter 2** | — | Shell hecho; cards de cursos internas quedan con estilo viejo | iteración 2 |
-| **TutorDirectory** | 3395 | Enorme | sesión dedicada |
-| **MiUniversidad** | 5039 | Enorme | sesión dedicada con el web-architect |
-| **Profile** | 4031 | Enorme | sesión dedicada |
-| **Biblioteca modals** | ~600 | Detalle/clone/PDF reader con estilo viejo | iteración 2 |
-| **Gamification internals** | — | renderProgress/renderBadges/renderLeague/renderChallenges con estilo viejo | iteración 2 |
-| **StudyRooms cards internas** | — | Room cards individuales con estilo viejo | iteración 2 |
+### Bloqueados por complejidad JSX
 
-## Mockups accesibles para revisión
+| Página | Líneas | Razón |
+|---|---|---|
+| **MiUniversidad** | 5039 | Tiene múltiples `return` internos (render functions) que rompieron al envolver con `<main>`. Intento de envolver revertido. Requiere refactor a subcomponentes antes del rediseño. |
+| **Profile** | 4031 | Mismo patrón: múltiples returns internos. Riesgo alto sin refactor previo. |
+| **Jobs** | 3743 | Flujo complejo de ofertas laborales. Requiere sesión dedicada. |
+| **ClassRoom** | 1278 | Mockup con nota tuya "no me gusta, actualizar". Esperar nuevo mockup. |
 
-Con dev server corriendo (`http://localhost:5173/`):
-- `/design-previews/biblioteca.html`
-- `/design-previews/quizzes.html`
-- `/design-previews/calendar.html`
-- `/design-previews/gamification.html`
-- `/design-previews/study-rooms.html`
-- `/design-previews/courses.html`
-- `/design-previews/cv-editor.html`
+### Reservados
+
+| Página | Razón |
+|---|---|
+| **Workspaces** | Me indicaste que la trabajas tú mañana |
+
+### Iteraciones 2 (mejoras visuales de partes internas)
+
+- Biblioteca: modal detalle, modal clone-to-workspace, PDF reader overlay (~600 líneas, funcionales, estilo viejo)
+- Gamification: renderProgress, renderBadges, renderLeague, renderChallenges internos
+- StudyRooms: cards individuales de rooms
+- Courses: grid de cursos, enrollment flow internals
+
+### Assets binarios
+
+- `/public/favicon.ico`, `/public/icon-*.png`, `/public/apple-touch-icon.png` siguen con logo antiguo (degradado azul)
+- Causa: `scripts/generate-app-icons.js` y `scripts/generate-icons.js` usan SVG antiguo
+- Acción pendiente: reescribir scripts + instalar sharp + regenerar + commit
 
 ## Cómo revisar lo construido
 
-1. Login en `http://localhost:5173/` (ya no bloquea el SW en dev)
-2. Sidebar → cada sección migrada:
+1. Login en `http://localhost:5173/` (SW deshabilitado en dev → ya no bloquea)
+2. Navega en el sidebar a cada sección migrada:
    - Biblioteca ✓
    - Quizzes ✓
    - Calendar ✓
    - Gamification ✓
    - Salas de estudio ✓
    - Cursos ✓
+   - Mi CV ✓ (con layout 3 col completo)
+   - Tutores ✓
+   - Eventos ✓
+   - Sugerencias ✓
+
+Si algún módulo aparece con el diseño viejo, hard-reload Cmd+Shift+R.
+
+## Mockups de referencia en repo
+
+Accesibles en `localhost:5173/design-previews/`:
+- biblioteca.html, quizzes.html, calendar.html, gamification.html
+- study-rooms.html, courses.html, cv-editor.html, tutores.html
 
 ## Violaciones del LOGO.SPEC vigentes
 
-Idénticas al snapshot anterior (doc/brand/LOGO-SPEC.md):
+Documentadas en `docs/brand/LOGO-SPEC.md`:
 1. Peso Funnel Display 800 (Google Fonts no sirve 900)
-2. App icon redibujado inline (pendiente componente BrandWordmark)
+2. App icon redibujado inline en HeroSection
 3. Wordmark nav usa `<a>` en vez de `<span class="brand">`
-4. Paths assets en `assets/branding/svg/` vs spec `assets/branding/`
+4. Paths `assets/branding/svg/` vs spec `assets/branding/`
 5. Componente `BrandWordmark` compartido aún no existe
-6. PNG favicon/app icons con logo antiguo (scripts `generate-*.js` con SVG viejo)
+6. PNG favicon/app icons con logo antiguo
 
 ## Pre-flight local al cierre
 
-Todos los módulos rediseñados pasan:
+Todas las páginas rediseñadas pasan:
 - `npx tsc --noEmit` ✓
 - `npx vite build` ✓
 - `npx prettier --write` ✓
