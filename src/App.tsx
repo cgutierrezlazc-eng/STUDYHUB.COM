@@ -21,9 +21,6 @@ import AppAvailableBanner from './components/AppAvailableBanner';
 import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
 
-// Landing legacy — respaldo en disco, NO se renderiza. No borrar.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import LandingLegacy from './pages/Landing';
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
 
@@ -566,7 +563,7 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <SEOHead {...authSEO} />
-        {authView === 'landing' && <UnderConstruction />}
+        {authView === 'landing' && <UnderConstruction onStaffLogin={() => setAuthView('login')} />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && (
           <Login
