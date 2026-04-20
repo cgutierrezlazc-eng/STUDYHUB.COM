@@ -9,6 +9,32 @@ export default defineConfig({
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router', 'react-router-dom'],
+          'vendor-capacitor': [
+            '@capacitor/app',
+            '@capacitor/browser',
+            '@capacitor/camera',
+            '@capacitor/core',
+            '@capacitor/haptics',
+            '@capacitor/keyboard',
+            '@capacitor/share',
+            '@capacitor/splash-screen',
+            '@capacitor/status-bar',
+          ],
+          'vendor-tiptap': [
+            '@tiptap/react',
+            '@tiptap/starter-kit',
+            '@tiptap/extension-collaboration',
+            '@tiptap/extension-collaboration-cursor',
+          ],
+          'vendor-yjs': ['yjs', 'y-websocket'],
+          'vendor-icons': ['lucide-react'],
+        },
+      },
+    },
   },
   resolve: {
     alias: {
