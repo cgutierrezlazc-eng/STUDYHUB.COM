@@ -54,3 +54,54 @@ export const RETRACT_LEGAL_CITE_CL = 'Art. 3 bis letra b, Ley N° 19.496 (Chile)
  * Ley 19.496. Referencia verificable para la cita de retracto.
  */
 export const RETRACT_LEGAL_URL_CL = 'https://www.bcn.cl/leychile/navegar?idNorma=61438';
+
+// -----------------------------------------------------------------------------
+// Versiones canónicas de los documentos legales publicados
+// -----------------------------------------------------------------------------
+// Espejo de backend/constants/legal_versions.py. Cualquier bump en un
+// documento legal requiere actualizar BOTH archivos con el mismo
+// version/hash y un commit dedicado con tipo `legal:`.
+//
+// Un cambio MAJOR o MINOR fuerza re-aceptación del usuario según el
+// mecanismo de la Pieza 6 del bloque bloque-legal-consolidation-v2.
+
+export interface LegalDocumentDescriptor {
+  documentType: 'tos' | 'privacy' | 'cookies';
+  version: string;
+  hash: string;
+  /** Ruta interna de la app donde el usuario lee este documento. */
+  route: string;
+  /** Nombre humano corto. */
+  label: string;
+}
+
+export const TOS_DOCUMENT: LegalDocumentDescriptor = {
+  documentType: 'tos',
+  version: '3.1.0',
+  hash: 'e3780c975df95ef48b07147940b406e6b3fa8d374aa466d2dd86a3dd8a85a98f',
+  route: '/terms',
+  label: 'Términos y Condiciones',
+};
+
+export const PRIVACY_DOCUMENT: LegalDocumentDescriptor = {
+  documentType: 'privacy',
+  version: '2.3.0',
+  hash: '0f7e0a3dc287da20bbbeede903622e005782cb4d927c4d01ebe35d22c3fd591f',
+  route: '/privacy',
+  label: 'Política de Privacidad',
+};
+
+export const COOKIES_DOCUMENT: LegalDocumentDescriptor = {
+  documentType: 'cookies',
+  version: '1.0.0',
+  hash: 'a00150297efa288b53bbd9a0c655e046a292d3cdefb04254b0b33c079022efd9',
+  route: '/cookies',
+  label: 'Política de Cookies',
+};
+
+/** Lista canónica de los documentos sujetos al gate de re-aceptación. */
+export const REACCEPT_DOCUMENTS: LegalDocumentDescriptor[] = [
+  TOS_DOCUMENT,
+  PRIVACY_DOCUMENT,
+  COOKIES_DOCUMENT,
+];

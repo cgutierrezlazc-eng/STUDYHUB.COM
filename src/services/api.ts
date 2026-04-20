@@ -135,6 +135,22 @@ export const api = {
 
   getMe: () => request('/auth/me'),
 
+  getReacceptStatus: (): Promise<{
+    user_id: string;
+    pending: Array<{ document_type: string; version: string; hash: string }>;
+    is_up_to_date: boolean;
+    enforce_enabled: boolean;
+  }> => request('/auth/reaccept-status'),
+
+  postReacceptLegal: (
+    documents: Array<{ document_type: string; text_version: string; text_version_hash: string }>,
+    userTimezone?: string
+  ) =>
+    request('/auth/reaccept-legal', {
+      method: 'POST',
+      body: JSON.stringify({ documents, user_timezone: userTimezone ?? null }),
+    }),
+
   updateMe: (data: any) => request('/auth/me', { method: 'PUT', body: JSON.stringify(data) }),
 
   changeUsername: (username: string) =>

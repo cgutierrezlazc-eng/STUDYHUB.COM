@@ -18,6 +18,7 @@ from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Request
 from middleware import create_access_token, create_refresh_token, decode_token, get_current_user
 from pydantic import BaseModel, EmailStr
 from shared.legal_texts import AGE_DECLARATION_HASH, AGE_DECLARATION_VERSION
+from constants.legal_versions import REACCEPT_DOCUMENTS
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
@@ -2108,4 +2109,181 @@ def migrate_username_prefixes(
         "skipped": len(skipped),
         "failed": len(failed),
         "details": {"updated": updated, "skipped": skipped, "failed": failed}
+    }
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Pieza 6 — Re-aceptación de documentos legales (bloque-legal-consolidation-v2)
+# ────────────────────────────────────────────────────────────────────────
+#
+# Cuando Conniku publica una versión nueva de los Términos y Condiciones,
+# de la Política de Privacidad o de la Política de Cookies, los usuarios
+# existentes NO quedan automáticamente vinculados por la versión nueva.
+# Deben re-aceptarla de forma explícita, con la misma evidencia probatoria
+# que se exige en el alta: timestamp UTC, hash del texto, IP, user-agent,
+# zona horaria, document_type, version.
+#
+# Mecanismo:
+#   1. El frontend llama a ``GET /auth/reaccept-status`` después del login.
+#      Responde con la lista de documentos pendientes (ya sea porque el
+#      usuario nunca los aceptó o porque aceptó una versión anterior).
+#   2. Si la lista está vacía, el usuario continúa normalmente.
+#   3. Si no está vacía, el frontend monta LegalReacceptanceModal. El
+#      usuario debe abrir cada documento y marcar el checkbox final.
+#   4. Al confirmar, el frontend llama a ``POST /auth/reaccept-legal`` con
+#      la lista ``[{document_type, text_version, text_version_hash}]``.
+#      El backend valida que las ternas coincidan con las publicadas e
+#      inserta una fila nueva por documento en ``user_agreements``.
+#
+# Feature flag ``LEGAL_GATE_ENFORCE``: si está en "false" (default), los
+# endpoints funcionan pero el middleware de enforce no bloquea el acceso
+# a otras rutas. Esto permite desplegar el código en producción sin
+# riesgo de lockout mientras se monitorea. Se activa manualmente una vez
+# confirmado el correcto funcionamiento.
+
+LEGAL_GATE_ENFORCE: bool = os.environ.get("LEGAL_GATE_ENFORCE", "false").lower() in ("1", "true", "yes")
+
+
+def record_document_acceptance(
+    db: Session,
+    user_id: str,
+    request: Request | None,
+    user_timezone: str | None,
+    document_type: str,
+    text_version: str,
+    text_version_hash: str,
+) -> UserAgreement:
+    """Registra la aceptación append-only de un documento legal.
+
+    No elimina filas anteriores: cada nueva aceptación produce una nueva
+    fila. Así queda historia completa de qué versiones aceptó el usuario
+    a lo largo del tiempo, útil para auditoría y disputas.
+    """
+    agreement = UserAgreement(
+        user_id=user_id,
+        document_type=document_type,
+        text_version=text_version,
+        text_version_hash=text_version_hash,
+        accepted_at_utc=datetime.utcnow(),
+        user_timezone=user_timezone,
+        client_ip=_get_client_ip(request),
+        user_agent=request.headers.get("user-agent", "") if request else None,
+    )
+    db.add(agreement)
+    return agreement
+
+
+def _pending_reaccept_for_user(db: Session, user_id: str) -> list[dict]:
+    """Devuelve la lista de documentos que este usuario debe re-aceptar.
+
+    Un documento está pendiente cuando NO existe ninguna fila en
+    ``user_agreements`` para ese ``document_type`` con el par
+    ``(text_version, text_version_hash)`` canónico publicado hoy.
+    """
+    pending: list[dict] = []
+    for document_type, version, hash_value in REACCEPT_DOCUMENTS:
+        row = (
+            db.query(UserAgreement)
+            .filter(
+                UserAgreement.user_id == user_id,
+                UserAgreement.document_type == document_type,
+                UserAgreement.text_version == version,
+                UserAgreement.text_version_hash == hash_value,
+            )
+            .first()
+        )
+        if row is None:
+            pending.append(
+                {
+                    "document_type": document_type,
+                    "version": version,
+                    "hash": hash_value,
+                }
+            )
+    return pending
+
+
+@router.get("/reaccept-status")
+def reaccept_status(user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Devuelve qué documentos legales vigentes el usuario aún no ha aceptado.
+
+    Siempre responde 200, incluso cuando hay documentos pendientes: el
+    status se infiere de la longitud de ``pending``. El frontend toma la
+    decisión de montar el modal o continuar.
+    """
+    pending = _pending_reaccept_for_user(db, user.id)
+    return {
+        "user_id": user.id,
+        "pending": pending,
+        "is_up_to_date": len(pending) == 0,
+        "enforce_enabled": LEGAL_GATE_ENFORCE,
+    }
+
+
+class ReacceptDocumentPayload(BaseModel):
+    document_type: str
+    text_version: str
+    text_version_hash: str
+
+
+class ReacceptLegalRequest(BaseModel):
+    documents: list[ReacceptDocumentPayload]
+    user_timezone: str | None = None
+
+
+@router.post("/reaccept-legal")
+def reaccept_legal(
+    req: ReacceptLegalRequest,
+    request: Request,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Registra la re-aceptación por parte del usuario de uno o más documentos.
+
+    Valida que cada (document_type, version, hash) enviado por el cliente
+    coincida con alguna de las entradas canónicas publicadas en
+    ``REACCEPT_DOCUMENTS``. Si alguna terna no coincide, la operación
+    completa se rechaza y no se escribe ninguna fila. Esto previene que
+    un cliente con bundle obsoleto o alterado registre un hash incorrecto.
+    """
+    if not req.documents:
+        raise HTTPException(status_code=400, detail="Se requiere al menos un documento")
+
+    canon = {(dt, ver, h): True for (dt, ver, h) in REACCEPT_DOCUMENTS}
+    invalid: list[str] = []
+    for doc in req.documents:
+        key = (doc.document_type, doc.text_version, doc.text_version_hash)
+        if key not in canon:
+            invalid.append(doc.document_type)
+    if invalid:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "hash_or_version_mismatch",
+                "invalid_document_types": invalid,
+                "hint": "Recarga la página para obtener la versión publicada vigente",
+            },
+        )
+
+    # Append-only: una fila nueva por cada document_type enviado.
+    written: list[dict] = []
+    for doc in req.documents:
+        record_document_acceptance(
+            db=db,
+            user_id=user.id,
+            request=request,
+            user_timezone=req.user_timezone,
+            document_type=doc.document_type,
+            text_version=doc.text_version,
+            text_version_hash=doc.text_version_hash,
+        )
+        written.append({"document_type": doc.document_type, "version": doc.text_version})
+
+    db.commit()
+
+    pending = _pending_reaccept_for_user(db, user.id)
+    return {
+        "accepted": written,
+        "pending": pending,
+        "is_up_to_date": len(pending) == 0,
     }
