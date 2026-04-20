@@ -1,9 +1,49 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
-import { BookOpen, Search, Star, ChevronRight } from '../components/Icons';
+import { BookOpen, Star, ChevronRight } from '../components/Icons';
 import PDFReader from '../components/PDFReader';
 import TierGate from '../components/TierGate';
+import styles from './Biblioteca.module.css';
+
+/* Paleta editorial de covers por índice — ciclo determinístico para que
+ * el mismo libro siempre se vea con el mismo color sin requerir dato
+ * del backend. Los nombres coinciden con las clases .coverXxx del CSS. */
+const COVER_PALETTE = [
+  'coverLime',
+  'coverPink',
+  'coverInk',
+  'coverCream',
+  'coverViolet',
+  'coverCyan',
+  'coverPaper',
+  'coverOrange',
+] as const;
+
+function coverClassFor(key: string): string {
+  // Hash estable basado en el id del doc (o cualquier string)
+  let h = 0;
+  for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0;
+  const idx = Math.abs(h) % COVER_PALETTE.length;
+  return styles[COVER_PALETTE[idx]];
+}
+
+function sourceBadgeLabel(source: string): string {
+  switch (source) {
+    case 'user_shared':
+      return 'Comunidad';
+    case 'openstax':
+      return 'OpenStax';
+    case 'scielo':
+      return 'SciELO';
+    case 'internetarchive':
+      return 'Archive';
+    case 'gutenberg':
+      return 'Gutenberg';
+    default:
+      return 'Online';
+  }
+}
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -358,256 +398,202 @@ export default function Biblioteca({ onNavigate }: Props) {
 
   const pages_total = Math.ceil(total / 24);
 
+  // Filtros idioma Gutenberg
+  const PD_LANGS = [
+    { v: '', l: 'Todos' },
+    { v: 'es', l: 'Español' },
+    { v: 'en', l: 'Inglés' },
+    { v: 'fr', l: 'Francés' },
+    { v: 'de', l: 'Alemán' },
+    { v: 'pt', l: 'Portugués' },
+  ];
+
+  const subtitleByTab = () => {
+    if (sourceTab === 'comunidad')
+      return total > 0
+        ? `${total} recurso${total !== 1 ? 's' : ''} de la comunidad`
+        : 'Recursos compartidos por la comunidad';
+    if (sourceTab === 'academicos')
+      return acTotal > 0
+        ? `${acTotal} recursos — OpenStax · SciELO · Internet Archive`
+        : 'Textbooks y libros académicos gratuitos';
+    return pdTotal > 0
+      ? `${pdTotal.toLocaleString()} libros en Project Gutenberg`
+      : 'Libros de dominio público';
+  };
+
   return (
-    <>
-      {/* ── Header ── */}
-      <div className="page-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {BookOpen({ size: 22 })} Biblioteca
-            </h2>
-            <p style={{ margin: 0, color: 'var(--text-muted)', fontSize: 13 }}>
-              {sourceTab === 'comunidad'
-                ? total > 0
-                  ? `${total} recurso${total !== 1 ? 's' : ''} de la comunidad`
-                  : 'Recursos académicos compartidos por la comunidad'
-                : sourceTab === 'academicos'
-                  ? acTotal > 0
-                    ? `${acTotal} recursos académicos — OpenStax, SciELO, Internet Archive`
-                    : 'Textbooks y libros académicos gratuitos'
-                  : pdTotal > 0
-                    ? `${pdTotal.toLocaleString()} libros en Project Gutenberg`
-                    : 'Libros de dominio público — Project Gutenberg'}
+    <div className={styles.bibRoot}>
+      {/* ── Top progress bar ── */}
+      <div className={styles.topProgress}>
+        <div className={styles.tpLeft}>
+          <span className={styles.pulse} aria-hidden="true"></span>
+          <span>Biblioteca Conniku</span>
+        </div>
+        <span>{subtitleByTab()}</span>
+      </div>
+
+      <main className={styles.main}>
+        {/* ── Hero editorial ── */}
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <h1 className={styles.heroH1}>
+              Biblioteca,
+              <br />
+              <span className={styles.chipCyan}>uno tuyo</span>.
+            </h1>
+            <p className={styles.heroLead}>
+              Académicos y generales. Filtra por tu carrera.{' '}
+              <strong>Explora, guarda y clona</strong> libros directamente a tus asignaturas dentro
+              de Conniku.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {sourceTab === 'comunidad' && (
-              <>
-                <button
-                  className={`btn btn-sm ${view === 'grid' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setView('grid')}
-                  title="Cuadrícula"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <rect x="3" y="3" width="7" height="7" />
-                    <rect x="14" y="3" width="7" height="7" />
-                    <rect x="3" y="14" width="7" height="7" />
-                    <rect x="14" y="14" width="7" height="7" />
-                  </svg>
-                </button>
-                <button
-                  className={`btn btn-sm ${view === 'list' ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setView('list')}
-                  title="Lista"
-                >
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <line x1="8" y1="6" x2="21" y2="6" />
-                    <line x1="8" y1="12" x2="21" y2="12" />
-                    <line x1="8" y1="18" x2="21" y2="18" />
-                    <line x1="3" y1="6" x2="3.01" y2="6" />
-                    <line x1="3" y1="12" x2="3.01" y2="12" />
-                    <line x1="3" y1="18" x2="3.01" y2="18" />
-                  </svg>
-                </button>
-              </>
-            )}
+
+          <div className={styles.searchCard}>
+            <div className={styles.searchLabel}>Buscar en biblioteca</div>
+            <input
+              className={styles.searchInput}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder={
+                sourceTab === 'publica'
+                  ? 'Buscar en Project Gutenberg…'
+                  : sourceTab === 'academicos'
+                    ? 'Buscar en textbooks y académicos…'
+                    : 'Termodinámica clásica'
+              }
+              aria-label="Buscar en biblioteca"
+            />
+            <div className={styles.sourceTabs} role="tablist" aria-label="Fuente de biblioteca">
+              <button
+                className={`${styles.sourceTabBtn} ${sourceTab === 'comunidad' ? styles.active : ''}`}
+                onClick={() => setSourceTab('comunidad')}
+                type="button"
+                role="tab"
+                aria-selected={sourceTab === 'comunidad'}
+              >
+                Comunidad
+              </button>
+              <button
+                className={`${styles.sourceTabBtn} ${sourceTab === 'academicos' ? styles.active : ''}`}
+                onClick={() => setSourceTab('academicos')}
+                type="button"
+                role="tab"
+                aria-selected={sourceTab === 'academicos'}
+              >
+                Académicos
+              </button>
+              <button
+                className={`${styles.sourceTabBtn} ${sourceTab === 'publica' ? styles.active : ''}`}
+                onClick={() => setSourceTab('publica')}
+                type="button"
+                role="tab"
+                aria-selected={sourceTab === 'publica'}
+              >
+                Dominio público
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        {/* ── Source tabs ── */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            marginTop: 14,
-            background: 'var(--bg-secondary)',
-            borderRadius: 10,
-            padding: 4,
-            width: 'fit-content',
-          }}
-        >
-          <button
-            onClick={() => setSourceTab('comunidad')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 13,
-              background: sourceTab === 'comunidad' ? 'var(--bg-primary)' : 'transparent',
-              color: sourceTab === 'comunidad' ? 'var(--text-primary)' : 'var(--text-muted)',
-              boxShadow: sourceTab === 'comunidad' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            }}
-          >
-            📚 Comunidad
-          </button>
-          <button
-            onClick={() => setSourceTab('academicos')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 13,
-              background: sourceTab === 'academicos' ? 'var(--bg-primary)' : 'transparent',
-              color: sourceTab === 'academicos' ? 'var(--text-primary)' : 'var(--text-muted)',
-              boxShadow: sourceTab === 'academicos' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            }}
-          >
-            🎓 Académicos
-          </button>
-          <button
-            onClick={() => setSourceTab('publica')}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 13,
-              background: sourceTab === 'publica' ? 'var(--bg-primary)' : 'transparent',
-              color: sourceTab === 'publica' ? 'var(--text-primary)' : 'var(--text-muted)',
-              boxShadow: sourceTab === 'publica' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            }}
-          >
-            🌐 Dominio Público
-          </button>
-        </div>
-
-        {/* Search */}
-        <div style={{ position: 'relative', marginTop: 12 }}>
-          <input
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder={
-              sourceTab === 'publica'
-                ? 'Buscar en Project Gutenberg...'
-                : 'Buscar por título, autor o tema...'
-            }
-            style={{
-              width: '100%',
-              padding: '10px 14px 10px 38px',
-              borderRadius: 8,
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-secondary)',
-              color: 'var(--text-primary)',
-              fontSize: 14,
-              boxSizing: 'border-box',
-            }}
-          />
-          <span
-            style={{
-              position: 'absolute',
-              left: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              opacity: 0.45,
-            }}
-          >
-            {Search({ size: 16 })}
-          </span>
-        </div>
-
-        {/* Filtros según tab */}
+        {/* ── Filtros según tab ── */}
         {sourceTab === 'comunidad' ? (
-          <div style={{ display: 'flex', gap: 6, marginTop: 12, flexWrap: 'wrap' }}>
+          <div className={styles.filtersRow}>
             {CATEGORIES.map((c) => (
               <button
                 key={c.value}
                 onClick={() => handleCategoryChange(c.value)}
-                style={{
-                  padding: '5px 13px',
-                  borderRadius: 20,
-                  border: '1px solid',
-                  borderColor: category === c.value ? 'var(--accent)' : 'var(--border-color)',
-                  background: category === c.value ? 'rgba(37,99,235,0.09)' : 'transparent',
-                  color: category === c.value ? 'var(--accent)' : 'var(--text-secondary)',
-                  fontSize: 12,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                }}
+                className={`${styles.filterChip} ${category === c.value ? styles.active : ''}`}
+                type="button"
               >
-                <span>{c.icon}</span> {c.label}
+                {c.label}
               </button>
             ))}
           </div>
         ) : sourceTab === 'publica' ? (
-          <div
-            style={{
-              display: 'flex',
-              gap: 6,
-              marginTop: 12,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>
-              Idioma:
-            </span>
-            {[
-              { v: '', l: 'Todos' },
-              { v: 'es', l: '🇪🇸 Español' },
-              { v: 'en', l: '🇬🇧 Inglés' },
-              { v: 'fr', l: '🇫🇷 Francés' },
-              { v: 'de', l: '🇩🇪 Alemán' },
-              { v: 'pt', l: '🇧🇷 Portugués' },
-            ].map((opt) => (
+          <div className={styles.filtersRow}>
+            <span className={styles.filterLabel}>Idioma:</span>
+            {PD_LANGS.map((opt) => (
               <button
                 key={opt.v}
                 onClick={() => {
                   setPdLang(opt.v);
                   setPdPage(1);
                 }}
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: 20,
-                  border: '1px solid',
-                  borderColor: pdLang === opt.v ? 'var(--accent)' : 'var(--border-color)',
-                  background: pdLang === opt.v ? 'rgba(37,99,235,0.09)' : 'transparent',
-                  color: pdLang === opt.v ? 'var(--accent)' : 'var(--text-secondary)',
-                  fontSize: 12,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                }}
+                className={`${styles.filterChip} ${pdLang === opt.v ? styles.active : ''}`}
+                type="button"
               >
                 {opt.l}
               </button>
             ))}
           </div>
         ) : null}
-      </div>
 
-      {/* ── Body ── */}
-      <div className="page-body">
+        {/* ── Section label ── */}
+        <div className={styles.sectionLabel}>
+          <span>
+            {sourceTab === 'comunidad'
+              ? 'Recursos compartidos'
+              : sourceTab === 'academicos'
+                ? 'Textbooks y académicos'
+                : 'Clásicos de dominio público'}
+          </span>
+          {sourceTab === 'comunidad' && (
+            <div className={styles.viewToggle}>
+              <button
+                onClick={() => setView('grid')}
+                className={`${styles.viewBtn} ${view === 'grid' ? styles.active : ''}`}
+                aria-label="Vista cuadrícula"
+                type="button"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setView('list')}
+                className={`${styles.viewBtn} ${view === 'list' ? styles.active : ''}`}
+                aria-label="Vista lista"
+                type="button"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="8" y1="6" x2="21" y2="6" />
+                  <line x1="8" y1="12" x2="21" y2="12" />
+                  <line x1="8" y1="18" x2="21" y2="18" />
+                  <line x1="3" y1="6" x2="3.01" y2="6" />
+                  <line x1="3" y1="12" x2="3.01" y2="12" />
+                  <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* ── Body por tab ── */}
         {sourceTab === 'comunidad' ? (
           <>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-                Cargando biblioteca...
-              </div>
+              <div className={styles.loading}>Cargando biblioteca…</div>
             ) : docs.length === 0 ? (
-              <div className="empty-state" style={{ padding: 60 }}>
-                <div className="empty-state-icon">{BookOpen({ size: 48 })}</div>
+              <div className={styles.empty}>
+                <div style={{ fontSize: 42, marginBottom: 8 }}>{BookOpen({ size: 48 })}</div>
                 <h3>No se encontraron recursos</h3>
                 <p>
                   {search || category
@@ -616,26 +602,20 @@ export default function Biblioteca({ onNavigate }: Props) {
                 </p>
                 {(search || category) && (
                   <button
-                    className="btn btn-secondary"
-                    style={{ marginTop: 12 }}
+                    className={styles.pagBtn}
                     onClick={() => {
                       setSearchInput('');
                       setSearch('');
                       setCategory('');
                     }}
+                    type="button"
                   >
                     Limpiar filtros
                   </button>
                 )}
               </div>
             ) : view === 'grid' ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                  gap: 16,
-                }}
-              >
+              <div className={styles.booksGrid}>
                 {docs.map((doc) => (
                   <BookCard
                     key={doc.id}
@@ -646,7 +626,7 @@ export default function Biblioteca({ onNavigate }: Props) {
                 ))}
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {docs.map((doc) => (
                   <BookRow
                     key={doc.id}
@@ -658,21 +638,23 @@ export default function Biblioteca({ onNavigate }: Props) {
               </div>
             )}
             {pages_total > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+              <div className={styles.paginator}>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
+                  type="button"
                 >
                   ← Anterior
                 </button>
-                <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+                <span className={styles.pagInfo}>
                   Pág. {page} / {pages_total}
                 </span>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={page >= pages_total}
                   onClick={() => setPage((p) => p + 1)}
+                  type="button"
                 >
                   Siguiente →
                 </button>
@@ -680,47 +662,23 @@ export default function Biblioteca({ onNavigate }: Props) {
             )}
           </>
         ) : sourceTab === 'academicos' ? (
-          /* ══ ACADÉMICOS (OpenStax) ══ */
           <>
-            {/* Info banner */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-                padding: '12px 16px',
-                background: 'rgba(139,92,246,0.06)',
-                border: '1px solid rgba(139,92,246,0.15)',
-                borderRadius: 10,
-                marginBottom: 18,
-              }}
-            >
-              <span style={{ fontSize: 20, flexShrink: 0 }}>🎓</span>
+            <div className={styles.infoBanner}>
+              <span className={styles.infoBannerIcon}>🎓</span>
               <div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    marginBottom: 2,
-                  }}
-                >
-                  Biblioteca Académica — 3 fuentes
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  OpenStax (textbooks), SciELO (Latinoamérica), Internet Archive (millones de
-                  libros). Licencias Creative Commons — lectura gratuita dentro de Conniku.
+                <div className={styles.infoBannerTitle}>Biblioteca Académica — 3 fuentes</div>
+                <div className={styles.infoBannerText}>
+                  OpenStax (textbooks), SciELO (Latinoamérica), Internet Archive. Licencias Creative
+                  Commons — lectura gratuita dentro de Conniku.
                 </div>
               </div>
             </div>
 
             {acLoading ? (
-              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-                Buscando recursos académicos...
-              </div>
+              <div className={styles.loading}>Buscando recursos académicos…</div>
             ) : acDocs.length === 0 ? (
-              <div className="empty-state" style={{ padding: 60 }}>
-                <div className="empty-state-icon">📖</div>
+              <div className={styles.empty}>
+                <div style={{ fontSize: 42, marginBottom: 8 }}>📖</div>
                 <h3>Sin resultados</h3>
                 <p>
                   {search
@@ -729,13 +687,7 @@ export default function Biblioteca({ onNavigate }: Props) {
                 </p>
               </div>
             ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                  gap: 16,
-                }}
-              >
+              <div className={styles.booksGrid}>
                 {acDocs.map((doc) => (
                   <BookCard
                     key={doc.id}
@@ -747,23 +699,24 @@ export default function Biblioteca({ onNavigate }: Props) {
               </div>
             )}
 
-            {/* Paginación Académicos */}
             {acTotal > 24 && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+              <div className={styles.paginator}>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={acPage === 1}
                   onClick={() => setAcPage((p) => p - 1)}
+                  type="button"
                 >
                   ← Anterior
                 </button>
-                <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
+                <span className={styles.pagInfo}>
                   Página {acPage} / {Math.ceil(acTotal / 24)}
                 </span>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={acDocs.length < 24}
                   onClick={() => setAcPage((p) => p + 1)}
+                  type="button"
                 >
                   Siguiente →
                 </button>
@@ -771,34 +724,12 @@ export default function Biblioteca({ onNavigate }: Props) {
             )}
           </>
         ) : (
-          /* ══ DOMINIO PÚBLICO ══ */
           <>
-            {/* Info banner */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-                padding: '12px 16px',
-                background: 'rgba(37,99,235,0.06)',
-                border: '1px solid rgba(37,99,235,0.15)',
-                borderRadius: 10,
-                marginBottom: 18,
-              }}
-            >
-              <span style={{ fontSize: 20, flexShrink: 0 }}>🌐</span>
+            <div className={styles.infoBanner}>
+              <span className={styles.infoBannerIcon}>🌐</span>
               <div>
-                <div
-                  style={{
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    marginBottom: 2,
-                  }}
-                >
-                  Project Gutenberg — 70.000+ libros gratuitos
-                </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                <div className={styles.infoBannerTitle}>Project Gutenberg</div>
+                <div className={styles.infoBannerText}>
                   Libros clásicos sin derechos de autor. Haz clic en un libro para leerlo
                   directamente desde Conniku.
                 </div>
@@ -806,23 +737,15 @@ export default function Biblioteca({ onNavigate }: Props) {
             </div>
 
             {pdLoading ? (
-              <div style={{ textAlign: 'center', padding: 60, color: 'var(--text-muted)' }}>
-                Buscando en Project Gutenberg...
-              </div>
+              <div className={styles.loading}>Buscando en Project Gutenberg…</div>
             ) : pdDocs.length === 0 ? (
-              <div className="empty-state" style={{ padding: 60 }}>
-                <div className="empty-state-icon">📖</div>
+              <div className={styles.empty}>
+                <div style={{ fontSize: 42, marginBottom: 8 }}>📖</div>
                 <h3>Sin resultados</h3>
                 <p>Intenta con otro término de búsqueda o cambia el idioma</p>
               </div>
             ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                  gap: 16,
-                }}
-              >
+              <div className={styles.booksGrid}>
                 {pdDocs.map((doc) => (
                   <BookCard
                     key={doc.id}
@@ -834,23 +757,22 @@ export default function Biblioteca({ onNavigate }: Props) {
               </div>
             )}
 
-            {/* Paginación Gutenberg */}
             {(pdTotal > 32 || pdPage > 1) && (
-              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 32 }}>
+              <div className={styles.paginator}>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={pdPage === 1}
                   onClick={() => setPdPage((p) => p - 1)}
+                  type="button"
                 >
                   ← Anterior
                 </button>
-                <span style={{ alignSelf: 'center', fontSize: 13, color: 'var(--text-muted)' }}>
-                  Página {pdPage}
-                </span>
+                <span className={styles.pagInfo}>Página {pdPage}</span>
                 <button
-                  className="btn btn-secondary btn-sm"
+                  className={styles.pagBtn}
                   disabled={pdDocs.length < 32}
                   onClick={() => setPdPage((p) => p + 1)}
+                  type="button"
                 >
                   Siguiente →
                 </button>
@@ -858,7 +780,29 @@ export default function Biblioteca({ onNavigate }: Props) {
             )}
           </>
         )}
-      </div>
+
+        {/* ── Categorías rail (discovery al final) ── */}
+        {sourceTab === 'comunidad' && (
+          <>
+            <div className={styles.sectionLabel}>
+              <span>Explora por categoría</span>
+            </div>
+            <div className={styles.categoriasRail}>
+              {CATEGORIES.filter((c) => c.value).map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => handleCategoryChange(c.value)}
+                  className={`${styles.catChip} ${category === c.value ? styles.active : ''}`}
+                  type="button"
+                >
+                  <span className={styles.catIcon}>{c.icon}</span>
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </main>
 
       {/* ── Modal Detalle ── */}
       {selected && (
@@ -1467,7 +1411,7 @@ export default function Biblioteca({ onNavigate }: Props) {
           )}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
@@ -1482,136 +1426,47 @@ function BookCard({
   onOpen: () => void;
   onSave: (e: React.MouseEvent) => void;
 }) {
-  const catColor = getCategoryColor(doc.category);
-  const catIcon = CATEGORIES.find((c) => c.value === doc.category)?.icon || '📖';
-  return (
-    <div
-      className="u-card"
-      style={{ padding: 0, overflow: 'hidden', cursor: 'pointer' }}
-      onClick={onOpen}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = 'translateY(-2px)';
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = '';
-        e.currentTarget.style.boxShadow = '';
-      }}
-    >
-      {/* Cover */}
-      <div
-        style={{
-          height: 130,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: `linear-gradient(135deg, ${catColor}15, ${catColor}30)`,
-          borderBottom: '1px solid var(--border-color)',
-          position: 'relative',
-        }}
-      >
-        {doc.cover_url ? (
-          <img
-            src={doc.cover_url}
-            alt=""
-            style={{ height: '100%', width: '100%', objectFit: 'cover' }}
-          />
-        ) : (
-          <div style={{ textAlign: 'center' }}>
-            <span style={{ fontSize: 34 }}>{catIcon}</span>
-            {doc.pages && (
-              <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>
-                {doc.pages} págs.
-              </div>
-            )}
-          </div>
-        )}
-        <span
-          style={{
-            position: 'absolute',
-            top: 8,
-            left: 8,
-            fontSize: 10,
-            fontWeight: 600,
-            padding: '2px 7px',
-            borderRadius: 8,
-            background:
-              doc.source_type === 'user_shared'
-                ? 'rgba(16,185,129,0.9)'
-                : doc.source_type === 'openstax'
-                  ? 'rgba(139,92,246,0.9)'
-                  : doc.source_type === 'scielo'
-                    ? 'rgba(14,165,233,0.9)'
-                    : doc.source_type === 'internetarchive'
-                      ? 'rgba(234,88,12,0.9)'
-                      : 'rgba(37,99,235,0.9)',
-            color: '#fff',
-          }}
-        >
-          {doc.source_type === 'user_shared'
-            ? 'Comunidad'
-            : doc.source_type === 'openstax'
-              ? 'OpenStax'
-              : doc.source_type === 'scielo'
-                ? 'SciELO'
-                : doc.source_type === 'internetarchive'
-                  ? 'Archive'
-                  : 'Online'}
-        </span>
-      </div>
+  const coverClass = coverClassFor(doc.id || doc.title);
+  // Spine label: categoría si existe, si no source display
+  const spine =
+    CATEGORIES.find((c) => c.value === doc.category)?.label ||
+    doc.source_display ||
+    sourceBadgeLabel(doc.source_type);
 
-      <div style={{ padding: 14 }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: 6,
-          }}
-        >
-          <h4
-            style={{
-              margin: 0,
-              fontSize: 13,
-              fontWeight: 600,
-              lineHeight: 1.35,
-              flex: 1,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-            }}
-          >
-            {doc.title}
-          </h4>
+  return (
+    <div className={styles.bookCard} onClick={onOpen} role="button" tabIndex={0}>
+      <div className={`${styles.bookCover} ${coverClass}`}>
+        <span className={styles.sourceBadge}>{sourceBadgeLabel(doc.source_type)}</span>
+        {doc.cover_url && <img src={doc.cover_url} alt="" />}
+        <div className={styles.spineLabel} style={{ position: 'relative', zIndex: 1 }}>
+          {spine}
+        </div>
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <h4 className={styles.bookTitle}>{doc.title}</h4>
+        </div>
+        <div className={styles.bookAuthor}>— {doc.author || 'Autor desconocido'}</div>
+      </div>
+      <div className={styles.bookInfo}>
+        <span>{doc.pages ? `${doc.pages} pp.` : doc.year ? `${doc.year}` : 'Sin detalles'}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {doc.rating !== undefined && doc.rating > 0 && (
+            <span className={styles.rating}>★ {doc.rating.toFixed(1)}</span>
+          )}
           {doc.source_type === 'user_shared' && (
             <button
               onClick={onSave}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 2,
-                flexShrink: 0,
-              }}
+              className={styles.saveBtn}
+              type="button"
+              aria-label={doc.is_saved ? 'Quitar de guardados' : 'Guardar'}
             >
               <Star
                 size={15}
-                fill={doc.is_saved ? '#F59E0B' : 'none'}
-                color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
+                fill={doc.is_saved ? '#FF4A1C' : 'none'}
+                color={doc.is_saved ? '#FF4A1C' : 'currentColor'}
               />
             </button>
           )}
-        </div>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 3 }}>
-          {doc.author}
-        </div>
-        {doc.rating !== undefined && doc.rating > 0 && (
-          <div style={{ fontSize: 11, color: '#F59E0B', marginTop: 6 }}>
-            {stars(doc.rating)} <span style={{ color: 'var(--text-muted)' }}>{doc.rating}</span>
-          </div>
-        )}
+        </span>
       </div>
     </div>
   );
@@ -1627,97 +1482,35 @@ function BookRow({
   onSave: (e: React.MouseEvent) => void;
 }) {
   const catIcon = CATEGORIES.find((c) => c.value === doc.category)?.icon || '📖';
-  const catColor = getCategoryColor(doc.category);
   return (
-    <div
-      className="u-card"
-      style={{ padding: 14, cursor: 'pointer', display: 'flex', gap: 14, alignItems: 'center' }}
-      onClick={onOpen}
-    >
-      <div
-        style={{
-          width: 44,
-          height: 44,
-          borderRadius: 8,
-          flexShrink: 0,
-          fontSize: 22,
-          background: `${catColor}18`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {catIcon}
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
-          style={{
-            fontWeight: 600,
-            fontSize: 13,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {doc.title}
-        </div>
-        <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+    <div className={styles.bookRow} onClick={onOpen} role="button" tabIndex={0}>
+      <div className={styles.bookRowThumb}>{catIcon}</div>
+      <div className={styles.bookRowBody}>
+        <h4 className={styles.bookRowTitle}>{doc.title}</h4>
+        <div className={styles.bookRowAuthor}>
           {doc.author}
           {doc.year ? ` · ${doc.year}` : ''}
           {doc.pages ? ` · ${doc.pages} págs.` : ''}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
         {doc.rating !== undefined && doc.rating > 0 && (
-          <span style={{ fontSize: 12, color: '#F59E0B' }}>★ {doc.rating}</span>
+          <span className={styles.bookRowMeta}>★ {doc.rating.toFixed(1)}</span>
         )}
-        <span
-          style={{
-            fontSize: 10,
-            fontWeight: 600,
-            padding: '2px 8px',
-            borderRadius: 8,
-            background:
-              doc.source_type === 'user_shared'
-                ? 'rgba(16,185,129,0.12)'
-                : doc.source_type === 'openstax'
-                  ? 'rgba(139,92,246,0.12)'
-                  : doc.source_type === 'scielo'
-                    ? 'rgba(14,165,233,0.12)'
-                    : doc.source_type === 'internetarchive'
-                      ? 'rgba(234,88,12,0.12)'
-                      : 'rgba(37,99,235,0.12)',
-            color:
-              doc.source_type === 'user_shared'
-                ? '#10B981'
-                : doc.source_type === 'openstax'
-                  ? '#8B5CF6'
-                  : doc.source_type === 'scielo'
-                    ? '#0EA5E9'
-                    : doc.source_type === 'internetarchive'
-                      ? '#EA580C'
-                      : '#2563EB',
-          }}
-        >
-          {doc.source_type === 'user_shared'
-            ? 'Comunidad'
-            : doc.source_type === 'openstax'
-              ? 'OpenStax'
-              : doc.source_type === 'scielo'
-                ? 'SciELO'
-                : doc.source_type === 'internetarchive'
-                  ? 'Archive'
-                  : 'Online'}
+        <span className={styles.sourceBadge} style={{ position: 'static' }}>
+          {sourceBadgeLabel(doc.source_type)}
         </span>
         {doc.source_type === 'user_shared' && (
           <button
             onClick={onSave}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+            className={styles.saveBtn}
+            type="button"
+            aria-label={doc.is_saved ? 'Quitar de guardados' : 'Guardar'}
           >
             <Star
-              size={14}
-              fill={doc.is_saved ? '#F59E0B' : 'none'}
-              color={doc.is_saved ? '#F59E0B' : 'var(--text-muted)'}
+              size={16}
+              fill={doc.is_saved ? '#FF4A1C' : 'none'}
+              color={doc.is_saved ? '#FF4A1C' : 'currentColor'}
             />
           </button>
         )}

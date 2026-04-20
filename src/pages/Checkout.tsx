@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../services/auth';
 import { Star, Lock } from '../components/Icons';
+import ckStyles from './Checkout.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -305,6 +306,13 @@ export default function Checkout({ onNavigate }: Props) {
 
   return (
     <div style={styles.page}>
+      <div className={ckStyles.topProgress}>
+        <div className={ckStyles.tpLeft}>
+          <span className={ckStyles.pulse} aria-hidden="true" />
+          <span>Checkout seguro</span>
+        </div>
+        <span>Pago intermediado · SSL</span>
+      </div>
       <button style={styles.backLink} onClick={() => onNavigate('/dashboard')}>
         ← Volver
       </button>

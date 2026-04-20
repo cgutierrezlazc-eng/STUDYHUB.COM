@@ -1,8 +1,5 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Conniku">
-  <defs></defs>
-  
-  <rect x="0" y="0" width="100" height="100" rx="22.0" fill="#0D0F10"/>
-  <text x="50.0" y="78.0" text-anchor="middle" font-family="Funnel Display, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" font-size="84.0" fill="#F5F4EF" letter-spacing="-4.0">u</text>
-  <circle cx="85.0" cy="76.0" r="6.0" fill="#F5F4EF"/>
-  
+  <rect width="100" height="100" rx="22" fill="#0D0F10"/>
+  <text x="50" y="71" text-anchor="middle" font-family="Funnel Display, -apple-system, sans-serif" font-weight="900" font-size="84" fill="#F5F4EF" letter-spacing="-4">u</text>
+  <circle cx="77" cy="68" r="6" fill="#F5F4EF"/>
 </svg>

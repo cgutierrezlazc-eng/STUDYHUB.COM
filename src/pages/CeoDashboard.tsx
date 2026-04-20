@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import ceoStyles from './CeoDashboard.module.css';
 import {
   BarChart3,
   GraduationCap,
@@ -335,6 +336,22 @@ export default function CeoDashboard({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={ceoStyles.topProgress}>
+        <div className={ceoStyles.tpLeft}>
+          <span className={ceoStyles.pulse} aria-hidden="true" />
+          <span>CEO Dashboard</span>
+        </div>
+        <span>{t('ceo.subtitle')}</span>
+      </div>
+      <div className={ceoStyles.heroWrap}>
+        <h1 className={ceoStyles.heroH1}>
+          <span className={ceoStyles.hlInk}>CEO</span>.
+        </h1>
+        <p className={ceoStyles.heroLead}>
+          Operaciones completas: RRHH, contabilidad, ventas, CRM, inventario, payroll. Todo
+          conectado a un solo panel, bajo cumplimiento chileno.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <h2>
           {Briefcase({ size: 22 })} {t('ceo.title')}

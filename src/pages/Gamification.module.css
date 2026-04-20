@@ -1,0 +1,279 @@
+/*
+ * Gamification.module.css
+ * Rediseño editorial v3 del módulo Gamification (shell).
+ * Fuente visual: Referencia/18-gamification.html
+ */
+
+.gamRoot {
+  --gm-ink: #0d0f10;
+  --gm-ink-2: #2b2e30;
+  --gm-ink-3: #696c6f;
+  --gm-paper: #f5f4ef;
+  --gm-paper-2: #ebe9e1;
+  --gm-line: #d2cfc3;
+  --gm-card: #ffffff;
+  --gm-lime: #d9ff3a;
+  --gm-lime-ink: #181f08;
+  --gm-pink: #ff4d3a;
+  --gm-cream: #ffe9b8;
+  --gm-violet: #6b4eff;
+  --gm-cyan: #00c2ff;
+  --gm-orange: #ff4a1c;
+  --gm-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  background: var(--gm-paper);
+  color: var(--gm-ink);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  min-height: 100%;
+  margin: 0 -20px;
+  overflow-x: hidden;
+}
+
+.gamRoot ::selection {
+  background: var(--gm-lime);
+  color: var(--gm-lime-ink);
+}
+
+.topProgress {
+  background: var(--gm-ink);
+  color: #fff;
+  padding: 8px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tpLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gm-lime);
+  animation: gmPulse 1.6s var(--gm-ease) infinite;
+}
+
+@keyframes gmPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(217, 255, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0);
+  }
+}
+
+.main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 40px 28px 120px;
+}
+
+/* Hero */
+.hero {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 36px;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -80px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--gm-lime) 0%, transparent 70%);
+  opacity: 0.25;
+  filter: blur(90px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.heroH1 {
+  font-weight: 800;
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  margin: 0;
+}
+
+.hlLime {
+  background: var(--gm-lime);
+  color: var(--gm-lime-ink);
+  padding: 0 12px;
+  border-radius: 14px;
+  transform: rotate(-1deg);
+  display: inline-block;
+}
+
+.heroLead {
+  margin-top: 18px;
+  font-size: 17px;
+  color: var(--gm-ink-2);
+  max-width: 480px;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* Level card rotada */
+.levelCard {
+  background: var(--gm-ink);
+  color: #fff;
+  border-radius: 28px;
+  padding: 32px;
+  transform: rotate(-1.2deg);
+  box-shadow: 8px 8px 0 var(--gm-lime);
+  position: relative;
+  z-index: 1;
+}
+
+.levelLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gm-lime);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.levelNum {
+  font-weight: 800;
+  font-size: 72px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-feature-settings: 'tnum';
+  color: var(--gm-lime);
+  margin-bottom: 16px;
+}
+
+.levelXp {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  font-weight: 600;
+}
+
+.xpBar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.xpFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gm-lime), var(--gm-cyan));
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+.streakRow {
+  display: flex;
+  gap: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.streakItem {
+  flex: 1;
+}
+
+.streakValue {
+  font-weight: 800;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-feature-settings: 'tnum';
+}
+
+.streakValue.flame {
+  color: var(--gm-orange);
+}
+
+.streakLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.tabBtn {
+  background: var(--gm-card);
+  border: 2px solid var(--gm-ink);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--gm-ink);
+  cursor: pointer;
+  transition: all 180ms var(--gm-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 var(--gm-ink);
+}
+
+.tabBtn.active {
+  background: var(--gm-ink);
+  color: var(--gm-lime);
+}
+
+/* Content wrapper — para que los renderX internos estén sobre fondo paper */
+.content {
+  background: var(--gm-paper);
+}
+
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .heroH1 {
+    font-size: clamp(40px, 9vw, 72px);
+  }
+}

@@ -10,139 +10,151 @@ export default function NotFound({ onNavigate }: Props) {
   return (
     <div
       style={{
-        height: '100%',
-        minHeight: '60vh',
+        minHeight: '100vh',
+        background: '#f5f4ef',
+        color: '#0d0f10',
+        fontFamily: "'Funnel Display', -apple-system, sans-serif",
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px 20px',
-        flexDirection: 'column',
-        gap: 0,
+        padding: '40px 24px',
+        position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* Animated 404 illustration */}
-      <div style={{ position: 'relative', marginBottom: 32 }}>
-        {/* Background circle */}
-        <div
-          style={{
-            width: 160,
-            height: 160,
-            borderRadius: '50%',
-            background:
-              'linear-gradient(135deg, rgba(45,98,200,0.08) 0%, rgba(45,98,200,0.03) 100%)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* Logo mark */}
-          <div
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              background: '#2D62C8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(45,98,200,0.3)',
-              animation: 'notfound-float 3s ease-in-out infinite',
-            }}
-          >
-            <svg viewBox="0 0 40 40" width={40} height={40}>
-              <circle
-                cx="20"
-                cy="20"
-                r="12"
-                fill="none"
-                stroke="#fff"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeDasharray="56 19"
-              />
-            </svg>
-          </div>
-        </div>
-        {/* Question marks */}
-        <span
-          style={{
-            position: 'absolute',
-            top: 8,
-            right: -4,
-            fontSize: 28,
-            opacity: 0.15,
-            fontWeight: 800,
-            color: '#2D62C8',
-            animation: 'notfound-float 2.5s ease-in-out infinite 0.3s',
-          }}
-        >
-          ?
-        </span>
-        <span
-          style={{
-            position: 'absolute',
-            bottom: 12,
-            left: -8,
-            fontSize: 20,
-            opacity: 0.1,
-            fontWeight: 800,
-            color: '#2D62C8',
-            animation: 'notfound-float 2.8s ease-in-out infinite 0.6s',
-          }}
-        >
-          ?
-        </span>
-      </div>
-
-      {/* 404 number */}
-      <h1
-        style={{
-          fontFamily: "'Outfit', -apple-system, sans-serif",
-          fontSize: 72,
-          fontWeight: 800,
-          margin: 0,
-          lineHeight: 1,
-          background: 'linear-gradient(135deg, #2D62C8 0%, #1a4494 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          letterSpacing: '-0.04em',
-        }}
-      >
-        404
-      </h1>
-
-      {/* Message */}
-      <h2
-        style={{
-          fontFamily: "'Outfit', -apple-system, sans-serif",
-          fontSize: 22,
-          fontWeight: 700,
-          margin: '8px 0 0',
-          color: 'var(--text-primary)',
-          letterSpacing: '-0.02em',
-        }}
-      >
-        {t('notfound.heading')}
-      </h2>
-      <p
-        style={{
-          fontSize: 14,
-          color: 'var(--text-muted)',
-          margin: '8px 0 0',
-          textAlign: 'center',
-          maxWidth: 400,
-          lineHeight: 1.6,
-        }}
-      >
-        {t('notfound.description')}
-      </p>
-
-      {/* Action buttons */}
       <div
         style={{
-          display: 'flex',
-          gap: 10,
+          position: 'absolute',
+          top: '15%',
+          left: '10%',
+          width: 380,
+          height: 380,
+          background: 'radial-gradient(circle, #d9ff3a 0%, transparent 70%)',
+          opacity: 0.3,
+          filter: 'blur(90px)',
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10%',
+          right: '12%',
+          width: 320,
+          height: 320,
+          background: 'radial-gradient(circle, #ff4d3a 0%, transparent 70%)',
+          opacity: 0.25,
+          filter: 'blur(90px)',
+          pointerEvents: 'none',
+        }}
+      />
+
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          onNavigate('/');
+        }}
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'inline-flex',
+          alignItems: 'baseline',
+          fontWeight: 800,
+          fontSize: 28,
+          letterSpacing: '-0.055em',
+          lineHeight: 1,
+          color: '#0d0f10',
+          textDecoration: 'none',
+          marginBottom: 48,
+        }}
+      >
+        conn<span>i</span>k
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'baseline',
+            background: '#d9ff3a',
+            color: '#0d0f10',
+            padding: '0.07em 0.14em 0.07em 0.09em',
+            borderRadius: '0.2em',
+            marginLeft: '0.02em',
+          }}
+        >
+          u<span style={{ color: '#ff4a1c' }}>.</span>
+        </span>
+      </a>
+
+      <h1
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          fontWeight: 800,
+          fontSize: 'clamp(120px, 22vw, 260px)',
+          letterSpacing: '-0.07em',
+          lineHeight: 0.88,
+          margin: 0,
+          color: '#0d0f10',
+        }}
+      >
+        4
+        <span
+          style={{
+            background: '#6b4eff',
+            color: '#fff',
+            padding: '0 12px',
+            borderRadius: 24,
+            display: 'inline-block',
+            transform: 'rotate(-3deg)',
+          }}
+        >
+          0
+        </span>
+        4
+      </h1>
+
+      <h2
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          fontWeight: 800,
+          fontSize: 'clamp(24px, 3.5vw, 40px)',
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
           marginTop: 28,
+          marginBottom: 14,
+          textAlign: 'center',
+          maxWidth: 640,
+        }}
+      >
+        Esta página no{' '}
+        <span style={{ background: '#ffe9b8', padding: '0 8px', borderRadius: 10 }}>existe</span>.
+      </h2>
+
+      <p
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          fontSize: 17,
+          color: '#2b2e30',
+          lineHeight: 1.5,
+          textAlign: 'center',
+          maxWidth: 460,
+          margin: '0 0 32px',
+          fontWeight: 500,
+        }}
+      >
+        {t('notFound.msg') ||
+          'Revisa la URL o vuelve al inicio. Si crees que es un error, avísanos.'}
+      </p>
+
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 1,
+          display: 'flex',
+          gap: 12,
           flexWrap: 'wrap',
           justifyContent: 'center',
         }}
@@ -150,137 +162,54 @@ export default function NotFound({ onNavigate }: Props) {
         <button
           onClick={() => onNavigate('/')}
           style={{
-            padding: '10px 28px',
+            background: '#0d0f10',
+            color: '#d9ff3a',
+            border: '2px solid #0d0f10',
+            borderRadius: 999,
+            padding: '12px 22px 12px 28px',
+            fontFamily: "'Funnel Display', -apple-system, sans-serif",
+            fontWeight: 800,
             fontSize: 14,
-            fontWeight: 600,
-            borderRadius: 10,
             cursor: 'pointer',
-            background: '#2D62C8',
-            color: '#fff',
-            border: 'none',
-            boxShadow: '0 2px 12px rgba(45,98,200,0.3)',
-            transition: 'transform 0.15s, box-shadow 0.15s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-1px)';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(45,98,200,0.4)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = '';
-            e.currentTarget.style.boxShadow = '0 2px 12px rgba(45,98,200,0.3)';
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 10,
           }}
         >
-          {t('notfound.homeBtn')}
+          Volver al inicio
+          <span
+            style={{
+              width: 24,
+              height: 24,
+              borderRadius: '50%',
+              background: '#d9ff3a',
+              color: '#0d0f10',
+              display: 'grid',
+              placeItems: 'center',
+              fontWeight: 900,
+              fontSize: 13,
+            }}
+          >
+            →
+          </span>
         </button>
         <button
-          onClick={() => onNavigate('/dashboard')}
+          onClick={() => onNavigate('/soporte')}
           style={{
-            padding: '10px 28px',
+            background: '#fff',
+            color: '#0d0f10',
+            border: '2px solid #0d0f10',
+            borderRadius: 999,
+            padding: '12px 22px',
+            fontFamily: "'Funnel Display', -apple-system, sans-serif",
+            fontWeight: 700,
             fontSize: 14,
-            fontWeight: 600,
-            borderRadius: 10,
             cursor: 'pointer',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-subtle)',
-            transition: 'background 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
         >
-          {t('sidebar.dashboard')}
-        </button>
-        <button
-          onClick={() => onNavigate('/courses')}
-          style={{
-            padding: '10px 28px',
-            fontSize: 14,
-            fontWeight: 600,
-            borderRadius: 10,
-            cursor: 'pointer',
-            background: 'var(--bg-secondary)',
-            color: 'var(--text-primary)',
-            border: '1px solid var(--border-subtle)',
-            transition: 'background 0.15s',
-          }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-hover)')}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg-secondary)')}
-        >
-          {t('nav.mySubjects')}
+          Contactar soporte
         </button>
       </div>
-
-      {/* Quick links */}
-      <div
-        style={{
-          marginTop: 40,
-          padding: '16px 24px',
-          borderRadius: 12,
-          background: 'var(--bg-secondary)',
-          border: '1px solid var(--border-subtle)',
-          maxWidth: 460,
-          width: '100%',
-        }}
-      >
-        <p
-          style={{
-            margin: '0 0 10px',
-            fontSize: 12,
-            fontWeight: 600,
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          {t('notfound.quickLinks')}
-        </p>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {[
-            { path: '/feed', label: t('sidebar.feed') },
-            { path: '/communities', label: t('sidebar.communities') },
-            { path: '/jobs', label: t('sidebar.jobBoard') },
-            { path: '/events', label: t('sidebar.events') },
-            { path: '/mentorship', label: 'Tutorias' },
-            { path: '/friends', label: 'Amigos' },
-            { path: '/messages', label: t('sidebar.messages') },
-            { path: '/marketplace', label: 'Marketplace' },
-          ].map((link) => (
-            <button
-              key={link.path}
-              onClick={() => onNavigate(link.path)}
-              style={{
-                padding: '5px 14px',
-                fontSize: 12,
-                fontWeight: 500,
-                borderRadius: 8,
-                cursor: 'pointer',
-                background: 'var(--bg-primary)',
-                color: 'var(--accent-blue)',
-                border: '1px solid var(--border-subtle)',
-                transition: 'background 0.12s, color 0.12s',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--accent-blue)';
-                e.currentTarget.style.color = '#fff';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'var(--bg-primary)';
-                e.currentTarget.style.color = 'var(--accent-blue)';
-              }}
-            >
-              {link.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* CSS animation */}
-      <style>{`
-        @keyframes notfound-float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-      `}</style>
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import fdStyles from './Feed.module.css';
 import {
   Home,
   Camera,
@@ -425,6 +426,22 @@ export default function Feed({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={fdStyles.topProgress}>
+        <div className={fdStyles.tpLeft}>
+          <span className={fdStyles.pulse} aria-hidden="true" />
+          <span>Feed</span>
+        </div>
+        <span>{t('feed.subtitle')}</span>
+      </div>
+      <div className={fdStyles.heroWrap}>
+        <h1 className={fdStyles.heroH1}>
+          <span className={fdStyles.hlCyan}>Comunidad</span>.
+        </h1>
+        <p className={fdStyles.heroLead}>
+          Lo que pasa en tu universidad y tu carrera ahora: apuntes compartidos, eventos, tutorías,
+          preguntas resueltas por tu comunidad.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>

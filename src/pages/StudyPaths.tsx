@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { api } from '../services/api';
 import { Project, QuizQuestion } from '../types';
 import TierGate from '../components/TierGate';
+import spStyles from './StudyPaths.module.css';
 
 interface Props {
   projects: Project[];
@@ -1493,6 +1494,14 @@ export default function StudyPaths({ projects, onNavigate }: Props) {
   return (
     <div style={S.page}>
       <style>{pulseCSS}</style>
+
+      <div className={spStyles.topProgress}>
+        <div className={spStyles.tpLeft}>
+          <span className={spStyles.pulse} aria-hidden="true" />
+          <span>Rutas de estudio</span>
+        </div>
+        <span>Desde documentos hasta dominar la materia</span>
+      </div>
 
       {/* Header */}
       <div style={S.header}>

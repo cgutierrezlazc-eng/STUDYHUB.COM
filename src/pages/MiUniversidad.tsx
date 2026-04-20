@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, lazy, Suspense } from 'react';
 import { api } from '../services/api';
+import muStyles from './MiUniversidad.module.css';
 
 // Profile embebido para el formulario de conexión LMS
 const Profile = lazy(() => import('./Profile'));
@@ -3009,881 +3010,932 @@ export default function MiUniversidad({ onNavigate }: Props) {
   const { connection, current_courses, past_courses, new_items_by_course, total_new } = hub!;
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 0 60px' }}>
-      {/* ── Barra de plataforma conectada — SIEMPRE ARRIBA ── */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          background: 'linear-gradient(135deg, rgba(10,30,70,0.7) 0%, rgba(26,86,219,0.5) 100%)',
-          border: '1px solid rgba(59,130,246,0.25)',
-          borderRadius: 12,
-          padding: '10px 16px',
-          marginBottom: 20,
-          flexWrap: 'wrap',
-          gap: 8,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: '50%',
-              background: '#10b981',
-              flexShrink: 0,
-              boxShadow: '0 0 6px #10b981',
-            }}
-          />
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
-            {connection?.platform_name}
-          </span>
-          {connection?.last_scan && (
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
-              · {timeAgo(connection.last_scan)}
-            </span>
-          )}
+    <div className={muStyles.muRoot}>
+      <div className={muStyles.topProgress}>
+        <div className={muStyles.tpLeft}>
+          <span className={muStyles.pulse} aria-hidden="true" />
+          <span>Mi universidad</span>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button
-            onClick={handleScan}
-            disabled={scanning}
-            style={{
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 8,
-              padding: '5px 13px',
-              fontSize: 12,
-              cursor: scanning ? 'not-allowed' : 'pointer',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-            }}
-          >
-            {scanning ? '⏳' : '↻'} Sincronizar
-          </button>
-          <button
-            onClick={() => setShowConfig(true)}
-            style={{
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              borderRadius: 8,
-              padding: '5px 13px',
-              fontSize: 12,
-              cursor: 'pointer',
-              color: 'rgba(255,255,255,0.7)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-            }}
-          >
-            ⚙ Cambiar plataforma
-          </button>
-        </div>
+        <span>
+          {connection?.platform_name
+            ? `Conectado con ${connection.platform_name}`
+            : 'Conecta tu plataforma universitaria'}
+        </span>
       </div>
-
-      {/* Título del módulo */}
-      <h1
-        style={{
-          margin: '0 0 20px',
-          fontSize: 22,
-          fontWeight: 700,
-          color: 'var(--text-primary)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
-        🎓 Mi Universidad
-      </h1>
-
-      {(scanMsg || bulkImportMsg) && (
-        <div
-          style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border)',
-            borderRadius: 10,
-            padding: '10px 16px',
-            marginBottom: 16,
-            fontSize: 13,
-            color: 'var(--text-muted)',
-          }}
-        >
-          {scanMsg || bulkImportMsg}
-        </div>
-      )}
-
-      {/* ── Layout 2 columnas: contenido principal + sidebar calendario ── */}
-      <div
-        style={{ display: 'grid', gridTemplateColumns: '1fr 284px', gap: 20, alignItems: 'start' }}
-      >
-        <div>
-          {/* ── COLUMNA PRINCIPAL ── */}
-
-          {/* ── Semestre actual: Asignaturas ──────────────────────── */}
-          <div style={{ marginBottom: 28 }}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 14,
-              }}
-            >
-              <div
+      <main className={muStyles.main}>
+        <section className={muStyles.hero}>
+          <div className={muStyles.heroCopy}>
+            <h1 className={muStyles.heroH1}>
+              Tu <span className={muStyles.hlViolet}>universidad</span>.
+              <br />
+              Sincronizada.
+            </h1>
+            <p className={muStyles.heroLead}>
+              Conecta U-Cursos, Canvas, Moodle u otra plataforma. <strong>Conniku</strong> importa
+              tu calendario, asignaturas, documentos y notas automáticamente.
+            </p>
+          </div>
+        </section>
+        <div className={muStyles.inner}>
+          {/* ── Barra de plataforma conectada — SIEMPRE ARRIBA ── */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background:
+                'linear-gradient(135deg, rgba(10,30,70,0.7) 0%, rgba(26,86,219,0.5) 100%)',
+              border: '1px solid rgba(59,130,246,0.25)',
+              borderRadius: 12,
+              padding: '10px 16px',
+              marginBottom: 20,
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span
                 style={{
-                  fontSize: 11,
-                  fontWeight: 800,
-                  letterSpacing: '0.08em',
-                  textTransform: 'uppercase',
-                  color: 'var(--text-muted)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  flexShrink: 0,
+                  boxShadow: '0 0 6px #10b981',
                 }}
-              >
-                📅 Semestre actual — en curso
-                {current_courses.length > 0 && (
-                  <span
-                    style={{
-                      background: 'var(--accent)',
-                      color: '#fff',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: '1px 8px',
-                      borderRadius: 99,
-                    }}
-                  >
-                    {current_courses.length}
-                  </span>
-                )}
-              </div>
+              />
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
+                {connection?.platform_name}
+              </span>
+              {connection?.last_scan && (
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)' }}>
+                  · {timeAgo(connection.last_scan)}
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
               <button
-                onClick={openAddModal}
+                onClick={handleScan}
+                disabled={scanning}
                 style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 9,
-                  padding: '6px 14px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  borderRadius: 8,
+                  padding: '5px 13px',
                   fontSize: 12,
-                  fontWeight: 700,
-                  cursor: 'pointer',
+                  cursor: scanning ? 'not-allowed' : 'pointer',
+                  color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 5,
                 }}
               >
-                + Agregar
+                {scanning ? '⏳' : '↻'} Sincronizar
               </button>
-            </div>
-
-            {current_courses.length === 0 ? (
-              <div
-                style={{
-                  background: 'var(--bg-card)',
-                  border: '2px dashed var(--border)',
-                  borderRadius: 14,
-                  padding: '36px 24px',
-                  textAlign: 'center',
-                }}
-              >
-                <p style={{ fontSize: 28, margin: '0 0 8px' }}>🎓</p>
-                <p
-                  style={{
-                    fontSize: 15,
-                    fontWeight: 600,
-                    color: 'var(--text-primary)',
-                    margin: '0 0 6px',
-                  }}
-                >
-                  Aquí van tus asignaturas
-                </p>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>
-                  Agrega las asignaturas del semestre actual para ver su material organizado.
-                </p>
-                <button
-                  onClick={openAddModal}
-                  style={{
-                    background: 'var(--accent)',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: 10,
-                    padding: '10px 22px',
-                    fontSize: 14,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                  }}
-                >
-                  + Agregar asignaturas
-                </button>
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
-                  gap: 12,
-                }}
-              >
-                {current_courses.map((c) => (
-                  <CourseCard
-                    key={c.id}
-                    course={c}
-                    onClick={() => openCourse(c)}
-                    renamingId={renamingId}
-                    renameValue={renameValue}
-                    onStartRename={(id, current) => {
-                      setRenamingId(id);
-                      setRenameValue(current);
-                    }}
-                    onRenameChange={setRenameValue}
-                    onRenameSubmit={handleRename}
-                    onRenameCancel={() => setRenamingId(null)}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ── Semestres anteriores (colapsable) ─────────────────── */}
-          {past_courses.length > 0 && (
-            <div style={{ marginBottom: 28 }}>
               <button
-                onClick={() => setPastOpen((p) => !p)}
+                onClick={() => setShowConfig(true)}
                 style={{
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 8,
+                  padding: '5px 13px',
+                  fontSize: 12,
+                  cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.7)',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 8,
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px 0',
-                  marginBottom: pastOpen ? 12 : 0,
-                  width: '100%',
+                  gap: 5,
                 }}
               >
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  🗂 Semestres anteriores ({past_courses.length})
-                </span>
-                <span
-                  style={{
-                    color: 'var(--text-muted)',
-                    fontSize: 11,
-                    marginLeft: 4,
-                    transform: pastOpen ? 'rotate(180deg)' : 'none',
-                    transition: 'transform 0.2s',
-                    display: 'inline-block',
-                  }}
-                >
-                  ▼
-                </span>
-                <div
-                  style={{ flex: 1, height: 1, background: 'var(--border-subtle)', marginLeft: 8 }}
-                />
+                ⚙ Cambiar plataforma
               </button>
-              {pastOpen && (
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                    gap: 10,
-                  }}
-                >
-                  {past_courses.map((c) => (
-                    <CourseCard
-                      key={c.id}
-                      course={c}
-                      onClick={() => openCourse(c)}
-                      muted
-                      renamingId={renamingId}
-                      renameValue={renameValue}
-                      onStartRename={(id, current) => {
-                        setRenamingId(id);
-                        setRenameValue(current);
-                      }}
-                      onRenameChange={setRenameValue}
-                      onRenameSubmit={handleRename}
-                      onRenameCancel={() => setRenamingId(null)}
-                    />
-                  ))}
-                </div>
-              )}
+            </div>
+          </div>
+
+          {/* Título del módulo */}
+          <h1
+            style={{
+              margin: '0 0 20px',
+              fontSize: 22,
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            🎓 Mi Universidad
+          </h1>
+
+          {(scanMsg || bulkImportMsg) && (
+            <div
+              style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border)',
+                borderRadius: 10,
+                padding: '10px 16px',
+                marginBottom: 16,
+                fontSize: 13,
+                color: 'var(--text-muted)',
+              }}
+            >
+              {scanMsg || bulkImportMsg}
             </div>
           )}
 
-          {/* ── Material nuevo detectado (agrupado por asignatura) ── */}
-          {total_new > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: 14,
-                }}
-              >
+          {/* ── Layout 2 columnas: contenido principal + sidebar calendario ── */}
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 284px',
+              gap: 20,
+              alignItems: 'start',
+            }}
+          >
+            <div>
+              {/* ── COLUMNA PRINCIPAL ── */}
+
+              {/* ── Semestre actual: Asignaturas ──────────────────────── */}
+              <div style={{ marginBottom: 28 }}>
                 <div
                   style={{
-                    fontSize: 11,
-                    fontWeight: 800,
-                    letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-muted)',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 8,
+                    justifyContent: 'space-between',
+                    marginBottom: 14,
                   }}
                 >
-                  📥 Material nuevo detectado
-                  <span
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 800,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--text-muted)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    📅 Semestre actual — en curso
+                    {current_courses.length > 0 && (
+                      <span
+                        style={{
+                          background: 'var(--accent)',
+                          color: '#fff',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: '1px 8px',
+                          borderRadius: 99,
+                        }}
+                      >
+                        {current_courses.length}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={openAddModal}
                     style={{
                       background: 'var(--accent)',
                       color: '#fff',
-                      fontSize: 10,
+                      border: 'none',
+                      borderRadius: 9,
+                      padding: '6px 14px',
+                      fontSize: 12,
                       fontWeight: 700,
-                      padding: '1px 8px',
-                      borderRadius: 99,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
                     }}
                   >
-                    {total_new} archivo{total_new !== 1 ? 's' : ''}
-                  </span>
+                    + Agregar
+                  </button>
                 </div>
-                <button
-                  onClick={markNewSeen}
-                  style={{
-                    background: 'none',
-                    border: '1px solid var(--border)',
-                    borderRadius: 7,
-                    padding: '4px 12px',
-                    fontSize: 11,
-                    cursor: 'pointer',
-                    color: 'var(--text-muted)',
-                  }}
-                >
-                  ✓ Marcar todo visto
-                </button>
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {Object.entries(new_items_by_course).map(([courseId, group]) => {
-                  const linkedCourse = [...current_courses, ...past_courses].find(
-                    (c) => c.id === courseId
-                  );
-                  const isLinked = !!linkedCourse?.conniku_project_id;
-                  const isOpen = openNovedades.has(courseId);
-                  const displayLabel =
-                    linkedCourse?.display_name || linkedCourse?.name || group.course_name;
-                  return (
-                    <div
-                      key={courseId}
+                {current_courses.length === 0 ? (
+                  <div
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '2px dashed var(--border)',
+                      borderRadius: 14,
+                      padding: '36px 24px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <p style={{ fontSize: 28, margin: '0 0 8px' }}>🎓</p>
+                    <p
                       style={{
-                        background: 'var(--bg-card)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 13,
-                        overflow: 'hidden',
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: 'var(--text-primary)',
+                        margin: '0 0 6px',
                       }}
                     >
-                      {/* Header del grupo */}
-                      <button
-                        onClick={() =>
-                          setOpenNovedades((prev) => {
-                            const s = new Set(prev);
-                            s.has(courseId) ? s.delete(courseId) : s.add(courseId);
-                            return s;
-                          })
-                        }
+                      Aquí van tus asignaturas
+                    </p>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px' }}>
+                      Agrega las asignaturas del semestre actual para ver su material organizado.
+                    </p>
+                    <button
+                      onClick={openAddModal}
+                      style={{
+                        background: 'var(--accent)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: 10,
+                        padding: '10px 22px',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      + Agregar asignaturas
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))',
+                      gap: 12,
+                    }}
+                  >
+                    {current_courses.map((c) => (
+                      <CourseCard
+                        key={c.id}
+                        course={c}
+                        onClick={() => openCourse(c)}
+                        renamingId={renamingId}
+                        renameValue={renameValue}
+                        onStartRename={(id, current) => {
+                          setRenamingId(id);
+                          setRenameValue(current);
+                        }}
+                        onRenameChange={setRenameValue}
+                        onRenameSubmit={handleRename}
+                        onRenameCancel={() => setRenamingId(null)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Semestres anteriores (colapsable) ─────────────────── */}
+              {past_courses.length > 0 && (
+                <div style={{ marginBottom: 28 }}>
+                  <button
+                    onClick={() => setPastOpen((p) => !p)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '8px 0',
+                      marginBottom: pastOpen ? 12 : 0,
+                      width: '100%',
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      🗂 Semestres anteriores ({past_courses.length})
+                    </span>
+                    <span
+                      style={{
+                        color: 'var(--text-muted)',
+                        fontSize: 11,
+                        marginLeft: 4,
+                        transform: pastOpen ? 'rotate(180deg)' : 'none',
+                        transition: 'transform 0.2s',
+                        display: 'inline-block',
+                      }}
+                    >
+                      ▼
+                    </span>
+                    <div
+                      style={{
+                        flex: 1,
+                        height: 1,
+                        background: 'var(--border-subtle)',
+                        marginLeft: 8,
+                      }}
+                    />
+                  </button>
+                  {pastOpen && (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                        gap: 10,
+                      }}
+                    >
+                      {past_courses.map((c) => (
+                        <CourseCard
+                          key={c.id}
+                          course={c}
+                          onClick={() => openCourse(c)}
+                          muted
+                          renamingId={renamingId}
+                          renameValue={renameValue}
+                          onStartRename={(id, current) => {
+                            setRenamingId(id);
+                            setRenameValue(current);
+                          }}
+                          onRenameChange={setRenameValue}
+                          onRenameSubmit={handleRename}
+                          onRenameCancel={() => setRenamingId(null)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Material nuevo detectado (agrupado por asignatura) ── */}
+              {total_new > 0 && (
+                <div style={{ marginBottom: 24 }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 14,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 800,
+                        letterSpacing: '0.08em',
+                        textTransform: 'uppercase',
+                        color: 'var(--text-muted)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                      }}
+                    >
+                      📥 Material nuevo detectado
+                      <span
                         style={{
-                          width: '100%',
-                          background: 'none',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: '13px 16px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: 10,
+                          background: 'var(--accent)',
+                          color: '#fff',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: '1px 8px',
+                          borderRadius: 99,
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
-                          <span style={{ fontSize: 16 }}>📘</span>
-                          <span
-                            style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}
-                          >
-                            {displayLabel}
-                          </span>
-                          <span
-                            style={{
-                              background: 'var(--accent)',
-                              color: '#fff',
-                              fontSize: 10,
-                              fontWeight: 700,
-                              padding: '2px 8px',
-                              borderRadius: 99,
-                            }}
-                          >
-                            {group.items.length} nuevo{group.items.length !== 1 ? 's' : ''}
-                          </span>
-                          {group.items[0]?.detected_at && (
-                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
-                              {new Date(group.items[0].detected_at).toLocaleDateString('es-CL', {
-                                day: 'numeric',
-                                month: 'short',
-                              })}
-                            </span>
-                          )}
-                        </div>
-                        <span
+                        {total_new} archivo{total_new !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <button
+                      onClick={markNewSeen}
+                      style={{
+                        background: 'none',
+                        border: '1px solid var(--border)',
+                        borderRadius: 7,
+                        padding: '4px 12px',
+                        fontSize: 11,
+                        cursor: 'pointer',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      ✓ Marcar todo visto
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {Object.entries(new_items_by_course).map(([courseId, group]) => {
+                      const linkedCourse = [...current_courses, ...past_courses].find(
+                        (c) => c.id === courseId
+                      );
+                      const isLinked = !!linkedCourse?.conniku_project_id;
+                      const isOpen = openNovedades.has(courseId);
+                      const displayLabel =
+                        linkedCourse?.display_name || linkedCourse?.name || group.course_name;
+                      return (
+                        <div
+                          key={courseId}
                           style={{
-                            color: 'var(--text-muted)',
-                            fontSize: 11,
-                            transform: isOpen ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.2s',
-                            display: 'inline-block',
+                            background: 'var(--bg-card)',
+                            border: '1px solid var(--border)',
+                            borderRadius: 13,
+                            overflow: 'hidden',
                           }}
                         >
-                          ▼
-                        </span>
-                      </button>
-
-                      {/* Cuerpo del grupo */}
-                      {isOpen && (
-                        <div style={{ padding: '0 16px 14px' }}>
-                          {/* Preview de archivos (máx 4) */}
-                          <div
+                          {/* Header del grupo */}
+                          <button
+                            onClick={() =>
+                              setOpenNovedades((prev) => {
+                                const s = new Set(prev);
+                                s.has(courseId) ? s.delete(courseId) : s.add(courseId);
+                                return s;
+                              })
+                            }
                             style={{
+                              width: '100%',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: '13px 16px',
                               display: 'flex',
-                              flexDirection: 'column',
-                              gap: 4,
-                              marginBottom: 12,
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              gap: 10,
                             }}
                           >
-                            {group.items.slice(0, 4).map((item) => (
-                              <div
-                                key={item.id}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+                              <span style={{ fontSize: 16 }}>📘</span>
+                              <span
                                 style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: 9,
-                                  padding: '6px 10px',
-                                  borderRadius: 8,
-                                  background: 'var(--bg-secondary)',
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  color: 'var(--text-primary)',
                                 }}
                               >
-                                <span style={{ fontSize: 14, flexShrink: 0 }}>
-                                  {TYPE_ICON[item.item_type] || '📄'}
+                                {displayLabel}
+                              </span>
+                              <span
+                                style={{
+                                  background: 'var(--accent)',
+                                  color: '#fff',
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: '2px 8px',
+                                  borderRadius: 99,
+                                }}
+                              >
+                                {group.items.length} nuevo{group.items.length !== 1 ? 's' : ''}
+                              </span>
+                              {group.items[0]?.detected_at && (
+                                <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                  {new Date(group.items[0].detected_at).toLocaleDateString(
+                                    'es-CL',
+                                    {
+                                      day: 'numeric',
+                                      month: 'short',
+                                    }
+                                  )}
                                 </span>
-                                <span
+                              )}
+                            </div>
+                            <span
+                              style={{
+                                color: 'var(--text-muted)',
+                                fontSize: 11,
+                                transform: isOpen ? 'rotate(180deg)' : 'none',
+                                transition: 'transform 0.2s',
+                                display: 'inline-block',
+                              }}
+                            >
+                              ▼
+                            </span>
+                          </button>
+
+                          {/* Cuerpo del grupo */}
+                          {isOpen && (
+                            <div style={{ padding: '0 16px 14px' }}>
+                              {/* Preview de archivos (máx 4) */}
+                              <div
+                                style={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: 4,
+                                  marginBottom: 12,
+                                }}
+                              >
+                                {group.items.slice(0, 4).map((item) => (
+                                  <div
+                                    key={item.id}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: 9,
+                                      padding: '6px 10px',
+                                      borderRadius: 8,
+                                      background: 'var(--bg-secondary)',
+                                    }}
+                                  >
+                                    <span style={{ fontSize: 14, flexShrink: 0 }}>
+                                      {TYPE_ICON[item.item_type] || '📄'}
+                                    </span>
+                                    <span
+                                      style={{
+                                        fontSize: 12,
+                                        color: 'var(--text-primary)',
+                                        flex: 1,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {item.item_name}
+                                    </span>
+                                    {item.topic_name && (
+                                      <span
+                                        style={{
+                                          fontSize: 10,
+                                          color: 'var(--text-muted)',
+                                          background: 'var(--bg-card)',
+                                          borderRadius: 5,
+                                          padding: '1px 6px',
+                                          flexShrink: 0,
+                                        }}
+                                      >
+                                        {item.topic_name}
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                                {group.items.length > 4 && (
+                                  <p
+                                    style={{
+                                      margin: 0,
+                                      fontSize: 12,
+                                      color: 'var(--text-muted)',
+                                      padding: '4px 10px',
+                                      fontStyle: 'italic',
+                                    }}
+                                  >
+                                    + {group.items.length - 4} archivo
+                                    {group.items.length - 4 !== 1 ? 's' : ''} más...
+                                  </p>
+                                )}
+                              </div>
+                              {/* Botones de acción */}
+                              {bulkImporting === courseId && bulkImportMsg && (
+                                <p
                                   style={{
+                                    margin: '0 0 8px',
                                     fontSize: 12,
-                                    color: 'var(--text-primary)',
+                                    color: 'var(--text-muted)',
+                                  }}
+                                >
+                                  {bulkImportMsg}
+                                </p>
+                              )}
+                              <div style={{ display: 'flex', gap: 8 }}>
+                                <button
+                                  onClick={() => handleBulkImport(courseId)}
+                                  disabled={bulkImporting === courseId}
+                                  style={{
                                     flex: 1,
+                                    padding: '8px 14px',
+                                    borderRadius: 8,
+                                    border: 'none',
+                                    background:
+                                      bulkImporting === courseId
+                                        ? 'var(--bg-secondary)'
+                                        : isLinked
+                                          ? 'var(--accent)'
+                                          : 'var(--accent-orange, #f97316)',
+                                    color:
+                                      bulkImporting === courseId ? 'var(--text-muted)' : '#fff',
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    cursor: bulkImporting === courseId ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 5,
+                                  }}
+                                >
+                                  {bulkImporting === courseId
+                                    ? '⏳ Importando...'
+                                    : isLinked
+                                      ? `📌 Importar a ${displayLabel}`
+                                      : '🚀 Importar asignatura'}
+                                </button>
+                                <button
+                                  onClick={() => linkedCourse && openCourse(linkedCourse)}
+                                  style={{
+                                    padding: '8px 14px',
+                                    borderRadius: 8,
+                                    border: '1px solid var(--border)',
+                                    background: 'transparent',
+                                    color: 'var(--text-muted)',
+                                    fontSize: 12,
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  Ver todos
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* /columna principal */}
+
+            {/* ══ SIDEBAR DERECHO — CALENDARIO ══════════════════════════ */}
+            <CalendarSidebar
+              events={calEvents}
+              prefs={calPrefs}
+              syncing={calSyncing}
+              msg={calMsg}
+              month={calMonth}
+              onMonthChange={setCalMonth}
+              onSync={handleSyncCalendar}
+              onPrefChange={updatePref}
+              onEventClick={handleCalEventClick}
+            />
+          </div>
+          {/* /grid */}
+
+          {/* ── Modal agregar asignaturas ──────────────────────────── */}
+          {showAddModal && (
+            <div
+              style={{
+                position: 'fixed',
+                inset: 0,
+                background: 'rgba(0,0,0,0.6)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1100,
+                padding: 16,
+              }}
+            >
+              <div
+                style={{
+                  background: 'var(--bg-card)',
+                  borderRadius: 18,
+                  width: '100%',
+                  maxWidth: 520,
+                  maxHeight: '85vh',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
+                }}
+              >
+                {/* Modal header */}
+                <div
+                  style={{
+                    padding: '20px 24px 0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Agregar asignaturas</h3>
+                  <button
+                    onClick={() => !adding && setShowAddModal(false)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: 20,
+                      cursor: 'pointer',
+                      color: 'var(--text-muted)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+
+                {/* Progress overlay */}
+                {adding && (
+                  <div style={{ padding: '16px 24px' }}>
+                    <div
+                      style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: 16 }}
+                    >
+                      {addProgress.map((msg, i) => (
+                        <p
+                          key={i}
+                          style={{
+                            margin: i === 0 ? 0 : '6px 0 0',
+                            fontSize: 13,
+                            color: 'var(--text-muted)',
+                          }}
+                        >
+                          {msg}
+                        </p>
+                      ))}
+                      <p style={{ marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+                        💡 Este proceso puede tomar 30–90 segundos dependiendo de la cantidad de
+                        archivos y la velocidad de tu campus virtual.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {!adding && (
+                  <>
+                    {/* Tabs */}
+                    <div
+                      style={{
+                        padding: '14px 24px 0',
+                        display: 'flex',
+                        gap: 4,
+                        background: 'var(--bg-secondary)',
+                        margin: '14px 24px 0',
+                        borderRadius: 10,
+                      }}
+                    >
+                      {(['en_curso', 'anteriores'] as const).map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => setAddTab(t)}
+                          style={{
+                            flex: 1,
+                            padding: '8px',
+                            border: 'none',
+                            borderRadius: 8,
+                            cursor: 'pointer',
+                            fontSize: 13,
+                            fontWeight: addTab === t ? 600 : 400,
+                            background: addTab === t ? 'var(--bg-card)' : 'transparent',
+                            color: addTab === t ? 'var(--text-primary)' : 'var(--text-muted)',
+                          }}
+                        >
+                          {t === 'en_curso'
+                            ? `📚 En curso (${available?.en_curso?.length ?? '…'})`
+                            : `📦 Anteriores (${available?.anteriores?.length ?? '…'})`}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Lista */}
+                    <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px' }}>
+                      {availableLoading ? (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: '24px 0',
+                            color: 'var(--text-muted)',
+                            fontSize: 13,
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 20,
+                              height: 20,
+                              border: '2px solid var(--border)',
+                              borderTopColor: 'var(--accent)',
+                              borderRadius: '50%',
+                              animation: 'spin 0.9s linear infinite',
+                            }}
+                          />
+                          Obteniendo asignaturas desde tu campus virtual…
+                        </div>
+                      ) : (
+                        (() => {
+                          const list =
+                            addTab === 'en_curso'
+                              ? available?.en_curso || []
+                              : available?.anteriores || [];
+                          if (list.length === 0)
+                            return (
+                              <p
+                                style={{
+                                  color: 'var(--text-muted)',
+                                  fontSize: 13,
+                                  padding: '24px 0',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {addTab === 'en_curso'
+                                  ? 'No hay asignaturas en curso sin agregar.'
+                                  : 'No hay asignaturas anteriores disponibles.'}
+                              </p>
+                            );
+                          return list.map((c: any) => (
+                            <label
+                              key={c.id}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 12,
+                                padding: '10px 0',
+                                borderBottom: '1px solid var(--border)',
+                                cursor: 'pointer',
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={selectedToAdd.has(c.id)}
+                                onChange={() => toggleSelect(c.id)}
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  accentColor: 'var(--accent)',
+                                  cursor: 'pointer',
+                                  flexShrink: 0,
+                                }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <p
+                                  style={{
+                                    margin: 0,
+                                    fontSize: 13,
+                                    fontWeight: 500,
+                                    color: 'var(--text-primary)',
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                   }}
                                 >
-                                  {item.item_name}
-                                </span>
-                                {item.topic_name && (
-                                  <span
-                                    style={{
-                                      fontSize: 10,
-                                      color: 'var(--text-muted)',
-                                      background: 'var(--bg-card)',
-                                      borderRadius: 5,
-                                      padding: '1px 6px',
-                                      flexShrink: 0,
-                                    }}
+                                  {c.name}
+                                </p>
+                                {c.short_name && (
+                                  <p
+                                    style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}
                                   >
-                                    {item.topic_name}
-                                  </span>
+                                    {c.short_name}
+                                  </p>
                                 )}
                               </div>
-                            ))}
-                            {group.items.length > 4 && (
-                              <p
-                                style={{
-                                  margin: 0,
-                                  fontSize: 12,
-                                  color: 'var(--text-muted)',
-                                  padding: '4px 10px',
-                                  fontStyle: 'italic',
-                                }}
-                              >
-                                + {group.items.length - 4} archivo
-                                {group.items.length - 4 !== 1 ? 's' : ''} más...
-                              </p>
-                            )}
-                          </div>
-                          {/* Botones de acción */}
-                          {bulkImporting === courseId && bulkImportMsg && (
-                            <p
-                              style={{
-                                margin: '0 0 8px',
-                                fontSize: 12,
-                                color: 'var(--text-muted)',
-                              }}
-                            >
-                              {bulkImportMsg}
-                            </p>
-                          )}
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button
-                              onClick={() => handleBulkImport(courseId)}
-                              disabled={bulkImporting === courseId}
-                              style={{
-                                flex: 1,
-                                padding: '8px 14px',
-                                borderRadius: 8,
-                                border: 'none',
-                                background:
-                                  bulkImporting === courseId
-                                    ? 'var(--bg-secondary)'
-                                    : isLinked
-                                      ? 'var(--accent)'
-                                      : 'var(--accent-orange, #f97316)',
-                                color: bulkImporting === courseId ? 'var(--text-muted)' : '#fff',
-                                fontSize: 12,
-                                fontWeight: 700,
-                                cursor: bulkImporting === courseId ? 'not-allowed' : 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 5,
-                              }}
-                            >
-                              {bulkImporting === courseId
-                                ? '⏳ Importando...'
-                                : isLinked
-                                  ? `📌 Importar a ${displayLabel}`
-                                  : '🚀 Importar asignatura'}
-                            </button>
-                            <button
-                              onClick={() => linkedCourse && openCourse(linkedCourse)}
-                              style={{
-                                padding: '8px 14px',
-                                borderRadius: 8,
-                                border: '1px solid var(--border)',
-                                background: 'transparent',
-                                color: 'var(--text-muted)',
-                                fontSize: 12,
-                                fontWeight: 600,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Ver todos
-                            </button>
-                          </div>
-                        </div>
+                            </label>
+                          ));
+                        })()
                       )}
                     </div>
-                  );
-                })}
+
+                    {/* Info */}
+                    <div
+                      style={{
+                        padding: '10px 24px',
+                        background: 'rgba(59,130,246,0.06)',
+                        borderTop: '1px solid var(--border)',
+                      }}
+                    >
+                      <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
+                        ℹ️ Importará todo el material (archivos, tareas, URLs) organizado por
+                        módulos. Puede tomar 30–90 segundos según la cantidad de archivos.
+                      </p>
+                    </div>
+
+                    {/* Footer */}
+                    <div
+                      style={{
+                        padding: '14px 24px',
+                        display: 'flex',
+                        gap: 10,
+                        borderTop: '1px solid var(--border)',
+                      }}
+                    >
+                      <button
+                        onClick={() => setShowAddModal(false)}
+                        style={{
+                          flex: 1,
+                          background: 'var(--bg-secondary)',
+                          border: '1px solid var(--border)',
+                          borderRadius: 10,
+                          padding: 10,
+                          fontSize: 14,
+                          cursor: 'pointer',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={handleAddCourses}
+                        disabled={selectedToAdd.size === 0}
+                        style={{
+                          flex: 2,
+                          background:
+                            selectedToAdd.size === 0 ? 'var(--bg-secondary)' : 'var(--accent)',
+                          color: selectedToAdd.size === 0 ? 'var(--text-muted)' : '#fff',
+                          border: 'none',
+                          borderRadius: 10,
+                          padding: 10,
+                          fontSize: 14,
+                          fontWeight: 600,
+                          cursor: selectedToAdd.size === 0 ? 'not-allowed' : 'pointer',
+                        }}
+                      >
+                        Agregar{' '}
+                        {selectedToAdd.size > 0
+                          ? `${selectedToAdd.size} asignatura${selectedToAdd.size !== 1 ? 's' : ''}`
+                          : 'asignaturas'}{' '}
+                        →
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
         </div>
-        {/* /columna principal */}
-
-        {/* ══ SIDEBAR DERECHO — CALENDARIO ══════════════════════════ */}
-        <CalendarSidebar
-          events={calEvents}
-          prefs={calPrefs}
-          syncing={calSyncing}
-          msg={calMsg}
-          month={calMonth}
-          onMonthChange={setCalMonth}
-          onSync={handleSyncCalendar}
-          onPrefChange={updatePref}
-          onEventClick={handleCalEventClick}
-        />
-      </div>
-      {/* /grid */}
-
-      {/* ── Modal agregar asignaturas ──────────────────────────── */}
-      {showAddModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1100,
-            padding: 16,
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--bg-card)',
-              borderRadius: 18,
-              width: '100%',
-              maxWidth: 520,
-              maxHeight: '85vh',
-              display: 'flex',
-              flexDirection: 'column',
-              boxShadow: '0 24px 60px rgba(0,0,0,0.4)',
-            }}
-          >
-            {/* Modal header */}
-            <div
-              style={{
-                padding: '20px 24px 0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Agregar asignaturas</h3>
-              <button
-                onClick={() => !adding && setShowAddModal(false)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  fontSize: 20,
-                  cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  lineHeight: 1,
-                }}
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Progress overlay */}
-            {adding && (
-              <div style={{ padding: '16px 24px' }}>
-                <div style={{ background: 'var(--bg-secondary)', borderRadius: 12, padding: 16 }}>
-                  {addProgress.map((msg, i) => (
-                    <p
-                      key={i}
-                      style={{
-                        margin: i === 0 ? 0 : '6px 0 0',
-                        fontSize: 13,
-                        color: 'var(--text-muted)',
-                      }}
-                    >
-                      {msg}
-                    </p>
-                  ))}
-                  <p style={{ marginTop: 12, fontSize: 12, color: 'var(--text-muted)' }}>
-                    💡 Este proceso puede tomar 30–90 segundos dependiendo de la cantidad de
-                    archivos y la velocidad de tu campus virtual.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {!adding && (
-              <>
-                {/* Tabs */}
-                <div
-                  style={{
-                    padding: '14px 24px 0',
-                    display: 'flex',
-                    gap: 4,
-                    background: 'var(--bg-secondary)',
-                    margin: '14px 24px 0',
-                    borderRadius: 10,
-                  }}
-                >
-                  {(['en_curso', 'anteriores'] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => setAddTab(t)}
-                      style={{
-                        flex: 1,
-                        padding: '8px',
-                        border: 'none',
-                        borderRadius: 8,
-                        cursor: 'pointer',
-                        fontSize: 13,
-                        fontWeight: addTab === t ? 600 : 400,
-                        background: addTab === t ? 'var(--bg-card)' : 'transparent',
-                        color: addTab === t ? 'var(--text-primary)' : 'var(--text-muted)',
-                      }}
-                    >
-                      {t === 'en_curso'
-                        ? `📚 En curso (${available?.en_curso?.length ?? '…'})`
-                        : `📦 Anteriores (${available?.anteriores?.length ?? '…'})`}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Lista */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '12px 24px' }}>
-                  {availableLoading ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '24px 0',
-                        color: 'var(--text-muted)',
-                        fontSize: 13,
-                      }}
-                    >
-                      <div
-                        style={{
-                          width: 20,
-                          height: 20,
-                          border: '2px solid var(--border)',
-                          borderTopColor: 'var(--accent)',
-                          borderRadius: '50%',
-                          animation: 'spin 0.9s linear infinite',
-                        }}
-                      />
-                      Obteniendo asignaturas desde tu campus virtual…
-                    </div>
-                  ) : (
-                    (() => {
-                      const list =
-                        addTab === 'en_curso'
-                          ? available?.en_curso || []
-                          : available?.anteriores || [];
-                      if (list.length === 0)
-                        return (
-                          <p
-                            style={{
-                              color: 'var(--text-muted)',
-                              fontSize: 13,
-                              padding: '24px 0',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {addTab === 'en_curso'
-                              ? 'No hay asignaturas en curso sin agregar.'
-                              : 'No hay asignaturas anteriores disponibles.'}
-                          </p>
-                        );
-                      return list.map((c: any) => (
-                        <label
-                          key={c.id}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 12,
-                            padding: '10px 0',
-                            borderBottom: '1px solid var(--border)',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedToAdd.has(c.id)}
-                            onChange={() => toggleSelect(c.id)}
-                            style={{
-                              width: 16,
-                              height: 16,
-                              accentColor: 'var(--accent)',
-                              cursor: 'pointer',
-                              flexShrink: 0,
-                            }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <p
-                              style={{
-                                margin: 0,
-                                fontSize: 13,
-                                fontWeight: 500,
-                                color: 'var(--text-primary)',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                              }}
-                            >
-                              {c.name}
-                            </p>
-                            {c.short_name && (
-                              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>
-                                {c.short_name}
-                              </p>
-                            )}
-                          </div>
-                        </label>
-                      ));
-                    })()
-                  )}
-                </div>
-
-                {/* Info */}
-                <div
-                  style={{
-                    padding: '10px 24px',
-                    background: 'rgba(59,130,246,0.06)',
-                    borderTop: '1px solid var(--border)',
-                  }}
-                >
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>
-                    ℹ️ Importará todo el material (archivos, tareas, URLs) organizado por módulos.
-                    Puede tomar 30–90 segundos según la cantidad de archivos.
-                  </p>
-                </div>
-
-                {/* Footer */}
-                <div
-                  style={{
-                    padding: '14px 24px',
-                    display: 'flex',
-                    gap: 10,
-                    borderTop: '1px solid var(--border)',
-                  }}
-                >
-                  <button
-                    onClick={() => setShowAddModal(false)}
-                    style={{
-                      flex: 1,
-                      background: 'var(--bg-secondary)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 10,
-                      padding: 10,
-                      fontSize: 14,
-                      cursor: 'pointer',
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleAddCourses}
-                    disabled={selectedToAdd.size === 0}
-                    style={{
-                      flex: 2,
-                      background:
-                        selectedToAdd.size === 0 ? 'var(--bg-secondary)' : 'var(--accent)',
-                      color: selectedToAdd.size === 0 ? 'var(--text-muted)' : '#fff',
-                      border: 'none',
-                      borderRadius: 10,
-                      padding: 10,
-                      fontSize: 14,
-                      fontWeight: 600,
-                      cursor: selectedToAdd.size === 0 ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    Agregar{' '}
-                    {selectedToAdd.size > 0
-                      ? `${selectedToAdd.size} asignatura${selectedToAdd.size !== 1 ? 's' : ''}`
-                      : 'asignaturas'}{' '}
-                    →
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+      </main>
     </div>
   );
 }

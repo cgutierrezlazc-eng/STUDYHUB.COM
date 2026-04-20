@@ -9,6 +9,7 @@ import {
   Settings,
   CheckCircle,
 } from '../components/Icons';
+import sgStyles from './Suggestions.module.css';
 
 interface Suggestion {
   id: string;
@@ -95,12 +96,23 @@ export default function Suggestions() {
   ];
 
   return (
-    <>
-      <div className="page-header">
-        <h2>{Lightbulb({ size: 22 })} Sugerencias</h2>
-        <p>Tu feedback nos ayuda a mejorar Conniku</p>
+    <div className={sgStyles.sgRoot}>
+      <div className={sgStyles.topProgress}>
+        <div className={sgStyles.tpLeft}>
+          <span className={sgStyles.pulse} aria-hidden="true" />
+          <span>Sugerencias</span>
+        </div>
+        <span>Tu voz construye Conniku</span>
       </div>
-      <div className="page-body page-enter">
+
+      <main className={sgStyles.main}>
+        <h1 className={sgStyles.heroH1}>
+          Tu <span className={sgStyles.hlCyan}>feedback</span> mejora Conniku.
+        </h1>
+        <p className={sgStyles.heroLead}>
+          Cuéntanos qué te gustaría ver, qué funciona mal, o qué nuevas funciones necesitas. Cada
+          sugerencia llega directo al equipo.
+        </p>
         {sent && (
           <div
             style={{
@@ -266,7 +278,7 @@ export default function Suggestions() {
             )}
           </div>
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

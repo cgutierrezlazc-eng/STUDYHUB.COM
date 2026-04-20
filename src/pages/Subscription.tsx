@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
 import tierData from '../../shared/tier-limits.json';
+import subStyles from './Subscription.module.css';
 import {
   Gem,
   CheckCircle,
@@ -199,6 +200,22 @@ export default function Subscription({ onNavigate }: Props) {
 
   return (
     <>
+      <div className={subStyles.topProgress}>
+        <div className={subStyles.tpLeft}>
+          <span className={subStyles.pulse} aria-hidden="true" />
+          <span>Suscripción</span>
+        </div>
+        <span>{t('sub.subtitle')}</span>
+      </div>
+      <div className={subStyles.heroWrap}>
+        <h1 className={subStyles.heroH1}>
+          Conniku <span className={subStyles.hlLime}>Pro</span>.
+        </h1>
+        <p className={subStyles.heroLead}>
+          Desbloquea Workspaces sin límite, Athena ilimitado, biblioteca extendida y exportación
+          profesional. Completa 6 cursos y obtén 1 mes gratis.
+        </p>
+      </div>
       <div className="page-header page-enter">
         <h2>
           {Gem()} {t('sub.title')}

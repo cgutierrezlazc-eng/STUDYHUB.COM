@@ -1,0 +1,600 @@
+/*
+ * Login.module.css
+ * Rediseño editorial v3 según FINAL HTML/02-Crear Cuenta_FINAL.html
+ *
+ * Layout 2 columnas:
+ * - Izq ink con brand hero + live chip + footer links
+ * - Der paper con form card flotante rotada -0.8deg con esquinas asimétricas
+ */
+
+.authRoot {
+  --au-ink: #0d0f10;
+  --au-ink-2: #2b2e30;
+  --au-ink-3: #696c6f;
+  --au-paper: #f5f4ef;
+  --au-paper-2: #ebe9e1;
+  --au-line: #d2cfc3;
+  --au-card: #ffffff;
+  --au-lime: #d9ff3a;
+  --au-lime-ink: #181f08;
+  --au-pink: #ff4d3a;
+  --au-cream: #ffe9b8;
+  --au-violet: #6b4eff;
+  --au-cyan: #00c2ff;
+  --au-orange: #ff4a1c;
+  --au-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: var(--au-ink);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+}
+
+.authRoot::before {
+  content: '';
+  position: absolute;
+  top: -100px;
+  left: 35%;
+  width: 400px;
+  height: 400px;
+  background: var(--au-lime);
+  border-radius: 50%;
+  opacity: 0.22;
+  filter: blur(100px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.authRoot::after {
+  content: '';
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
+  background: var(--au-pink);
+  border-radius: 50%;
+  opacity: 0.22;
+  filter: blur(90px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Left panel (ink, branding) ── */
+.leftPanel {
+  position: relative;
+  z-index: 2;
+  padding: 76px 48px 40px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.backHome {
+  position: absolute;
+  top: 24px;
+  left: 48px;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--au-paper);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 200ms var(--au-ease);
+}
+
+.backHome:hover {
+  background: var(--au-paper);
+  color: var(--au-ink);
+  border-color: var(--au-paper);
+  transform: translateX(-2px);
+}
+
+.bhArrow {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--au-lime);
+  color: var(--au-lime-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 12px;
+  transition: all 200ms var(--au-ease);
+}
+
+.backHome:hover .bhArrow {
+  background: var(--au-ink);
+  color: var(--au-lime);
+}
+
+.topMeta {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: baseline;
+  font-weight: 800;
+  font-size: clamp(56px, 6vw, 80px);
+  letter-spacing: -0.055em;
+  line-height: 0.9;
+  color: #fff;
+}
+
+.uPack {
+  display: inline-flex;
+  align-items: baseline;
+  background: var(--au-lime);
+  color: var(--au-ink);
+  padding: 0.07em 0.14em 0.07em 0.09em;
+  border-radius: 0.2em;
+  margin-left: 0.02em;
+}
+
+.brandDot {
+  color: var(--au-orange);
+}
+
+.liveChip {
+  margin-top: 12px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.liveChipDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--au-orange);
+  animation: authPulse 1.6s var(--au-ease) infinite;
+}
+
+@keyframes authPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 74, 28, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 74, 28, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 74, 28, 0);
+  }
+}
+
+.heroBrand {
+  position: relative;
+  z-index: 2;
+  margin: auto 0;
+}
+
+.heroH1 {
+  font-weight: 800;
+  font-size: clamp(56px, 6.5vw, 100px);
+  line-height: 0.92;
+  letter-spacing: -0.055em;
+  color: #fff;
+  margin: 0;
+}
+
+.chipAccent {
+  background: var(--au-pink);
+  color: #fff;
+  padding: 0 14px;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(-1deg);
+}
+
+.outline {
+  color: transparent;
+  -webkit-text-stroke: 2.5px #fff;
+  display: inline-block;
+}
+
+.dotFinal {
+  color: var(--au-orange);
+}
+
+.heroLead {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 440px;
+  font-weight: 500;
+}
+
+.heroLead strong {
+  background: var(--au-lime);
+  color: var(--au-lime-ink);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+.footerLinks {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding-top: 20px;
+  margin-top: auto;
+}
+
+.footerLinks::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.14) 40%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
+.footerLinks a,
+.footerLinks button {
+  background: transparent;
+  border: 0;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  letter-spacing: -0.005em;
+  transition: color 180ms var(--au-ease);
+  cursor: pointer;
+}
+
+.footerLinks a:hover,
+.footerLinks button:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.footerLinks .mini {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.04em;
+  margin-left: auto;
+  padding-top: 1px;
+}
+
+/* ── Right panel (card flotante) ── */
+.rightPanel {
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow-y: auto;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+}
+
+.formCard {
+  background: var(--au-card);
+  border: 2px solid var(--au-ink);
+  border-radius: 32px 48px 28px 44px;
+  padding: 32px;
+  width: 100%;
+  max-width: 460px;
+  position: relative;
+  transform: rotate(-0.8deg);
+  box-shadow:
+    14px 14px 0 rgba(13, 15, 16, 0.12),
+    0 24px 50px rgba(13, 15, 16, 0.18),
+    0 4px 12px rgba(13, 15, 16, 0.08);
+}
+
+.tabSwitch {
+  display: flex;
+  background: var(--au-paper-2);
+  border-radius: 999px;
+  padding: 3px;
+  margin-bottom: 20px;
+}
+
+.tabBtn {
+  flex: 1;
+  padding: 9px 18px;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--au-ink-3);
+  transition: all 180ms var(--au-ease);
+}
+
+.tabBtn.active {
+  background: var(--au-ink);
+  color: var(--au-lime);
+}
+
+.cardTitle {
+  font-weight: 800;
+  font-size: 26px;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0 0 6px;
+  color: var(--au-ink);
+}
+
+.cardSub {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--au-ink-3);
+  margin: 0 0 20px;
+  font-weight: 600;
+}
+
+.googleBtn {
+  width: 100%;
+  background: var(--au-card);
+  border: 2px solid var(--au-ink);
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--au-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 180ms var(--au-ease);
+}
+
+.googleBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 var(--au-ink);
+}
+
+.googleBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 18px 0;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--au-ink-3);
+  font-weight: 700;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1.5px;
+  background: var(--au-ink);
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.label {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--au-ink-3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.input {
+  width: 100%;
+  background: var(--au-paper);
+  border: 2px solid var(--au-ink);
+  border-radius: 12px;
+  padding: 11px 14px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--au-ink);
+  outline: none;
+  transition: background 120ms var(--au-ease);
+}
+
+.input:focus {
+  background: var(--au-card);
+}
+
+.passwordWrap {
+  position: relative;
+}
+
+.pwToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-size: 15px;
+  padding: 4px;
+}
+
+.errorBox {
+  background: var(--au-pink);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.submitBtn {
+  width: 100%;
+  background: var(--au-ink);
+  color: var(--au-lime);
+  border: 2px solid var(--au-ink);
+  border-radius: 999px;
+  padding: 12px 20px 12px 28px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all 180ms var(--au-ease);
+  margin-top: 6px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 4px 4px 0 var(--au-lime);
+}
+
+.submitBtn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ring {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--au-lime);
+  color: var(--au-ink);
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.linkBtn {
+  display: block;
+  width: 100%;
+  text-align: center;
+  background: transparent;
+  border: 0;
+  padding: 12px 0 0;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--au-ink-2);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.linkBtn:hover {
+  color: var(--au-ink);
+}
+
+.helperText {
+  margin-top: 14px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--au-ink-3);
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Responsive — una columna bajo 900px */
+@media (max-width: 900px) {
+  .authRoot {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+    overflow: auto;
+  }
+  .leftPanel {
+    padding: 70px 28px 32px;
+  }
+  .backHome {
+    left: 20px;
+    top: 18px;
+  }
+  .heroH1 {
+    font-size: clamp(44px, 10vw, 72px);
+  }
+  .rightPanel {
+    height: auto;
+    padding: 28px 20px 48px;
+  }
+  .formCard {
+    transform: rotate(0);
+    border-radius: 24px;
+  }
+}

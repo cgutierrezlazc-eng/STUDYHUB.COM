@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { useI18n, LANGUAGES } from '../services/i18n';
 import { api } from '../services/api';
+import pfStyles from './Profile.module.css';
 import { LanguageSkill } from '../types';
 import MilestonePopup from '../components/MilestonePopup';
 import CoverPhotoModal, { getCoverStyle } from '../components/CoverPhotoModal';
@@ -343,6 +344,26 @@ export default function Profile({
 
   return (
     <>
+      {!embedded && (
+        <>
+          <div className={pfStyles.topProgress}>
+            <div className={pfStyles.tpLeft}>
+              <span className={pfStyles.pulse} aria-hidden="true" />
+              <span>Mi perfil</span>
+            </div>
+            <span>{t('profile.settingsDesc')}</span>
+          </div>
+          <div className={pfStyles.heroWrap}>
+            <h1 className={pfStyles.heroH1}>
+              Tu <span className={pfStyles.hlViolet}>identidad</span>.
+            </h1>
+            <p className={pfStyles.heroLead}>
+              Foto, ubicación, universidad, intereses, privacidad y cuenta. Todo lo que te define en
+              Conniku.
+            </p>
+          </div>
+        </>
+      )}
       {!embedded && (
         <div className="page-header page-enter">
           <h2>{t('profile.settings')}</h2>

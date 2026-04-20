@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { useI18n } from '../services/i18n';
 import { api } from '../services/api';
+import styles from './Gamification.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -963,91 +964,84 @@ export default function Gamification({ onNavigate }: Props) {
   };
 
   /* ─── Main render ────────────────────────────────────────────── */
+  const xpProgress = xpForNext > 0 ? Math.round(((xp - (level - 1) * 100) / 100) * 100) : 0;
+  const xpToNext = Math.max(0, xpForNext - xp);
+
   return (
-    <>
-      <div className="page-header page-enter">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 12,
-          }}
-        >
-          <div>
-            <h2 style={{ margin: 0 }}>🏆 Logros y Progreso</h2>
-            <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 14 }}>
-              Tu centro de gamificación — sube de nivel, desbloquea insignias y compite en la liga
-            </p>
-          </div>
-          {stats && (
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: 12,
-                padding: '8px 16px',
-              }}
-            >
-              <span style={{ fontWeight: 800, color: 'var(--accent)', fontSize: 18 }}>
-                Nv. {level}
-              </span>
-              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{xp} XP</span>
-              <span style={{ color: '#ff6b35', fontSize: 13, fontWeight: 600 }}>
-                🔥 {stats.streakDays || 0}
-              </span>
-            </div>
-          )}
+    <div className={styles.gamRoot}>
+      <div className={styles.topProgress}>
+        <div className={styles.tpLeft}>
+          <span className={styles.pulse} aria-hidden="true" />
+          <span>Logros y progreso</span>
         </div>
+        <span>
+          Nivel {level} · {xp} XP · {stats?.streakDays || 0}d racha
+        </span>
       </div>
 
-      <div className="page-body">
-        {/* Tabs */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 4,
-            marginBottom: 20,
-            background: 'var(--bg-secondary)',
-            borderRadius: 12,
-            padding: 4,
-            overflowX: 'auto',
-          }}
-        >
+      <main className={styles.main}>
+        <section className={styles.hero}>
+          <div className={styles.heroCopy}>
+            <h1 className={styles.heroH1}>
+              Sube de <span className={styles.hlLime}>nivel</span>.
+              <br />
+              Desbloquea insignias.
+            </h1>
+            <p className={styles.heroLead}>
+              Gana XP con cada hora de estudio, quiz aprobado y ayuda a tus compañeros. Sube en la
+              liga semanal y completa tus desafíos diarios.
+            </p>
+          </div>
+
+          {stats && (
+            <div className={styles.levelCard}>
+              <div className={styles.levelLabel}>Nivel actual</div>
+              <div className={styles.levelNum}>{level}</div>
+              <div className={styles.levelXp}>
+                {xp} XP · {xpToNext > 0 ? `${xpToNext} para nivel ${level + 1}` : 'Nivel máximo'}
+              </div>
+              <div className={styles.xpBar}>
+                <div className={styles.xpFill} style={{ width: `${Math.min(100, xpProgress)}%` }} />
+              </div>
+              <div className={styles.streakRow}>
+                <div className={styles.streakItem}>
+                  <div className={`${styles.streakValue} ${styles.flame}`}>
+                    {stats.streakDays || 0}
+                  </div>
+                  <div className={styles.streakLabel}>Días racha</div>
+                </div>
+                <div className={styles.streakItem}>
+                  <div className={styles.streakValue}>{stats.totalBadges || 0}</div>
+                  <div className={styles.streakLabel}>Insignias</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* Tabs editoriales */}
+        <div className={styles.tabs} role="tablist">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              style={{
-                flex: 1,
-                padding: '10px 16px',
-                borderRadius: 10,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 13,
-                fontWeight: 600,
-                whiteSpace: 'nowrap',
-                background: activeTab === tab ? 'var(--bg-primary)' : 'transparent',
-                color: activeTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
-                boxShadow: activeTab === tab ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
-                transition: 'all 0.2s',
-              }}
+              className={`${styles.tabBtn} ${activeTab === tab ? styles.active : ''}`}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
             >
               {tab}
             </button>
           ))}
         </div>
 
-        {/* Tab content */}
-        {activeTab === 'Mi Progreso' && renderProgress()}
-        {activeTab === 'Insignias' && renderBadges()}
-        {activeTab === 'Liga Semanal' && renderLeague()}
-        {activeTab === 'Desafíos Diarios' && renderChallenges()}
-      </div>
-    </>
+        <div className={styles.content}>
+          {activeTab === 'Mi Progreso' && renderProgress()}
+          {activeTab === 'Insignias' && renderBadges()}
+          {activeTab === 'Liga Semanal' && renderLeague()}
+          {activeTab === 'Desafíos Diarios' && renderChallenges()}
+        </div>
+      </main>
+    </div>
   );
 }

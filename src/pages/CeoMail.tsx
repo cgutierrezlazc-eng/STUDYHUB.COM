@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { useI18n } from '../services/i18n';
+import cmStyles from './CeoMail.module.css';
 import {
   Inbox,
   Send,
@@ -422,6 +423,13 @@ export default function CeoMail({ onNavigate, defaultAccount = 'all' }: Props) {
 
   return (
     <div className="ceo-mail-root">
+      <div className={cmStyles.topProgress}>
+        <div className={cmStyles.tpLeft}>
+          <span className={cmStyles.pulse} aria-hidden="true" />
+          <span>CEO Mail</span>
+        </div>
+        <span>Zoho SMTP · 3 cuentas conectadas</span>
+      </div>
       <style>{`
         .ceo-mail-root {
           display: flex;

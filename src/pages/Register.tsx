@@ -1,6 +1,7 @@
 import React, { useState, useRef, useMemo } from 'react';
 import { useAuth } from '../services/auth';
 import { useI18n, LANGUAGES } from '../services/i18n';
+import rgStyles from './Login.module.css';
 import { Gender, Language } from '../types';
 import { api } from '../services/api';
 import TermsOfService from '../components/TermsOfService';
@@ -374,77 +375,69 @@ export default function Register({ onSwitchToLogin, onBack }: Props) {
   ];
 
   return (
-    <div className="auth-page">
-      <div className="auth-left">
-        <div className="auth-brand">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 10,
-                background: '#2D62C8',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                flexShrink: 0,
-              }}
-            >
-              <svg viewBox="0 0 40 40" width={22} height={22}>
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="12"
-                  fill="none"
-                  stroke="#fff"
-                  strokeWidth="5"
-                  strokeLinecap="round"
-                  strokeDasharray="56 19"
-                />
-              </svg>
-            </div>
-            <span
-              style={{
-                fontFamily: "'Outfit', -apple-system, sans-serif",
-                fontSize: 32,
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '-0.04em',
-                lineHeight: 1,
-              }}
-            >
-              conni<span style={{ color: '#2D62C8' }}>ku</span>
+    <div className={rgStyles.authRoot}>
+      {/* ── Left panel: branding editorial ── */}
+      <div className={rgStyles.leftPanel}>
+        {onBack && (
+          <button onClick={onBack} className={rgStyles.backHome} type="button">
+            <span className={rgStyles.bhArrow}>←</span>
+            Volver al inicio
+          </button>
+        )}
+
+        <div className={rgStyles.topMeta}>
+          <a className={rgStyles.brand} href="#" onClick={(e) => e.preventDefault()}>
+            conn<span>i</span>k
+            <span className={rgStyles.uPack}>
+              u<span className={rgStyles.brandDot}>.</span>
             </span>
+          </a>
+          <div className={rgStyles.liveChip}>
+            <span className={rgStyles.liveChipDot} />
+            Gratis
           </div>
         </div>
-        <div className="auth-free-badge">{t('reg.freeTrial')}</div>
-        <div className="auth-features">
-          <div className="auth-feature">
-            <span className="auth-feature-icon">{Brain({ size: 20 })}</span>
-            <div>
-              <strong>{t('reg.featStudy')}</strong>
-              <p>{t('reg.featStudyDesc')}</p>
-            </div>
-          </div>
-          <div className="auth-feature">
-            <span className="auth-feature-icon">{Users({ size: 20 })}</span>
-            <div>
-              <strong>{t('feat.community')}</strong>
-              <p>{t('feat.communityDesc')}</p>
-            </div>
-          </div>
-          <div className="auth-feature">
-            <span className="auth-feature-icon">{BookOpen({ size: 20 })}</span>
-            <div>
-              <strong>{t('reg.featGuides')}</strong>
-              <p>{t('reg.featGuidesDesc')}</p>
-            </div>
-          </div>
+
+        <div className={rgStyles.heroBrand}>
+          <h1 className={rgStyles.heroH1}>
+            Únete a <span className={rgStyles.chipAccent}>Conniku</span>
+            <span className={rgStyles.dotFinal}>.</span>
+          </h1>
+          <p className={rgStyles.heroLead}>
+            Workspaces colaborativos, Athena, biblioteca, tutorías validadas.{' '}
+            <strong>Todo gratis para empezar.</strong>
+          </p>
+        </div>
+
+        <div className={rgStyles.footerLinks}>
+          <a href="/terminos">Términos</a>
+          <a href="/privacidad">Privacidad</a>
+          <a href="/cookies">Cookies</a>
+          <a href="mailto:contacto@conniku.com">Contacto</a>
+          <span className={rgStyles.mini}>+18 años · Hecho en Chile</span>
         </div>
       </div>
 
-      <div className="auth-right">
-        <div className="auth-card">
+      {/* ── Right panel: form card flotante ── */}
+      <div className={rgStyles.rightPanel}>
+        <div className={rgStyles.formCard}>
+          <div className={rgStyles.tabSwitch} role="tablist">
+            <button
+              type="button"
+              className={rgStyles.tabBtn}
+              onClick={onSwitchToLogin}
+              aria-selected="false"
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              className={`${rgStyles.tabBtn} ${rgStyles.active}`}
+              aria-selected="true"
+            >
+              Crear cuenta
+            </button>
+          </div>
           {onBack && (
             <button
               onClick={onBack}

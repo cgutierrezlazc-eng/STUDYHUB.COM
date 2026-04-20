@@ -4,20 +4,33 @@ import { useAuth } from '../services/auth';
 import { api } from '../services/api';
 import { CalendarEvent, Project } from '../types';
 import {
-  Calendar as CalendarIcon,
   ListChecks,
   ClipboardList,
   Clock,
   BookOpen,
   AlertTriangle,
-  CheckCircle,
-  Target,
   Check,
   X,
   ChevronLeft,
   ChevronRight,
   LayoutGrid,
 } from '../components/Icons';
+import styles from './Calendar.module.css';
+
+/* Mapea tipo de evento a clase de chip editorial */
+function evChipClass(type: string): string {
+  switch (type) {
+    case 'exam':
+      return styles.evExam;
+    case 'deadline':
+      return styles.evDeadline;
+    case 'study_session':
+      return styles.evStudy;
+    case 'task':
+    default:
+      return styles.evTask;
+  }
+}
 
 interface Props {
   projects: Project[];
@@ -486,203 +499,382 @@ export default function Calendar({ projects, onNavigate }: Props) {
     </div>
   );
 
+  // Eventos del día de hoy para el side panel
+  const todayEvents = filteredEvents
+    .filter((e) => {
+      const d = new Date(e.dueDate);
+      return isSameDay(d, now);
+    })
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+  const barForType = (type: string): string => {
+    switch (type) {
+      case 'exam':
+        return styles.evExam;
+      case 'deadline':
+        return styles.evDeadline;
+      case 'study_session':
+        return styles.evStudy;
+      case 'task':
+      default:
+        return styles.evTask;
+    }
+  };
+
   return (
-    <>
-      <div className="page-header page-enter">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div>
-            <h2>
-              {CalendarIcon()} {t('calendar.title')}
-            </h2>
-            <p>{t('calendar.subtitle')}</p>
-          </div>
-          <button className="btn btn-primary" onClick={() => setShowForm(true)}>
-            {t('calendar.new')}
-          </button>
+    <div className={styles.calRoot}>
+      <div className={styles.topProgress}>
+        <div className={styles.tpLeft}>
+          <span className={styles.pulse} aria-hidden="true" />
+          <span>Tu calendario</span>
         </div>
-        <div
-          style={{
-            display: 'flex',
-            gap: 8,
-            marginTop: 12,
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <div style={{ display: 'flex', gap: 8 }}>
-            {(['all', 'pending', 'completed'] as const).map((f) => (
-              <button
-                key={f}
-                className={`tab ${filter === f ? 'active' : ''}`}
-                onClick={() => setFilter(f)}
-              >
-                {f === 'all'
-                  ? t('calendar.tabAll')
-                  : f === 'pending'
-                    ? t('calendar.tabPending')
-                    : t('calendar.tabCompleted')}
-                {f === 'pending' && overdue.length > 0 && (
-                  <span
-                    style={{
-                      marginLeft: 6,
-                      background: 'var(--accent-red)',
-                      color: '#fff',
-                      borderRadius: 10,
-                      padding: '2px 6px',
-                      fontSize: 10,
-                    }}
-                  >
-                    {overdue.length}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              gap: 4,
-              background: 'var(--bg-secondary)',
-              borderRadius: 8,
-              padding: 2,
-            }}
-          >
-            <button
-              onClick={() => setView('month')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 6,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-                background: view === 'month' ? 'var(--accent)' : 'transparent',
-                color: view === 'month' ? '#fff' : 'var(--text-muted)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {LayoutGrid({ size: 14 })} Mes
-            </button>
-            <button
-              onClick={() => setView('list')}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 6,
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: 12,
-                fontWeight: 600,
-                background: view === 'list' ? 'var(--accent)' : 'transparent',
-                color: view === 'list' ? '#fff' : 'var(--text-muted)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                transition: 'all 0.15s ease',
-              }}
-            >
-              {ListChecks({ size: 14 })} Lista
-            </button>
-          </div>
-        </div>
+        <span>
+          {filteredEvents.length} evento{filteredEvents.length !== 1 ? 's' : ''} ·{' '}
+          {overdue.length > 0
+            ? `${overdue.length} atrasado${overdue.length !== 1 ? 's' : ''}`
+            : 'al día'}
+        </span>
       </div>
 
-      <div className="page-body">
-        {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="skeleton skeleton-card" />
-            ))}
-          </div>
-        ) : events.length === 0 && !showForm ? (
-          <div className="empty-state" style={{ padding: 48, textAlign: 'center' }}>
-            <div style={{ marginBottom: 16, opacity: 0.6 }}>
-              {CalendarIcon({ size: 56, color: 'var(--accent)' })}
+      <main className={styles.main}>
+        {/* ── Header ── */}
+        <div className={styles.topRow}>
+          <div>
+            <h1 className={styles.titleH1}>
+              <span className={styles.titleMo} style={{ textTransform: 'capitalize' }}>
+                {monthLabel.split(' ')[0]}
+              </span>{' '}
+              {monthLabel.split(' ').slice(1).join(' ')}
+            </h1>
+            <div className={styles.titleSub}>
+              {upcoming.length > 0 && (
+                <>
+                  <strong>{upcoming.length}</strong> próximo{upcoming.length !== 1 ? 's' : ''}
+                  {overdue.length > 0 && ' · '}
+                </>
+              )}
+              {overdue.length > 0 && (
+                <>
+                  <strong style={{ color: 'var(--cl-pink, #ff4d3a)' }}>{overdue.length}</strong>{' '}
+                  atrasado{overdue.length !== 1 ? 's' : ''}
+                </>
+              )}
+              {upcoming.length === 0 && overdue.length === 0 && 'Sin eventos pendientes'}
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>Organiza tu semestre</h3>
+          </div>
+          <div className={styles.controls}>
+            <button
+              className={`${styles.calBtn} ${styles.arrow}`}
+              onClick={prevMonth}
+              aria-label="Mes anterior"
+            >
+              {ChevronLeft({ size: 16 })}
+            </button>
+            <button
+              className={`${styles.calBtn} ${styles.arrow}`}
+              onClick={nextMonth}
+              aria-label="Mes siguiente"
+            >
+              {ChevronRight({ size: 16 })}
+            </button>
+            <div className={styles.viewSwitcher}>
+              <button
+                className={`${styles.vsBtn} ${view === 'month' ? styles.active : ''}`}
+                onClick={() => setView('month')}
+                type="button"
+              >
+                {LayoutGrid({ size: 14 })} Mes
+              </button>
+              <button
+                className={`${styles.vsBtn} ${view === 'list' ? styles.active : ''}`}
+                onClick={() => setView('list')}
+                type="button"
+              >
+                {ListChecks({ size: 14 })} Lista
+              </button>
+            </div>
+            <button
+              className={`${styles.calBtn} ${styles.primary}`}
+              onClick={() => setShowForm(true)}
+              type="button"
+            >
+              + Nuevo
+            </button>
+          </div>
+        </div>
+
+        {/* ── Filter tabs ── */}
+        <div className={styles.filterTabs}>
+          {(['all', 'pending', 'completed'] as const).map((f) => (
+            <button
+              key={f}
+              className={`${styles.filterTab} ${filter === f ? styles.active : ''}`}
+              onClick={() => setFilter(f)}
+              type="button"
+            >
+              {f === 'all'
+                ? t('calendar.tabAll')
+                : f === 'pending'
+                  ? t('calendar.tabPending')
+                  : t('calendar.tabCompleted')}
+              {f === 'pending' && overdue.length > 0 && (
+                <span className={styles.filterBadge}>{overdue.length}</span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Body ── */}
+        {loading ? (
+          <div className={styles.empty}>Cargando calendario…</div>
+        ) : events.length === 0 && !showForm ? (
+          <div className={styles.calMain} style={{ padding: 60, textAlign: 'center' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>📅</div>
+            <h3
+              style={{ fontWeight: 800, fontSize: 24, letterSpacing: '-0.02em', margin: '0 0 8px' }}
+            >
+              Organiza tu semestre
+            </h3>
             <p
               style={{
-                color: 'var(--text-muted)',
                 fontSize: 14,
-                maxWidth: 360,
-                margin: '0 auto 20px',
-                lineHeight: 1.6,
+                color: 'var(--cl-ink-3, #696c6f)',
+                maxWidth: 400,
+                margin: '0 auto 18px',
               }}
             >
-              Agenda pruebas, entregas y sesiones de estudio para no olvidar nada importante
+              Agenda pruebas, entregas y sesiones de estudio para no olvidar nada.
             </p>
-            <p style={{ color: 'var(--text-muted)', fontSize: 12, marginBottom: 16 }}>
-              Ej: Solemne 1 Calculo, Entrega informe, Repaso grupal
-            </p>
-            <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+            <button
+              className={`${styles.calBtn} ${styles.primary}`}
+              onClick={() => setShowForm(true)}
+              type="button"
+            >
               + Nuevo evento
             </button>
           </div>
-        ) : view === 'month' ? (
-          renderMonthGrid()
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            {overdue.length > 0 && filter !== 'completed' && (
-              <div>
-                <h3 style={{ fontSize: 14, color: 'var(--accent-red)', marginBottom: 8 }}>
-                  {AlertTriangle({ size: 14 })} {t('calendar.overdue')} ({overdue.length})
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {overdue.map(renderEvent)}
+          <div className={styles.layout}>
+            {/* ── Left: calendar grid or list ── */}
+            <div>
+              {view === 'month' ? (
+                <div className={styles.calMain}>
+                  <div className={styles.weekdays}>
+                    {DOW_LABELS.map((d, i) => (
+                      <div
+                        key={d}
+                        className={`${styles.wd} ${i === (now.getDay() + 6) % 7 ? styles.today : ''}`}
+                      >
+                        {d}
+                      </div>
+                    ))}
+                  </div>
+                  <div className={styles.daysGrid}>
+                    {calendarDays.map((day, i) => {
+                      if (!day)
+                        return (
+                          <div
+                            key={`blank-${i}`}
+                            className={`${styles.dayCell} ${styles.outside}`}
+                          />
+                        );
+                      const dayEvts = eventsForDay(day);
+                      const isToday = isSameDay(day, now);
+                      const isSelected = selectedDay && isSameDay(day, selectedDay);
+                      const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+                      return (
+                        <div
+                          key={i}
+                          onClick={() => handleDayClick(day)}
+                          className={`${styles.dayCell} ${isToday ? styles.today : ''} ${isSelected ? styles.selected : ''} ${!isCurrentMonth ? styles.outside : ''}`}
+                        >
+                          <div className={styles.dayNum}>{day.getDate()}</div>
+                          {dayEvts.length > 0 && (
+                            <div className={styles.dayEvents}>
+                              {dayEvts.slice(0, 3).map((evt) => (
+                                <span
+                                  key={evt.id}
+                                  className={`${styles.evChip} ${evt.completed ? styles.evDone : evChipClass(evt.eventType)}`}
+                                  title={evt.title}
+                                >
+                                  {evt.title}
+                                </span>
+                              ))}
+                              {dayEvts.length > 3 && (
+                                <span className={styles.eventMore}>+{dayEvts.length - 3} más</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            )}
-            {upcoming.length > 0 && filter !== 'completed' && (
-              <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>
-                  {Target({ size: 14 })} {t('calendar.upcoming')} ({upcoming.length})
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {upcoming.map(renderEvent)}
+              ) : (
+                <div className={styles.listView}>
+                  {overdue.length > 0 &&
+                    filter !== 'completed' &&
+                    overdue.map((event) => (
+                      <div
+                        key={event.id}
+                        className={styles.listRow}
+                        onClick={() => handleToggle(event.id, event.completed)}
+                      >
+                        <div
+                          className={`${styles.listBar} ${styles.evExam}`}
+                          style={{ background: 'var(--cl-pink, #ff4d3a)' }}
+                        />
+                        <div className={styles.listBody}>
+                          <div className={styles.listTitle}>
+                            {AlertTriangle({ size: 12 })} {event.title}
+                          </div>
+                          <div className={styles.listMeta}>{formatDate(event.dueDate)}</div>
+                        </div>
+                        <button
+                          className={styles.listAction}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(event.id);
+                          }}
+                          type="button"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  {upcoming.length > 0 &&
+                    filter !== 'completed' &&
+                    upcoming.map((event) => (
+                      <div
+                        key={event.id}
+                        className={styles.listRow}
+                        onClick={() => handleToggle(event.id, event.completed)}
+                      >
+                        <div className={`${styles.listBar} ${barForType(event.eventType)}`} />
+                        <div className={styles.listBody}>
+                          <div className={styles.listTitle}>{event.title}</div>
+                          <div className={styles.listMeta}>{formatDate(event.dueDate)}</div>
+                        </div>
+                        <button
+                          className={styles.listAction}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(event.id);
+                          }}
+                          type="button"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  {completed.length > 0 &&
+                    filter !== 'pending' &&
+                    completed.map((event) => (
+                      <div
+                        key={event.id}
+                        className={`${styles.listRow} ${styles.done}`}
+                        onClick={() => handleToggle(event.id, event.completed)}
+                      >
+                        <div className={`${styles.listBar} ${barForType(event.eventType)}`} />
+                        <div className={styles.listBody}>
+                          <div className={styles.listTitle}>{event.title}</div>
+                          <div className={styles.listMeta}>{formatDate(event.dueDate)}</div>
+                        </div>
+                        <button
+                          className={styles.listAction}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(event.id);
+                          }}
+                          type="button"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
                 </div>
-              </div>
-            )}
-            {completed.length > 0 && filter !== 'pending' && (
-              <div>
-                <h3 style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 8 }}>
-                  {CheckCircle({ size: 14 })} {t('calendar.completed')} ({completed.length})
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {completed.map(renderEvent)}
+              )}
+            </div>
+
+            {/* ── Right: side panels ── */}
+            <aside className={styles.side}>
+              <div className={styles.sideCard}>
+                <h3>Hoy</h3>
+                <div
+                  className="sub"
+                  style={{
+                    fontFamily: "'Geist Mono', monospace",
+                    fontSize: 11,
+                    color: 'var(--cl-ink-3, #696c6f)',
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    marginBottom: 14,
+                    fontWeight: 600,
+                  }}
+                >
+                  {now.toLocaleDateString('es-CL', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                  })}
                 </div>
+                {todayEvents.length === 0 ? (
+                  <div className={styles.empty}>Sin eventos hoy.</div>
+                ) : (
+                  <div className={styles.todayList}>
+                    {todayEvents.map((event) => (
+                      <div key={event.id} className={styles.todayRow}>
+                        <div className={styles.teTime}>
+                          {new Date(event.dueDate).toLocaleTimeString('es-CL', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                        <div className={`${styles.teBar} ${barForType(event.eventType)}`} />
+                        <div className={styles.teBody}>
+                          <div className={styles.teTitle}>{event.title}</div>
+                          {event.description && (
+                            <div className={styles.teSub}>{event.description}</div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
+
+              <div className={styles.reminderBox}>
+                <div className={styles.rLabel}>Tip</div>
+                <h4>Click en un día vacío</h4>
+                <p>para crear un evento directo en esa fecha.</p>
+              </div>
+            </aside>
           </div>
         )}
 
+        {/* ── Form modal ── */}
         {showForm && (
-          <div className="modal-overlay" onClick={() => setShowForm(false)}>
-            <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className={styles.formOverlay} onClick={() => setShowForm(false)}>
+            <div className={styles.formCard} onClick={(e) => e.stopPropagation()}>
               <h3>{t('calendar.modalTitle')}</h3>
-              <div className="auth-field">
-                <label>{t('calendar.titleLabel')}</label>
+
+              <div style={{ marginBottom: 14 }}>
+                <label className={styles.formLabel}>{t('calendar.titleLabel')}</label>
                 <input
+                  className={styles.formInput}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder={t('calendar.titlePlaceholder')}
                   autoFocus
                 />
               </div>
-              <div className="auth-field">
-                <label>{t('calendar.typeLabel')}</label>
+
+              <div style={{ marginBottom: 14 }}>
+                <label className={styles.formLabel}>{t('calendar.typeLabel')}</label>
                 <select
+                  className={styles.formSelect}
                   value={eventType}
                   onChange={(e) => setEventType(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 8,
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-primary)',
-                  }}
                 >
                   {EVENT_TYPES.map((et) => (
                     <option key={et.value} value={et.value}>
@@ -691,28 +883,23 @@ export default function Calendar({ projects, onNavigate }: Props) {
                   ))}
                 </select>
               </div>
-              <div className="auth-field">
-                <label>{t('calendar.dateLabel')}</label>
+
+              <div style={{ marginBottom: 14 }}>
+                <label className={styles.formLabel}>{t('calendar.dateLabel')}</label>
                 <input
+                  className={styles.formInput}
                   type="datetime-local"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  style={{ colorScheme: 'dark' }}
                 />
               </div>
-              <div className="auth-field">
-                <label>{t('calendar.subjectLabel')}</label>
+
+              <div style={{ marginBottom: 14 }}>
+                <label className={styles.formLabel}>{t('calendar.subjectLabel')}</label>
                 <select
+                  className={styles.formSelect}
                   value={projectId}
                   onChange={(e) => setProjectId(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '10px 12px',
-                    borderRadius: 8,
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-secondary)',
-                    color: 'var(--text-primary)',
-                  }}
                 >
                   <option value="">{t('calendar.noSubject')}</option>
                   {projects.map((p) => (
@@ -722,22 +909,26 @@ export default function Calendar({ projects, onNavigate }: Props) {
                   ))}
                 </select>
               </div>
-              <div className="auth-field">
-                <label>{t('calendar.descLabel')}</label>
+
+              <div>
+                <label className={styles.formLabel}>{t('calendar.descLabel')}</label>
                 <input
+                  className={styles.formInput}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder={t('calendar.descPlaceholder')}
                 />
               </div>
-              <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
-                <button className="btn btn-secondary" onClick={() => setShowForm(false)}>
+
+              <div className={styles.formActions}>
+                <button className={styles.calBtn} onClick={() => setShowForm(false)} type="button">
                   {t('calendar.cancel')}
                 </button>
                 <button
-                  className="btn btn-primary"
+                  className={`${styles.calBtn} ${styles.primary}`}
                   onClick={handleCreate}
                   disabled={!title.trim() || !dueDate}
+                  type="button"
                 >
                   {t('calendar.createSubmit')}
                 </button>
@@ -745,7 +936,7 @@ export default function Calendar({ projects, onNavigate }: Props) {
             </div>
           </div>
         )}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
