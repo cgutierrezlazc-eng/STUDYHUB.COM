@@ -634,15 +634,18 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
         {/* 10. Menores */}
         <h2 style={styles.h2}>10. Menores de Edad</h2>
         <p style={styles.p}>
-          Conniku es un servicio destinado a estudiantes universitarios y está diseñado para
-          personas mayores de 16 años. No recopilamos intencionalmente datos de menores de 16 años.
-          Si tomamos conocimiento de que hemos recopilado datos de un menor de 16 años sin el
-          consentimiento adecuado, procederemos a eliminar dichos datos a la brevedad.
+          Conniku es una plataforma exclusiva para personas mayores de 18 años. No recopilamos
+          intencionalmente datos personales de personas menores de 18 años. Si tomamos conocimiento
+          de que hemos recopilado datos de una persona menor de 18 años sin el consentimiento
+          adecuado, procederemos a eliminar dichos datos en un plazo máximo de 72 horas desde la
+          confirmación del hecho.
         </p>
         <p style={styles.p}>
-          Para usuarios de la Unión Europea: el umbral de edad para el tratamiento de datos basado
-          en consentimiento puede ser de 13 a 16 años según el Estado miembro. Conniku aplica 16
-          años como edad mínima uniforme a nivel global.
+          Para usuarios de la Unión Europea: el GDPR Art. 8 permite que algunos Estados miembros
+          fijen un umbral de edad mínima para el consentimiento digital inferior a 18 años. Conniku
+          aplica 18 años como edad mínima uniforme en todas las jurisdicciones, adoptando la
+          restricción más estricta de forma global, independientemente de lo que permita la
+          legislación local aplicable.
         </p>
 
         {/* 11. Cambios */}

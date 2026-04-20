@@ -132,8 +132,10 @@ export default function TermsOfService({ onNavigate }: Props) {
           </li>
         </ul>
         <p style={styles.p}>
-          El usuario debe ser mayor de 16 años para crear una cuenta. Al registrarse, declara
-          cumplir con este requisito.
+          Conniku es una plataforma exclusiva para personas mayores de 18 años. El usuario debe ser
+          mayor de 18 años para crear una cuenta. Al registrarse, declara cumplir con este
+          requisito. Esta restricción refleja la política operacional de Conniku (§Cumplimiento
+          Legal) y aplica sin excepción en todas las jurisdicciones donde opera el servicio.
         </p>
 
         {/* 4. Planes y pagos */}
