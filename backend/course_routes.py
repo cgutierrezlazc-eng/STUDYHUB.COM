@@ -1118,8 +1118,14 @@ def submit_quiz(course_id: str, data: dict, user: User = Depends(get_current_use
 
     pool = json.loads(quiz.questions or "[]")
 
+    # Fix C8 (2026-04-19): `total = len(pool)` (no `len(answers)`).
+    # Si se usaba `len(answers)`, el cliente podía enviar solo 1 respuesta
+    # correcta de N preguntas → score=100% → certificado emitido.
+    # Ahora el denominador es el tamaño real del quiz; preguntas no
+    # respondidas cuentan como incorrectas.
+    total = len(pool)
+
     correct = 0
-    total = len(answers)
     for qid_str, selected in answers.items():
         try:
             qid = int(qid_str)
