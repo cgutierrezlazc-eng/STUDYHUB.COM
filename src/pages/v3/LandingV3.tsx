@@ -107,7 +107,7 @@ const CAPABILITIES = [
   {
     id: '05',
     title: 'Tutorías verificadas',
-    desc: 'Tutores titulados. Conniku intermedia el pago. Garantía antifraude en cada sesión.',
+    desc: 'Tutores titulados. Conniku intermedia el pago entre estudiante y tutor.',
     color: 'stk-violet',
     rot: '-1.1deg',
   },
@@ -677,8 +677,8 @@ export default function LandingV3({ onLogin, onRegister }: LandingV3Props) {
                 },
                 {
                   icon: '🛡️',
-                  title: 'Tutores con garantía',
-                  desc: 'Conniku verifica credenciales y protege tu pago. Si la sesión no fue útil, te devolvemos.',
+                  title: 'Tutores verificados',
+                  desc: 'Conniku verifica credenciales de los tutores e intermedia el pago entre las partes.',
                 },
                 {
                   icon: '💼',
@@ -687,8 +687,8 @@ export default function LandingV3({ onLogin, onRegister }: LandingV3Props) {
                 },
                 {
                   icon: '🎓',
-                  title: 'Diploma con respaldo',
-                  desc: 'El Diploma Conniku tiene valor real porque los cursos los diseñamos con estándares universitarios.',
+                  title: 'Diploma propio',
+                  desc: 'El Diploma Conniku certifica formación interna diseñada con criterio académico riguroso.',
                 },
               ].map((item, i) => (
                 <Reveal key={i} delay={i * 50}>
@@ -878,7 +878,7 @@ export default function LandingV3({ onLogin, onRegister }: LandingV3Props) {
                 {
                   label: 'pagos',
                   value: 'protegidos',
-                  highlight: 'garantía antifraude',
+                  highlight: 'intermediados por Conniku',
                   desc: 'en cada sesión de tutoría reservada',
                 },
                 {
@@ -1575,10 +1575,14 @@ export default function LandingV3({ onLogin, onRegister }: LandingV3Props) {
               © 2026 Conniku SpA · Santiago, Chile
             </p>
             <div style={{ display: 'flex', gap: 20 }}>
-              {['Términos', 'Privacidad', 'Cookies'].map((link) => (
+              {[
+                { label: 'Términos', href: '/terms' },
+                { label: 'Privacidad', href: '/privacy' },
+                { label: 'Cookies', href: '/cookies' },
+              ].map((link) => (
                 <a
-                  key={link}
-                  href={`#${link.toLowerCase()}`}
+                  key={link.label}
+                  href={link.href}
                   style={{
                     fontFamily: 'var(--font-mono)',
                     fontSize: 11,
@@ -1588,7 +1592,7 @@ export default function LandingV3({ onLogin, onRegister }: LandingV3Props) {
                     transition: 'color 180ms var(--ease)',
                   }}
                 >
-                  {link}
+                  {link.label}
                 </a>
               ))}
             </div>

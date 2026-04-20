@@ -179,6 +179,12 @@ export default function RegisterV3({ onSwitchToLogin, onBack }: Props) {
       setError('Este nombre de usuario no está permitido. Elige otro.');
       return false;
     }
+    if (!legalDocOpened) {
+      setError(
+        'Debes abrir y leer los Términos y Condiciones antes de marcar la declaración jurada de edad.'
+      );
+      return false;
+    }
     if (!ageDeclarationAccepted) {
       setError('Debes marcar la declaración jurada de edad para continuar con el registro.');
       return false;
