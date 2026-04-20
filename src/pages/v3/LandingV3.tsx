@@ -189,7 +189,7 @@ const TESTIMONIALS = [
         out: true,
         text: 'Tutores titulados, pagos protegidos. Conniku actúa como intermediario.',
       },
-      { out: false, text: 'Tomé tres sesiones de Estadística y saqué un 6.2 en el examen.' },
+      { out: false, text: 'Tomé sesiones de Estadística y me fue mejor de lo que esperaba.' },
     ],
     reaction: '💪',
   },
