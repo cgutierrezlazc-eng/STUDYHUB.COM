@@ -3,6 +3,7 @@ import { useAuth } from '../services/auth';
 import { useI18n } from '../services/i18n';
 import { api } from '../services/api';
 import { AdminStats } from '../types';
+import adStyles from './Admin.module.css';
 import {
   BarChart3,
   Users,
@@ -383,6 +384,22 @@ export default function Admin() {
 
   return (
     <>
+      <div className={adStyles.topProgress}>
+        <div className={adStyles.tpLeft}>
+          <span className={adStyles.pulse} aria-hidden="true" />
+          <span>{user?.role === 'owner' ? 'Admin CEO' : 'Administración'}</span>
+        </div>
+        <span>Gestión · moderación · estadísticas</span>
+      </div>
+      <div className={adStyles.heroWrap}>
+        <h1 className={adStyles.heroH1}>
+          Panel de <span className={adStyles.hlOrange}>administración</span>.
+        </h1>
+        <p className={adStyles.heroLead}>
+          Usuarios, reportes, moderación de contenidos, estadísticas globales de la plataforma.
+          {user?.role === 'owner' && ' Acceso completo CEO.'}
+        </p>
+      </div>
       <div className="page-header">
         <h2>Panel de Administración {user?.role === 'owner' ? '— CEO' : ''}</h2>
         <p>Gestión de usuarios, moderación y estadísticas</p>
