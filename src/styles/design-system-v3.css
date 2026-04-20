@@ -431,13 +431,23 @@
   z-index: 0;
 }
 
-/* ─── Animación de reveal en scroll ─────────────────────────── */
+/* ─── Animación de reveal en scroll ─────────────────────────────────────────
+ * Progressive enhancement: contenido VISIBLE por default (opacity 1).
+ * Si el JS quiere animar entrada, suma la clase .v3-reveal-init que ahora
+ * sí oculta. .v3-reveal.visible la regresa a visible.
+ * Esto evita que un fallo de IntersectionObserver / Suspense / lazy deje
+ * pantalla en blanco. */
 .v3-surface .v3-reveal {
-  opacity: 0;
-  transform: translateY(20px);
+  opacity: 1;
+  transform: translateY(0);
   transition:
     opacity 400ms var(--ease),
     transform 400ms var(--ease);
+}
+
+.v3-surface .v3-reveal-init {
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .v3-surface .v3-reveal.visible {
