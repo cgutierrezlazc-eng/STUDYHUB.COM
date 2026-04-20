@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../services/auth';
 import { api } from '../services/api';
+import mtStyles from './MyTutorDashboard.module.css';
 
 interface Props {
   onNavigate: (path: string) => void;
@@ -323,7 +324,14 @@ export default function MyTutorDashboard({ onNavigate, subPath }: Props) {
   const isApproved = profile.status === 'approved';
 
   return (
-    <div style={{ padding: '24px 28px', maxWidth: 1100, margin: '0 auto' }}>
+    <div style={{ padding: '0 28px 24px', maxWidth: 1100, margin: '0 auto' }}>
+      <div className={mtStyles.topProgress}>
+        <div className={mtStyles.tpLeft}>
+          <span className={mtStyles.pulse} aria-hidden="true" />
+          <span>Mi tutor dashboard</span>
+        </div>
+        <span>Clases · ingresos · reseñas</span>
+      </div>
       {/* Header */}
       <div
         style={{
