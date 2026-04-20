@@ -469,6 +469,69 @@ export default function PrivacyPolicy({ onNavigate }: Props) {
             </tr>
             <tr>
               <td style={styles.td}>
+                <strong>Supabase</strong>
+              </td>
+              <td style={styles.td}>
+                Autenticación de usuarios y almacenamiento primario de la base de datos relacional
+                (PostgreSQL gestionado). Actúa como encargado de tratamiento conforme al artículo 28
+                del RGPD y equivalentes de la Ley 19.628.
+              </td>
+              <td style={styles.td}>
+                Credenciales de acceso (contraseña almacenada como hash, nunca en texto plano),
+                identificadores únicos de usuario, dirección de correo electrónico, metadatos de
+                sesión, y todos los contenidos que la plataforma almacene en la base de datos
+                (perfil, documentos, mensajes, registros de actividad).
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Firebase Cloud Messaging (Google)</strong>
+              </td>
+              <td style={styles.td}>
+                Entrega de notificaciones push al navegador y a las aplicaciones móviles, por
+                ejemplo recordatorios de suscripción, avisos de mensajes nuevos y alertas operativas
+                que usted haya habilitado.
+              </td>
+              <td style={styles.td}>
+                Token único del dispositivo generado por el propio Firebase (identificador técnico
+                de entrega), tipo de dispositivo y plataforma. No se envían contenidos sensibles
+                dentro del payload de la notificación; los datos completos se consultan solo después
+                de que usted abre la aplicación.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Google OAuth</strong>
+              </td>
+              <td style={styles.td}>
+                Inicio de sesión federado "Entrar con Google" cuando usted decide utilizarlo.
+                Permite autenticar sin crear una contraseña separada.
+              </td>
+              <td style={styles.td}>
+                Dirección de correo electrónico asociada a la cuenta Google, nombre público y (si
+                usted lo autoriza) foto de perfil. Los permisos solicitados se limitan a los scopes
+                "openid", "email" y "profile". Usted puede revocar el acceso en cualquier momento
+                desde https://myaccount.google.com/permissions.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
+                <strong>Capacitor (app móvil)</strong>
+              </td>
+              <td style={styles.td}>
+                Empaquetado de la aplicación para iOS y Android. Permite acceder a almacenamiento
+                local del dispositivo (equivalente a localStorage del navegador) para funciones
+                offline y recordatorios de sesión.
+              </td>
+              <td style={styles.td}>
+                Datos locales del dispositivo: preferencias de interfaz, borradores no
+                sincronizados, identificadores de sesión. Estos datos no se envían a terceros;
+                residen en el dispositivo y se eliminan al desinstalar la aplicación o desde los
+                ajustes del sistema operativo.
+              </td>
+            </tr>
+            <tr>
+              <td style={styles.td}>
                 <strong>MercadoPago / PayPal</strong>
               </td>
               <td style={styles.td}>Procesamiento de pagos de suscripciones</td>
