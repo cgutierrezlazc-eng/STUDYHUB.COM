@@ -22,6 +22,10 @@ import SupportChat from './components/SupportChat';
 import CommandBar from './components/CommandBar';
 
 import Landing from './pages/Landing';
+import { LANDING_V3_ENABLED } from './config/v3';
+
+// ─── v3 piloto (bloque-piloto-rediseno-v3) ───────────────────────
+const LandingV3 = lazy(() => import('./pages/v3/LandingV3'));
 import { Project } from './types';
 import { api, initPushNotifications } from './services/api';
 
@@ -561,12 +565,18 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <SEOHead {...authSEO} />
-        {authView === 'landing' && (
-          <Landing
-            onLogin={() => setAuthView('login')}
-            onRegister={() => setAuthView('register')}
-          />
-        )}
+        {authView === 'landing' &&
+          (LANDING_V3_ENABLED ? (
+            <LandingV3
+              onLogin={() => setAuthView('login')}
+              onRegister={() => setAuthView('register')}
+            />
+          ) : (
+            <Landing
+              onLogin={() => setAuthView('login')}
+              onRegister={() => setAuthView('register')}
+            />
+          ))}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && (
           <Login
