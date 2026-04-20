@@ -41,6 +41,13 @@ presentarlos cuando Cristian pida "pendientes" o decida qué bloque emprender.
 - **Hipótesis**: o bien el bug ya fue fixeado retroactivamente sin documentar, o bien el reporte original de Konni 2026-04-16 tenía el número de línea desactualizado. Sin reproducción concreta, marcado como SIN EVIDENCIA.
 - **Estado**: cerrado por falta de reproducibilidad. Si vuelve a aparecer, abrir issue nuevo con stack trace.
 
+### C8. Quiz score inflado por manipulación de denominador — ✅ CERRADO 2026-04-19
+- **Ubicación**: `backend/course_routes.py:1110-1131` endpoint `POST /{course_id}/quiz/submit`
+- **Problema**: el handler calculaba `total = len(answers)` del cliente. Atacante podía enviar solo 1 respuesta correcta de un quiz de N preguntas → `correct=1`, `total=1`, `score=100%`, `passed=True` → certificado emitido + 30 XP.
+- **Origen**: descubrimiento 2026-04-19 al auditar `/quiz/submit` como derivado natural de C3 fix (CLAUDE.md §22 verificación de premisas).
+- **Resolución**: cambio de `total = len(answers)` por `total = len(pool)` (denominador desde BD). Preguntas no respondidas cuentan como incorrectas. Hotfix dedicado en rama `hotfix-c8-quiz-submit-total`.
+- **Tests**: 4 tests TDD en `backend/tests/test_course_quiz_security.py` (subset trampa, no certificado, flujo legítimo 3/3, flujo 2/3).
+
 ### C5. PCI-DSS violation en Checkout
 - **Ubicación**: `src/pages/Checkout.tsx:13-30`
 - **Problema**: recolecta tarjeta+CVC en React state, simula pago con setTimeout. Viola PCI-DSS y Ley 19.628.
