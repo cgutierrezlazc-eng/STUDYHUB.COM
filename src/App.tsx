@@ -40,6 +40,7 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
+const UnderConstruction = lazy(() => import('./pages/UnderConstruction'));
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
 const Communities = lazy(() => import('./pages/Communities'));
 const CommunityView = lazy(() => import('./pages/CommunityView'));
@@ -561,12 +562,7 @@ export default function App() {
     return (
       <Suspense fallback={<PageLoader />}>
         <SEOHead {...authSEO} />
-        {authView === 'landing' && (
-          <Landing
-            onLogin={() => setAuthView('login')}
-            onRegister={() => setAuthView('register')}
-          />
-        )}
+        {authView === 'landing' && <UnderConstruction />}
         {authView === 'forgot' && <ForgotPassword onBack={() => setAuthView('login')} />}
         {authView === 'login' && (
           <Login
