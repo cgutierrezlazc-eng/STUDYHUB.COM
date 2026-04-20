@@ -1,0 +1,738 @@
+/*
+ * Biblioteca.module.css
+ * Rediseño editorial v3 del módulo 04 Biblioteca.
+ * Fuente visual: Referencia/02-biblioteca-editorial.html
+ *
+ * Decisiones de adaptación al estado real del producto (2026-04-20):
+ * - NO top nav con logo (se delega al Sidebar/TopBar global del layout)
+ * - NO stats inventados "+70k libros", "18h esta semana", etc.
+ *   (regla §RULES.01.3 no inventar cifras)
+ * - NO sección "chat con libros" del mockup (feature no implementada; memoria
+ *   project_chat_biblioteca.md queda como ticket futuro)
+ * - SÍ hero editorial con título grande + card de búsqueda rotada
+ * - SÍ covers coloreados con rotaciones y borders negros
+ * - SÍ categorías como rail horizontal grande tipográfico
+ * - SÍ tabs de fuente (comunidad/académicos/dominio público) preservados
+ */
+
+.bibRoot {
+  --bib-ink: #0d0f10;
+  --bib-ink-2: #2b2e30;
+  --bib-ink-3: #696c6f;
+  --bib-paper: #f5f4ef;
+  --bib-paper-2: #ebe9e1;
+  --bib-paper-3: #dbd9cf;
+  --bib-line: #d2cfc3;
+  --bib-line-soft: #e2dfd4;
+  --bib-card: #ffffff;
+  --bib-lime: #d9ff3a;
+  --bib-lime-ink: #181f08;
+  --bib-pink: #ff4d3a;
+  --bib-cream: #ffe9b8;
+  --bib-violet: #6b4eff;
+  --bib-cyan: #00c2ff;
+  --bib-orange: #ff4a1c;
+  --bib-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  background: var(--bib-paper);
+  color: var(--bib-ink);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  min-height: 100%;
+  padding: 0;
+  margin: 0 -20px;
+  overflow-x: hidden;
+}
+
+.bibRoot ::selection {
+  background: var(--bib-lime);
+  color: var(--bib-lime-ink);
+}
+
+/* Top progress */
+.topProgress {
+  background: var(--bib-ink);
+  color: #fff;
+  padding: 8px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.topProgress .tpLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--bib-lime);
+  animation: bibPulse 1.6s var(--bib-ease) infinite;
+}
+
+@keyframes bibPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(217, 255, 58, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 255, 58, 0);
+  }
+}
+
+/* Main */
+.main {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 28px 120px;
+}
+
+/* Hero */
+.hero {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 60px;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -20px;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--bib-cream) 0%, transparent 70%);
+  opacity: 0.5;
+  z-index: 0;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 1;
+}
+
+.heroH1 {
+  font-weight: 800;
+  font-size: clamp(56px, 9vw, 128px);
+  line-height: 0.86;
+  letter-spacing: -0.05em;
+  margin: 0;
+}
+
+.heroH1 .chipCyan {
+  background: var(--bib-cyan);
+  padding: 0 14px;
+  border-radius: 14px;
+  display: inline-block;
+  transform: rotate(-1.2deg);
+  color: var(--bib-ink);
+}
+
+.heroLead {
+  margin-top: 24px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--bib-ink-2);
+  font-weight: 500;
+  max-width: 460px;
+}
+
+.heroLead strong {
+  background: var(--bib-lime);
+  color: var(--bib-lime-ink);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+}
+
+/* Search card (rotada) */
+.searchCard {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 24px;
+  padding: 28px;
+  transform: rotate(0.8deg);
+  box-shadow: 8px 8px 0 var(--bib-ink);
+  position: relative;
+  z-index: 1;
+}
+
+.searchLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bib-ink-3);
+  margin-bottom: 14px;
+}
+
+.searchInput {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid var(--bib-ink);
+  padding: 8px 0 14px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 600;
+  font-size: 22px;
+  outline: none;
+  color: var(--bib-ink);
+}
+
+.searchInput::placeholder {
+  color: var(--bib-ink-3);
+  font-weight: 500;
+}
+
+/* Tabs editoriales (fuente) */
+.sourceTabs {
+  display: flex;
+  gap: 10px;
+  margin: 32px 0 16px;
+  flex-wrap: wrap;
+}
+
+.sourceTabBtn {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  color: var(--bib-ink);
+  transition: all 180ms var(--bib-ease);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sourceTabBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 var(--bib-ink);
+}
+
+.sourceTabBtn.active {
+  background: var(--bib-ink);
+  color: var(--bib-lime);
+}
+
+/* Filter chips (category + language) */
+.filtersRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 20px;
+}
+
+.filterChip {
+  background: var(--bib-paper);
+  border: 1px solid var(--bib-ink);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bib-ink);
+  cursor: pointer;
+  transition: all 180ms var(--bib-ease);
+}
+
+.filterChip:hover {
+  background: var(--bib-ink);
+  color: #fff;
+}
+
+.filterChip.active {
+  background: var(--bib-lime);
+  color: var(--bib-lime-ink);
+  border-color: var(--bib-ink);
+  font-weight: 700;
+}
+
+.filterLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bib-ink-3);
+  align-self: center;
+  margin-right: 4px;
+}
+
+/* Section label */
+.sectionLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bib-ink-3);
+  margin: 40px 0 20px;
+}
+
+.sectionLabel::before {
+  content: '';
+  width: 32px;
+  height: 2px;
+  background: var(--bib-ink);
+}
+
+/* View toggle (grid/list) */
+.viewToggle {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.viewBtn {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+  color: var(--bib-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.viewBtn.active {
+  background: var(--bib-ink);
+  color: var(--bib-lime);
+}
+
+/* Books grid */
+.booksGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Info banner (OpenStax / Gutenberg) */
+.infoBanner {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 22px;
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 20px;
+  margin-bottom: 24px;
+  box-shadow: 4px 4px 0 var(--bib-ink);
+}
+
+.infoBannerIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.infoBannerTitle {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--bib-ink);
+  margin-bottom: 4px;
+  letter-spacing: -0.01em;
+}
+
+.infoBannerText {
+  font-size: 13px;
+  color: var(--bib-ink-2);
+  line-height: 1.5;
+}
+
+/* Loading / empty */
+.loading,
+.empty {
+  text-align: center;
+  padding: 80px 40px;
+  color: var(--bib-ink-3);
+}
+
+.empty h3 {
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--bib-ink);
+  margin: 12px 0 6px;
+  letter-spacing: -0.02em;
+}
+
+.empty p {
+  font-size: 14px;
+  color: var(--bib-ink-3);
+  margin-bottom: 16px;
+}
+
+/* Categorías rail (chips tipográficos grandes) */
+.categoriasRail {
+  margin: 56px -28px 40px;
+  overflow-x: auto;
+  display: flex;
+  gap: 14px;
+  padding: 0 28px 20px;
+}
+
+.categoriasRail::-webkit-scrollbar {
+  height: 4px;
+}
+
+.categoriasRail::-webkit-scrollbar-thumb {
+  background: var(--bib-ink);
+  border-radius: 4px;
+}
+
+.catChip {
+  flex-shrink: 0;
+  border: 2px solid var(--bib-ink);
+  border-radius: 18px;
+  padding: 18px 26px;
+  font-weight: 800;
+  font-size: clamp(24px, 3vw, 44px);
+  letter-spacing: -0.03em;
+  cursor: pointer;
+  transition: transform 180ms var(--bib-ease);
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  background: var(--bib-card);
+  color: var(--bib-ink);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.catChip:hover {
+  transform: translateY(-3px);
+}
+
+.catChip.active {
+  background: var(--bib-lime);
+  color: var(--bib-lime-ink);
+  border-color: var(--bib-ink);
+}
+
+.catIcon {
+  font-size: 0.7em;
+}
+
+/* Paginación */
+.paginator {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 48px;
+  align-items: center;
+}
+
+.pagBtn {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family:
+    'Funnel Display',
+    -apple-system,
+    sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--bib-ink);
+  cursor: pointer;
+  transition: all 180ms var(--bib-ease);
+}
+
+.pagBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0 var(--bib-ink);
+}
+
+.pagBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.pagInfo {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--bib-ink-3);
+  text-transform: uppercase;
+}
+
+/* BookCard editorial */
+.bookCard {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 200ms var(--bib-ease);
+  display: flex;
+  flex-direction: column;
+}
+
+.bookCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 8px 8px 0 var(--bib-ink);
+}
+
+.bookCard:nth-child(3n + 1) {
+  transform: rotate(-0.6deg);
+}
+
+.bookCard:nth-child(3n + 2) {
+  transform: rotate(0.4deg);
+}
+
+.bookCard:nth-child(3n + 1):hover,
+.bookCard:nth-child(3n + 2):hover {
+  transform: translateY(-4px) rotate(0);
+}
+
+.bookCover {
+  height: 220px;
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+.bookCover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bookCover.coverLime {
+  background: var(--bib-lime);
+  color: var(--bib-lime-ink);
+}
+.bookCover.coverPink {
+  background: var(--bib-pink);
+  color: #fff;
+}
+.bookCover.coverCream {
+  background: var(--bib-cream);
+  color: var(--bib-ink);
+}
+.bookCover.coverInk {
+  background: var(--bib-ink);
+  color: #fff;
+}
+.bookCover.coverViolet {
+  background: var(--bib-violet);
+  color: #fff;
+}
+.bookCover.coverCyan {
+  background: var(--bib-cyan);
+  color: var(--bib-ink);
+}
+.bookCover.coverPaper {
+  background: var(--bib-paper-3);
+  color: var(--bib-ink);
+}
+.bookCover.coverOrange {
+  background: var(--bib-orange);
+  color: #fff;
+}
+
+.sourceBadge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: var(--bib-ink);
+  color: var(--bib-lime);
+  border-radius: 999px;
+  padding: 5px 11px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.spineLabel {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.78;
+  z-index: 1;
+}
+
+.bookTitle {
+  font-weight: 800;
+  font-size: 20px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  z-index: 1;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.bookAuthor {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.82;
+  z-index: 1;
+  margin-top: 8px;
+}
+
+.bookInfo {
+  padding: 14px 20px;
+  background: var(--bib-card);
+  border-top: 2px solid var(--bib-ink);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--bib-ink-3);
+  text-transform: uppercase;
+}
+
+.bookInfo .rating {
+  color: var(--bib-ink);
+  font-weight: 700;
+}
+
+.saveBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  color: var(--bib-ink);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* BookRow (vista lista) */
+.bookRow {
+  background: var(--bib-card);
+  border: 2px solid var(--bib-ink);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 180ms var(--bib-ease);
+}
+
+.bookRow:hover {
+  transform: translateX(3px);
+  box-shadow: 5px 5px 0 var(--bib-ink);
+}
+
+.bookRowThumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  border: 2px solid var(--bib-ink);
+}
+
+.bookRowBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.bookRowTitle {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--bib-ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookRowAuthor {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--bib-ink-3);
+  letter-spacing: 0.06em;
+  margin-top: 2px;
+}
+
+.bookRowMeta {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--bib-ink-3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 1080px) {
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .booksGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .heroH1 {
+    font-size: clamp(44px, 10vw, 72px);
+  }
+}
+
+@media (max-width: 640px) {
+  .booksGrid {
+    grid-template-columns: 1fr;
+  }
+  .main {
+    padding: 32px 18px 80px;
+  }
+  .categoriasRail {
+    margin: 40px -18px 28px;
+    padding: 0 18px 16px;
+  }
+}
